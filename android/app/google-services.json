@@ -1,0 +1,227 @@
+{
+  "project_info": {
+    "project_number": "711441452263",
+    "firebase_url": "https://fg-man-power-default-rtdb.firebaseio.com",
+    "project_id": "fg-man-power",
+    "storage_bucket": "fg-man-power.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:711441452263:android:5a45a50446957b8ae06642",
+        "android_client_info": {
+          "package_name": "com.fg.Seller"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "711441452263-ujp2etish112vjbpephbdald4v2unddc.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCv_oAmOzsmuFYOKIzAJQKdBeMI7ckPFYY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "711441452263-ujp2etish112vjbpephbdald4v2unddc.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "711441452263-lr1h4gcqk6knmb8dd9ajl1h8c6u0busv.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.fgmanpower"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:711441452263:android:2a16c8674fa43987e06642",
+        "android_client_info": {
+          "package_name": "com.fg.agent"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "711441452263-ujp2etish112vjbpephbdald4v2unddc.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCv_oAmOzsmuFYOKIzAJQKdBeMI7ckPFYY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "711441452263-ujp2etish112vjbpephbdald4v2unddc.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "711441452263-lr1h4gcqk6knmb8dd9ajl1h8c6u0busv.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.fgmanpower"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:711441452263:android:73c4feee65f918d6e06642",
+        "android_client_info": {
+          "package_name": "com.fg.delivery"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "711441452263-ujp2etish112vjbpephbdald4v2unddc.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCv_oAmOzsmuFYOKIzAJQKdBeMI7ckPFYY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "711441452263-ujp2etish112vjbpephbdald4v2unddc.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "711441452263-lr1h4gcqk6knmb8dd9ajl1h8c6u0busv.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.fgmanpower"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:711441452263:android:cbdb0301c284d252e06642",
+        "android_client_info": {
+          "package_name": "com.fg.fgtracker"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "711441452263-ujp2etish112vjbpephbdald4v2unddc.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCv_oAmOzsmuFYOKIzAJQKdBeMI7ckPFYY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "711441452263-ujp2etish112vjbpephbdald4v2unddc.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "711441452263-lr1h4gcqk6knmb8dd9ajl1h8c6u0busv.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.fgmanpower"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:711441452263:android:3496e574366b472de06642",
+        "android_client_info": {
+          "package_name": "com.fg.manpower"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "711441452263-ujp2etish112vjbpephbdald4v2unddc.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCv_oAmOzsmuFYOKIzAJQKdBeMI7ckPFYY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "711441452263-ujp2etish112vjbpephbdald4v2unddc.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "711441452263-lr1h4gcqk6knmb8dd9ajl1h8c6u0busv.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.fgmanpower"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:711441452263:android:5743760ff58d734be06642",
+        "android_client_info": {
+          "package_name": "com.fg.partner"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "711441452263-ujp2etish112vjbpephbdald4v2unddc.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCv_oAmOzsmuFYOKIzAJQKdBeMI7ckPFYY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "711441452263-ujp2etish112vjbpephbdald4v2unddc.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "711441452263-lr1h4gcqk6knmb8dd9ajl1h8c6u0busv.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.fgmanpower"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

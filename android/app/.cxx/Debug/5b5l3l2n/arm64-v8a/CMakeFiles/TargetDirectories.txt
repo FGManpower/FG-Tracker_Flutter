@@ -1,0 +1,2 @@
+/Users/rahulgupta/Desktop/FGM/tracker/android/app/.cxx/Debug/5b5l3l2n/arm64-v8a/CMakeFiles/edit_cache.dir
+/Users/rahulgupta/Desktop/FGM/tracker/android/app/.cxx/Debug/5b5l3l2n/arm64-v8a/CMakeFiles/rebuild_cache.dir

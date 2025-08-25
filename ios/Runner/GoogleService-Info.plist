@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>711441452263-9ss4cmin5472ul9n6c1lb32kisk0pvnp.apps.googleusercontent.com</string>
+	<key>API_KEY</key>
+	<string>AIzaSyDO6HT_5_VRn_kzKRidUrHeW3kiVPUx6HY</string>
+	<key>GCM_SENDER_ID</key>
+	<string>711441452263</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.fg.fgtracker</string>
+	<key>PROJECT_ID</key>
+	<string>fg-man-power</string>
+	<key>STORAGE_BUCKET</key>
+	<string>fg-man-power.firebasestorage.app</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:711441452263:ios:0ff801704af59566e06642</string>
+	<key>DATABASE_URL</key>
+	<string>https://fg-man-power-default-rtdb.firebaseio.com</string>
+</dict>
+</plist>

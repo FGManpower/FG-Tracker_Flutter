@@ -1,0 +1,2 @@
+C:/Users/HP/Desktop/FG/Tracker/FG-Tracker_Flutter/android/app/.cxx/RelWithDebInfo/5k2u6pp6/arm64-v8a/CMakeFiles/edit_cache.dir
+C:/Users/HP/Desktop/FG/Tracker/FG-Tracker_Flutter/android/app/.cxx/RelWithDebInfo/5k2u6pp6/arm64-v8a/CMakeFiles/rebuild_cache.dir

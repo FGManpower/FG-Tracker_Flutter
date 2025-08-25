@@ -1,0 +1,150 @@
+import 'dart:async';
+import 'dart:developer';
+
+import 'package:fgtracker/app/Core/values/Dialog/Common_dialog.dart';
+import 'package:fgtracker/app/Core/values/Utils.dart';
+import 'package:fgtracker/app/Core/values/global.dart';
+import 'package:fgtracker/app/Data/Repositories/Auth_repo.dart';
+import 'package:fgtracker/app/Data/Repositories/NotificationServices.dart';
+import 'package:fgtracker/app/routes/app_pages.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:otp_autofill/otp_autofill.dart';
+import '../../../Core/util/http/Constant.dart';
+import '../../../Core/values/loading.dart';
+
+class OtpController extends GetxController {
+  TextEditingController otpController = TextEditingController();
+  TextEditingController resendOtpController = TextEditingController();
+  FocusNode focusNode = FocusNode();
+  OTPInteractor otpInteractor = OTPInteractor();
+  Timer? _timer;
+  var deviceId = "".obs;
+  var resendSeconds = 0.obs;
+  var mobileNumber = ''.obs;
+  var showOtpSentText = false.obs;
+
+  Map<String, dynamic>? arguments = Get.arguments;
+
+  @override
+  void onInit() {
+    super.onInit();
+
+    firebaseNotificationServices().getDiviceToken().then(
+      (value) {
+        deviceId.value = value;
+      },
+    );
+
+    otpController = OTPTextEditController(
+      codeLength: 4,
+      onCodeReceive: (code) => log('$code'),
+      otpInteractor: otpInteractor,
+    )..startListenUserConsent(
+        (code) {
+          final exp = RegExp(r'(\d{4})');
+          return exp.stringMatch(code ?? '') ?? '';
+        },
+      );
+
+    mobileNumber.value = arguments?['mobNo'] ?? '';
+  }
+
+  void startResendTimer() {
+    _timer?.cancel();
+    resendSeconds.value = 59;
+    showOtpSentText.value = true;
+
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (resendSeconds.value == 0) {
+        timer.cancel();
+        showOtpSentText.value = false;
+      } else {
+        resendSeconds.value--;
+      }
+    });
+  }
+
+  void resendOtp() async {
+    try {
+      Loading().showloading();
+      dynamic param = {
+        "MobileNo": arguments?['mobNo'],
+      };
+
+      var result = await AuthRepo.ResendOtp(param);
+      Loading().dismissloading();
+
+      if (result.status == true) {
+        Utils().fluttertoast(result.message.toString());
+        startResendTimer();
+      } else {
+        CommonDialog.errorMessage(result.message);
+      }
+    } catch (e) {
+      Loading().dismissloading();
+      CommonDialog.errorMessage(e.toString());
+    }
+  }
+
+  @override
+  void onClose() {
+    _timer?.cancel();
+    super.onClose();
+  }
+
+  Future<void> veriefyOtp() async {
+    if (otpController.text.isEmpty) {
+      Utils().fluttertoast("Otp is Required");
+    } else {
+      try {
+        Loading().showloading();
+        dynamic param = {
+          "MobileNo": arguments?['mobNo'],
+          "otp": otpController.text,
+          'Device_Id': deviceId.value ?? "",
+        };
+        var result = await AuthRepo.VeriefyOtp(param);
+        if (result.status == true) {
+          Loading().dismissloading();
+
+          Global.storageServices.setString(
+            Constant.STORAGE_USER_TOKEN_KEY,
+            result.data!.token.toString(),
+          );
+          Global.storageServices.setString(
+            Constant.userId,
+            result.data!.userId.toString(),
+          );
+          if (result.data?.isNewUser == true) {
+            Get.toNamed(Routes.Register, arguments: {
+              "mobNo": arguments?['mobNo'],
+            });
+          } else {
+            Global.storageServices.setString(
+              Constant.userName,
+              result.data!.userName ?? "Unknown",
+            );
+
+            Global.storageServices.setString(
+              Constant.profileImage,
+              result.data!.profileImage ?? "Unknown",
+            );
+            Global.storageServices.setString(
+              Constant.isRegistered,
+              "true",
+            );
+            Get.offAllNamed(Routes.Home_Screen);
+          }
+        } else {
+          Loading().dismissloading();
+          CommonDialog.errorMessage(result.message);
+        }
+      } catch (e) {
+        Loading().dismissloading();
+        CommonDialog.errorMessage(e.toString());
+      }
+    }
+  }
+}

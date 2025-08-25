@@ -1,0 +1,230 @@
+import 'dart:io';
+import 'package:fgtracker/app/Core/util/http/Constant.dart';
+import 'package:fgtracker/app/Data/Repositories/GetMessageRepo.dart';
+import 'package:fgtracker/app/Data/Services/CallStateTracker.dart';
+import 'package:fgtracker/app/Data/Services/FireStore_services.dart';
+import 'package:fgtracker/app/Model/GetMessage.dart';
+import 'package:fgtracker/app/Model/MemberDataRes.dart';
+import 'package:fgtracker/app/modules/Messages/Controller/MessageController.dart';
+import 'package:fgtracker/app/modules/Messages/Controller/Socket_Message_Services.dart';
+import 'package:fgtracker/app/modules/Messages/widgets/message_Widgets.dart';
+import 'package:fgtracker/app/modules/home/Views/home_screen.dart';
+import 'package:fgtracker/app/routes/app_pages.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
+import '../../../Core/values/Dialog/Common_dialog.dart';
+import '../../../Core/values/global.dart';
+import '../../../global_widget/common_widget.dart';
+import 'package:uuid/uuid.dart';
+
+class ChatPage extends StatefulWidget {
+  MemberData userData;
+  String? type;
+  final String groupName;
+  ChatPage(
+      {Key? key, required this.userData, this.type, required this.groupName})
+      : super(key: key);
+
+  @override
+  State<ChatPage> createState() => _ChatPageState();
+}
+
+class _ChatPageState extends State<ChatPage> {
+  final TextEditingController _controller = TextEditingController();
+  late var controller = Get.put(MessageController());
+
+  final SocketMessageService socketService = SocketMessageService.instance;
+  RxString selectedImagePath = ''.obs;
+  TextEditingController messageController = TextEditingController();
+  var chatBackgroundColor = Colors.white.obs;
+  var chatBackgroundImage = RxnString(); // nullable
+  final ChatThemeController chatThemeController =
+      Get.put(ChatThemeController());
+  final ScrollController _scrollController = ScrollController();
+  final channelId = const Uuid().v4();
+
+  void handleBackPressed() {
+    final userId = Global.storageServices.get(Constant.userId).toString();
+    final groupId = widget.userData.groupId!;
+
+    SocketMessageService.instance.leaveUserFromGroup(userId, groupId);
+    SocketMessageService.instance.disconnectSocket();
+
+    controller.messageText.value = '';
+    controller.imagePath.value = '';
+    controller.isSending.value = false;
+    controller.messageData.clear();
+    controller.chatBackgroundImagePath.value = null;
+    Get.delete<MessageController>(tag: userId);
+
+    ChatStateTracker.isChatCallScreenOpen = false;
+
+    Navigator.of(context).pop();
+    // Get.offAllNamed(Routes.Home_Screen);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    ChatStateTracker.isChatCallScreenOpen = true;
+    final userId = widget.userData.userId.toString();
+    final groupId = widget.userData.groupId!;
+    controller.initSocket(userId, groupId: groupId);
+    chatThemeController.loadThemePreferences();
+    controller.loadThemePreferences(userId);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      controller.getMessageHistory(context, userId, groupId).then((_) {
+        scrollToBottom(_scrollController, animated: true);
+      });
+    });
+  }
+
+  bool _isSending = false;
+
+  Future<void> _sendMessage() async {
+    final imagePath = controller.imagePath.value;
+    final text = _controller.text.trim();
+    if (_isSending) return;
+    _isSending = true;
+
+    try {
+      if (imagePath.isNotEmpty) {
+        final result = await MessageRepo.uploadChatImage(imagePath);
+
+        if (result.status == true && result.filename != null) {
+          final uploadedImage = result.filename!;
+
+          if (text.isNotEmpty) {
+            socketService.sendMessage(
+              messageType: "image",
+              receiverId: widget.userData.userId.toString(),
+              groupId: widget.userData.groupId!,
+              content: uploadedImage,
+            );
+
+            await Future.delayed(const Duration(milliseconds: 200));
+
+            socketService.sendMessage(
+              messageType: "text",
+              receiverId: widget.userData.userId.toString(),
+              groupId: widget.userData.groupId!,
+              content: text,
+            );
+          } else {
+            socketService.sendMessage(
+              messageType: "image",
+              receiverId: widget.userData.userId.toString(),
+              groupId: widget.userData.groupId!,
+              content: uploadedImage,
+            );
+          }
+        } else {
+          CommonDialog.errorMessage("Image upload failed. Please try again.");
+          return;
+        }
+
+        controller.imagePath.value = "";
+        _controller.clear(); // Clear text if any
+      } else if (text.isNotEmpty) {
+        socketService.sendMessage(
+          receiverId: widget.userData.userId.toString(),
+          content: text,
+          messageType: "text",
+          groupId: widget.userData.groupId!,
+        );
+        _controller.clear();
+      }
+
+// ✅ Scroll after the list updates
+      Future.delayed(const Duration(milliseconds: 50), () {
+        scrollToBottom(_scrollController, animated: true);
+      });
+    } catch (e) {
+    } finally {
+      _isSending = false;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return WillPopScope(
+      onWillPop: () async {
+        handleBackPressed();
+        return false;
+      },
+      child: Scaffold(
+          backgroundColor: Colors.white,
+          resizeToAvoidBottomInset: true,
+          appBar: CommonChatAppBar(
+            profileImageUrl:
+                "${Constant.ImagebaseUrl}${widget.userData?.profileImage ?? ""}",
+            userName: widget.userData?.name ?? "",
+            onBackTap: () {
+              handleBackPressed();
+            },
+            onCallTap: () {
+              FireStoreServices().startCall(
+                context,
+                false,
+                receiverId: int.parse(widget.userData.userId.toString()),
+              );
+            },
+            onMicTap: () {
+              // Handle mic press
+            },
+            onVideoTap: () {
+              FireStoreServices().startCall(
+                context,
+                true,
+                receiverId: int.parse(widget.userData.userId.toString()),
+              );
+            },
+            onThemeTap: () {
+              ThemePicker.show(
+                  context, controller, widget.userData.userId.toString());
+            },
+            groupName: widget.groupName,
+          ),
+          body: Obx(() => SafeArea(
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: controller.chatBackgroundImagePath.value == null
+                        ? controller.chatBackgroundColor.value
+                        : null,
+                    image: controller.chatBackgroundImagePath.value != null
+                        ? DecorationImage(
+                            image: FileImage(File(
+                                controller.chatBackgroundImagePath.value!)),
+                            fit: BoxFit.cover,
+                          )
+                        : null,
+                  ),
+                  child: Column(
+                    children: [
+                      Expanded(
+                          child: ChatList(
+                              controller: controller,
+                              scrollController: _scrollController)),
+                      ChatInputArea(
+                        messageText: controller.messageText,
+                        imagePath: controller.imagePath,
+                        isSending: controller.isSending,
+                        textController: _controller,
+                        scrollController: _scrollController,
+                        onSend: () {
+                          _sendMessage();
+                        },
+                        onImageSelected: (path) {
+                          controller.imagePath.value = path;
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ))),
+    );
+  }
+}
