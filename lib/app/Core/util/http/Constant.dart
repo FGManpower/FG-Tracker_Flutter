@@ -2,17 +2,17 @@ import 'package:dio/dio.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 
 String ProductionUrl = "http://fgtracker.in:3000/";
-String development = "http://10.85.239.223:4000/";
-String socketUrl = "http://fgtracker.in:3000"; //pro
-// String socketUrl = "http://10.85.239.223:4000"; //dev
+String development = "http://192.168.152.223:4000/";
+// String socketUrl = "http://fgtracker.in:3000"; //pro
+String socketUrl = "http://192.168.152.223:4000"; //dev
 
 final String gMapApiKey = "AIzaSyDu1PPgXuqRdLfEfA9Gf-6A8QydUlyMq-0";
 final String agoraAppId = "46901509bdc9411a85d1287c9957a42d";
 
 class Constant {
-  static String Baseurl = "${ProductionUrl}api";
+  static String Baseurl = "${development}api";
   static String incomingDeepLinkUrl = "https://fgtracker.in";
-  static String ImagebaseUrl = ProductionUrl;
+  static String ImagebaseUrl = development;
   static BaseOptions networkOptions = BaseOptions(
     baseUrl: Baseurl,
   );

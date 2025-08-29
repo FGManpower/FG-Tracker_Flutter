@@ -8,6 +8,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
   cloud_firestore
   file_selector_windows
   firebase_core
+  flutter_webrtc
   geolocator_windows
   iris_method_channel
   permission_handler_windows

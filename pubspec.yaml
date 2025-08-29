@@ -72,6 +72,7 @@ dependencies:
   android_intent_plus: ^5.3.0
   system_alert_window: ^2.0.4
   flutter_callkit_incoming: ^2.5.8
+  flutter_webrtc: ^1.1.0
 
 
 

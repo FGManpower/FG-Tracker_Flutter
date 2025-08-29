@@ -8,6 +8,7 @@ import 'package:fgtracker/app/Model/MemberDataRes.dart';
 import 'package:fgtracker/app/modules/Messages/Controller/MessageController.dart';
 import 'package:fgtracker/app/modules/Messages/Controller/Socket_Message_Services.dart';
 import 'package:fgtracker/app/modules/Messages/widgets/message_Widgets.dart';
+import 'package:fgtracker/app/modules/WebRtcCall/call_screen.dart';
 import 'package:fgtracker/app/modules/home/Views/home_screen.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:flutter/material.dart';
@@ -18,6 +19,9 @@ import '../../../Core/values/Dialog/Common_dialog.dart';
 import '../../../Core/values/global.dart';
 import '../../../global_widget/common_widget.dart';
 import 'package:uuid/uuid.dart';
+
+
+import '../../WebRtcCall/call_service.dart';
 
 class ChatPage extends StatefulWidget {
   MemberData userData;
@@ -44,7 +48,7 @@ class _ChatPageState extends State<ChatPage> {
       Get.put(ChatThemeController());
   final ScrollController _scrollController = ScrollController();
   final channelId = const Uuid().v4();
-
+  late CallService callService;
   void handleBackPressed() {
     final userId = Global.storageServices.get(Constant.userId).toString();
     final groupId = widget.userData.groupId!;
@@ -80,6 +84,70 @@ class _ChatPageState extends State<ChatPage> {
         scrollToBottom(_scrollController, animated: true);
       });
     });
+
+    callService = CallService(userId:Global.storageServices.get(Constant.userId).toString(), debug: true);
+    callService.init();
+
+    // wire events
+    callService.onIncomingCall = (data) {
+      // show dialog or IncomingCallScreen
+      print("Incoming call: $data");
+      showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: Text("Incoming Call from ${data['caller_name'] ?? data['from']}"),
+          actions: [
+            TextButton(
+              onPressed: () async {
+                Navigator.pop(context);
+                await callService.acceptCall(incomingCall: data);
+
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => CallScreen(
+                      callService: callService,
+                      peerId: userId,
+                      isVideo: data['is_video'] == true,
+                    ),
+                  ),
+                );
+              },
+              child: const Text("Accept"),
+            ),
+            TextButton(
+              onPressed: () async {
+                Navigator.pop(context);
+                await callService.rejectCall(incomingCall: data);
+              },
+              child: const Text("Reject"),
+            ),
+          ],
+        ),
+      );
+    };
+
+    callService.onCallAccepted = (callId) {
+      // Caller side: open the call UI when accepted
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => CallScreen(
+            callService: callService,
+            peerId: userId,
+            isVideo: true,
+          ),
+        ),
+      );
+    };
+
+    callService.onCallEnded = () {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Call ended")),
+      );
+      Navigator.of(context).popUntil((route) => route.isFirst);
+    };
+
   }
 
   bool _isSending = false;
@@ -148,6 +216,8 @@ class _ChatPageState extends State<ChatPage> {
     }
   }
 
+
+
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
@@ -159,35 +229,89 @@ class _ChatPageState extends State<ChatPage> {
           backgroundColor: Colors.white,
           resizeToAvoidBottomInset: true,
           appBar: CommonChatAppBar(
-            profileImageUrl:
-                "${Constant.ImagebaseUrl}${widget.userData?.profileImage ?? ""}",
+            profileImageUrl: "${Constant.ImagebaseUrl}${widget.userData?.profileImage ?? ""}",
             userName: widget.userData?.name ?? "",
             onBackTap: () {
               handleBackPressed();
             },
-            onCallTap: () {
-              FireStoreServices().startCall(
+            onCallTap: () async {
+              // 🔹 Start AUDIO call
+              await callService.startCall(
+                receiverId: widget.userData.userId.toString(),
+                isVideo: false,
+                callerName: Global.storageServices.get(Constant.userId),
+              );
+
+
+
+              Navigator.push(
                 context,
-                false,
-                receiverId: int.parse(widget.userData.userId.toString()),
+                MaterialPageRoute(
+                  builder: (_) => CallScreen(
+                    callService: callService,
+                    peerId: Global.storageServices.get(Constant.userId).toString(),//our UserId
+                    isVideo: false,
+                  ),
+                ),
+              );
+            },
+            onVideoTap: () async {
+              // 🔹 Start VIDEO call
+              await callService.startCall(
+                receiverId: widget.userData.userId.toString(),
+                isVideo: true,
+                callerName: Global.storageServices.get(Constant.userId),//our UserId
+              );
+
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => CallScreen(
+                    callService: callService,
+                    peerId: Global.storageServices.get(Constant.userId).toString(),
+                    isVideo: true,
+                  ),
+                ),
               );
             },
             onMicTap: () {
-              // Handle mic press
-            },
-            onVideoTap: () {
-              FireStoreServices().startCall(
-                context,
-                true,
-                receiverId: int.parse(widget.userData.userId.toString()),
-              );
+              // optional mic mute logic
             },
             onThemeTap: () {
-              ThemePicker.show(
-                  context, controller, widget.userData.userId.toString());
+              ThemePicker.show(context, controller, widget.userData.userId.toString());
             },
             groupName: widget.groupName,
           ),
+          // appBar: CommonChatAppBar(
+          //   profileImageUrl:
+          //       "${Constant.ImagebaseUrl}${widget.userData?.profileImage ?? ""}",
+          //   userName: widget.userData?.name ?? "",
+          //   onBackTap: () {
+          //     handleBackPressed();
+          //   },
+          //   onCallTap: () {
+          //     FireStoreServices().startCall(
+          //       context,
+          //       false,
+          //       receiverId: int.parse(widget.userData.userId.toString()),
+          //     );
+          //   },
+          //   onMicTap: () {
+          //     // Handle mic press
+          //   },
+          //   onVideoTap: () {
+          //     FireStoreServices().startCall(
+          //       context,
+          //       true,
+          //       receiverId: int.parse(widget.userData.userId.toString()),
+          //     );
+          //   },
+          //   onThemeTap: () {
+          //     ThemePicker.show(
+          //         context, controller, widget.userData.userId.toString());
+          //   },
+          //   groupName: widget.groupName,
+          // ),
           body: Obx(() => SafeArea(
                 child: Container(
                   decoration: BoxDecoration(
