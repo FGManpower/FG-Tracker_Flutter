@@ -9,7 +9,7 @@ class Tracking {
   Future<Map<String, dynamic>?> getWalkingRoute(
       LatLng origin, LatLng destination,{String mode="walking"}) async {
     final String url =
-        "https://maps.googleapis.com/maps/api/directions/json?origin=${origin.latitude},${origin.longitude}&destination=${destination.latitude},${destination.longitude}&mode=$mode&key=$gMapApiKey";
+        "https://maps.googleapis.com/maps/api/directions/json?origin=${origin.latitude},${origin.longitude}&destination=${destination.latitude},${destination.longitude}&mode=$mode&key='ApiKey..'";
 
     try {
       final response = await Constant().sendRequest.get(url);

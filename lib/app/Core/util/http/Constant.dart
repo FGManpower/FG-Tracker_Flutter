@@ -6,7 +6,7 @@ String development = "http://10.85.239.223:4000/";
 String socketUrl = "http://fgtracker.in:3000"; //pro
 // String socketUrl = "http://10.85.239.223:4000"; //dev
 
-final String gMapApiKey = "AIzaSyDu1PPgXuqRdLfEfA9Gf-6A8QydUlyMq-0";
+
 final String agoraAppId = "46901509bdc9411a85d1287c9957a42d";
 
 class Constant {
