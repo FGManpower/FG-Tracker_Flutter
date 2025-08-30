@@ -54,8 +54,8 @@ Join my group instantly using the QR code or the code above.
 
 
   Future<void> downloadQrCode(BuildContext context) async {
-    PermissionStatus imagePermission = await Permission.photos.request(); // iOS / Android 13+
-    PermissionStatus videoPermission = await Permission.videos.request(); // Android 13+
+    PermissionStatus imagePermission = await Permission.photos.request();
+    PermissionStatus videoPermission = await Permission.videos.request();
 
     bool isGranted = imagePermission.isGranted || videoPermission.isGranted;
 
