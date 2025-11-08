@@ -1,5 +1,5 @@
 import 'dart:developer';
-import 'package:fgtracker/app/Core/util/http/Constant.dart';
+import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:get/get.dart';
@@ -65,7 +65,7 @@ class SocketMessageService extends GetxService {
     String messageType = "text",
   }) {
     final msg = {
-      'senderId': Global.storageServices.get(Constant.userId),
+      'senderId': Global.storageServices.get(PrefConst.userId),
       'receiverId': receiverId, //as unique id
       'groupId': groupId,
       'content': content,

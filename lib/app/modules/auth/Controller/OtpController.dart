@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:developer';
 
+import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/Dialog/Common_dialog.dart';
 import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
@@ -11,7 +12,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:otp_autofill/otp_autofill.dart';
-import '../../../Core/util/http/Constant.dart';
 import '../../../Core/values/loading.dart';
 
 class OtpController extends GetxController {
@@ -110,11 +110,11 @@ class OtpController extends GetxController {
           Loading().dismissloading();
 
           Global.storageServices.setString(
-            Constant.STORAGE_USER_TOKEN_KEY,
+            PrefConst.STORAGE_USER_TOKEN_KEY,
             result.data!.token.toString(),
           );
           Global.storageServices.setString(
-            Constant.userId,
+            PrefConst.userId,
             result.data!.userId.toString(),
           );
           if (result.data?.isNewUser == true) {
@@ -123,16 +123,16 @@ class OtpController extends GetxController {
             });
           } else {
             Global.storageServices.setString(
-              Constant.userName,
+              PrefConst.userName,
               result.data!.userName ?? "Unknown",
             );
 
             Global.storageServices.setString(
-              Constant.profileImage,
+              PrefConst.profileImage,
               result.data!.profileImage ?? "Unknown",
             );
             Global.storageServices.setString(
-              Constant.isRegistered,
+              PrefConst.isRegistered,
               "true",
             );
             Get.offAllNamed(Routes.Home_Screen);

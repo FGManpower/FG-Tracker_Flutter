@@ -1,3 +1,5 @@
+import 'package:fgtracker/app/modules/Application/splashscreen.dart';
+import 'package:fgtracker/app/modules/IntroScreen/IntroScreen.dart';
 import 'package:fgtracker/app/modules/QiblaFinder/QiblaDirection.dart';
 import 'package:fgtracker/app/modules/auth/Bindings/auth_binding.dart';
 import 'package:fgtracker/app/modules/auth/Views/Otp_Screen.dart';
@@ -5,7 +7,7 @@ import 'package:fgtracker/app/modules/auth/Views/login_Page.dart';
 import 'package:fgtracker/app/modules/auth/Views/registration_screen.dart';
 import 'package:fgtracker/app/modules/home/Views/AboutUs.dart';
 import 'package:fgtracker/app/modules/home/Views/home_screen.dart';
-import 'package:fgtracker/app/modules/splashscreen.dart';
+
 import 'package:get/get.dart';
 part 'app_routes.dart';
 
@@ -17,8 +19,19 @@ class AppPages {
   static final routes = [
     GetPage(
       name: _Paths.Splash,
-      page: () => Splashscreen(),
+      page: () => LoginPage(),
+      binding: Auth_Binding(),
     ),
+
+    GetPage(
+      name: _Paths.Intro,
+      page: () => IntroScreen(),
+      transition: Transition.topLevel,
+      transitionDuration: const Duration(milliseconds: 500),
+    ),
+
+
+
     GetPage(
       name: _Paths.Login,
       page: () => LoginPage(),

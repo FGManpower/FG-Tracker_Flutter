@@ -14,8 +14,8 @@ class ToggleThemeData {
   static Color black = Colors.black;
   static Color backgroundWhite = Color(0xffF5F5F5);
 
-  static const Color Appcolor = Color(0xff6978FF);
-  static const Color darkPurple = Color(0xff8274FD);
+  static const Color Appcolor = Color(0xff8274FD);
+  static const Color darkPurple = Color(0xff5045B9);
   static const Color customBlue = Color(0xFF313F5E);
   static Color GreyShade = Colors.grey.shade200;
   static Color grey = Colors.grey;

@@ -1,23 +1,19 @@
 import 'dart:io';
-import 'package:fgtracker/app/Core/util/http/Constant.dart';
+import 'package:fgtracker/app/Core/constant/const_res.dart';
+import 'package:fgtracker/app/Core/constant/pref_res.dart';
+
 import 'package:fgtracker/app/Data/Repositories/GetMessageRepo.dart';
 import 'package:fgtracker/app/Data/Services/CallStateTracker.dart';
-import 'package:fgtracker/app/Data/Services/FireStore_services.dart';
-import 'package:fgtracker/app/Model/GetMessage.dart';
 import 'package:fgtracker/app/Model/MemberDataRes.dart';
 import 'package:fgtracker/app/modules/Messages/Controller/MessageController.dart';
 import 'package:fgtracker/app/modules/Messages/Controller/Socket_Message_Services.dart';
 import 'package:fgtracker/app/modules/Messages/widgets/message_Widgets.dart';
 import 'package:fgtracker/app/modules/WebRtcCall/call_screen.dart';
-import 'package:fgtracker/app/modules/home/Views/home_screen.dart';
-import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import '../../../Core/values/Dialog/Common_dialog.dart';
 import '../../../Core/values/global.dart';
-import '../../../global_widget/common_widget.dart';
 import 'package:uuid/uuid.dart';
 
 
@@ -50,7 +46,7 @@ class _ChatPageState extends State<ChatPage> {
   final channelId = const Uuid().v4();
   late CallService callService;
   void handleBackPressed() {
-    final userId = Global.storageServices.get(Constant.userId).toString();
+    final userId = Global.storageServices.get(PrefConst.userId).toString();
     final groupId = widget.userData.groupId!;
 
     SocketMessageService.instance.leaveUserFromGroup(userId, groupId);
@@ -85,7 +81,7 @@ class _ChatPageState extends State<ChatPage> {
       });
     });
 
-    callService = CallService(userId:Global.storageServices.get(Constant.userId).toString(), debug: true);
+    callService = CallService(userId:Global.storageServices.get(PrefConst.userId).toString(), debug: true);
     callService.init();
 
     // wire events
@@ -229,7 +225,7 @@ class _ChatPageState extends State<ChatPage> {
           backgroundColor: Colors.white,
           resizeToAvoidBottomInset: true,
           appBar: CommonChatAppBar(
-            profileImageUrl: "${Constant.ImagebaseUrl}${widget.userData?.profileImage ?? ""}",
+            profileImageUrl: "${ConstRes.aImageBaseUrl}${widget.userData?.profileImage ?? ""}",
             userName: widget.userData?.name ?? "",
             onBackTap: () {
               handleBackPressed();
@@ -239,7 +235,7 @@ class _ChatPageState extends State<ChatPage> {
               await callService.startCall(
                 receiverId: widget.userData.userId.toString(),
                 isVideo: false,
-                callerName: Global.storageServices.get(Constant.userId),
+                callerName: Global.storageServices.get(PrefConst.userId),
               );
 
 
@@ -249,7 +245,7 @@ class _ChatPageState extends State<ChatPage> {
                 MaterialPageRoute(
                   builder: (_) => CallScreen(
                     callService: callService,
-                    peerId: Global.storageServices.get(Constant.userId).toString(),//our UserId
+                    peerId: Global.storageServices.get(PrefConst.userId).toString(),//our UserId
                     isVideo: false,
                   ),
                 ),
@@ -260,7 +256,7 @@ class _ChatPageState extends State<ChatPage> {
               await callService.startCall(
                 receiverId: widget.userData.userId.toString(),
                 isVideo: true,
-                callerName: Global.storageServices.get(Constant.userId),//our UserId
+                callerName: Global.storageServices.get(PrefConst.userId),//our UserId
               );
 
               Navigator.push(
@@ -268,7 +264,7 @@ class _ChatPageState extends State<ChatPage> {
                 MaterialPageRoute(
                   builder: (_) => CallScreen(
                     callService: callService,
-                    peerId: Global.storageServices.get(Constant.userId).toString(),
+                    peerId: Global.storageServices.get(PrefConst.userId).toString(),
                     isVideo: true,
                   ),
                 ),
@@ -284,7 +280,7 @@ class _ChatPageState extends State<ChatPage> {
           ),
           // appBar: CommonChatAppBar(
           //   profileImageUrl:
-          //       "${Constant.ImagebaseUrl}${widget.userData?.profileImage ?? ""}",
+          //       "${ConstRes.aImageBaseUrl}${widget.userData?.profileImage ?? ""}",
           //   userName: widget.userData?.name ?? "",
           //   onBackTap: () {
           //     handleBackPressed();

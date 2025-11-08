@@ -1,18 +1,17 @@
 import 'dart:convert';
 import 'dart:developer';
 
+import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-
-import '../../Core/util/http/Constant.dart';
 
 class Tracking {
   Future<Map<String, dynamic>?> getWalkingRoute(
       LatLng origin, LatLng destination,{String mode="walking"}) async {
     final String url =
-        "https://maps.googleapis.com/maps/api/directions/json?origin=${origin.latitude},${origin.longitude}&destination=${destination.latitude},${destination.longitude}&mode=$mode&key=$gMapApiKey";
+        "https://maps.googleapis.com/maps/api/directions/json?origin=${origin.latitude},${origin.longitude}&destination=${destination.latitude},${destination.longitude}&mode=$mode&key=${ConstRes.gMapApiKey}";
 
     try {
-      final response = await Constant().sendRequest.get(url);
+      final response = await ConstRes().sendRequest.get(url);
 
       if (response.statusCode == 200) {
         final data =

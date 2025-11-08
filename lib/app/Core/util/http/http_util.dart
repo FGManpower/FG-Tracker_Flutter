@@ -1,13 +1,12 @@
 
 import 'package:dio/dio.dart';
-import 'package:fgtracker/app/Core/values/Context_Utility.dart';
+import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
-import 'package:fgtracker/app/Core/values/logoutuser.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 
 import '../../theme/AppText.dart';
 import 'ApiErrorHandler.dart';
-import 'Constant.dart';
+
 
 class HttpUtil {
   static final HttpUtil _instance = HttpUtil._internal();
@@ -16,7 +15,7 @@ class HttpUtil {
     return _instance;
   }
 
-  Constant api = Constant();
+  ConstRes api = ConstRes();
 
   HttpUtil._internal() {
     api.sendRequest.interceptors.add(PrettyDioLogger());

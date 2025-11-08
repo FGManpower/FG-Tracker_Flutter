@@ -1,6 +1,6 @@
 // ignore_for_file: unused_import
 
-import 'package:fgtracker/app/Core/util/http/Constant.dart';
+import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/util/http/http_util.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Model/ChatImageUploadResponse.dart';
@@ -15,7 +15,7 @@ import '../../Model/CommonRes.dart';
 class MessageRepo {
   static Future<GetMessage> MessageHistory({required String recieverId,required int groupId}) async {
     var response = await HttpUtil().get(
-        "/getMessageHistory?senderId=${Global.storageServices.get(Constant.userId)}&receiverId=$recieverId&groupId=$groupId");
+        "/getMessageHistory?senderId=${Global.storageServices.get(PrefConst.userId)}&receiverId=$recieverId&groupId=$groupId");
     return GetMessage.fromJson(response);
   }
 

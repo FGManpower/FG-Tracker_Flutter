@@ -1,10 +1,8 @@
-
 import 'dart:convert';
 
-import 'package:fgtracker/app/Core/util/http/Constant.dart';
+import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Model/call_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 
 class StorageServices {
   late final SharedPreferences _prefs;
@@ -17,16 +15,13 @@ class StorageServices {
   Future<bool> setBool(String key, bool value) async {
     return await _prefs.setBool(key, value);
   }
+
   Future<bool> getBool(String key) async {
-    return  _prefs.getBool(key)??false;
+    return await _prefs.getBool(key) ?? false;
   }
 
-   Future<bool> setDefaultTheme(String key, bool value) async {
-   return await _prefs.setBool(key, value);
-  }
-
-   Future<bool> getDefaultTheme() async {
-     return _prefs.getBool(Constant.isDarkMode)??false;
+  Future<bool> setDefaultTheme(String key, bool value) async {
+    return await _prefs.setBool(key, value);
   }
 
   Future<bool> setString(String key, String value) async {
@@ -38,16 +33,15 @@ class StorageServices {
   }
 
   String? getaccesstoken() {
-    return _prefs.getString(Constant.STORAGE_USER_TOKEN_KEY);
+    return _prefs.getString(PrefConst.STORAGE_USER_TOKEN_KEY);
   }
 
   String? getDevice_Id() {
-    return _prefs.getString(Constant.DEVICE_ID);
+    return _prefs.getString(PrefConst.DEVICE_ID);
   }
 
-
   CallModel getInComingNotificationData() {
-    final data = _prefs.getString(Constant.incomingCall);
+    final data = _prefs.getString(PrefConst.incomingCall);
     Map<String, dynamic> jsondatais = jsonDecode(data!);
     return CallModel.fromMap(jsondatais);
   }
@@ -55,7 +49,4 @@ class StorageServices {
   String? get(String key) {
     return _prefs.getString(key);
   }
-
-
-
 }

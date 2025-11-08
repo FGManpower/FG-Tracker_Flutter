@@ -1,10 +1,9 @@
+import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/theme/AppText.dart';
-import 'package:fgtracker/app/Core/util/http/Constant.dart';
 import 'package:fgtracker/app/Core/values/Dialog/Common_dialog.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Core/values/loading.dart';
 
-import 'package:fgtracker/app/modules/auth/Auth_Widget/privacy_terms_bottom_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:fgtracker/app/Data/Repositories/Auth_repo.dart';
@@ -42,26 +41,11 @@ class Login_Controller extends GetxController {
   Future<void> login() async {
     if (!validateMobile()) return;
     if (!loginKey.currentState!.validate()) return;
-    String key = "${Constant.AcceptPolicy}_${mobNoController.text}";
+    String key = "${PrefConst.AcceptPolicy}_${mobNoController.text}";
     String? isAccepted = Global.storageServices.get(key);
 
     await _performLogin();
-    // if (isAccepted == "true") {
-    //   await _performLogin();
-    // } else {
-    //
-    //   bool accepted = await PrivacyTermsBottomSheet.show(Get.context!, mobNoController.text);
-    //
-    //   if (accepted) {
-    //
-    //     await Global.storageServices.setString(key, "true");
-    //
-    //     await _performLogin();
-    //   } else {
-    //
-    //     CommonDialog.errorMessage("You must accept Terms & Privacy Policy to continue.");
-    //   }
-    // }
+
   }
   Future<void> _performLogin() async {
     try {
@@ -111,12 +95,12 @@ class AuthController extends GetxController {
 
 
   void loadAcceptance(String phone) {
-    String? val = Global.storageServices.get("${Constant.AcceptPolicy}_$phone");
+    String? val = Global.storageServices.get("${PrefConst.AcceptPolicy}_$phone");
     isAcceptedTerm.value = (val == "true");
   }
 
   void setAcceptance(String phone, bool value) {
-    Global.storageServices.setString("${Constant.AcceptPolicy}_$phone", value ? "true" : "false");
+    Global.storageServices.setString("${PrefConst.AcceptPolicy}_$phone", value ? "true" : "false");
     isAcceptedTerm.value = value;
   }
 }

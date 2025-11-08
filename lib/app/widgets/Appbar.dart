@@ -1,5 +1,5 @@
+import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/theme/appTheme.dart';
-import 'package:fgtracker/app/Core/util/http/Constant.dart';
 import 'package:fgtracker/app/Core/values/utility.dart';
 import 'package:fgtracker/app/config/themes_data.dart';
 import 'package:fgtracker/app/modules/home/Controller/home_controller.dart';
@@ -34,7 +34,7 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
               backgroundColor: Colors.grey[200],
               backgroundImage: NetworkImage(
                 Utility.isNotNullEmptyOrFalse(controller.userData.value.profileImage)
-                    ? "${Constant.ImagebaseUrl}${controller.userData.value.profileImage}"
+                    ? "${ConstRes.aImageBaseUrl}${controller.userData.value.profileImage}"
                     : MyAppTheme.ProfilenotFoundImg,
               ),
               child: controller.userData.value.profileImage == null

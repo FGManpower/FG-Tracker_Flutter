@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:fgtracker/app/Core/constant/const_res.dart';
+import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/bottomSheet.dart';
 import 'package:fgtracker/app/Core/values/utility.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
@@ -8,7 +10,6 @@ import 'package:get/get.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:http/http.dart' as http;
 
-import '../../../Core/util/http/Constant.dart';
 import '../../../Core/values/global.dart';
 import '../../../Model/GetMessage.dart';
 import '../Controller/MessageController.dart';
@@ -452,7 +453,7 @@ class ChatBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final currentUserId = Global.storageServices.get(Constant.userId).toString();
+    final currentUserId = Global.storageServices.get(PrefConst.userId).toString();
     final isSentByMe = message.senderId.toString() == currentUserId;
 
     final align = isSentByMe ? CrossAxisAlignment.end : CrossAxisAlignment.start;
@@ -473,7 +474,7 @@ class ChatBubble extends StatelessWidget {
       bottomRight: Radius.circular(15.r),
     );
 
-    final imageUrl = "${Constant.ImagebaseUrl}${message.content ?? ''}";
+    final imageUrl = "${ConstRes.aImageBaseUrl}${message.content ?? ''}";
 
     return Container(
       margin: EdgeInsets.symmetric(vertical: 6.h),
@@ -521,7 +522,7 @@ class ChatBubble extends StatelessWidget {
           ClipRRect(
             borderRadius: BorderRadius.circular(10.r),
             child: ImageViewerWidget(
-              imageProvider: NetworkImage("${Constant.ImagebaseUrl}$imagePart"),
+              imageProvider: NetworkImage("${ConstRes.aImageBaseUrl}$imagePart"),
               width: 200,
               height: 200,
               borderRadius: 10,

@@ -1,9 +1,8 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/deep_Link/uniservices.dart';
-import 'package:fgtracker/app/Core/util/http/Constant.dart';
-import 'package:fgtracker/app/Core/values/Dialog/Common_dialog.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:flutter/material.dart';
@@ -11,7 +10,6 @@ import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
-import 'package:permission_handler/permission_handler.dart';
 
 import '../../Data/Services/CallStateTracker.dart';
 import '../../Model/call_model.dart';
@@ -72,7 +70,7 @@ class _IncomingCallScreenState extends State<IncomingCallScreen> {
       CallStateTracker.isIncomingCallScreenOpen = false;
 
       _stopRingtone();
-      Global.storageServices.remove(Constant.incomingCall);
+      Global.storageServices.remove(PrefConst.incomingCall);
       Navigator.pop(context, "true");
     } catch (e) {
       print("❌ Error rejecting call: $e");

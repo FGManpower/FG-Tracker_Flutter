@@ -1,5 +1,6 @@
+import 'package:fgtracker/app/Core/constant/const_res.dart';
+import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/theme/AppText.dart';
-import 'package:fgtracker/app/Core/util/http/Constant.dart';
 import 'package:fgtracker/app/Core/values/Dialog/Common_dialog.dart';
 import 'package:fgtracker/app/Core/values/LiquidPullToRefresh_Indicatore.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
@@ -15,7 +16,6 @@ import 'package:get/get.dart';
 import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
-import '../../../widgets/ExpandableUserCard.dart';
 import '../../Messages/Views/Chat_Screen.dart';
 
 
@@ -128,7 +128,7 @@ class _MemberscreenScreenState extends State<MemberscreenScreen> {
                   context,
                   MaterialPageRoute(
                     builder: (_) => LocationTrackingPage(groupId: int.parse(widget.groupId.toString()),groupName: widget.groupName,),
-                    // builder: (_) => LocationTrackingPage(groupId: widget.groupId, userId: Global.storageServices.get(Constant.userId)!),
+                    // builder: (_) => LocationTrackingPage(groupId: widget.groupId, userId: Global.storageServices.get(PrefConst.userId)!),
                   ),
                 );
               },
@@ -232,7 +232,7 @@ class _MemberscreenScreenState extends State<MemberscreenScreen> {
                                   child: CircleAvatar(
                                     radius: 28.r,
                                     backgroundImage: NetworkImage(
-                                      "${Constant.ImagebaseUrl}${data?.profileImage ?? ""}",
+                                      "${ConstRes.aImageBaseUrl}${data?.profileImage ?? ""}",
                                     ),
                                     backgroundColor: Colors.grey.shade200,
                                   ),
@@ -264,7 +264,7 @@ class _MemberscreenScreenState extends State<MemberscreenScreen> {
                                             mobileNumber:
                                                 data?.mobileNo ?? AppText.noNumber,
                                           ),
-                                          Global.storageServices.get(Constant.userId).toString()!=data?.userId.toString()? Padding(
+                                          Global.storageServices.get(PrefConst.userId).toString()!=data?.userId.toString()? Padding(
                                             padding: EdgeInsets.only(left:50.w),
                                             child: _buildIcon(
                                               Icons.chat,

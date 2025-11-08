@@ -1,11 +1,10 @@
-import 'package:fgtracker/app/Core/util/http/Constant.dart';
+import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/Dialog/Common_dialog.dart';
 import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 
 import 'package:fgtracker/app/Core/values/loading.dart';
 import 'package:fgtracker/app/Data/Repositories/Auth_repo.dart';
-import 'package:fgtracker/app/Data/Repositories/NotificationServices.dart';
 import 'package:fgtracker/app/Model/ProfileRes.dart';
 
 import 'package:fgtracker/app/routes/app_pages.dart';
@@ -81,7 +80,7 @@ class RegistrationController extends GetxController {
 
 
           Global.storageServices.setString(
-            Constant.isRegistered,
+            PrefConst.isRegistered,
             "true",
           );
 
@@ -91,12 +90,12 @@ class RegistrationController extends GetxController {
             if (profileData.status == true) {
               Loading().dismissloading();
               Global.storageServices.setString(
-                Constant.userName,
+                PrefConst.userName,
                 profileData.data!.name ?? "Unknown",
               );
 
               Global.storageServices.setString(
-                Constant.profileImage,
+                PrefConst.profileImage,
                 profileData.data!.profileImage ?? "Unknown",
               );
 
@@ -141,12 +140,12 @@ class RegistrationController extends GetxController {
             if (profileData.status == true) {
               Loading().dismissloading();
               Global.storageServices.setString(
-                Constant.userName,
+                PrefConst.userName,
                 profileData.data!.name ?? "Unknown",
               );
 
               Global.storageServices.setString(
-                Constant.profileImage,
+                PrefConst.profileImage,
                 profileData.data!.profileImage ?? "Unknown",
               );
 

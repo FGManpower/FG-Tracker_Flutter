@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -12,7 +13,6 @@ import 'package:flutter_callkit_incoming/flutter_callkit_incoming.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app/Core/util/CallUtils.dart';
-import 'app/Core/util/http/Constant.dart';
 import 'app/Core/values/Context_Utility.dart';
 import 'app/Core/values/global.dart';
 import 'app/Model/call_model.dart';
@@ -42,7 +42,6 @@ Future<void> main() async {
   FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
   await Firebase.initializeApp();
   await Global.init();
-
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(statusBarColor: Colors.transparent),
   );
@@ -109,7 +108,7 @@ class _MyAppState extends State<MyApp> {
     try {
       CallModel incomingCallData = CallModel(
         callerId: data['callerId'],
-        receiverId: sharedpref.get(Constant.userId).toString(),
+        receiverId: sharedpref.get(PrefConst.userId).toString(),
         channelId: data['channelId'],
         isVideo: data['isVideo'] == 'true',
         status: 'ringing',
@@ -117,7 +116,6 @@ class _MyAppState extends State<MyApp> {
         callerProfileImage: data['callerProfileImage'],
       );
 
-      print('--------------CallData------${data}');
 
       Navigator.push(
           ContextUtility.navigator!.context,

@@ -1,10 +1,11 @@
 import 'dart:developer';
 import 'dart:io';
 import 'dart:ui';
+import 'package:fgtracker/app/Core/constant/const_res.dart';
+import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Model/ProfileRes.dart';
 import 'package:intl/intl.dart';
 import 'package:path/path.dart' as path;
-import 'package:fgtracker/app/Core/util/http/Constant.dart';
 import 'package:fgtracker/app/Core/values/Dialog/Common_dialog.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Core/values/loading.dart';
@@ -98,12 +99,12 @@ class MessageController extends GetxController {
 
       ) {
     log("----------------InitChatDetail----groupId:${groupId}-----recieverId--${recieverId}");
-    socketService.init(groupId: groupId,userId: recieverId,socketUrl);
+    socketService.init(groupId: groupId,userId: recieverId,ConstRes.socketUrl);
 
     socketService.socket?.off('receive_message');
     socketService.RecievedMessage(
 
-      senderId: Global.storageServices.get(Constant.userId).toString(),
+      senderId: Global.storageServices.get(PrefConst.userId).toString(),
       recieverId: recieverId,
       groupId: groupId,
         callback: (message) {

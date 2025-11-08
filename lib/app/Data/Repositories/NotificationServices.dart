@@ -1,24 +1,20 @@
 import 'dart:convert';
 import 'dart:math';
 
+import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/util/CallUtils.dart';
-import 'package:fgtracker/app/Core/util/http/Constant.dart';
 import 'package:fgtracker/app/Core/values/Context_Utility.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Model/MemberDataRes.dart';
 import 'package:fgtracker/app/modules/Group/Views/MemberScreen.dart';
 import 'package:fgtracker/app/modules/Messages/Views/Chat_Screen.dart';
-import 'package:fgtracker/app/modules/Notification/Controller/cubit/notification_count_cubit.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 import 'dart:io';
 
-import '../../Model/call_model.dart';
-import '../../modules/AgoraVideoandAudio_Call/incoming_call_screen.dart';
 
 import '../Services/CallStateTracker.dart';
 
@@ -158,7 +154,7 @@ class firebaseNotificationServices {
     FirebaseMessaging.instance.getInitialMessage().then((message) {});
 
     FirebaseMessaging.onMessage.listen((message) async {
-      await Global.storageServices.setBool(Constant.notificationBadge, true);
+      await Global.storageServices.setBool(PrefConst.notificationBadge, true);
 
 
       if (Platform.isAndroid) {
@@ -230,7 +226,7 @@ class firebaseNotificationServices {
         // if (!CallStateTracker.isIncomingCallScreenOpen) {
           // final call = CallModel(
           //   callerId: message.data['callerId'],
-          //   receiverId: Global.storageServices.get(Constant.userId).toString(),
+          //   receiverId: Global.storageServices.get(PrefConst.userId).toString(),
           //   channelId: message.data['channelId'],
           //   isVideo: message.data['isVideo'] == 'true',
           //   status: 'ringing',
@@ -253,7 +249,7 @@ class firebaseNotificationServices {
         // if (!CallStateTracker.isIncomingCallScreenOpen) {
         //   final call = CallModel(
         //     callerId: message.data['callerId'],
-        //     receiverId: Global.storageServices.get(Constant.userId).toString(),
+        //     receiverId: Global.storageServices.get(PrefConst.userId).toString(),
         //     channelId: message.data['channelId'],
         //     isVideo: message.data['isVideo'] == 'true',
         //     status: 'ringing',

@@ -1,13 +1,13 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
+import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:http/http.dart' as http;
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
-import '../../../Core/util/http/Constant.dart';
 
 
 
@@ -25,7 +25,7 @@ class CallController extends GetxController {
   var countdownSeconds = 60.obs;
 
   Future<String?> getToken(String channelId) async {
-    final response = await http.get(Uri.parse("${Constant.Baseurl}/rtc-token?channelName=$channelId"));
+    final response = await http.get(Uri.parse("${ConstRes.aBaseUrl}/rtc-token?channelName=$channelId"));
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
       return data['token'];
@@ -43,7 +43,7 @@ class CallController extends GetxController {
       this.channelId = channelId;
       engine = createAgoraRtcEngine();
       await engine
-          .initialize( RtcEngineContext(appId: agoraAppId,));
+          .initialize( RtcEngineContext(appId: ConstRes.agoraAppId,));
 
       log("[DEBUG] Agora Engine Initialized");
 

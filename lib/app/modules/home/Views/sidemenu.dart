@@ -1,6 +1,7 @@
+import 'package:fgtracker/app/Core/constant/const_res.dart';
+import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/theme/AppText.dart';
 import 'package:fgtracker/app/Core/theme/appTheme.dart';
-import 'package:fgtracker/app/Core/util/http/Constant.dart';
 import 'package:fgtracker/app/Core/values/Context_Utility.dart';
 import 'package:fgtracker/app/Core/values/Dialog/Common_dialog.dart';
 import 'package:fgtracker/app/Core/values/logoutuser.dart';
@@ -137,7 +138,7 @@ class Sidemenu extends StatelessWidget {
                           SizedBox(
                             width: 7.h,
                           ),
-                          reausabletext(Constant.CurrentVersion,
+                          reausabletext(PrefConst.CurrentVersion,
                               fontfamily: FontFamily.interRegular,
                               fontsize: 11),
                         ],
@@ -200,7 +201,7 @@ class Sidemenu extends StatelessWidget {
                       backgroundImage: NetworkImage(
                         Utility.isNotNullEmptyOrFalse(
                                 controller.userData.value.profileImage)
-                            ? "${Constant.ImagebaseUrl}${controller.userData.value.profileImage}"
+                            ? "${ConstRes.aImageBaseUrl}${controller.userData.value.profileImage}"
                             : MyAppTheme.ProfilenotFoundImg,
                       ),
                     ),

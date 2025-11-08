@@ -29,7 +29,7 @@
 // //
 // //     _socket?.onConnect((_) {
 // //       log("✅Stream Socket connected");
-// //       _joinUser(Global.storageServices.get(Constant.userId).toString());
+// //       _joinUser(Global.storageServices.get(PrefConst.userId).toString());
 // //     });
 // //
 // //     _socket?.onAny((event, data) {
@@ -61,7 +61,7 @@
 // //     required String channelId,
 // //   }) {
 // //     _socket?.emit("start_call", {
-// //       "caller_id": Global.storageServices.get(Constant.userId),
+// //       "caller_id": Global.storageServices.get(PrefConst.userId),
 // //       "receiver_id": receiverId,
 // //       "caller_name": callerName,
 // //       "caller_profile_image": profileImage,
@@ -123,7 +123,7 @@
 // //         "channelId": channelId,
 // //         "receiverId": receiverId,
 // //         "callerId": Global.storageServices
-// //             .get(Constant.userId), // replace with actual callerId
+// //             .get(PrefConst.userId), // replace with actual callerId
 // //       });
 // //
 // //       callback(true);
@@ -183,7 +183,7 @@
 //
 //     _socket?.onConnect((_) {
 //       log("✅ Stream Socket connected");
-//       _joinUser(Global.storageServices.get(Constant.userId).toString());
+//       _joinUser(Global.storageServices.get(PrefConst.userId).toString());
 //     });
 //
 //
@@ -251,7 +251,7 @@
 //     required String channelId,
 //   }) {
 //     _socket?.emit("start_call", {
-//       "caller_id": Global.storageServices.get(Constant.userId),
+//       "caller_id": Global.storageServices.get(PrefConst.userId),
 //       "receiver_id": receiverId,
 //       "caller_name": callerName,
 //       "caller_profile_image": profileImage,
@@ -264,7 +264,7 @@
 //     _socket?.emit("end_call", {
 //       "channel_id": channelId,
 //       "receiver_id": receiverId,
-//       "caller_id": Global.storageServices.get(Constant.userId),
+//       "caller_id": Global.storageServices.get(PrefConst.userId),
 //       "caller_name": callerName,
 //     });
 //   }

@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'dart:developer';
-import 'package:fgtracker/app/Core/util/http/Constant.dart';
+import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/Dialog/Common_dialog.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Core/values/loading.dart';
@@ -9,8 +9,6 @@ import 'package:fgtracker/app/modules/Track/Controller/SocketServices.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:location/location.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:permission_handler/permission_handler.dart' as ph;
 
 import '../../../Core/values/Context_Utility.dart';
 
@@ -79,7 +77,7 @@ class LocationService extends GetxService {
           }
 
           _listenToLocationUpdates(
-              Global.storageServices.get(Constant.userId).toString());
+              Global.storageServices.get(PrefConst.userId).toString());
           Loading().dismissloading();
 
         } catch (e) {

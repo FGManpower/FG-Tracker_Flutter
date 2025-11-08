@@ -15,8 +15,11 @@ class $AssetsIconsGen {
   /// File path: assets/icons/app_icon.png
   AssetGenImage get appIcon => const AssetGenImage('assets/icons/app_icon.png');
 
+  /// File path: assets/icons/flag.png
+  AssetGenImage get flag => const AssetGenImage('assets/icons/flag.png');
+
   /// List of all assets
-  List<AssetGenImage> get values => [appIcon];
+  List<AssetGenImage> get values => [appIcon, flag];
 }
 
 class $AssetsImagesGen {
@@ -25,8 +28,6 @@ class $AssetsImagesGen {
   /// File path: assets/images/about_us.jpg
   AssetGenImage get aboutUs =>
       const AssetGenImage('assets/images/about_us.jpg');
-
-  AssetGenImage get appicon => const AssetGenImage('assets/images/app_icon.png');
 
   /// File path: assets/images/appUpdate.png
   AssetGenImage get appUpdate =>
@@ -58,6 +59,18 @@ class $AssetsImagesGen {
 
   /// File path: assets/images/image3.png
   AssetGenImage get image3 => const AssetGenImage('assets/images/image3.png');
+
+  /// File path: assets/images/introduction1.png
+  AssetGenImage get introduction1 =>
+      const AssetGenImage('assets/images/introduction1.png');
+
+  /// File path: assets/images/introduction2.png
+  AssetGenImage get introduction2 =>
+      const AssetGenImage('assets/images/introduction2.png');
+
+  /// File path: assets/images/introduction3.png
+  AssetGenImage get introduction3 =>
+      const AssetGenImage('assets/images/introduction3.png');
 
   /// File path: assets/images/kaaba-marker.png
   AssetGenImage get kaabaMarker =>
@@ -97,6 +110,10 @@ class $AssetsImagesGen {
   AssetGenImage get serverError =>
       const AssetGenImage('assets/images/server_error.png');
 
+  /// File path: assets/images/splash_bg.png
+  AssetGenImage get splashBg =>
+      const AssetGenImage('assets/images/splash_bg.png');
+
   /// File path: assets/images/user_avatar.jpg
   AssetGenImage get userAvatar =>
       const AssetGenImage('assets/images/user_avatar.jpg');
@@ -117,6 +134,9 @@ class $AssetsImagesGen {
     image1,
     image2,
     image3,
+    introduction1,
+    introduction2,
+    introduction3,
     kaabaMarker,
     kaaba,
     loginIllustration,
@@ -128,6 +148,7 @@ class $AssetsImagesGen {
     qibla,
     safe,
     serverError,
+    splashBg,
     userAvatar,
     userVideo,
   ];
@@ -136,11 +157,17 @@ class $AssetsImagesGen {
 class $AssetsMusicGen {
   const $AssetsMusicGen();
 
+  /// File path: assets/music/Incoming_Call.mp3
+  String get incomingCall => 'assets/music/Incoming_Call.mp3';
+
   /// File path: assets/music/recieve_notification.mp3
   String get recieveNotification => 'assets/music/recieve_notification.mp3';
 
+  /// File path: assets/music/stop_job.mp3
+  String get stopJob => 'assets/music/stop_job.mp3';
+
   /// List of all assets
-  List<String> get values => [recieveNotification];
+  List<String> get values => [incomingCall, recieveNotification, stopJob];
 }
 
 class $AssetsSvgGen {
@@ -265,8 +292,6 @@ class $AssetsSvgGen {
 
   /// File path: assets/svg/youtube.svg
   String get youtube => 'assets/svg/youtube.svg';
-
-
 
   /// List of all assets
   List<String> get values => [

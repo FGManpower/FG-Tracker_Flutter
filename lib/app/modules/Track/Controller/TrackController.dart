@@ -35,7 +35,7 @@
 //   String? _alreadyListeningGroupId;
 //
 //   Future<void> initSocketConnection() async {
-//     userId = Global.storageServices.get(Constant.userId).toString();
+//     userId = Global.storageServices.get(PrefConst.userId).toString();
 //     await socketService.init(socketUrl);
 //   }
 //
@@ -226,7 +226,7 @@
 //     try {
 //       if (profileImageUrl.isNotEmpty) {
 //         await precacheImage(
-//           NetworkImage(Constant.ImagebaseUrl + profileImageUrl),
+//           NetworkImage(ConstRes.aImageBaseUrl + profileImageUrl),
 //           Get.context!,
 //         );
 //       }
@@ -297,6 +297,8 @@
 import 'dart:developer';
 import 'dart:math' hide log;
 
+import 'package:fgtracker/app/Core/constant/const_res.dart';
+import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/Dialog/Common_dialog.dart';
 import 'package:fgtracker/app/Data/Repositories/TrackRepo.dart';
 import 'package:fgtracker/app/Model/GroupRes.dart';
@@ -305,7 +307,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../../Core/values/Dialog/DialogBox.dart';
-import '../../../Core/util/http/Constant.dart';
 import '../../../Core/values/global.dart';
 import '../../../Core/values/loading.dart';
 import '../../../Data/Services/Tracking.dart';
@@ -328,8 +329,8 @@ class TrackingController extends GetxController {
   String? _alreadyListeningGroupId;
 
   Future<void> initSocketConnection() async {
-    userId = Global.storageServices.get(Constant.userId).toString();
-    await socketService.init(socketUrl);
+    userId = Global.storageServices.get(PrefConst.userId).toString();
+    await socketService.init(ConstRes.socketUrl);
   }
 
   void initializeLocation() {
@@ -495,7 +496,7 @@ class TrackingController extends GetxController {
     try {
       if (profileImageUrl.isNotEmpty) {
         await precacheImage(
-          NetworkImage(Constant.ImagebaseUrl + profileImageUrl),
+          NetworkImage(ConstRes.aImageBaseUrl + profileImageUrl),
           Get.context!,
         );
       }

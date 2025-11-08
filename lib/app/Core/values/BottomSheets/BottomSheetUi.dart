@@ -1,4 +1,4 @@
-import 'package:fgtracker/app/Core/util/http/Constant.dart';
+import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Data/Services/Tracking.dart';
 import 'package:fgtracker/app/Model/LocationDataRes.dart';
 import 'package:fgtracker/app/config/themes_data.dart';
@@ -52,7 +52,7 @@ class BottomSheetUi {
                   final isOnline =
                       member.isOnline == true || member.isOnline == 1;
                   final profileUrl = (member.profileImage?.isNotEmpty ?? false)
-                      ? "${Constant.ImagebaseUrl}${member.profileImage}"
+                      ? "${ConstRes.aImageBaseUrl}${member.profileImage}"
                       : null;
 
                   return Container(

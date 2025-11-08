@@ -1,10 +1,11 @@
 
+import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/Context_Utility.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 
-import '../../../Core/util/http/Constant.dart';
+
 import '../../../Core/values/Dialog/Common_dialog.dart';
 import '../../../Data/Repositories/Notification_Repo.dart';
 import '../../../Model/NotificationData.dart';
@@ -19,7 +20,7 @@ class NotificationController extends GetxController {
   void onInit() {
     // TODO: implement onInit
     super.onInit();
-    Global.storageServices.setBool(Constant.notificationBadge, false);
+    Global.storageServices.setBool(PrefConst.notificationBadge, false);
     BlocProvider.of<NotificationCountCubit>(ContextUtility.context!)
         .showBadge();
     getNotificationData();

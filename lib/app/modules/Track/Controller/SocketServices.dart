@@ -1,5 +1,5 @@
 import 'dart:developer';
-import 'package:fgtracker/app/Core/util/http/Constant.dart';
+import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:get/get.dart';
@@ -83,13 +83,13 @@ class SocketService extends GetxService {
     _socket?.on("group-location-update", (data) {
       if (data is List) {
         for (var item in data) {
-          if (item["userId"].toString() != Global.storageServices.get(Constant.userId)
+          if (item["userId"].toString() != Global.storageServices.get(PrefConst.userId)
             ) {
             callback(item);
           }
         }
       } else if (data is Map) {
-        if (data["userId"].toString() != Global.storageServices.get(Constant.userId)) {
+        if (data["userId"].toString() != Global.storageServices.get(PrefConst.userId)) {
           callback(data);
         }
       }
@@ -130,7 +130,7 @@ class SocketService extends GetxService {
   }
 
   void _rejoinGroup(String groupId) {
-    final userId = Global.storageServices.get(Constant.userId).toString();
+    final userId = Global.storageServices.get(PrefConst.userId).toString();
     _socket?.emit("join-group", {
       "groupId": groupId,
       "userId": userId,

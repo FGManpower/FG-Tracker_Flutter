@@ -1,16 +1,13 @@
-import 'dart:ui';
-import 'package:fgtracker/app/Core/util/http/Constant.dart';
+import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/modules/auth/Auth_Widget/policy_texts.dart';
 import 'package:fgtracker/app/modules/auth/Controller/PrivacyTermsController.dart';
 import 'package:fgtracker/app/modules/auth/Controller/login_controller.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 
 class PrivacyTermsBottomSheet extends StatefulWidget {
   final String userPhone;
@@ -109,13 +106,13 @@ class _PrivacyTermsBottomSheetState extends State<PrivacyTermsBottomSheet> {
   }
 
   void _handleAccept() async {
-    await Global.storageServices.setString("${Constant.AcceptPolicy}_${widget.userPhone}", "true");
+    await Global.storageServices.setString("${PrefConst.AcceptPolicy}_${widget.userPhone}", "true");
     authController.setAcceptance(widget.userPhone, true);
     Navigator.pop(context,true); // ✅ Return true
   }
 
   void _handleDecline() {
-    Global.storageServices.setString("${Constant.AcceptPolicy}_${widget.userPhone}", "false");
+    Global.storageServices.setString("${PrefConst.AcceptPolicy}_${widget.userPhone}", "false");
     authController.setAcceptance(widget.userPhone, false);
     Navigator.pop(context,false); // ✅ Return false
   }

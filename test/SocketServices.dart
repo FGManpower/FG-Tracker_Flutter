@@ -159,7 +159,7 @@
 //   void exitGroup(String groupId, {Function(bool)? onCompletion}) {
 //     socket.emit('leave-group', {
 //       'groupId': groupId,
-//       'userId': Global.storageServices.get(Constant.userId),
+//       'userId': Global.storageServices.get(PrefConst.userId),
 //     });
 //     _groupId = null;
 //     onCompletion!(true);
@@ -274,7 +274,7 @@
 //
 //   void _updateGroupMarker(dynamic data) async {
 //     log("-------------UserData----------${data}");
-//     final profileImageUrl = Constant.ImagebaseUrl + (data["ProfileImage"] ?? "");
+//     final profileImageUrl = ConstRes.aImageBaseUrl + (data["ProfileImage"] ?? "");
 //     final bool isOnline = data["isOnline"] == false;
 //
 //     final icon = await getCustomIcon(profileImageUrl, isOnline);

@@ -270,7 +270,7 @@ Widget reausablebutton(
       bool enable = true,
       String? type,
       int fontSize = 18,
-      Color backgroundColor = ToggleThemeData.Appcolor}) {
+      Color backgroundColor = ToggleThemeData.darkPurple}) {
   return GestureDetector(
     onTap: enable == false ? null : ontap,
     child: Container(
@@ -542,8 +542,8 @@ Widget reausabletext(String title,
       Color? decorationcolor,
       TextAlign? align,
       int? maxline,
-      TextOverflow? textoverflow, }) {
-  return SizedBox(
+      TextOverflow? textoverflow,var letterSpacing,void Function()? onTap }) {
+  return InkWell(onTap: onTap ,child: SizedBox(
     width: widths?.w,
     child: Text(
       textAlign: align,
@@ -558,9 +558,10 @@ Widget reausabletext(String title,
           fontSize: fontsize.sp,
           color: color,
           decorationColor: decorationcolor,
+          letterSpacing:letterSpacing,
           fontWeight: fontweight),
     ),
-  );
+  ),);
 }
 
 void FullImageView(BuildContext context, {String? title, img}) {

@@ -1,23 +1,20 @@
 import 'dart:io';
+import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/theme/AppText.dart';
 import 'package:fgtracker/app/Core/theme/appTheme.dart';
-import 'package:fgtracker/app/Core/util/http/Constant.dart';
 import 'package:fgtracker/app/Core/values/bottomSheet.dart';
 import 'package:fgtracker/app/Core/values/utility.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/modules/auth/Auth_Widget/Auth_widget.dart';
 import 'package:fgtracker/gen/assets.gen.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 
-import '../../../config/themes_data.dart';
 import '../../../routes/app_pages.dart';
 import '../Controller/RegisterController.dart';
-import 'login_Page.dart';
 
 class RegistrationScreen extends GetView<RegistrationController> {
   Widget buildGender(
@@ -126,7 +123,7 @@ class RegistrationScreen extends GetView<RegistrationController> {
                       : CircleAvatar(
                     radius: 60.r,
                     backgroundImage: NetworkImage(
-                      "${Constant.ImagebaseUrl}${controller.userData.profileImage}",
+                      "${ConstRes.aImageBaseUrl}${controller.userData.profileImage}",
                     ),
                     backgroundColor: Colors.black,
                   )

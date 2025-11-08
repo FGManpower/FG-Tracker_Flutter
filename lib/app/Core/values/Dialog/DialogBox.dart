@@ -1,8 +1,8 @@
 import 'dart:developer';
 import 'dart:io';
 
+import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/theme/appTheme.dart';
-import 'package:fgtracker/app/Core/util/http/Constant.dart';
 import 'package:fgtracker/app/Core/values/Context_Utility.dart';
 import 'package:fgtracker/app/Core/values/bottomSheet.dart';
 import 'package:fgtracker/app/Core/values/utility.dart';
@@ -502,7 +502,7 @@ class DialogBox {
                     radius: 30.r,
                     backgroundImage: NetworkImage(
                       Utility.isNotNullEmptyOrFalse(imageUrl)
-                          ? Constant.ImagebaseUrl + imageUrl!
+                          ? ConstRes.aImageBaseUrl + imageUrl!
                           : MyAppTheme.notFoundImg,
                     )),
                 SizedBox(width: 12.w),

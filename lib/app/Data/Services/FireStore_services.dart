@@ -3,6 +3,8 @@
 import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:fgtracker/app/Core/constant/const_res.dart';
+import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
@@ -12,7 +14,6 @@ import 'package:googleapis_auth/auth_io.dart';
 
 import 'package:uuid/uuid.dart';
 
-import '../../Core/util/http/Constant.dart';
 import '../../Model/call_model.dart';
 import '../../modules/AgoraVideoandAudio_Call/agora_call_screen.dart';
 
@@ -30,10 +31,10 @@ class FireStoreServices {
   Future<void> createUserDocument() async {
     try {
       String? deviceToken = await _messaging.getToken();
-      await FirebaseFirestore.instance.collection('users').doc(Global.storageServices.get(Constant.userId).toString()).set({
+      await FirebaseFirestore.instance.collection('users').doc(Global.storageServices.get(PrefConst.userId).toString()).set({
         'device_token': deviceToken,
-        'user_id': Global.storageServices.get(Constant.userId).toString(),
-        'name': Global.storageServices.get(Constant.userId).toString(),
+        'user_id': Global.storageServices.get(PrefConst.userId).toString(),
+        'name': Global.storageServices.get(PrefConst.userId).toString(),
       }, SetOptions(merge: true));
     } catch (e) {
       print('❌ Failed to create user doc: $e');
@@ -43,7 +44,7 @@ class FireStoreServices {
   /// ☎️ Start a call
   Future<void> startCall(BuildContext context, bool isVideo,
       {required int receiverId,}) async {
-    final String? callerId = Global.storageServices.get(Constant.userId.toString());
+    final String? callerId = Global.storageServices.get(PrefConst.userId.toString());
 
     if (callerId == receiverId.toString()) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -59,8 +60,8 @@ class FireStoreServices {
       'receiverId': receiverId,
       'isVideo': isVideo,
       'status': 'calling',
-      'callerName': Global.storageServices.get(Constant.userName.toString()),
-      'callerProfileImage': Constant.ImagebaseUrl + Global.storageServices.get(Constant.profileImage.toString())!,
+      'callerName': Global.storageServices.get(PrefConst.userName.toString()),
+      'callerProfileImage': ConstRes.aImageBaseUrl + Global.storageServices.get(PrefConst.profileImage.toString())!,
       'timestamp': FieldValue.serverTimestamp(),
 
     });
@@ -71,7 +72,7 @@ class FireStoreServices {
         builder: (_) => AgoraCallScreen(
           // channelId: channelId,
           // isVideo: isVideo,
-          call: CallModel(callerId: callerId!, receiverId: receiverId.toString(), channelId: channelId, isVideo: isVideo, status: "calling", callerName: Global.storageServices.get(Constant.userName.toString())!, callerProfileImage: Constant.ImagebaseUrl + Global.storageServices.get(Constant.profileImage.toString())!,),
+          call: CallModel(callerId: callerId!, receiverId: receiverId.toString(), channelId: channelId, isVideo: isVideo, status: "calling", callerName: Global.storageServices.get(PrefConst.userName.toString())!, callerProfileImage: ConstRes.aImageBaseUrl + Global.storageServices.get(PrefConst.profileImage.toString())!,),
         ),
       ),
     );
@@ -89,8 +90,8 @@ class FireStoreServices {
       await sendCallNotificationTerminated(
         receiverToken: receiverToken,
         callerId: callerId!,
-        callerName:Global.storageServices.get(Constant.userName.toString())!,
-        callerProfileImage: Constant.ImagebaseUrl + Global.storageServices.get(Constant.profileImage.toString())!,
+        callerName:Global.storageServices.get(PrefConst.userName.toString())!,
+        callerProfileImage: ConstRes.aImageBaseUrl + Global.storageServices.get(PrefConst.profileImage.toString())!,
         channelId: channelId,
         isVideo: isVideo,
 

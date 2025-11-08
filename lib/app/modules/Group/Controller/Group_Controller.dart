@@ -1,18 +1,14 @@
-import 'package:fgtracker/app/Core/util/http/Constant.dart';
 import 'package:fgtracker/app/Core/values/Dialog/Common_dialog.dart';
 import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/Core/values/loading.dart';
 import 'package:fgtracker/app/Data/Repositories/GroupRepo.dart';
 import 'package:fgtracker/app/modules/Track/Controller/TrackController.dart';
-import 'package:fgtracker/app/modules/Track/Controller/LocationService.dart';
 import 'package:fgtracker/app/Model/GroupRes.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:google_mlkit_barcode_scanning/google_mlkit_barcode_scanning.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:location/location.dart';
 
-import '../../../Core/values/global.dart';
 
 class GroupController extends GetxController {
   GlobalKey<FormState> createGroupKey = GlobalKey<FormState>();
@@ -109,7 +105,7 @@ class GroupController extends GetxController {
   //       //     result.groupData![0].isActive == true) {
   //       //   TrackingController.instance.setActiveGroup(
   //       //     result.groupData![0].id.toString(),
-  //       //     Global.storageServices.get(Constant.userId).toString(),
+  //       //     Global.storageServices.get(PrefConst.userId).toString(),
   //       //   );
   //       // }
   //     } else {

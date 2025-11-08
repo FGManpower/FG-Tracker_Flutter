@@ -1,12 +1,12 @@
 // lib/services/call_service.dart
 import 'dart:async';
+import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 
-import '../../Core/util/http/Constant.dart';
 
 /// Replace with your server address (no trailing slash), e.g. "http://192.168.1.50:3000"
-final String SIGNALING_SERVER = socketUrl;
+final String SIGNALING_SERVER = ConstRes.socketUrl;
 
 class CallService {
   final String userId;

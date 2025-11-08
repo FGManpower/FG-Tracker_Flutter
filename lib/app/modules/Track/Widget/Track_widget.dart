@@ -1,8 +1,5 @@
 import 'dart:math';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:fgtracker/app/Core/theme/appTheme.dart';
-import 'package:fgtracker/app/Core/util/http/Constant.dart';
-import 'package:fgtracker/app/Core/values/utility.dart';
+import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/config/themes_data.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/modules/Track/Widget/ToBitDescription.dart';
@@ -77,7 +74,7 @@ class MarkerWidget extends StatelessWidget {
                 //   child: ClipOval(
                 //     child: CachedNetworkImage(
                 //       imageUrl: Utility.isNotNullEmptyOrFalse(imageUrl)
-                //           ? Constant.ImagebaseUrl + imageUrl
+                //           ? ConstRes.aImageBaseUrl + imageUrl
                 //           : MyAppTheme.notFoundImg,
                 //       fit: BoxFit.cover,
                 //       placeholder: (context, url) => Center(child: CircularProgressIndicator(strokeWidth: 2)),
@@ -99,10 +96,10 @@ class MarkerWidget extends StatelessWidget {
                   ),
                   child: ClipOval(
                     child: Image.network(
-                      Constant.ImagebaseUrl + imageUrl,
+                      ConstRes.aImageBaseUrl + imageUrl,
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) {
-                        print("❌ Image load error: ${Constant.ImagebaseUrl + imageUrl}");
+                        print("❌ Image load error: ${ConstRes.aImageBaseUrl + imageUrl}");
                         return Icon(Icons.person, size: 30.sp);
                       },
                     ),
