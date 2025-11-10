@@ -8,9 +8,9 @@ class ConstRes {
       'http://192.168.152.223:4000/'; // Development
   static const String production =
       'http://fgtracker.in:3000/'; //Prod
-  static const String aBaseUrl = '${development}api/';
+  static const String aBaseUrl = '${production}api/';
 
-  static const String aImageBaseUrl = development;
+  static const String aImageBaseUrl = production;
 
 
   static String socketUrl = "http://fgtracker.in:3000"; //pro
@@ -26,7 +26,7 @@ class ConstRes {
 
   final Dio _dio = Dio();
 
-  Constant() {
+  ConstRes() {
     BaseOptions options = BaseOptions(
       baseUrl: aBaseUrl,
     );

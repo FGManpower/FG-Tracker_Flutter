@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:fgtracker/app/Core/constant/urls.dart';
 import 'package:fgtracker/app/Core/util/http/http_util.dart';
 import 'package:fgtracker/app/Core/values/utility.dart';
 import 'package:fgtracker/app/Model/CommonRes.dart';
@@ -11,16 +12,16 @@ import 'NotificationServices.dart';
 
 class AuthRepo {
   static Future<CommonResponse> login(dynamic param) async {
-    var response = await HttpUtil().post("/send-otp", data: param);
+    var response = await HttpUtil().post(Urls.sendOtp, data: param);
     return CommonResponse.fromJson(response);
   }
 
   static Future<VeriefyOtpResponse> VeriefyOtp(dynamic param) async {
-    var response = await HttpUtil().post("/verify-otp", data: param);
+    var response = await HttpUtil().post(Urls.verifyOtp, data: param);
     return VeriefyOtpResponse.fromJson(response);
   }
   static Future<VeriefyOtpResponse> ResendOtp(dynamic param) async {
-    var response = await HttpUtil().post("/resendOtp", data: param);
+    var response = await HttpUtil().post(Urls.resendOtp, data: param);
     return VeriefyOtpResponse.fromJson(response);
   }
 
@@ -44,19 +45,11 @@ class AuthRepo {
               : "",
     });
     var response =
-        await HttpUtil().Authpost("/updateProfile", formdata: data, type: "formdata");
+        await HttpUtil().Authpost(Urls.updateProfile, formdata: data, type: "formdata");
     return CommonResponse.fromJson(response);
   }
 
-  static Future<CommonResponse> forgetPassword(dynamic param) async {
-    var response = await HttpUtil().post("/forgetPassword", data: param);
-    return CommonResponse.fromJson(response);
-  }
 
-  static Future<CommonResponse> resetPassword(dynamic param) async {
-    var response = await HttpUtil().Authpost("/resetPassword", data: param);
-    return CommonResponse.fromJson(response);
-  }
 
   static Future<CommonResponse> updateProfile(
       RegistrationController controller) async {
@@ -76,7 +69,7 @@ class AuthRepo {
     final data = FormData.fromMap(formMap);
 
     var response = await HttpUtil()
-        .Authpost("/updateProfile", formdata: data, type: "formdata");
+        .Authpost(Urls.updateProfile, formdata: data, type: "formdata");
     return CommonResponse.fromJson(response);
   }
 }

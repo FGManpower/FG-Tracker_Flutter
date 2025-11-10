@@ -93,13 +93,36 @@ class MyAppTheme {
               fontFamily: FontFamily.interMedium,
             ),
 
+            enabledBorder: OutlineInputBorder(
+                borderRadius:
+                BorderRadius.all(Radius.circular(OutlineInputBorderRadius.r)),
+                borderSide: const BorderSide(
+                    width: 1,
+                    style: BorderStyle.solid,
+                    color: ToggleThemeData.darkPurple)),
+            disabledBorder: OutlineInputBorder(
+                borderRadius:
+                BorderRadius.all(Radius.circular(OutlineInputBorderRadius.r)),
+                borderSide: const BorderSide(
+                    width: 1,
+                    style: BorderStyle.solid,
+                    color: ToggleThemeData.darkPurple)),
+
             focusedBorder: OutlineInputBorder(
+                borderRadius:
+                BorderRadius.all(Radius.circular(OutlineInputBorderRadius.r)),
                 borderSide: const BorderSide(
                     width: 2,
+
                     style: BorderStyle.solid,
-                    color: ToggleThemeData.Appcolor)),
+                    color: ToggleThemeData.darkPurple)),
             counterText: "",
             border: OutlineInputBorder(
+                borderSide: const BorderSide(
+                    width: 1,
+
+                    style: BorderStyle.solid,
+                    color: ToggleThemeData.darkPurple),
               borderRadius:
                   BorderRadius.all(Radius.circular(OutlineInputBorderRadius.r)),
             ),

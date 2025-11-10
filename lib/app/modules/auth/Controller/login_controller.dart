@@ -41,8 +41,7 @@ class Login_Controller extends GetxController {
   Future<void> login() async {
     if (!validateMobile()) return;
     if (!loginKey.currentState!.validate()) return;
-    String key = "${PrefConst.AcceptPolicy}_${mobNoController.text}";
-    String? isAccepted = Global.storageServices.get(key);
+
 
     await _performLogin();
 

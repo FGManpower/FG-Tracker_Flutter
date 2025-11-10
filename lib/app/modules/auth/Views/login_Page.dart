@@ -65,7 +65,7 @@ class LoginPage extends GetView<Login_Controller> {
                   ),
                   Padding(
                     padding:
-                        EdgeInsets.only(top: 80.h, left: 15.w, right: 24.w),
+                    EdgeInsets.only(top: 80.h, left: 15.w, right: 24.w),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -75,7 +75,7 @@ class LoginPage extends GetView<Login_Controller> {
                               radius: 48.r,
                               backgroundColor: Colors.white,
                               backgroundImage:
-                                  AssetImage(Assets.icons.appIcon.path),
+                              AssetImage(Assets.icons.appIcon.path),
                             ),
                             SizedBox(width: 12.w),
                             reausabletext(
@@ -100,6 +100,7 @@ class LoginPage extends GetView<Login_Controller> {
               ),
             ),
           ),
+
           Padding(
             padding: EdgeInsets.only(top: 370.h),
             child: Padding(
@@ -129,74 +130,118 @@ class LoginPage extends GetView<Login_Controller> {
                       fontfamily: FontFamily.interMedium,
                     ),
                     SizedBox(height: 16.h),
+
                     Form(
                       key: controller.loginKey,
                       child: Column(
                         children: [
-                          Container(
-                            padding: EdgeInsets.symmetric(vertical: 0.h),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFF8F6FF),
-                              borderRadius: BorderRadius.circular(40.r),
-                              border: Border.all(
-                                color: AppColors.darkBlue,
-                                width: 1,
-                              ),
-                            ),
-                            child: Row(
-                              children: [
-                                CountryCodePicker(
-                                  onChanged: (country) {
-                                    controller.selectedDialCode =
-                                        country.dialCode ?? '+91';
-                                  },
-                                  initialSelection: 'IN',
-                                  favorite: ['+91', 'IN'],
-                                  showCountryOnly: false,
-                                  showOnlyCountryWhenClosed: false,
-                                  alignLeft: false,
-                                  flagWidth: 20.sp,
-                                  textStyle: TextStyle(
-                                    fontSize: 14.sp,
-                                    color: ToggleThemeData.darkPurple,
+                          Obx(() => Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                padding:
+                                EdgeInsets.symmetric(vertical: 0.h),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFF8F6FF),
+                                  borderRadius: BorderRadius.circular(40.r),
+                                  border: Border.all(
+                                    color: controller.mobileErrorText.value
+                                        .isEmpty
+                                        ? ToggleThemeData.darkPurple
+                                        : Colors.red,
+                                    width: 1,
                                   ),
                                 ),
-                                Container(
-                                  height: 30.h,
-                                  width: 1.w,
-                                  color: Colors.black,
-                                ),
-                                SizedBox(width: 8.w),
-                                Expanded(
-                                  child: TextFormField(
-                                    focusNode: controller.phoneFocusNode,
-                                    inputFormatters: [
-                                      FilteringTextInputFormatter.digitsOnly
-                                    ],
-                                    style: TextStyle(
-                                      fontSize: 16.sp,
-                                      fontFamily: FontFamily.interMedium,
+                                child: Row(
+                                  children: [
+                                    CountryCodePicker(
+                                      onChanged: (country) {
+                                        controller.selectedDialCode =
+                                            country.dialCode ?? '+91';
+                                      },
+                                      initialSelection: 'IN',
+                                      favorite: ['+91', 'IN'],
+                                      flagWidth: 20.sp,
+                                      textStyle: TextStyle(
+                                        fontSize: 14.sp,
+                                        color: ToggleThemeData.darkPurple,
+                                      ),
                                     ),
-                                    controller: controller.mobNoController,
-                                    keyboardType: TextInputType.phone,
-                                    textInputAction: TextInputAction.done,
-                                    maxLength: 18,
-                                    decoration: InputDecoration(
-                                        counterText: '',
-                                        border: InputBorder.none,
-                                        hintText: 'Enter Mobile Number',
-                                        hintStyle: TextStyle(
+                                    Container(
+                                      height: 30.h,
+                                      width: 1.w,
+                                      color: Colors.black,
+                                    ),
+                                    SizedBox(width: 8.w),
+                                    Expanded(
+                                      child: TextFormField(
+                                        focusNode:
+                                        controller.phoneFocusNode,
+                                        inputFormatters: [
+                                          FilteringTextInputFormatter
+                                              .digitsOnly
+                                        ],
+                                        style: TextStyle(
+                                          fontSize: 16.sp,
+                                          fontFamily:
+                                          FontFamily.interMedium,
+                                        ),
+                                        controller:
+                                        controller.mobNoController,
+                                        keyboardType:
+                                        TextInputType.phone,
+                                        textInputAction:
+                                        TextInputAction.done,
+                                        maxLength: 18,
+                                        decoration: InputDecoration(
+                                          counterText: '',
+                                          border: InputBorder.none,
+                                          hintText: 'Enter Mobile Number',
+                                          hintStyle: TextStyle(
                                             fontSize: 14.sp,
-                                            color: ToggleThemeData.darkPurple)),
-                                    onFieldSubmitted: (_) {
-                                      controller.phoneFocusNode.unfocus();
-                                    },
-                                  ),
+                                            color: ToggleThemeData
+                                                .darkPurple,
+                                          ),
+                                        ),
+                                        onChanged: (_) {
+                                          controller.mobileErrorText.value =
+                                          '';
+                                        },
+                                        onFieldSubmitted: (_) {
+                                          controller.phoneFocusNode
+                                              .unfocus();
+                                        },
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ],
-                            ),
-                          ),
+                              ),
+                              AnimatedSwitcher(
+                                duration:
+                                const Duration(milliseconds: 250),
+                                child: controller.mobileErrorText.value
+                                    .isNotEmpty
+                                    ? Padding(
+                                  padding: EdgeInsets.only(
+                                      left: 20.w, top: 6.h),
+                                  child: Text(
+                                    controller.mobileErrorText.value,
+                                    key: ValueKey(controller
+                                        .mobileErrorText.value),
+                                    style: TextStyle(
+                                      color: Colors.red,
+                                      fontSize: 12.sp,
+                                      fontFamily: FontFamily
+                                          .interMedium,
+                                    ),
+                                  ),
+                                )
+                                    : const SizedBox.shrink(),
+                              ),
+                            ],
+                          )),
                           SizedBox(height: 20.h),
+
                           reausablebutton(
                             title: AppText.login,
                             ontap: () {

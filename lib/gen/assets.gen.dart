@@ -103,6 +103,10 @@ class $AssetsImagesGen {
   /// File path: assets/images/qibla.png
   AssetGenImage get qibla => const AssetGenImage('assets/images/qibla.png');
 
+  /// File path: assets/images/registeration_bg.png
+  AssetGenImage get registerationBg =>
+      const AssetGenImage('assets/images/registeration_bg.png');
+
   /// File path: assets/images/safe.jpg
   AssetGenImage get safe => const AssetGenImage('assets/images/safe.jpg');
 
@@ -146,6 +150,7 @@ class $AssetsImagesGen {
     play,
     playstore,
     qibla,
+    registerationBg,
     safe,
     serverError,
     splashBg,

@@ -1,9 +1,14 @@
 import 'package:fgtracker/app/Core/theme/AppText.dart';
 import 'package:fgtracker/app/Core/util/size_config.dart';
+import 'package:fgtracker/app/Core/values/utility.dart';
+import 'package:fgtracker/app/config/themes_data.dart';
+import 'package:fgtracker/app/global_widget/common_widget.dart';
+import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import '../../../Core/theme/appTheme.dart';
 import '../Controller/RegisterController.dart';
 
 Widget buildInput({
@@ -253,7 +258,7 @@ class CustomTextField extends StatefulWidget {
   final bool isConfirmPassword;
   final bool obscureText;
   final VoidCallback? toggleVisibility;
-  bool isEnable=true;
+  bool isEnable = true;
   final int? maxLength;
   final String? Function(String?)? validator; // Add this to the constructor
 
@@ -267,7 +272,7 @@ class CustomTextField extends StatefulWidget {
     this.isConfirmPassword = false,
     this.obscureText = false,
     this.toggleVisibility,
-    this.isEnable=true,
+    this.isEnable = true,
     this.maxLength,
     this.validator,
   });
@@ -282,17 +287,13 @@ class _CustomTextFieldState extends State<CustomTextField> {
   @override
   Widget build(BuildContext context) {
     int maxLength = 50;
-   if (widget.hint.toLowerCase().contains("password")) {
+    if (widget.hint.toLowerCase().contains("password")) {
       maxLength = 12;
     }
-   // else if (widget.hint.toLowerCase().contains("phone")) {
-   //   maxLength = 10; // For phone number
-   // }
 
     return TextFormField(
       controller: widget.controller,
       obscureText: widget.obscureText,
-
       maxLength: maxLength,
       keyboardType: widget.hint.toLowerCase().contains("email")
           ? TextInputType.emailAddress
@@ -342,7 +343,6 @@ class _CustomTextFieldState extends State<CustomTextField> {
           // }
         }
       },
-
       validator: (value) {
         if (value == null || value.trim().isEmpty) {
           return "${widget.hint} is required";
@@ -366,7 +366,6 @@ class _CustomTextFieldState extends State<CustomTextField> {
           return null;
         }
 
-
         if ((widget.isPassword || widget.isConfirmPassword) &&
             value.trim().length < 6) {
           return AppText.psswrdMustBe6Character;
@@ -382,4 +381,62 @@ class _CustomTextFieldState extends State<CustomTextField> {
       },
     );
   }
+}
+
+Widget inputField(BuildContext context,
+    {String? title,
+    TextEditingController? textctr,
+    String? hintname,
+    IconData? prefixicon,
+    void Function(String? value)? onChanged,
+    FormFieldValidator? validators,
+    void Function()? onTap,
+    void Function(String? value)? onFieldSubmitted,
+    bool enable = true,
+    int? maxLength,
+    int? maxLines,
+    TextInputType? keyboradtype,
+    GlobalKey? key,
+    List<TextInputFormatter>? inputFormatters,
+    TextInputAction? textInputAction = TextInputAction.next,
+    FocusNode? focusNode}) {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Utility.isNullEmptyOrFalse(title)
+          ? SizedBox()
+          : Padding(
+              padding: EdgeInsets.only(bottom: 5.h,left: 3.w),
+              child: reausabletext(title ?? "",
+                  fontsize: 16, fontfamily: FontFamily.interSemiBold),
+            ),
+      MyAppTheme.customizedTextFormField(
+        filled: true,
+        onTap: onTap,
+        onFieldSubmitted: onFieldSubmitted,
+        inputFormatters: inputFormatters,
+        OutlineInputBorderRadius: 50,
+        focusNode: focusNode,
+        fillColor: const Color(0xffF4F4F4),
+        context,
+        onChanged: onChanged,
+        keyboardType: keyboradtype,
+        textInputAction: textInputAction,
+        enabled: enable,
+        maxLength: maxLength,
+        maxLines: maxLines,
+        controller: textctr,
+        validator: validators,
+        hintText: hintname,
+        prefixIcon: Padding(
+          padding: EdgeInsets.only(left: 10.w, right: 10.w),
+          child: Icon(
+            prefixicon,
+            size: 23.sp,
+            color: ToggleThemeData.Appcolor,
+          ),
+        ),
+      )
+    ],
+  );
 }

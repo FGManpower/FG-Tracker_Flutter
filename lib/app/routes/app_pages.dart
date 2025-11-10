@@ -19,7 +19,7 @@ class AppPages {
   static final routes = [
     GetPage(
       name: _Paths.Splash,
-      page: () => LoginPage(),
+      page: () => Splashscreen(),
       binding: Auth_Binding(),
     ),
 

@@ -10,11 +10,8 @@ import 'package:fgtracker/app/config/themes_data.dart';
 import 'package:fgtracker/app/global_widget/input_widget.dart';
 import 'package:fgtracker/app/modules/Group/Controller/Group_Controller.dart';
 import 'package:fgtracker/app/modules/Group/Controller/JoinGroup_Controller.dart';
-import 'package:fgtracker/app/modules/auth/Auth_Widget/Auth_widget.dart';
-import 'package:fgtracker/app/modules/auth/Controller/Forgot_Password_Controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_mlkit_barcode_scanning/google_mlkit_barcode_scanning.dart';
 
@@ -194,108 +191,6 @@ class DialogBox {
     );
   }
 
-  void showForgotPasswordBottomSheet(BuildContext context) {
-    Get.bottomSheet(
-      GetBuilder<ForgotPasswordController>(
-        init: ForgotPasswordController(),
-        builder: (controller) {
-          return DraggableScrollableSheet(
-            initialChildSize: 0.55,
-            minChildSize: 0.5,
-            maxChildSize: 0.65,
-            expand: false,
-            builder: (context, scrollController) {
-              return Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-                ),
-                child: SingleChildScrollView(
-                  controller: scrollController,
-                  child: Form(
-                    key: controller.forgetKey,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Drag handle
-                        Center(
-                          child: Container(
-                            width: 40,
-                            height: 5,
-                            margin: const EdgeInsets.only(bottom: 16),
-                            decoration: BoxDecoration(
-                              color: Colors.grey[300],
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                        ),
-
-                        reausabletext(
-                          AppText.forgotPassword,
-                          fontsize: 22,
-                          fontweight: FontWeight.bold,
-                        ),
-                        const SizedBox(height: 8),
-                        reausabletext(
-                          AppText.dontWorryItHappens,
-                          fontsize: 14,
-                          color: Colors.grey,
-                        ),
-                        const SizedBox(height: 24),
-
-                        ReusableTextFormField(
-                          controller: controller.emailController,
-                          hintText: AppText.emailAddress,
-                          prefixIcon: Icons.email_outlined,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return AppText.emailIsRequired;
-                            } else if (!GetUtils.isEmail(value)) {
-                              return AppText.enterAValidEmail;
-                            }
-                            return null;
-                          },
-                        ),
-
-                        const SizedBox(height: 24),
-                        reausablebutton(
-                          title: AppText.continueBtn,
-                          borderradiues: 10,
-                          ontap: () {
-                            if (controller.forgetKey.currentState!.validate()) {
-                              controller.forgetPassword();
-                            }
-                          },
-                        ),
-                        const SizedBox(height: 16),
-
-                        Center(
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 12),
-                            child: reausabletext(
-                              AppText.byContinuingYouAgree,
-                              fontsize: 13,
-                              color: Colors.grey,
-                              align: TextAlign.center,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                      ],
-                    ),
-                  ),
-                ),
-              );
-            },
-          );
-        },
-      ),
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-    );
-  }
 
   showQRScanOptions(BuildContext context,
       {required JoinGroupController controller,

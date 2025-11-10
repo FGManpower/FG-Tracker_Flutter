@@ -24,6 +24,9 @@ class OtpController extends GetxController {
   var resendSeconds = 0.obs;
   var mobileNumber = ''.obs;
   var showOtpSentText = false.obs;
+  final otpErrorText = ''.obs;
+  late FocusNode phoneFocusNode;
+
 
   Map<String, dynamic>? arguments = Get.arguments;
 
@@ -51,6 +54,21 @@ class OtpController extends GetxController {
     mobileNumber.value = arguments?['mobNo'] ?? '';
   }
 
+  bool validateOtp() {
+    String number = otpController.text.trim();
+
+    if (number.isEmpty) {
+      otpErrorText.value = "Otp is required!";
+      return false;
+    } else if ( otpController.text.length < 4) {
+      otpErrorText.value = "Otp must be at least 4 digit";
+      return false;
+    }
+
+    otpErrorText.value = '';
+    return true;
+  }
+
   void startResendTimer() {
     _timer?.cancel();
     resendSeconds.value = 59;
@@ -67,6 +85,7 @@ class OtpController extends GetxController {
   }
 
   void resendOtp() async {
+
     try {
       Loading().showloading();
       dynamic param = {
@@ -95,9 +114,7 @@ class OtpController extends GetxController {
   }
 
   Future<void> veriefyOtp() async {
-    if (otpController.text.isEmpty) {
-      Utils().fluttertoast("Otp is Required");
-    } else {
+    if (!validateOtp()) return;
       try {
         Loading().showloading();
         dynamic param = {
@@ -145,6 +162,6 @@ class OtpController extends GetxController {
         Loading().dismissloading();
         CommonDialog.errorMessage(e.toString());
       }
-    }
+
   }
 }

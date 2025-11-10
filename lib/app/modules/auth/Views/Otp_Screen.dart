@@ -1,8 +1,7 @@
-import 'package:fgtracker/app/Core/values/colors.dart';
+import 'package:fgtracker/app/Core/values/Curve/Login_Curve.dart';
+import 'package:fgtracker/app/config/themes_data.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
-import 'package:fgtracker/app/modules/auth/Auth_Widget/Auth_widget.dart';
 import 'package:fgtracker/app/modules/auth/Controller/OtpController.dart';
-import 'package:fgtracker/gen/assets.gen.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -11,206 +10,215 @@ import 'package:get/get.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 
 class OTPScreen extends GetView<OtpController> {
-  OTPScreen({super.key});
+  const OTPScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     final args = Get.arguments as Map<String, dynamic>;
     final String mobileNumber = args["mobNo"];
+
     return Scaffold(
       backgroundColor: Colors.white,
-      bottomNavigationBar: Padding(
-        padding: EdgeInsets.only(bottom: 10.h, left: 10.w, right: 10.w),
-        child: reausablebutton(
-          title: "Verify  OTP",
-          ontap: () {
-            controller.veriefyOtp();
-          },
-        ),
-      ),
-      body: SingleChildScrollView(
-        child: Stack(
-          children: [
-            // Curved purple background
-            ClipPath(
-              clipper: CustomHeaderWaveClipper(),
-              child: Container(
-                height: 200.h,
-                decoration: BoxDecoration(
-                  color: AppColors.darkBlue,
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(20.r),
-                  ),
+      body: Stack(
+        children: [
+          ClipPath(
+            clipper: CurvedDiagonalClipper(cutHeightFactor: 0.8),
+            child: Container(
+              height: 360.h,
+              width: double.infinity,
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Color(0xFF4B3FDD), Color(0xFF7E6FF3)],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
                 ),
-                child: Padding(
-                  padding: EdgeInsets.only(bottom: 20.h),
-                  child: Row(
-                    children: [
-                      SizedBox(width: 8.w),
-                      reausabletext(
-                        "OTP Verification",
-                        color: Colors.white,
-                        fontsize: 20,
-                        fontweight: FontWeight.bold,
-                      ),
-                    ],
+              ),
+              child: Stack(
+                children: [
+                  Positioned(
+                    left: 40.w,
+                    bottom: 50.h,
+                    child: Icon(
+                      Icons.lock_outline,
+                      size: 130.sp,
+                      color: Colors.white.withOpacity(0.1),
+                    ),
                   ),
-                ),
+                  Padding(
+                    padding: EdgeInsets.only(top: 80.h, left: 20.w, right: 24.w),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        reausabletext(
+                          "OTP Verification",
+                          color: Colors.white,
+                          fontsize: 33,
+                          fontfamily: FontFamily.interBold,
+                        ),
+                        SizedBox(height: 12.h),
+                        reausabletext(
+                          "Please verify your identity by entering the One-Time Password (OTP) sent to your registered mobile number.",
+                          color: ToggleThemeData.white,
+                          fontsize: 14,
+                          align: TextAlign.start,
+                          fontfamily: FontFamily.interRegular,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
-
-            Padding(
-              padding: EdgeInsets.only(top: 120.h, left: 20.w, right: 20.w),
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Align(
-                      alignment: Alignment.topCenter,
-                      child: Padding(
-                        padding: EdgeInsets.only(top: 0.h),
-                        child: Image.asset(
-                          Assets.images.otpLock.path,
-                          fit: BoxFit.contain,
-                          width: 250.w, // Adjust width as needed
+          ),
+          SingleChildScrollView(
+            padding: EdgeInsets.only(top: 360.h),
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 25.h),
+              child: Column(
+                children: [
+                  Container(
+                    width: double.infinity,
+                    padding:
+                    EdgeInsets.symmetric(horizontal: 20.w, vertical: 25.h),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20.r),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
                         ),
-                      ),
+                      ],
                     ),
-
-                    reausabletext(
-                      "Get Your Code",
-                      fontsize: 32,
-                      color: AppColors.darkBlue,
-                      fontfamily: FontFamily.interBold,
-                      fontweight: FontWeight.bold,
-                    ),
-                    const SizedBox(height: 8),
-                    reausabletext(
-                        "Please enter the 4 digit code that\nsent to your Mobile number. $mobileNumber",
-                        color: Colors.grey,
-                        align: TextAlign.center,
-                        fontsize: 14), reausabletext(
-                        "",
-                        color: Colors.grey,
-                        align: TextAlign.center,
-                        fontsize: 14),
-                    // SizedBox(height: 30),
-                    SizedBox(
-                      height: 30.h,
-                    ),
-                    Center(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                        child: PinCodeTextField(
-                          appContext: context,
-                          length: 4,
-                          controller: controller.otpController,
-                          focusNode: controller.focusNode,
-                          animationType: AnimationType.fade,
-                          pinTheme: PinTheme(
-                            shape: PinCodeFieldShape.box,
-                            borderRadius: BorderRadius.circular(16.0.r),
-                            fieldHeight: 55.w,
-                            fieldWidth: 55.w,
-                            activeFillColor: Colors.white,
-                            selectedColor: Colors.grey,
-                            inactiveColor: Colors.grey,
-                            activeColor: Colors.grey,
-                            borderWidth: 0.8,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        RichText(
+                          text: TextSpan(
+                            text:
+                            "Please enter the 4-digit code sent to your mobile number ",
+                            style: TextStyle(
+                              color: Colors.grey.shade600,
+                              fontSize: 12.sp,
+                              fontFamily: FontFamily.interRegular,
+                            ),
+                            children: [
+                              TextSpan(
+                                text: "+$mobileNumber",
+                                style: TextStyle(
+                                  color: ToggleThemeData.Appcolor,
+                                  fontSize: 12.sp,
+                                  fontFamily: FontFamily.interBold,
+                                ),
+                              ),
+                            ],
                           ),
-                          textStyle: TextStyle(
-                            fontSize: 27.sp,
-                            color: Colors.black,
-                            fontWeight: FontWeight.w500,
-                          ),
-                          keyboardType: TextInputType.number,
-                          animationDuration: const Duration(milliseconds: 300),
-                          enableActiveFill: false,
-                          // mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          onChanged: (value) {
-                            // You can do realtime validation or checks here if needed
-                          },
-                          onCompleted: (otp) {
-                            // controller.verifyOtp(otp);
-                          },
                         ),
-                      ),
+                        SizedBox(height: 20.h),
+                        Obx(
+                              () => Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Center(
+                                child: PinCodeTextField(
+                                  appContext: context,
+                                  length: 4,
+                                  controller: controller.otpController,
+                                  focusNode: controller.focusNode,
+                                  animationType: AnimationType.fade,
+                                  keyboardType: TextInputType.number,
+                                  animationDuration:
+                                  const Duration(milliseconds: 300),
+                                  enableActiveFill: false,
+                                  pinTheme: PinTheme(
+                                    shape: PinCodeFieldShape.box,
+                                    borderRadius: BorderRadius.circular(16.r),
+                                    fieldHeight: 60.w,
+                                    fieldWidth: 60.w,
+                                    borderWidth: 1,
+                                    activeColor: ToggleThemeData.darkPurple,
+                                    inactiveColor:
+                                    ToggleThemeData.darkPurple.withOpacity(0.5),
+                                    selectedColor: ToggleThemeData.darkPurple,
+                                  ),
+                                  textStyle: TextStyle(
+                                    fontSize: 22.sp,
+                                    color: Colors.black,
+                                    fontFamily: FontFamily.interMedium,
+                                  ),
+                                  onChanged: (value) =>
+                                  controller.otpErrorText.value = '',
+                                  onCompleted: (otp) {},
+                                ),
+                              ),
+                              if (controller.otpErrorText.value.isNotEmpty)
+                                Padding(
+                                  padding:
+                                  EdgeInsets.only(top: 6.h, left: 20.w),
+                                  child: Text(
+                                    controller.otpErrorText.value,
+                                    style: TextStyle(
+                                      color: Colors.red,
+                                      fontSize: 12.sp,
+                                      fontFamily: FontFamily.interMedium,
+                                    ),
+                                  ),
+                                ),
+                              SizedBox(height: 25.h),
+                              reausablebutton(
+                                title: "Verify Code",
+                                ontap: controller.veriefyOtp,
+                                borderradiues: 25.r,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 8),
-                    Align(
-                        // alignment: Alignment.centerRight,
-                        child: Obx(() {
+                  ),
+                  SizedBox(height: 20.h),
+                  Align(
+                    alignment: Alignment.center,
+                    child: Obx(() {
                       final controller = Get.find<OtpController>();
-
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          controller.resendSeconds.value > 0
-                              ? Column(
-                                  children: [
-                                    reausabletext(
-                                      "Resend OTP in 00:${controller.resendSeconds.value.toString().padLeft(2, '0')}",
-                                        fontsize: 14.sp,
-                                        color: Colors.grey,
-                                    ),
-                                  ],
-                                )
-                              : TextButton(
-                                  onPressed: controller.resendOtp,
-                                  child: Text.rich(
-                                    TextSpan(
-                                      text: "Didn't get the code? ",
-                                      style: TextStyle(
-                                        fontSize: 14.sp,
-                                        color: Colors.grey,
-                                      ),
-                                      children: [
-                                        TextSpan(
-                                          text: "Resend",
-                                          style: TextStyle(
-                                            fontSize: 14.sp,
-                                            color: AppColors.darkBlue,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                          recognizer: TapGestureRecognizer()
-                                            ..onTap = () {
-                                              controller.resendOtp();
-                                            },
-                                        ),
-                                      ],
-                                    ),
-                                  )),
-                        ],
+                      return controller.resendSeconds.value > 0
+                          ? reausabletext(
+                        "Resend OTP in 00:${controller.resendSeconds.value.toString().padLeft(2, '0')}",
+                        fontsize: 13.sp,
+                        color: Colors.grey,
+                        fontfamily: FontFamily.interMedium,
+                      )
+                          : Text.rich(
+                        TextSpan(
+                          text: "Didn't get the code? ",
+                          style: TextStyle(
+                            fontSize: 13.sp,
+                            color: Colors.grey.shade700,
+                            fontFamily: FontFamily.interRegular,
+                          ),
+                          children: [
+                            TextSpan(
+                              text: "Resend It",
+                              style: TextStyle(
+                                fontSize: 13.sp,
+                                color: ToggleThemeData.Appcolor,
+                                fontFamily: FontFamily.interBold,
+                              ),
+                              recognizer: TapGestureRecognizer()
+                                ..onTap = controller.resendOtp,
+                            ),
+                          ],
+                        ),
                       );
-                    })),
-                  ],
-                ),
+                    }),
+                  ),
+                ],
               ),
-            )
-          ],
-        ),
+            ),
+          ),
+        ],
       ),
     );
   }
-}
-
-// Custom clipper for top curve
-class MyCustomClipper extends CustomClipper<Path> {
-  @override
-  Path getClip(Size size) {
-    final path = Path();
-    path.lineTo(0.0, size.height - 50);
-    path.quadraticBezierTo(
-      size.width * 0.5,
-      size.height,
-      size.width,
-      size.height - 60,
-    );
-    path.lineTo(size.width, 0.0);
-    path.close();
-    return path;
-  }
-
-  @override
-  bool shouldReclip(CustomClipper<Path> oldClipper) => false;
 }

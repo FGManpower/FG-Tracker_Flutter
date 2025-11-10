@@ -29,7 +29,7 @@ class AppText {
   static String mobNOIsRqrd = "Mobile Number is required";
   static String mobNoMustBe6Charactr = "Mobile Number must be at least 10 characters";
   static String rememberMe = "Remember Me";
-  static String login = "Login";
+  static String login = "Log In";
   static String orContinueWith = "Or continue with";
   static String dontHaveAccount = "Don’t have an account?";
   static String signUp = "Sign up";

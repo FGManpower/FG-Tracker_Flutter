@@ -8,6 +8,7 @@ import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'dart:io';
@@ -135,52 +136,129 @@ class ModalImage {
     }
   }
 
-  void mainBottomSheet(BuildContext context, {String? type,groupType}) {
-    showModalBottomSheet(backgroundColor: Colors.white,
+  void mainBottomSheet(BuildContext context, {String? type, groupType}) {
+    showModalBottomSheet(
       context: context,
+      backgroundColor: Colors.transparent,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
       ),
       builder: (BuildContext context) {
-        return Padding(
-          padding: const EdgeInsets.all(10.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              ListTile(
-                leading: const Icon(Icons.photo_library),
-                title:  reausabletext(AppText.gallery.tr),
-                onTap: () async {
-                  await callGallery(context,type: groupType,);
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.camera),
-                title:  reausabletext(AppText.camera.tr),
-                onTap: () async {
-                  await callCamera(context,type: groupType);
-                },
-              ),
-              type == "File"
-                  ? ListTile(
-                leading: const Icon(Icons.insert_drive_file),
-                title:  reausabletext(AppText.file),
-                onTap: () async {
-                  await callFilePicker(context);
-                },
-              )
-                  : const SizedBox(),
-              ListTile(
-                leading: const Icon(Icons.cancel),
-                title:  reausabletext(AppText.cancel.tr),
-                onTap: () {
-                  Navigator.pop(context);
-                },
+        return Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black12.withOpacity(0.1),
+                blurRadius: 10.r,
+                spreadRadius: 2.r,
               ),
             ],
+          ),
+          padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
+          child: SafeArea(
+            top: false,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 50.w,
+                  height: 5.h,
+                  margin: EdgeInsets.only(bottom: 16.h),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(20.r),
+                  ),
+                ),
+                reausabletext(
+                  "Choose an Option",
+                  fontsize: 16,
+                  fontweight: FontWeight.bold,
+                ),
+                SizedBox(height: 16.h),
+                _buildOption(
+                  icon: Icons.photo_library_rounded,
+                  text: AppText.gallery.tr,
+                  color: Colors.blueAccent,
+                  onTap: () async {
+                    await callGallery(context, type: groupType);
+                  },
+                ),
+                _buildOption(
+                  icon: Icons.camera_alt_rounded,
+                  text: AppText.camera.tr,
+                  color: Colors.orangeAccent,
+                  onTap: () async {
+                    await callCamera(context, type: groupType);
+                  },
+                ),
+                if (type == "File")
+                  _buildOption(
+                    icon: Icons.insert_drive_file_rounded,
+                    text: AppText.file,
+                    color: Colors.teal,
+                    onTap: () async {
+                      await callFilePicker(context);
+                    },
+                  ),
+                _buildOption(
+                  icon: Icons.cancel_rounded,
+                  text: AppText.cancel.tr,
+                  color: Colors.redAccent,
+                  onTap: () {
+                    Navigator.pop(context);
+                  },
+                ),
+                SizedBox(height: 8.h),
+              ],
+            ),
           ),
         );
       },
     );
   }
+
+  Widget _buildOption({
+    required IconData icon,
+    required String text,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12.r),
+      child: Container(
+        margin: EdgeInsets.symmetric(vertical: 6.h),
+        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 14.h),
+        decoration: BoxDecoration(
+          color: Colors.grey.shade100,
+          borderRadius: BorderRadius.circular(12.r),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: EdgeInsets.all(8.w),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8.r),
+              ),
+              child: Icon(icon, color: color, size: 22.sp),
+            ),
+            SizedBox(width: 14.w),
+            reausabletext(
+              text,
+              fontsize: 14.sp,
+              fontweight: FontWeight.w600,
+              color: Colors.black87,
+            ),
+            const Spacer(),
+            Icon(Icons.arrow_forward_ios, size: 16.sp, color: Colors.grey),
+          ],
+        ),
+      ),
+    );
+  }
+
+
 }
