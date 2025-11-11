@@ -67,11 +67,7 @@ class RegistrationController extends GetxController {
           CommonDialog.errorMessage("please select the gender");
           return;
         }
-        if (!controller.isChecked.value) {
-          CommonDialog.errorMessage("Please accept the "
-              "terms and conditions");
-          return;
-        }
+
 
         Loading().showloading();
 

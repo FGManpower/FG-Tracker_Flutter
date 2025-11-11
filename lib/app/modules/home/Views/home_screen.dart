@@ -1,10 +1,11 @@
-import 'dart:io';
-
+import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/deep_Link/uniservices.dart';
 import 'package:fgtracker/app/Core/theme/AppText.dart';
-import 'package:fgtracker/app/Core/values/Dialog/Common_dialog.dart';
+import 'package:fgtracker/app/Core/theme/appTheme.dart';
 import 'package:fgtracker/app/Core/values/LiquidPullToRefresh_Indicatore.dart';
+import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/Core/values/colors.dart';
+import 'package:fgtracker/app/Core/values/utility.dart';
 import 'package:fgtracker/app/Data/Repositories/NotificationServices.dart';
 import 'package:fgtracker/app/Model/GroupRes.dart';
 import 'package:fgtracker/app/config/themes_data.dart';
@@ -12,6 +13,9 @@ import 'package:fgtracker/app/modules/DashboardController.dart';
 import 'package:fgtracker/app/modules/Group/Controller/JoinGroup_Controller.dart';
 import 'package:fgtracker/app/modules/Group/Views/MemberScreen.dart';
 import 'package:fgtracker/app/modules/home/Controller/home_controller.dart';
+import 'package:fgtracker/app/modules/home/Home_Widget/Home_widget.dart';
+import 'package:fgtracker/app/modules/home/Home_Widget/bannerUi.dart';
+import 'package:fgtracker/gen/assets.gen.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -20,14 +24,15 @@ import 'package:fgtracker/app/modules/Group/Controller/Group_Controller.dart';
 import 'package:fgtracker/app/widgets/Appbar.dart';
 import 'package:fgtracker/app/modules/home/Views/sidemenu.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 import '../../../Data/Services/FireStore_services.dart';
-import '../../../routes/app_pages.dart';
 import '../../Group/Views/QrScreen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -94,7 +99,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
     Map<Permission, PermissionStatus> statuses = await permissions.request();
 
-    // Debug: Print all permissions' statuses
     statuses.forEach((permission, status) {
       debugPrint('${permission.toString()} status: ${status.toString()}');
     });
@@ -127,59 +131,19 @@ class _HomeScreenState extends State<HomeScreen> {
         scaffoldKey: _scaffoldKey,
         controller: controller,
       ),
-      body: Column(
-        children: [
-          SizedBox(),
-          GestureDetector(
-            onTap: () {
-              Get.toNamed(Routes.QiblaScreen);
-            },
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
-              child: Container(
-                width: double.maxFinite,
-                height: 100.h,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16.r),
-                  border: Border.all(
-                    color: Colors.green.shade300,
-                    width: 1.2.w,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black12,
-                      blurRadius: 6,
-                      offset: Offset(0, 3),
-                    ),
-                  ],
-                ),
-                child: Padding(
-                  padding: EdgeInsets.only(left: 15.w),
-                  child: Row(
-                    children: [
-                      Center(
-                        child: Image.asset(
-                          color: Colors.green.shade300,
-                          'assets/images/qibla.png',
-                          height: 50.h,
-                          width: 50.w,
-                        ),
-                      ),
-                      SizedBox(
-                        width: 20.w,
-                      ),
-                      Center(
-                          child: reausabletext("Qibla Direction",
-                              fontsize: 16.sp)),
-                    ],
-                  ),
-                ),
-              ),
+      body: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 12.w),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            headerUi(controller),
+            BannerUi(),
+            Padding(
+              padding: EdgeInsets.only(left: 5.w, top: 10.h),
+              child: reausabletext("Newly Created Group",
+                  fontfamily: FontFamily.interSemiBold, fontsize: 18),
             ),
-          ),
-          Expanded(
-            child: Obx(() {
+            Obx(() {
               if (groupController.responseError.value.isNotEmpty) {
                 return LostinternetConnection(
                     retry: () {
@@ -212,9 +176,9 @@ class _HomeScreenState extends State<HomeScreen> {
               } else {
                 return groupListUi(groupData: groupController.groupData);
               }
-            }),
-          )
-        ],
+            })
+          ],
+        ),
       ),
       bottomNavigationBar: Padding(
         padding: EdgeInsets.only(bottom: 15.h),
@@ -290,177 +254,201 @@ class _HomeScreenState extends State<HomeScreen> {
     List<GroupData>? groupData,
     bool isLoading = false,
   }) {
-    return MyCustomPullToRefresh(
-      onTapCallback: () {
-        groupController.groupDataLoading.value = true;
-      },
-      onTap2Callback: () {
-        groupController.getGroupData();
-      },
-      Indicatorekey: GlobalKey<LiquidPullToRefreshState>(),
-      child: Skeletonizer(
-        enabled: isLoading,
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
-          child: ListView.builder(
-            physics: AlwaysScrollableScrollPhysics(), // Allow pull-to-refresh
-            itemCount: groupData?.length ?? 10,
-            itemBuilder: (context, index) {
-              final data = groupData?[index];
-              final isActive = data?.isActive ?? true;
+    return Expanded(child: ListView.separated(
+      physics: const BouncingScrollPhysics(),
+      scrollDirection: Axis.horizontal,
+      itemCount: groupData?.length ?? 8,
+      padding: EdgeInsets.only(bottom: 110.h),
+      separatorBuilder: (context, index) => SizedBox(width: 12.w),
+      itemBuilder: (context, index) {
+        final data = groupData?[index];
+        final bool isActive = data?.isActive ?? false;
+        final bool isCreator = data?.isCreator ?? false;
 
-              return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child: Opacity(
-                  opacity: isActive ? 1 : 0.6,
-                  child: Container(
+        return GestureDetector(
+          onTap: () {
+            if (data?.isActive == true) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => MemberscreenScreen(
+                    groupId: data!.id.toString(),
+                    isCreator: data.isCreator!,
+                    isActive: data.isActive!,
+                    groupName: data.groupName!,
+                  ),
+                ),
+              ).then((value) {
+                if (value == true) {
+                  groupController.getGroupData();
+                }
+              });
+            }
+          },
+          child: Opacity(
+            opacity: isActive ? 1 : 0.7,
+            child: Container(
+              width: 190.w,
+              decoration: BoxDecoration(
+                color: const Color(0xffF2F0FF),
+                borderRadius: BorderRadius.circular(15.r),
+                // border: Border.all(
+                //   color: const Color(0xff5045B9).withOpacity(0.3),
+                //   width: 1,
+                // ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black12,
+                    blurRadius: 4,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    height: 70.h,
+                    width: double.maxFinite,
                     decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16.r),
-                      border: Border.all(
-                        color: isActive
-                            ? Colors.green.shade300
-                            : Colors.grey.shade400,
-                        width: 1.2.w,
+                      color: const Color(0xffE4E0FF),
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(10.r),
+                        topRight: Radius.circular(10.r),
                       ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black12,
-                          blurRadius: 6,
-                          offset: Offset(0, 3),
-                        ),
-                      ],
                     ),
-                    child: ListTile(
-                      contentPadding: EdgeInsets.symmetric(
-                        horizontal: 16.w,
-                        vertical: 14.h,
-                      ),
-                      leading: Container(
-                        width: 50.w,
-                        height: 50.w,
-                        decoration: BoxDecoration(
-                          color: isActive
-                              ? Colors.green.shade100
-                              : Colors.grey.shade300,
-                          borderRadius: BorderRadius.circular(12.r),
-                        ),
-                        child: Icon(
-                          Icons.explore_rounded,
-                          color: Colors.white,
-                          size: 30,
-                        ),
-                      ),
-                      title: reausabletext(
-                        data?.groupName ?? AppText.unnamedTrip,
-                        fontsize: 17,
-                        fontweight: FontWeight.w600,
-                        color: Colors.blueGrey.shade900,
-                        maxline: 1,
-                        textoverflow: TextOverflow.ellipsis,
-                      ),
-                      subtitle: Padding(
-                        padding: EdgeInsets.only(top: 6.h),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                    padding: EdgeInsets.symmetric(
+                        horizontal: 10.w, vertical: 8.h),
+                    child: reausabletext(
+                      data?.groupName ?? AppText.unnamedTrip,
+                      fontsize: 18,
+                      fontfamily: FontFamily.interSemiBold,
+                      color:ToggleThemeData.black,
+                      maxline: 2,
+                      textoverflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.symmetric(
+                        horizontal: 10.w, vertical: 3.h),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment:
+                          MainAxisAlignment.spaceBetween,
                           children: [
                             reausabletext(
-                              data?.groupDesc ?? AppText.noDscrptionAvailable,
-                              fontsize: 13,
-                              color: Colors.grey[700],
+                              "Team Code",
+                              fontfamily: FontFamily.interRegular,
+                              fontsize: 12,
+                            ),
+                            isCreator
+                                ? Transform.scale(
+                              scale: 0.9,
+                              child: CupertinoSwitch(
+                                value: isActive,
+                                onChanged: (value) {
+                                  groupController.updateGroup(
+                                    groupController,
+                                    groupId: data!.id.toString(),
+                                    groupStatus: value.toString(),
+                                  );
+                                },
+                                activeColor: const Color(0xff5045B9),
+                                trackColor: Colors.black26,
+                              ),
+                            )
+
+                                : Icon(
+                              isActive
+                                  ? Icons.check_circle_outline
+                                  : Icons.cancel_sharp,
+                              color: isActive
+                                  ? Colors.green
+                                  : Colors.redAccent,
+                              size: 20.sp,
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 5.h,),
+                        Row(
+                          crossAxisAlignment:
+                          CrossAxisAlignment.center,
+                          children: [
+                            reausabletext(
+                              data?.groupCode ?? "",
+                              fontfamily: FontFamily.interSemiBold,
+                              fontsize: 11,
+                              color: const Color(0xff5045B9),
                               maxline: 1,
                               textoverflow: TextOverflow.ellipsis,
                             ),
-                            Row(
-                              children: [
-                                reausabletext(
-                                  AppText.groupCode,
-                                  fontsize: 13,
-                                  color: Colors.grey[700],
-                                  maxline: 1,
-                                  textoverflow: TextOverflow.ellipsis,
-                                ),
-                                Text(
-                                  data?.groupCode ?? "",
-                                  style: TextStyle(
-                                      fontSize: 13.sp,
-                                      color: Colors.black,
-                                      fontFamily: FontFamily.interSemiBold),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ],
-                            ),
-                            isActive
-                                ? TextButton(
-                                    onPressed: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => QrCodeScreen(
-                                              groupCode: data?.groupCode ?? ""),
-                                        ),
-                                      );
-                                    },
-                                    child: reausabletext(AppText.showQr,
-                                        fontsize: 12),
-                                  )
-                                : SizedBox(),
+                            SizedBox(width: 10.w,),
+                            reausableIcon(icon: Icons.copy,size: 16,color: Colors.black45,ontap: () {
+                              Clipboard.setData(ClipboardData(
+                                  text: data?.groupCode ?? ""));
+                              Utils()
+                                  .fluttertoast("Group code copied!");
+                            },)
+
                           ],
                         ),
-                      ),
-                      trailing: data?.isCreator == true
-                          ? SizedBox(
-                              width: 50.w,
-                              child: CupertinoSwitch(
-                                value: data?.isActive ?? false,
-                                activeColor: AppColors.darkBlue,
-                                onChanged: (value) {
-                                  if (data?.isCreator == true) {
-                                    groupController.updateGroup(
-                                      groupController,
-                                      groupId: data!.id.toString(),
-                                      groupStatus: value.toString(),
-                                    );
-                                  }
-                                },
-                              ),
-                            )
-                          : Icon(
-                              (data?.isActive ?? false)
-                                  ? Icons.check_circle_outline
-                                  : Icons.cancel_sharp,
-                              color: (data?.isActive ?? false)
-                                  ? Colors.green
-                                  : Colors.redAccent,
-                              size: 25.sp),
-                      onTap: () {
-                        if (data?.isActive == true) {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => MemberscreenScreen(
-                                groupId: data!.id.toString(),
-                                isCreator: data.isCreator!,
-                                isActive: data.isActive!,
-                                groupName: data.groupName!,
-                              ),
-                            ),
-                          ).then((value) {
-                            if (value == true) {
-                              groupController.getGroupData();
+                        SizedBox(height: 4.h),
+                        GestureDetector(
+                          onTap: () {
+                            if (isActive) {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => QrCodeScreen(
+                                      groupCode: data?.groupCode ?? ""),
+                                ),
+                              );
+                            } else {
+                              Utils().fluttertoast(
+                                  "Activate the group to view QR");
                             }
-                          });
-                        }
-                      },
+                          },
+                          child: Row(
+                            mainAxisAlignment:
+                            MainAxisAlignment.spaceBetween,
+                            children: [
+                              reausabletext(
+                                "Show QR Code",
+                                fontfamily: FontFamily.interSemiBold,
+                                fontsize: 12,
+                                color: ToggleThemeData.darkPurple
+                              ),
+                              Container(
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: const Color(0xff5045B9),
+                                    width: 1.8.w,
+                                  ),
+                                ),
+                                child: Padding(
+                                  padding: EdgeInsets.all(6.r),
+                                  child: reausableIcon(
+                                    icon: FontAwesomeIcons.walkieTalkie,
+                                    size: 18,
+                                    color: const Color(0xff5045B9),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ),
-              );
-            },
+                ],
+              ),
+            ),
           ),
-        ),
-      ),
-    );
+        );
+      },
+    ));
   }
 }

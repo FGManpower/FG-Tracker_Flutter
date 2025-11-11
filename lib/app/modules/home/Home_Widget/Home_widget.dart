@@ -1,195 +1,130 @@
-
-import 'package:fgtracker/app/Core/util/size_config.dart';
+import 'package:fgtracker/app/Core/constant/const_res.dart';
+import 'package:fgtracker/app/Core/values/utility.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
+import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:get/get.dart';
+import 'package:url_launcher/url_launcher.dart';
 
-Widget buildInput({
-  required String hintText,
-  required IconData icon,
-  required TextEditingController controller,
-  Widget? suffixIcon,
-  bool obscureText = false,
-  required String? Function(String?) validator,
-}) {
-  return TextFormField(
-    controller: controller,
-    obscureText: obscureText,
-    validator: validator,
-    decoration: InputDecoration(
-      hintText: hintText,
-      prefixIcon: Icon(icon),
-      suffixIcon: suffixIcon,
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      contentPadding: EdgeInsets.symmetric(
-        horizontal: SizeConfig.blockWidth * 4,
-        vertical: SizeConfig.blockHeight * 2,
-      ),
-    ),
-    style: TextStyle(fontSize: SizeConfig.getFont(14)),
-  );
-}
+import '../../../Core/theme/appTheme.dart';
+import '../../../config/themes_data.dart';
+import '../Controller/home_controller.dart';
 
-class GoogleMapPreview extends StatefulWidget {
-  final double latitude;
-  final double longitude;
-
-  const GoogleMapPreview({
-    required this.latitude,
-    required this.longitude,
-    Key? key,
-  }) : super(key: key);
-
-  @override
-  State<GoogleMapPreview> createState() => _GoogleMapPreviewState();
-}
-
-class _GoogleMapPreviewState extends State<GoogleMapPreview> {
-  GoogleMapController? _mapController;
-  double _zoomLevel = 16.0;
-
-  void _zoomIn() {
-    if (_zoomLevel < 20) {
-      setState(() => _zoomLevel += 1);
-      _mapController?.moveCamera(CameraUpdate.zoomTo(_zoomLevel));
-    }
-  }
-
-  void _zoomOut() {
-    if (_zoomLevel > 5) {
-      setState(() => _zoomLevel -= 1);
-      _mapController?.moveCamera(CameraUpdate.zoomTo(_zoomLevel));
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final CameraPosition _initialPosition = CameraPosition(
-      target: LatLng(widget.latitude, widget.longitude),
-      zoom: _zoomLevel,
-    );
-
-    return Stack(
+Widget headerUi(HomeController controller) {
+  return
+    Obx(() =>   Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Container(
-          height: 180,
-          width: double.infinity,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.blueAccent, width: 2),
-          ),
-          clipBehavior: Clip.hardEdge,
-          child: GoogleMap(
-            onMapCreated: (controller) => _mapController = controller,
-            initialCameraPosition: _initialPosition,
-            mapType: MapType.satellite,
-            myLocationEnabled: true,
-            myLocationButtonEnabled: false,
-            zoomControlsEnabled: false,
-          ),
-        ),
-        Positioned(
-          top: 10,
-          right: 10,
+        Expanded(
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              FloatingActionButton(
-                heroTag: 'zoom_in',
-                mini: true,
-                onPressed: _zoomIn,
-                child: const Icon(Icons.add),
-              ),
-              const SizedBox(height: 8),
-              FloatingActionButton(
-                heroTag: 'zoom_out',
-                mini: true,
-                onPressed: _zoomOut,
-                child: const Icon(Icons.remove),
-              ),
+              reausabletext("Hello ${controller.userData.value.name ?? ""}",
+                  fontfamily: FontFamily.interSemiBold, fontsize: 19),
+              reausabletext("It’s good to see you again 👋",
+                  fontfamily: FontFamily.interRegular, fontsize: 12),
             ],
           ),
         ),
-      ],
-    );
-  }
-}
 
 
-
-class GridMenuItem {
-  final String imagePath;
-  final String label;
-  final VoidCallback onTap;
-  final double imageSize;
-
-  GridMenuItem({
-    required this.imagePath,
-    required this.label,
-    required this.onTap,
-    this.imageSize = 50.0,
-  });
-}
-
-class ReusableGridMenu extends StatelessWidget {
-  final List<GridMenuItem> items;
-  final int crossAxisCount;
-  final double spacing;
-  final EdgeInsetsGeometry padding;
-
-  const ReusableGridMenu({
-    Key? key,
-    required this.items,
-    this.crossAxisCount = 3,
-    this.spacing = 12,
-    this.padding = const EdgeInsets.all(8),
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: GridView.builder(
-        padding: padding,
-        itemCount: items.length,
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: crossAxisCount,
-          crossAxisSpacing: spacing,
-          mainAxisSpacing: spacing,
-          childAspectRatio: 0.9, // Adjust as needed
-        ),
-        itemBuilder: (context, index) {
-          final item = items[index];
-          return GestureDetector(
-            onTap: item.onTap,
-            child: Card(
-              color: Colors.white,
-              elevation: 4,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-                side: const BorderSide(color: Colors.blueAccent),
+        Padding(
+          padding: EdgeInsets.only(right: 10.w),
+          child: IconButton(
+            icon: CircleAvatar(
+              radius: 27.r,
+              backgroundColor: Colors.grey[200],
+              backgroundImage: NetworkImage(
+                Utility.isNotNullEmptyOrFalse(
+                    controller.userData.value.profileImage)
+                    ? "${ConstRes.aImageBaseUrl}${controller.userData.value.profileImage}"
+                    : MyAppTheme.ProfilenotFoundImg,
               ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+              child: controller.userData.value.profileImage == null
+                  ? Icon(Icons.person, color: Colors.white)
+                  : null,
+            ),
+            onPressed: () {},
+          ),
+        )
+      ],
+    ));
+
+}
+
+Widget ReusablelistItem(
+    {String? name,
+    required String imagename,
+    void Function()? func,
+    int height = 25,
+    int width = 25}) {
+  return Padding(
+    padding: EdgeInsets.only(top: 5.h),
+    child: InkWell(
+        onTap: func,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: EdgeInsets.only(left: 25.w),
+              child: Row(
                 children: [
-                  Image.asset(
-                    item.imagePath,
-                    width: item.imageSize,
-                    height: item.imageSize,
-                    fit: BoxFit.contain,
+                  CircleAvatar(
+                    backgroundColor: ToggleThemeData.darkPurple,
+                    radius: 21.r,
+                    child: SvgPicture.asset(
+                      imagename,
+                      height: height.h,
+                      width: width.w,
+                      color: Colors.white,
+                    ),
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(
+                    width: 20.w,
+                  ),
                   reausabletext(
-                    item.label,
-                   fontsize: 14,align: TextAlign.center)
+                    align: TextAlign.center,
+                    name.toString(),
+                    fontfamily: FontFamily.interMedium,
+                    fontsize: 16,
+                  ),
                 ],
               ),
             ),
-          );
-        },
-      ),
-    );
-  }
+            SizedBox(
+              height: 5.h,
+            ),
+            Divider(
+              color: Colors.black12,
+              thickness: 2,
+            ),
+          ],
+        )),
+  );
 }
 
-
+Widget Social_Icon({required String imagename, required String url}) {
+  return Padding(
+    padding: EdgeInsets.only(right: 7.w),
+    child: CircleAvatar(
+        radius: 17.r,
+        backgroundColor: ToggleThemeData.Appcolor,
+        child: Center(
+          child: InkWell(
+            onTap: () {
+              launch(url);
+            },
+            child: SvgPicture.asset(
+              imagename,
+              height: 20.h,
+              width: 20.w,
+              color: Colors.white,
+            ),
+          ),
+        )),
+  );
+}

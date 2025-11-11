@@ -84,7 +84,7 @@ class ToggleThemeData {
       backgroundColor: ToggleThemeData.white,
       surfaceTintColor: ToggleThemeData.white,
       systemOverlayStyle: const SystemUiOverlayStyle(
-        statusBarColor: Appcolor,
+        statusBarColor: darkPurple,
         statusBarIconBrightness: Brightness.light,
         statusBarBrightness: Brightness.light,
       ),

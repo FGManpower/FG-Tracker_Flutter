@@ -18,8 +18,12 @@ class $AssetsIconsGen {
   /// File path: assets/icons/flag.png
   AssetGenImage get flag => const AssetGenImage('assets/icons/flag.png');
 
+  /// File path: assets/icons/walkie-talkie.png
+  AssetGenImage get walkieTalkie =>
+      const AssetGenImage('assets/icons/walkie-talkie.png');
+
   /// List of all assets
-  List<AssetGenImage> get values => [appIcon, flag];
+  List<AssetGenImage> get values => [appIcon, flag, walkieTalkie];
 }
 
 class $AssetsImagesGen {

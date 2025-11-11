@@ -168,7 +168,7 @@ class _QRScanScreenState extends State<QRScanScreen> {
             ),
           ),
 
-          // Instructions
+
           Positioned(
             bottom: 100,
             left: 0,
