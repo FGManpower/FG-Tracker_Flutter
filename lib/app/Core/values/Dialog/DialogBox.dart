@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/theme/appTheme.dart';
+import 'package:fgtracker/app/Core/util/validator.dart';
 import 'package:fgtracker/app/Core/values/Context_Utility.dart';
 import 'package:fgtracker/app/Core/values/bottomSheet.dart';
 import 'package:fgtracker/app/Core/values/utility.dart';
@@ -10,6 +11,7 @@ import 'package:fgtracker/app/config/themes_data.dart';
 import 'package:fgtracker/app/global_widget/input_widget.dart';
 import 'package:fgtracker/app/modules/Group/Controller/Group_Controller.dart';
 import 'package:fgtracker/app/modules/Group/Controller/JoinGroup_Controller.dart';
+import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -18,6 +20,7 @@ import 'package:google_mlkit_barcode_scanning/google_mlkit_barcode_scanning.dart
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../global_widget/common_widget.dart';
+import '../../../modules/auth/Auth_Widget/Auth_widget.dart';
 import '../../theme/AppText.dart';
 import 'Common_dialog.dart';
 
@@ -58,19 +61,30 @@ class DialogBox {
                   SizedBox(height: 15.h),
                   reausabletext(
                     AppText.createNewGroup,
-                    fontsize: 20.sp,
-                    fontweight: FontWeight.bold,
+                    fontsize: 18.sp,
+                   fontfamily: FontFamily.interSemiBold
                   ),
                   SizedBox(height: 20.h),
-                  InputField(
+
+                  inputField(
+                    context,
                     title: AppText.groupName,
                     maxLength: 50,
-                    hintText: AppText.enterGroupName,
-                    controller: controller.groupName,
-                    validator: (value) => value == null || value.isEmpty
-                        ? AppText.groupNameCnntEmpty
-                        : null,
+                    maxLines: 1,
+                    hintname: AppText.enterGroupName,
+                    textctr: controller.groupName,
+                    validators: (value) => Validator.validate(
+                        value: value, title: "Group Name"),
                   ),
+                  // InputField(
+                  //   title: AppText.groupName,
+                  //   maxLength: 50,
+                  //   hintText: AppText.enterGroupName,
+                  //   controller: controller.groupName,
+                  //   validator: (value) => value == null || value.isEmpty
+                  //       ? AppText.groupNameCnntEmpty
+                  //       : null,
+                  // ),
                   SizedBox(height: 12.h),
                   InputField(
                     title: AppText.groupDescription,
@@ -84,7 +98,7 @@ class DialogBox {
                   ),
                   SizedBox(height: 25.h),
                   reausablebutton(
-                    title: AppText.createGroup,
+                    title: "Done",
                     ontap: () async {
                       if (controller.createGroupKey.currentState!.validate()) {
                         bool isCreated = await controller.createGroup(
@@ -158,9 +172,9 @@ class DialogBox {
                     controller: controller.groupCodeController,
                     maxLength: 6,
                     textCapitalization: TextCapitalization
-                        .characters, // ensures keyboard suggests uppercase
+                        .characters,
                     inputFormatters: [
-                      UpperCaseTextFormatter(), // ensures typed/pasted text is always uppercase
+                      UpperCaseTextFormatter(),
                     ],
                     validator: (value) => value == null || value.isEmpty
                         ? AppText.groupCodeCannotBeEmpty
@@ -190,7 +204,6 @@ class DialogBox {
       },
     );
   }
-
 
   showQRScanOptions(BuildContext context,
       {required JoinGroupController controller,
@@ -224,19 +237,10 @@ class DialogBox {
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
-                    const SizedBox(height: 20),
-                    reausabletext(
-                      AppText.joinGroupViaQrCode,
-                      fontsize: 18,
-                      fontweight: FontWeight.bold,
-                      align: TextAlign.center,
-                    ),
                     SizedBox(height: 25),
                     _buildOptionTile(
                       title: AppText.scanFromCamera,
                       icon: Icons.qr_code_scanner,
-                      iconColor: Colors.blue,
-                      bgColor: Colors.blueAccent.withOpacity(0.1),
                       onTap: () {
                         Navigator.pop(context);
                         controller.scanQRCodeFromCamera();
@@ -246,8 +250,6 @@ class DialogBox {
                     _buildOptionTile(
                       title: AppText.uploadFromGallery,
                       icon: Icons.photo_library,
-                      iconColor: Colors.green,
-                      bgColor: Colors.greenAccent.withOpacity(0.1),
                       onTap: () {
                         Navigator.pop(context);
 
@@ -269,11 +271,9 @@ class DialogBox {
                                   final groupCode = barcodes.first.rawValue;
                                   if (groupCode != null &&
                                       groupCode.isNotEmpty) {
-                                    // Call the joinGroup function
                                     await controller.joinGroup(
                                       context,
-                                      groupController:
-                                          groupController, // Make sure controller is of type GroupController
+                                      groupController: groupController,
                                       groupCode: groupCode,
                                       type: "Qr",
                                     );
@@ -303,8 +303,6 @@ class DialogBox {
                     _buildOptionTile(
                       title: AppText.enterGroupCodeManually,
                       icon: Icons.keyboard,
-                      iconColor: Colors.purple,
-                      bgColor: Colors.purpleAccent.withOpacity(0.1),
                       onTap: () {
                         Navigator.pop(context);
                         DialogBox().showGroupCodeBottomSheet(
@@ -327,24 +325,31 @@ class DialogBox {
   Widget _buildOptionTile({
     required String title,
     required IconData icon,
-    required Color iconColor,
-    required Color bgColor,
     required VoidCallback onTap,
   }) {
     return ListTile(
+      splashColor: ToggleThemeData.Appcolor,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(50.r),
       ),
-      tileColor: Colors.grey.shade100,
-      leading: Container(
-        padding: const EdgeInsets.all(10),
-        decoration: BoxDecoration(
-          color: bgColor,
-          shape: BoxShape.circle,
+      tileColor: ToggleThemeData.darkPurple,
+      selectedTileColor: const Color(0xff5045B9).withOpacity(0.15),
+      hoverColor: const Color(0xff5045B9).withOpacity(0.1),
+      leading: Padding(
+        padding: EdgeInsets.only(left: 10.w),
+        child: Icon(icon, color: Colors.white, size: 26.sp),
+      ),
+      title: Padding(
+        padding: EdgeInsets.only(right: 30.w),
+        child: Text(
+          title,
+          style: TextStyle(
+            fontSize: 15.sp,
+            color: ToggleThemeData.white,
+            fontFamily: FontFamily.interSemiBold,
+          ),
         ),
-        child: Icon(icon, color: iconColor, size: 26),
       ),
-      title: Text(title, style: const TextStyle(fontSize: 16)),
       onTap: onTap,
     );
   }

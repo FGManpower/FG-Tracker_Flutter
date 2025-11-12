@@ -187,62 +187,21 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
 
 
-              Expanded(
-                child: InkWell(
-                  onTap: () async {
-                    DialogBox().showQRScanOptions(context,
-                        controller: joinGroupController,
-                        groupController: groupController);
-                  },
-                  child: Container(
-                    height: 55.h,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(50.r),
-                      color: ToggleThemeData.darkPurple,
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        reausableIcon(
-                            icon: Icons.group, color: ToggleThemeData.white),
-                        SizedBox(width: 8.w),
-                        reausabletext(AppText.joinGroup,
-                            color: ToggleThemeData.white, fontsize: 12),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
+              Expanded(child: reausablebutton(title: AppText.joinGroup,icon:Icons.group,fontSize: 12,borderradiues: 50,ontap: () {
+                DialogBox().showQRScanOptions(context,
+                    controller: joinGroupController,
+                    groupController: groupController);
+              },height: 55)),
               SizedBox(width: 40.w),
-              Expanded(
-                child: InkWell(
-                  onTap: () async {
-                    DialogBox().showCreateGroupBottomSheet(
-                      context: context,
-                      controller: groupController,
-                    );
-                  },
+              Expanded(child: reausablebutton(title: AppText.createGroup,icon:Icons.group_add,fontSize: 12,borderradiues: 50,ontap: () {
+                DialogBox().showCreateGroupBottomSheet(
+                  context: context,
+                  controller: groupController,
+                );
+              },height: 55)),
 
-                  child: Container(
-                    height: 55.h,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(50.r),
-                      color: ToggleThemeData.darkPurple,
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        reausableIcon(
-                            icon: Icons.group_add,
-                            color: ToggleThemeData.white),
-                        SizedBox(width: 8.w),
-                        reausabletext(AppText.createGroup,
-                            color: ToggleThemeData.white, fontsize: 12),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
+
+
             ],
           ),
         ),

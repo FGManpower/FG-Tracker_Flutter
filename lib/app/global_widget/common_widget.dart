@@ -270,7 +270,7 @@ Widget reausablebutton(
       bool enable = true,
       String? type,
       int fontSize = 18,
-      Color backgroundColor = ToggleThemeData.darkPurple,IconData? icon,double iconSize=19,Color iconColor=Colors.white}) {
+      Color backgroundColor = ToggleThemeData.darkPurple,IconData? icon,double iconSize=20,Color iconColor=Colors.white}) {
   return GestureDetector(
     onTap: enable == false ? null : ontap,
     child: Container(

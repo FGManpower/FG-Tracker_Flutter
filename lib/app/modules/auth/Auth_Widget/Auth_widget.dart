@@ -394,6 +394,7 @@ Widget inputField(BuildContext context,
     void Function(String? value)? onFieldSubmitted,
     bool enable = true,
     int? maxLength,
+      Widget? prefixEmpty,
     int? maxLines,
     TextInputType? keyboradtype,
     GlobalKey? key,
@@ -428,7 +429,7 @@ Widget inputField(BuildContext context,
         controller: textctr,
         validator: validators,
         hintText: hintname,
-        prefixIcon: Padding(
+        prefixIcon: prefixicon==null?prefixEmpty:Padding(
           padding: EdgeInsets.only(left: 10.w, right: 10.w),
           child: Icon(
             prefixicon,
