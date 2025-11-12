@@ -29,6 +29,10 @@ class $AssetsIconsGen {
 class $AssetsImagesGen {
   const $AssetsImagesGen();
 
+  /// File path: assets/images/QrCode_bg.png
+  AssetGenImage get qrCodeBg =>
+      const AssetGenImage('assets/images/QrCode_bg.png');
+
   /// File path: assets/images/about_us.jpg
   AssetGenImage get aboutUs =>
       const AssetGenImage('assets/images/about_us.jpg');
@@ -135,6 +139,7 @@ class $AssetsImagesGen {
 
   /// List of all assets
   List<AssetGenImage> get values => [
+    qrCodeBg,
     aboutUs,
     appUpdate,
     appIcon,

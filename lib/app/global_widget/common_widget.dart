@@ -270,7 +270,7 @@ Widget reausablebutton(
       bool enable = true,
       String? type,
       int fontSize = 18,
-      Color backgroundColor = ToggleThemeData.darkPurple}) {
+      Color backgroundColor = ToggleThemeData.darkPurple,IconData? icon,double iconSize=19,Color iconColor=Colors.white}) {
   return GestureDetector(
     onTap: enable == false ? null : ontap,
     child: Container(
@@ -279,15 +279,22 @@ Widget reausablebutton(
       decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(borderradiues.r),
           color: backgroundColor),
-      child: Center(
-        child: Text(
-          "$title",
-          style: TextStyle(
-              fontSize: fontSize.sp,
-              fontFamily: FontFamily.interSemiBold,
-              color: textcolor),
-        ),
-      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment:MainAxisAlignment.center,
+        children: [
+          icon==null?SizedBox(): Padding(padding: EdgeInsets.only(right: 10.w),child: reausableIcon(icon: icon,size:iconSize,color: iconColor ),),
+          Center(
+            child: Text(
+              "$title",
+              style: TextStyle(
+                  fontSize: fontSize.sp,
+                  fontFamily: FontFamily.interSemiBold,
+                  color: textcolor),
+            ),
+          ),
+        ],
+      )
     ),
   );
 }
@@ -573,29 +580,29 @@ void FullImageView(BuildContext context, {String? title, img}) {
       ));
 }
 
-Widget reusabletextfield({
-  required String labelText,
-  required TextEditingController textctr,
-  required TextInputType keyboradtype,
-  required bool requiredtextfieldtext,
-  required bool enable,
-  Widget? suffix_Icon,
-}) {
-  return TextFormField(
-    controller: textctr,
-    enabled: enable,
-    keyboardType: keyboradtype,
-    decoration: InputDecoration(
-      labelText: labelText,
-      suffixIcon: suffix_Icon,
-      border: OutlineInputBorder(),
-    ),
-    validator: (value) {
-      if (requiredtextfieldtext && (value == null || value.isEmpty)) {
-        return '$labelText is required';
-      }
-      return null;
+
+
+Widget BackpressIcon(BuildContext context,{Color color=  ToggleThemeData.darkPurple}) {
+  return GestureDetector(
+    onTap: () async {
+      Navigator.pop(context);
     },
+    child: Container(
+      decoration:  BoxDecoration(
+        shape: BoxShape.circle,
+        // color: Colors.white,
+        border: Border.all(color:color,width: 2.w)
+      ),
+      height: 40.h,
+      width: 40.w,
+      child: Center(
+        child: Icon(
+          Icons.arrow_back_outlined,
+          color: color,
+          size: 25.sp,
+        ),
+      ),
+    ),
   );
 }
 
@@ -630,9 +637,6 @@ class _LanguageCalendarDialogState extends State<LanguageCalendarDialog> {
     super.initState();
     _selectedDay = widget.initialSelectedDate ?? _focusedDay;
 
-    // Ensure `intl` data is loaded for the specific locales.
-    // For 'ur_PK', 'ur' is the language code, 'PK' is the country.
-    // table_calendar automatically uses `intl`'s locale data.
   }
 
   @override
