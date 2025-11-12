@@ -26,7 +26,8 @@ class NewlyGroupUi extends StatelessWidget {
   GroupController groupController;
   @override
   Widget build(BuildContext context) {
-    return Expanded(
+    return SizedBox(
+      height: 185.h,
         child: ListView.separated(
       physics: const BouncingScrollPhysics(),
       scrollDirection: Axis.horizontal,

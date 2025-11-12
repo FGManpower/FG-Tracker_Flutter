@@ -8,12 +8,14 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
+import '../../../../gen/assets.gen.dart';
 import '../../../../gen/fonts.gen.dart';
 import '../../../Core/theme/AppText.dart';
 import '../../../Core/values/Utils.dart';
 import '../../../config/themes_data.dart';
 import '../../../global_widget/common_widget.dart';
 import '../../Group/Views/QrScreen.dart';
+import 'Home_widget.dart';
 
 class CreatedGroupUi extends StatelessWidget {
   CreatedGroupUi(
@@ -26,172 +28,144 @@ class CreatedGroupUi extends StatelessWidget {
   GroupController groupController;
   @override
   Widget build(BuildContext context) {
-    return Expanded(
+    return SizedBox(
+        height: 175.h,
         child: ListView.separated(
-      physics: const BouncingScrollPhysics(),
-      scrollDirection: Axis.horizontal,
-      itemCount: groupData?.length ?? 8,
-      // padding: EdgeInsets.only(bottom: 110.h),
-      separatorBuilder: (context, index) => SizedBox(width: 12.w),
-      itemBuilder: (context, index) {
-        final data = groupData?[index];
-        final bool isActive = data?.isActive ?? false;
-        final bool isCreator = data?.isCreator ?? false;
+          physics: const BouncingScrollPhysics(),
+          scrollDirection: Axis.horizontal,
+          itemCount: groupData?.length ?? 8,
+          // padding: EdgeInsets.only(bottom: 110.h),
+          separatorBuilder: (context, index) => SizedBox(width: 12.w),
+          itemBuilder: (context, index) {
+            final data = groupData?[index];
+            final bool isActive = data?.isActive ?? false;
+            final bool isCreator = data?.isCreator ?? false;
 
-        return Skeletonizer(
-          enabled: isLoading,
-          child: GestureDetector(
-            onTap: () {
-              if (data?.isActive == true) {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => MemberscreenScreen(
-                      groupId: data!.id.toString(),
-                      isCreator: data.isCreator!,
-                      isActive: data.isActive!,
-                      groupName: data.groupName!,
-                    ),
-                  ),
-                ).then((value) {
-                  if (value == true) {
-                    groupController.getGroupData();
-                  }
-                });
-              }
-            },
-            child: Opacity(
-              opacity: isActive ? 1 : 0.7,
-              child: Container(
-                width: 190.w,
-                decoration: BoxDecoration(
-                  color: const Color(0xffF2F0FF),
-                  borderRadius: BorderRadius.circular(15.r),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black12,
-                      blurRadius: 4,
-                      offset: const Offset(0, 3),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      height: 70.h,
-                      width: double.maxFinite,
-                      decoration: BoxDecoration(
-                        color: const Color(0xffE4E0FF),
-                        borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(10.r),
-                          topRight: Radius.circular(10.r),
+            return Skeletonizer(
+              enabled: isLoading,
+              child: GestureDetector(
+                onTap: () {
+                  if (data?.isActive == true) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => MemberscreenScreen(
+                          groupId: data!.id.toString(),
+                          isCreator: data.isCreator!,
+                          isActive: data.isActive!,
+                          groupName: data.groupName!,
                         ),
                       ),
-                      padding:
-                      EdgeInsets.symmetric(horizontal: 10.w, vertical: 8.h),
-                      child: reausabletext(
-                        data?.groupName ?? AppText.unnamedTrip,
-                        fontsize: 18,
-                        fontfamily: FontFamily.interSemiBold,
-                        color: ToggleThemeData.black,
-                        maxline: 2,
-                        textoverflow: TextOverflow.ellipsis,
+                    ).then((value) {
+                      if (value == true) {
+                        groupController.getGroupData();
+                      }
+                    });
+                  }
+                },
+                child: Opacity(
+                  opacity: isActive ? 1 : 0.7,
+                  child: Container(
+                      width: 240.w,
+                      decoration: BoxDecoration(
+                        image: DecorationImage(
+                          image: AssetImage(Assets.images.groupBg.path),
+                          fit: BoxFit.cover,
+                          opacity: 0.15,
+                        ),
+                        color: const Color(0xffF2F0FF),
+                        borderRadius: BorderRadius.circular(15.r),
                       ),
-                    ),
-                    Padding(
-                      padding:
-                      EdgeInsets.symmetric(horizontal: 10.w, vertical: 3.h),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              reausabletext(
-                                "Team Code",
-                                fontfamily: FontFamily.interRegular,
-                                fontsize: 12,
-                              ),
-                              isCreator
-                                  ? Transform.scale(
-                                scale: 0.9,
-                                child: CupertinoSwitch(
-                                  value: isActive,
-                                  onChanged: (value) {
-                                    groupController.updateGroup(
-                                      groupController,
-                                      groupId: data!.id.toString(),
-                                      groupStatus: value.toString(),
-                                    );
-                                  },
-                                  activeColor: const Color(0xff5045B9),
-                                  trackColor: Colors.black26,
-                                ),
-                              )
-                                  : Icon(
-                                isActive
-                                    ? Icons.check_circle_outline
-                                    : Icons.cancel_sharp,
-                                color: isActive
-                                    ? Colors.green
-                                    : Colors.redAccent,
-                                size: 20.sp,
-                              ),
-                            ],
-                          ),
-                          SizedBox(
-                            height: 5.h,
-                          ),
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              reausabletext(
-                                data?.groupCode ?? "",
-                                fontfamily: FontFamily.interSemiBold,
-                                fontsize: 11,
-                                color: const Color(0xff5045B9),
-                                maxline: 1,
-                                textoverflow: TextOverflow.ellipsis,
-                              ),
-                              SizedBox(
-                                width: 10.w,
-                              ),
-                              reausableIcon(
-                                icon: Icons.copy,
-                                size: 16,
-                                color: Colors.black45,
-                                ontap: () {
-                                  Clipboard.setData(
-                                      ClipboardData(text: data?.groupCode ?? ""));
-                                  Utils().fluttertoast("Group code copied!");
-                                },
-                              )
-                            ],
-                          ),
-                          GestureDetector(
-                            onTap: () {
-                              if (isActive) {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => QrCodeScreen(
-                                        groupCode: data?.groupCode ?? ""),
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 10.w,vertical: 15.h),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Flexible(
+                                  child: reausabletext(
+                                    data?.groupName ?? AppText.unnamedTrip,
+                                    fontsize: 14,
+                                    fontfamily: FontFamily.interSemiBold,
+                                    color: ToggleThemeData.black,
+                                    maxline: 2,
+                                    textoverflow: TextOverflow.ellipsis,
                                   ),
-                                );
-                              } else {
-                                Utils().fluttertoast(
-                                    "Activate the group to view QR");
-                              }
-                            },
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.end,
+                                ),
+                                isCreator
+                                    ? Padding(
+                                        padding: EdgeInsets.only(left: 7.w),
+                                        child: Transform.scale(
+                                          scale: 0.8,
+                                          child: CupertinoSwitch(
+                                            value: isActive,
+                                            onChanged: (value) {
+                                              groupController.updateGroup(
+                                                groupController,
+                                                groupId: data!.id.toString(),
+                                                groupStatus: value.toString(),
+                                              );
+                                            },
+                                            activeColor:
+                                                const Color(0xff5045B9),
+                                            trackColor: Colors.black26,
+                                          ),
+                                        ),
+                                      )
+                                    : Padding(
+                                        padding: EdgeInsets.only(left: 7.w),
+                                        child: Icon(
+                                          isActive
+                                              ? Icons.check_circle_outline
+                                              : Icons.cancel_sharp,
+                                          color: isActive
+                                              ? Colors.green
+                                              : Colors.redAccent,
+                                          size: 20.sp,
+                                        ),
+                                      )
+                              ],
+                            ),
+
+                            SizedBox(height: 13.h,),
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                GroupRow(title: "Team Code",value:  data?.groupCode ?? "",),
+                                GroupRow(title: "Created By",value:  data?.isCreator.toString() ?? "0",),
+                                GroupRow(title: "No. Of Member",value:  "04" ?? "0",showDivider: false,)
+
+                              ],
+                            ),
+
+                            SizedBox(height: 15.h,),
+
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                reausabletext("Show QR Code",
-                                    fontfamily: FontFamily.interMedium,
-                                    fontsize: 12,
-                                    color: ToggleThemeData.darkPurple),
+                                GestureDetector(
+                                    onTap: () {
+                                      if (isActive) {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) => QrCodeScreen(
+                                                groupCode: data?.groupCode ?? ""),
+                                          ),
+                                        );
+                                      } else {
+                                        Utils().fluttertoast(
+                                            "Activate the group to view QR");
+                                      }
+                                    },
+                                    child:              reausabletext("Show QR Code",
+                                        fontfamily: FontFamily.interMedium,
+                                        fontsize: 12,
+                                        color: ToggleThemeData.darkPurple),
+                                ),
                                 Container(
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
@@ -211,17 +185,13 @@ class CreatedGroupUi extends StatelessWidget {
                                 ),
                               ],
                             ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+                          ],
+                        ),
+                      )),
                 ),
               ),
-            ),
-          ),
-        );
-      },
-    ));
+            );
+          },
+        ));
   }
 }

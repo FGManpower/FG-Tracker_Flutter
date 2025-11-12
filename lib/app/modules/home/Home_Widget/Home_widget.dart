@@ -128,3 +128,56 @@ Widget Social_Icon({required String imagename, required String url}) {
         )),
   );
 }
+
+
+class GroupRow extends StatelessWidget {
+  final String title;
+  final String value;
+  final bool showDivider;
+
+  const GroupRow({
+    Key? key,
+    required this.title,
+    required this.value,
+    this.showDivider = true,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            reausabletext(
+              title,
+              fontfamily: FontFamily.interRegular,
+              fontsize: 9,
+            ),
+            SizedBox(height: 7.h),
+            reausabletext(
+              widths: 52,
+            value,
+              fontfamily: FontFamily.interSemiBold,
+              fontsize: 10,
+              color: const Color(0xff5045B9),
+              maxline: 1,
+              textoverflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+        if (showDivider)
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 8.w),
+            child: Container(
+              height: 35.h,
+              width: 1.w,
+              color: const Color(0xff5045B9),
+            ),
+          ),
+      ],
+    );
+  }
+}

@@ -55,6 +55,9 @@ class $AssetsImagesGen {
   /// File path: assets/images/group.png
   AssetGenImage get group => const AssetGenImage('assets/images/group.png');
 
+  /// File path: assets/images/groupBg.png
+  AssetGenImage get groupBg => const AssetGenImage('assets/images/groupBg.png');
+
   /// File path: assets/images/image1.png
   AssetGenImage get image1 => const AssetGenImage('assets/images/image1.png');
 
@@ -139,6 +142,7 @@ class $AssetsImagesGen {
     background,
     emptyGroup,
     group,
+    groupBg,
     image1,
     image2,
     image3,

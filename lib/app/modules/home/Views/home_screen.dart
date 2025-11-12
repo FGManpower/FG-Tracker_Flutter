@@ -1,40 +1,25 @@
-import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/deep_Link/uniservices.dart';
 import 'package:fgtracker/app/Core/theme/AppText.dart';
-import 'package:fgtracker/app/Core/theme/appTheme.dart';
-import 'package:fgtracker/app/Core/values/LiquidPullToRefresh_Indicatore.dart';
-import 'package:fgtracker/app/Core/values/Utils.dart';
-import 'package:fgtracker/app/Core/values/colors.dart';
-import 'package:fgtracker/app/Core/values/utility.dart';
 import 'package:fgtracker/app/Data/Repositories/NotificationServices.dart';
-import 'package:fgtracker/app/Model/GroupRes.dart';
 import 'package:fgtracker/app/config/themes_data.dart';
 import 'package:fgtracker/app/modules/DashboardController.dart';
 import 'package:fgtracker/app/modules/Group/Controller/JoinGroup_Controller.dart';
-import 'package:fgtracker/app/modules/Group/Views/MemberScreen.dart';
 import 'package:fgtracker/app/modules/home/Controller/home_controller.dart';
 import 'package:fgtracker/app/modules/home/Home_Widget/CreatedGroupUi.dart';
 import 'package:fgtracker/app/modules/home/Home_Widget/Home_widget.dart';
 import 'package:fgtracker/app/modules/home/Home_Widget/bannerUi.dart';
-import 'package:fgtracker/gen/assets.gen.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fgtracker/app/Core/values/Dialog/DialogBox.dart';
 import 'package:fgtracker/app/modules/Group/Controller/Group_Controller.dart';
 import 'package:fgtracker/app/widgets/Appbar.dart';
 import 'package:fgtracker/app/modules/home/Views/sidemenu.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
-import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:skeletonizer/skeletonizer.dart';
 
 import '../../../Data/Services/FireStore_services.dart';
-import '../../Group/Views/QrScreen.dart';
 import '../Home_Widget/NewlyGroupUi.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -67,7 +52,6 @@ class _HomeScreenState extends State<HomeScreen> {
     controller.getProfileData();
     groupController.getGroupData();
     if (dashController.DeeplinkWithStartJob.value == false) {
-      // checkDeeplink();
     }
 
     // notificationServices.getDiviceToken();
@@ -136,7 +120,6 @@ class _HomeScreenState extends State<HomeScreen> {
       body: Padding(
         padding: EdgeInsets.symmetric(horizontal: 12.w),
         child: ListView(
-          // crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             headerUi(controller),
             BannerUi(),
@@ -162,12 +145,12 @@ class _HomeScreenState extends State<HomeScreen> {
                       fontsize: 14),
                 );
               } else {
-                return SizedBox(height: 185.h,child: NewlyGroupUi(groupData: groupController.groupData,isLoading: false,groupController: groupController,),);
+                return NewlyGroupUi(groupData: groupController.groupData,isLoading: false,groupController: groupController,);
               }
             }),
 
             Padding(
-              padding: EdgeInsets.only(left: 5.w, top: 10.h,bottom: 10.h),
+              padding: EdgeInsets.only(left: 5.w, top: 15.h,bottom: 10.h),
               child: reausabletext("Created Group",
                   fontfamily: FontFamily.interSemiBold, fontsize: 18),
             ),
@@ -188,7 +171,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       fontsize: 14),
                 );
               } else {
-                return SizedBox(height: 200.h,child: CreatedGroupUi(groupData: groupController.groupData,isLoading: false,groupController: groupController,),);
+                return CreatedGroupUi(groupData: groupController.groupData,isLoading: false,groupController: groupController,);
               }
             }),
 
@@ -197,7 +180,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
       bottomNavigationBar: Padding(
-        padding: EdgeInsets.only(bottom: 15.h),
+        padding: EdgeInsets.only(bottom: 0.h),
         child: BottomAppBar(
           color: Colors.white,
           child: Row(
@@ -209,12 +192,11 @@ class _HomeScreenState extends State<HomeScreen> {
                         controller: joinGroupController,
                         groupController: groupController);
                   },
-                  borderRadius: BorderRadius.circular(14),
                   child: Container(
                     height: 55.h,
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(14),
-                      color: ToggleThemeData.Appcolor,
+                      borderRadius: BorderRadius.circular(50.r),
+                      color: ToggleThemeData.darkPurple,
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -238,12 +220,12 @@ class _HomeScreenState extends State<HomeScreen> {
                       controller: groupController,
                     );
                   },
-                  borderRadius: BorderRadius.circular(14),
+
                   child: Container(
                     height: 55.h,
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(14),
-                      color: ToggleThemeData.Appcolor,
+                      borderRadius: BorderRadius.circular(50.r),
+                      color: ToggleThemeData.darkPurple,
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
