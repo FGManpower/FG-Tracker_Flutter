@@ -9,6 +9,8 @@ import 'package:fgtracker/app/modules/home/Views/AboutUs.dart';
 import 'package:fgtracker/app/modules/home/Views/home_screen.dart';
 
 import 'package:get/get.dart';
+
+import '../modules/Track/Views/Search_Members.dart';
 part 'app_routes.dart';
 
 class AppPages {
@@ -63,6 +65,12 @@ class AppPages {
     GetPage(
       name: _Paths.AboutUs,
       page: () => AboutUs(),
+      transition: Transition.topLevel,
+      transitionDuration: const Duration(milliseconds: 500),
+    ),
+    GetPage(
+      name: _Paths.SearchMembers,
+      page: () => SearchMembers(),
       transition: Transition.topLevel,
       transitionDuration: const Duration(milliseconds: 500),
     ),

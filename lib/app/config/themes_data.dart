@@ -19,6 +19,7 @@ class ToggleThemeData {
   static const Color customBlue = Color(0xFF313F5E);
   static Color GreyShade = Colors.grey.shade200;
   static Color grey = Colors.grey;
+  static Color chatBackground = Color(0xFFF2F0FF);
 
   // static ThemeData lightTheme = ThemeData(
   //     useMaterial3: true,

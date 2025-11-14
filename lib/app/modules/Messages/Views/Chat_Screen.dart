@@ -5,19 +5,21 @@ import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Data/Repositories/GetMessageRepo.dart';
 import 'package:fgtracker/app/Data/Services/CallStateTracker.dart';
 import 'package:fgtracker/app/Model/MemberDataRes.dart';
+import 'package:fgtracker/app/config/themes_data.dart';
 import 'package:fgtracker/app/modules/Messages/Controller/MessageController.dart';
 import 'package:fgtracker/app/modules/Messages/Controller/Socket_Message_Services.dart';
+import 'package:fgtracker/app/modules/Messages/widgets/ChatList.dart';
 import 'package:fgtracker/app/modules/Messages/widgets/message_Widgets.dart';
 import 'package:fgtracker/app/modules/WebRtcCall/call_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import '../../../Core/values/Dialog/Common_dialog.dart';
 import '../../../Core/values/global.dart';
 import 'package:uuid/uuid.dart';
 
 
 import '../../WebRtcCall/call_service.dart';
+import '../widgets/ChatInputArea.dart';
 
 class ChatPage extends StatefulWidget {
   MemberData userData;
@@ -222,11 +224,12 @@ class _ChatPageState extends State<ChatPage> {
         return false;
       },
       child: Scaffold(
-          backgroundColor: Colors.white,
+          backgroundColor: ToggleThemeData.chatBackground,
           resizeToAvoidBottomInset: true,
           appBar: CommonChatAppBar(
             profileImageUrl: "${ConstRes.aImageBaseUrl}${widget.userData?.profileImage ?? ""}",
             userName: widget.userData?.name ?? "",
+            isCreator: widget.userData.isCreator!,
             onBackTap: () {
               handleBackPressed();
             },
@@ -311,9 +314,7 @@ class _ChatPageState extends State<ChatPage> {
           body: Obx(() => SafeArea(
                 child: Container(
                   decoration: BoxDecoration(
-                    color: controller.chatBackgroundImagePath.value == null
-                        ? controller.chatBackgroundColor.value
-                        : null,
+                    color: Color(0xffF2F0FF),
                     image: controller.chatBackgroundImagePath.value != null
                         ? DecorationImage(
                             image: FileImage(File(

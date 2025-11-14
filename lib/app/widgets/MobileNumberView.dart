@@ -1,3 +1,5 @@
+import 'package:fgtracker/app/config/themes_data.dart';
+import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -39,7 +41,7 @@ class MobileNumberView extends StatelessWidget {
             style: TextStyle(
               fontSize: 12.sp,
               color: Colors.black.withOpacity(0.6),
-              fontFamily: 'interMedium',
+              fontFamily: FontFamily.interRegular,
             ),
           ),
           SizedBox(width: 8.w),
@@ -52,7 +54,7 @@ class MobileNumberView extends StatelessWidget {
                     ? Icons.visibility_off
                     : Icons.visibility,
                 size: 20.sp,
-                color: Colors.black.withOpacity(0.6),
+                color: ToggleThemeData.darkPurple,
               )),
             ),
           ),

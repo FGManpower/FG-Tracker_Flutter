@@ -10,6 +10,8 @@ import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/modules/Group/Controller/JoinGroup_Controller.dart';
 import 'package:fgtracker/app/modules/Track/Views/TrackLocationScreen.dart';
 import 'package:fgtracker/app/widgets/MobileNumberView.dart';
+import 'package:fgtracker/gen/assets.gen.dart';
+import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -18,19 +20,18 @@ import 'package:skeletonizer/skeletonizer.dart';
 
 import '../../Messages/Views/Chat_Screen.dart';
 
-
 class MemberscreenScreen extends StatefulWidget {
   final String groupId;
-      final dynamic groupName;
+  final dynamic groupName;
   bool isCreator;
   bool isActive;
-
 
   MemberscreenScreen(
       {super.key,
       required this.groupId,
       required this.isCreator,
-      required this.isActive,required this.groupName});
+      required this.isActive,
+      required this.groupName});
 
   @override
   State<MemberscreenScreen> createState() => _MemberscreenScreenState();
@@ -38,7 +39,7 @@ class MemberscreenScreen extends StatefulWidget {
 
 class _MemberscreenScreenState extends State<MemberscreenScreen> {
   final controller = Get.put(JoinGroupController());
-  int? _expandedIndex;
+
   @override
   void initState() {
     super.initState();
@@ -48,117 +49,145 @@ class _MemberscreenScreenState extends State<MemberscreenScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        leading: InkWell(
-            onTap: () {
-              Get.back();
-            },
-            child: reausableIcon(
-                icon: Icons.arrow_back_outlined, color: Colors.white)),
-        title: reausabletext(
-         widget.groupName,
-          fontsize: 20,
-          color: Colors.white,
-          fontweight: FontWeight.bold,
-        ),
-        centerTitle: true,
-        backgroundColor: ToggleThemeData.Appcolor,
-        elevation: 4,
-        actions: [
-          PopupMenuButton<String>(
-            onSelected: (value) {
-              if (value == 'delete') {
-                CommonDialog.ConfirmationDialog(
-                  title: AppText.areYouSure,
-                  content: AppText.doYouWantToDeleteGroup,
-                  onConfirm: () {
-                    controller.deleteGroup(context,
-                        groupId: widget.groupId.toString());
-                  },
-                );
-              } else if (value == 'exit') {
-                CommonDialog.ConfirmationDialog(
-                  title: AppText.areYouSure,
-                  content: AppText.doYouWantToExitGroup,
-                  onConfirm: () {
-                    controller.exitGroup(context, groupId: widget.groupId);
-                  },
-                );
-              }
-            },
-            icon: Icon(
-              Icons.more_vert,
-              color: Colors.white,
-              size: 25,
-            ),
-            offset: Offset(0, 40), // Move popup slightly downward
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-            color: Colors.white, // Light background for contrast
-            itemBuilder: (context) => [
-              PopupMenuItem<String>(
-                height: 20.h, // Reduce height
-                padding: EdgeInsets.symmetric(horizontal: 12.w),
-                value: widget.isCreator ? 'delete' : 'exit',
-                child: Row(
-                  children: [
-                    Icon(
-                      widget.isCreator ? Icons.delete_outline : Icons.logout,
-                      size: 18,
-                      color: Colors.black87,
-                    ),
-                    SizedBox(width: 8),
-                    reausabletext(
-                        widget.isCreator ? 'Delete Group' : 'Exit Group',
-                        fontsize: 14.sp),
-                  ],
+        backgroundColor: Colors.white,
+        appBar: AppBar(
+          leading: IconButton(
+            onPressed: () => Navigator.pop(context),
+            padding: EdgeInsets.zero,
+            icon: Container(
+              height: 33.w,
+              width: 33.w,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border:
+                    Border.all(color: ToggleThemeData.darkPurple, width: 2.w),
+              ),
+              child: Center(
+                child: Icon(
+                  Icons.arrow_back_outlined,
+                  color: ToggleThemeData.darkPurple,
+                  size: 24.sp,
                 ),
               ),
-            ],
+            ),
           ),
-        ],
-      ),
-      floatingActionButton: widget.isActive == true
-          ? FloatingActionButton.extended(
-              backgroundColor: ToggleThemeData.Appcolor,
-              onPressed: () {
+          title: reausabletext(
+            "Members",
+            fontsize: 20,
+            color: Colors.black,
+            fontweight: FontWeight.bold,
+          ),
+          centerTitle: false,
+          backgroundColor: ToggleThemeData.white,
+          elevation: 4,
+          actions: [
+            reausableIcon(
+                icon: Icons.search,
+                size: 30,
+                color: ToggleThemeData.darkPurple),
+            SizedBox(
+              width: 15.w,
+            ),
+          ],
+        ),
+
+
+
+        bottomNavigationBar: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 15.h,vertical: 10.h),
+          child:  Row(
+            children: [
+
+
+              Expanded(child: reausablebutton(title: "Walkie-Talkie",icon:Icons.groups,fontSize: 12,borderradiues: 50,ontap: () {
+
+              },height: 55)),
+              SizedBox(width: 40.w),
+              Expanded(child: reausablebutton(title: "Track",icon:Icons.track_changes,fontSize: 12,borderradiues: 50,ontap: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => LocationTrackingPage(groupId: int.parse(widget.groupId.toString()),groupName: widget.groupName,),
+                    builder: (_) => LocationTrackingPage(
+                      groupId: int.parse(widget.groupId.toString()),
+                      groupName: widget.groupName,
+                    ),
                     // builder: (_) => LocationTrackingPage(groupId: widget.groupId, userId: Global.storageServices.get(PrefConst.userId)!),
                   ),
                 );
-              },
-              icon: reausableIcon(
-                  icon: Icons.track_changes,
-                  color: ToggleThemeData.white,
-                  size: 17),
-              label: reausabletext(AppText.track,
-                  color: ToggleThemeData.white, fontsize: 17),
-            )
-          : SizedBox(),
-      body: SafeArea(
-        child: Obx(() {
-          if (controller.responseError.value.isNotEmpty) {
-            return LostinternetConnection(
-              retry: () {
-                controller.getMembersData(widget.groupId);
-              },
-              messgae: controller.responseError.value.toString(),
-            );
-          } else if (controller.memberDataLoading.value) {
-            return memberListUi(isLoading: true);
-          } else if (controller.memberData.isEmpty) {
-            return Center(child: reausabletext(AppText.noDataFound));
-          } else {
-            return memberListUi(groupData: controller.memberData);
-          }
-        }),
-      ),
-    );
+              },height: 55)),
+
+
+
+            ],
+          ),
+        ),
+        body: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: EdgeInsets.only(
+                left: 15.w,
+                top: 20.h,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  reausabletext(widget.groupName ?? "",
+                      fontsize: 21,
+                      fontfamily: FontFamily.interBold,
+                      color: ToggleThemeData.darkPurple),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      reausabletext("Feel Free to start a conversation ",
+                          fontsize: 12,
+                          fontfamily: FontFamily.interRegular,
+                          color: Colors.black45),
+                      Expanded(
+                        child: Container(
+                          height: 3.h,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.centerLeft,
+                              end: Alignment.centerRight,
+                              colors: [
+                                Colors.transparent,
+                                Color(0xff5045B9),
+                                Color(0xff5045B9),
+                              ],
+                            ),
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(4.r)),
+                          ),
+                        ),
+                      )
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(
+              height: 30.h,
+            ),
+            Obx(() {
+              if (controller.responseError.value.isNotEmpty) {
+                return LostinternetConnection(
+                  retry: () {
+                    controller.getMembersData(widget.groupId);
+                  },
+                  messgae: controller.responseError.value.toString(),
+                );
+              } else if (controller.memberDataLoading.value) {
+                return Expanded(child: memberListUi(isLoading: true));
+              } else if (controller.memberData.isEmpty) {
+                return Center(child: reausabletext(AppText.noDataFound));
+              } else {
+                return Expanded(
+                    child: memberListUi(groupData: controller.memberData));
+              }
+            }),
+          ],
+        ));
   }
 
   Widget memberListUi({
@@ -177,158 +206,136 @@ class _MemberscreenScreenState extends State<MemberscreenScreen> {
       child: Skeletonizer(
         enabled: isLoading,
         child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 12.h),
-          child: ListView.builder(
-            physics: const AlwaysScrollableScrollPhysics(),
-            scrollDirection: Axis.vertical,
-            itemCount: groupData?.length ?? 10,
-            itemBuilder: (context, index) {
-              final data = groupData?[index];
-                    return Card(
-                      elevation: 10,
-                      shadowColor: Colors.white,
-                      color: Colors.grey.shade50,
-                      child: Container(
-                        padding: EdgeInsets.all(16.w),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.15),
-                          borderRadius: BorderRadius.circular(20.r),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.05),
-                              blurRadius: 20,
-                              offset: const Offset(0, 6),
-                            ),
-                          ],
-                          gradient: LinearGradient(
-                            colors: [
-                              Colors.white.withOpacity(0.25),
-                              Colors.white.withOpacity(0.05),
-                            ],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
-                          border: Border.all(
-                            color: Colors.white.withOpacity(0.2),
+            padding: EdgeInsets.symmetric(horizontal: 0.w, vertical: 0.h),
+            child: ListView.builder(
+              physics: const AlwaysScrollableScrollPhysics(),
+              scrollDirection: Axis.vertical,
+              itemCount: groupData?.length ?? 10,
+              itemBuilder: (context, index) {
+                final data = groupData?[index];
+
+                return GestureDetector(
+                  onTap: () {
+                    if (Global.storageServices
+                        .get(PrefConst.userId)
+                        .toString() !=
+                        data?.userId.toString()){
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => ChatPage(
+                            userData: data!,
+                            groupName:
+                            widget.groupName,
                           ),
                         ),
-                        child: Column(
+                      );
+                    }
+
+                  },
+                  child: Column(
+                    children: [
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 16.h, vertical: 10.h),
+                        decoration: const BoxDecoration(
+                          color: Colors.white,
+                        ),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-
-                            Row(
+                            Stack(
+                              clipBehavior: Clip.none,
                               children: [
-
-                                Container(
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black12,
-                                        blurRadius: 10,
-                                        offset: const Offset(0, 4),
-                                      ),
-                                    ],
+                                CircleAvatar(
+                                  radius: 30.r,
+                                  backgroundImage: NetworkImage(
+                                    "${ConstRes.aImageBaseUrl}${data?.profileImage ?? ""}",
                                   ),
-                                  child: CircleAvatar(
-                                    radius: 28.r,
-                                    backgroundImage: NetworkImage(
-                                      "${ConstRes.aImageBaseUrl}${data?.profileImage ?? ""}",
-                                    ),
-                                    backgroundColor: Colors.grey.shade200,
-                                  ),
+                                  backgroundColor: Colors.grey.shade200,
                                 ),
-                                SizedBox(width: 16.w),
-
-                                /// Info Section
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Expanded(
-                                            child: reausabletext(
-                                              data?.name ?? AppText.unnamedMember,
-                                              fontsize: 16,
-                                              fontweight: FontWeight.bold,
-                                            ),
-                                          ),
-                                        ],
+                                if (true)
+                                  Positioned(
+                                    // bottom: 0,
+                                    right: 4.w,
+                                    child: Container(
+                                      height: 12.w,
+                                      width: 12.w,
+                                      decoration: BoxDecoration(
+                                        color: Colors.green,
+                                        shape: BoxShape.circle,
+                                        border: Border.all(
+                                            color: Colors.white, width: 1.5.w),
                                       ),
-                                      // SizedBox(height: 4.h),
-                                      Row(
-                                        children: [
-                                          MobileNumberView(
-                                            mobileNumber:
-                                                data?.mobileNo ?? AppText.noNumber,
-                                          ),
-                                          Global.storageServices.get(PrefConst.userId).toString()!=data?.userId.toString()? Padding(
-                                            padding: EdgeInsets.only(left:50.w),
-                                            child: _buildIcon(
-                                              Icons.chat,
-                                              "",
-                                              onTap: () {
-                                                Navigator.push(
-                                                  context,
-                                                  MaterialPageRoute(
-                                                    builder: (_) => ChatPage(userData: data!, groupName: widget.groupName,),
-                                                  ),
-                                                );
-                                              },
-                                            ),
-                                          ):SizedBox(),
-                                        ],
-                                      ),
-
-                                    ],
-                                  ),
-                                ),
-
-                                if (data?.isCreator == true)
-                                  Padding(
-                                    padding: EdgeInsets.only(top: 6.h),
-                                    child: Row(
-                                      children: [
-                                        Container(
-
-                                          padding: EdgeInsets.symmetric(
-                                              horizontal: 10.w, vertical: 4.h),
-                                          decoration: BoxDecoration(
-                                            gradient: const LinearGradient(
-                                              colors: [
-                                                Colors.cyanAccent,
-                                                Colors.blue,
-                                              ],
-                                            ),
-                                            borderRadius:
-                                                BorderRadius.circular(30.r),
-                                          ),
-
-                                          child: reausabletext(
-                                            AppText.creator,
-                                            fontsize: 11,
-                                            fontweight: FontWeight.w600,
-                                            color: Colors.white,
-                                          ),
-
-                                        ),
-                                      ],
                                     ),
                                   ),
                               ],
                             ),
-
-
+                            SizedBox(width: 16.w),
+                            Expanded(
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Expanded(
+                                              child: reausabletext(
+                                                data?.name ??
+                                                    AppText.unnamedMember,
+                                                fontsize: 15,
+                                                fontfamily:
+                                                FontFamily.interSemiBold,
+                                              ),
+                                            ),
+                                            reausabletext(
+                                              "12:08 PM",
+                                              fontsize: 10,
+                                              fontfamily: FontFamily.interMedium,
+                                              color: Colors.grey.shade500,
+                                            ),
+                                          ],
+                                        ),
+                                        SizedBox(height: 4.h),
+                                        MobileNumberView(
+                                          mobileNumber: data?.mobileNo ??
+                                              AppText.noNumber,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: EdgeInsets.only(left: 50.w),
+                                    child: Image.asset(
+                                      Assets.icons.walkieTalkie.path,
+                                      height: 28.h,
+                                      width: 28.w,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ],
                         ),
                       ),
-                    );
-                  }
-
-          ),
-        ),
+                      if (index != (groupData?.length ?? 10) - 1)
+                        Container(
+                          margin: EdgeInsets.symmetric(horizontal: 16.w),
+                          height: 1,
+                          color: Colors.grey.withOpacity(0.2),
+                        ),
+                    ],
+                  ),
+                );
+              },
+            )),
       ),
     );
   }
@@ -340,11 +347,13 @@ class _MemberscreenScreenState extends State<MemberscreenScreen> {
         children: [
           CircleAvatar(
             radius: 20.r,
-            backgroundColor: Colors.blue.shade100,
-            child: Icon(icon, color: Colors.blue, size: 20.sp),
+            // backgroundColor: Colors.blue.shade100,
+            child: Icon(icon, color: ToggleThemeData.darkPurple, size: 22.sp),
           ),
           SizedBox(height: 4.h),
-          Text(label, style: TextStyle(fontSize: 10.sp)),
+          Text(label,
+              style: TextStyle(
+                  fontSize: 12.sp, fontFamily: FontFamily.interRegular)),
         ],
       ),
     );

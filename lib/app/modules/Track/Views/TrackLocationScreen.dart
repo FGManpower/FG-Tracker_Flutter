@@ -3,11 +3,15 @@ import 'package:fgtracker/app/config/themes_data.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/modules/Track/Widget/Track_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fgtracker/app/modules/Group/Controller/Group_Controller.dart';
 import 'package:fgtracker/app/modules/Track/Controller/TrackController.dart';
+
+import '../../../routes/app_pages.dart';
+import '../Widget/TrackLAppBar.dart';
 
 class LocationTrackingPage extends StatefulWidget {
   final int groupId;
@@ -43,6 +47,21 @@ class _LocationTrackingPageState extends State<LocationTrackingPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       extendBodyBehindAppBar: true,
+      appBar: buildTrackAppBar(
+        context,
+        groupName: widget.groupName,
+        onPressMembers: () {
+          BottomSheetUi().showMemberBottomSheet(context,
+              controller.groupWiseUserData[widget.groupId.toString()] ?? []);
+        },
+        onPressRefresh: () {
+          controller.getGroupLocationData(context, widget.groupId);
+          controller.initGroupTracking(widget.groupId.toString());
+        },
+        onSearch: () {
+          Get.toNamed(Routes.SearchMembers);
+        },
+      ),
       body: Stack(
         children: [
           Obx(() => GoogleMap(

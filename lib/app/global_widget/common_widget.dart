@@ -593,8 +593,8 @@ Widget BackpressIcon(BuildContext context,{Color color=  ToggleThemeData.darkPur
         // color: Colors.white,
         border: Border.all(color:color,width: 2.w)
       ),
-      height: 40.h,
-      width: 40.w,
+      height: 20.h,
+      width: 20.w,
       child: Center(
         child: Icon(
           Icons.arrow_back_outlined,

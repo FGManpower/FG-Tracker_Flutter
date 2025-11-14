@@ -14,7 +14,8 @@ abstract class Routes {
   static const Memberscreen = _Paths.Memberscreen;
   static const OTPScreen = _Paths.OTPScreen;
   static const QiblaScreen = _Paths.QiblaScreen;
-  static const DemoScreen = _Paths.DemoScreen;
+  static const SearchMembers = _Paths.SearchMembers;
+
 
 }
 
@@ -31,7 +32,8 @@ abstract class _Paths {
   static const Memberscreen = '/MemberscreenScreen';
   static const OTPScreen = '/OTPScreen';
   static const QiblaScreen = '/Qibladirection';
-  static const DemoScreen = '/DemoScreen';
+  static const SearchMembers = '/SearchMembers';
+
 
 
 
