@@ -7,8 +7,9 @@ import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Model/MemberDataRes.dart';
 import 'package:fgtracker/app/config/themes_data.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
-import 'package:fgtracker/app/modules/Group/Controller/JoinGroup_Controller.dart';
+import 'package:fgtracker/app/modules/Group/Controller/MemberController.dart';
 import 'package:fgtracker/app/modules/Track/Views/TrackLocationScreen.dart';
+import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:fgtracker/app/widgets/MobileNumberView.dart';
 import 'package:fgtracker/gen/assets.gen.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
@@ -19,38 +20,20 @@ import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 import '../../Messages/Views/Chat_Screen.dart';
+import '../../Track/Widget/TrackLAppBar.dart';
 
-class MemberscreenScreen extends StatefulWidget {
-  final String groupId;
-  final dynamic groupName;
-  bool isCreator;
-  bool isActive;
-
-  MemberscreenScreen(
-      {super.key,
-      required this.groupId,
-      required this.isCreator,
-      required this.isActive,
-      required this.groupName});
-
-  @override
-  State<MemberscreenScreen> createState() => _MemberscreenScreenState();
-}
-
-class _MemberscreenScreenState extends State<MemberscreenScreen> {
-  final controller = Get.put(JoinGroupController());
-
-  @override
-  void initState() {
-    super.initState();
-    controller.getMembersData(widget.groupId);
-  }
-
+class MemberscreenScreen extends GetView<MemberController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         backgroundColor: Colors.white,
         appBar: AppBar(
+          elevation: 0,
+          shadowColor: Colors.transparent,
+          scrolledUnderElevation: 0,
+          backgroundColor: ToggleThemeData.white,
+          automaticallyImplyLeading: false,
+          centerTitle: false,
           leading: IconButton(
             onPressed: () => Navigator.pop(context),
             padding: EdgeInsets.zero,
@@ -77,47 +60,84 @@ class _MemberscreenScreenState extends State<MemberscreenScreen> {
             color: Colors.black,
             fontweight: FontWeight.bold,
           ),
-          centerTitle: false,
-          backgroundColor: ToggleThemeData.white,
-          elevation: 4,
           actions: [
             reausableIcon(
                 icon: Icons.search,
                 size: 30,
                 color: ToggleThemeData.darkPurple),
+            bool.parse(controller.arguments?['isCreator'])
+                ? PopupMenuButton<String>(
+                    onSelected: (value) {},
+                    color: Colors.white,
+                    elevation: 5,
+                    offset: Offset(0, 48),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
+                    icon: Icon(
+                      Icons.more_vert,
+                      color: ToggleThemeData.darkPurple,
+                      size: 26.sp,
+                    ),
+                    itemBuilder: (context) => [
+                      popupItem(
+                        context: context,
+                        value: 'delete',
+                        icon: Icons.delete_outline,
+                        text: 'Group Delete',
+                        onTap: () {
+                          CommonDialog.ConfirmationDialog(
+                            title: AppText.areYouSure,
+                            content: AppText.doYouWantToDeleteGroup,
+                            onConfirm: () {
+                              controller.deleteGroup(context,
+                                  groupId: controller.arguments!['groupId']
+                                      .toString());
+                            },
+                          );
+                        },
+                      ),
+                    ],
+                  )
+                : SizedBox(),
             SizedBox(
-              width: 15.w,
+              width: 5.w,
             ),
           ],
         ),
-
-
-
         bottomNavigationBar: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 15.h,vertical: 10.h),
-          child:  Row(
+          padding: EdgeInsets.symmetric(horizontal: 15.h, vertical: 10.h),
+          child: Row(
             children: [
-
-
-              Expanded(child: reausablebutton(title: "Walkie-Talkie",icon:Icons.groups,fontSize: 12,borderradiues: 50,ontap: () {
-
-              },height: 55)),
+              Expanded(
+                  child: reausablebutton(
+                      title: "Walkie-Talkie",
+                      icon: Icons.groups,
+                      fontSize: 12,
+                      borderradiues: 50,
+                      ontap: () {},
+                      height: 55)),
               SizedBox(width: 40.w),
-              Expanded(child: reausablebutton(title: "Track",icon:Icons.track_changes,fontSize: 12,borderradiues: 50,ontap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => LocationTrackingPage(
-                      groupId: int.parse(widget.groupId.toString()),
-                      groupName: widget.groupName,
-                    ),
-                    // builder: (_) => LocationTrackingPage(groupId: widget.groupId, userId: Global.storageServices.get(PrefConst.userId)!),
-                  ),
-                );
-              },height: 55)),
-
-
-
+              Expanded(
+                  child: reausablebutton(
+                      title: "Track",
+                      icon: Icons.track_changes,
+                      fontSize: 12,
+                      borderradiues: 50,
+                      ontap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => LocationTrackingPage(
+                              groupId: int.parse(
+                                  controller.arguments!['groupId'].toString()),
+                              groupName: controller.arguments!['groupName'],
+                            ),
+                            // builder: (_) => LocationTrackingPage(groupId: widget.groupId, userId: Global.storageServices.get(PrefConst.userId)!),
+                          ),
+                        );
+                      },
+                      height: 55)),
             ],
           ),
         ),
@@ -132,7 +152,7 @@ class _MemberscreenScreenState extends State<MemberscreenScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  reausabletext(widget.groupName ?? "",
+                  reausabletext(controller.arguments!['groupName'] ?? "",
                       fontsize: 21,
                       fontfamily: FontFamily.interBold,
                       color: ToggleThemeData.darkPurple),
@@ -173,7 +193,7 @@ class _MemberscreenScreenState extends State<MemberscreenScreen> {
               if (controller.responseError.value.isNotEmpty) {
                 return LostinternetConnection(
                   retry: () {
-                    controller.getMembersData(widget.groupId);
+                    controller.getMembersData(controller.arguments!['groupId']);
                   },
                   messgae: controller.responseError.value.toString(),
                 );
@@ -200,7 +220,7 @@ class _MemberscreenScreenState extends State<MemberscreenScreen> {
         controller.memberDataLoading.value = true;
       },
       onTap2Callback: () {
-        controller.getMembersData(widget.groupId);
+        controller.getMembersData(controller.arguments!['groupId']);
       },
       Indicatorekey: GlobalKey<LiquidPullToRefreshState>(),
       child: Skeletonizer(
@@ -216,22 +236,18 @@ class _MemberscreenScreenState extends State<MemberscreenScreen> {
 
                 return GestureDetector(
                   onTap: () {
-                    if (Global.storageServices
-                        .get(PrefConst.userId)
-                        .toString() !=
-                        data?.userId.toString()){
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => ChatPage(
-                            userData: data!,
-                            groupName:
-                            widget.groupName,
-                          ),
-                        ),
-                      );
-                    }
 
+                    if (Global.storageServices
+                            .get(PrefConst.userId)
+                            .toString() !=
+                        data?.userId.toString()) {
+                      Get.toNamed(Routes.chatScreen,arguments: {
+                        "userData":data,
+                        "groupName":controller.arguments!['groupName'],
+                        "type":"",
+                      });
+
+                    }
                   },
                   child: Column(
                     children: [
@@ -274,17 +290,18 @@ class _MemberscreenScreenState extends State<MemberscreenScreen> {
                             SizedBox(width: 16.w),
                             Expanded(
                               child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
                                   Expanded(
                                     child: Column(
                                       crossAxisAlignment:
-                                      CrossAxisAlignment.start,
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Row(
                                           mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
+                                              MainAxisAlignment.spaceBetween,
                                           children: [
                                             Expanded(
                                               child: reausabletext(
@@ -292,13 +309,14 @@ class _MemberscreenScreenState extends State<MemberscreenScreen> {
                                                     AppText.unnamedMember,
                                                 fontsize: 15,
                                                 fontfamily:
-                                                FontFamily.interSemiBold,
+                                                    FontFamily.interSemiBold,
                                               ),
                                             ),
                                             reausabletext(
                                               "12:08 PM",
                                               fontsize: 10,
-                                              fontfamily: FontFamily.interMedium,
+                                              fontfamily:
+                                                  FontFamily.interMedium,
                                               color: Colors.grey.shade500,
                                             ),
                                           ],
@@ -336,25 +354,6 @@ class _MemberscreenScreenState extends State<MemberscreenScreen> {
                 );
               },
             )),
-      ),
-    );
-  }
-
-  Widget _buildIcon(IconData icon, String label, {VoidCallback? onTap}) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Column(
-        children: [
-          CircleAvatar(
-            radius: 20.r,
-            // backgroundColor: Colors.blue.shade100,
-            child: Icon(icon, color: ToggleThemeData.darkPurple, size: 22.sp),
-          ),
-          SizedBox(height: 4.h),
-          Text(label,
-              style: TextStyle(
-                  fontSize: 12.sp, fontFamily: FontFamily.interRegular)),
-        ],
       ),
     );
   }

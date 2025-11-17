@@ -1,7 +1,6 @@
 import 'package:fgtracker/app/Core/deep_Link/uniservices.dart';
 import 'package:fgtracker/app/Core/theme/AppText.dart';
 import 'package:fgtracker/app/Data/Repositories/NotificationServices.dart';
-import 'package:fgtracker/app/config/themes_data.dart';
 import 'package:fgtracker/app/modules/DashboardController.dart';
 import 'package:fgtracker/app/modules/Group/Controller/JoinGroup_Controller.dart';
 import 'package:fgtracker/app/modules/home/Controller/home_controller.dart';
@@ -51,8 +50,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     controller.getProfileData();
     groupController.getGroupData();
-    if (dashController.DeeplinkWithStartJob.value == false) {
-    }
+    if (dashController.DeeplinkWithStartJob.value == false) {}
 
     // notificationServices.getDiviceToken();
     notificationServices.setupInteractMessage(context);
@@ -124,7 +122,7 @@ class _HomeScreenState extends State<HomeScreen> {
             headerUi(controller),
             BannerUi(),
             Padding(
-              padding: EdgeInsets.only(left: 5.w, top: 10.h,bottom: 10.h),
+              padding: EdgeInsets.only(left: 5.w, top: 10.h, bottom: 10.h),
               child: reausabletext("Newly Created Group",
                   fontfamily: FontFamily.interSemiBold, fontsize: 18),
             ),
@@ -136,21 +134,27 @@ class _HomeScreenState extends State<HomeScreen> {
                     },
                     messgae: groupController.responseError.value.toString());
               } else if (groupController.groupDataLoading.value) {
-                return NewlyGroupUi(isLoading: true,groupController: groupController,);
+                return NewlyGroupUi(
+                  isLoading: true,
+                  groupController: groupController,
+                );
               } else if (groupController.groupData.isEmpty) {
                 return Center(
-                  child:  reausabletext(AppText.youHaventJoindOrCreatedGroup,
+                  child: reausabletext(AppText.youHaventJoindOrCreatedGroup,
                       align: TextAlign.center,
                       color: Colors.grey[600],
                       fontsize: 14),
                 );
               } else {
-                return NewlyGroupUi(groupData: groupController.groupData,isLoading: false,groupController: groupController,);
+                return NewlyGroupUi(
+                  groupData: groupController.groupData,
+                  isLoading: false,
+                  groupController: groupController,
+                );
               }
             }),
-
             Padding(
-              padding: EdgeInsets.only(left: 5.w, top: 15.h,bottom: 10.h),
+              padding: EdgeInsets.only(left: 5.w, top: 15.h, bottom: 10.h),
               child: reausabletext("Created Group",
                   fontfamily: FontFamily.interSemiBold, fontsize: 18),
             ),
@@ -162,20 +166,25 @@ class _HomeScreenState extends State<HomeScreen> {
                     },
                     messgae: groupController.responseError.value.toString());
               } else if (groupController.groupDataLoading.value) {
-                return NewlyGroupUi(isLoading: true,groupController: groupController,);
+                return NewlyGroupUi(
+                  isLoading: true,
+                  groupController: groupController,
+                );
               } else if (groupController.groupData.isEmpty) {
                 return Center(
-                  child:  reausabletext(AppText.youHaventJoindOrCreatedGroup,
+                  child: reausabletext(AppText.youHaventJoindOrCreatedGroup,
                       align: TextAlign.center,
                       color: Colors.grey[600],
                       fontsize: 14),
                 );
               } else {
-                return CreatedGroupUi(groupData: groupController.groupData,isLoading: false,groupController: groupController,);
+                return CreatedGroupUi(
+                  groupData: groupController.groupData,
+                  isLoading: false,
+                  groupController: groupController,
+                );
               }
             }),
-
-
           ],
         ),
       ),
@@ -185,29 +194,36 @@ class _HomeScreenState extends State<HomeScreen> {
           color: Colors.white,
           child: Row(
             children: [
-
-
-              Expanded(child: reausablebutton(title: AppText.joinGroup,icon:Icons.group,fontSize: 12,borderradiues: 50,ontap: () {
-                DialogBox().showQRScanOptions(context,
-                    controller: joinGroupController,
-                    groupController: groupController);
-              },height: 55)),
+              Expanded(
+                  child: reausablebutton(
+                      title: AppText.joinGroup,
+                      icon: Icons.group,
+                      fontSize: 12,
+                      borderradiues: 50,
+                      ontap: () {
+                        DialogBox().showQRScanOptions(context,
+                            controller: joinGroupController,
+                            groupController: groupController);
+                      },
+                      height: 55)),
               SizedBox(width: 40.w),
-              Expanded(child: reausablebutton(title: AppText.createGroup,icon:Icons.group_add,fontSize: 12,borderradiues: 50,ontap: () {
-                DialogBox().showCreateGroupBottomSheet(
-                  context: context,
-                  controller: groupController,
-                );
-              },height: 55)),
-
-
-
+              Expanded(
+                  child: reausablebutton(
+                      title: AppText.createGroup,
+                      icon: Icons.group_add,
+                      fontSize: 12,
+                      borderradiues: 50,
+                      ontap: () {
+                        DialogBox().showCreateGroupBottomSheet(
+                          context: context,
+                          controller: groupController,
+                        );
+                      },
+                      height: 55)),
             ],
           ),
         ),
       ),
     );
   }
-
-
 }

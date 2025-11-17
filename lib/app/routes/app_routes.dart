@@ -8,13 +8,13 @@ abstract class Routes {
   static const Login = _Paths.Login;
   static const Register = _Paths.Register;
   static const Home_Screen = _Paths.Home_Screen;
-  static const Profile = _Paths.Profile;
   static const AboutUs = '/AboutUs';
   static const joinGroup = _Paths.joinGroup;
   static const Memberscreen = _Paths.Memberscreen;
   static const OTPScreen = _Paths.OTPScreen;
-  static const QiblaScreen = _Paths.QiblaScreen;
   static const SearchMembers = _Paths.SearchMembers;
+  static const QrCodeScreen = _Paths.QrCodeScreen;
+  static const chatScreen = _Paths.chatScreen;
 
 
 }
@@ -26,13 +26,13 @@ abstract class _Paths {
   static const Login = '/login';
   static const Register = '/register';
   static const Home_Screen = '/Home_Screen';
-  static const Profile = '/jfksdajflkdsj';
   static const AboutUs = '/AboutUs';
   static const joinGroup = '/JoinGroup';
   static const Memberscreen = '/MemberscreenScreen';
   static const OTPScreen = '/OTPScreen';
-  static const QiblaScreen = '/Qibladirection';
+  static const QrCodeScreen = '/QrCodeScreen';
   static const SearchMembers = '/SearchMembers';
+  static const chatScreen = '/chatScreen';
 
 
 

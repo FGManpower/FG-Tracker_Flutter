@@ -16,11 +16,11 @@ class BannerUi extends StatelessWidget {
       return Skeletonizer(
         enabled: controller.isLoading.value,
         child: SizedBox(
-          height: 200.h,
+          height: 160.h,
           child: Swiper(
             controller: controller.swiperController,
             scrollDirection: Axis.horizontal,
-            autoplay: true,
+            autoplay: false,
             autoplayDelay: 4000,
             duration: 800,
             curve: Curves.easeInOut,
@@ -33,7 +33,7 @@ class BannerUi extends StatelessWidget {
                 padding: EdgeInsets.all(8.0.r),
                 child: GestureDetector(
                   child: Container(
-                    height: 200.h,
+                    height: 160.h,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(15.r),
                       image: DecorationImage(

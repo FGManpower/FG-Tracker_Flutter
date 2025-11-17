@@ -18,93 +18,94 @@ class LoginPage extends GetView<Login_Controller> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Stack(
-        children: [
-          ClipPath(
-            clipper: CurvedDiagonalClipper(cutHeightFactor: 0.8),
-            child: Container(
-              height: 360.h,
-              width: double.infinity,
-              clipBehavior: Clip.antiAlias,
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Color(0xFF4B3FDD), Color(0xFF7E6FF3)],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            ClipPath(
+              clipper: CurvedDiagonalClipper(cutHeightFactor: 0.8),
+              child: Container(
+                height: 360.h,
+                width: double.infinity,
+                clipBehavior: Clip.antiAlias,
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Color(0xFF4B3FDD), Color(0xFF7E6FF3)],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                  ),
+                ),
+                child: Stack(
+                  clipBehavior: Clip.hardEdge,
+                  children: [
+                    Positioned(
+                      right: 10.w,
+                      bottom: 160.h,
+                      child: Icon(
+                        Icons.location_on,
+                        size: 70.sp,
+                        color: Colors.white.withOpacity(0.08),
+                      ),
+                    ),
+                    Positioned(
+                      left: 20.w,
+                      bottom: 20.h,
+                      child: Icon(
+                        Icons.location_on,
+                        size: 50.sp,
+                        color: Colors.white.withOpacity(0.12),
+                      ),
+                    ),
+                    Positioned(
+                      left: 40.w,
+                      bottom: 50.h,
+                      child: Icon(
+                        Icons.location_on,
+                        size: 130.sp,
+                        color: Colors.white.withOpacity(0.1),
+                      ),
+                    ),
+                    Padding(
+                      padding:
+                      EdgeInsets.only(top: 80.h, left: 15.w, right: 24.w),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+
+                            children: [
+                              CircleAvatar(
+                                radius: 48.r,
+                                backgroundColor: Colors.white,
+                                backgroundImage:
+                                AssetImage(Assets.icons.appIcon.path),
+                              ),
+                              SizedBox(width: 10.w),
+                           Flexible(child:    reausabletext(
+                             "Welcome Back",
+                             color: Colors.white,
+                             fontsize: 32,
+                             fontfamily: FontFamily.interBold,
+                           ),),
+
+                            ],
+                          ),
+                          SizedBox(height: 12.h),
+                          reausabletext(
+                            "We’re glad to see you again. Log in to access your account and explore our latest features.",
+                            color: ToggleThemeData.white,
+                            fontsize: 14,
+                            align: TextAlign.start,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              child: Stack(
-                clipBehavior: Clip.hardEdge,
-                children: [
-                  Positioned(
-                    right: 10.w,
-                    bottom: 160.h,
-                    child: Icon(
-                      Icons.location_on,
-                      size: 70.sp,
-                      color: Colors.white.withOpacity(0.08),
-                    ),
-                  ),
-                  Positioned(
-                    left: 20.w,
-                    bottom: 20.h,
-                    child: Icon(
-                      Icons.location_on,
-                      size: 50.sp,
-                      color: Colors.white.withOpacity(0.12),
-                    ),
-                  ),
-                  Positioned(
-                    left: 40.w,
-                    bottom: 50.h,
-                    child: Icon(
-                      Icons.location_on,
-                      size: 130.sp,
-                      color: Colors.white.withOpacity(0.1),
-                    ),
-                  ),
-                  Padding(
-                    padding:
-                    EdgeInsets.only(top: 80.h, left: 15.w, right: 24.w),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            CircleAvatar(
-                              radius: 48.r,
-                              backgroundColor: Colors.white,
-                              backgroundImage:
-                              AssetImage(Assets.icons.appIcon.path),
-                            ),
-                            SizedBox(width: 12.w),
-                            reausabletext(
-                              "Welcome Back",
-                              color: Colors.white,
-                              fontsize: 32,
-                              fontfamily: FontFamily.interBold,
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: 12.h),
-                        reausabletext(
-                          "We’re glad to see you again. Log in to access your account and explore our latest features.",
-                          color: ToggleThemeData.white,
-                          fontsize: 14,
-                          align: TextAlign.start,
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
             ),
-          ),
 
-          Padding(
-            padding: EdgeInsets.only(top: 370.h),
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 50.h),
+            Padding(
+              padding: EdgeInsets.only(left: 20.w,right:20.w, top: 60.h),
               child: Container(
                 width: double.infinity,
                 padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 25.h),
@@ -256,9 +257,9 @@ class LoginPage extends GetView<Login_Controller> {
                 ),
               ),
             ),
-          )
-        ],
-      ),
+          ],
+        ),
+      )
     );
   }
 }

@@ -434,7 +434,7 @@ Widget inputField(BuildContext context,
           child: Icon(
             prefixicon,
             size: 23.sp,
-            color: ToggleThemeData.Appcolor,
+            color: ToggleThemeData.darkPurple,
           ),
         ),
       )

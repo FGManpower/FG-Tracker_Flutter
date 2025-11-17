@@ -59,29 +59,30 @@ class LocationService extends GetxService {
           return;
         }
       } else {
+
         try {
-          Loading().showloading();
+          // Loading().showloading();
           await _location.enableBackgroundMode(enable: true);
-          try {
-            currentPosition = await _location
-                .getLocation()
-                .timeout(Duration(minutes: 2), onTimeout: () {
-              log("⚠️ Location fetch timed out, using fallback.");
-              return LocationData.fromMap({
-                "latitude": 0.0,
-                "longitude": 0.0,
-              });
-            });
-          } catch (error) {
-            log("errors---$error");
-          }
+          // try {
+          //   currentPosition = await _location
+          //       .getLocation()
+          //       .timeout(Duration(minutes: 2), onTimeout: () {
+          //     log("⚠️ Location fetch timed out, using fallback.");
+          //     return LocationData.fromMap({
+          //       "latitude": 0.0,
+          //       "longitude": 0.0,
+          //     });
+          //   });
+          // } catch (error) {
+          //   log("errors---$error");
+          // }
 
           _listenToLocationUpdates(
               Global.storageServices.get(PrefConst.userId).toString());
-          Loading().dismissloading();
+          // Loading().dismissloading();
 
         } catch (e) {
-          Loading().dismissloading();
+          // Loading().dismissloading();
 
         }
       }

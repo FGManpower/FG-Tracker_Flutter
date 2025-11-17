@@ -10,49 +10,51 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../../Core/theme/appTheme.dart';
 import '../../../config/themes_data.dart';
+import '../../../routes/app_pages.dart';
 import '../Controller/home_controller.dart';
 
 Widget headerUi(HomeController controller) {
-  return
-    Obx(() =>   Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              reausabletext("Hello ${controller.userData.value.name ?? ""}",
-                  fontfamily: FontFamily.interSemiBold, fontsize: 19),
-              reausabletext("It’s good to see you again 👋",
-                  fontfamily: FontFamily.interRegular, fontsize: 12),
-            ],
-          ),
-        ),
-
-
-        Padding(
-          padding: EdgeInsets.only(right: 10.w),
-          child: IconButton(
-            icon: CircleAvatar(
-              radius: 27.r,
-              backgroundColor: Colors.grey[200],
-              backgroundImage: NetworkImage(
-                Utility.isNotNullEmptyOrFalse(
-                    controller.userData.value.profileImage)
-                    ? "${ConstRes.aImageBaseUrl}${controller.userData.value.profileImage}"
-                    : MyAppTheme.ProfilenotFoundImg,
-              ),
-              child: controller.userData.value.profileImage == null
-                  ? Icon(Icons.person, color: Colors.white)
-                  : null,
+  return Obx(() => Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                reausabletext("Hello ${controller.userData.value.name ?? ""}",
+                    fontfamily: FontFamily.interSemiBold, fontsize: 19),
+                reausabletext("It’s good to see you again 👋",
+                    fontfamily: FontFamily.interRegular, fontsize: 12),
+              ],
             ),
-            onPressed: () {},
           ),
-        )
-      ],
-    ));
-
+          Padding(
+            padding: EdgeInsets.only(right: 0.w),
+            child: IconButton(
+              icon: CircleAvatar(
+                radius: 27.r,
+                backgroundColor: Colors.grey[200],
+                backgroundImage: NetworkImage(
+                  Utility.isNotNullEmptyOrFalse(
+                          controller.userData.value.profileImage)
+                      ? "${ConstRes.aImageBaseUrl}${controller.userData.value.profileImage}"
+                      : MyAppTheme.ProfilenotFoundImg,
+                ),
+                child: controller.userData.value.profileImage == null
+                    ? Icon(Icons.person, color: Colors.white)
+                    : null,
+              ),
+              onPressed: () {
+                Get.toNamed(Routes.Register, arguments: {
+                  "type": "Update",
+                  'userData': controller.userData.value
+                });
+              },
+            ),
+          )
+        ],
+      ));
 }
 
 Widget ReusablelistItem(
@@ -129,7 +131,6 @@ Widget Social_Icon({required String imagename, required String url}) {
   );
 }
 
-
 class GroupRow extends StatelessWidget {
   final String title;
   final String value;
@@ -159,7 +160,7 @@ class GroupRow extends StatelessWidget {
             SizedBox(height: 7.h),
             reausabletext(
               widths: 52,
-            value,
+              value,
               fontfamily: FontFamily.interSemiBold,
               fontsize: 10,
               color: const Color(0xff5045B9),

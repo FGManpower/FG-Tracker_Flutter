@@ -6,12 +6,13 @@ import 'package:fgtracker/app/Core/util/CallUtils.dart';
 import 'package:fgtracker/app/Core/values/Context_Utility.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Model/MemberDataRes.dart';
-import 'package:fgtracker/app/modules/Group/Views/MemberScreen.dart';
 import 'package:fgtracker/app/modules/Messages/Views/Chat_Screen.dart';
+import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:get/get.dart';
 
 import 'dart:io';
 
@@ -193,14 +194,13 @@ class firebaseNotificationServices {
       print("messageRecieved--------${message.data}");
 
       if (message.data['screen_name'] == "MemberPage") {
-        Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => MemberscreenScreen(
-                  groupId: message.data['groupId'],
-                  isCreator: message.data['isCreator'],
-                  isActive: message.data['isActive'],groupName: message.data['groupName'],),
-            ));
+        Get.toNamed(Routes.Memberscreen, arguments: {
+          "groupId": message.data['groupId'],
+          "groupName": message.data['groupName'],
+          "isCreator": message.data['isCreator'],
+          "isActive": message.data['isActive'],
+        });
+
 
       } else if (message.data["screen_name"] == "chatScreen") {
         if (!ChatStateTracker.isChatCallScreenOpen) {
@@ -211,12 +211,12 @@ class firebaseNotificationServices {
             debugPrint("Invalid memberData format: $e");
           }
           if (memberData != null) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => ChatPage(userData: memberData!,type: "chatScreen", groupName: ''),
-              ),
-            );
+            Get.toNamed(Routes.chatScreen,arguments: {
+              "userData":memberData!,
+              "groupName":"",
+              "type":"chatScreen",
+            });
+
           }
         }
 

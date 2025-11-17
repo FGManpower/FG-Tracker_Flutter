@@ -1,12 +1,11 @@
 import 'package:fgtracker/app/config/themes_data.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
+import 'package:fgtracker/app/modules/Track/Widget/TrackLAppBar.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import '../../../Core/theme/AppText.dart';
-import '../../../Core/values/Dialog/Common_dialog.dart';
 import '../Controller/MessageController.dart';
 
 class CommonChatAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -15,10 +14,10 @@ class CommonChatAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String groupName;
   final VoidCallback? onBackTap;
   final VoidCallback? onCallTap;
-  final VoidCallback? onMicTap;
+
   final VoidCallback? onVideoTap;
-  final VoidCallback? onThemeTap;
-  bool isCreator;
+  final VoidCallback? onGroupExit;
+
 
   CommonChatAppBar(
       {Key? key,
@@ -26,11 +25,11 @@ class CommonChatAppBar extends StatelessWidget implements PreferredSizeWidget {
       required this.userName,
       this.onBackTap,
       this.onCallTap,
-      this.onMicTap,
       this.onVideoTap,
-      this.onThemeTap,
+
       required this.groupName,
-      required this.isCreator})
+        this.onGroupExit
+   })
       : super(key: key);
 
   @override
@@ -119,53 +118,32 @@ class CommonChatAppBar extends StatelessWidget implements PreferredSizeWidget {
             SizedBox(
               width: 5.w,
             ),
+
+
             PopupMenuButton<String>(
-              onSelected: (value) {
-                if (value == 'delete') {
-                  CommonDialog.ConfirmationDialog(
-                    title: AppText.areYouSure,
-                    content: AppText.doYouWantToDeleteGroup,
-                    onConfirm: () {
-                      // controller.deleteGroup(context, groupId: widget.groupId.toString());
-                    },
-                  );
-                } else if (value == 'exit') {
-                  CommonDialog.ConfirmationDialog(
-                    title: AppText.areYouSure,
-                    content: AppText.doYouWantToExitGroup,
-                    onConfirm: () {
-                      // controller.exitGroup(context, groupId: widget.groupId);
-                    },
-                  );
-                }
-              },
-              icon: reausableIcon(
-                icon: FontAwesomeIcons.ellipsis,
-                color: ToggleThemeData.darkPurple,
-                size: 26,
-              ),
-              offset: Offset(0, 40),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
+              onSelected: (value) {},
               color: Colors.white,
+              elevation: 5,
+              offset: Offset(0, 48),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12.r),
+              ),
+              icon: Icon(
+                FontAwesomeIcons.ellipsis,
+                color: ToggleThemeData.darkPurple,
+                size: 26.sp,
+              ),
               itemBuilder: (context) => [
-                PopupMenuItem<String>(
-                  height: 20.h,
-                  padding: EdgeInsets.symmetric(horizontal: 12.w),
-                  value: isCreator ? 'delete' : 'exit',
-                  child: Row(
-                    children: [
-                      Icon(
-                        isCreator ? Icons.delete_outline : Icons.logout,
-                        size: 18,
-                        color: Colors.black87,
-                      ),
-                      SizedBox(width: 8),
-                      reausabletext(isCreator ? 'Delete Group' : 'Exit Group',
-                          fontsize: 14.sp),
-                    ],
-                  ),
+                popupItem(
+                  context: context,
+                  value:  'exit',
+                  icon:  Icons.logout,
+                  text:  'Exit Group',
+                  onTap: () {
+
+                     onGroupExit!();
+
+                  },
                 ),
               ],
             ),
@@ -178,8 +156,6 @@ class CommonChatAppBar extends StatelessWidget implements PreferredSizeWidget {
     );
   }
 }
-
-
 
 class ImageViewerWidget extends StatelessWidget {
   final ImageProvider imageProvider;
@@ -248,65 +224,4 @@ class ImageViewerWidget extends StatelessWidget {
   }
 }
 
-class ThemePicker {
-  static void show(
-      BuildContext context, MessageController controller, String userId) {
-    showModalBottomSheet(
-      context: context,
-      builder: (_) => Container(
-        padding: EdgeInsets.all(16),
-        height: 280,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              "Choose Chat Theme",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 16),
-            Wrap(
-              spacing: 10,
-              children: [
-                Colors.blue.shade100,
-                Colors.green.shade100,
-                Colors.pink.shade100,
-                Colors.yellow.shade100,
-                Colors.grey.shade100,
-                Colors.white,
-              ].map((color) {
-                return GestureDetector(
-                  onTap: () {
-                    controller.chatBackgroundColor.value = color;
-                    controller.chatBackgroundImagePath.value = null;
-                    controller.saveThemePreferences(userId);
-                    Get.back();
-                  },
-                  child: Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: color,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.black12),
-                    ),
-                  ),
-                );
-              }).toList(),
-            ),
-            SizedBox(height: 20),
-            ElevatedButton.icon(
-              onPressed: () {
-                controller.pickBackgroundImageFromGallery(userId).then((_) {
-                  controller.saveThemePreferences(userId);
-                });
-                Get.back();
-              },
-              icon: Icon(Icons.photo),
-              label: Text("Choose from Gallery"),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
+

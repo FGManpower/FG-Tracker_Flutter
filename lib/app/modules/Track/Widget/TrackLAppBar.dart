@@ -61,7 +61,7 @@ AppBar buildTrackAppBar(BuildContext context, {required String groupName,void Fu
           size: 26.sp,
         ),
         itemBuilder: (context) => [
-          _popupItem(
+          popupItem(
             context: context,
             value: "members",
             icon: Icons.groups,
@@ -69,7 +69,7 @@ AppBar buildTrackAppBar(BuildContext context, {required String groupName,void Fu
             onTap: onPressMembers,
           ),
           dividerMenuItem(),
-          _popupItem(
+          popupItem(
               context: context,
             value: "refresh_Maps",
             icon: Icons.refresh,
@@ -84,7 +84,7 @@ AppBar buildTrackAppBar(BuildContext context, {required String groupName,void Fu
   );
 }
 
-PopupMenuItem<String> _popupItem({
+PopupMenuItem<String> popupItem({
   required BuildContext context,
   required String value,
   required IconData icon,

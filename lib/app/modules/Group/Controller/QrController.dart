@@ -12,11 +12,20 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:share_plus/share_plus.dart';
 
-class QrController extends GetxController{
+class QrController extends GetxController {
+
+   var groupCode="".obs;
+
+  @override
+  void onInit() {
+    // TODO: implement onInit
+    super.onInit();
+    groupCode.value= Get.arguments["groupCode"] ?? "";
+  }
   final ScreenshotController screenshotController = ScreenshotController();
 
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-  FlutterLocalNotificationsPlugin();
+      FlutterLocalNotificationsPlugin();
 
   Future<void> shareQrCode(String groupCode) async {
     try {
@@ -28,12 +37,12 @@ class QrController extends GetxController{
         return;
       }
 
-
       final tempDir = await getTemporaryDirectory();
       final file = await File('${tempDir.path}/qr_code.png').create();
       await file.writeAsBytes(image);
 
-      const String appLink = 'https://play.google.com/store/apps/details?id=com.fg.fgtracker';
+      const String appLink =
+          'https://play.google.com/store/apps/details?id=com.fg.fgtracker';
       final String message = '''
 📌 *Group Code*: $groupCode
 
@@ -51,21 +60,28 @@ Join my group instantly using the QR code or the code above.
     }
   }
 
-
-
   Future<void> downloadQrCode(BuildContext context) async {
-    PermissionStatus imagePermission = await Permission.photos.request(); // iOS / Android 13+
-    PermissionStatus videoPermission = await Permission.videos.request(); // Android 13+
+    PermissionStatus imagePermission =
+        await Permission.photos.request(); // iOS / Android 13+
+    PermissionStatus videoPermission =
+        await Permission.videos.request(); // Android 13+
 
     bool isGranted = imagePermission.isGranted || videoPermission.isGranted;
 
     if (!isGranted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content:  Text("Image/Storage permission denied. Please allow it to continue.",style: TextStyle(
-              color: Colors.white,fontSize: 13.sp,),),
-          action: SnackBarAction(textColor: Colors.white,
-            label: "Open Settings",backgroundColor: AppColors.darkBlue,
+          content: Text(
+            "Image/Storage permission denied. Please allow it to continue.",
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 13.sp,
+            ),
+          ),
+          action: SnackBarAction(
+            textColor: Colors.white,
+            label: "Open Settings",
+            backgroundColor: AppColors.darkBlue,
             onPressed: () {
               openAppSettings();
             },
@@ -91,10 +107,9 @@ Join my group instantly using the QR code or the code above.
     }
   }
 
-
-
   void _showDownloadNotification(String filePath) async {
-    const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
+    const AndroidNotificationDetails androidDetails =
+        AndroidNotificationDetails(
       'download_channel',
       'Download Notifications',
       channelDescription: 'Notifies when QR code is downloaded',
@@ -114,10 +129,9 @@ Join my group instantly using the QR code or the code above.
     );
   }
 
-
   Future<void> initializeNotifications() async {
     const initializationSettingsAndroid =
-    AndroidInitializationSettings('@mipmap/ic_launcher');
+        AndroidInitializationSettings('@mipmap/ic_launcher');
     const initializationSettings = InitializationSettings(
       android: initializationSettingsAndroid,
     );

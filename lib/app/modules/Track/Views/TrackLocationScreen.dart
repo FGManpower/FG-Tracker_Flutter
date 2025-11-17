@@ -1,4 +1,5 @@
 import 'package:fgtracker/app/Core/values/BottomSheets/BottomSheetUi.dart';
+import 'package:fgtracker/app/Core/values/utility.dart';
 import 'package:fgtracker/app/config/themes_data.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/modules/Track/Widget/Track_widget.dart';
@@ -59,7 +60,16 @@ class _LocationTrackingPageState extends State<LocationTrackingPage> {
           controller.initGroupTracking(widget.groupId.toString());
         },
         onSearch: () {
-          Get.toNamed(Routes.SearchMembers);
+          Get.toNamed(Routes.SearchMembers, arguments: {
+            "GroupMembers":
+                controller.groupWiseUserData[widget.groupId.toString()]
+          })?.then(
+            (value) {
+              if (value.toString().isNotEmpty) {
+                controller.searchUserAndZoom(widget.groupId.toString(), value);
+              }
+            },
+          );
         },
       ),
       body: Stack(
@@ -186,56 +196,56 @@ class _LocationTrackingPageState extends State<LocationTrackingPage> {
           })
         ],
       ),
-      bottomNavigationBar: Container(
-        padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 16.w),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(25.r),
-            topRight: Radius.circular(25.r),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black12,
-              blurRadius: 10.r,
-              offset: Offset(0, -2),
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            reausabletext(
-              "Group: ${widget.groupName}",
-              fontsize: 16,
-              fontweight: FontWeight.w600,
-              color: Colors.black87,
-            ),
-            SizedBox(height: 10.h),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                buildNavActionButton(Icons.search, "Search", () {
-                  isSearching.value = !isSearching.value;
-                }),
-                // buildNavActionButton(Icons.my_location, "My Location", () async {
-                //
-                // }),
-                buildNavActionButton(Icons.people_alt_outlined, "Members", () {
-                  BottomSheetUi().showMemberBottomSheet(
-                      context,
-                      controller.groupWiseUserData[widget.groupId.toString()] ??
-                          []);
-                }),
-                buildNavActionButton(Icons.refresh, "Reload", () {
-                  controller.getGroupLocationData(context, widget.groupId);
-                  controller.initGroupTracking(widget.groupId.toString());
-                }),
-              ],
-            ),
-          ],
-        ),
-      ),
+      // bottomNavigationBar: Container(
+      //   padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 16.w),
+      //   decoration: BoxDecoration(
+      //     color: Colors.white,
+      //     borderRadius: BorderRadius.only(
+      //       topLeft: Radius.circular(25.r),
+      //       topRight: Radius.circular(25.r),
+      //     ),
+      //     boxShadow: [
+      //       BoxShadow(
+      //         color: Colors.black12,
+      //         blurRadius: 10.r,
+      //         offset: Offset(0, -2),
+      //       ),
+      //     ],
+      //   ),
+      //   child: Column(
+      //     mainAxisSize: MainAxisSize.min,
+      //     children: [
+      //       reausabletext(
+      //         "Group: ${widget.groupName}",
+      //         fontsize: 16,
+      //         fontweight: FontWeight.w600,
+      //         color: Colors.black87,
+      //       ),
+      //       SizedBox(height: 10.h),
+      //       Row(
+      //         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      //         children: [
+      //           buildNavActionButton(Icons.search, "Search", () {
+      //             isSearching.value = !isSearching.value;
+      //           }),
+      //           // buildNavActionButton(Icons.my_location, "My Location", () async {
+      //           //
+      //           // }),
+      //           buildNavActionButton(Icons.people_alt_outlined, "Members", () {
+      //             BottomSheetUi().showMemberBottomSheet(
+      //                 context,
+      //                 controller.groupWiseUserData[widget.groupId.toString()] ??
+      //                     []);
+      //           }),
+      //           buildNavActionButton(Icons.refresh, "Reload", () {
+      //             controller.getGroupLocationData(context, widget.groupId);
+      //             controller.initGroupTracking(widget.groupId.toString());
+      //           }),
+      //         ],
+      //       ),
+      //     ],
+      //   ),
+      // ),
     );
   }
 }

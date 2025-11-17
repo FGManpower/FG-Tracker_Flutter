@@ -1,11 +1,14 @@
 import 'package:fgtracker/app/Model/GroupRes.dart';
 import 'package:fgtracker/app/modules/Group/Controller/Group_Controller.dart';
 import 'package:fgtracker/app/modules/Group/Views/MemberScreen.dart';
+import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 import '../../../../gen/assets.gen.dart';
@@ -46,21 +49,18 @@ class CreatedGroupUi extends StatelessWidget {
               child: GestureDetector(
                 onTap: () {
                   if (data?.isActive == true) {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => MemberscreenScreen(
-                          groupId: data!.id.toString(),
-                          isCreator: data.isCreator!,
-                          isActive: data.isActive!,
-                          groupName: data.groupName!,
-                        ),
-                      ),
-                    ).then((value) {
-                      if (value == true) {
-                        groupController.getGroupData();
-                      }
-                    });
+                    Get.toNamed(Routes.Memberscreen, arguments: {
+                      "groupId": data!.id.toString(),
+                      "groupName": data!.groupName.toString(),
+                      "isCreator": data.isCreator.toString(),
+                      "isActive": data!.isActive.toString(),
+                    })?.then(
+                          (value) {
+                        if (value == true) {
+                          groupController.getGroupData();
+                        }
+                      },
+                    );
                   }
                 },
                 child: Opacity(
@@ -77,7 +77,8 @@ class CreatedGroupUi extends StatelessWidget {
                         borderRadius: BorderRadius.circular(15.r),
                       ),
                       child: Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 10.w,vertical: 15.h),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 10.w, vertical: 15.h),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.start,
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -128,43 +129,50 @@ class CreatedGroupUi extends StatelessWidget {
                                       )
                               ],
                             ),
-
-                            SizedBox(height: 13.h,),
+                            SizedBox(
+                              height: 13.h,
+                            ),
                             Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                GroupRow(title: "Team Code",value:  data?.groupCode ?? "",),
-                                GroupRow(title: "Created By",value:  data?.isCreator.toString() ?? "0",),
-                                GroupRow(title: "No. Of Member",value:  "04" ?? "0",showDivider: false,)
-
+                                GroupRow(
+                                  title: "Team Code",
+                                  value: data?.groupCode ?? "",
+                                ),
+                                GroupRow(
+                                  title: "Created By",
+                                  value: data?.isCreator.toString() ?? "0",
+                                ),
+                                GroupRow(
+                                  title: "No. Of Member",
+                                  value: "04" ?? "0",
+                                  showDivider: false,
+                                )
                               ],
                             ),
-
-                            SizedBox(height: 15.h,),
-
+                            SizedBox(
+                              height: 15.h,
+                            ),
                             Row(
                               crossAxisAlignment: CrossAxisAlignment.center,
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 GestureDetector(
-                                    onTap: () {
-                                      if (isActive) {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) => QrCodeScreen(
-                                                groupCode: data?.groupCode ?? ""),
-                                          ),
-                                        );
-                                      } else {
-                                        Utils().fluttertoast(
-                                            "Activate the group to view QR");
-                                      }
-                                    },
-                                    child:              reausabletext("Show QR Code",
-                                        fontfamily: FontFamily.interMedium,
-                                        fontsize: 12,
-                                        color: ToggleThemeData.darkPurple),
+                                  onTap: () {
+                                    if (isActive) {
+                                      Get.toNamed(Routes.QrCodeScreen,
+                                          arguments: {
+                                            "groupCode": data?.groupCode
+                                          });
+                                    } else {
+                                      Utils().fluttertoast(
+                                          "Activate the group to view QR");
+                                    }
+                                  },
+                                  child: reausabletext("Show QR Code",
+                                      fontfamily: FontFamily.interMedium,
+                                      fontsize: 12,
+                                      color: ToggleThemeData.darkPurple),
                                 ),
                                 Container(
                                   decoration: BoxDecoration(

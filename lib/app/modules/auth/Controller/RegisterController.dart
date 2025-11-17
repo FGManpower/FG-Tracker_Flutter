@@ -146,7 +146,7 @@ class RegistrationController extends GetxController {
               );
 
 
-              Utils().fluttertoast(result.message.toString());
+              // Utils().fluttertoast(result.message.toString());
               Get.offAllNamed(Routes.Home_Screen);
 
             }else{

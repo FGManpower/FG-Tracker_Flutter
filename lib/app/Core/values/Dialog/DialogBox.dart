@@ -59,11 +59,8 @@ class DialogBox {
                     ),
                   ),
                   SizedBox(height: 15.h),
-                  reausabletext(
-                    AppText.createNewGroup,
-                    fontsize: 18.sp,
-                   fontfamily: FontFamily.interSemiBold
-                  ),
+                  reausabletext(AppText.createNewGroup,
+                      fontsize: 18.sp, fontfamily: FontFamily.interSemiBold),
                   SizedBox(height: 20.h),
 
                   inputField(
@@ -73,8 +70,8 @@ class DialogBox {
                     maxLines: 1,
                     hintname: AppText.enterGroupName,
                     textctr: controller.groupName,
-                    validators: (value) => Validator.validate(
-                        value: value, title: "Group Name"),
+                    validators: (value) =>
+                        Validator.validate(value: value, title: "Group Name"),
                   ),
                   // InputField(
                   //   title: AppText.groupName,
@@ -168,11 +165,9 @@ class DialogBox {
                   InputField(
                     title: AppText.groupCode,
                     hintText: AppText.enterGroupCode,
-
                     controller: controller.groupCodeController,
                     maxLength: 6,
-                    textCapitalization: TextCapitalization
-                        .characters,
+                    textCapitalization: TextCapitalization.characters,
                     inputFormatters: [
                       UpperCaseTextFormatter(),
                     ],
@@ -362,7 +357,8 @@ class DialogBox {
     bool? status,
     String? lastSeen,
   }) {
-    bool isOnline = lastSeen == "Just now";
+    bool isOnline = status == true || (lastSeen?.toLowerCase() == "just now");
+
     showModalBottomSheet(
       context: ContextUtility.context!,
       isScrollControlled: true,
@@ -379,107 +375,91 @@ class DialogBox {
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                reausabletext(AppText.memberInfo,
-                    fontsize: 18.sp, fontweight: FontWeight.bold),
-                Align(
-                  alignment: Alignment.topRight,
-                  child: IconButton(
-                    icon: Icon(Icons.close, size: 28.sp),
-                    onPressed: () => Navigator.pop(ctx),
-                  ),
-                ),
-              ],
+            reausabletext(
+              AppText.memberInfo,
+              fontsize: 20,
+              fontweight: FontWeight.w700,
+              align: TextAlign.center,
             ),
-            Row(
-              children: [
-                CircleAvatar(
-                    radius: 30.r,
-                    backgroundImage: NetworkImage(
-                      Utility.isNotNullEmptyOrFalse(imageUrl)
-                          ? ConstRes.aImageBaseUrl + imageUrl!
-                          : MyAppTheme.notFoundImg,
-                    )),
-                SizedBox(width: 12.w),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      reausabletext(name ?? AppText.member,
-                          fontsize: 18.sp, fontweight: FontWeight.bold),
-                      SizedBox(height: 4.h),
-                      Text(
-                        isOnline ? "Online" : "Offline",
-                        style: TextStyle(
-                          fontSize: 14.sp,
-                          color: isOnline ? Colors.green : Colors.red,
-                        ),
-                      ),
-                      SizedBox(height: 2.h),
-                      if (!isOnline)
-                        reausabletext(
-                          "${AppText.lastSeen}$lastSeen",
-                          fontsize: 12.sp,
-                          color: Colors.grey,
-                        ),
-                    ],
-                  ),
-                ),
-              ],
+            SizedBox(height: 15.h),
+            CircleAvatar(
+              radius: 55.r,
+              backgroundImage: NetworkImage(
+                Utility.isNotNullEmptyOrFalse(imageUrl)
+                    ? ConstRes.aImageBaseUrl + imageUrl!
+                    : MyAppTheme.notFoundImg,
+              ),
             ),
+            SizedBox(height: 10.h),
+            reausabletext(
+              name ?? AppText.member,
+              fontsize: 16.sp,
+              fontfamily: FontFamily.interMedium,
+              color: Colors.black87,
+              align: TextAlign.center,
+            ),
+            SizedBox(height: 4.h),
+            reausabletext(
+              isOnline ? "Online" : "Offline",
+              fontsize: 12.sp,
+              color: isOnline ? Colors.green : Colors.red,
+              fontfamily: FontFamily.interMedium,
+            ),
+            if (!isOnline && Utility.isNotNullEmptyOrFalse(lastSeen))
+              Padding(
+                padding: EdgeInsets.only(top: 2.h),
+                child: reausabletext(
+                  "${AppText.lastSeen}$lastSeen",
+                  fontsize: 10.sp,
+                  color: Colors.grey.shade700,
+                ),
+              ),
             SizedBox(height: 24.h),
             Container(
               width: double.infinity,
-              padding: EdgeInsets.all(16.w),
+              padding: EdgeInsets.symmetric(vertical: 16.h),
               decoration: BoxDecoration(
-                color: Colors.blue.shade50,
-                borderRadius: BorderRadius.circular(12.r),
+                color: const Color(0xffA8A3DC).withOpacity(0.16),
+                borderRadius: BorderRadius.circular(50.r),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Row(
-                    children: [
-                      Icon(Icons.location_on_outlined,
-                          color: Colors.blue, size: 20.sp),
-                      SizedBox(width: 8.w),
-                      reausabletext(
-                          "${AppText.distance}${distance.toStringAsFixed(1)} km",
-                          fontsize: 15.sp),
-                    ],
+                  reausableIcon(
+                    icon: Icons.location_on_outlined,
+                    color: ToggleThemeData.darkPurple,
+                    size: 22.sp,
                   ),
-                  SizedBox(height: 8.h),
+                  SizedBox(width: 8.w),
+                  reausabletext(
+                    "${AppText.distance}${distance.toStringAsFixed(2)} Km",
+                    fontsize: 15.sp,
+                    fontfamily: FontFamily.interMedium,
+                    color: ToggleThemeData.darkPurple,
+                  ),
                 ],
               ),
             ),
-            SizedBox(height: 20.h),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: ToggleThemeData.Appcolor, // Deep Blue
-                  padding: EdgeInsets.symmetric(vertical: 14.h),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12.r),
-                  ),
-                ),
-                onPressed: () {
-                  final Uri mapsUri = Uri.parse(
-                      "https://www.google.com/maps/dir/?api=1&destination=${destination.latitude},${destination.longitude}&travelmode=walking");
-                  launchUrl(mapsUri);
-                },
-                icon: Icon(Icons.directions, size: 22.sp, color: Colors.white),
-                label: reausabletext(AppText.getDirections,
-                    fontsize: 16.sp,
-                    color: Colors.white,
-                    fontweight: FontWeight.w600),
-              ),
-            )
+            SizedBox(height: 15.h),
+            reausablebutton(
+              title: AppText.getDirections,
+              fontSize: 19,
+              borderradiues: 50.r,
+              icon: Icons.directions,
+              iconSize: 23.sp,
+              iconColor: Colors.white,
+              textcolor: Colors.white,
+              height: 58,
+              ontap: () {
+                final Uri mapsUri = Uri.parse(
+                  "https://www.google.com/maps/dir/?api=1"
+                  "&destination=${destination.latitude},${destination.longitude}"
+                  "&travelmode=walking",
+                );
+                launchUrl(mapsUri, mode: LaunchMode.externalApplication);
+              },
+            ),
           ],
         ),
       ),

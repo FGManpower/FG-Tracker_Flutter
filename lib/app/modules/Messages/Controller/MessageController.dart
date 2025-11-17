@@ -1,217 +1,186 @@
 import 'dart:developer';
-import 'dart:io';
-import 'dart:ui';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
-import 'package:fgtracker/app/Model/ProfileRes.dart';
-import 'package:intl/intl.dart';
-import 'package:path/path.dart' as path;
+import 'package:fgtracker/app/Core/deep_Link/Context_Utility.dart';
 import 'package:fgtracker/app/Core/values/Dialog/Common_dialog.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Core/values/loading.dart';
 import 'package:fgtracker/app/Data/Repositories/GetMessageRepo.dart';
+import 'package:fgtracker/app/Data/Services/CallStateTracker.dart';
 import 'package:fgtracker/app/Model/GetMessage.dart';
+import 'package:fgtracker/app/Model/MemberDataRes.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../WebRtcCall/call_service.dart';
 import 'Socket_Message_Services.dart';
 
 class MessageController extends GetxController {
+  final socketService = SocketMessageService.instance;
+  final ScrollController scrollController = ScrollController();
 
-  final SocketMessageService socketService = SocketMessageService.instance;
-  final ScrollController _scrollController = ScrollController();
+  RxList<MessageData> messageData = <MessageData>[].obs;
+  RxString imagePath = "".obs;
+  RxBool isSending = false.obs;
+  RxString messageText = "".obs;
 
-  var messageData = <MessageData>[].obs;
-  var imagePath = "".obs;
-  final joinedUsersData = <Map<String, dynamic>>[].obs;
-  var isSending = false.obs;
-  var messageText = ''.obs;
+  late MemberData memberData;
+  late CallService callService;
 
+  Map<String, dynamic>? arguments = Get.arguments;
 
-  String getBgColorKey(String userId) => 'chat_background_color_$userId';
-  String getBgImagePathKey(String userId) => 'chat_background_image_path_$userId';
+  @override
+  void onInit() {
+    super.onInit();
+    memberData = arguments?['userData'];
 
-
-  var chatBackgroundColor = Colors.white.obs;
-  var chatBackgroundImagePath = RxnString(); // path to file image
-
-
-  late final UserData userData; // User data for the current chat
-  final TextEditingController textController = TextEditingController();
-  final RxBool _isSending = false.obs; // Observable to track sending status
-
-  String get currentImagePath => imagePath.value;
-  TextEditingController get messageTextController => textController;
-
-  final TextEditingController inputController = TextEditingController();
-
-
-
-  Future<void> saveThemePreferences(String userId) async {
-    final prefs = await SharedPreferences.getInstance();
-    prefs.setInt('chat_background_color_$userId', chatBackgroundColor.value.value);
-
-    if (chatBackgroundImagePath.value != null) {
-      prefs.setString('chat_background_image_path_$userId', chatBackgroundImagePath.value!);
-    } else {
-      prefs.remove('chat_background_image_path_$userId');
-    }
+    _initializeChat();
+    _initializeCallService();
   }
 
-  Future<void> loadThemePreferences(String userId) async {
-    final prefs = await SharedPreferences.getInstance();
+  void _initializeChat() {
+    final userId = memberData.userId.toString();
+    final groupId = memberData.groupId!;
 
-    final colorValue = prefs.getInt('chat_background_color_$userId');
-    if (colorValue != null) {
-      chatBackgroundColor.value = Color(colorValue);
-    }
+    ChatStateTracker.isChatCallScreenOpen = true;
 
-    final imagePath = prefs.getString('chat_background_image_path_$userId');
-    if (imagePath != null && File(imagePath).existsSync()) {
-      chatBackgroundImagePath.value = imagePath;
-    } else {
-      chatBackgroundImagePath.value = null;
-    }
-  }
-
-
-
-  Future<void> pickBackgroundImageFromGallery(String userId) async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-
-    if (pickedFile != null) {
-      final directory = await getApplicationDocumentsDirectory();
-      final fileName = path.basename(pickedFile.path);
-      final savedImage = await File(pickedFile.path).copy('${directory.path}/$fileName');
-      chatBackgroundImagePath.value = savedImage.path;
-      saveThemePreferences(userId); // 👈 pass the specific userId here
-
-    }
-  }
-
-
-
-  void initSocket(String recieverId,{required int groupId}
-
-      ) {
-    log("----------------InitChatDetail----groupId:${groupId}-----recieverId--${recieverId}");
-    socketService.init(groupId: groupId,userId: recieverId,ConstRes.socketUrl);
+    socketService.init(groupId: groupId, userId: userId, ConstRes.socketUrl);
 
     socketService.socket?.off('receive_message');
     socketService.RecievedMessage(
-
       senderId: Global.storageServices.get(PrefConst.userId).toString(),
-      recieverId: recieverId,
+      recieverId: userId,
       groupId: groupId,
-        callback: (message) {
-          messageData.add(MessageData.fromJson(message));
-
-          Future.delayed(const Duration(milliseconds: 50), () {
-            scrollToBottom(_scrollController, animated: true);
-          });
-        }
-      // callback: (message) {
-      //   messageData.add(MessageData.fromJson(message));
-      //   scrollToBottom(_scrollController, animated: true);
-      // },
+      callback: (message) {
+        messageData.add(MessageData.fromJson(message));
+        scrollToBottom();
+      },
     );
+
+    getMessageHistory( userId, groupId);
   }
 
+  void _initializeCallService() {
+    callService = CallService(
+      userId: Global.storageServices.get(PrefConst.userId).toString(),
+      debug: true,
+    );
 
-  Future<void> getMessageHistory(BuildContext context,String recieverId,int groupId) async {
-   try{
-     Loading().showloading(context: context);
-    var result = await MessageRepo.MessageHistory(recieverId: recieverId,groupId: groupId);
-    if(result.status==true){
-      Loading().dismissloading(context: context);
-      messageData.value=result.messageData!;
-    }else{
-      Loading().dismissloading(context: context);
-      CommonDialog.errorMessage(result.message);
-    }
-   }catch(e){
-     Loading().dismissloading(context: context);
-     log("message-Exception:$e");
-   }
-  }
-}
+    callService.init();
 
-
-class ChatThemeController extends GetxController {
-  static const String _bgColorKey = 'chat_background_color';
-  static const String _bgImageKey = 'chat_background_image';
-
-  var chatBackgroundColor = Colors.white.obs;
-  var chatBackgroundImage = RxnString();
-
-  Future<void> loadThemePreferences() async {
-    final prefs = await SharedPreferences.getInstance();
-
-    final colorValue = prefs.getInt(_bgColorKey);
-    if (colorValue != null) {
-      chatBackgroundColor.value = Color(colorValue);
-    }
-
-    final imagePath = prefs.getString(_bgImageKey);
-    chatBackgroundImage.value = imagePath;
-  }
-}
-
-
-void scrollToBottom(ScrollController controller, {bool animated = false}) {
-  void tryScroll([int attempt = 0]) {
-    if (!controller.hasClients) return;
-
-    final maxScroll = controller.position.maxScrollExtent;
-
-    if (animated) {
-      controller.animateTo(
-        maxScroll,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeOut,
+    callService.onIncomingCall = (data) {
+      Get.defaultDialog(
+        title: "Incoming Call",
+        middleText: "From: ${data['caller_name'] ?? data['from']}",
+        onConfirm: () async {
+          Get.back();
+          await callService.acceptCall(incomingCall: data);
+        },
+        onCancel: () => callService.rejectCall(incomingCall: data),
       );
-    } else {
-      controller.jumpTo(maxScroll);
-    }
+    };
+  }
 
-    // ✅ Retry a few times until list fully renders
-    if (attempt < 3) {
-      Future.delayed(const Duration(milliseconds: 100), () => tryScroll(attempt + 1));
+  Future<void> sendMessage({required TextEditingController textController}) async {
+    if (isSending.value) return;
+    isSending.value = true;
+
+    final text = textController.text.trim();
+
+    try {
+      // Image message
+      if (imagePath.isNotEmpty) {
+        var result = await MessageRepo.uploadChatImage(imagePath.value);
+
+        if (result.status == true && result.filename != null) {
+          socketService.sendMessage(
+            messageType: "image",
+            receiverId: memberData.userId.toString(),
+            groupId: memberData.groupId!,
+            content: result.filename!,
+          );
+
+          if (text.isNotEmpty) {
+            await Future.delayed(const Duration(milliseconds: 300));
+            socketService.sendMessage(
+              messageType: "text",
+              receiverId: memberData.userId.toString(),
+              groupId: memberData.groupId!,
+              content: text,
+            );
+          }
+        } else {
+          CommonDialog.errorMessage("Image upload failed.");
+        }
+
+        imagePath.value = "";
+        textController.clear();
+      }
+
+      // Text message
+      else if (text.isNotEmpty) {
+        socketService.sendMessage(
+          messageType: "text",
+          receiverId: memberData.userId.toString(),
+          groupId: memberData.groupId!,
+          content: text,
+        );
+        textController.clear();
+      }
+
+      scrollToBottom();
+    } catch (e) {
+      log("Error sending message: $e");
+    } finally {
+      isSending.value = false;
     }
   }
 
-  // Wait a little before first scroll
-  Future.delayed(const Duration(milliseconds: 50), tryScroll);
-}
+  Future<void> getMessageHistory( String recieverId, int groupId) async {
+    try {
+      // Loading().showloading(context: context);
+
+      var result = await MessageRepo.MessageHistory(recieverId: recieverId, groupId: groupId);
 
 
 
-String formatTime(String timestamp) {
-  final dateTime = DateTime.parse(timestamp).toLocal();
-  return DateFormat('hh:mm a').format(dateTime);
-}
+      if (result.status == true) {
+        messageData.value = result.messageData!;
+        scrollToBottom();
+      } else {
+        CommonDialog.errorMessage(result.message);
+      }
+    } catch (e) {
+      // Loading().dismissloading(context: context);
+      log("History Error: $e");
+    }
+  }
 
-String formatDateHeader(String timestamp) {
-  final dateTime = DateTime.parse(timestamp).toLocal();
-  final now = DateTime.now();
+  void scrollToBottom() {
+    Future.delayed(const Duration(milliseconds: 100), () {
+      if (scrollController.hasClients) {
+        scrollController.animateTo(
+          scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 350),
+          curve: Curves.easeOut,
+        );
+      }
+    });
+  }
 
-  final today = DateTime(now.year, now.month, now.day);
-  final messageDate = DateTime(dateTime.year, dateTime.month, dateTime.day);
+  void handleBackPressed(BuildContext context, {required int groupID}) {
+    final userId = Global.storageServices.get(PrefConst.userId).toString();
 
-  if (messageDate == today) {
-    return "Today";
-  } else if (messageDate == today.subtract(Duration(days: 1))) {
-    return "Yesterday";
-  } else {
-    return DateFormat('dd MMM yyyy').format(dateTime); // like "05 Jun 2025"
+    socketService.leaveUserFromGroup(userId, groupID);
+    socketService.disconnectSocket();
+
+    messageData.clear();
+    messageText.value = "";
+    imagePath.value = "";
+    isSending.value = false;
+
+    ChatStateTracker.isChatCallScreenOpen = false;
+
+    Navigator.of(context).pop();
   }
 }
-
-final RxString imagePath = ''.obs;
-final TextEditingController inputController = TextEditingController();
-
-

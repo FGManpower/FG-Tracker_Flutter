@@ -1,6 +1,10 @@
 import 'package:fgtracker/app/modules/Application/splashscreen.dart';
+import 'package:fgtracker/app/modules/Group/Bindings/Member_binding.dart';
+import 'package:fgtracker/app/modules/Group/Views/MemberScreen.dart';
 import 'package:fgtracker/app/modules/IntroScreen/IntroScreen.dart';
+import 'package:fgtracker/app/modules/Messages/Bindings/Chat_binding.dart';
 import 'package:fgtracker/app/modules/QiblaFinder/QiblaDirection.dart';
+import 'package:fgtracker/app/modules/Track/Bindings/track_binding.dart';
 import 'package:fgtracker/app/modules/auth/Bindings/auth_binding.dart';
 import 'package:fgtracker/app/modules/auth/Views/Otp_Screen.dart';
 import 'package:fgtracker/app/modules/auth/Views/login_Page.dart';
@@ -10,6 +14,8 @@ import 'package:fgtracker/app/modules/home/Views/home_screen.dart';
 
 import 'package:get/get.dart';
 
+import '../modules/Group/Views/QrScreen.dart';
+import '../modules/Messages/Views/Chat_Screen.dart';
 import '../modules/Track/Views/Search_Members.dart';
 part 'app_routes.dart';
 
@@ -38,14 +44,14 @@ class AppPages {
       name: _Paths.Login,
       page: () => LoginPage(),
       binding: Auth_Binding(),
-      transition: Transition.topLevel,
+      transition: Transition.rightToLeft,
       transitionDuration: const Duration(milliseconds: 500),
     ),
     GetPage(
       name: _Paths.Register,
       page: () => RegistrationScreen(),
       binding: Registeration_Binding(),
-      transition: Transition.topLevel,
+      transition: Transition.rightToLeft,
       transitionDuration: const Duration(milliseconds: 500),
     ),
     GetPage(
@@ -72,9 +78,32 @@ class AppPages {
       name: _Paths.SearchMembers,
       page: () => SearchMembers(),
       transition: Transition.topLevel,
+      binding: SearchMember_Binding(),
       transitionDuration: const Duration(milliseconds: 500),
     ),
 
-    GetPage(name: _Paths.QiblaScreen, page: () => Qibladirection(),transition: Transition.topLevel,transitionDuration: Duration(milliseconds: 500))
+    GetPage(
+      name: _Paths.QrCodeScreen,
+      page: () => QrCodeScreen(),
+      transition: Transition.rightToLeft,
+      transitionDuration: const Duration(milliseconds: 500),
+    ),
+
+
+    GetPage(
+      name: _Paths.Memberscreen,
+      page: () => MemberscreenScreen(),
+      transition: Transition.rightToLeft,
+      binding: MemberBinding(),
+      transitionDuration: const Duration(milliseconds: 500),
+    ),
+
+    GetPage(
+      name: _Paths.chatScreen,
+      page: () => ChatScreen(),
+      transition: Transition.rightToLeft,
+      binding: ChatBinding(),
+      transitionDuration: const Duration(milliseconds: 500),
+    ),
   ];
 }

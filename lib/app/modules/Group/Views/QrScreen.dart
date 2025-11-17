@@ -14,9 +14,9 @@ import 'package:screenshot/screenshot.dart';
 import '../../../../gen/assets.gen.dart';
 
 class QrCodeScreen extends StatefulWidget {
-  final String groupCode;
 
-  const QrCodeScreen({super.key, required this.groupCode});
+
+  const QrCodeScreen({super.key, });
 
   @override
   State<QrCodeScreen> createState() => _QrCodeScreenState();
@@ -52,7 +52,6 @@ class _QrCodeScreenState extends State<QrCodeScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // appBar: reusableAppbar("Group QR Code", ontap: Get.back),
       body: Container(
         width: double.infinity,
         height: double.infinity,
@@ -77,7 +76,7 @@ class _QrCodeScreenState extends State<QrCodeScreen>
                     height: 40.h,
                   ),
                   Center(
-                    child: widget.groupCode.isNotEmpty
+                    child: controller.groupCode.isNotEmpty
                         ? Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
@@ -139,7 +138,7 @@ class _QrCodeScreenState extends State<QrCodeScreen>
                                                   ],
                                                 ),
                                                 child: PrettyQrView.data(
-                                                  data: widget.groupCode,
+                                                  data:  controller.groupCode.toString(),
                                                   errorCorrectLevel:
                                                       QrErrorCorrectLevel.M,
                                                   decoration:
@@ -169,7 +168,7 @@ class _QrCodeScreenState extends State<QrCodeScreen>
                                             children: [
                                               reausabletext("Team Code ",color: Colors.black,fontsize: 14,fontfamily: FontFamily.interRegular),
                                               Text(
-                                                widget.groupCode,
+                                                controller.groupCode.toString(),
                                                 textAlign: TextAlign.center,
                                                 style: TextStyle(
                                                   fontSize: 14.sp,
@@ -180,7 +179,7 @@ class _QrCodeScreenState extends State<QrCodeScreen>
                                               TextButton.icon(
                                                 onPressed: () {
                                                   Clipboard.setData(
-                                                      ClipboardData(text: widget.groupCode));
+                                                      ClipboardData(text: controller.groupCode.toString()));
 
                                                   Utils().fluttertoast("Group code copied!");
                                                 },
@@ -213,7 +212,7 @@ class _QrCodeScreenState extends State<QrCodeScreen>
                             Padding(padding: EdgeInsets.symmetric(horizontal: 10.w,vertical: 10.h),child:   Row(
                               children: [
                                 Expanded(child:   reausablebutton(icon: Icons.share,title: "Share",iconColor: Color(0xffFFE400),borderradiues: 25,fontSize:14,backgroundColor: ToggleThemeData.Appcolor,iconSize:20,ontap: () => controller
-                                    .shareQrCode(widget.groupCode),),),
+                                    .shareQrCode(controller.groupCode.toString()),),),
 
                                 SizedBox(width: 20.w,),
                                 Expanded(child:   reausablebutton(icon: Icons.download_rounded,title: "Download",iconColor: Color(0xffFFE400),borderradiues: 25,fontSize:14,backgroundColor: ToggleThemeData.Appcolor,iconSize:20,ontap: () => controller.downloadQrCode(context),),),
