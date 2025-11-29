@@ -2,17 +2,22 @@ import 'dart:developer';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/deep_Link/Context_Utility.dart';
+import 'package:fgtracker/app/Core/theme/appTheme.dart';
 import 'package:fgtracker/app/Core/values/Dialog/Common_dialog.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
-import 'package:fgtracker/app/Core/values/loading.dart';
 import 'package:fgtracker/app/Data/Repositories/GetMessageRepo.dart';
 import 'package:fgtracker/app/Data/Services/CallStateTracker.dart';
 import 'package:fgtracker/app/Model/GetMessage.dart';
 import 'package:fgtracker/app/Model/MemberDataRes.dart';
+import 'package:fgtracker/app/modules/mediaStream/Views/incoming_call_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../../WebRtcCall/call_service.dart';
+
+import '../../../Data/Services/SignallingService.dart';
+import '../../../routes/app_pages.dart';
+import '../../mediaStream/Views/call_screen.dart';
+
 import 'Socket_Message_Services.dart';
 
 class MessageController extends GetxController {
@@ -25,18 +30,24 @@ class MessageController extends GetxController {
   RxString messageText = "".obs;
 
   late MemberData memberData;
-  late CallService callService;
-
   Map<String, dynamic>? arguments = Get.arguments;
+
+  var incomingSDPOffer = Rxn<Map>();
 
   @override
   void onInit() {
     super.onInit();
-    memberData = arguments?['userData'];
 
+    memberData = arguments?['userData'];
     _initializeChat();
-    _initializeCallService();
+
+    // listen for incoming video call
+    SignallingService.instance.socket!.on("newCall", (data) {
+      // set SDP Offer of incoming call
+      incomingSDPOffer.value = data;
+    });
   }
+
 
   void _initializeChat() {
     final userId = memberData.userId.toString();
@@ -47,6 +58,7 @@ class MessageController extends GetxController {
     socketService.init(groupId: groupId, userId: userId, ConstRes.socketUrl);
 
     socketService.socket?.off('receive_message');
+
     socketService.RecievedMessage(
       senderId: Global.storageServices.get(PrefConst.userId).toString(),
       recieverId: userId,
@@ -57,38 +69,17 @@ class MessageController extends GetxController {
       },
     );
 
-    getMessageHistory( userId, groupId);
+    getMessageHistory(userId, groupId);
   }
 
-  void _initializeCallService() {
-    callService = CallService(
-      userId: Global.storageServices.get(PrefConst.userId).toString(),
-      debug: true,
-    );
-
-    callService.init();
-
-    callService.onIncomingCall = (data) {
-      Get.defaultDialog(
-        title: "Incoming Call",
-        middleText: "From: ${data['caller_name'] ?? data['from']}",
-        onConfirm: () async {
-          Get.back();
-          await callService.acceptCall(incomingCall: data);
-        },
-        onCancel: () => callService.rejectCall(incomingCall: data),
-      );
-    };
-  }
-
-  Future<void> sendMessage({required TextEditingController textController}) async {
+  Future<void> sendMessage(
+      {required TextEditingController textController}) async {
     if (isSending.value) return;
     isSending.value = true;
 
     final text = textController.text.trim();
 
     try {
-      // Image message
       if (imagePath.isNotEmpty) {
         var result = await MessageRepo.uploadChatImage(imagePath.value);
 
@@ -115,10 +106,7 @@ class MessageController extends GetxController {
 
         imagePath.value = "";
         textController.clear();
-      }
-
-      // Text message
-      else if (text.isNotEmpty) {
+      } else if (text.isNotEmpty) {
         socketService.sendMessage(
           messageType: "text",
           receiverId: memberData.userId.toString(),
@@ -136,13 +124,12 @@ class MessageController extends GetxController {
     }
   }
 
-  Future<void> getMessageHistory( String recieverId, int groupId) async {
+  Future<void> getMessageHistory(String recieverId, int groupId) async {
     try {
-      // Loading().showloading(context: context);
-
-      var result = await MessageRepo.MessageHistory(recieverId: recieverId, groupId: groupId);
-
-
+      var result = await MessageRepo.MessageHistory(
+        recieverId: recieverId,
+        groupId: groupId,
+      );
 
       if (result.status == true) {
         messageData.value = result.messageData!;
@@ -151,7 +138,6 @@ class MessageController extends GetxController {
         CommonDialog.errorMessage(result.message);
       }
     } catch (e) {
-      // Loading().dismissloading(context: context);
       log("History Error: $e");
     }
   }
@@ -161,7 +147,7 @@ class MessageController extends GetxController {
       if (scrollController.hasClients) {
         scrollController.animateTo(
           scrollController.position.maxScrollExtent,
-          duration: const Duration(milliseconds: 350),
+          duration: const Duration(milliseconds: 300),
           curve: Curves.easeOut,
         );
       }
@@ -182,5 +168,35 @@ class MessageController extends GetxController {
     ChatStateTracker.isChatCallScreenOpen = false;
 
     Navigator.of(context).pop();
+  }
+
+
+  startCall(BuildContext context, {
+    required String callerId,
+    required String remoteUserId,
+    dynamic offer,
+  }) {
+
+
+        Get.toNamed(
+          Routes.callScreen,
+      arguments: {
+        "callerId": callerId,
+        "remoteUserId": remoteUserId,
+        "offer": offer,
+      },
+    );
+
+    // Navigator.push(
+    //   context,
+    //   MaterialPageRoute(
+    //     builder: (_) =>
+    //         CallScreen(
+    //           callerId: callerId,
+    //           remoteUserId: remoteUserId,
+    //           offer: offer,
+    //         ),
+    //   ),
+    // );
   }
 }

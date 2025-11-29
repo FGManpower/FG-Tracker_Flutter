@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -15,9 +16,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'app/Core/util/CallUtils.dart';
 import 'app/Core/values/Context_Utility.dart';
 import 'app/Core/values/global.dart';
+import 'app/Data/Services/SignallingService.dart';
 import 'app/Model/call_model.dart';
 import 'app/modules/AgoraVideoandAudio_Call/incoming_call_screen.dart';
 import 'app/modules/Notification/Controller/cubit/notification_count_cubit.dart';
+
 import 'app/routes/app_pages.dart';
 import 'app/modules/Track/Controller/SocketServices.dart';
 import 'app/modules/Track/Controller/TrackController.dart';
@@ -46,11 +49,15 @@ Future<void> main() async {
     const SystemUiOverlayStyle(statusBarColor: Colors.transparent),
   );
 
-  // Dependency injection
+
   Get.put<TrackingController>(TrackingController());
   Get.put<LocationService>(LocationService());
   Get.put<SocketService>(SocketService());
 
+  SignallingService.instance.init(
+    websocketUrl: ConstRes.socketUrl,
+    selfCallerID: Global.storageServices.get(PrefConst.userId).toString(),
+  );
   runApp(const MyApp());
 }
 
@@ -66,8 +73,18 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
     listenCallKitEvents();
+
+    // Connect the socket AFTER user logs in
+    // Future.microtask(() async {
+    //   // other inits (Firebase, Global.init etc)
+    //   await CallManager.instance.callService.init();
+    //
+    //   // OPTIONAL: connect and register once you have logged-in user id
+    //   CallManager.instance.callService.connectAndRegister(userId: "${Global.storageServices.get(PrefConst.userId)}");
+    // });
   }
 
+  //final callService = CallService.instance;
   void listenCallKitEvents() {
     FlutterCallkitIncoming.onEvent.listen((CallEvent? event) {
       if (event == null) return;
@@ -116,12 +133,12 @@ class _MyAppState extends State<MyApp> {
         callerProfileImage: data['callerProfileImage'],
       );
 
-
-      Navigator.push(
-          ContextUtility.navigator!.context,
-          MaterialPageRoute(
-              builder: (context) =>
-                  IncomingCallScreen(call: incomingCallData)));
+      //
+      // Navigator.push(
+      //     ContextUtility.navigator!.context,
+      //     MaterialPageRoute(
+      //         builder: (context) =>
+      //             IncomingCallScreen(call: incomingCallData)));
 
     } catch (e) {
       log('exception:${e.toString()}');
@@ -167,6 +184,7 @@ class _MyAppState extends State<MyApp> {
               Locale('hi', 'IN'),
               Locale('ur', 'PK'),
             ],
+            // home: JoinScreen(selfCallerId: Global.storageServices.get(PrefConst.userId).toString(),),
           ),
         ),
       ),

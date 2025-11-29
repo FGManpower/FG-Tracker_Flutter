@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import '../../../../gen/fonts.gen.dart';
 import '../../../Core/constant/const_res.dart';
 import '../../../Core/theme/AppText.dart';
+import '../../../Data/Services/Tracking.dart';
 import '../../../config/themes_data.dart';
 import '../../../global_widget/common_widget.dart';
 import '../Controller/SearchController.dart';
@@ -84,6 +85,12 @@ class SearchMembers extends GetView<SearchMemberController> {
       itemCount: controller.filteredMembers.length,
       itemBuilder: (context, index) {
         final data = controller.filteredMembers[index];
+        bool isOnline = (data.isOnline == true) ||
+            (data.lastSeen != null &&
+                Tracking()
+                    .getTimeAgo(DateTime.parse(data!.lastSeen!))
+                    .toLowerCase() ==
+                    "just now");
         return GestureDetector(
           onTap: () {
             Navigator.pop(context,data.name);
@@ -108,7 +115,7 @@ class SearchMembers extends GetView<SearchMemberController> {
                         height: 12.w,
                         width: 12.w,
                         decoration: BoxDecoration(
-                          color: Colors.green,
+                          color: isOnline?Colors.green:Colors.red,
                           shape: BoxShape.circle,
                           border: Border.all(color: Colors.white, width: 1.5.w),
                         ),

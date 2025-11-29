@@ -101,6 +101,10 @@ class $AssetsImagesGen {
   /// File path: assets/images/message.png
   AssetGenImage get message => const AssetGenImage('assets/images/message.png');
 
+  /// File path: assets/images/not_fount.png
+  AssetGenImage get notFound =>
+      const AssetGenImage('assets/images/not_fount.png');
+
   /// File path: assets/images/otpLock.png
   AssetGenImage get otpLock => const AssetGenImage('assets/images/otpLock.png');
 
@@ -159,6 +163,7 @@ class $AssetsImagesGen {
     loginIllustration,
     lostInternets,
     message,
+    notFound,
     otpLock,
     play,
     playstore,

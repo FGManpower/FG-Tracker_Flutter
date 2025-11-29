@@ -72,17 +72,17 @@ class UniServices {
           if (Utility.isNotNullEmptyOrFalse(notificationData.callerId)) {
             try {
               Future.delayed(Duration(seconds: 3));
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => IncomingCallScreen(
-                    call: notificationData,
-                  ),
-                ),
-              ).then((value) {
-                AppLinkStateTracker.isIncomingScreenOpened = false;
-                controller.DeeplinkWithStartJob.value = true;
-              });
+              // Navigator.push(
+              //   context,
+              //   MaterialPageRoute(
+              //     builder: (context) => IncomingCallScreen(
+              //       call: notificationData,
+              //     ),
+              //   ),
+              // ).then((value) {
+              //   AppLinkStateTracker.isIncomingScreenOpened = false;
+              //   controller.DeeplinkWithStartJob.value = true;
+              // });
             } catch (e) {
               log("NavigatorException--------${e.toString()}");
             }

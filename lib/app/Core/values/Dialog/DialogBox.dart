@@ -9,8 +9,8 @@ import 'package:fgtracker/app/Core/values/bottomSheet.dart';
 import 'package:fgtracker/app/Core/values/utility.dart';
 import 'package:fgtracker/app/config/themes_data.dart';
 import 'package:fgtracker/app/global_widget/input_widget.dart';
-import 'package:fgtracker/app/modules/Group/Controller/Group_Controller.dart';
 import 'package:fgtracker/app/modules/Group/Controller/JoinGroup_Controller.dart';
+import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -20,6 +20,7 @@ import 'package:google_mlkit_barcode_scanning/google_mlkit_barcode_scanning.dart
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../global_widget/common_widget.dart';
+
 import '../../../modules/auth/Auth_Widget/Auth_widget.dart';
 import '../../theme/AppText.dart';
 import 'Common_dialog.dart';
@@ -28,6 +29,7 @@ class DialogBox {
   void showCreateGroupBottomSheet({
     required BuildContext context,
     required GroupController controller,
+
   }) {
     showModalBottomSheet(
       context: context,
@@ -82,17 +84,17 @@ class DialogBox {
                   //       ? AppText.groupNameCnntEmpty
                   //       : null,
                   // ),
-                  SizedBox(height: 12.h),
-                  InputField(
-                    title: AppText.groupDescription,
-                    maxLength: 60,
-                    hintText: AppText.entGroupDescription,
-                    controller: controller.groupDesc,
-                    maxLines: 3,
-                    validator: (value) => value == null || value.isEmpty
-                        ? AppText.entGroupDescriptionCnntBeEmpty
-                        : null,
-                  ),
+                  // SizedBox(height: 12.h),
+                  // InputField(
+                  //   title: AppText.groupDescription,
+                  //   maxLength: 60,
+                  //   hintText: AppText.entGroupDescription,
+                  //   controller: controller.groupDesc,
+                  //   maxLines: 3,
+                  //   validator: (value) => value == null || value.isEmpty
+                  //       ? AppText.entGroupDescriptionCnntBeEmpty
+                  //       : null,
+                  // ),
                   SizedBox(height: 25.h),
                   reausablebutton(
                     title: "Done",

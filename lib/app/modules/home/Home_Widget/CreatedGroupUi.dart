@@ -1,23 +1,19 @@
 import 'package:fgtracker/app/Model/GroupRes.dart';
-import 'package:fgtracker/app/modules/Group/Controller/Group_Controller.dart';
-import 'package:fgtracker/app/modules/Group/Views/MemberScreen.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import 'package:skeletonizer/skeletonizer.dart';
-
 import '../../../../gen/assets.gen.dart';
 import '../../../../gen/fonts.gen.dart';
 import '../../../Core/theme/AppText.dart';
 import '../../../Core/values/Utils.dart';
 import '../../../config/themes_data.dart';
 import '../../../global_widget/common_widget.dart';
-import '../../Group/Views/QrScreen.dart';
+import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
+
 import 'Home_widget.dart';
 
 class CreatedGroupUi extends StatelessWidget {
@@ -26,7 +22,7 @@ class CreatedGroupUi extends StatelessWidget {
       this.groupData,
       this.isLoading = false,
       required this.groupController});
-  List<GroupData>? groupData;
+  List<GroupsResData>? groupData;
   bool isLoading = false;
   GroupController groupController;
   @override
@@ -55,7 +51,7 @@ class CreatedGroupUi extends StatelessWidget {
                       "isCreator": data.isCreator.toString(),
                       "isActive": data!.isActive.toString(),
                     })?.then(
-                          (value) {
+                      (value) {
                         if (value == true) {
                           groupController.getGroupData();
                         }
@@ -84,6 +80,7 @@ class CreatedGroupUi extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Flexible(
                                   child: reausabletext(
@@ -145,7 +142,7 @@ class CreatedGroupUi extends StatelessWidget {
                                 ),
                                 GroupRow(
                                   title: "No. Of Member",
-                                  value: "04" ?? "0",
+                                  value: "${data?.memberCount}" ?? "0",
                                   showDivider: false,
                                 )
                               ],
@@ -153,46 +150,46 @@ class CreatedGroupUi extends StatelessWidget {
                             SizedBox(
                               height: 15.h,
                             ),
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                GestureDetector(
-                                  onTap: () {
-                                    if (isActive) {
-                                      Get.toNamed(Routes.QrCodeScreen,
-                                          arguments: {
-                                            "groupCode": data?.groupCode
-                                          });
-                                    } else {
-                                      Utils().fluttertoast(
-                                          "Activate the group to view QR");
-                                    }
-                                  },
-                                  child: reausabletext("Show QR Code",
+                            GestureDetector(
+                              onTap: () {
+                                if (isActive) {
+                                  Get.toNamed(Routes.QrCodeScreen, arguments: {
+                                    "groupCode": data?.groupCode
+                                  });
+                                } else {
+                                  Utils().fluttertoast(
+                                      "Activate the group to view QR");
+                                }
+                              },
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  reausabletext("Show QR Code",
                                       fontfamily: FontFamily.interMedium,
                                       fontsize: 12,
                                       color: ToggleThemeData.darkPurple),
-                                ),
-                                Container(
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                      color: const Color(0xff5045B9),
-                                      width: 1.8.w,
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: const Color(0xff5045B9),
+                                        width: 1.8.w,
+                                      ),
+                                    ),
+                                    child: Padding(
+                                      padding: EdgeInsets.all(6.r),
+                                      child: reausableIcon(
+                                        icon: FontAwesomeIcons.qrcode,
+                                        size: 18,
+                                        color: const Color(0xff5045B9),
+                                      ),
                                     ),
                                   ),
-                                  child: Padding(
-                                    padding: EdgeInsets.all(6.r),
-                                    child: reausableIcon(
-                                      icon: FontAwesomeIcons.walkieTalkie,
-                                      size: 18,
-                                      color: const Color(0xff5045B9),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
+                                ],
+                              ),
+                            )
                           ],
                         ),
                       )),

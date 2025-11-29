@@ -15,7 +15,8 @@ class GroupController extends GetxController {
   final groupName = TextEditingController();
   final groupDesc = TextEditingController();
   RxBool groupDataLoading = false.obs;
-  var groupData = <GroupData>[].obs;
+  var newlyCreatedGroups = <GroupsResData>[].obs;
+  var createdGroups = <GroupsResData>[].obs;
   var responseError = "".obs;
 
   Future<void> decodeQRCodeFromGallery() async {
@@ -76,11 +77,22 @@ class GroupController extends GetxController {
       groupDataLoading.value = true;
       var result = await GroupRepo.getGroupData();
       if (result.status == true) {
-        groupData.value = result.groupData!;
+        newlyCreatedGroups.value = result.data!.newlyCreatedGroups!;
+        createdGroups.value = result.data!.createdGroups!;
         responseError.value = "";
         groupDataLoading.value = false;
         try{
-          TrackingController.instance.inItAllGroups(groups: result.groupData ?? []);
+          List<GroupsResData> groupData =[];
+          groupData.addAll(newlyCreatedGroups);
+          groupData.addAll(createdGroups);
+
+          groupData.forEach((element) {
+            print("-------------GroupData--------${element.groupName}");
+
+          },);
+
+
+          TrackingController.instance.inItAllGroups(groups: groupData ?? []);
 
         }catch(e){
           print("error in inItAllGroups:${e}");
@@ -95,26 +107,6 @@ class GroupController extends GetxController {
       groupDataLoading.value = false;
     }
   }
-
-  // Future<void> inItSocket({int? groupId}) async {
-  //   try {
-  //     var result = await GroupRepo.getGroupData();
-  //     if (result.status == true) {
-  //       TrackingController.instance.inItAllGroups(groups: result.groupData);
-  //       // if (result.groupData!.isNotEmpty &&
-  //       //     result.groupData![0].isActive == true) {
-  //       //   TrackingController.instance.setActiveGroup(
-  //       //     result.groupData![0].id.toString(),
-  //       //     Global.storageServices.get(PrefConst.userId).toString(),
-  //       //   );
-  //       // }
-  //     } else {
-  //       Utils().fluttertoast(result.message.toString());
-  //     }
-  //   } catch (e) {
-  //     Utils().fluttertoast(e.toString());
-  //   }
-  // }
 
   Future<void> updateGroup(GroupController controller,
       {required String groupId, required String groupStatus}) async {

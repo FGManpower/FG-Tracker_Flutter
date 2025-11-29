@@ -25,7 +25,7 @@ class MarkerWidget extends StatelessWidget {
 
   Color get randomColor {
     final Random random =
-        Random(imageUrl.hashCode); // consistent color for same user
+        Random(imageUrl.hashCode);
     return Color.fromARGB(
       255,
       random.nextInt(256),
@@ -57,49 +57,21 @@ class MarkerWidget extends StatelessWidget {
             top: 35.h,
             child: Stack(
               children: [
-                // Profile image
-                // Container(
-                //   width: 52.w,
-                //   height: 52.w,
-                //   decoration: BoxDecoration(
-                //     shape: BoxShape.circle,
-                //     color: Colors.grey,
-                //     boxShadow: [
-                //       BoxShadow(
-                //         color: Colors.black12,
-                //         blurRadius: 4,
-                //       )
-                //     ],
-                //   ),
-                //   child: ClipOval(
-                //     child: CachedNetworkImage(
-                //       imageUrl: Utility.isNotNullEmptyOrFalse(imageUrl)
-                //           ? ConstRes.aImageBaseUrl + imageUrl
-                //           : MyAppTheme.notFoundImg,
-                //       fit: BoxFit.cover,
-                //       placeholder: (context, url) => Center(child: CircularProgressIndicator(strokeWidth: 2)),
-                //       errorWidget: (context, url, error) {
-                //         print('Image failed to load: $url, error: $error');
-                //         return Icon(Icons.person, size: 30.sp);
-                //       },
-                //     ),
-                //   ),
-                //
-                // ),
+
                 Container(
                   width: 52.w,
                   height: 52.w,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: Colors.white, // to distinguish background
-                    border: Border.all(color: Colors.red, width: 1), // add border for visibility
+                    color: Colors.white,
+                    border: Border.all(color: Colors.red, width: 1),
                   ),
                   child: ClipOval(
                     child: Image.network(
                       ConstRes.aImageBaseUrl + imageUrl,
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) {
-                        print("❌ Image load error: ${ConstRes.aImageBaseUrl + imageUrl}");
+                        debugPrint("❌ Image load error: ${ConstRes.aImageBaseUrl + imageUrl}");
                         return Icon(Icons.person, size: 30.sp);
                       },
                     ),
@@ -107,7 +79,6 @@ class MarkerWidget extends StatelessWidget {
 
                 ),
 
-                // Online/Offline Dot
                 Positioned(
                   right: 0,
                   top: 0,
@@ -116,7 +87,7 @@ class MarkerWidget extends StatelessWidget {
                     height: 12.w,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: isOnline ? Colors.green : Colors.green,
+                      color: isOnline ? Colors.green : Colors.red,
                       border: Border.all(color: Colors.white, width: 2),
                     ),
                   ),

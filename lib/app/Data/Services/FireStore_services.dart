@@ -66,16 +66,16 @@ class FireStoreServices {
 
     });
 
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => AgoraCallScreen(
-          // channelId: channelId,
-          // isVideo: isVideo,
-          call: CallModel(callerId: callerId!, receiverId: receiverId.toString(), channelId: channelId, isVideo: isVideo, status: "calling", callerName: Global.storageServices.get(PrefConst.userName.toString())!, callerProfileImage: ConstRes.aImageBaseUrl + Global.storageServices.get(PrefConst.profileImage.toString())!,),
-        ),
-      ),
-    );
+    // Navigator.push(
+    //   context,
+    //   MaterialPageRoute(
+    //     builder: (_) => AgoraCallScreen(
+    //       // channelId: channelId,
+    //       // isVideo: isVideo,
+    //       call: CallModel(callerId: callerId!, receiverId: receiverId.toString(), channelId: channelId, isVideo: isVideo, status: "calling", callerName: Global.storageServices.get(PrefConst.userName.toString())!, callerProfileImage: ConstRes.aImageBaseUrl + Global.storageServices.get(PrefConst.profileImage.toString())!,),
+    //     ),
+    //   ),
+    // );
 
     try {
       final receiverSnapshot = await FirebaseFirestore.instance

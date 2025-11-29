@@ -15,6 +15,9 @@ abstract class Routes {
   static const SearchMembers = _Paths.SearchMembers;
   static const QrCodeScreen = _Paths.QrCodeScreen;
   static const chatScreen = _Paths.chatScreen;
+  static const LocationTracking = _Paths.LocationTracking;
+  static const QRScanScreen = _Paths.QRScanScreen;
+  static const callScreen = _Paths.callScreen;
 
 
 }
@@ -33,6 +36,9 @@ abstract class _Paths {
   static const QrCodeScreen = '/QrCodeScreen';
   static const SearchMembers = '/SearchMembers';
   static const chatScreen = '/chatScreen';
+  static const LocationTracking = '/LocationTracking';
+  static const QRScanScreen = '/QRScanScreen';
+  static const callScreen = '/callScreen';
 
 
 

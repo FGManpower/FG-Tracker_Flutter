@@ -1,6 +1,6 @@
 //
 //
-// import 'package:fgtracker/app/modules/Notification/Controller/Notification_Controller.dart';
+// import 'package:fgtracker/app/modules/Notification/controller/Notification_Controller.dart';
 // import 'package:flutter/material.dart';
 // import 'package:get/get.dart';
 //

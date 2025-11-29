@@ -62,10 +62,10 @@ Widget ReausableLoading() {
 
 Widget CNetworkImage(
     {String? imageurl,
-      int height = 170,
-      int width = 340,
-      double borderradius = 8,
-      String? circlindicator}) {
+    int height = 170,
+    int width = 340,
+    double borderradius = 8,
+    String? circlindicator}) {
   return SizedBox(
       height: height.h,
       width: width.w,
@@ -78,18 +78,18 @@ Widget CNetworkImage(
           placeholder: (context, string) => circlindicator == "no"
               ? const SizedBox()
               : const Center(
-            child: CircularProgressIndicator(),
-          ),
+                  child: CircularProgressIndicator(),
+                ),
         ),
       ));
 }
 
 Widget ContainerNetworkImage(
     {String? imageurl,
-      int height = 100,
-      int width = 100,
-      double borderradius = 8,
-      String? circlindicator}) {
+    int height = 100,
+    int width = 100,
+    double borderradius = 8,
+    String? circlindicator}) {
   return Container(
       height: height.h,
       width: width.w,
@@ -104,9 +104,9 @@ Widget ContainerNetworkImage(
 
 Widget reausableIcon(
     {required IconData icon,
-      Color? color,
-      double size = 20,
-      void Function()? ontap}) {
+    Color? color,
+    double size = 20,
+    void Function()? ontap}) {
   return InkWell(
     onTap: ontap,
     child: Icon(
@@ -118,29 +118,29 @@ Widget reausableIcon(
 }
 
 Widget reausababletextfield(
-    TextEditingController textctr,
-    String hintname, {
-      double? height,
-      double? width,
-      double top = 5,
-      double left = 15,
-      double bottom = 0,
-      TextInputType? keyboardtype,
-      FormFieldValidator? validators,
-      Color hintcolor = Colors.black,
-      int? maxline,
-      bool? dense,
-      double? hintfontsize,
-      bool? enable,
-      Color fillColor = Colors.white,
-      String? otptext,
-      bool? filled,
-      String? postcode,
-      Widget? suffix,
-      void Function(String value)? onsubmitted,
-      void Function(String value)? onchange,
-      Color borderColor = AppColors.textbordercolor,
-    }) {
+  TextEditingController textctr,
+  String hintname, {
+  double? height,
+  double? width,
+  double top = 5,
+  double left = 15,
+  double bottom = 0,
+  TextInputType? keyboardtype,
+  FormFieldValidator? validators,
+  Color hintcolor = Colors.black,
+  int? maxline,
+  bool? dense,
+  double? hintfontsize,
+  bool? enable,
+  Color fillColor = Colors.white,
+  String? otptext,
+  bool? filled,
+  String? postcode,
+  Widget? suffix,
+  void Function(String value)? onsubmitted,
+  void Function(String value)? onchange,
+  Color borderColor = AppColors.textbordercolor,
+}) {
   return Builder(
     builder: (context) {
       final isDarkMode = context.isDarkMode;
@@ -203,7 +203,7 @@ Widget reausababletextfield(
             ),
             suffixIcon: suffix,
             contentPadding:
-            EdgeInsets.only(top: top.h, left: left.w, bottom: bottom.h),
+                EdgeInsets.only(top: top.h, left: left.w, bottom: bottom.h),
             hintStyle: TextStyle(
               color: isDarkMode
                   ? ToggleThemeData.backgroundWhite
@@ -219,14 +219,14 @@ Widget reausababletextfield(
 
 Widget reausablebuttons(
     {void Function()? ontap,
-      String? title,
-      int width = 320,
-      int height = 50,
-      Color textcolor = Colors.white,
-      double borderradiues = 30,
-      List<Color>? colors,
-      bool enable = true,
-      int buttonfontsize = 18}) {
+    String? title,
+    int width = 320,
+    int height = 50,
+    Color textcolor = Colors.white,
+    double borderradiues = 30,
+    List<Color>? colors,
+    bool enable = true,
+    int buttonfontsize = 18}) {
   colors ??= [
     AppColors.darkBlue,
     AppColors.blue,
@@ -240,14 +240,14 @@ Widget reausablebuttons(
           borderRadius: BorderRadius.circular(borderradiues.r),
           gradient: enable == false
               ? LinearGradient(colors: [
-            Colors.grey.shade300,
-            Colors.grey.shade300,
-          ])
+                  Colors.grey.shade300,
+                  Colors.grey.shade300,
+                ])
               : LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: colors,
-          )),
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: colors,
+                )),
       child: Center(
         child: Text(
           "$title",
@@ -260,42 +260,51 @@ Widget reausablebuttons(
     ),
   );
 }
+
 Widget reausablebutton(
     {void Function()? ontap,
-      String? title,
-      double width = double.maxFinite,
-      int height = 50,
-      Color textcolor = Colors.white,
-      double borderradiues = 10,
-      bool enable = true,
-      String? type,
-      int fontSize = 18,
-      Color backgroundColor = ToggleThemeData.darkPurple,IconData? icon,double iconSize=20,Color iconColor=Colors.white}) {
+    String? title,
+    double width = double.maxFinite,
+    int height = 50,
+    Color textcolor = Colors.white,
+    double borderradiues = 10,
+    bool enable = true,
+    String? type,
+    int fontSize = 18,
+    Color backgroundColor = ToggleThemeData.darkPurple,
+    IconData? icon,
+    double iconSize = 20,
+    Color iconColor = Colors.white}) {
   return GestureDetector(
     onTap: enable == false ? null : ontap,
     child: Container(
-      height: height.h,
-      width: width.w,
-      decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(borderradiues.r),
-          color: backgroundColor),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        mainAxisAlignment:MainAxisAlignment.center,
-        children: [
-          icon==null?SizedBox(): Padding(padding: EdgeInsets.only(right: 10.w),child: reausableIcon(icon: icon,size:iconSize,color: iconColor ),),
-          Center(
-            child: Text(
-              "$title",
-              style: TextStyle(
-                  fontSize: fontSize.sp,
-                  fontFamily: FontFamily.interSemiBold,
-                  color: textcolor),
+        height: height.h,
+        width: width.w,
+        decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(borderradiues.r),
+            color: backgroundColor),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            icon == null
+                ? SizedBox()
+                : Padding(
+                    padding: EdgeInsets.only(right: 10.w),
+                    child: reausableIcon(
+                        icon: icon, size: iconSize, color: iconColor),
+                  ),
+            Center(
+              child: Text(
+                "$title",
+                style: TextStyle(
+                    fontSize: fontSize.sp,
+                    fontFamily: FontFamily.interSemiBold,
+                    color: textcolor),
+              ),
             ),
-          ),
-        ],
-      )
-    ),
+          ],
+        )),
   );
 }
 
@@ -305,12 +314,12 @@ Widget ReusableJobDetail(String type, var value,
     // int fontsize = 17,
     // int textheight = 30,
     // int textwidth = 120,
-        {int height = 30,
-      int width = 90,
-      int fontsize = 17,
-      int textheight = 30,
-      int textwidth = 75,
-      int textfontsize = 15}) {
+    {int height = 30,
+    int width = 90,
+    int fontsize = 17,
+    int textheight = 30,
+    int textwidth = 75,
+    int textfontsize = 15}) {
   return Row(
     children: [
       Container(
@@ -385,12 +394,12 @@ Widget ReusableUpderline() {
 }
 
 AppBar reusableAppbar(
-    String title, {
-      void Function()? ontap,
-      Color color = AppColors.darkBlue,
-      BuildContext? context,
-      bool showActions = false,
-    }) {
+  String title, {
+  void Function()? ontap,
+  Color color = AppColors.darkBlue,
+  BuildContext? context,
+  bool showActions = false,
+}) {
   return AppBar(
     toolbarHeight: 50.h,
     backgroundColor: ContextUtility.context!.isDarkMode
@@ -398,7 +407,7 @@ AppBar reusableAppbar(
         : color,
     scrolledUnderElevation: 0,
     leading: InkWell(
-      onTap: ontap ?? ()=>Navigator.pop(ContextUtility.navigator!.context),
+      onTap: ontap ?? () => Navigator.pop(ContextUtility.navigator!.context),
       child: Icon(
         Icons.arrow_back_ios_new,
         color: Colors.white,
@@ -440,65 +449,64 @@ Widget LostinternetConnection(
     child: Center(
         child: messgae == "An error occured please try again!"
             ?
-        //------------------------ Internet Lost ------------------ //
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Image.asset(Assets.images.lostInternets.path),
-            reausabletext("Lost Connection",
-                fontsize: 24, fontfamily: FontFamily.interBold),
-            SizedBox(
-              height: 10.h,
-            ),
-            reausabletext(
-                AppText.woopsNoInternet,
-                fontsize: 15,
-                color: Colors.grey,
-                fontfamily: FontFamily.interMedium,
-                widths: 260,
-                align: TextAlign.center),
-            SizedBox(
-              height: 30.h,
-            ),
-            showbutton == "no"
-                ? const SizedBox()
-                : reausablebutton(
-                width: 180,
-                title: "Try Again",
-                textcolor: Colors.white,
-                ontap: retry)
-          ],
-        )
-        //------------------------ Server Error ------------------ //
+            //------------------------ Internet Lost ------------------ //
+            Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Image.asset(Assets.images.lostInternets.path),
+                  reausabletext("Lost Connection",
+                      fontsize: 24, fontfamily: FontFamily.interBold),
+                  SizedBox(
+                    height: 10.h,
+                  ),
+                  reausabletext(AppText.woopsNoInternet,
+                      fontsize: 15,
+                      color: Colors.grey,
+                      fontfamily: FontFamily.interMedium,
+                      widths: 260,
+                      align: TextAlign.center),
+                  SizedBox(
+                    height: 30.h,
+                  ),
+                  showbutton == "no"
+                      ? const SizedBox()
+                      : reausablebutton(
+                          width: 180,
+                          title: "Try Again",
+                          textcolor: Colors.white,
+                          ontap: retry)
+                ],
+              )
+            //------------------------ Server Error ------------------ //
             : Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Image.asset(Assets.images.serverError.path),
-            reausabletext(AppText.smthngWentWrong,
-                fontsize: 24, fontfamily: FontFamily.interBold),
-            SizedBox(
-              height: 10.h,
-            ),
-            reausabletext(AppText.refreshThePage,
-                fontsize: 15,
-                color: Colors.grey,
-                fontfamily: FontFamily.interMedium,
-                widths: 260,
-                align: TextAlign.center),
-            SizedBox(
-              height: 30.h,
-            ),
-            showbutton == "no"
-                ? const SizedBox()
-                : reausablebutton(
-                width: 180,
-                title: AppText.tryAgain,
-                textcolor: Colors.white,
-                ontap: retry)
-          ],
-        )),
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Image.asset(Assets.images.serverError.path),
+                  reausabletext(AppText.smthngWentWrong,
+                      fontsize: 24, fontfamily: FontFamily.interBold),
+                  SizedBox(
+                    height: 10.h,
+                  ),
+                  reausabletext(AppText.refreshThePage,
+                      fontsize: 15,
+                      color: Colors.grey,
+                      fontfamily: FontFamily.interMedium,
+                      widths: 260,
+                      align: TextAlign.center),
+                  SizedBox(
+                    height: 30.h,
+                  ),
+                  showbutton == "no"
+                      ? const SizedBox()
+                      : reausablebutton(
+                          width: 180,
+                          title: AppText.tryAgain,
+                          textcolor: Colors.white,
+                          ontap: retry)
+                ],
+              )),
   );
 }
 
@@ -539,36 +547,41 @@ Widget DataEmpty_SvgImage({required String assetspath}) {
 
 Widget reausabletext(String title,
     {double fontsize = 20,
-      Color? color,
-      String fontfamily = "geographeditwebbold",
-      FontWeight? fontweight,
-      double? height,
-      double? widths,
-      TextDecoration? decoration,
-      Color? backcolor,
-      Color? decorationcolor,
-      TextAlign? align,
-      int? maxline,
-      TextOverflow? textoverflow,var letterSpacing,void Function()? onTap }) {
-  return InkWell(onTap: onTap ,child: SizedBox(
-    width: widths?.w,
-    child: Text(
-      textAlign: align,
-      title,
-      overflow: textoverflow,
-      maxLines: maxline,
-      style: TextStyle(
-          decoration: decoration,
-          backgroundColor: backcolor,
-          height: height,
-          fontFamily: fontfamily,
-          fontSize: fontsize.sp,
-          color: color,
-          decorationColor: decorationcolor,
-          letterSpacing:letterSpacing,
-          fontWeight: fontweight),
+    Color? color,
+    String fontfamily = "geographeditwebbold",
+    FontWeight? fontweight,
+    double? height,
+    double? widths,
+    TextDecoration? decoration,
+    Color? backcolor,
+    Color? decorationcolor,
+    TextAlign? align,
+    int? maxline,
+    TextOverflow? textoverflow,
+    var letterSpacing,
+    void Function()? onTap}) {
+  return InkWell(
+    onTap: onTap,
+    child: SizedBox(
+      width: widths?.w,
+      child: Text(
+        textAlign: align,
+        title,
+        overflow: textoverflow,
+        maxLines: maxline,
+        style: TextStyle(
+            decoration: decoration,
+            backgroundColor: backcolor,
+            height: height,
+            fontFamily: fontfamily,
+            fontSize: fontsize.sp,
+            color: color,
+            decorationColor: decorationcolor,
+            letterSpacing: letterSpacing,
+            fontWeight: fontweight),
+      ),
     ),
-  ),);
+  );
 }
 
 void FullImageView(BuildContext context, {String? title, img}) {
@@ -580,19 +593,17 @@ void FullImageView(BuildContext context, {String? title, img}) {
       ));
 }
 
-
-
-Widget BackpressIcon(BuildContext context,{Color color=  ToggleThemeData.darkPurple}) {
+Widget BackpressIcon(BuildContext context,
+    {Color color = ToggleThemeData.darkPurple}) {
   return GestureDetector(
     onTap: () async {
       Navigator.pop(context);
     },
     child: Container(
-      decoration:  BoxDecoration(
-        shape: BoxShape.circle,
-        // color: Colors.white,
-        border: Border.all(color:color,width: 2.w)
-      ),
+      decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          // color: Colors.white,
+          border: Border.all(color: color, width: 2.w)),
       height: 40.h,
       width: 40.w,
       child: Center(
@@ -629,14 +640,13 @@ class _LanguageCalendarDialogState extends State<LanguageCalendarDialog> {
   final Map<String, String> _locales = {
     'en_US': 'English',
     'hi_IN': 'हिंदी (Hindi)', // Hindi locale
-    'ur_PK': 'اردو (Urdu)',    // Urdu locale
+    'ur_PK': 'اردو (Urdu)', // Urdu locale
   };
 
   @override
   void initState() {
     super.initState();
     _selectedDay = widget.initialSelectedDate ?? _focusedDay;
-
   }
 
   @override
@@ -696,7 +706,8 @@ class _LanguageCalendarDialogState extends State<LanguageCalendarDialog> {
               headerStyle: HeaderStyle(
                 formatButtonVisible: false,
                 titleCentered: true,
-                titleTextStyle: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
+                titleTextStyle:
+                    TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
               ),
               calendarStyle: CalendarStyle(
                 outsideDaysVisible: false,
@@ -710,20 +721,6 @@ class _LanguageCalendarDialogState extends State<LanguageCalendarDialog> {
                 ),
                 selectedTextStyle: const TextStyle(color: Colors.white),
               ),
-              // Optional: Add custom builders for further customization if needed
-              // calendarBuilders: CalendarBuilders(
-              //   dowBuilder: (context, day) {
-              //     if (day.weekday == DateTime.sunday) {
-              //       return Center(
-              //         child: Text(
-              //           DateFormat.E(_currentLocale).format(day), // Use locale for day of week
-              //           style: TextStyle(color: Colors.red),
-              //         ),
-              //       );
-              //     }
-              //     return null;
-              //   },
-              // ),
             ),
             const SizedBox(height: 16.0),
 
@@ -739,7 +736,8 @@ class _LanguageCalendarDialogState extends State<LanguageCalendarDialog> {
                 ),
                 TextButton(
                   onPressed: () {
-                    Navigator.of(context).pop(_selectedDay); // Return selected date
+                    Navigator.of(context)
+                        .pop(_selectedDay); // Return selected date
                   },
                   child: const Text('OK'),
                 ),
@@ -752,5 +750,9 @@ class _LanguageCalendarDialogState extends State<LanguageCalendarDialog> {
   }
 }
 
-
-
+Widget DataEmpty({String? imgname, type}) {
+  return Align(
+    alignment: Alignment.center,
+    child: Image.asset(imgname!),
+  );
+}

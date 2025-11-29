@@ -1,6 +1,6 @@
 import 'package:fgtracker/app/Model/GroupRes.dart';
-import 'package:fgtracker/app/modules/Group/Controller/Group_Controller.dart';
-import 'package:fgtracker/app/modules/Group/Views/MemberScreen.dart';
+import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -23,7 +23,7 @@ class NewlyGroupUi extends StatelessWidget {
       this.groupData,
       this.isLoading = false,
       required this.groupController});
-  List<GroupData>? groupData;
+  List<GroupsResData>? groupData;
   bool isLoading = false;
   GroupController groupController;
   @override

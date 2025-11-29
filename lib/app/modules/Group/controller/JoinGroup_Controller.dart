@@ -3,19 +3,16 @@ import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/Core/values/loading.dart';
 import 'package:fgtracker/app/Data/Repositories/GroupRepo.dart';
 
-import 'package:fgtracker/app/Model/MemberDataRes.dart';
-import 'package:fgtracker/app/modules/Group/Controller/Group_Controller.dart';
-import 'package:fgtracker/app/modules/Group/Views/QRScanScreen.dart';
-import 'package:fgtracker/app/modules/Track/Controller/TrackController.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
-import 'package:google_mlkit_barcode_scanning/google_mlkit_barcode_scanning.dart';
-import 'package:image_picker/image_picker.dart';
+
 import 'package:location/location.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import '../../../Data/Services/LocationPermission.dart';
+import '../controller/Group_Controller.dart';
+
 
 class JoinGroupController extends GetxController {
   GlobalKey<FormState> joinGroupKey = GlobalKey<FormState>();
@@ -26,10 +23,11 @@ class JoinGroupController extends GetxController {
 
 
 
+
   Future<void> scanQRCodeFromCamera() async {
     final status = await Permission.camera.request();
     if (status.isGranted) {
-      final scannedResult = await Get.to(() => QRScanScreen());
+      final scannedResult = await Get.toNamed(Routes.QRScanScreen);
       if (scannedResult != null) {
         print("QR Code: $scannedResult");
       }
@@ -76,7 +74,7 @@ class JoinGroupController extends GetxController {
         if (type != "Qr") {
           Navigator.pop(context);
         }
-        groupController.getGroupData();
+        // groupController.getGroupData();
         // final service = TrackingService.instance;
         // await service.init();
         return true;

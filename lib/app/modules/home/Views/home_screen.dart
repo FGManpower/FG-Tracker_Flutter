@@ -10,7 +10,6 @@ import 'package:fgtracker/app/modules/home/Home_Widget/bannerUi.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:fgtracker/app/Core/values/Dialog/DialogBox.dart';
-import 'package:fgtracker/app/modules/Group/Controller/Group_Controller.dart';
 import 'package:fgtracker/app/widgets/Appbar.dart';
 import 'package:fgtracker/app/modules/home/Views/sidemenu.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
@@ -18,7 +17,9 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+import '../../../../gen/assets.gen.dart';
 import '../../../Data/Services/FireStore_services.dart';
+import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
 import '../Home_Widget/NewlyGroupUi.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -138,7 +139,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   isLoading: true,
                   groupController: groupController,
                 );
-              } else if (groupController.groupData.isEmpty) {
+              } else if (groupController.newlyCreatedGroups.isEmpty) {
                 return Center(
                   child: reausabletext(AppText.youHaventJoindOrCreatedGroup,
                       align: TextAlign.center,
@@ -147,43 +148,33 @@ class _HomeScreenState extends State<HomeScreen> {
                 );
               } else {
                 return NewlyGroupUi(
-                  groupData: groupController.groupData,
+                  groupData: groupController.newlyCreatedGroups,
                   isLoading: false,
                   groupController: groupController,
                 );
               }
             }),
             Padding(
-              padding: EdgeInsets.only(left: 5.w, top: 15.h, bottom: 10.h),
+              padding: EdgeInsets.only(left: 5.w, top: 15.h, bottom: 0.h),
               child: reausabletext("Created Group",
                   fontfamily: FontFamily.interSemiBold, fontsize: 18),
             ),
             Obx(() {
-              if (groupController.responseError.value.isNotEmpty) {
-                return LostinternetConnection(
-                    retry: () {
-                      groupController.getGroupData();
-                    },
-                    messgae: groupController.responseError.value.toString());
-              } else if (groupController.groupDataLoading.value) {
-                return NewlyGroupUi(
-                  isLoading: true,
-                  groupController: groupController,
-                );
-              } else if (groupController.groupData.isEmpty) {
-                return Center(
-                  child: reausabletext(AppText.youHaventJoindOrCreatedGroup,
-                      align: TextAlign.center,
-                      color: Colors.grey[600],
-                      fontsize: 14),
-                );
-              } else {
-                return CreatedGroupUi(
-                  groupData: groupController.groupData,
-                  isLoading: false,
-                  groupController: groupController,
-                );
-              }
+              return groupController.createdGroups.isEmpty
+                  ? Padding(
+                      padding: EdgeInsets.only(top: 0.h),
+                      child: Center(
+                        child: DataEmpty(
+                          imgname: Assets.images.notFound.path,
+                          type: "png",
+                        ),
+                      ),
+                    )
+                  : CreatedGroupUi(
+                      groupData: groupController.createdGroups,
+                      isLoading: false,
+                      groupController: groupController,
+                    );
             }),
           ],
         ),

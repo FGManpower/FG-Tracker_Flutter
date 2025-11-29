@@ -35,6 +35,8 @@ class MemberData {
   String? mobileNo;
   String? profileImage;
   bool? isCreator;
+  bool? isOnline;
+  String? lastSeen;
 
   MemberData(
       {this.id,
@@ -42,7 +44,10 @@ class MemberData {
       this.userId,
       this.name,
       this.mobileNo,
-      this.profileImage,this.isCreator});
+      this.profileImage,
+      this.isCreator,
+      this.isOnline,
+      this.lastSeen});
 
   MemberData.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -52,6 +57,8 @@ class MemberData {
     mobileNo = json['MobileNo'];
     profileImage = json['ProfileImage'];
     isCreator = json['isCreator'];
+    isOnline = json['isOnline'];
+    lastSeen = json['lastSeen'];
   }
 
   Map<String, dynamic> toJson() {
@@ -63,6 +70,8 @@ class MemberData {
     data['MobileNo'] = mobileNo;
     data['ProfileImage'] = profileImage;
     data['isCreator'] = isCreator;
+    data['isOnline'] = isOnline;
+    data['lastSeen'] = lastSeen;
     return data;
   }
 }
