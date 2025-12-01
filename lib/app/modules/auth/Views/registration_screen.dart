@@ -152,9 +152,14 @@ class RegistrationScreen extends GetView<RegistrationController> {
                   Align(
                       alignment: Alignment.bottomRight,
                       child: Padding(
-                        padding: EdgeInsets.only(top: 60.h),
+                        padding: EdgeInsets.only(top: 30.h),
                         child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            Padding(
+                              padding: EdgeInsets.only(left: 15.w),
+                              child: BackpressIcon(context, color: ToggleThemeData.Appcolor),
+                            ),
                             Center(
                               child: GestureDetector(
                                 onTap: () {
