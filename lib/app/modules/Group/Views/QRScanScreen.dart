@@ -10,9 +10,6 @@ import '../controller/QrScanController.dart';
 
 class QRScanScreen extends GetView<QRScanController> {
 
-
-
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(

@@ -66,7 +66,9 @@ class MemberscreenScreen extends GetView<MemberController> {
                     padding: EdgeInsets.symmetric(horizontal: 12.w),
                     child: TextField(
                       controller: controller.searchController,
-                      onChanged: controller.onSearch,
+                      onChanged: (value) {
+                        controller.onSearch(value);
+                      },
                       autofocus: true,
                       decoration: InputDecoration(
                           icon: Icon(Icons.search,

@@ -16,8 +16,8 @@ class QRScanController extends GetxController {
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
 
   final groupController = Get.find<GroupController>();
-
-  final joinGroupController = Get.find<JoinGroupController>();
+  //
+  // final joinGroupController = Get.find<JoinGroupController>();
 
   var isFlashOn = false.obs;
   var isProcessing = false.obs;
@@ -53,15 +53,15 @@ class QRScanController extends GetxController {
     try {
       isProcessing.value = true;
 
-      // await joinGroupController.joinGroup(
-      //   context,
-      //   type: "Qr",
-      //   groupController: groupController,
-      //   groupCode: code,
-      //   validateForm: false,
-      // );
-      //
-      // groupController.handleJoinGroup(code);
+      await JoinGroupController().joinGroup(
+        context,
+        type: "Qr",
+        groupController: groupController,
+        groupCode: code,
+        validateForm: false,
+      );
+
+      groupController.handleJoinGroup(code);
       Get.back();
     } finally {
       isProcessing.value = false;
