@@ -13,7 +13,6 @@ import 'package:fgtracker/app/modules/mediaStream/Views/incoming_call_screen.dar
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-
 import '../../../Data/Services/SignallingService.dart';
 import '../../../routes/app_pages.dart';
 import '../../mediaStream/Views/call_screen.dart';
@@ -41,13 +40,10 @@ class MessageController extends GetxController {
     memberData = arguments?['userData'];
     _initializeChat();
 
-    // listen for incoming video call
     SignallingService.instance.socket!.on("newCall", (data) {
-      // set SDP Offer of incoming call
       incomingSDPOffer.value = data;
     });
   }
-
 
   void _initializeChat() {
     final userId = memberData.userId.toString();
@@ -57,7 +53,7 @@ class MessageController extends GetxController {
 
     socketService.init(groupId: groupId, userId: userId, ConstRes.socketUrl);
 
-    socketService.socket?.off('receive_message');
+    socketService.socket.off('receive_message');
 
     socketService.RecievedMessage(
       senderId: Global.storageServices.get(PrefConst.userId).toString(),
@@ -170,33 +166,21 @@ class MessageController extends GetxController {
     Navigator.of(context).pop();
   }
 
-
-  startCall(BuildContext context, {
+  startCall(
+    BuildContext context, {
     required String callerId,
     required String remoteUserId,
+    required String callType,
     dynamic offer,
   }) {
-
-
-        Get.toNamed(
-          Routes.callScreen,
+    Get.toNamed(
+      Routes.callScreen,
       arguments: {
         "callerId": callerId,
         "remoteUserId": remoteUserId,
         "offer": offer,
+        "callType": callType,
       },
     );
-
-    // Navigator.push(
-    //   context,
-    //   MaterialPageRoute(
-    //     builder: (_) =>
-    //         CallScreen(
-    //           callerId: callerId,
-    //           remoteUserId: remoteUserId,
-    //           offer: offer,
-    //         ),
-    //   ),
-    // );
   }
 }

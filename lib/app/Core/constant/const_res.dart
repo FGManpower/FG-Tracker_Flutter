@@ -5,14 +5,14 @@ class ConstRes {
   ///------------------------ Backend urls and key ------------------------///
 
   static const String development =
-      'http://10.120.229.195:4000/'; // Development
+      'http://192.168.1.34:4000/'; // Development
   static const String production = 'http://fgtracker.in:3000/'; //Prod
   static const String aBaseUrl = '${development}api/';
 
   static const String aImageBaseUrl = development;
 
   // static String socketUrl = "http://fgtracker.in:3000"; //pro
-  static const String socketUrl = "http://10.120.229.195:4000"; //dev
+  static const String socketUrl = "http://192.168.1.34:4000"; //dev
 
   static String gMapApiKey = "AIzaSyDu1PPgXuqRdLfEfA9Gf-6A8QydUlyMq-0";
   static String agoraAppId = "46901509bdc9411a85d1287c9957a42d";

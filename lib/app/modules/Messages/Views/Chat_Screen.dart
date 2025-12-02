@@ -1,3 +1,4 @@
+import 'package:fgtracker/app/Core/constant/BottomSheet/ChatBottomSheet.dart';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
@@ -46,14 +47,21 @@ class ChatScreen extends GetView<MessageController> {
                     groupID: int.parse(userData.groupId.toString()));
               },
               onCallTap: () {
-                controller.startCall(context,
-                    callerId:
-                        Global.storageServices.get(PrefConst.userId).toString(),
-                    remoteUserId: controller.memberData.userId.toString());
-                // controller.startAudioCall(controller.memberData.userId.toString());
+
+                ChatBottomSheet.showCallOptions(context,onAudioCall: () {
+                  controller.startCall(context,
+                      callerId:
+                      Global.storageServices.get(PrefConst.userId).toString(),
+                      remoteUserId: controller.memberData.userId.toString(),callType: "audio");
+                },onWalkieTalkieCall: () {
+
+                },);
               },
               onVideoTap: () {
-                // controller.startVideoCall(controller.memberData.userId.toString());
+                controller.startCall(context,
+                    callerId:
+                    Global.storageServices.get(PrefConst.userId).toString(),
+                    remoteUserId: controller.memberData.userId.toString(),callType: "video");
               },
               onGroupExit: () {
                 CommonDialog.ConfirmationDialog(
@@ -68,57 +76,7 @@ class ChatScreen extends GetView<MessageController> {
             ),
             body: SafeArea(
               child:
-                  // Obx(() {
-                  //   final offer = controller.incomingSDPOffer.value;
-                  //
-                  //   if (offer == null) {
-                  //     return const SizedBox();
-                  //   }
-                  //
-                  //   return Positioned(
-                  //     left: 0,
-                  //     right: 0,
-                  //     bottom: 20,
-                  //     child: Card(
-                  //       color: Colors.black87,
-                  //       margin: const EdgeInsets.symmetric(horizontal: 12),
-                  //       child: ListTile(
-                  //         title: Text(
-                  //           "Incoming Call from ${offer["callerId"]}",
-                  //           style: const TextStyle(color: Colors.white),
-                  //         ),
-                  //         trailing: Row(
-                  //           mainAxisSize: MainAxisSize.min,
-                  //           children: [
-                  //             IconButton(
-                  //               icon:
-                  //                   const Icon(Icons.call_end, color: Colors.redAccent),
-                  //               onPressed: () {
-                  //                 controller.incomingSDPOffer.value = null;
-                  //               },
-                  //             ),
-                  //             IconButton(
-                  //               icon: const Icon(Icons.call, color: Colors.greenAccent),
-                  //               onPressed: () {
-                  //                 controller.startCall(
-                  //                   context,
-                  //                   callerId: controller
-                  //                       .incomingSDPOffer.value!["remoteUserId"]!,
-                  //                   remoteUserId: Global.storageServices
-                  //                       .get(PrefConst.userId)
-                  //                       .toString(),
-                  //                   offer:
-                  //                       controller.incomingSDPOffer.value?["sdpOffer"],
-                  //                 );
-                  //                 controller.incomingSDPOffer.value = null;
-                  //               },
-                  //             ),
-                  //           ],
-                  //         ),
-                  //       ),
-                  //     ),
-                  //   );
-                  // }),
+
 
                   Column(
                 children: [
@@ -154,6 +112,7 @@ class ChatScreen extends GetView<MessageController> {
                                         context,
                                         callerId: controller.incomingSDPOffer
                                             .value!["remoteUserId"]!,
+                                        callType: "audio",
                                         remoteUserId: Global.storageServices
                                             .get(PrefConst.userId)
                                             .toString(),

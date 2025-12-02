@@ -19,6 +19,7 @@ class CallController extends GetxController {
 
   late String callerId;
   late String remoteUserId;
+  late String callType;
   dynamic offer;
 
   @override
@@ -27,6 +28,7 @@ class CallController extends GetxController {
     callerId = args["callerId"];
     remoteUserId = args["remoteUserId"];
     offer = args["offer"];
+    callType = args["callType"];
 
     localRenderer.initialize();
     remoteRenderer.initialize();
@@ -40,7 +42,6 @@ class CallController extends GetxController {
       peer?.close();
       localStream?.dispose();
     } catch (_) {}
-
     peer = null;
     localStream = null;
     iceCandidates.clear();
@@ -48,13 +49,11 @@ class CallController extends GetxController {
 
   void safeAddCandidate(dynamic data) {
     if (peer == null) return;
-
     final c = RTCIceCandidate(
       data["iceCandidate"]["candidate"],
       data["iceCandidate"]["id"],
       data["iceCandidate"]["label"],
     );
-
     peer!.addCandidate(c);
   }
 
@@ -81,8 +80,8 @@ class CallController extends GetxController {
     };
 
     localStream = await navigator.mediaDevices.getUserMedia({
-      'audio': isAudioOn,
-      'video': isVideoOn
+      'audio': true,
+      'video': callType == "video"
           ? {'facingMode': isFrontCamera ? 'user' : 'environment'}
           : false,
     });
@@ -108,10 +107,8 @@ class CallController extends GetxController {
       await peer!.setRemoteDescription(
         RTCSessionDescription(offer["sdp"], offer["type"]),
       );
-
       final answer = await peer!.createAnswer();
       await peer!.setLocalDescription(answer);
-
       socket!.emit("answerCall", {
         "callerId": callerId,
         "sdpAnswer": answer.toMap(),
@@ -126,7 +123,6 @@ class CallController extends GetxController {
             data["sdpAnswer"]["type"],
           ),
         );
-
         for (var c in iceCandidates) {
           socket!.emit("IceCandidate", {
             "remoteUserId": remoteUserId,
@@ -161,12 +157,14 @@ class CallController extends GetxController {
   }
 
   void toggleCamera() {
+    if (callType == "audio") return;
     isVideoOn = !isVideoOn;
     localStream?.getVideoTracks().forEach((t) => t.enabled = isVideoOn);
     update();
   }
 
   void switchCamera() {
+    if (callType == "audio") return;
     isFrontCamera = !isFrontCamera;
     localStream?.getVideoTracks().forEach((t) => t.switchCamera());
     update();

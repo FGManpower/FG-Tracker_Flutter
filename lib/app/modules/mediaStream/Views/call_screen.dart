@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:get/get.dart';
-
+import 'package:flutter_webrtc/flutter_webrtc.dart';
 import '../controller/call_controller.dart';
-
 
 class CallScreen extends StatelessWidget {
   final controller = Get.put(CallController());
@@ -15,33 +13,41 @@ class CallScreen extends StatelessWidget {
     return GetBuilder<CallController>(
       builder: (c) {
         return Scaffold(
-          backgroundColor: Theme.of(context).colorScheme.background,
-          appBar: AppBar(title: const Text("P2P Call App")),
+          backgroundColor: Colors.black,
           body: SafeArea(
             child: Column(
               children: [
                 Expanded(
                   child: Stack(
                     children: [
-                      RTCVideoView(
+                      c.callType == "video"
+                          ? RTCVideoView(
                         c.remoteRenderer,
-                        objectFit:
-                        RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
-                      ),
-                      Positioned(
-                        right: 20,
-                        bottom: 20,
-                        child: SizedBox(
-                          height: 150,
-                          width: 120,
-                          child: RTCVideoView(
-                            c.localRenderer,
-                            mirror: c.isFrontCamera,
-                            objectFit: RTCVideoViewObjectFit
-                                .RTCVideoViewObjectFitCover,
-                          ),
+                        objectFit: RTCVideoViewObjectFit
+                            .RTCVideoViewObjectFitCover,
+                      )
+                          : Center(
+                        child: Icon(
+                          Icons.call,
+                          size: 140,
+                          color: Colors.greenAccent,
                         ),
                       ),
+                      if (c.callType == "video")
+                        Positioned(
+                          right: 20,
+                          bottom: 20,
+                          child: SizedBox(
+                            height: 150,
+                            width: 120,
+                            child: RTCVideoView(
+                              c.localRenderer,
+                              mirror: c.isFrontCamera,
+                              objectFit: RTCVideoViewObjectFit
+                                  .RTCVideoViewObjectFitCover,
+                            ),
+                          ),
+                        )
                     ],
                   ),
                 ),
@@ -52,23 +58,32 @@ class CallScreen extends StatelessWidget {
                     children: [
                       IconButton(
                         icon: Icon(
-                            c.isAudioOn ? Icons.mic : Icons.mic_off),
+                          c.isAudioOn ? Icons.mic : Icons.mic_off,
+                          color: Colors.white,
+                        ),
                         onPressed: c.toggleMic,
                       ),
                       IconButton(
-                        icon: const Icon(Icons.call_end),
-                        iconSize: 30,
+                        icon: const Icon(Icons.call_end, color: Colors.red),
+                        iconSize: 40,
                         onPressed: c.endCall,
                       ),
-                      IconButton(
-                        icon: const Icon(Icons.cameraswitch),
-                        onPressed: c.switchCamera,
-                      ),
-                      IconButton(
-                        icon: Icon(
-                            c.isVideoOn ? Icons.videocam : Icons.videocam_off),
-                        onPressed: c.toggleCamera,
-                      ),
+                      if (c.callType == "video")
+                        IconButton(
+                          icon: const Icon(Icons.cameraswitch,
+                              color: Colors.white),
+                          onPressed: c.switchCamera,
+                        ),
+                      if (c.callType == "video")
+                        IconButton(
+                          icon: Icon(
+                            c.isVideoOn
+                                ? Icons.videocam
+                                : Icons.videocam_off,
+                            color: Colors.white,
+                          ),
+                          onPressed: c.toggleCamera,
+                        ),
                     ],
                   ),
                 ),
