@@ -8,7 +8,7 @@ import 'package:http_parser/http_parser.dart';
 
 import 'package:fgtracker/app/modules/auth/Controller/RegisterController.dart';
 
-import 'NotificationServices.dart';
+import '../Services/NotificationServices.dart';
 
 class AuthRepo {
   static Future<CommonResponse> login(dynamic param) async {

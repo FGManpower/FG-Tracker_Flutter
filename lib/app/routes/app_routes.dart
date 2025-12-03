@@ -18,6 +18,7 @@ abstract class Routes {
   static const LocationTracking = _Paths.LocationTracking;
   static const QRScanScreen = _Paths.QRScanScreen;
   static const callScreen = _Paths.callScreen;
+  static const IncomingCallScreen = _Paths.IncomingCallScreen;
 
 
 }
@@ -39,6 +40,7 @@ abstract class _Paths {
   static const LocationTracking = '/LocationTracking';
   static const QRScanScreen = '/QRScanScreen';
   static const callScreen = '/callScreen';
+  static const IncomingCallScreen = '/IncomingCallScreen';
 
 
 

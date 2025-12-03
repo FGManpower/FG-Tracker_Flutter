@@ -1,3 +1,6 @@
+import 'package:fgtracker/app/Core/constant/pref_res.dart';
+import 'package:fgtracker/app/Core/theme/appTheme.dart';
+import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:get/get.dart' hide navigator;
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import '../../../Data/Services/SignallingService.dart';
@@ -19,23 +22,40 @@ class CallController extends GetxController {
 
   late String callerId;
   late String remoteUserId;
-  late String callType;
+  late bool is_video;
   dynamic offer;
-
+  final args = Get.arguments;
   @override
   void onInit() {
-    final args = Get.arguments;
+
     callerId = args["callerId"];
     remoteUserId = args["remoteUserId"];
     offer = args["offer"];
-    callType = args["callType"];
+    is_video = args["is_video"];
+
 
     localRenderer.initialize();
     remoteRenderer.initialize();
 
     _setupPeer();
+    _listenForCallEvents();
     super.onInit();
   }
+
+  void _listenForCallEvents() {
+    socket!.on("callRejected", (data) {
+      resetPeer();
+      Get.back();
+      // Get.snackbar("Call", "Call rejected by ${data['rejectedBy']}");
+    });
+
+    socket!.on("callEnded", (data) {
+      resetPeer();
+      Get.back();
+      // Get.snackbar("Call", "Call ended by ${data['endedBy']}");
+    });
+  }
+
 
   void resetPeer() {
     try {
@@ -81,7 +101,7 @@ class CallController extends GetxController {
 
     localStream = await navigator.mediaDevices.getUserMedia({
       'audio': true,
-      'video': callType == "video"
+      'video': is_video == true
           ? {'facingMode': isFrontCamera ? 'user' : 'environment'}
           : false,
     });
@@ -141,14 +161,31 @@ class CallController extends GetxController {
       socket!.emit("makeCall", {
         "remoteUserId": remoteUserId,
         "sdpOffer": sdpOffer.toMap(),
+        "is_video": is_video,
+        "callerId": Global.storageServices.get(PrefConst.userId),
+
+        // "caller_name":  args["caller_name"],
+        // "caller_profile_image":args["caller_profile_image"] ?? MyAppTheme.notFoundImg,
       });
     }
   }
 
+
+
   void endCall() {
+    final myUserId = Global.storageServices.get(PrefConst.userId).toString();
+    final targetUser =
+    (myUserId == callerId.toString()) ? remoteUserId : callerId;
+
+    socket?.emit("endCall", {
+      "remoteUserId": targetUser.toString(),
+    });
+
     resetPeer();
     Get.back();
   }
+
+
 
   void toggleMic() {
     isAudioOn = !isAudioOn;
@@ -157,14 +194,14 @@ class CallController extends GetxController {
   }
 
   void toggleCamera() {
-    if (callType == "audio") return;
+    if (is_video == false) return;
     isVideoOn = !isVideoOn;
     localStream?.getVideoTracks().forEach((t) => t.enabled = isVideoOn);
     update();
   }
 
   void switchCamera() {
-    if (callType == "audio") return;
+    if (is_video == false) return;
     isFrontCamera = !isFrontCamera;
     localStream?.getVideoTracks().forEach((t) => t.switchCamera());
     update();

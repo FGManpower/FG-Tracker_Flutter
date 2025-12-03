@@ -20,6 +20,7 @@ import '../modules/Group/Views/QrScreen.dart';
 import '../modules/Messages/Views/Chat_Screen.dart';
 import '../modules/Track/Views/Search_Members.dart';
 import '../modules/Track/Views/TrackLocationScreen.dart';
+import '../modules/mediaStream/Views/incoming_call_screen.dart';
 part 'app_routes.dart';
 
 class AppPages {
@@ -122,6 +123,14 @@ class AppPages {
       page: () => CallScreen(),
       transition: Transition.rightToLeft,
       binding: StreamBinding(),
+      transitionDuration: const Duration(milliseconds: 500),
+    ),
+
+    GetPage(
+      name: _Paths.IncomingCallScreen,
+      page: () => IncomingCallScreen(),
+      transition: Transition.rightToLeft,
+      binding: IncomingCallBinding(),
       transitionDuration: const Duration(milliseconds: 500),
     ),
   ];

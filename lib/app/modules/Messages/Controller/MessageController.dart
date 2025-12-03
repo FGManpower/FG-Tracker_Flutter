@@ -31,7 +31,7 @@ class MessageController extends GetxController {
   late MemberData memberData;
   Map<String, dynamic>? arguments = Get.arguments;
 
-  var incomingSDPOffer = Rxn<Map>();
+  // var incomingSDPOffer = Rxn<Map>();
 
   @override
   void onInit() {
@@ -40,9 +40,9 @@ class MessageController extends GetxController {
     memberData = arguments?['userData'];
     _initializeChat();
 
-    SignallingService.instance.socket!.on("newCall", (data) {
-      incomingSDPOffer.value = data;
-    });
+    // SignallingService.instance.socket!.on("newCall", (data) {
+    //   incomingSDPOffer.value = data;
+    // });
   }
 
   void _initializeChat() {
@@ -170,8 +170,10 @@ class MessageController extends GetxController {
     BuildContext context, {
     required String callerId,
     required String remoteUserId,
-    required String callType,
+    required bool is_video,
     dynamic offer,
+    dynamic callerName,
+    dynamic callerProfileImage,
   }) {
     Get.toNamed(
       Routes.callScreen,
@@ -179,7 +181,8 @@ class MessageController extends GetxController {
         "callerId": callerId,
         "remoteUserId": remoteUserId,
         "offer": offer,
-        "callType": callType,
+        "is_video": is_video,
+
       },
     );
   }

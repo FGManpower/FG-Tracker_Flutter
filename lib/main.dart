@@ -16,9 +16,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'app/Core/util/CallUtils.dart';
 import 'app/Core/values/Context_Utility.dart';
 import 'app/Core/values/global.dart';
+import 'app/Data/Services/NotificationServices.dart';
 import 'app/Data/Services/SignallingService.dart';
-import 'app/Model/call_model.dart';
-import 'app/modules/AgoraVideoandAudio_Call/incoming_call_screen.dart';
+
 import 'app/modules/Notification/Controller/cubit/notification_count_cubit.dart';
 
 import 'app/routes/app_pages.dart';
@@ -45,6 +45,7 @@ Future<void> main() async {
   FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
   await Firebase.initializeApp();
   await Global.init();
+  await firebaseNotificationServices().initialized();
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(statusBarColor: Colors.transparent),
   );
@@ -123,15 +124,15 @@ class _MyAppState extends State<MyApp> {
 
 
     try {
-      CallModel incomingCallData = CallModel(
-        callerId: data['callerId'],
-        receiverId: sharedpref.get(PrefConst.userId).toString(),
-        channelId: data['channelId'],
-        isVideo: data['isVideo'] == 'true',
-        status: 'ringing',
-        callerName: data['callerName'],
-        callerProfileImage: data['callerProfileImage'],
-      );
+      // CallModel incomingCallData = CallModel(
+      //   callerId: data['callerId'],
+      //   receiverId: sharedpref.get(PrefConst.userId).toString(),
+      //   channelId: data['channelId'],
+      //   isVideo: data['isVideo'] == 'true',
+      //   status: 'ringing',
+      //   callerName: data['callerName'],
+      //   callerProfileImage: data['callerProfileImage'],
+      // );
 
       //
       // Navigator.push(

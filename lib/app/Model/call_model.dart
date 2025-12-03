@@ -1,45 +1,40 @@
-class CallModel {
+class IncomingCallModel {
   final String callerId;
   final String receiverId;
-  final String channelId;
   final bool isVideo;
-  final String status;
   final String callerName;
-  final String callerProfileImage; // 'ringing', 'accepted', 'rejected', 'cancelled'
+  final String callerProfileImage;
+  final String? sdpOfferCompressed;
 
-  CallModel({
+  IncomingCallModel({
     required this.callerId,
     required this.receiverId,
-    required this.channelId,
     required this.isVideo,
-    required this.status,
     required this.callerName,
     required this.callerProfileImage,
-
+    required this.sdpOfferCompressed,
   });
 
   Map<String, dynamic> toMap() {
     return {
       'callerId': callerId,
       'receiverId': receiverId,
-      'channelId': channelId,
       'isVideo': isVideo,
-      'status': status,
       'callerName': callerName,
       'callerProfileImage': callerProfileImage,
+      'sdpOfferCompressed': sdpOfferCompressed,
+
     };
   }
 
-  factory CallModel.fromMap(Map<String, dynamic> map) {
-    return CallModel(
-      callerId: map['callerId'],
-      receiverId: map['receiverId'],
-      channelId: map['channelId'],
-      isVideo: map['isVideo'],
-      status: map['status'],
-      callerName: map['callerName'],
-      callerProfileImage: map['callerProfileImage'],
-
+  factory IncomingCallModel.fromMap(Map<String, dynamic> map) {
+    return IncomingCallModel(
+      callerId: map['callerId'].toString(),
+      receiverId: map['receiverId'].toString(),
+      isVideo: map['isVideo'] == true || map['is_video'] == true,
+      callerName: map['callerName'] ?? map['caller_name'] ?? "",
+      callerProfileImage: map['callerProfileImage'] ?? map['caller_profile_image'] ?? "",
+      sdpOfferCompressed: map['sdpOfferCompressed'] ,
     );
   }
 }

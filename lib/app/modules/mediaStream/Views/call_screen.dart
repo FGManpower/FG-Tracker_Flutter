@@ -20,20 +20,20 @@ class CallScreen extends StatelessWidget {
                 Expanded(
                   child: Stack(
                     children: [
-                      c.callType == "video"
+                      c.is_video == true
                           ? RTCVideoView(
-                        c.remoteRenderer,
-                        objectFit: RTCVideoViewObjectFit
-                            .RTCVideoViewObjectFitCover,
-                      )
+                              c.remoteRenderer,
+                              objectFit: RTCVideoViewObjectFit
+                                  .RTCVideoViewObjectFitCover,
+                            )
                           : Center(
-                        child: Icon(
-                          Icons.call,
-                          size: 140,
-                          color: Colors.greenAccent,
-                        ),
-                      ),
-                      if (c.callType == "video")
+                              child: Icon(
+                                Icons.call,
+                                size: 140,
+                                color: Colors.greenAccent,
+                              ),
+                            ),
+                      if (c.is_video == true)
                         Positioned(
                           right: 20,
                           bottom: 20,
@@ -68,18 +68,16 @@ class CallScreen extends StatelessWidget {
                         iconSize: 40,
                         onPressed: c.endCall,
                       ),
-                      if (c.callType == "video")
+                      if (c.is_video == true)
                         IconButton(
                           icon: const Icon(Icons.cameraswitch,
                               color: Colors.white),
                           onPressed: c.switchCamera,
                         ),
-                      if (c.callType == "video")
+                      if (c.is_video == true)
                         IconButton(
                           icon: Icon(
-                            c.isVideoOn
-                                ? Icons.videocam
-                                : Icons.videocam_off,
+                            c.isVideoOn ? Icons.videocam : Icons.videocam_off,
                             color: Colors.white,
                           ),
                           onPressed: c.toggleCamera,

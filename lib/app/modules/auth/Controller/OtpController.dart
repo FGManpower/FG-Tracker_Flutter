@@ -6,7 +6,7 @@ import 'package:fgtracker/app/Core/values/Dialog/Common_dialog.dart';
 import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Data/Repositories/Auth_repo.dart';
-import 'package:fgtracker/app/Data/Repositories/NotificationServices.dart';
+import 'package:fgtracker/app/Data/Services/NotificationServices.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';

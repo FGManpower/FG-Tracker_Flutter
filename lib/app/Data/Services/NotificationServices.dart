@@ -6,6 +6,7 @@ import 'package:fgtracker/app/Core/util/CallUtils.dart';
 import 'package:fgtracker/app/Core/values/Context_Utility.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Model/MemberDataRes.dart';
+import 'package:fgtracker/app/Model/call_model.dart';
 import 'package:fgtracker/app/modules/Messages/Views/Chat_Screen.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -16,18 +17,16 @@ import 'package:get/get.dart';
 
 import 'dart:io';
 
-
-import '../Services/CallStateTracker.dart';
+import '../../modules/mediaStream/Views/incoming_call_screen.dart';
+import 'CallStateTracker.dart';
 
 class firebaseNotificationServices {
   FirebaseMessaging messaging = FirebaseMessaging.instance;
-
 
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
 
   static String fcmToken = "";
-
 
   void inItLocalNotification(
       BuildContext context, RemoteMessage message) async {
@@ -157,7 +156,6 @@ class firebaseNotificationServices {
     FirebaseMessaging.onMessage.listen((message) async {
       await Global.storageServices.setBool(PrefConst.notificationBadge, true);
 
-
       if (Platform.isAndroid) {
         inItLocalNotification(
             ContextUtility.navigatorkey.currentState!.context, message);
@@ -200,69 +198,49 @@ class firebaseNotificationServices {
           "isCreator": message.data['isCreator'],
           "isActive": message.data['isActive'],
         });
-
-
       } else if (message.data["screen_name"] == "chatScreen") {
         if (!ChatStateTracker.isChatCallScreenOpen) {
           MemberData? memberData;
           try {
-            memberData = MemberData.fromJson(jsonDecode(message.data['memberData']));
+            memberData =
+                MemberData.fromJson(jsonDecode(message.data['memberData']));
           } catch (e) {
             debugPrint("Invalid memberData format: $e");
           }
           if (memberData != null) {
-            Get.toNamed(Routes.chatScreen,arguments: {
-              "userData":memberData!,
-              "groupName":"",
-              "type":"chatScreen",
+            Get.toNamed(Routes.chatScreen, arguments: {
+              "userData": memberData!,
+              "groupName": "",
+              "type": "chatScreen",
             });
-
           }
         }
+      } else if (message.data['screen_name'] == 'incomingCall') {
+        if (!CallStateTracker.isIncomingCallScreenOpen) {
+          final callMap = jsonDecode(message.data['callData']);
 
+          final call = IncomingCallModel.fromMap(callMap);
 
-      } else if (message.data['type'] == 'call') {
-        CallUtils().showIncomingCall(message.data);
-        // if (!CallStateTracker.isIncomingCallScreenOpen) {
-          // final call = CallModel(
-          //   callerId: message.data['callerId'],
-          //   receiverId: Global.storageServices.get(PrefConst.userId).toString(),
-          //   channelId: message.data['channelId'],
-          //   isVideo: message.data['isVideo'] == 'true',
-          //   status: 'ringing',
-          //   callerName: message.data['callerName'],
-          //   callerProfileImage: message.data['callerProfileImage'],
-          //
-          // );
-          //
-          // Navigator.push(
-          //     context,
-          //     MaterialPageRoute(
-          //         builder: (context) => IncomingCallScreen(call: call)));
-        // }
+          CallStateTracker.isIncomingCallScreenOpen = true;
+
+          Get.toNamed(Routes.IncomingCallScreen,
+              arguments: {"callDetail": call});
+        }
       } else {
         //---------on Message Open App-------//
       }
     } else {
-      if (message.data['type'] == 'call') {
-        CallUtils().showIncomingCall(message.data);
-        // if (!CallStateTracker.isIncomingCallScreenOpen) {
-        //   final call = CallModel(
-        //     callerId: message.data['callerId'],
-        //     receiverId: Global.storageServices.get(PrefConst.userId).toString(),
-        //     channelId: message.data['channelId'],
-        //     isVideo: message.data['isVideo'] == 'true',
-        //     status: 'ringing',
-        //     callerName: message.data['callerName'],
-        //     callerProfileImage: message.data['callerProfileImage'],
-        //
-        //   );
-        //
-        //   Navigator.push(
-        //       context,
-        //       MaterialPageRoute(
-        //           builder: (context) => IncomingCallScreen(call: call)));
-        // }
+      if (message.data['screen_name'] == 'incomingCall') {
+        if (!CallStateTracker.isIncomingCallScreenOpen) {
+          final callMap = jsonDecode(message.data['callData']);
+
+          final call = IncomingCallModel.fromMap(callMap);
+
+          CallStateTracker.isIncomingCallScreenOpen = true;
+
+          Get.toNamed(Routes.IncomingCallScreen,
+              arguments: {"callDetail": call});
+        }
       }
     }
   }

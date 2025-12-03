@@ -38,7 +38,11 @@ class SignallingService {
     socket!.onError((err) {
       log("Socket Error: $err");
     });
+
+
   }
+
+
 
   void disconnect() {
     if (socket != null) {

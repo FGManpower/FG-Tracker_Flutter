@@ -40,10 +40,10 @@ class StorageServices {
     return _prefs.getString(PrefConst.DEVICE_ID);
   }
 
-  CallModel getInComingNotificationData() {
+  IncomingCallModel getInComingNotificationData() {
     final data = _prefs.getString(PrefConst.incomingCall);
     Map<String, dynamic> jsondatais = jsonDecode(data!);
-    return CallModel.fromMap(jsondatais);
+    return IncomingCallModel.fromMap(jsondatais);
   }
 
   String? get(String key) {
