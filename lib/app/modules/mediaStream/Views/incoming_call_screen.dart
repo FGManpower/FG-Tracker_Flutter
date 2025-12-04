@@ -6,6 +6,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import '../../../../gen/assets.gen.dart';
 import '../../../Core/theme/appTheme.dart';
+import '../../../Core/values/Curve/Call_Cipper.dart';
 import '../controller/incoming_call_controller.dart';
 
 class IncomingCallScreen extends GetView<IncomingCallController> {
@@ -48,78 +49,49 @@ class IncomingCallScreen extends GetView<IncomingCallController> {
               ],
             ),
           ),
-
-          // ------------------- BOTTOM CURVED UI -------------------
           Positioned(
             bottom: 0,
             left: 0,
             right: 0,
-            child: Container(
-              height: 120.h,
-              padding: EdgeInsets.symmetric(horizontal: 30.w, vertical: 20.h),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(120.r),
-                  topRight: Radius.circular(120.r),
+            child: ClipPath(
+              clipper: BottomFullArcClipper(),
+              child: Container(
+                height: 150.h,
+                padding: EdgeInsets.symmetric(horizontal: 60.w, vertical: 30.h),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black12,
+                      blurRadius: 12,
+                      offset: Offset(0, -3),
+                    ),
+                  ],
                 ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black12,
-                    blurRadius: 12,
-                    offset: Offset(0, -3),
-                  ),
-                ],
-              ),
-              // color: Colors.white,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  InkWell(
-                    onTap: () {
-                      controller.acceptCall();
-                    },
-                    child: Container(
-                      height: 80.r,
-                      width: 80.r,
-                      decoration: BoxDecoration(
-                        color: Colors.green,
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.green.withOpacity(0.4),
-                            blurRadius: 14,
-                            offset: Offset(0, 4),
-                          ),
-                        ],
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    InkWell(
+                      onTap: controller.acceptCall,
+                      child: CircleAvatar(
+                        radius: 30.r,
+                        backgroundColor: Colors.green,
+                        child: const Icon(Icons.call,
+                            color: Colors.white, size: 32),
                       ),
-                      child:
-                          const Icon(Icons.call, color: Colors.white, size: 32),
                     ),
-                  ),
-                  InkWell(
-                    onTap: () {
-                      controller.rejectCall();
-                    },
-                    child: Container(
-                      height: 80.r,
-                      width: 80.r,
-                      decoration: BoxDecoration(
-                        color: Colors.red,
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.red.withOpacity(0.4),
-                            blurRadius: 14,
-                            offset: Offset(0, 4),
-                          ),
-                        ],
+                    InkWell(
+                      onTap: controller.rejectCall,
+                      child: CircleAvatar(
+                        radius: 30.r,
+                        backgroundColor: Colors.red,
+                        child: const Icon(Icons.call_end,
+                            color: Colors.white, size: 32),
                       ),
-                      child: const Icon(Icons.call_end,
-                          color: Colors.white, size: 32),
                     ),
-                  )
-                ],
+                  ],
+                ),
               ),
             ),
           ),
@@ -127,94 +99,4 @@ class IncomingCallScreen extends GetView<IncomingCallController> {
       ),
     );
   }
-
-  Widget _buildBlurBackground(String imgUrl) {
-    return Stack(
-      children: [
-        Container(
-          decoration: BoxDecoration(
-            image: DecorationImage(
-              image: NetworkImage(
-                imgUrl.isNotEmpty ? imgUrl : MyAppTheme.ProfilenotFoundImg,
-              ),
-              fit: BoxFit.cover,
-            ),
-          ),
-        ),
-        BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-          child: Container(
-            color: Colors.black.withOpacity(0.4),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildActionButtons(IncomingCallController c) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [
-        Column(
-          children: [
-            FloatingActionButton(
-              heroTag: "reject_btn",
-              backgroundColor: Colors.red,
-              onPressed: c.rejectCall,
-              child: const Icon(Icons.call_end, size: 32),
-            ),
-            const SizedBox(height: 10),
-            const Text(
-              "Decline",
-              style: TextStyle(color: Colors.white70),
-            ),
-          ],
-        ),
-        Column(
-          children: [
-            FloatingActionButton(
-              heroTag: "accept_btn",
-              backgroundColor: Colors.green,
-              onPressed: c.acceptCall,
-              child: const Icon(Icons.call, size: 32),
-            ),
-            const SizedBox(height: 10),
-            const Text(
-              "Accept",
-              style: TextStyle(color: Colors.white70),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-}
-
-class BottomCurveClipper extends CustomClipper<Path> {
-  @override
-  Path getClip(Size size) {
-    Path path = Path();
-
-    // Move from bottom-left up to the top-left corner
-    path.moveTo(0, size.height);
-
-    // Left vertical edge up
-    path.lineTo(0, size.height * 0.35);
-
-    // FULL smooth semicircle
-    path.quadraticBezierTo(
-      size.width * 0.5, // mid X
-      -size.height * 0.4, // high arc (bigger = more curve)
-      size.width, size.height * 0.35,
-    );
-
-    // Right vertical edge down
-    path.lineTo(size.width, size.height);
-
-    path.close();
-    return path;
-  }
-
-  @override
-  bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
 }
