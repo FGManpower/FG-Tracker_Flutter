@@ -86,6 +86,7 @@ class IncomingCallController extends GetxController {
         "remoteUserId": Global.storageServices.get(PrefConst.userId).toString(),
         "offer": offer,
         "is_video": call.isVideo,
+        "callerName": call.callerName,
       },
     );
   }

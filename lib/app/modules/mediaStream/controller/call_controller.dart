@@ -1,5 +1,6 @@
+import 'dart:async';
+
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
-import 'package:fgtracker/app/Core/theme/appTheme.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:get/get.dart' hide navigator;
 import 'package:flutter_webrtc/flutter_webrtc.dart';
@@ -25,6 +26,10 @@ class CallController extends GetxController {
   late bool is_video;
   dynamic offer;
   final args = Get.arguments;
+  Timer? callTimer;
+  int callDurationSeconds = 0;
+
+
   @override
   void onInit() {
 
@@ -44,12 +49,16 @@ class CallController extends GetxController {
 
   void _listenForCallEvents() {
     socket!.on("callRejected", (data) {
+      callTimer?.cancel();
+      callTimer = null;
       resetPeer();
       Get.back();
       // Get.snackbar("Call", "Call rejected by ${data['rejectedBy']}");
     });
 
     socket!.on("callEnded", (data) {
+      callTimer?.cancel();
+      callTimer = null;
       resetPeer();
       Get.back();
       // Get.snackbar("Call", "Call ended by ${data['endedBy']}");
@@ -97,6 +106,7 @@ class CallController extends GetxController {
     peer!.onTrack = (event) {
       remoteRenderer.srcObject = event.streams[0];
       update();
+      startCallTimer();
     };
 
     localStream = await navigator.mediaDevices.getUserMedia({
@@ -173,6 +183,8 @@ class CallController extends GetxController {
 
 
   void endCall() {
+    callTimer?.cancel();
+    callTimer = null;
     final myUserId = Global.storageServices.get(PrefConst.userId).toString();
     final targetUser =
     (myUserId == callerId.toString()) ? remoteUserId : callerId;
@@ -206,6 +218,23 @@ class CallController extends GetxController {
     localStream?.getVideoTracks().forEach((t) => t.switchCamera());
     update();
   }
+
+  String get formattedDuration {
+    final minutes = (callDurationSeconds ~/ 60).toString().padLeft(2, '0');
+    final seconds = (callDurationSeconds % 60).toString().padLeft(2, '0');
+    return "$minutes:$seconds";
+  }
+
+  void startCallTimer() {
+    if (callTimer != null) return;
+
+    callTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      callDurationSeconds++;
+      update();
+    });
+  }
+
+
 
   @override
   void onClose() {

@@ -173,7 +173,7 @@ class MessageController extends GetxController {
     required bool is_video,
     dynamic offer,
     dynamic callerName,
-    dynamic callerProfileImage,
+
   }) {
     Get.toNamed(
       Routes.callScreen,
@@ -182,6 +182,7 @@ class MessageController extends GetxController {
         "remoteUserId": remoteUserId,
         "offer": offer,
         "is_video": is_video,
+        "callerName": callerName,
 
       },
     );

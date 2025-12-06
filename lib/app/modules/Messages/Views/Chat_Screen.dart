@@ -51,7 +51,7 @@ class ChatScreen extends GetView<MessageController> {
                 controller.startCall(context,
                     callerId:
                     Global.storageServices.get(PrefConst.userId).toString(),
-                    remoteUserId: controller.memberData.userId.toString(),is_video:false,callerName:controller.memberData.name,callerProfileImage: controller.memberData.profileImage );
+                    remoteUserId: controller.memberData.userId.toString(),is_video:false,callerName:controller.memberData.name,);
               },onWalkieTalkieCall: () {
 
               },);
@@ -60,7 +60,7 @@ class ChatScreen extends GetView<MessageController> {
               controller.startCall(context,
                   callerId:
                   Global.storageServices.get(PrefConst.userId).toString(),
-                  remoteUserId: controller.memberData.userId.toString(),is_video:true,callerName:controller.memberData.name,callerProfileImage: controller.memberData.profileImage );
+                  remoteUserId: controller.memberData.userId.toString(),is_video:true,callerName:controller.memberData.name, );
             },
             onGroupExit: () {
               CommonDialog.ConfirmationDialog(
