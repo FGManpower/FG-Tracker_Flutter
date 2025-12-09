@@ -69,7 +69,6 @@ dependencies:
   shorebird_code_push: ^2.0.3
   flutter_ringtone_player: ^4.0.0+4
   android_intent_plus: ^5.3.0
-  system_alert_window: ^2.0.4
   flutter_callkit_incoming: ^2.5.8
   flutter_webrtc: ^1.2.0
   card_swiper: ^3.0.1
