@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
@@ -20,7 +21,7 @@ class CallController extends GetxController {
   bool isAudioOn = true;
   bool isVideoOn = true;
   bool isFrontCamera = true;
-
+  var callId;
   late String callerId;
   late String remoteUserId;
   late bool is_video;
@@ -39,6 +40,10 @@ class CallController extends GetxController {
     is_video = args["is_video"];
 
 
+    if (args["callId"] != null) {
+      callId = args["callId"];
+      print("-------------CallController..CallId-------${args["callId"]}");
+    }
     localRenderer.initialize();
     remoteRenderer.initialize();
 
@@ -48,6 +53,20 @@ class CallController extends GetxController {
   }
 
   void _listenForCallEvents() {
+
+    // Caller receives callId
+    socket!.on("callCreated", (data) {
+      callId = data["callId"].toString();
+      update();
+    });
+
+    // Receiver: new incoming call received
+    socket!.on("newCall", (data) {
+      callId = data["callId"].toString();
+      update();
+    });
+
+
     socket!.on("callRejected", (data) {
       callTimer?.cancel();
       callTimer = null;
@@ -63,6 +82,15 @@ class CallController extends GetxController {
       Get.back();
       // Get.snackbar("Call", "Call ended by ${data['endedBy']}");
     });
+
+    socket!.on("missedCall", (data) {
+      callTimer?.cancel();
+      callTimer = null;
+      resetPeer();
+      Get.back();
+      // Get.snackbar("Call", "Call ended by ${data['endedBy']}");
+    });
+
   }
 
 
@@ -139,7 +167,9 @@ class CallController extends GetxController {
       );
       final answer = await peer!.createAnswer();
       await peer!.setLocalDescription(answer);
+      log("---------------------CallId---${callId}");
       socket!.emit("answerCall", {
+        "callId": callId,
         "callerId": callerId,
         "sdpAnswer": answer.toMap(),
       });
@@ -189,7 +219,9 @@ class CallController extends GetxController {
     final targetUser =
     (myUserId == callerId.toString()) ? remoteUserId : callerId;
 
+    print("-----------------EndCallId---------${callId}");
     socket?.emit("endCall", {
+      "callId": callId,
       "remoteUserId": targetUser.toString(),
     });
 

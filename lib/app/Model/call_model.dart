@@ -5,6 +5,7 @@ class IncomingCallModel {
   final String callerName;
   final String callerProfileImage;
   final String? sdpOfferCompressed;
+  final int? callId;
 
   IncomingCallModel({
     required this.callerId,
@@ -13,6 +14,7 @@ class IncomingCallModel {
     required this.callerName,
     required this.callerProfileImage,
     required this.sdpOfferCompressed,
+    required this.callId,
   });
 
   Map<String, dynamic> toMap() {
@@ -23,6 +25,7 @@ class IncomingCallModel {
       'callerName': callerName,
       'callerProfileImage': callerProfileImage,
       'sdpOfferCompressed': sdpOfferCompressed,
+      'callId': callId,
 
     };
   }
@@ -35,6 +38,7 @@ class IncomingCallModel {
       callerName: map['callerName'] ?? map['caller_name'] ?? "",
       callerProfileImage: map['callerProfileImage'] ?? map['caller_profile_image'] ?? "",
       sdpOfferCompressed: map['sdpOfferCompressed'] ,
+      callId: map['callId'] ,
     );
   }
 }

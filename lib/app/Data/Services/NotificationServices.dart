@@ -222,9 +222,9 @@ class firebaseNotificationServices {
           final call = IncomingCallModel.fromMap(callMap);
 
           CallStateTracker.isIncomingCallScreenOpen = true;
+          print("------------CallDetail------${callMap}");
 
-          Get.toNamed(Routes.IncomingCallScreen,
-              arguments: {"callDetail": call});
+          Get.toNamed(Routes.IncomingCallScreen, arguments: {"callDetail": call});
         }
       } else {
         //---------on Message Open App-------//
@@ -233,7 +233,7 @@ class firebaseNotificationServices {
       if (message.data['screen_name'] == 'incomingCall') {
         if (!CallStateTracker.isIncomingCallScreenOpen) {
           final callMap = jsonDecode(message.data['callData']);
-
+          print("------------CallDetail------${callMap}");
           final call = IncomingCallModel.fromMap(callMap);
 
           CallStateTracker.isIncomingCallScreenOpen = true;

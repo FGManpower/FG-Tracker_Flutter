@@ -5,7 +5,7 @@ class ConstRes {
   ///------------------------ Backend urls and key ------------------------///
 
   static const String development ='http://192.168.1.37:4000/'; // Development
-  static const String production = 'http://fgtracker.in:3000/'; //Prod
+  // static const String production = 'http://fgtracker.in:3000/'; //Prod
   static const String aBaseUrl = '${development}api/';
 
   static const String aImageBaseUrl = development;

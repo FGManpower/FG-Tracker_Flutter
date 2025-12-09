@@ -18,7 +18,6 @@ import 'package:get/get.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import '../../../../gen/assets.gen.dart';
-import '../../../Data/Services/FireStore_services.dart';
 import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
 import '../Home_Widget/NewlyGroupUi.dart';
 
@@ -42,8 +41,6 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-
-    FireStoreServices().createUserDocument();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       checkAndRequestPermissions(context);

@@ -1,13 +1,13 @@
 import 'dart:convert';
 import 'package:archive/archive.dart';
 import 'package:get/get.dart';
-
 import '../../../Core/constant/pref_res.dart';
 import '../../../Core/values/global.dart';
 import '../../../Data/Services/CallStateTracker.dart';
 import '../../../Data/Services/SignallingService.dart';
 import '../../../Model/call_model.dart';
 import '../../../routes/app_pages.dart';
+
 
 class IncomingCallController extends GetxController {
   final args = Get.arguments;
@@ -32,6 +32,11 @@ class IncomingCallController extends GetxController {
 
     socket?.off("callEnded");
     socket?.on("callEnded", (data) {
+      CallStateTracker.isIncomingCallScreenOpen = false;
+      Get.back();
+    });
+
+    socket?.on("missedCall", (data) {
       CallStateTracker.isIncomingCallScreenOpen = false;
       Get.back();
     });
@@ -62,11 +67,9 @@ class IncomingCallController extends GetxController {
 
   void rejectCall() {
     final myId = Global.storageServices.get(PrefConst.userId).toString();
-
     socket?.emit("rejectCall", {
       "remoteUserId": myId == call.callerId ? call.receiverId : call.callerId,
     });
-
     CallStateTracker.isIncomingCallScreenOpen = false;
     Get.back();
   }
@@ -87,6 +90,7 @@ class IncomingCallController extends GetxController {
         "offer": offer,
         "is_video": call.isVideo,
         "callerName": call.callerName,
+        "callId": call.callId,
       },
     );
   }
