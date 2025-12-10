@@ -44,10 +44,12 @@ class MemberController extends GetxController {
           }
         });
 
+        memberData.assignAll(tempList);
         filteredMembers.assignAll(tempList);
 
         responseError.value = "";
-      } else {
+      }
+      else {
         responseError.value = result.message.toString();
       }
     } catch (e) {
@@ -63,11 +65,12 @@ class MemberController extends GetxController {
     } else {
       filteredMembers.value = memberData
           .where((m) =>
-              m.name!.toLowerCase().contains(value.toLowerCase()) ||
-              m.mobileNo!.toLowerCase().contains(value.toLowerCase()))
+      m.name!.toLowerCase().contains(value.toLowerCase()) ||
+          m.mobileNo!.toLowerCase().contains(value.toLowerCase()))
           .toList();
     }
   }
+
 
   Future<void> exitGroup(
     BuildContext context, {

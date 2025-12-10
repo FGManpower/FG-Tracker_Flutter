@@ -91,6 +91,7 @@ class IncomingCallController extends GetxController {
         "is_video": call.isVideo,
         "callerName": call.callerName,
         "callId": call.callId,
+        "callerProfile": call.callerProfileImage,
       },
     );
   }

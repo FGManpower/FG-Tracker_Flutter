@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:fgtracker/app/Core/values/utility.dart';
 import 'package:fgtracker/app/config/themes_data.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
+import 'package:fgtracker/app/modules/mediaStream/Views/AudioCall_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -32,8 +33,7 @@ class CallScreen extends StatelessWidget {
                               RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
                         )
                       : Center(
-                          child: Icon(Icons.call,
-                              size: 140, color: Colors.greenAccent),
+                          child: AudiocallScreen(controller: controller),
                         ),
                 ),
                 Positioned(
@@ -45,34 +45,37 @@ class CallScreen extends StatelessWidget {
                       bottomLeft: Radius.circular(0.r),
                       bottomRight: Radius.circular(0.r),
                     ),
-                    child: BackdropFilter(
-                      filter: ImageFilter.blur(sigmaX: 3, sigmaY: 3),
-                      child: Container(
-                        height: 100.h,
-                        color: Colors.white.withOpacity(0.22),
-                        padding: EdgeInsets.symmetric(vertical: 7.h),
-                        alignment: Alignment.center,
-                        child: Column(
-                          children: [
-                            reausabletext("Call From",
-                                fontsize: 17,
-                                fontfamily: FontFamily.interMedium,
-                                color: ToggleThemeData.white),
-                            reausabletext(controller.args["callerName"],
-                                fontsize: 28,
-                                fontfamily: FontFamily.interSemiBold,
-                                color: ToggleThemeData.white),
-                            Utility.isNullEmptyOrFalse(
-                                    controller.formattedDuration)
-                                ? SizedBox()
-                                : reausabletext(controller.formattedDuration,
-                                    fontsize: 12,
-                                    fontfamily: FontFamily.interMedium,
-                                    color: ToggleThemeData.white),
-                          ],
-                        ),
-                      ),
-                    ),
+                    child: c.is_video
+                        ? BackdropFilter(
+                            filter: ImageFilter.blur(sigmaX: 3, sigmaY: 3),
+                            child: Container(
+                              height: 100.h,
+                              color: Colors.white.withOpacity(0.22),
+                              padding: EdgeInsets.symmetric(vertical: 7.h),
+                              alignment: Alignment.center,
+                              child: Column(
+                                children: [
+                                  reausabletext("Call From",
+                                      fontsize: 17,
+                                      fontfamily: FontFamily.interMedium,
+                                      color: ToggleThemeData.white),
+                                  reausabletext(controller.args["callerName"],
+                                      fontsize: 28,
+                                      fontfamily: FontFamily.interSemiBold,
+                                      color: ToggleThemeData.white),
+                                  Utility.isNullEmptyOrFalse(
+                                          controller.formattedDuration)
+                                      ? SizedBox()
+                                      : reausabletext(
+                                          controller.formattedDuration,
+                                          fontsize: 12,
+                                          fontfamily: FontFamily.interMedium,
+                                          color: ToggleThemeData.white),
+                                ],
+                              ),
+                            ),
+                          )
+                        : SizedBox(),
                   ),
                 ),
                 if (c.is_video == true)

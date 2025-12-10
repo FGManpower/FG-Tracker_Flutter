@@ -104,6 +104,7 @@ class MemberscreenScreen extends GetView<MemberController> {
                   controller.isSearching.toggle();
                   controller.searchController.clear();
                   controller.filteredMembers.assignAll(controller.memberData);
+
                 },
               ),
               if (!controller.isSearching.value &&

@@ -1,4 +1,6 @@
 import 'dart:ui';
+import 'package:fgtracker/app/Core/constant/const_res.dart';
+import 'package:fgtracker/app/Core/values/utility.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
@@ -37,7 +39,7 @@ class IncomingCallScreen extends GetView<IncomingCallController> {
                 SizedBox(height: 30.h),
                 CircleAvatar(
                   radius: 75.r,
-                  backgroundImage: NetworkImage(MyAppTheme.notFoundImg),
+                  backgroundImage: NetworkImage(Utility.isNullEmptyOrFalse(controller.call.callerProfileImage)?MyAppTheme.ProfilenotFoundImg:ConstRes.aImageBaseUrl+controller.call.callerProfileImage),
                 ),
                 SizedBox(height: 7.h),
                 reausabletext(
