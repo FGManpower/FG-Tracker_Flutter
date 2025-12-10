@@ -88,7 +88,7 @@ class CommonChatAppBar extends StatelessWidget implements PreferredSizeWidget {
                   reausabletext(groupName,
                       fontfamily: FontFamily.interMedium,
                       fontsize: 13.sp,
-                      widths: 160,
+                      widths: 155,
                       color: Colors.grey[500]),
                 ],
               ),

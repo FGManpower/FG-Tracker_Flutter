@@ -74,7 +74,7 @@ class JoinGroupController extends GetxController {
         if (type != "Qr") {
           Navigator.pop(context);
         }
-        // groupController.getGroupData();
+        groupController.getGroupData();
         // final service = TrackingService.instance;
         // await service.init();
         return true;
