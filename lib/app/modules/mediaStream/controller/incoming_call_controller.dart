@@ -1,14 +1,16 @@
 import 'dart:convert';
 import 'package:archive/archive.dart';
+import 'package:fgtracker/gen/assets.gen.dart';
+import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'package:get/get.dart';
 import '../../../Core/constant/pref_res.dart';
+import '../../../Core/theme/AppText.dart';
 import '../../../Core/util/decomPress.dart';
 import '../../../Core/values/global.dart';
 import '../../../Data/Services/CallStateTracker.dart';
 import '../../../Data/Services/SignallingService.dart';
 import '../../../Model/call_model.dart';
 import '../../../routes/app_pages.dart';
-
 
 class IncomingCallController extends GetxController {
   final args = Get.arguments;
@@ -20,6 +22,12 @@ class IncomingCallController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    FlutterRingtonePlayer().play(
+      asAlarm: true,
+      fromAsset: Assets.music.incomingCall,
+      looping: true,
+      volume: 1.0,
+    );
     call = args['callDetail'];
     update();
     offer = decomPress().decompressSDPOffer(call.sdpOfferCompressed);
@@ -33,17 +41,17 @@ class IncomingCallController extends GetxController {
 
     socket?.off("callEnded");
     socket?.on("callEnded", (data) {
+      FlutterRingtonePlayer().stop();
       CallStateTracker.isIncomingCallScreenOpen = false;
       Get.back();
     });
 
     socket?.on("missedCall", (data) {
+      FlutterRingtonePlayer().stop();
       CallStateTracker.isIncomingCallScreenOpen = false;
       Get.back();
     });
   }
-
-
 
   void _listenForSocketOffer() {
     socket?.off("newCall");
@@ -58,6 +66,7 @@ class IncomingCallController extends GetxController {
   }
 
   void rejectCall() {
+    FlutterRingtonePlayer().stop();
     final myId = Global.storageServices.get(PrefConst.userId).toString();
     socket?.emit("rejectCall", {
       "remoteUserId": myId == call.callerId ? call.receiverId : call.callerId,
@@ -71,7 +80,7 @@ class IncomingCallController extends GetxController {
       Get.snackbar("Please wait", "Connecting…");
       return;
     }
-
+    FlutterRingtonePlayer().stop();
     CallStateTracker.isIncomingCallScreenOpen = false;
 
     Get.offNamed(

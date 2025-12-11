@@ -25,7 +25,6 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
@@ -38,9 +37,7 @@
     <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
 
-    <!-- The Agora SDK requires Bluetooth permissions in case users are using Bluetooth devices. -->
     <uses-permission android:name="android.permission.BLUETOOTH" />
-    <!-- For Android 12 and above devices, the following permission is also required. -->
 
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
@@ -51,6 +48,7 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
 
 
 
@@ -62,7 +60,13 @@
         android:foregroundServiceType="location"
         android:requestLegacyExternalStorage="true"
         android:enableOnBackInvokedCallback="true"
-        tools:targetApi="m">
+        tools:targetApi="31">
+
+        <!-- Required for incoming call full screen UI (Google-approved) -->
+        <meta-data
+            android:name="com.google.android.fullScreenIntent"
+            android:value="true" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -72,93 +76,40 @@
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
             android:hardwareAccelerated="true"
             android:windowSoftInputMode="adjustResize"
-            tools:targetApi="honeycomb">
+            tools:targetApi="33">
 
             <meta-data
-              android:name="io.flutter.embedding.android.NormalTheme"
-              android:resource="@style/NormalTheme"
-              />
+                android:name="io.flutter.embedding.android.NormalTheme"
+                android:resource="@style/NormalTheme" />
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
-
-
-
-<!--            &lt;!&ndash; App Links &ndash;&gt;-->
-<!--            <intent-filter android:autoVerify="true">-->
-<!--                <action android:name="android.intent.action.VIEW" />-->
-
-<!--                <category android:name="android.intent.category.DEFAULT" />-->
-<!--                <category android:name="android.intent.category.BROWSABLE" />-->
-<!--                &lt;!&ndash; Accepts URIs that begin with https://YOUR_HOST &ndash;&gt;-->
-<!--                <data-->
-<!--                    android:scheme="https"-->
-<!--                    android:host="fgtracker.in"-->
-<!--                    />-->
-<!--            </intent-filter>-->
-
-
-            <!-- Deep Links -->
-
-            <meta-data
-                android:name="flutter_deeplinking_enabled"
-                android:value="true" />
-
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <!-- Accepts URIs that begin with YOUR_SCHEME://YOUR_HOST -->
-                <data
-                    android:host="fgtracker.in"
-                    android:scheme="https" />
-            </intent-filter>
-
-            <!-- App Links -->
-            <intent-filter android:autoVerify="true">
-                <action android:name="android.intent.action.VIEW" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <!-- Accepts URIs that begin with https://YOUR_HOST -->
-                <data
-                    android:host="fgtracker.in"
-                    android:scheme="https" />
-            </intent-filter>
-
-
-
         </activity>
-
 
         <activity
             android:name="com.yalantis.ucrop.UCropActivity"
             android:screenOrientation="fullSensor"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
 
-
-
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_channel_id"
             android:value="high_importance_channel" />
-
 
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
 
-        <meta-data android:name="com.google.android.geo.API_KEY"
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyDu1PPgXuqRdLfEfA9Gf-6A8QydUlyMq-0"/>
-
 
         <service
             android:name="com.lyokone.location.FlutterLocationService"
             android:exported="false"
             android:enabled="true"
             android:foregroundServiceType="location" />
-
 
         <service
             android:name="io.flutter.plugins.firebase.messaging.FlutterFirebaseMessagingService"
@@ -169,7 +120,6 @@
             </intent-filter>
         </service>
 
-        <!-- Boot receiver (so calls can be received after restart) -->
         <receiver
             android:name="com.hiennv.flutter_callkit_incoming.CallkitIncomingBroadcastReceiver"
             android:exported="true">
@@ -187,9 +137,6 @@
             </intent-filter>
         </receiver>
 
-
-
-        <!-- Call service for showing heads-up UI -->
         <service
             android:name="com.hiennv.flutter_callkit_incoming.CallkitIncomingService"
             android:foregroundServiceType="phoneCall|dataSync"
@@ -197,6 +144,7 @@
             android:exported="true" />
 
     </application>
+
 
     <queries>
         <intent>

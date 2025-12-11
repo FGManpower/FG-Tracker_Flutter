@@ -1,4 +1,3 @@
-import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fgtracker/app/Core/theme/AppText.dart';
@@ -13,7 +12,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
-import 'package:table_calendar/table_calendar.dart';
+
 
 import '../Core/values/colors.dart';
 
@@ -617,138 +616,6 @@ Widget BackpressIcon(BuildContext context,
   );
 }
 
-class LanguageCalendarDialog extends StatefulWidget {
-  final DateTime? initialSelectedDate;
-  final Function(DateTime)? onDateSelected;
-
-  const LanguageCalendarDialog({
-    Key? key,
-    this.initialSelectedDate,
-    this.onDateSelected,
-  }) : super(key: key);
-
-  @override
-  State<LanguageCalendarDialog> createState() => _LanguageCalendarDialogState();
-}
-
-class _LanguageCalendarDialogState extends State<LanguageCalendarDialog> {
-  DateTime _focusedDay = DateTime.now();
-  DateTime? _selectedDay;
-  String _currentLocale = 'en_US'; // Default to English
-
-  // Map of language options for display
-  final Map<String, String> _locales = {
-    'en_US': 'English',
-    'hi_IN': 'हिंदी (Hindi)', // Hindi locale
-    'ur_PK': 'اردو (Urdu)', // Urdu locale
-  };
-
-  @override
-  void initState() {
-    super.initState();
-    _selectedDay = widget.initialSelectedDate ?? _focusedDay;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
-      elevation: 0.0,
-      backgroundColor: Colors.transparent,
-      child: Container(
-        padding: const EdgeInsets.all(16.0),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16.0),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Language Selection Dropdown
-            DropdownButton<String>(
-              value: _currentLocale,
-              onChanged: (String? newValue) {
-                if (newValue != null) {
-                  setState(() {
-                    _currentLocale = newValue;
-                  });
-                }
-              },
-              items: _locales.keys.map<DropdownMenuItem<String>>((String key) {
-                return DropdownMenuItem<String>(
-                  value: key,
-                  child: Text(_locales[key]!),
-                );
-              }).toList(),
-            ),
-            const SizedBox(height: 16.0),
-
-            // Table Calendar Widget
-            TableCalendar(
-              locale: _currentLocale, // Set the locale dynamically
-              firstDay: DateTime.utc(2000, 1, 1),
-              lastDay: DateTime.utc(2050, 12, 31),
-              focusedDay: _focusedDay,
-              selectedDayPredicate: (day) {
-                return isSameDay(_selectedDay, day);
-              },
-              onDaySelected: (selectedDay, focusedDay) {
-                setState(() {
-                  _selectedDay = selectedDay;
-                  _focusedDay = focusedDay; // update `_focusedDay` as well
-                });
-                // Optionally call a callback immediately on selection
-                // widget.onDateSelected?.call(selectedDay);
-              },
-              onPageChanged: (focusedDay) {
-                _focusedDay = focusedDay;
-              },
-              headerStyle: HeaderStyle(
-                formatButtonVisible: false,
-                titleCentered: true,
-                titleTextStyle:
-                    TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
-              ),
-              calendarStyle: CalendarStyle(
-                outsideDaysVisible: false,
-                todayDecoration: BoxDecoration(
-                  color: Colors.blue.withOpacity(0.5),
-                  shape: BoxShape.circle,
-                ),
-                selectedDecoration: const BoxDecoration(
-                  color: Colors.blue,
-                  shape: BoxShape.circle,
-                ),
-                selectedTextStyle: const TextStyle(color: Colors.white),
-              ),
-            ),
-            const SizedBox(height: 16.0),
-
-            // Action Buttons
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop(); // Close the dialog
-                  },
-                  child: const Text('CANCEL'),
-                ),
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context)
-                        .pop(_selectedDay); // Return selected date
-                  },
-                  child: const Text('OK'),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
 
 Widget DataEmpty({String? imgname, type}) {
   return Align(

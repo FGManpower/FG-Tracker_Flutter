@@ -2,22 +2,20 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
-import 'package:fgtracker/app/Core/util/CallUtils.dart';
 import 'package:fgtracker/app/Core/values/Context_Utility.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Model/MemberDataRes.dart';
 import 'package:fgtracker/app/Model/call_model.dart';
-import 'package:fgtracker/app/modules/Messages/Views/Chat_Screen.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_callkit_incoming/flutter_callkit_incoming.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
 
 import 'dart:io';
 
-import '../../modules/mediaStream/Views/incoming_call_screen.dart';
 import 'CallStateTracker.dart';
 
 class firebaseNotificationServices {
@@ -150,7 +148,6 @@ class firebaseNotificationServices {
     // }
     getDeviceTokenToSendNotification();
 
-    // If App is Terminated state & used click notification
     FirebaseMessaging.instance.getInitialMessage().then((message) {});
 
     FirebaseMessaging.onMessage.listen((message) async {
@@ -168,8 +165,6 @@ class firebaseNotificationServices {
       }
     });
 
-    // App on Backaground not Terminated
-    // When app is in background
     FirebaseMessaging.onMessageOpenedApp.listen((event) async {
       handleMessage(ContextUtility.navigatorkey.currentState!.context, event,
           type: "recienvedmessage");
@@ -187,7 +182,6 @@ class firebaseNotificationServices {
 
   Future<void> handleMessage(BuildContext context, RemoteMessage message,
       {String? type}) async {
-    //------------- if recieved message badges will not show ----------- //
     if (type == "recienvedmessage") {
       print("messageRecieved--------${message.data}");
 
@@ -209,38 +203,54 @@ class firebaseNotificationServices {
           }
           if (memberData != null) {
             Get.toNamed(Routes.chatScreen, arguments: {
-              "userData": memberData!,
+              "userData": memberData,
               "groupName": "",
               "type": "chatScreen",
             });
           }
         }
       } else if (message.data['screen_name'] == 'incomingCall') {
-        if (!CallStateTracker.isIncomingCallScreenOpen) {
-          final callMap = jsonDecode(message.data['callData']);
+        final activeCalls = await FlutterCallkitIncoming.activeCalls();
 
-          final call = IncomingCallModel.fromMap(callMap);
-
-          CallStateTracker.isIncomingCallScreenOpen = true;
-          print("------------CallDetail------${callMap}");
-
-          Get.toNamed(Routes.IncomingCallScreen, arguments: {"callDetail": call});
+        if (activeCalls.isNotEmpty) {
+          return;
         }
+        if (CallStateTracker.isIncomingCallScreenOpen) {
+          return;
+        }
+
+        final callMap = jsonDecode(message.data['callData']);
+        final call = IncomingCallModel.fromMap(callMap);
+
+        CallStateTracker.isIncomingCallScreenOpen = true;
+
+        Get.toNamed(
+          Routes.IncomingCallScreen,
+          arguments: {"callDetail": call},
+        );
       } else {
         //---------on Message Open App-------//
       }
     } else {
       if (message.data['screen_name'] == 'incomingCall') {
-        if (!CallStateTracker.isIncomingCallScreenOpen) {
-          final callMap = jsonDecode(message.data['callData']);
-          print("------------CallDetail------${callMap}");
-          final call = IncomingCallModel.fromMap(callMap);
+        final activeCalls = await FlutterCallkitIncoming.activeCalls();
 
-          CallStateTracker.isIncomingCallScreenOpen = true;
-
-          Get.toNamed(Routes.IncomingCallScreen,
-              arguments: {"callDetail": call});
+        if (activeCalls.isNotEmpty) {
+          return;
         }
+        if (CallStateTracker.isIncomingCallScreenOpen) {
+          return;
+        }
+
+        final callMap = jsonDecode(message.data['callData']);
+        final call = IncomingCallModel.fromMap(callMap);
+
+        CallStateTracker.isIncomingCallScreenOpen = true;
+
+        Get.toNamed(
+          Routes.IncomingCallScreen,
+          arguments: {"callDetail": call},
+        );
       }
     }
   }

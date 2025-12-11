@@ -1188,52 +1188,6 @@ PODS:
     - abseil/meta/type_traits
     - abseil/xcprivacy
   - abseil/xcprivacy (1.20240722.0)
-  - agora_rtc_engine (6.5.2):
-    - AgoraIrisRTC_iOS (= 4.5.2-build.1)
-    - AgoraRtcEngine_iOS (= 4.5.2)
-    - Flutter
-  - AgoraInfra_iOS (1.2.13.1)
-  - AgoraIrisRTC_iOS (4.5.2-build.1)
-  - AgoraRtcEngine_iOS (4.5.2):
-    - AgoraRtcEngine_iOS/AIAEC (= 4.5.2)
-    - AgoraRtcEngine_iOS/AIAECLL (= 4.5.2)
-    - AgoraRtcEngine_iOS/AINS (= 4.5.2)
-    - AgoraRtcEngine_iOS/AINSLL (= 4.5.2)
-    - AgoraRtcEngine_iOS/AudioBeauty (= 4.5.2)
-    - AgoraRtcEngine_iOS/ClearVision (= 4.5.2)
-    - AgoraRtcEngine_iOS/ContentInspect (= 4.5.2)
-    - AgoraRtcEngine_iOS/FaceCapture (= 4.5.2)
-    - AgoraRtcEngine_iOS/FaceDetection (= 4.5.2)
-    - AgoraRtcEngine_iOS/LipSync (= 4.5.2)
-    - AgoraRtcEngine_iOS/ReplayKit (= 4.5.2)
-    - AgoraRtcEngine_iOS/RtcBasic (= 4.5.2)
-    - AgoraRtcEngine_iOS/SpatialAudio (= 4.5.2)
-    - AgoraRtcEngine_iOS/VideoAv1CodecDec (= 4.5.2)
-    - AgoraRtcEngine_iOS/VideoAv1CodecEnc (= 4.5.2)
-    - AgoraRtcEngine_iOS/VideoCodecDec (= 4.5.2)
-    - AgoraRtcEngine_iOS/VideoCodecEnc (= 4.5.2)
-    - AgoraRtcEngine_iOS/VirtualBackground (= 4.5.2)
-    - AgoraRtcEngine_iOS/VQA (= 4.5.2)
-  - AgoraRtcEngine_iOS/AIAEC (4.5.2)
-  - AgoraRtcEngine_iOS/AIAECLL (4.5.2)
-  - AgoraRtcEngine_iOS/AINS (4.5.2)
-  - AgoraRtcEngine_iOS/AINSLL (4.5.2)
-  - AgoraRtcEngine_iOS/AudioBeauty (4.5.2)
-  - AgoraRtcEngine_iOS/ClearVision (4.5.2)
-  - AgoraRtcEngine_iOS/ContentInspect (4.5.2)
-  - AgoraRtcEngine_iOS/FaceCapture (4.5.2)
-  - AgoraRtcEngine_iOS/FaceDetection (4.5.2)
-  - AgoraRtcEngine_iOS/LipSync (4.5.2)
-  - AgoraRtcEngine_iOS/ReplayKit (4.5.2)
-  - AgoraRtcEngine_iOS/RtcBasic (4.5.2):
-    - AgoraInfra_iOS (= 1.2.13.1)
-  - AgoraRtcEngine_iOS/SpatialAudio (4.5.2)
-  - AgoraRtcEngine_iOS/VideoAv1CodecDec (4.5.2)
-  - AgoraRtcEngine_iOS/VideoAv1CodecEnc (4.5.2)
-  - AgoraRtcEngine_iOS/VideoCodecDec (4.5.2)
-  - AgoraRtcEngine_iOS/VideoCodecEnc (4.5.2)
-  - AgoraRtcEngine_iOS/VirtualBackground (4.5.2)
-  - AgoraRtcEngine_iOS/VQA (4.5.2)
   - app_links (0.0.2):
     - Flutter
   - BoringSSL-GRPC (0.0.37):
@@ -1248,6 +1202,7 @@ PODS:
     - Firebase/Firestore (= 11.15.0)
     - firebase_core
     - Flutter
+  - CryptoSwift (1.8.4)
   - DKImagePickerController/Core (4.3.9):
     - DKImagePickerController/ImageDataManager
     - DKImagePickerController/Resource
@@ -1342,6 +1297,9 @@ PODS:
     - nanopb (~> 3.30910.0)
   - FirebaseSharedSwift (11.15.0)
   - Flutter (1.0.0)
+  - flutter_callkit_incoming (0.0.1):
+    - CryptoSwift
+    - Flutter
   - flutter_compass (0.0.1):
     - Flutter
   - flutter_image_compress_common (1.0.0):
@@ -1353,6 +1311,9 @@ PODS:
     - Flutter
   - flutter_ringtone_player (0.0.1):
     - Flutter
+  - flutter_webrtc (1.2.0):
+    - Flutter
+    - WebRTC-SDK (= 137.7151.04)
   - fluttertoast (0.0.2):
     - Flutter
   - geocoding_ios (1.0.5):
@@ -1511,8 +1472,6 @@ PODS:
     - TOCropViewController (~> 2.7.4)
   - image_picker_ios (0.0.1):
     - Flutter
-  - iris_method_channel (0.0.1):
-    - Flutter
   - leveldb-library (1.22.6)
   - libwebp (1.5.0):
     - libwebp/demux (= 1.5.0)
@@ -1554,9 +1513,6 @@ PODS:
     - nanopb/encode (= 3.30910.0)
   - nanopb/decode (3.30910.0)
   - nanopb/encode (3.30910.0)
-  - no_screenshot (0.3.2-beta.3):
-    - Flutter
-    - ScreenProtectorKit (~> 1.3.1)
   - open_file_ios (0.0.1):
     - Flutter
   - otp_autofill (0.0.1):
@@ -1570,10 +1526,9 @@ PODS:
   - qr_code_scanner_plus (0.2.6):
     - Flutter
     - MTBBarcodeScanner
-  - ScreenProtectorKit (1.3.1)
-  - SDWebImage (5.21.1):
-    - SDWebImage/Core (= 5.21.1)
-  - SDWebImage/Core (5.21.1)
+  - SDWebImage (5.21.3):
+    - SDWebImage/Core (= 5.21.3)
+  - SDWebImage/Core (5.21.3)
   - SDWebImageWebPCoder (0.14.6):
     - libwebp (~> 1.0)
     - SDWebImage/Core (~> 5.17)
@@ -1589,9 +1544,9 @@ PODS:
   - TOCropViewController (2.7.4)
   - url_launcher_ios (0.0.1):
     - Flutter
+  - WebRTC-SDK (137.7151.04)
 
 DEPENDENCIES:
-  - agora_rtc_engine (from `.symlinks/plugins/agora_rtc_engine/ios`)
   - app_links (from `.symlinks/plugins/app_links/ios`)
   - camera_avfoundation (from `.symlinks/plugins/camera_avfoundation/ios`)
   - cloud_firestore (from `.symlinks/plugins/cloud_firestore/ios`)
@@ -1599,10 +1554,12 @@ DEPENDENCIES:
   - firebase_core (from `.symlinks/plugins/firebase_core/ios`)
   - firebase_messaging (from `.symlinks/plugins/firebase_messaging/ios`)
   - Flutter (from `Flutter`)
+  - flutter_callkit_incoming (from `.symlinks/plugins/flutter_callkit_incoming/ios`)
   - flutter_compass (from `.symlinks/plugins/flutter_compass/ios`)
   - flutter_image_compress_common (from `.symlinks/plugins/flutter_image_compress_common/ios`)
   - flutter_local_notifications (from `.symlinks/plugins/flutter_local_notifications/ios`)
   - flutter_ringtone_player (from `.symlinks/plugins/flutter_ringtone_player/ios`)
+  - flutter_webrtc (from `.symlinks/plugins/flutter_webrtc/ios`)
   - fluttertoast (from `.symlinks/plugins/fluttertoast/ios`)
   - geocoding_ios (from `.symlinks/plugins/geocoding_ios/ios`)
   - geolocator_apple (from `.symlinks/plugins/geolocator_apple/darwin`)
@@ -1611,9 +1568,7 @@ DEPENDENCIES:
   - google_mlkit_commons (from `.symlinks/plugins/google_mlkit_commons/ios`)
   - image_cropper (from `.symlinks/plugins/image_cropper/ios`)
   - image_picker_ios (from `.symlinks/plugins/image_picker_ios/ios`)
-  - iris_method_channel (from `.symlinks/plugins/iris_method_channel/ios`)
   - location (from `.symlinks/plugins/location/ios`)
-  - no_screenshot (from `.symlinks/plugins/no_screenshot/ios`)
   - open_file_ios (from `.symlinks/plugins/open_file_ios/ios`)
   - otp_autofill (from `.symlinks/plugins/otp_autofill/ios`)
   - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
@@ -1627,10 +1582,8 @@ DEPENDENCIES:
 SPEC REPOS:
   trunk:
     - abseil
-    - AgoraInfra_iOS
-    - AgoraIrisRTC_iOS
-    - AgoraRtcEngine_iOS
     - BoringSSL-GRPC
+    - CryptoSwift
     - DKImagePickerController
     - DKPhotoGallery
     - Firebase
@@ -1662,15 +1615,13 @@ SPEC REPOS:
     - MTBBarcodeScanner
     - nanopb
     - PromisesObjC
-    - ScreenProtectorKit
     - SDWebImage
     - SDWebImageWebPCoder
     - SwiftyGif
     - TOCropViewController
+    - WebRTC-SDK
 
 EXTERNAL SOURCES:
-  agora_rtc_engine:
-    :path: ".symlinks/plugins/agora_rtc_engine/ios"
   app_links:
     :path: ".symlinks/plugins/app_links/ios"
   camera_avfoundation:
@@ -1685,6 +1636,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/firebase_messaging/ios"
   Flutter:
     :path: Flutter
+  flutter_callkit_incoming:
+    :path: ".symlinks/plugins/flutter_callkit_incoming/ios"
   flutter_compass:
     :path: ".symlinks/plugins/flutter_compass/ios"
   flutter_image_compress_common:
@@ -1693,6 +1646,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/flutter_local_notifications/ios"
   flutter_ringtone_player:
     :path: ".symlinks/plugins/flutter_ringtone_player/ios"
+  flutter_webrtc:
+    :path: ".symlinks/plugins/flutter_webrtc/ios"
   fluttertoast:
     :path: ".symlinks/plugins/fluttertoast/ios"
   geocoding_ios:
@@ -1709,12 +1664,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/image_cropper/ios"
   image_picker_ios:
     :path: ".symlinks/plugins/image_picker_ios/ios"
-  iris_method_channel:
-    :path: ".symlinks/plugins/iris_method_channel/ios"
   location:
     :path: ".symlinks/plugins/location/ios"
-  no_screenshot:
-    :path: ".symlinks/plugins/no_screenshot/ios"
   open_file_ios:
     :path: ".symlinks/plugins/open_file_ios/ios"
   otp_autofill:
@@ -1736,14 +1687,11 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   abseil: a05cc83bf02079535e17169a73c5be5ba47f714b
-  agora_rtc_engine: 55723c1e997b9f1d423d4a07dd8d9ec437a1eb89
-  AgoraInfra_iOS: 3691b2b277a1712a35ae96de25af319de0d73d08
-  AgoraIrisRTC_iOS: eab58c126439adf5ec99632828a558ea216860da
-  AgoraRtcEngine_iOS: 97e2398a2addda9057815a2a583a658e36796ff6
   app_links: f3e17e4ee5e357b39d8b95290a9b2c299fca71c6
   BoringSSL-GRPC: dded2a44897e45f28f08ae87a55ee4bcd19bc508
   camera_avfoundation: adb0207d868b2d873e895371d88448399ab78d87
   cloud_firestore: 06bb439e96941cdca91ac6bff6fa17d94952d4a8
+  CryptoSwift: e64e11850ede528a02a0f3e768cec8e9d92ecb90
   DKImagePickerController: 946cec48c7873164274ecc4624d19e3da4c1ef3c
   DKPhotoGallery: b3834fecb755ee09a593d7c9e389d8b5d6deed60
   file_picker: b159e0c068aef54932bb15dc9fd1571818edaf49
@@ -1759,11 +1707,13 @@ SPEC CHECKSUMS:
   FirebaseInstallations: 317270fec08a5d418fdbc8429282238cab3ac843
   FirebaseMessaging: 3b26e2cee503815e01c3701236b020aa9b576f09
   FirebaseSharedSwift: e17c654ef1f1a616b0b33054e663ad1035c8fd40
-  Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
+  Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
+  flutter_callkit_incoming: 417dd1b46541cdd5d855ad795ccbe97d1c18155e
   flutter_compass: cbbd285cea1584c7ac9c4e0c3e1f17cbea55e855
   flutter_image_compress_common: ec1d45c362c9d30a3f6a0426c297f47c52007e3e
   flutter_local_notifications: 4cde75091f6327eb8517fa068a0a5950212d2086
   flutter_ringtone_player: 15eba85187230b87b2512f0e1b92225618bc03e7
+  flutter_webrtc: 2f8c283dc8d16b988cdf8b0a7248b0717829bd78
   fluttertoast: 21eecd6935e7064cc1fcb733a4c5a428f3f24f0f
   geocoding_ios: eafacae6ad11a1eb56681f7d11df602a5fd49416
   geolocator_apple: 66b711889fd333205763b83c9dcf0a57a28c7afd
@@ -1781,7 +1731,6 @@ SPEC CHECKSUMS:
   GTMSessionFetcher: 5aea5ba6bd522a239e236100971f10cb71b96ab6
   image_cropper: 37d40f62177c101ff4c164906d259ea2c3aa70cf
   image_picker_ios: c560581cceedb403a6ff17f2f816d7fea1421fc1
-  iris_method_channel: 4e3fe7fe6b2db1b84feae956e98ce1479402627a
   leveldb-library: cc8b8f8e013647a295ad3f8cd2ddf49a6f19be19
   libwebp: 02b23773aedb6ff1fd38cec7a77b81414c6842a8
   location: d5cf8598915965547c3f36761ae9cc4f4e87d22e
@@ -1792,15 +1741,13 @@ SPEC CHECKSUMS:
   MLKitVision: 45e79d68845a2de77e2dd4d7f07947f0ed157b0e
   MTBBarcodeScanner: f453b33c4b7dfe545d8c6484ed744d55671788cb
   nanopb: fad817b59e0457d11a5dfbde799381cd727c1275
-  no_screenshot: be17af44d81c8aad04dcab01badb48c3954380fa
   open_file_ios: 461db5853723763573e140de3193656f91990d9e
   otp_autofill: 93bcc21475705d35445927cb9aef24e818bbf083
   path_provider_foundation: 2b6b4c569c0fb62ec74538f866245ac84301af46
   permission_handler_apple: 9878588469a2b0d0fc1e048d9f43605f92e6cec2
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
   qr_code_scanner_plus: 3bfe4deb7f28996a63a2a580819d49dae80d5ed3
-  ScreenProtectorKit: 83a6281b02c7a5902ee6eac4f5045f674e902ae4
-  SDWebImage: f29024626962457f3470184232766516dee8dfea
+  SDWebImage: 16309af6d214ba3f77a7c6f6fdda888cb313a50a
   SDWebImageWebPCoder: e38c0a70396191361d60c092933e22c20d5b1380
   share_plus: 8b6f8b3447e494cca5317c8c3073de39b3600d1f
   shared_preferences_foundation: fcdcbc04712aee1108ac7fda236f363274528f78
@@ -1808,6 +1755,7 @@ SPEC CHECKSUMS:
   SwiftyGif: 706c60cf65fa2bc5ee0313beece843c8eb8194d4
   TOCropViewController: 80b8985ad794298fb69d3341de183f33d1853654
   url_launcher_ios: 5334b05cef931de560670eeae103fd3e431ac3fe
+  WebRTC-SDK: 40d4f5ba05cadff14e4db5614aec402a633f007e
 
 PODFILE CHECKSUM: 819463e6a0290f5a72f145ba7cde16e8b6ef0796
 
