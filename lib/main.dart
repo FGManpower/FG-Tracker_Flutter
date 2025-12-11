@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:developer';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
@@ -9,9 +10,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter_callkit_incoming/entities/call_event.dart';
-import 'package:flutter_callkit_incoming/flutter_callkit_incoming.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app/Core/util/CallUtils.dart';
 import 'app/Core/values/Context_Utility.dart';
@@ -19,6 +17,7 @@ import 'app/Core/values/global.dart';
 import 'app/Data/Services/NotificationServices.dart';
 import 'app/Data/Services/SignallingService.dart';
 
+import 'app/Model/call_model.dart';
 import 'app/modules/Notification/Controller/cubit/notification_count_cubit.dart';
 
 import 'app/routes/app_pages.dart';
@@ -32,12 +31,23 @@ final localNotifications = FlutterLocalNotificationsPlugin();
 @pragma('vm:entry-point')
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
-  log("[Background FCM] Data: ${message.data}");
+  log("[Background FCM] Raw Data: ${message.data}");
 
-  if (message.data['type'] == 'call') {
-    await CallUtils().showIncomingCall(message.data);
+  if (message.data['screen_name'] == 'incomingCall') {
+
+    try {
+      final callMap = jsonDecode(message.data['callData']);
+      final callModel = IncomingCallModel.fromMap(callMap);
+
+      await CallUtils().showIncomingCall(callModel);
+
+    } catch (e) {
+      log("🔥 Background handler error: $e");
+    }
   }
 }
+
+
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -59,6 +69,7 @@ Future<void> main() async {
     websocketUrl: ConstRes.socketUrl,
     selfCallerID: Global.storageServices.get(PrefConst.userId).toString(),
   );
+  CallUtils().listenCallKitEvents();
   runApp(const MyApp());
 }
 
@@ -73,78 +84,9 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    listenCallKitEvents();
 
-    // Connect the socket AFTER user logs in
-    // Future.microtask(() async {
-    //   // other inits (Firebase, Global.init etc)
-    //   await CallManager.instance.callService.init();
-    //
-    //   // OPTIONAL: connect and register once you have logged-in user id
-    //   CallManager.instance.callService.connectAndRegister(userId: "${Global.storageServices.get(PrefConst.userId)}");
-    // });
   }
 
-  //final callService = CallService.instance;
-  void listenCallKitEvents() {
-    FlutterCallkitIncoming.onEvent.listen((CallEvent? event) {
-      if (event == null) return;
-      log("[CallKit Event] ${event.event.name} - ${event.body}");
-
-      switch (event.event) {
-
-        case Event.actionCallAccept:
-          final rawExtra = event.body['extra'];
-
-
-          final extra = (rawExtra as Map?)?.map(
-                (key, value) => MapEntry(key.toString(), value),
-          ) ?? <String, dynamic>{};
-          log("[CallKit] Call Accept");
-          _navigateToCallScreen(extra);
-          break;
-
-
-        case Event.actionCallDecline:
-          log("[CallKit] Call declined");
-          break;
-
-        case Event.actionCallEnded:
-          log("[CallKit] Call ended");
-          break;
-
-        default:
-          break;
-      }
-    });
-  }
-
-  Future<void> _navigateToCallScreen(Map<String, dynamic> data) async {
-    final sharedpref = await SharedPreferences.getInstance();
-
-
-    try {
-      // CallModel incomingCallData = CallModel(
-      //   callerId: data['callerId'],
-      //   receiverId: sharedpref.get(PrefConst.userId).toString(),
-      //   channelId: data['channelId'],
-      //   isVideo: data['isVideo'] == 'true',
-      //   status: 'ringing',
-      //   callerName: data['callerName'],
-      //   callerProfileImage: data['callerProfileImage'],
-      // );
-
-      //
-      // Navigator.push(
-      //     ContextUtility.navigator!.context,
-      //     MaterialPageRoute(
-      //         builder: (context) =>
-      //             IncomingCallScreen(call: incomingCallData)));
-
-    } catch (e) {
-      log('exception:${e.toString()}');
-    }
-  }
 
   @override
   Widget build(BuildContext context) {

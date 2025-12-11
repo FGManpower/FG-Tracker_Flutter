@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:archive/archive.dart';
 import 'package:get/get.dart';
 import '../../../Core/constant/pref_res.dart';
+import '../../../Core/util/decomPress.dart';
 import '../../../Core/values/global.dart';
 import '../../../Data/Services/CallStateTracker.dart';
 import '../../../Data/Services/SignallingService.dart';
@@ -21,7 +22,7 @@ class IncomingCallController extends GetxController {
     super.onInit();
     call = args['callDetail'];
     update();
-    offer = _decompressSDPOffer(call.sdpOfferCompressed);
+    offer = decomPress().decompressSDPOffer(call.sdpOfferCompressed);
 
     if (offer != null) {
       gotSDP = true;
@@ -42,16 +43,7 @@ class IncomingCallController extends GetxController {
     });
   }
 
-  Map<String, dynamic>? _decompressSDPOffer(String? compressed) {
-    if (compressed == null) return null;
-    try {
-      final decoded = base64Decode(compressed);
-      final unzipped = GZipDecoder().decodeBytes(decoded);
-      return jsonDecode(utf8.decode(unzipped));
-    } catch (_) {
-      return null;
-    }
-  }
+
 
   void _listenForSocketOffer() {
     socket?.off("newCall");

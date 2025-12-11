@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'package:fgtracker/app/Core/util/CallUtils.dart';
 import 'package:socket_io_client/socket_io_client.dart';
 
 class SignallingService {
@@ -25,6 +26,7 @@ class SignallingService {
 
     socket!.onConnect((_) {
       log("Call Socket Connected (ID: $selfCallerID)");
+      CallUtils().setupSocketCallEvents();
     });
 
     socket!.onDisconnect((_) {
