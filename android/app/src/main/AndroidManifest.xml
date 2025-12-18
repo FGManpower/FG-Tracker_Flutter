@@ -48,7 +48,7 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
-    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+
 
 
 
@@ -62,10 +62,7 @@
         android:enableOnBackInvokedCallback="true"
         tools:targetApi="31">
 
-        <!-- Required for incoming call full screen UI (Google-approved) -->
-        <meta-data
-            android:name="com.google.android.fullScreenIntent"
-            android:value="true" />
+
 
         <activity
             android:name=".MainActivity"
@@ -120,28 +117,7 @@
             </intent-filter>
         </service>
 
-        <receiver
-            android:name="com.hiennv.flutter_callkit_incoming.CallkitIncomingBroadcastReceiver"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="com.hiennv.flutter_callkit_incoming.ACTION_CALL_ACCEPT" />
-                <action android:name="com.hiennv.flutter_callkit_incoming.ACTION_CALL_DECLINE" />
-                <action android:name="com.hiennv.flutter_callkit_incoming.ACTION_CALL_ENDED" />
-                <action android:name="com.hiennv.flutter_callkit_incoming.ACTION_CALL_TIMEOUT" />
-                <action android:name="com.hiennv.flutter_callkit_incoming.ACTION_CALL_CALLBACK" />
-                <action android:name="com.hiennv.flutter_callkit_incoming.ACTION_CALL_TOGGLE_HOLD" />
-                <action android:name="com.hiennv.flutter_callkit_incoming.ACTION_CALL_TOGGLE_MUTE" />
-                <action android:name="com.hiennv.flutter_callkit_incoming.ACTION_CALL_TOGGLE_DMTF" />
-                <action android:name="com.hiennv.flutter_callkit_incoming.ACTION_CALL_TOGGLE_GROUP" />
-                <action android:name="com.hiennv.flutter_callkit_incoming.ACTION_CALL_TOGGLE_AUDIO_SESSION" />
-            </intent-filter>
-        </receiver>
 
-        <service
-            android:name="com.hiennv.flutter_callkit_incoming.CallkitIncomingService"
-            android:foregroundServiceType="phoneCall|dataSync"
-            android:permission="android.permission.BIND_TELECOM_CONNECTION_SERVICE"
-            android:exported="true" />
 
     </application>
 

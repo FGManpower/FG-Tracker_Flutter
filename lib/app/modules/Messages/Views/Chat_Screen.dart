@@ -54,6 +54,7 @@ class ChatScreen extends GetView<MessageController> {
                     remoteUserId: controller.memberData.userId.toString(),is_video:false,callerName:controller.memberData.name,);
               },onWalkieTalkieCall: () {
 
+
               },);
             },
             onVideoTap: () {
