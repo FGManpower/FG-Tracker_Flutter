@@ -3,7 +3,7 @@ import 'dart:developer';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/Dialog/Common_dialog.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
-import 'package:fgtracker/app/Core/values/loading.dart';
+
 import 'package:fgtracker/app/Data/Services/LocationPermission.dart';
 import 'package:fgtracker/app/modules/Track/Controller/SocketServices.dart';
 import 'package:flutter/material.dart';
@@ -63,19 +63,7 @@ class LocationService extends GetxService {
         try {
           // Loading().showloading();
           await _location.enableBackgroundMode(enable: true);
-          // try {
-          //   currentPosition = await _location
-          //       .getLocation()
-          //       .timeout(Duration(minutes: 2), onTimeout: () {
-          //     log("⚠️ Location fetch timed out, using fallback.");
-          //     return LocationData.fromMap({
-          //       "latitude": 0.0,
-          //       "longitude": 0.0,
-          //     });
-          //   });
-          // } catch (error) {
-          //   log("errors---$error");
-          // }
+
 
           _listenToLocationUpdates(
               Global.storageServices.get(PrefConst.userId).toString());

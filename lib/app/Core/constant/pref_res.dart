@@ -7,7 +7,6 @@ class PrefConst {
   static const String Location_Permission = "Location_Permission";
   static const String isDarkMode = "isDarkMode";
   static const String notificationBadge = "notificationBadge";
-  static const String googleMapApiKey = "AIzaSyDu1PPgXuqRdLfEfA9Gf-6A8QydUlyMq-0";
   static const String userId = "userId";
   static const String userName = "userName";
   static const String profileImage = "profileImage";

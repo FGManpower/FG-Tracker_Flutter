@@ -15,6 +15,7 @@ import 'package:get/get.dart';
 
 import '../../../Data/Services/SignallingService.dart';
 import '../../../routes/app_pages.dart';
+import '../../Application/Controller/WalkieController.dart';
 import '../../mediaStream/Views/call_screen.dart';
 
 import 'Socket_Message_Services.dart';
@@ -31,6 +32,9 @@ class MessageController extends GetxController {
   late MemberData memberData;
   Map<String, dynamic>? arguments = Get.arguments;
 
+  // final wc = Get.put(WalkieController());
+
+
   // var incomingSDPOffer = Rxn<Map>();
 
   @override
@@ -38,11 +42,9 @@ class MessageController extends GetxController {
     super.onInit();
 
     memberData = arguments?['userData'];
-    _initializeChat();
 
-    // SignallingService.instance.socket!.on("newCall", (data) {
-    //   incomingSDPOffer.value = data;
-    // });
+
+    _initializeChat();
   }
 
   void _initializeChat() {

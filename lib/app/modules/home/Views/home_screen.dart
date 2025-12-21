@@ -1,6 +1,8 @@
+import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/deep_Link/uniservices.dart';
 import 'package:fgtracker/app/Core/theme/AppText.dart';
 import 'package:fgtracker/app/Data/Services/NotificationServices.dart';
+import 'package:fgtracker/app/Data/Services/walkie_native_service.dart';
 import 'package:fgtracker/app/modules/DashboardController.dart';
 import 'package:fgtracker/app/modules/Group/Controller/JoinGroup_Controller.dart';
 import 'package:fgtracker/app/modules/home/Controller/home_controller.dart';
@@ -19,6 +21,7 @@ import 'package:permission_handler/permission_handler.dart';
 
 import '../../../../gen/assets.gen.dart';
 import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
+import '../../../Core/values/global.dart';
 import '../Home_Widget/NewlyGroupUi.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -46,6 +49,8 @@ class _HomeScreenState extends State<HomeScreen> {
       checkAndRequestPermissions(context);
     });
 
+
+
     controller.getProfileData();
     groupController.getGroupData();
     if (dashController.DeeplinkWithStartJob.value == false) {}
@@ -71,6 +76,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> checkAndRequestPermissions(BuildContext context) async {
+    await WalkieNativeService.saveUserId(Global.storageServices.get(PrefConst.userId).toString());
     final permissions = [
       Permission.camera,
       Permission.microphone,
@@ -84,6 +90,8 @@ class _HomeScreenState extends State<HomeScreen> {
     statuses.forEach((permission, status) {
       debugPrint('${permission.toString()} status: ${status.toString()}');
     });
+
+
 
     // PermissionStatus overlayStatus = PermissionStatus.granted;
     // if (Platform.isAndroid) {

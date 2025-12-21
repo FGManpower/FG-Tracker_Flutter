@@ -49,8 +49,8 @@
     <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
 
-
-
+    <uses-permission
+        android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
 
     <application
         android:label="FG Tracker"
@@ -100,7 +100,7 @@
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyDu1PPgXuqRdLfEfA9Gf-6A8QydUlyMq-0"/>
+            android:value="AIzaSyA8yzwlAnFOlI1pcXhrnXLwtuAx711H4uc"/>
 
         <service
             android:name="com.lyokone.location.FlutterLocationService"
@@ -118,6 +118,18 @@
         </service>
 
 
+        <service
+            android:name=".WalkieService"
+            android:foregroundServiceType="microphone" />
+
+
+        <service
+            android:name=".WalkieFCMService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
 
     </application>
 

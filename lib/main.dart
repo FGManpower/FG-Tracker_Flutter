@@ -17,6 +17,7 @@ import 'app/Core/values/global.dart';
 import 'app/Data/Services/NotificationServices.dart';
 import 'app/Data/Services/SignallingService.dart';
 
+import 'app/Data/Services/walkie_native_service.dart';
 import 'app/Model/call_model.dart';
 import 'app/modules/Notification/Controller/cubit/notification_count_cubit.dart';
 
@@ -31,23 +32,29 @@ final localNotifications = FlutterLocalNotificationsPlugin();
 @pragma('vm:entry-point')
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
+  await Global.init();
   log("[Background FCM] Raw Data: ${message.data}");
 
   if (message.data['screen_name'] == 'incomingCall') {
-
     try {
       final callMap = jsonDecode(message.data['callData']);
       final callModel = IncomingCallModel.fromMap(callMap);
 
       await CallUtils().showIncomingCall(callModel);
-
     } catch (e) {
       log("🔥 Background handler error: $e");
     }
   }
+  // else if (message.data['type'] == 'WALKIE_CALL') {
+  //   log("🔥 Background Message Data ${message.data}");
+  //   final fromUserId = message.data['fromUserId'];
+  //
+  //   await WalkieNativeService.start(
+  //     myUserId: Global.storageServices.get(PrefConst.userId).toString(),
+  //     remoteUserId: fromUserId,
+  //   );
+  // }
 }
-
-
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -59,7 +66,6 @@ Future<void> main() async {
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(statusBarColor: Colors.transparent),
   );
-
 
   Get.put<TrackingController>(TrackingController());
   Get.put<LocationService>(LocationService());
@@ -84,9 +90,7 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-
   }
-
 
   @override
   Widget build(BuildContext context) {

@@ -3,13 +3,15 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../config/themes_data.dart';
 import '../../../global_widget/common_widget.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
+import 'package:get/get.dart';
+import '../../../modules/Application/Controller/WalkieController.dart';
 
 class ChatBottomSheet {
   static Future<void> showCallOptions(
-      BuildContext context, {
-        VoidCallback? onAudioCall,
-        VoidCallback? onWalkieTalkieCall,
-      }) async {
+    BuildContext context, {
+    VoidCallback? onAudioCall,
+    VoidCallback? onWalkieTalkieCall,
+  }) async {
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -46,7 +48,6 @@ class ChatBottomSheet {
                     fontfamily: FontFamily.interBold,
                   ),
                   SizedBox(height: 12.h),
-
                   _callTile(
                     context,
                     title: "Normal Audio Call",
@@ -79,14 +80,129 @@ class ChatBottomSheet {
     );
   }
 
+  static Future<void> showWalkieTalkie(
+    BuildContext context,
+    WalkieController wc,
+  ) async {
+    return showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) {
+        return Container(
+          height: 420.h,
+          width: double.maxFinite,
+          padding: EdgeInsets.symmetric(horizontal: 20.w),
+          decoration: BoxDecoration(
+            color: const Color(0xFF0E0F14),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(28.r)),
+          ),
+          child: Column(
+            children: [
+              Container(
+                margin: EdgeInsets.symmetric(vertical: 12.h),
+                width: 42.w,
+                height: 5.h,
+                decoration: BoxDecoration(
+                  color: Colors.white24,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              reausabletext(
+                "Walkie-Talkie",
+                fontsize: 20,
+                color: Colors.white,
+                fontfamily: FontFamily.interBold,
+              ),
+              SizedBox(height: 6.h),
+              Obx(() {
+                String text;
+                Color color;
+
+                switch (wc.status.value) {
+                  case WalkieStatus.talking:
+                    text = "TRANSMITTING";
+                    color = Colors.greenAccent;
+                    break;
+                  case WalkieStatus.listening:
+                    text = "LISTENING";
+                    color = Colors.blueAccent;
+                    break;
+                  default:
+                    text = "READY";
+                    color = Colors.white54;
+                }
+
+                return Text(
+                  text,
+                  style: TextStyle(
+                    color: color,
+                    fontSize: 13.sp,
+                    letterSpacing: 1.3,
+                    fontWeight: FontWeight.w600,
+                  ),
+                );
+              }),
+              const Spacer(),
+              Obx(() {
+                final isTalking = wc.status.value == WalkieStatus.talking;
+
+                return GestureDetector(
+                  onTapDown: (_) => wc.startTalking(),
+                  onTapUp: (_) => wc.stopTalking(),
+                  onTapCancel: wc.stopTalking,
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 160),
+                    height: isTalking ? 150.w : 130.w,
+                    width: isTalking ? 150.w : 130.w,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color:
+                          isTalking ? Colors.greenAccent : Colors.grey.shade800,
+                      boxShadow: isTalking
+                          ? [
+                              BoxShadow(
+                                color: Colors.greenAccent.withOpacity(0.6),
+                                blurRadius: 30,
+                                spreadRadius: 6,
+                              )
+                            ]
+                          : [],
+                    ),
+                    child: Icon(
+                      Icons.mic_rounded,
+                      size: 60,
+                      color: isTalking ? Colors.black : Colors.white70,
+                    ),
+                  ),
+                );
+              }),
+              SizedBox(height: 30.h),
+              Obx(() => Text(
+                    wc.status.value == WalkieStatus.talking
+                        ? "Release to stop talking"
+                        : "Press & hold to talk",
+                    style: TextStyle(
+                      color: Colors.white38,
+                      fontSize: 14.sp,
+                    ),
+                  )),
+              SizedBox(height: 24.h),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   static Widget _callTile(
-      BuildContext context, {
-        required String title,
-        required String subtitle,
-        required IconData icon,
-        required Color color,
-        required VoidCallback onTap,
-      }) {
+    BuildContext context, {
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(14.r),
@@ -126,7 +242,8 @@ class ChatBottomSheet {
                 ],
               ),
             ),
-            Icon(Icons.arrow_forward_ios, size: 16.sp, color: Colors.grey.shade700),
+            Icon(Icons.arrow_forward_ios,
+                size: 16.sp, color: Colors.grey.shade700),
           ],
         ),
       ),
