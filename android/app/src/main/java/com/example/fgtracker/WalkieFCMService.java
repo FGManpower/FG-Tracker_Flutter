@@ -10,7 +10,7 @@ public class WalkieFCMService extends FirebaseMessagingService {
 
     @Override
     public void onMessageReceived(RemoteMessage message) {
-
+        System.out.println("🔥 WalkieFCMService triggered");
         if (message.getData() == null) return;
 
         String type = message.getData().get("type");

@@ -140,15 +140,17 @@ public class WalkieService extends Service {
 
 
 
-      socket = IO.socket("http://192.168.1.39:4000/walkie", options);
+      socket = IO.socket("http://192.168.1.30:4000/walkie", options);
 
-      socket.on(Socket.EVENT_CONNECT, args ->
-              System.out.println("✅ Socket CONNECTED as " + myUserId)
-      if (audioTrack.getPlayState() != AudioTrack.PLAYSTATE_PLAYING) {
-        audioTrack.play();
-        System.out.println("🔊 AudioTrack PLAYING after socket connect");
-      }
-      );
+      socket.on(Socket.EVENT_CONNECT, args -> {
+        System.out.println("✅ Socket CONNECTED as " + myUserId);
+
+        if (audioTrack.getPlayState() != AudioTrack.PLAYSTATE_PLAYING) {
+          audioTrack.play();
+          System.out.println("🔊 AudioTrack PLAYING after socket connect");
+        }
+      });
+
 
       socket.on(Socket.EVENT_CONNECT_ERROR, args ->
               System.out.println("❌ Socket CONNECT ERROR: " + args[0])

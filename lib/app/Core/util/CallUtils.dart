@@ -48,6 +48,7 @@ class CallUtils {
           isShowLogo: true,
           backgroundColor: '#0955fa',
           actionColor: '#4CAF50',
+          isShowFullLockedScreen: false,
         ),
         ios: const IOSParams(
           handleType: 'generic',
