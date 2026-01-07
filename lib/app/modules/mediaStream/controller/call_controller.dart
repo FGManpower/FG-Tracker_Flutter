@@ -31,12 +31,15 @@ class CallController extends GetxController {
   Timer? callTimer;
   int callDurationSeconds = 0;
 
+
   @override
   void onInit() {
+
     callerId = args["callerId"];
     remoteUserId = args["remoteUserId"];
     offer = args["offer"];
     is_video = args["is_video"];
+
 
     if (args["callId"] != null) {
       callId = args["callId"];
@@ -50,6 +53,7 @@ class CallController extends GetxController {
   }
 
   void _listenForCallEvents() {
+
     // Caller receives callId
     socket!.on("callCreated", (data) {
       callId = data["callId"].toString();
@@ -61,6 +65,7 @@ class CallController extends GetxController {
       callId = data["callId"].toString();
       update();
     });
+
 
     socket!.on("callRejected", (data) {
       callTimer?.cancel();
@@ -85,7 +90,9 @@ class CallController extends GetxController {
       Get.back();
       // Get.snackbar("Call", "Call ended by ${data['endedBy']}");
     });
+
   }
+
 
   void resetPeer() {
     try {
@@ -116,28 +123,18 @@ class CallController extends GetxController {
     peer = await createPeerConnection({
       'iceServers': [
         {
+          'urls': ['stun:stun.l.google.com:19302'],
+        },
+        {
           'urls': [
-            'stun:stun1.l.google.com:19302',
-            'stun:stun2.l.google.com:19302'
-          ]
+            'turn:89.116.23.2:3478?transport=udp',
+            'turn:89.116.23.2:3478?transport=tcp',
+          ],
+          'username': 'fgtracker',
+          'credential': 'FGM_Tracker@2025',
         }
-      ]
-
-      // "iceServers": [
-      //   {
-      //     "urls": ["stun:stun.l.google.com:19302"]
-      //   },
-      //   {
-      //     "urls": [
-      //       "turn:89.116.23.2:3478?transport=udp",
-      //       "turn:89.116.23.2:3478?transport=tcp",
-      //     ],
-      //     "username": "webrtc",
-      //     "credential": "123456"
-      //   }
-      // ],
-      // "iceTransportPolicy": "all",
-      // "sdpSemantics": "unified-plan",
+      ],
+      'iceTransportPolicy': 'all',
     });
 
     peer!.onTrack = (event) {
@@ -219,12 +216,14 @@ class CallController extends GetxController {
     }
   }
 
+
+
   void endCall() {
     callTimer?.cancel();
     callTimer = null;
     final myUserId = Global.storageServices.get(PrefConst.userId).toString();
     final targetUser =
-        (myUserId == callerId.toString()) ? remoteUserId : callerId;
+    (myUserId == callerId.toString()) ? remoteUserId : callerId;
 
     socket?.emit("endCall", {
       "callId": callId,
@@ -237,7 +236,15 @@ class CallController extends GetxController {
     } else {
       Get.offAllNamed(Routes.Home_Screen);
     }
+
+    if (Get.currentRoute != Routes.Home_Screen) {
+      Get.back();
+    } else {
+      Get.offAllNamed(Routes.Home_Screen);
+    }
   }
+
+
 
   void toggleMic() {
     isAudioOn = !isAudioOn;
@@ -273,6 +280,8 @@ class CallController extends GetxController {
       update();
     });
   }
+
+
 
   @override
   void onClose() {
