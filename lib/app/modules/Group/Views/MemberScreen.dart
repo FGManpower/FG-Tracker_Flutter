@@ -21,6 +21,7 @@ import 'package:skeletonizer/skeletonizer.dart';
 import '../../../Core/util/DateTime_Format.dart';
 import '../../../Data/Services/Tracking.dart';
 import '../../Track/Widget/TrackLAppBar.dart';
+import '../../Walkie-talkie/Controller/walkieController.dart';
 
 class MemberscreenScreen extends GetView<MemberController> {
   @override
@@ -104,7 +105,6 @@ class MemberscreenScreen extends GetView<MemberController> {
                   controller.isSearching.toggle();
                   controller.searchController.clear();
                   controller.filteredMembers.assignAll(controller.memberData);
-
                 },
               ),
               if (!controller.isSearching.value &&
@@ -145,42 +145,44 @@ class MemberscreenScreen extends GetView<MemberController> {
               SizedBox(width: 5.w),
             ],
           ),
-          bottomNavigationBar: controller.filteredMembers.isEmpty
-              ? SizedBox()
-              : Padding(
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 15.h, vertical: 10.h),
-                  child: Row(
-                    children: [
-                      Expanded(
-                          child: reausablebutton(
-                              title: "Walkie-Talkie",
-                              icon: Icons.groups,
-                              fontSize: 12,
-                              borderradiues: 50,
-                              ontap: () {},
-                              height: 55)),
-                      SizedBox(width: 40.w),
-                      Expanded(
-                          child: reausablebutton(
-                              title: "Track",
-                              icon: Icons.track_changes,
-                              fontSize: 12,
-                              borderradiues: 50,
-                              ontap: () {
-                                Get.toNamed(Routes.LocationTracking,
-                                    arguments: {
-                                      "groupId": int.parse(controller
-                                          .arguments!['groupId']
-                                          .toString()),
-                                      "groupName":
-                                          controller.arguments!['groupName'],
-                                    });
-                              },
-                              height: 55)),
-                    ],
+          bottomNavigationBar: SafeArea(
+            child: controller.filteredMembers.isEmpty
+                ? SizedBox()
+                : Padding(
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 15.h, vertical: 10.h),
+                    child: Row(
+                      children: [
+                        Expanded(
+                            child: reausablebutton(
+                                title: "Walkie-Talkie",
+                                icon: Icons.groups,
+                                fontSize: 12,
+                                borderradiues: 50,
+                                ontap: () {},
+                                height: 55)),
+                        SizedBox(width: 40.w),
+                        Expanded(
+                            child: reausablebutton(
+                                title: "Track",
+                                icon: Icons.track_changes,
+                                fontSize: 12,
+                                borderradiues: 50,
+                                ontap: () {
+                                  Get.toNamed(Routes.LocationTracking,
+                                      arguments: {
+                                        "groupId": int.parse(controller
+                                            .arguments!['groupId']
+                                            .toString()),
+                                        "groupName":
+                                            controller.arguments!['groupName'],
+                                      });
+                                },
+                                height: 55)),
+                      ],
+                    ),
                   ),
-                ),
+          ),
           body: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -282,7 +284,10 @@ class MemberscreenScreen extends GetView<MemberController> {
                 final data = groupData?[index];
                 bool isOnline = (data?.isOnline == true) ||
                     (data?.lastSeen != null &&
-                        Tracking().getTimeAgo(DateTime.parse(data!.lastSeen!)).toLowerCase() == "just now");
+                        Tracking()
+                                .getTimeAgo(DateTime.parse(data!.lastSeen!))
+                                .toLowerCase() ==
+                            "just now");
 
                 return GestureDetector(
                   onTap: () {
@@ -326,7 +331,9 @@ class MemberscreenScreen extends GetView<MemberController> {
                                       height: 12.w,
                                       width: 12.w,
                                       decoration: BoxDecoration(
-                                        color: isOnline?Colors.green:Colors.red,
+                                        color: isOnline
+                                            ? Colors.green
+                                            : Colors.red,
                                         shape: BoxShape.circle,
                                         border: Border.all(
                                             color: Colors.white, width: 1.5.w),
@@ -380,14 +387,23 @@ class MemberscreenScreen extends GetView<MemberController> {
                                       ],
                                     ),
                                   ),
-                                  Padding(
-                                    padding: EdgeInsets.only(left: 50.w),
-                                    child: Image.asset(
-                                      Assets.icons.walkieTalkie.path,
-                                      height: 28.h,
-                                      width: 28.w,
+                                  InkWell(
+                                    onTap: () {
+                                      WalkieController().startServices(
+                                          callerName: data!.name.toString(),
+                                          profileImage: data.profileImage,
+                                          remoteUserId:
+                                              data!.userId.toString());
+                                    },
+                                    child: Padding(
+                                      padding: EdgeInsets.only(left: 50.w),
+                                      child: Image.asset(
+                                        Assets.icons.walkieTalkie.path,
+                                        height: 28.h,
+                                        width: 28.w,
+                                      ),
                                     ),
-                                  ),
+                                  )
                                 ],
                               ),
                             ),

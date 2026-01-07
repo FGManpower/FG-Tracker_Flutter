@@ -8,6 +8,8 @@ import 'package:fgtracker/app/modules/AppUpdate/Controller/UpdateCubit/update_cu
 import 'package:fgtracker/app/modules/AppUpdate/Views/ShoreBird_AppUpdate_Screen.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 
+import '../../../Data/Services/Custom_NotificationServices.dart';
+
 class InitiateController extends GetxController with GetTickerProviderStateMixin {
   final UpdateCubit updateCubit = UpdateCubit();
   late AnimationController animationController;
@@ -33,8 +35,14 @@ class InitiateController extends GetxController with GetTickerProviderStateMixin
 
     animationController.forward();
 
+
+
     Timer(const Duration(seconds: 4), () => checkLoginStatus());
   }
+
+
+
+
 
   Future<void> checkAppUpdates() async {
     final isUpdateRequired = await updateCubit.checkForUpdate();

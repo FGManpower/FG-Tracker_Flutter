@@ -57,7 +57,7 @@ class RegistrationScreen extends GetView<RegistrationController> {
                 children: [
                   Padding(
                     padding:
-                        EdgeInsets.only(left: 15.w, right: 15.w, top: 140.h),
+                        EdgeInsets.only(left: 15.w, right: 15.w, top: 150.h),
                     child: Container(
                         decoration: BoxDecoration(
                           color: Colors.white,
@@ -152,7 +152,7 @@ class RegistrationScreen extends GetView<RegistrationController> {
                   Align(
                       alignment: Alignment.bottomRight,
                       child: Padding(
-                        padding: EdgeInsets.only(top: 30.h),
+                        padding: EdgeInsets.only(top: 40.h),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [

@@ -23,7 +23,7 @@ class IncomingCallController extends GetxController {
   void onInit() {
     super.onInit();
     FlutterRingtonePlayer().play(
-      asAlarm: true,
+      asAlarm: false,
       fromAsset: Assets.music.incomingCall,
       looping: true,
       volume: 1.0,

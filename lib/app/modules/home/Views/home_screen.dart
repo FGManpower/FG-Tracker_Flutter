@@ -1,5 +1,5 @@
+
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
-import 'package:fgtracker/app/Core/deep_Link/uniservices.dart';
 import 'package:fgtracker/app/Core/theme/AppText.dart';
 import 'package:fgtracker/app/Data/Services/NotificationServices.dart';
 import 'package:fgtracker/app/Data/Services/walkie_native_service.dart';
@@ -22,6 +22,7 @@ import 'package:permission_handler/permission_handler.dart';
 import '../../../../gen/assets.gen.dart';
 import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
 import '../../../Core/values/global.dart';
+
 import '../Home_Widget/NewlyGroupUi.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -31,84 +32,54 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen>{
   final groupController = Get.put(GroupController());
   final controller = Get.put(HomeController());
   final dashController = Get.put(DashboardCtr());
   final joinGroupController = Get.put(JoinGroupController());
+
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  String? groupCode = '';
-  firebaseNotificationServices notificationServices =
+
+  final firebaseNotificationServices notificationServices =
       firebaseNotificationServices();
 
   @override
   void initState() {
     super.initState();
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      checkAndRequestPermissions(context);
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await checkAndRequestPermissions(context);
+
     });
-
-
 
     controller.getProfileData();
     groupController.getGroupData();
-    if (dashController.DeeplinkWithStartJob.value == false) {}
 
-    // notificationServices.getDiviceToken();
     notificationServices.setupInteractMessage(context);
   }
 
-  Future<void> checkDeeplink() async {
-    await UniServices.init(
-      context,
-      onCompletion: (success) {
-        if (success) {
-          // notificationServices.setupInteractMessage(context);
-        }
-      },
+
+  Future<void> checkAndRequestPermissions(BuildContext context) async {
+    await WalkieNativeService.saveUserId(
+      Global.storageServices.get(PrefConst.userId).toString(),
     );
+
+    final permissions = [
+      Permission.camera,
+      Permission.microphone,
+      Permission.locationAlways,
+      Permission.notification,
+      Permission.audio,
+      Permission.photos,
+      Permission.contacts,
+    ];
+
+    await permissions.request();
   }
 
   @override
   void dispose() {
     super.dispose();
-  }
-
-  Future<void> checkAndRequestPermissions(BuildContext context) async {
-    await WalkieNativeService.saveUserId(Global.storageServices.get(PrefConst.userId).toString());
-    final permissions = [
-      Permission.camera,
-      Permission.microphone,
-      Permission.locationAlways,
-      // Permission.audio,
-      Permission.notification,
-    ];
-
-    Map<Permission, PermissionStatus> statuses = await permissions.request();
-
-    statuses.forEach((permission, status) {
-      debugPrint('${permission.toString()} status: ${status.toString()}');
-    });
-
-
-
-    // PermissionStatus overlayStatus = PermissionStatus.granted;
-    // if (Platform.isAndroid) {
-    //   overlayStatus = await Permission.systemAlertWindow.request();
-    //   debugPrint(
-    //       'Overlay (System Alert Window) status: ${overlayStatus.toString()}');
-    // }
-    //
-    // bool anyDenied = statuses.values.any((status) => status.isDenied);
-    // bool anyPermanentlyDenied =
-    //     statuses.values.any((status) => status.isPermanentlyDenied);
-    //
-    // if ( !overlayStatus.isGranted) {
-    //   await Permission.systemAlertWindow.request();
-    // } else {
-    //   await firebaseNotificationServices().getDiviceToken();
-    // }
   }
 
   @override
@@ -129,16 +100,18 @@ class _HomeScreenState extends State<HomeScreen> {
             BannerUi(),
             Padding(
               padding: EdgeInsets.only(left: 5.w, top: 10.h, bottom: 10.h),
-              child: reausabletext("Newly Created Group",
-                  fontfamily: FontFamily.interSemiBold, fontsize: 18),
+              child: reausabletext(
+                "Newly Created Group",
+                fontfamily: FontFamily.interSemiBold,
+                fontsize: 18,
+              ),
             ),
             Obx(() {
               if (groupController.responseError.value.isNotEmpty) {
                 return LostinternetConnection(
-                    retry: () {
-                      groupController.getGroupData();
-                    },
-                    messgae: groupController.responseError.value.toString());
+                  retry: groupController.getGroupData,
+                  messgae: groupController.responseError.value.toString(),
+                );
               } else if (groupController.groupDataLoading.value) {
                 return NewlyGroupUi(
                   isLoading: true,
@@ -146,10 +119,12 @@ class _HomeScreenState extends State<HomeScreen> {
                 );
               } else if (groupController.newlyCreatedGroups.isEmpty) {
                 return Center(
-                  child: reausabletext(AppText.youHaventJoindOrCreatedGroup,
-                      align: TextAlign.center,
-                      color: Colors.grey[600],
-                      fontsize: 14),
+                  child: reausabletext(
+                    AppText.youHaventJoindOrCreatedGroup,
+                    align: TextAlign.center,
+                    color: Colors.grey[600],
+                    fontsize: 14,
+                  ),
                 );
               } else {
                 return NewlyGroupUi(
@@ -160,19 +135,19 @@ class _HomeScreenState extends State<HomeScreen> {
               }
             }),
             Padding(
-              padding: EdgeInsets.only(left: 5.w, top: 15.h, bottom: 0.h),
-              child: reausabletext("Created Group",
-                  fontfamily: FontFamily.interSemiBold, fontsize: 18),
+              padding: EdgeInsets.only(left: 5.w, top: 15.h),
+              child: reausabletext(
+                "Created Group",
+                fontfamily: FontFamily.interSemiBold,
+                fontsize: 18,
+              ),
             ),
             Obx(() {
               return groupController.createdGroups.isEmpty
-                  ? Padding(
-                      padding: EdgeInsets.only(top: 0.h),
-                      child: Center(
-                        child: DataEmpty(
-                          imgname: Assets.images.notFound.path,
-                          type: "png",
-                        ),
+                  ? Center(
+                      child: DataEmpty(
+                        imgname: Assets.images.notFound.path,
+                        type: "png",
                       ),
                     )
                   : CreatedGroupUi(
@@ -184,40 +159,43 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
       ),
-      bottomNavigationBar: Padding(
-        padding: EdgeInsets.only(bottom: 0.h),
-        child: BottomAppBar(
-          color: Colors.white,
-          child: Row(
-            children: [
-              Expanded(
-                  child: reausablebutton(
-                      title: AppText.joinGroup,
-                      icon: Icons.group,
-                      fontSize: 12,
-                      borderradiues: 50,
-                      ontap: () {
-                        DialogBox().showQRScanOptions(context,
-                            controller: joinGroupController,
-                            groupController: groupController);
-                      },
-                      height: 55)),
-              SizedBox(width: 40.w),
-              Expanded(
-                  child: reausablebutton(
-                      title: AppText.createGroup,
-                      icon: Icons.group_add,
-                      fontSize: 12,
-                      borderradiues: 50,
-                      ontap: () {
-                        DialogBox().showCreateGroupBottomSheet(
-                          context: context,
-                          controller: groupController,
-                        );
-                      },
-                      height: 55)),
-            ],
-          ),
+      bottomNavigationBar: BottomAppBar(
+        color: Colors.white,
+        child: Row(
+          children: [
+            Expanded(
+              child: reausablebutton(
+                title: AppText.joinGroup,
+                icon: Icons.group,
+                fontSize: 12,
+                borderradiues: 50,
+                height: 55,
+                ontap: () {
+                  DialogBox().showQRScanOptions(
+                    context,
+                    controller: joinGroupController,
+                    groupController: groupController,
+                  );
+                },
+              ),
+            ),
+            SizedBox(width: 40.w),
+            Expanded(
+              child: reausablebutton(
+                title: AppText.createGroup,
+                icon: Icons.group_add,
+                fontSize: 12,
+                borderradiues: 50,
+                height: 55,
+                ontap: () {
+                  DialogBox().showCreateGroupBottomSheet(
+                    context: context,
+                    controller: groupController,
+                  );
+                },
+              ),
+            ),
+          ],
         ),
       ),
     );

@@ -10,13 +10,14 @@ import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_callkit_incoming/flutter_callkit_incoming.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
 
 import 'dart:io';
 
+import '../../Core/util/AppLifeCycle.dart';
 import 'CallStateTracker.dart';
+import 'Custom_NotificationServices.dart';
 
 class firebaseNotificationServices {
   FirebaseMessaging messaging = FirebaseMessaging.instance;
@@ -30,14 +31,11 @@ class firebaseNotificationServices {
       BuildContext context, RemoteMessage message) async {
     var androidinitializeSetting =
         const AndroidInitializationSettings("@mipmap/ic_launcher");
-
     var iosinitializeSetting = const DarwinInitializationSettings();
-
     var initializationSetting = InitializationSettings(
       android: androidinitializeSetting,
       iOS: iosinitializeSetting,
     );
-
     await flutterLocalNotificationsPlugin.initialize(initializationSetting,
         onDidReceiveNotificationResponse: (payload) {
       handleMessage(context, message, type: "recienvedmessage");
@@ -45,8 +43,6 @@ class firebaseNotificationServices {
   }
 
   Future<void> showNotification(RemoteMessage message) async {
-    //android completed
-
     AndroidNotificationChannel channel = AndroidNotificationChannel(
       Random.secure().nextInt(10000).toString(),
       "High Importance Notification",
@@ -66,7 +62,6 @@ class firebaseNotificationServices {
                 'recieve_notification'),
             enableVibration: true);
 
-    //ios notification
     const DarwinNotificationDetails darwinNotificationDetails =
         DarwinNotificationDetails(
             presentAlert: true,
@@ -80,8 +75,8 @@ class firebaseNotificationServices {
     );
 
     Future.delayed(Duration.zero, () {
-      flutterLocalNotificationsPlugin.show(0, message.notification!.title,
-          message.notification!.body, notificationDetails);
+      flutterLocalNotificationsPlugin.show(0, message.notification?.title ?? "",
+          message.notification?.body ?? "", notificationDetails);
     });
   }
 
@@ -210,34 +205,27 @@ class firebaseNotificationServices {
           }
         }
       } else if (message.data['screen_name'] == 'incomingCall') {
-        final activeCalls = await FlutterCallkitIncoming.activeCalls();
-
-        if (activeCalls.isNotEmpty) {
-          return;
-        }
-        if (CallStateTracker.isIncomingCallScreenOpen) {
-          return;
-        }
+        if (CallStateTracker.isIncomingCallScreenOpen) return;
 
         final callMap = jsonDecode(message.data['callData']);
         final call = IncomingCallModel.fromMap(callMap);
 
         CallStateTracker.isIncomingCallScreenOpen = true;
+        final appState = AppLifecycleTracker.state;
 
-        Get.toNamed(
-          Routes.IncomingCallScreen,
-          arguments: {"callDetail": call},
-        );
-      } else {
-        //---------on Message Open App-------//
+        if (appState == AppLifecycleState.resumed) {
+          // FOREGROUND → open screen directly
+          Get.toNamed(
+            Routes.IncomingCallScreen,
+            arguments: {"callDetail": call},
+          );
+        } else {
+          // BACKGROUND / TERMINATED → notification only
+          await CustomNotificationServices.showIncomingCall(callMap);
+        }
       }
     } else {
       if (message.data['screen_name'] == 'incomingCall') {
-        final activeCalls = await FlutterCallkitIncoming.activeCalls();
-
-        if (activeCalls.isNotEmpty) {
-          return;
-        }
         if (CallStateTracker.isIncomingCallScreenOpen) {
           return;
         }

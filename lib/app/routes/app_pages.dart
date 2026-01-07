@@ -20,6 +20,7 @@ import '../modules/Group/Views/QrScreen.dart';
 import '../modules/Messages/Views/Chat_Screen.dart';
 import '../modules/Track/Views/Search_Members.dart';
 import '../modules/Track/Views/TrackLocationScreen.dart';
+import '../modules/Walkie-talkie/WalkieTalkieScreen.dart';
 import '../modules/mediaStream/Views/incoming_call_screen.dart';
 part 'app_routes.dart';
 
@@ -131,6 +132,13 @@ class AppPages {
       page: () => IncomingCallScreen(),
       transition: Transition.rightToLeft,
       binding: IncomingCallBinding(),
+      transitionDuration: const Duration(milliseconds: 500),
+    ),
+
+    GetPage(
+      name: _Paths.walkieTalkieScreen,
+      page: () => WalkieTalkieScreen(),
+      transition: Transition.rightToLeft,
       transitionDuration: const Duration(milliseconds: 500),
     ),
   ];

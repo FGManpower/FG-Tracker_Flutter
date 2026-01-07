@@ -30,6 +30,7 @@ public class WalkieFCMService extends FirebaseMessagingService {
         intent.setAction(WalkieService.ACTION_START);
         intent.putExtra("myUserId", myUserId);
         intent.putExtra("remoteUserId", fromUserId);
+        intent.putExtra("isCaller", false);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             startForegroundService(intent);

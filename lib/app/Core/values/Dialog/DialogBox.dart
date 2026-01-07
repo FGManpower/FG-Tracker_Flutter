@@ -29,7 +29,6 @@ class DialogBox {
   void showCreateGroupBottomSheet({
     required BuildContext context,
     required GroupController controller,
-
   }) {
     showModalBottomSheet(
       context: context,
@@ -39,7 +38,7 @@ class DialogBox {
       ),
       backgroundColor: Colors.white,
       builder: (context) {
-        return Padding(
+        return SafeArea(child: Padding(
           padding: EdgeInsets.only(
             bottom: MediaQuery.of(context).viewInsets.bottom,
             top: 20.h,
@@ -119,7 +118,7 @@ class DialogBox {
               ),
             ),
           ),
-        );
+        ));
       },
     );
   }
@@ -136,7 +135,7 @@ class DialogBox {
       ),
       backgroundColor: Colors.white,
       builder: (context) {
-        return Padding(
+        return SafeArea(child: Padding(
           padding: EdgeInsets.only(
             bottom: MediaQuery.of(context).viewInsets.bottom,
             top: 20.h,
@@ -197,7 +196,7 @@ class DialogBox {
               ),
             ),
           ),
-        );
+        ));
       },
     );
   }
@@ -213,7 +212,7 @@ class DialogBox {
         borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
       ),
       builder: (context) {
-        return LayoutBuilder(
+        return SafeArea(child: LayoutBuilder(
           builder: (context, constraints) {
             return SingleChildScrollView(
               child: Padding(
@@ -259,7 +258,7 @@ class DialogBox {
 
                               try {
                                 final inputImage =
-                                    InputImage.fromFilePath(imageFile.path);
+                                InputImage.fromFilePath(imageFile.path);
                                 final barcodeScanner = BarcodeScanner();
                                 final barcodes = await barcodeScanner
                                     .processImage(inputImage);
@@ -314,7 +313,7 @@ class DialogBox {
               ),
             );
           },
-        );
+        ));
       },
     );
   }
@@ -362,109 +361,111 @@ class DialogBox {
     bool isOnline = status == true || (lastSeen?.toLowerCase() == "just now");
 
     showModalBottomSheet(
-      context: ContextUtility.context!,
-      isScrollControlled: true,
-      backgroundColor: Colors.white,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
-      ),
-      builder: (ctx) => Padding(
-        padding: EdgeInsets.only(
-          left: 20.w,
-          right: 20.w,
-          top: 24.h,
-          bottom: MediaQuery.of(ctx).viewInsets.bottom + 20.h,
+        context: ContextUtility.context!,
+        isScrollControlled: true,
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            reausabletext(
-              AppText.memberInfo,
-              fontsize: 20,
-              fontweight: FontWeight.w700,
-              align: TextAlign.center,
-            ),
-            SizedBox(height: 15.h),
-            CircleAvatar(
-              radius: 55.r,
-              backgroundImage: NetworkImage(
-                Utility.isNotNullEmptyOrFalse(imageUrl)
-                    ? ConstRes.aImageBaseUrl + imageUrl!
-                    : MyAppTheme.notFoundImg,
-              ),
-            ),
-            SizedBox(height: 10.h),
-            reausabletext(
-              name ?? AppText.member,
-              fontsize: 16.sp,
-              fontfamily: FontFamily.interMedium,
-              color: Colors.black87,
-              align: TextAlign.center,
-            ),
-            SizedBox(height: 4.h),
-            reausabletext(
-              isOnline ? "Online" : "Offline",
-              fontsize: 12.sp,
-              color: isOnline ? Colors.green : Colors.red,
-              fontfamily: FontFamily.interMedium,
-            ),
-            if (!isOnline && Utility.isNotNullEmptyOrFalse(lastSeen))
-              Padding(
-                padding: EdgeInsets.only(top: 2.h),
-                child: reausabletext(
-                  "${AppText.lastSeen}$lastSeen",
-                  fontsize: 10.sp,
-                  color: Colors.grey.shade700,
+        builder: (ctx) => SafeArea(
+              child: Padding(
+                padding: EdgeInsets.only(
+                  left: 20.w,
+                  right: 20.w,
+                  top: 24.h,
+                  bottom: MediaQuery.of(ctx).viewInsets.bottom + 20.h,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    reausabletext(
+                      AppText.memberInfo,
+                      fontsize: 20,
+                      fontweight: FontWeight.w700,
+                      align: TextAlign.center,
+                    ),
+                    SizedBox(height: 15.h),
+                    CircleAvatar(
+                      radius: 55.r,
+                      backgroundImage: NetworkImage(
+                        Utility.isNotNullEmptyOrFalse(imageUrl)
+                            ? ConstRes.aImageBaseUrl + imageUrl!
+                            : MyAppTheme.notFoundImg,
+                      ),
+                    ),
+                    SizedBox(height: 10.h),
+                    reausabletext(
+                      name ?? AppText.member,
+                      fontsize: 16.sp,
+                      fontfamily: FontFamily.interMedium,
+                      color: Colors.black87,
+                      align: TextAlign.center,
+                    ),
+                    SizedBox(height: 4.h),
+                    reausabletext(
+                      isOnline ? "Online" : "Offline",
+                      fontsize: 12.sp,
+                      color: isOnline ? Colors.green : Colors.red,
+                      fontfamily: FontFamily.interMedium,
+                    ),
+                    if (!isOnline && Utility.isNotNullEmptyOrFalse(lastSeen))
+                      Padding(
+                        padding: EdgeInsets.only(top: 2.h),
+                        child: reausabletext(
+                          "${AppText.lastSeen}$lastSeen",
+                          fontsize: 10.sp,
+                          color: Colors.grey.shade700,
+                        ),
+                      ),
+                    SizedBox(height: 24.h),
+                    Container(
+                      width: double.infinity,
+                      padding: EdgeInsets.symmetric(vertical: 16.h),
+                      decoration: BoxDecoration(
+                        color: const Color(0xffA8A3DC).withOpacity(0.16),
+                        borderRadius: BorderRadius.circular(50.r),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          reausableIcon(
+                            icon: Icons.location_on_outlined,
+                            color: ToggleThemeData.darkPurple,
+                            size: 22.sp,
+                          ),
+                          SizedBox(width: 8.w),
+                          reausabletext(
+                            "${AppText.distance}${distance.toStringAsFixed(2)} Km",
+                            fontsize: 15.sp,
+                            fontfamily: FontFamily.interMedium,
+                            color: ToggleThemeData.darkPurple,
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(height: 15.h),
+                    reausablebutton(
+                      title: AppText.getDirections,
+                      fontSize: 19,
+                      borderradiues: 50.r,
+                      icon: Icons.directions,
+                      iconSize: 23.sp,
+                      iconColor: Colors.white,
+                      textcolor: Colors.white,
+                      height: 58,
+                      ontap: () {
+                        final Uri mapsUri = Uri.parse(
+                          "https://www.google.com/maps/dir/?api=1"
+                          "&destination=${destination.latitude},${destination.longitude}"
+                          "&travelmode=walking",
+                        );
+                        launchUrl(mapsUri,
+                            mode: LaunchMode.externalApplication);
+                      },
+                    ),
+                  ],
                 ),
               ),
-            SizedBox(height: 24.h),
-            Container(
-              width: double.infinity,
-              padding: EdgeInsets.symmetric(vertical: 16.h),
-              decoration: BoxDecoration(
-                color: const Color(0xffA8A3DC).withOpacity(0.16),
-                borderRadius: BorderRadius.circular(50.r),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  reausableIcon(
-                    icon: Icons.location_on_outlined,
-                    color: ToggleThemeData.darkPurple,
-                    size: 22.sp,
-                  ),
-                  SizedBox(width: 8.w),
-                  reausabletext(
-                    "${AppText.distance}${distance.toStringAsFixed(2)} Km",
-                    fontsize: 15.sp,
-                    fontfamily: FontFamily.interMedium,
-                    color: ToggleThemeData.darkPurple,
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(height: 15.h),
-            reausablebutton(
-              title: AppText.getDirections,
-              fontSize: 19,
-              borderradiues: 50.r,
-              icon: Icons.directions,
-              iconSize: 23.sp,
-              iconColor: Colors.white,
-              textcolor: Colors.white,
-              height: 58,
-              ontap: () {
-                final Uri mapsUri = Uri.parse(
-                  "https://www.google.com/maps/dir/?api=1"
-                  "&destination=${destination.latitude},${destination.longitude}"
-                  "&travelmode=walking",
-                );
-                launchUrl(mapsUri, mode: LaunchMode.externalApplication);
-              },
-            ),
-          ],
-        ),
-      ),
-    );
+            ));
   }
 }

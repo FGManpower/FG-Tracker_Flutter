@@ -1,8 +1,4 @@
-import 'dart:convert';
-import 'dart:developer';
 
-import 'package:fgtracker/app/Core/constant/const_res.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class Tracking {
 

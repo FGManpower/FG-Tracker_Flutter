@@ -12,7 +12,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:otp_autofill/otp_autofill.dart';
+import '../../../Core/constant/const_res.dart';
 import '../../../Core/values/loading.dart';
+import '../../../Data/Services/SignallingService.dart';
 
 class OtpController extends GetxController {
   TextEditingController otpController = TextEditingController();
@@ -26,7 +28,6 @@ class OtpController extends GetxController {
   var showOtpSentText = false.obs;
   final otpErrorText = ''.obs;
   late FocusNode phoneFocusNode;
-
 
   Map<String, dynamic>? arguments = Get.arguments;
 
@@ -60,7 +61,7 @@ class OtpController extends GetxController {
     if (number.isEmpty) {
       otpErrorText.value = "Otp is required!";
       return false;
-    } else if ( otpController.text.length < 4) {
+    } else if (otpController.text.length < 4) {
       otpErrorText.value = "Otp must be at least 4 digit";
       return false;
     }
@@ -85,7 +86,6 @@ class OtpController extends GetxController {
   }
 
   void resendOtp() async {
-
     try {
       Loading().showloading();
       dynamic param = {
@@ -115,53 +115,61 @@ class OtpController extends GetxController {
 
   Future<void> veriefyOtp() async {
     if (!validateOtp()) return;
-      try {
-        Loading().showloading();
-        dynamic param = {
-          "MobileNo": arguments?['mobNo'],
-          "otp": otpController.text,
-          'Device_Id': deviceId.value ?? "",
-        };
-        var result = await AuthRepo.VeriefyOtp(param);
-        if (result.status == true) {
-          Loading().dismissloading();
-
-          Global.storageServices.setString(
-            PrefConst.STORAGE_USER_TOKEN_KEY,
-            result.data!.token.toString(),
-          );
-          Global.storageServices.setString(
-            PrefConst.userId,
-            result.data!.userId.toString(),
-          );
-          if (result.data?.isNewUser == true) {
-            Get.toNamed(Routes.Register, arguments: {
-              "mobNo": arguments?['mobNo'],
-            });
-          } else {
-            Global.storageServices.setString(
-              PrefConst.userName,
-              result.data!.userName ?? "Unknown",
-            );
-
-            Global.storageServices.setString(
-              PrefConst.profileImage,
-              result.data!.profileImage ?? "Unknown",
-            );
-            Global.storageServices.setString(
-              PrefConst.isRegistered,
-              "true",
-            );
-            Get.offAllNamed(Routes.Home_Screen);
-          }
-        } else {
-          Loading().dismissloading();
-          CommonDialog.errorMessage(result.message);
-        }
-      } catch (e) {
+    try {
+      Loading().showloading();
+      dynamic param = {
+        "MobileNo": arguments?['mobNo'],
+        "otp": otpController.text,
+        'Device_Id': deviceId.value ?? "",
+      };
+      var result = await AuthRepo.VeriefyOtp(param);
+      if (result.status == true) {
         Loading().dismissloading();
-        CommonDialog.errorMessage(e.toString());
-      }
 
+        try {
+          SignallingService.instance.init(
+            websocketUrl: ConstRes.socketUrl,
+            selfCallerID: result.data!.userId.toString(),
+          );
+        } catch (e) {
+          log("login_SocketException====${e}");
+        }
+
+        Global.storageServices.setString(
+          PrefConst.STORAGE_USER_TOKEN_KEY,
+          result.data!.token.toString(),
+        );
+        Global.storageServices.setString(
+          PrefConst.userId,
+          result.data!.userId.toString(),
+        );
+        if (result.data?.isNewUser == true) {
+          Get.toNamed(Routes.Register, arguments: {
+            "mobNo": arguments?['mobNo'],
+          });
+        } else {
+          Global.storageServices.setString(
+            PrefConst.userName,
+            result.data!.userName ?? "Unknown",
+          );
+
+          Global.storageServices.setString(
+            PrefConst.profileImage,
+            result.data!.profileImage ?? "Unknown",
+          );
+          Global.storageServices.setString(
+            PrefConst.isRegistered,
+            "true",
+          );
+          Get.offAllNamed(Routes.Home_Screen);
+        }
+      } else {
+        Loading().dismissloading();
+        CommonDialog.errorMessage(result.message);
+      }
+    } catch (e) {
+      Loading().dismissloading();
+      CommonDialog.errorMessage(e.toString());
+    }
   }
 }

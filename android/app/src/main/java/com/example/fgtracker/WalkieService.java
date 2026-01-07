@@ -25,6 +25,8 @@ public class WalkieService extends Service {
   private Socket socket;
 
   private boolean isTalking = false;
+
+  private boolean isCaller = false;
   private String myUserId;
   private String remoteUserId;
   private int bufferSize;
@@ -33,8 +35,8 @@ public class WalkieService extends Service {
   public void onCreate() {
     super.onCreate();
     System.out.println("🟢 WalkieService.onCreate()");
-    forceAudioRoute();   // 🔥 ADD THIS
-    startForegroundNotification();
+//    forceAudioRoute();   // 🔥 ADD THIS
+//    startForegroundNotification();
     initAudio();
   }
 
@@ -52,21 +54,29 @@ public class WalkieService extends Service {
     if (ACTION_START.equals(action)) {
       myUserId = intent.getStringExtra("myUserId");
       remoteUserId = intent.getStringExtra("remoteUserId");
+      isCaller = intent.getBooleanExtra("isCaller", false);
 
       System.out.println("👤 myUserId = " + myUserId);
       System.out.println("🎯 remoteUserId = " + remoteUserId);
 
+      System.out.println("☎️ isCaller = " + isCaller);
+
+      if (!isCaller) {
+        startForegroundNotification(); // ✅ Allowed
+      }
+      
       initSocket();
     }
 
     if (ACTION_TALK_START.equals(action)) {
       System.out.println("🎤 ACTION_TALK_START received");
-      startTalking();
+      startTalking(); // only caller can talk
+
     }
 
     if (ACTION_TALK_STOP.equals(action)) {
       System.out.println("🔇 ACTION_TALK_STOP received");
-      stopTalking();
+     stopTalking();
     }
 
     return START_STICKY;
@@ -140,7 +150,8 @@ public class WalkieService extends Service {
 
 
 
-      socket = IO.socket("http://192.168.1.30:4000/walkie", options);
+
+      socket = IO.socket("http://fgtracker.in:3000/walkie", options);
 
       socket.on(Socket.EVENT_CONNECT, args -> {
         System.out.println("✅ Socket CONNECTED as " + myUserId);

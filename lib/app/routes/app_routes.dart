@@ -19,6 +19,7 @@ abstract class Routes {
   static const QRScanScreen = _Paths.QRScanScreen;
   static const callScreen = _Paths.callScreen;
   static const IncomingCallScreen = _Paths.IncomingCallScreen;
+  static const walkieTalkieScreen = _Paths.walkieTalkieScreen;
 
 
 }
@@ -41,6 +42,7 @@ abstract class _Paths {
   static const QRScanScreen = '/QRScanScreen';
   static const callScreen = '/callScreen';
   static const IncomingCallScreen = '/IncomingCallScreen';
+  static const walkieTalkieScreen = '/WalkieTalkieScreen';
 
 
 

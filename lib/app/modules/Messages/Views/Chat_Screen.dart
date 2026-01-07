@@ -9,12 +9,15 @@ import 'package:fgtracker/app/modules/Messages/widgets/message_Widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../Core/theme/AppText.dart';
+
 import '../../../Core/values/Dialog/Common_dialog.dart';
+
 import '../../../Data/Services/walkie_native_service.dart';
-import '../../Application/Controller/WalkieController.dart';
+import '../../../routes/app_pages.dart';
+import '../../Walkie-talkie/Controller/walkieController.dart';
 import '../widgets/ChatInputArea.dart';
 import '../widgets/ChatList.dart';
-import 'WalkieTalkieScreen.dart';
+
 
 class ChatScreen extends GetView<MessageController> {
   ChatScreen({super.key});
@@ -60,16 +63,20 @@ class ChatScreen extends GetView<MessageController> {
                 callerName: controller.memberData.name,
               );
             }, onWalkieTalkieCall: () async {
-              await WalkieNativeService.start(
-                myUserId:  Global.storageServices.get(PrefConst.userId).toString(),
+              // await WalkieNativeService.start(
+              //   myUserId:
+              //       Global.storageServices.get(PrefConst.userId).toString(),
+              //   remoteUserId: controller.memberData.userId.toString(),
+              // );
+              // await Future.delayed(const Duration(milliseconds: 500));
+              // Get.to(Routes.walkieTalkieScreen,arguments: {
+              //   "callerName": controller.memberData.name ?? "",
+              //   "profileUrl": controller.memberData.profileImage,
+              // });
 
-                remoteUserId:  controller.memberData.userId.toString(),
-              );
-              await Future.delayed(const Duration(milliseconds: 500));
-              Get.to(() => const WalkieTalkieScreen());
-            }
+              WalkieController().startServices(callerName: controller.memberData.name.toString(),profileImage:controller.memberData.profileImage,remoteUserId: controller.memberData.userId.toString() );
 
-            );
+            });
           },
           onVideoTap: () {
             controller.startCall(
@@ -117,7 +124,4 @@ class ChatScreen extends GetView<MessageController> {
       ),
     );
   }
-
-
-
 }

@@ -87,15 +87,14 @@ class GroupController extends GetxController {
           groupData.addAll(createdGroups);
 
           groupData.forEach((element) {
-            print("-------------GroupData--------${element.groupName}");
+            debugPrint("-------------GroupData--------${element.groupName}");
 
           },);
 
-
-          TrackingController.instance.inItAllGroups(groups: groupData ?? []);
+          TrackingController.instance.inItAllGroups(groups: groupData);
 
         }catch(e){
-          print("error in inItAllGroups:${e}");
+          debugPrint("error in inItAllGroups:${e}");
         }
 
       } else {

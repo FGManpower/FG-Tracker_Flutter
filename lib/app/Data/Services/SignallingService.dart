@@ -1,5 +1,5 @@
 import 'dart:developer';
-import 'package:fgtracker/app/Core/util/CallUtils.dart';
+import 'package:fgtracker/app/Data/Services/Custom_NotificationServices.dart';
 import 'package:socket_io_client/socket_io_client.dart';
 
 class SignallingService {
@@ -26,7 +26,7 @@ class SignallingService {
 
     socket!.onConnect((_) {
       log("Call Socket Connected (ID: $selfCallerID)");
-      CallUtils().setupSocketCallEvents();
+      CustomNotificationServices().setupSocketCallEvents();
     });
 
     socket!.onDisconnect((_) {
@@ -40,11 +40,7 @@ class SignallingService {
     socket!.onError((err) {
       log("Socket Error: $err");
     });
-
-
   }
-
-
 
   void disconnect() {
     if (socket != null) {

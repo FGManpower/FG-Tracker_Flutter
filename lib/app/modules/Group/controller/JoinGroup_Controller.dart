@@ -25,16 +25,17 @@ class JoinGroupController extends GetxController {
 
 
   Future<void> scanQRCodeFromCamera() async {
-    final status = await Permission.camera.request();
-    if (status.isGranted) {
-      final scannedResult = await Get.toNamed(Routes.QRScanScreen);
-      if (scannedResult != null) {
-        print("QR Code: $scannedResult");
-      }
-    } else {
-      Get.snackbar(
-          "Permission Denied", "Camera access is needed to scan QR codes");
-    }
+    // final status = await Permission.camera.request();
+    // if (status.isGranted) {
+    //   final scannedResult = await Get.toNamed(Routes.QRScanScreen);
+    //   if (scannedResult != null) {
+    //     print("QR Code: $scannedResult");
+    //   }
+    // } else {
+    //   Get.snackbar(
+    //       "Permission Denied", "Camera access is needed to scan QR codes");
+    // }
+    Get.toNamed(Routes.QRScanScreen);
   }
 
   Future<bool> joinGroup(

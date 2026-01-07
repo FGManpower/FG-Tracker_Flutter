@@ -4,14 +4,14 @@ import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 class ConstRes {
   ///------------------------ Backend urls and key ------------------------///
 
-  static const String development ='http://192.168.1.30:4000/'; // Development
-  // static const String production = 'http://fgtracker.in:3000/'; //Prod
-  static const String aBaseUrl = '${development}api/';
+  // static const String development ='http://192.168.1.34:4000/'; // Development
+  static const String production = 'http://fgtracker.in:3000/'; //Prod
+  static const String aBaseUrl = '${production}api/';
 
-  static const String aImageBaseUrl = development;
+  static const String aImageBaseUrl = production;
 
-  // static String socketUrl = "http://fgtracker.in:3000"; //pro
-  static const String socketUrl = "http://192.168.1.30:4000"; //dev
+  static String socketUrl = "http://fgtracker.in:3000"; //pro
+  // static const String socketUrl = "http://192.168.1.34:4000"; //dev
 
   static String gMapApiKey = "AIzaSyA8yzwlAnFOlI1pcXhrnXLwtuAx711H4uc";
 

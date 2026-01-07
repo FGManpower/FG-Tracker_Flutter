@@ -41,7 +41,7 @@ class _LocationTrackingPageState extends State<LocationTrackingPage> {
   @override
   Widget build(BuildContext context) {
     return Obx(
-          () => Scaffold(
+      () => Scaffold(
         extendBodyBehindAppBar: true,
         appBar: buildTrackAppBar(
           context,
@@ -61,7 +61,7 @@ class _LocationTrackingPageState extends State<LocationTrackingPage> {
               Routes.SearchMembers,
               arguments: {
                 "GroupMembers":
-                controller.groupWiseUserData[groupId.toString()],
+                    controller.groupWiseUserData[groupId.toString()],
               },
             )?.then((value) {
               if (value != null && value.toString().isNotEmpty) {
@@ -70,22 +70,24 @@ class _LocationTrackingPageState extends State<LocationTrackingPage> {
             });
           },
         ),
-        body: GoogleMap(
-          initialCameraPosition: CameraPosition(
-            target: controller.locationService.currentPosition != null
-                ? LatLng(
-              controller.locationService.currentPosition!.latitude!,
-              controller.locationService.currentPosition!.longitude!,
-            )
-                : const LatLng(19.093394, 72.9137016),
-            zoom: 15,
+        body: SafeArea(
+          child: GoogleMap(
+            initialCameraPosition: CameraPosition(
+              target: controller.locationService.currentPosition != null
+                  ? LatLng(
+                      controller.locationService.currentPosition!.latitude!,
+                      controller.locationService.currentPosition!.longitude!,
+                    )
+                  : const LatLng(19.093394, 72.9137016),
+              zoom: 15,
+            ),
+            mapType: MapType.normal,
+            myLocationEnabled: true,
+            zoomControlsEnabled: true,
+            onMapCreated: (mapController) =>
+                controller.mapController = mapController,
+            markers: controller.markers.toSet(),
           ),
-          mapType: MapType.normal,
-          myLocationEnabled: true,
-          zoomControlsEnabled: true,
-          onMapCreated: (mapController) =>
-          controller.mapController = mapController,
-          markers: controller.markers.toSet(),
         ),
       ),
     );

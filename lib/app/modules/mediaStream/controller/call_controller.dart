@@ -3,6 +3,7 @@ import 'dart:developer';
 
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
+import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:get/get.dart' hide navigator;
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import '../../../Data/Services/SignallingService.dart';
@@ -30,19 +31,15 @@ class CallController extends GetxController {
   Timer? callTimer;
   int callDurationSeconds = 0;
 
-
   @override
   void onInit() {
-
     callerId = args["callerId"];
     remoteUserId = args["remoteUserId"];
     offer = args["offer"];
     is_video = args["is_video"];
 
-
     if (args["callId"] != null) {
       callId = args["callId"];
-      print("-------------CallController..CallId-------${args["callId"]}");
     }
     localRenderer.initialize();
     remoteRenderer.initialize();
@@ -53,7 +50,6 @@ class CallController extends GetxController {
   }
 
   void _listenForCallEvents() {
-
     // Caller receives callId
     socket!.on("callCreated", (data) {
       callId = data["callId"].toString();
@@ -65,7 +61,6 @@ class CallController extends GetxController {
       callId = data["callId"].toString();
       update();
     });
-
 
     socket!.on("callRejected", (data) {
       callTimer?.cancel();
@@ -90,9 +85,7 @@ class CallController extends GetxController {
       Get.back();
       // Get.snackbar("Call", "Call ended by ${data['endedBy']}");
     });
-
   }
-
 
   void resetPeer() {
     try {
@@ -129,6 +122,22 @@ class CallController extends GetxController {
           ]
         }
       ]
+
+      // "iceServers": [
+      //   {
+      //     "urls": ["stun:stun.l.google.com:19302"]
+      //   },
+      //   {
+      //     "urls": [
+      //       "turn:89.116.23.2:3478?transport=udp",
+      //       "turn:89.116.23.2:3478?transport=tcp",
+      //     ],
+      //     "username": "webrtc",
+      //     "credential": "123456"
+      //   }
+      // ],
+      // "iceTransportPolicy": "all",
+      // "sdpSemantics": "unified-plan",
     });
 
     peer!.onTrack = (event) {
@@ -167,7 +176,7 @@ class CallController extends GetxController {
       );
       final answer = await peer!.createAnswer();
       await peer!.setLocalDescription(answer);
-      log("---------------------CallId---${callId}");
+      log("---------------------CallId---$callId");
       socket!.emit("answerCall", {
         "callId": callId,
         "callerId": callerId,
@@ -210,26 +219,25 @@ class CallController extends GetxController {
     }
   }
 
-
-
   void endCall() {
     callTimer?.cancel();
     callTimer = null;
     final myUserId = Global.storageServices.get(PrefConst.userId).toString();
     final targetUser =
-    (myUserId == callerId.toString()) ? remoteUserId : callerId;
+        (myUserId == callerId.toString()) ? remoteUserId : callerId;
 
-    print("-----------------EndCallId---------${callId}");
     socket?.emit("endCall", {
       "callId": callId,
       "remoteUserId": targetUser.toString(),
     });
 
     resetPeer();
-    Get.back();
+    if (Get.currentRoute != Routes.Home_Screen) {
+      Get.back();
+    } else {
+      Get.offAllNamed(Routes.Home_Screen);
+    }
   }
-
-
 
   void toggleMic() {
     isAudioOn = !isAudioOn;
@@ -265,8 +273,6 @@ class CallController extends GetxController {
       update();
     });
   }
-
-
 
   @override
   void onClose() {

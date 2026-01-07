@@ -50,6 +50,12 @@ class CommonChatAppBar extends StatelessWidget implements PreferredSizeWidget {
               SizedBox(
                 width: 10.w,
               ),
+              reausableIcon(icon: Icons.arrow_back_ios,size: 25,ontap: () {
+                Navigator.pop(context);
+              },),
+              SizedBox(
+                width: 5.w,
+              ),
               Stack(
                 clipBehavior: Clip.none,
                 children: [
@@ -84,11 +90,12 @@ class CommonChatAppBar extends StatelessWidget implements PreferredSizeWidget {
                       align: TextAlign.start,
                       color: Colors.black,
                       fontsize: 18.sp,
+                      widths: 130,
                       fontfamily: FontFamily.interSemiBold),
                   reausabletext(groupName,
                       fontfamily: FontFamily.interMedium,
                       fontsize: 13.sp,
-                      widths: 155,
+                      widths: 125,
                       color: Colors.grey[500]),
                 ],
               ),

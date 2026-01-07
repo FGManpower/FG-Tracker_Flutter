@@ -32,6 +32,7 @@ public class MainActivity extends FlutterActivity {
                     intent.setAction(WalkieService.ACTION_START);
                     intent.putExtra("myUserId", myUserId);
                     intent.putExtra("remoteUserId", remoteUserId);
+                    intent.putExtra("isCaller", true);
 
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                         startForegroundService(intent);
@@ -64,11 +65,12 @@ public class MainActivity extends FlutterActivity {
                 }
 
 
-
-
                 default:
                     result.notImplemented();
             }
         });
     }
 }
+
+
+

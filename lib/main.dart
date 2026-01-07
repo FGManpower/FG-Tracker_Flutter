@@ -1,68 +1,77 @@
 import 'dart:convert';
 import 'dart:developer';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
+import 'package:fgtracker/app/Core/constant/notification_holder.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-
-import 'app/Core/util/CallUtils.dart';
+import 'app/Core/global/global_notification_handler.dart';
+import 'app/Core/util/AppLifeCycle.dart';
 import 'app/Core/values/Context_Utility.dart';
 import 'app/Core/values/global.dart';
+import 'app/Data/Services/Custom_NotificationServices.dart';
 import 'app/Data/Services/NotificationServices.dart';
 import 'app/Data/Services/SignallingService.dart';
-
-import 'app/Data/Services/walkie_native_service.dart';
-import 'app/Model/call_model.dart';
+import 'app/Data/Services/Walkie_NotificationSerives.dart';
 import 'app/modules/Notification/Controller/cubit/notification_count_cubit.dart';
-
 import 'app/routes/app_pages.dart';
 import 'app/modules/Track/Controller/SocketServices.dart';
 import 'app/modules/Track/Controller/TrackController.dart';
 import 'app/modules/Track/Controller/LocationService.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-
-final localNotifications = FlutterLocalNotificationsPlugin();
+import 'gen/assets.gen.dart';
 
 @pragma('vm:entry-point')
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
-  await Global.init();
   log("[Background FCM] Raw Data: ${message.data}");
 
   if (message.data['screen_name'] == 'incomingCall') {
-    try {
-      final callMap = jsonDecode(message.data['callData']);
-      final callModel = IncomingCallModel.fromMap(callMap);
+    final callMap = jsonDecode(message.data['callData']);
 
-      await CallUtils().showIncomingCall(callModel);
+    try {
+      await CustomNotificationServices.showIncomingCall(callMap);
+      FlutterRingtonePlayer()
+          .play(asAlarm: false, fromAsset: Assets.music.incomingCall);
+      Future.delayed(const Duration(seconds: 7), () {
+        FlutterRingtonePlayer().stop();
+      });
     } catch (e) {
-      log("🔥 Background handler error: $e");
+      debugPrint("exception=======${e}");
     }
   }
-  // else if (message.data['type'] == 'WALKIE_CALL') {
-  //   log("🔥 Background Message Data ${message.data}");
-  //   final fromUserId = message.data['fromUserId'];
-  //
-  //   await WalkieNativeService.start(
-  //     myUserId: Global.storageServices.get(PrefConst.userId).toString(),
-  //     remoteUserId: fromUserId,
-  //   );
-  // }
 }
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
   await Firebase.initializeApp();
   await Global.init();
+  FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+
   await firebaseNotificationServices().initialized();
+
+  const AndroidInitializationSettings androidInit =
+      AndroidInitializationSettings('@mipmap/ic_launcher');
+
+  const DarwinInitializationSettings iosInit = DarwinInitializationSettings();
+
+  const InitializationSettings initSettings =
+      InitializationSettings(android: androidInit, iOS: iosInit);
+
+  await flutterLocalNotificationsPlugin.initialize(
+    initSettings,
+    onDidReceiveNotificationResponse: (response) {
+      NotificationHolder.pendingResponse = response;
+    },
+  );
+
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(statusBarColor: Colors.transparent),
   );
@@ -75,7 +84,10 @@ Future<void> main() async {
     websocketUrl: ConstRes.socketUrl,
     selfCallerID: Global.storageServices.get(PrefConst.userId).toString(),
   );
-  CallUtils().listenCallKitEvents();
+
+  WidgetsBinding.instance.addObserver(AppLifecycleObserver());
+  GlobalNotificationHandler.instance.init();
+
   runApp(const MyApp());
 }
 
@@ -131,7 +143,6 @@ class _MyAppState extends State<MyApp> {
               Locale('hi', 'IN'),
               Locale('ur', 'PK'),
             ],
-            // home: JoinScreen(selfCallerId: Global.storageServices.get(PrefConst.userId).toString(),),
           ),
         ),
       ),

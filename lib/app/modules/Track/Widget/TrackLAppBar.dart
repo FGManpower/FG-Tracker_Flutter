@@ -4,7 +4,11 @@ import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-AppBar buildTrackAppBar(BuildContext context, {required String groupName,void Function()? onPressMembers,void Function()? onPressRefresh,void Function()? onSearch}) {
+AppBar buildTrackAppBar(BuildContext context,
+    {required String groupName,
+    void Function()? onPressMembers,
+    void Function()? onPressRefresh,
+    void Function()? onSearch}) {
   return AppBar(
     backgroundColor: ToggleThemeData.darkPurple,
     elevation: 4,
@@ -37,7 +41,6 @@ AppBar buildTrackAppBar(BuildContext context, {required String groupName,void Fu
       widths: 200,
       color: Colors.white,
       fontweight: FontWeight.bold,
-
     ),
     actions: [
       reausableIcon(
@@ -71,12 +74,10 @@ AppBar buildTrackAppBar(BuildContext context, {required String groupName,void Fu
           dividerMenuItem(),
           popupItem(
               context: context,
-            value: "refresh_Maps",
-            icon: Icons.refresh,
-            text: "Refresh Map",
-            onTap: onPressRefresh
-          ),
-
+              value: "refresh_Maps",
+              icon: Icons.refresh,
+              text: "Refresh Map",
+              onTap: onPressRefresh),
         ],
       ),
       SizedBox(width: 10.w),
@@ -84,52 +85,48 @@ AppBar buildTrackAppBar(BuildContext context, {required String groupName,void Fu
   );
 }
 
-PopupMenuItem<String> popupItem({
-  required BuildContext context,
-  required String value,
-  required IconData icon,
-  required String text,
-  void Function()? onTap
-}) {
+PopupMenuItem<String> popupItem(
+    {required BuildContext context,
+    required String value,
+    required IconData icon,
+    required String text,
+    void Function()? onTap}) {
   return PopupMenuItem<String>(
     value: value,
+    onTap: () {
+      onTap?.call();
+    },
     padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
-    child: GestureDetector(
-      onTap: () {
-        Navigator.pop(context);
-        onTap?.call();
-      },
-      child: Row(
-        children: [
-          Container(
-            height: 32.h,
-            width: 32.w,
-            decoration: BoxDecoration(
-              color: ToggleThemeData.darkPurple.withOpacity(0.12),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              icon,
-              size: 18.sp,
-              color: ToggleThemeData.darkPurple,
-            ),
+    child: Row(
+      children: [
+        Container(
+          height: 32.h,
+          width: 32.w,
+          decoration: BoxDecoration(
+            color: ToggleThemeData.darkPurple.withOpacity(0.12),
+            shape: BoxShape.circle,
           ),
-          SizedBox(width: 12.w),
-          Text(
-            text,
-            style: TextStyle(
-              fontSize: 15.sp,
-              color: Colors.black87,
-              fontWeight: FontWeight.w500,
-            ),
+          child: Icon(
+            icon,
+            size: 18.sp,
+            color: ToggleThemeData.darkPurple,
           ),
-        ],
-      ),
-    )
+        ),
+        SizedBox(width: 12.w),
+        Text(
+          text,
+          style: TextStyle(
+            fontSize: 15.sp,
+            color: Colors.black87,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
+    ),
   );
 }
 
-PopupMenuEntry<String>dividerMenuItem() {
+PopupMenuEntry<String> dividerMenuItem() {
   return PopupMenuItem(
     enabled: false,
     height: 1,
