@@ -75,8 +75,8 @@ class firebaseNotificationServices {
     );
 
     Future.delayed(Duration.zero, () {
-      flutterLocalNotificationsPlugin.show(0, message.notification?.title ?? "",
-          message.notification?.body ?? "", notificationDetails);
+      flutterLocalNotificationsPlugin.show(0, message.notification!.title,
+          message.notification!.body, notificationDetails);
     });
   }
 
@@ -211,35 +211,32 @@ class firebaseNotificationServices {
         final call = IncomingCallModel.fromMap(callMap);
 
         CallStateTracker.isIncomingCallScreenOpen = true;
-        final appState = AppLifecycleTracker.state;
-
-        if (appState == AppLifecycleState.resumed) {
-          // FOREGROUND → open screen directly
-          Get.toNamed(
-            Routes.IncomingCallScreen,
-            arguments: {"callDetail": call},
-          );
-        } else {
-          // BACKGROUND / TERMINATED → notification only
-          await CustomNotificationServices.showIncomingCall(callMap);
-        }
-      }
-    } else {
-      if (message.data['screen_name'] == 'incomingCall') {
-        if (CallStateTracker.isIncomingCallScreenOpen) {
-          return;
-        }
-
-        final callMap = jsonDecode(message.data['callData']);
-        final call = IncomingCallModel.fromMap(callMap);
-
-        CallStateTracker.isIncomingCallScreenOpen = true;
 
         Get.toNamed(
           Routes.IncomingCallScreen,
           arguments: {"callDetail": call},
         );
       }
+    } else {
+
+      if (message.data['screen_name'] == 'incomingCall') {
+        if (CallStateTracker.isIncomingCallScreenOpen) {
+          return;
+        }
+        final callMap = jsonDecode(message.data['callData']);
+        final call = IncomingCallModel.fromMap(callMap);
+
+        CallStateTracker.isIncomingCallScreenOpen = true;
+        final appState = AppLifecycleTracker.state;
+
+        if (appState == AppLifecycleState.resumed) {
+          Get.toNamed(
+            Routes.IncomingCallScreen,
+            arguments: {"callDetail": call},
+          );
+        }
+      }
+
     }
   }
 }

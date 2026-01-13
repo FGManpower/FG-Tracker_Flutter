@@ -151,6 +151,7 @@ public class WalkieService extends Service {
 
 
 
+//      socket = IO.socket("http://10.156.216.195:4000/walkie", options);
       socket = IO.socket("http://fgtracker.in:3000/walkie", options);
 
       socket.on(Socket.EVENT_CONNECT, args -> {

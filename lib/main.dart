@@ -12,14 +12,15 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'app/Core/global/global_notification_handler.dart';
-import 'app/Core/util/AppLifeCycle.dart';
 import 'app/Core/values/Context_Utility.dart';
 import 'app/Core/values/global.dart';
+import 'app/Data/Services/CallStateTracker.dart';
 import 'app/Data/Services/Custom_NotificationServices.dart';
 import 'app/Data/Services/NotificationServices.dart';
 import 'app/Data/Services/SignallingService.dart';
-import 'app/Data/Services/Walkie_NotificationSerives.dart';
 import 'app/modules/Notification/Controller/cubit/notification_count_cubit.dart';
 import 'app/routes/app_pages.dart';
 import 'app/modules/Track/Controller/SocketServices.dart';
@@ -27,6 +28,8 @@ import 'app/modules/Track/Controller/TrackController.dart';
 import 'app/modules/Track/Controller/LocationService.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'gen/assets.gen.dart';
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+FlutterLocalNotificationsPlugin();
 
 @pragma('vm:entry-point')
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
@@ -37,17 +40,53 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     final callMap = jsonDecode(message.data['callData']);
 
     try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool("notificationConsumed", false);
+     print("==========notificationPrefSAvedSuccessFully");
       await CustomNotificationServices.showIncomingCall(callMap);
+      // AppLaunchState.notificationConsumed = false;
       FlutterRingtonePlayer()
           .play(asAlarm: false, fromAsset: Assets.music.incomingCall);
       Future.delayed(const Duration(seconds: 7), () {
         FlutterRingtonePlayer().stop();
       });
     } catch (e) {
-      debugPrint("exception=======${e}");
+      debugPrint("Backgroundexception=======$e");
     }
   }
 }
+
+@pragma('vm:entry-point')
+void onNotificationResponse(NotificationResponse response) async {
+  log("OnNotificationPress");
+  // await Global.init();
+  //
+  // final Map<String, dynamic> callData = jsonDecode(response.payload!);
+  //
+  // if (response.actionId == "CALL_DECLINE") {
+  //
+  //   final userId = Global.storageServices.get(PrefConst.userId)?.toString();
+  //
+  //   if (userId != null) {
+  //     SignallingService.instance.init(
+  //       websocketUrl: ConstRes.socketUrl,
+  //       selfCallerID: userId,
+  //     );
+  //   }
+  //
+  //   await CustomNotificationServices().declineCall(callData);
+  //   NotificationHolder.clear();
+  //   await flutterLocalNotificationsPlugin.cancelAll();
+  // }
+
+  NotificationHolder.pendingResponse = response;
+}
+
+
+
+
+
+
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -57,21 +96,6 @@ Future<void> main() async {
 
   await firebaseNotificationServices().initialized();
 
-  const AndroidInitializationSettings androidInit =
-      AndroidInitializationSettings('@mipmap/ic_launcher');
-
-  const DarwinInitializationSettings iosInit = DarwinInitializationSettings();
-
-  const InitializationSettings initSettings =
-      InitializationSettings(android: androidInit, iOS: iosInit);
-
-  await flutterLocalNotificationsPlugin.initialize(
-    initSettings,
-    onDidReceiveNotificationResponse: (response) {
-      NotificationHolder.pendingResponse = response;
-    },
-  );
-
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(statusBarColor: Colors.transparent),
   );
@@ -80,14 +104,41 @@ Future<void> main() async {
   Get.put<LocationService>(LocationService());
   Get.put<SocketService>(SocketService());
 
-  SignallingService.instance.init(
-    websocketUrl: ConstRes.socketUrl,
-    selfCallerID: Global.storageServices.get(PrefConst.userId).toString(),
+  // const androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
+  // const iosInit = DarwinInitializationSettings();
+  //
+  // await flutterLocalNotificationsPlugin.initialize(
+  //   const InitializationSettings(
+  //     android: androidInit,
+  //     iOS: iosInit,
+  //   ),
+  //   onDidReceiveNotificationResponse: onNotificationResponse,
+  // );
+
+
+  const AndroidInitializationSettings androidInit =
+  AndroidInitializationSettings('@mipmap/ic_launcher');
+
+  const DarwinInitializationSettings iosInit = DarwinInitializationSettings();
+
+  const InitializationSettings initSettings =
+  InitializationSettings(android: androidInit, iOS: iosInit);
+
+  await flutterLocalNotificationsPlugin.initialize(
+    initSettings,
+    onDidReceiveNotificationResponse: onNotificationResponse,
   );
 
-  WidgetsBinding.instance.addObserver(AppLifecycleObserver());
   GlobalNotificationHandler.instance.init();
 
+  final userId = Global.storageServices.get(PrefConst.userId)?.toString();
+
+  if (userId != null) {
+    SignallingService.instance.init(
+      websocketUrl: ConstRes.socketUrl,
+      selfCallerID: userId,
+    );
+  }
   runApp(const MyApp());
 }
 

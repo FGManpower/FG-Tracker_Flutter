@@ -37,7 +37,7 @@ class CustomNotificationServices {
         const AndroidNotificationAction(
           "CALL_DECLINE",
           "Decline",
-          cancelNotification: true,
+          showsUserInterface: true,
         ),
         const AndroidNotificationAction(
           "CALL_ACCEPT",
@@ -67,11 +67,12 @@ class CustomNotificationServices {
   }
 
   Future<void> declineCall(Map<String, dynamic> data) async {
+    FlutterRingtonePlayer().stop();
     final call = IncomingCallModel.fromMap(data);
     final myId = Global.storageServices.get(PrefConst.userId).toString();
-
     socket?.emit("rejectCall", {
-      "remoteUserId": myId == call.callerId ? call.receiverId : call.callerId,
+      "callId": call.callId,
+      "remoteUserId": myId,
     });
 
     CallStateTracker.isIncomingCallScreenOpen = false;
@@ -80,9 +81,9 @@ class CustomNotificationServices {
 
   Future<void> navigateToCallScreen(Map<String, dynamic> data) async {
     try {
+      FlutterRingtonePlayer().stop();
       final call = IncomingCallModel.fromMap(data);
       CallStateTracker.isIncomingCallScreenOpen = false;
-
       Map<String, dynamic>? offer =
           await decomPress().decompressSDPOffer(call.sdpOfferCompressed);
       Get.offNamed(
@@ -97,6 +98,25 @@ class CustomNotificationServices {
           "callId": call.callId,
           "callerProfile": call.callerProfileImage,
         },
+      );
+    } catch (e) {
+      FlutterRingtonePlayer().stop();
+      log("[CallKit] Navigation error: $e");
+    }
+  }
+
+  Future<void> navigateToIncomingCallScreen(Map<String, dynamic> data) async {
+    try {
+      final call = IncomingCallModel.fromMap(data);
+
+      if (CallStateTracker.isIncomingCallScreenOpen) {
+        return;
+      }
+
+      // CallStateTracker.isIncomingCallScreenOpen = true;
+      Get.toNamed(
+        Routes.IncomingCallScreen,
+        arguments: {"callDetail": call},
       );
     } catch (e) {
       FlutterRingtonePlayer().stop();
@@ -130,6 +150,4 @@ class CustomNotificationServices {
       }
     });
   }
-
-
 }

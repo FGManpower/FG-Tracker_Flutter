@@ -7,3 +7,7 @@ class NotificationHolder {
     pendingResponse = null;
   }
 }
+
+class AppLaunchTracker {
+  static bool fromTerminatedCall = false;
+}

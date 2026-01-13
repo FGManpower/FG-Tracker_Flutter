@@ -33,6 +33,9 @@ class SignallingService {
       log("Call Socket Disconnected");
     });
 
+    socket?.onAny((event, data) {
+      log("CallAllEventCalled: $event => $data");
+    });
     socket!.onConnectError((err) {
       log("Connect Error: $err");
     });

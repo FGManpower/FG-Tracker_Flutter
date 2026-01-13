@@ -6,6 +6,7 @@ import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:get/get.dart' hide navigator;
 import 'package:flutter_webrtc/flutter_webrtc.dart';
+import '../../../../main.dart';
 import '../../../Data/Services/SignallingService.dart';
 
 class CallController extends GetxController {
@@ -54,6 +55,7 @@ class CallController extends GetxController {
 
   void _listenForCallEvents() {
 
+    socket?.off("callRejected");
     // Caller receives callId
     socket!.on("callCreated", (data) {
       callId = data["callId"].toString();
@@ -68,6 +70,7 @@ class CallController extends GetxController {
 
 
     socket!.on("callRejected", (data) {
+      log("==================CallRejectedEventCalled");
       callTimer?.cancel();
       callTimer = null;
       resetPeer();
@@ -222,26 +225,25 @@ class CallController extends GetxController {
     callTimer?.cancel();
     callTimer = null;
     final myUserId = Global.storageServices.get(PrefConst.userId).toString();
-    final targetUser =
-    (myUserId == callerId.toString()) ? remoteUserId : callerId;
+    final targetUser = (myUserId == callerId.toString()) ? remoteUserId : callerId;
 
+    print('======CallId==${callId}=======>MyUserId:${myUserId}');
     socket?.emit("endCall", {
       "callId": callId,
       "remoteUserId": targetUser.toString(),
     });
 
     resetPeer();
-    if (Get.currentRoute != Routes.Home_Screen) {
-      Get.back();
-    } else {
+    // if (Get.currentRoute != Routes.Home_Screen) {
+    //   Get.back();
+    // } else {
       Get.offAllNamed(Routes.Home_Screen);
-    }
+    // }
 
-    if (Get.currentRoute != Routes.Home_Screen) {
-      Get.back();
-    } else {
+
+    flutterLocalNotificationsPlugin.cancelAll();
       Get.offAllNamed(Routes.Home_Screen);
-    }
+
   }
 
 

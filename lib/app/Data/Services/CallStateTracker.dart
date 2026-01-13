@@ -4,3 +4,8 @@ class CallStateTracker {
 class ChatStateTracker {
   static bool isChatCallScreenOpen = false;
 }
+
+
+class AppLaunchState {
+  // static bool notificationConsumed = false;
+}

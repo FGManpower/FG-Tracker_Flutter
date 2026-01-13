@@ -1,4 +1,3 @@
-
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/theme/AppText.dart';
 import 'package:fgtracker/app/Data/Services/NotificationServices.dart';
@@ -21,6 +20,7 @@ import 'package:permission_handler/permission_handler.dart';
 
 import '../../../../gen/assets.gen.dart';
 import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
+import '../../../Core/global/global_notification_handler.dart';
 import '../../../Core/values/global.dart';
 
 import '../Home_Widget/NewlyGroupUi.dart';
@@ -32,7 +32,7 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen>{
+class _HomeScreenState extends State<HomeScreen> {
   final groupController = Get.put(GroupController());
   final controller = Get.put(HomeController());
   final dashController = Get.put(DashboardCtr());
@@ -48,8 +48,10 @@ class _HomeScreenState extends State<HomeScreen>{
     super.initState();
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
+      handleTerminatedCallIfAny();
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       await checkAndRequestPermissions(context);
-
     });
 
     controller.getProfileData();
@@ -57,7 +59,6 @@ class _HomeScreenState extends State<HomeScreen>{
 
     notificationServices.setupInteractMessage(context);
   }
-
 
   Future<void> checkAndRequestPermissions(BuildContext context) async {
     await WalkieNativeService.saveUserId(
