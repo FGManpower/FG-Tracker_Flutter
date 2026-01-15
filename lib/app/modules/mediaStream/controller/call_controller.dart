@@ -241,8 +241,6 @@ class CallController extends GetxController {
     // }
 
 
-    flutterLocalNotificationsPlugin.cancelAll();
-      Get.offAllNamed(Routes.Home_Screen);
 
   }
 

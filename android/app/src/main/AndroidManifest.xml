@@ -96,7 +96,7 @@
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyA8yzwlAnFOlI1pcXhrnXLwtuAx711H4uc"/>
+            android:value="AIzaSyAgt-V8kmcQJb_6Cj6LHArWfhWjVPh7N_Q"/>
 
         <service
             android:name="com.lyokone.location.FlutterLocationService"

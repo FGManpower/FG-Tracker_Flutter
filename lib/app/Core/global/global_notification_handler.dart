@@ -10,9 +10,9 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-import '../../Data/Services/CallStateTracker.dart';
 import '../../Data/Services/Walkie_NotificationSerives.dart';
+
+const String _consumeKey = "notificationConsumed";
 
 class GlobalNotificationHandler with WidgetsBindingObserver {
   static final GlobalNotificationHandler instance =
@@ -27,12 +27,17 @@ class GlobalNotificationHandler with WidgetsBindingObserver {
   }
 
   @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    // Only react when coming FROM background
-    // print("_lastState==$_lastState");
-
+  Future<void> didChangeAppLifecycleState(AppLifecycleState state) async {
     if (_lastState == AppLifecycleState.paused) {
-      handlePendingNotification();
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.reload();
+      bool isConsumed = prefs.getBool(_consumeKey) ?? true;
+
+      if (!isConsumed) {
+        log("Found unconsumed notification. Processing now.$isConsumed");
+        await prefs.setBool("notificationConsumed", true);
+        await handlePendingNotification();
+      }
     }
 
     _lastState = state;
@@ -42,11 +47,6 @@ class GlobalNotificationHandler with WidgetsBindingObserver {
 Future<void> handlePendingNotification() async {
   FlutterRingtonePlayer().stop();
   NotificationResponse? response;
-  final pref = await SharedPreferences.getInstance();
-  print("====NotificationStatus==${await pref.getString("notificationConsumed").toString()}");
-  if (pref.getString("notificationConsumed").toString()=="true") return;
-
-
   final details =
       await flutterLocalNotificationsPlugin.getNotificationAppLaunchDetails();
 
@@ -58,26 +58,20 @@ Future<void> handlePendingNotification() async {
 
   if (response == null || response.payload == null) return;
 
-  // 🔒 MARK AS CONSUMED IMMEDIATELY
-  // AppLaunchState.notificationConsumed = true;
-
-  await pref.setString("notificationConsumed", "true");
-
   final Map<String, dynamic> callData = jsonDecode(response.payload!);
 
   FlutterRingtonePlayer().stop();
 
-
   if (response.actionId == "CALL_ACCEPT") {
     await _ensureSocketReady();
-
-    // wait for navigation stack
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      print("=======GoingFromBackgroundState");
+      log("=======GoingFromBackgroundState");
       CustomNotificationServices().navigateToCallScreen(callData);
     });
   } else if (response.actionId == "CALL_DECLINE") {
     CustomNotificationServices().declineCall(callData);
+  } else if (response.actionId == null) {
+    CustomNotificationServices().navigateToIncomingCallScreen(callData);
   }
 
   NotificationHolder.clear();
@@ -88,33 +82,33 @@ Future<void> _ensureSocketReady() async {
   final userId = Global.storageServices.get(PrefConst.userId)?.toString();
 
   if (userId == null || userId.isEmpty) {
-    debugPrint("❌ userId missing, cannot init socket");
+    log("userId missing, cannot init socket");
     return;
   }
 
   if (SignallingService.instance.socket == null ||
       SignallingService.instance.socket!.disconnected) {
-    debugPrint("🔌 Reconnecting socket (terminated state)");
+    log("Reconnecting socket (terminated state)");
 
     SignallingService.instance.init(
       websocketUrl: ConstRes.socketUrl,
       selfCallerID: userId,
     );
-
-    // VERY IMPORTANT delay
     await Future.delayed(const Duration(milliseconds: 900));
   }
 
-  debugPrint("✅ socket ready");
+  log("socket ready");
 }
 
 Future<void> handleTerminatedCallIfAny() async {
-  final pref = await SharedPreferences.getInstance();
-  print("====TerminatedNotificationStatus==${await pref.getString("notificationConsumed").toString()}");
-  if (pref.getString("notificationConsumed").toString()=="true") return;
-
-
   FlutterRingtonePlayer().stop();
+  final prefs = await SharedPreferences.getInstance();
+
+  await prefs.reload();
+
+  bool isConsumed = prefs.getBool(_consumeKey) ?? true;
+  if (isConsumed) return;
+  await prefs.setBool("notificationConsumed", true);
   NotificationResponse? response;
 
   final details =
@@ -127,11 +121,6 @@ Future<void> handleTerminatedCallIfAny() async {
   response ??= NotificationHolder.pendingResponse;
 
   if (response == null || response.payload == null) return;
-
-  // 🔒 MARK AS CONSUMED IMMEDIATELY
-  await pref.setString("notificationConsumed", "true");
-
-  // AppLaunchState.notificationConsumed = true;
 
   final callData = jsonDecode(response.payload!);
   final userId = Global.storageServices.get(PrefConst.userId)?.toString();
@@ -149,7 +138,7 @@ Future<void> handleTerminatedCallIfAny() async {
     await _ensureSocketReady();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      print("=======GoingFromTerminatedState");
+      log("=======GoingFromTerminatedState");
       CustomNotificationServices().navigateToCallScreen(callData);
     });
   } else if (response.actionId == "CALL_DECLINE") {
@@ -158,27 +147,5 @@ Future<void> handleTerminatedCallIfAny() async {
     CustomNotificationServices().navigateToIncomingCallScreen(callData);
   }
 
-//====Clear===>
-  await CallCleanupManager.onCallScreenOpened();
-}
-
-class CallCleanupManager {
-  static bool callActive = false;
-
-  static Future<void> onCallScreenOpened() async {
-    if (callActive) return;
-    callActive = true;
-
-    FlutterRingtonePlayer().stop();
-    await flutterLocalNotificationsPlugin.cancelAll();
-
-    NotificationHolder.clear();
-    await Global.storageServices.remove("TERMINATED_CALL_ACCEPT");
-
-    CallStateTracker.isIncomingCallScreenOpen = false;
-  }
-
-  static void onCallEnded() {
-    callActive = false;
-  }
+  NotificationHolder.clear();
 }

@@ -6,6 +6,4 @@ class ChatStateTracker {
 }
 
 
-class AppLaunchState {
-  // static bool notificationConsumed = false;
-}
+

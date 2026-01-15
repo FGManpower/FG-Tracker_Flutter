@@ -42,9 +42,7 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool("notificationConsumed", false);
-     print("==========notificationPrefSAvedSuccessFully");
       await CustomNotificationServices.showIncomingCall(callMap);
-      // AppLaunchState.notificationConsumed = false;
       FlutterRingtonePlayer()
           .play(asAlarm: false, fromAsset: Assets.music.incomingCall);
       Future.delayed(const Duration(seconds: 7), () {
@@ -59,33 +57,10 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 @pragma('vm:entry-point')
 void onNotificationResponse(NotificationResponse response) async {
   log("OnNotificationPress");
-  // await Global.init();
-  //
-  // final Map<String, dynamic> callData = jsonDecode(response.payload!);
-  //
-  // if (response.actionId == "CALL_DECLINE") {
-  //
-  //   final userId = Global.storageServices.get(PrefConst.userId)?.toString();
-  //
-  //   if (userId != null) {
-  //     SignallingService.instance.init(
-  //       websocketUrl: ConstRes.socketUrl,
-  //       selfCallerID: userId,
-  //     );
-  //   }
-  //
-  //   await CustomNotificationServices().declineCall(callData);
-  //   NotificationHolder.clear();
-  //   await flutterLocalNotificationsPlugin.cancelAll();
-  // }
+
 
   NotificationHolder.pendingResponse = response;
 }
-
-
-
-
-
 
 
 Future<void> main() async {

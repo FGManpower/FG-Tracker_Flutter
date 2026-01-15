@@ -13,7 +13,7 @@ class ConstRes {
   static String socketUrl = "http://fgtracker.in:3000"; //pro
   // static const String socketUrl = "http://10.156.216.195:4000"; //dev
 
-  static String gMapApiKey = "AIzaSyA8yzwlAnFOlI1pcXhrnXLwtuAx711H4uc";
+  static String gMapApiKey = "AIzaSyAgt-V8kmcQJb_6Cj6LHArWfhWjVPh7N_Q";
 
   static BaseOptions networkOptions = BaseOptions(
     baseUrl: aBaseUrl,
