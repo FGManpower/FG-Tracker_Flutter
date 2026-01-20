@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/constant/notification_holder.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
+import 'package:fgtracker/app/Data/Services/Walkie-Talkie-Service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -12,12 +13,10 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'app/Core/global/global_notification_handler.dart';
 import 'app/Core/values/Context_Utility.dart';
 import 'app/Core/values/global.dart';
-import 'app/Data/Services/CallStateTracker.dart';
 import 'app/Data/Services/Custom_NotificationServices.dart';
 import 'app/Data/Services/NotificationServices.dart';
 import 'app/Data/Services/SignallingService.dart';
@@ -28,8 +27,9 @@ import 'app/modules/Track/Controller/TrackController.dart';
 import 'app/modules/Track/Controller/LocationService.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'gen/assets.gen.dart';
+
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-FlutterLocalNotificationsPlugin();
+    FlutterLocalNotificationsPlugin();
 
 @pragma('vm:entry-point')
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
@@ -51,6 +51,8 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     } catch (e) {
       debugPrint("Backgroundexception=======$e");
     }
+  } else if (message.data['screen_name'] == 'walkie') {
+    final deepLink = message.data['link'];
   }
 }
 
@@ -58,10 +60,8 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 void onNotificationResponse(NotificationResponse response) async {
   log("OnNotificationPress");
 
-
   NotificationHolder.pendingResponse = response;
 }
-
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -79,25 +79,13 @@ Future<void> main() async {
   Get.put<LocationService>(LocationService());
   Get.put<SocketService>(SocketService());
 
-  // const androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
-  // const iosInit = DarwinInitializationSettings();
-  //
-  // await flutterLocalNotificationsPlugin.initialize(
-  //   const InitializationSettings(
-  //     android: androidInit,
-  //     iOS: iosInit,
-  //   ),
-  //   onDidReceiveNotificationResponse: onNotificationResponse,
-  // );
-
-
   const AndroidInitializationSettings androidInit =
-  AndroidInitializationSettings('@mipmap/ic_launcher');
+      AndroidInitializationSettings('@mipmap/ic_launcher');
 
   const DarwinInitializationSettings iosInit = DarwinInitializationSettings();
 
   const InitializationSettings initSettings =
-  InitializationSettings(android: androidInit, iOS: iosInit);
+      InitializationSettings(android: androidInit, iOS: iosInit);
 
   await flutterLocalNotificationsPlugin.initialize(
     initSettings,
@@ -105,7 +93,6 @@ Future<void> main() async {
   );
 
   GlobalNotificationHandler.instance.init();
-
   final userId = Global.storageServices.get(PrefConst.userId)?.toString();
 
   if (userId != null) {
@@ -113,7 +100,12 @@ Future<void> main() async {
       websocketUrl: ConstRes.socketUrl,
       selfCallerID: userId,
     );
+    WalkietalkieService.instance.init(
+      websocketUrl: ConstRes.socketUrl,
+      selfUserId: userId,
+    );
   }
+
   runApp(const MyApp());
 }
 

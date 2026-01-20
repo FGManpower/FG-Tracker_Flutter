@@ -1,4 +1,5 @@
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
+import 'package:fgtracker/app/Core/deep_Link/uniservices.dart';
 import 'package:fgtracker/app/Core/theme/AppText.dart';
 import 'package:fgtracker/app/Data/Services/NotificationServices.dart';
 import 'package:fgtracker/app/Data/Services/walkie_native_service.dart';
@@ -58,12 +59,13 @@ class _HomeScreenState extends State<HomeScreen> {
     groupController.getGroupData();
 
     notificationServices.setupInteractMessage(context);
+    // checkDeeplink();
   }
 
   Future<void> checkAndRequestPermissions(BuildContext context) async {
-    await WalkieNativeService.saveUserId(
-      Global.storageServices.get(PrefConst.userId).toString(),
-    );
+    // await WalkieNativeService.saveUserId(
+    //   Global.storageServices.get(PrefConst.userId).toString(),
+    // );
 
     final permissions = [
       Permission.camera,
@@ -81,6 +83,14 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void dispose() {
     super.dispose();
+  }
+
+
+  Future<void> checkDeeplink() async {
+   // await Permission.systemAlertWindow.request();
+    await UniServices.init(context,onCompletion: (success) {
+
+    },);
   }
 
   @override

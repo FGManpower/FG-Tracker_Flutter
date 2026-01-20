@@ -11,3 +11,7 @@ class NotificationHolder {
 class AppLaunchTracker {
   static bool fromTerminatedCall = false;
 }
+
+class WalkieLaunchTracker {
+  static bool fromWalkieCall = false;
+}

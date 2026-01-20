@@ -9,6 +9,9 @@ import 'package:flutter/services.dart';
 import 'package:app_links/app_links.dart';
 import 'package:get/get.dart';
 
+import '../../modules/Walkie-talkie/Controller/walkieController.dart';
+import '../../modules/Walkie-talkie/soundTesting.dart';
+
 final _appLinks = AppLinks();
 final controller = Get.put(DashboardCtr());
 
@@ -71,17 +74,23 @@ class UniServices {
           if (Utility.isNotNullEmptyOrFalse(notificationData.callerId)) {
             try {
               Future.delayed(Duration(seconds: 3));
-              // Navigator.push(
-              //   context,
-              //   MaterialPageRoute(
-              //     builder: (context) => IncomingCallScreen(
-              //       call: notificationData,
-              //     ),
-              //   ),
-              // ).then((value) {
-              //   AppLinkStateTracker.isIncomingScreenOpened = false;
-              //   controller.DeeplinkWithStartJob.value = true;
-              // });
+
+              // WalkieController().onIncoming(
+              //   remoteUserId: data['fromUserId'],
+              //   callerName: data['fromUserName'] ?? "Unknown",
+              //   profileImage: data['fromUserProfile'] ?? "",
+              // );
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => RealtimeAudioScreen(
+
+                  ),
+                ),
+              ).then((value) {
+                AppLinkStateTracker.isIncomingScreenOpened = false;
+                controller.DeeplinkWithStartJob.value = true;
+              });
             } catch (e) {
               log("NavigatorException--------${e.toString()}");
             }

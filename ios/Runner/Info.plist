@@ -81,6 +81,11 @@
       <key>NSAllowsArbitraryLoads</key>
       <true/>
     </dict>
+    <key>AssociatedDomains</key>
+    <array>
+      <string>applinks:fgtracker.in</string>
+    </array>
+
 
 
 

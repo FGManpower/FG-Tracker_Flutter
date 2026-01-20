@@ -7,6 +7,7 @@ import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Data/Repositories/Auth_repo.dart';
 import 'package:fgtracker/app/Data/Services/NotificationServices.dart';
+import 'package:fgtracker/app/Data/Services/Walkie-Talkie-Service.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -130,6 +131,10 @@ class OtpController extends GetxController {
           SignallingService.instance.init(
             websocketUrl: ConstRes.socketUrl,
             selfCallerID: result.data!.userId.toString(),
+          );
+          WalkietalkieService.instance.init(
+            websocketUrl: ConstRes.socketUrl,
+            selfUserId: result.data!.userId.toString(),
           );
         } catch (e) {
           log("login_SocketException====${e}");
