@@ -68,7 +68,8 @@ dependencies:
   app_links: ^6.4.0
   flutter_sound: ^9.30.0
   audio_streamer: ^4.3.0
-  flutter_background_service: ^5.1.0
+  system_alert_window: ^2.0.7
+  android_intent_plus: ^6.0.0
 
 
 

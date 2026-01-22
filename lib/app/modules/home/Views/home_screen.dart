@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/deep_Link/uniservices.dart';
 import 'package:fgtracker/app/Core/theme/AppText.dart';
@@ -77,7 +79,28 @@ class _HomeScreenState extends State<HomeScreen> {
       Permission.contacts,
     ];
 
-    await permissions.request();
+    // await permissions.request();
+    Map<Permission, PermissionStatus> statuses = await permissions.request();
+
+    // Debug: Print all permissions' statuses
+    statuses.forEach((permission, status) {
+      debugPrint('${permission.toString()} status: ${status.toString()}');
+    });
+
+    PermissionStatus overlayStatus = PermissionStatus.granted;
+    if (Platform.isAndroid) {
+      overlayStatus = await Permission.systemAlertWindow.request();
+      debugPrint(
+          'Overlay (System Alert Window) status: ${overlayStatus.toString()}');
+    }
+
+    bool anyDenied = statuses.values.any((status) => status.isDenied);
+    bool anyPermanentlyDenied =
+        statuses.values.any((status) => status.isPermanentlyDenied);
+
+    if ( !overlayStatus.isGranted) {
+      await Permission.systemAlertWindow.request();
+    }
   }
 
   @override

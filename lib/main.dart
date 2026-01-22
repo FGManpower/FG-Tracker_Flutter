@@ -1,5 +1,9 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
+import 'dart:io';
+import 'dart:ui';
+import 'package:android_intent_plus/android_intent.dart';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/constant/notification_holder.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
@@ -52,7 +56,23 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
       debugPrint("Backgroundexception=======$e");
     }
   } else if (message.data['screen_name'] == 'walkie') {
-    final deepLink = message.data['link'];
+ 
+    final sharedpref = await SharedPreferences.getInstance();
+    await sharedpref.setString('fromUserId', message.data['fromUserId']);
+
+    var url = "${ConstRes.DeepLink_Url}/?page=Walkie";
+    log("====>AppLaunch Url is ======$url");
+    if (Platform.isAndroid) {
+      AndroidIntent intent = AndroidIntent(
+          action: 'action_view', data: url, package: "com.example.fgtracker");
+      await intent.launch().then((value) {
+        log("AppLaunch Success");
+      }).onError(
+            (error, stackTrace) {
+          log("AppLaunchIssue:$error,StackTrace is:$stackTrace");
+        },
+      );
+    }
   }
 }
 

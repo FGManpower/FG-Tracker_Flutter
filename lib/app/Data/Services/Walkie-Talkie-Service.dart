@@ -39,6 +39,8 @@ class WalkietalkieService {
         "transports": ["websocket"],
         "query": {"userId": selfUserId},
         "forceNew": true,
+        "autoConnect": true,
+
       },
     );
 

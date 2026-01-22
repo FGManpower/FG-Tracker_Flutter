@@ -67,11 +67,10 @@ class UniServices {
         log("Exeption${e.toString()}");
       }
 
-      if (recievecode == "IncomingCall") {
+      if (recievecode == "Walkie") {
         if (AppLinkStateTracker.isIncomingScreenOpened == false) {
-          final notificationData =
-              Global.storageServices.getInComingNotificationData();
-          if (Utility.isNotNullEmptyOrFalse(notificationData.callerId)) {
+
+          // if (Utility.isNotNullEmptyOrFalse(notificationData.callerId)) {
             try {
               Future.delayed(Duration(seconds: 3));
 
@@ -94,9 +93,9 @@ class UniServices {
             } catch (e) {
               log("NavigatorException--------${e.toString()}");
             }
-          } else {
-            log("DeepLink: Notification data is null, skipping navigation.");
-          }
+          // } else {
+          //   log("DeepLink: Notification data is null, skipping navigation.");
+          // }
         }
       }
     } catch (e) {
