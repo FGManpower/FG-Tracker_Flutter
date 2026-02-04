@@ -24,6 +24,7 @@
 //
 //   Future<void> showIncomingCall(IncomingCallModel data) async {
 //     try {
+//       print("=======navigatoretoCallscreess${data.callerId}");
 //       final callId = data.callId?.toString() ??
 //           DateTime.now().millisecondsSinceEpoch.toString();
 //
@@ -124,6 +125,7 @@
 //
 //   Future<void> _navigateToCallScreen(Map<String, dynamic> data) async {
 //     try {
+//       print("=======navigatoretoCallscree;=${data}");
 //       final call = IncomingCallModel.fromMap(data);
 //
 //       CallStateTracker.isIncomingCallScreenOpen = false;

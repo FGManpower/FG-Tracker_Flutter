@@ -19,11 +19,14 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'app/Core/global/global_notification_handler.dart';
+import 'app/Core/util/CallUtils.dart';
 import 'app/Core/values/Context_Utility.dart';
 import 'app/Core/values/global.dart';
-import 'app/Data/Services/Custom_NotificationServices.dart';
+import 'app/Data/Services/CallKitService.dart';
+import 'app/Data/Services/CallEvents_NotificationServices.dart';
 import 'app/Data/Services/NotificationServices.dart';
 import 'app/Data/Services/SignallingService.dart';
+import 'app/Model/call_model.dart';
 import 'app/modules/Notification/Controller/cubit/notification_count_cubit.dart';
 import 'app/routes/app_pages.dart';
 import 'app/modules/Track/Controller/SocketServices.dart';
@@ -43,10 +46,22 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   if (message.data['screen_name'] == 'incomingCall') {
     final callMap = jsonDecode(message.data['callData']);
 
+    print("========callData==${callMap}");
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool("notificationConsumed", false);
+      // if (Platform.isIOS) {
+      //   print("===showingincoming inios:");
+      //   // await CallKitService.showIncomingCall(callMap);
+      //
+      //   final callModel = IncomingCallModel.fromMap(callMap);
+      //
+      //   await CallUtils().showIncomingCall(callModel);
+      // } else {
+      // ANDROID: your existing custom notification
       await CustomNotificationServices.showIncomingCall(callMap);
+      // }
+
       FlutterRingtonePlayer()
           .play(asAlarm: false, fromAsset: Assets.music.incomingCall);
       Future.delayed(const Duration(seconds: 7), () {
@@ -56,7 +71,6 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
       debugPrint("Backgroundexception=======$e");
     }
   } else if (message.data['screen_name'] == 'walkie') {
- 
     final sharedpref = await SharedPreferences.getInstance();
     await sharedpref.setString('fromUserId', message.data['fromUserId']);
 
@@ -68,7 +82,7 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
       await intent.launch().then((value) {
         log("AppLaunch Success");
       }).onError(
-            (error, stackTrace) {
+        (error, stackTrace) {
           log("AppLaunchIssue:$error,StackTrace is:$stackTrace");
         },
       );
@@ -82,6 +96,23 @@ void onNotificationResponse(NotificationResponse response) async {
 
   NotificationHolder.pendingResponse = response;
 }
+
+// void listenCallKitEvents() {
+//   FlutterCallkitIncoming.onEvent.listen((event) async {
+//     final body = event?.body;
+//     final action = event?.event;
+//
+//     if (action == Event.actionCallAccept) {
+//       final callData = Map<String, dynamic>.from(body['extra']);
+//       CustomNotificationServices().navigateToCallScreen(callData);
+//     }
+//
+//     if (action == Event.actionCallDecline || action == Event.actionCallEnded) {
+//       final callData = Map<String, dynamic>.from(body['extra']);
+//       CustomNotificationServices().declineCall(callData);
+//     }
+//   });
+// }
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -102,13 +133,31 @@ Future<void> main() async {
   const AndroidInitializationSettings androidInit =
       AndroidInitializationSettings('@mipmap/ic_launcher');
 
-  const DarwinInitializationSettings iosInit = DarwinInitializationSettings();
-
-  const InitializationSettings initSettings =
-      InitializationSettings(android: androidInit, iOS: iosInit);
+  final DarwinInitializationSettings iosInit = DarwinInitializationSettings(
+    notificationCategories: [
+      DarwinNotificationCategory(
+        'INCOMING_CALL',
+        actions: [
+          DarwinNotificationAction.plain(
+            'CALL_ACCEPT',
+            'Accept',
+            options: {DarwinNotificationActionOption.foreground},
+          ),
+          DarwinNotificationAction.plain(
+            'CALL_DECLINE',
+            'Decline',
+            options: {DarwinNotificationActionOption.destructive},
+          ),
+        ],
+      ),
+    ],
+  );
 
   await flutterLocalNotificationsPlugin.initialize(
-    initSettings,
+    InitializationSettings(
+      android: androidInit,
+      iOS: iosInit,
+    ),
     onDidReceiveNotificationResponse: onNotificationResponse,
   );
 

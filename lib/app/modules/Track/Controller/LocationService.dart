@@ -63,15 +63,10 @@ class LocationService extends GetxService {
         try {
           // Loading().showloading();
           await _location.enableBackgroundMode(enable: true);
-
-
-          _listenToLocationUpdates(
-              Global.storageServices.get(PrefConst.userId).toString());
+          _listenToLocationUpdates(Global.storageServices.get(PrefConst.userId).toString());
           // Loading().dismissloading();
-
         } catch (e) {
           // Loading().dismissloading();
-
         }
       }
     } else {

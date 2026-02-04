@@ -48,6 +48,7 @@ class CustomNotificationServices {
     );
 
     const iosDetails = DarwinNotificationDetails(
+      categoryIdentifier: 'INCOMING_CALL',
       presentAlert: true,
       presentSound: true,
     );

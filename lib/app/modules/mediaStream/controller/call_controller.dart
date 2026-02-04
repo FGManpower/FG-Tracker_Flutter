@@ -3,9 +3,12 @@ import 'dart:developer';
 
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
+import 'package:fgtracker/app/Core/values/utility.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
+import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'package:get/get.dart' hide navigator;
 import 'package:flutter_webrtc/flutter_webrtc.dart';
+import '../../../../gen/assets.gen.dart';
 import '../../../../main.dart';
 import '../../../Data/Services/SignallingService.dart';
 
@@ -50,6 +53,7 @@ class CallController extends GetxController {
 
     _setupPeer();
     _listenForCallEvents();
+    playSound();
     super.onInit();
   }
 
@@ -269,6 +273,9 @@ class CallController extends GetxController {
   String get formattedDuration {
     final minutes = (callDurationSeconds ~/ 60).toString().padLeft(2, '0');
     final seconds = (callDurationSeconds % 60).toString().padLeft(2, '0');
+    if( Utility.isNotNullEmptyOrFalse("$minutes:$seconds")){
+      stopSound();
+    }
     return "$minutes:$seconds";
   }
 
@@ -281,6 +288,17 @@ class CallController extends GetxController {
     });
   }
 
+  playSound(){
+    FlutterRingtonePlayer().play(
+      asAlarm: false,
+      fromAsset: Assets.music.ringing,
+      looping: true,
+      volume: 1.0,
+    );
+  }
+  stopSound(){
+    FlutterRingtonePlayer().stop();
+  }
 
 
   @override

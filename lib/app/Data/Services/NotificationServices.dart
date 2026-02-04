@@ -17,7 +17,7 @@ import 'dart:io';
 
 import '../../Core/util/AppLifeCycle.dart';
 import 'CallStateTracker.dart';
-import 'Custom_NotificationServices.dart';
+import 'CallEvents_NotificationServices.dart';
 
 class firebaseNotificationServices {
   FirebaseMessaging messaging = FirebaseMessaging.instance;
@@ -31,7 +31,7 @@ class firebaseNotificationServices {
       BuildContext context, RemoteMessage message) async {
     var androidinitializeSetting =
         const AndroidInitializationSettings("@mipmap/ic_launcher");
-    var iosinitializeSetting = const DarwinInitializationSettings();
+    var iosinitializeSetting = DarwinInitializationSettings();
     var initializationSetting = InitializationSettings(
       android: androidinitializeSetting,
       iOS: iosinitializeSetting,
@@ -86,7 +86,6 @@ class firebaseNotificationServices {
   }
 
   Future<void> setupInteractMessage(BuildContext context) async {
-    // When app is terminated
     RemoteMessage? initialMessage =
         await FirebaseMessaging.instance.getInitialMessage();
 
@@ -95,7 +94,6 @@ class firebaseNotificationServices {
       handleMessage(context, initialMessage, type: "recienvedmessage");
     }
 
-    // When app is in background
     FirebaseMessaging.onMessageOpenedApp.listen((event) async {
       handleMessage(context, event, type: "recienvedmessage");
     });
@@ -133,30 +131,51 @@ class firebaseNotificationServices {
   }
 
   Future<void> initialized() async {
-    await Firebase.initializeApp();
-    // if (Constant.env == "pro") {
-    //   FirebaseMessaging.instance.subscribeToTopic("seller_pro");
-    //   FirebaseMessaging.instance.unsubscribeFromTopic("seller_dev");
-    // } else {
-    //   FirebaseMessaging.instance.subscribeToTopic("seller_dev");
-    //   FirebaseMessaging.instance.unsubscribeFromTopic("seller_pro");
-    // }
     getDeviceTokenToSendNotification();
 
     FirebaseMessaging.instance.getInitialMessage().then((message) {});
+    //
+    // FirebaseMessaging.onMessage.listen((message) async {
+    //   await Global.storageServices.setBool(Constant.notificationBadge, true);
+    //   try {
+    //     BlocProvider.of<NotificationCountCubit>(
+    //             ContextUtility.navigatorkey.currentState!.context)
+    //         .showBadge();
+    //   } catch (e) {
+    //     debugPrint(e.toString());
+    //   }
+    //
+    //   if (Platform.isAndroid) {
+    //     inItLocalNotification(
+    //         ContextUtility.navigatorkey.currentState!.context, message);
+    //     showNotification(message);
+    //     handleMessage(
+    //         ContextUtility.navigatorkey.currentState!.context, message);
+    //   } else {}
+    // });
 
     FirebaseMessaging.onMessage.listen((message) async {
-      await Global.storageServices.setBool(PrefConst.notificationBadge, true);
+      // await Global.storageServices.setBool(Constant.notificationBadge, true);
+
+      final context =
+          ContextUtility.navigatorkey.currentState?.overlay?.context;
+
+      if (context == null) {
+        debugPrint("⚠️ Context not ready, skipping UI actions");
+        return;
+      }
+
+      // SAFE Bloc access
+      // try {
+      //   BlocProvider.of<NotificationCountCubit>(context).showBadge();
+      // } catch (e) {
+      //   debugPrint("Bloc error: $e");
+      // }
 
       if (Platform.isAndroid) {
-        inItLocalNotification(
-            ContextUtility.navigatorkey.currentState!.context, message);
+        inItLocalNotification(context, message);
         showNotification(message);
-        handleMessage(
-            ContextUtility.navigatorkey.currentState!.context, message);
-      } else {
-        // showNotification(message);
-        // handleMessage(context, message);
+        handleMessage(context, message);
       }
     });
 
@@ -177,6 +196,7 @@ class firebaseNotificationServices {
 
   Future<void> handleMessage(BuildContext context, RemoteMessage message,
       {String? type}) async {
+    print("==========HandleMessageREcieving===${message.data}");
     if (type == "recienvedmessage") {
       print("messageRecieved--------${message.data}");
 
@@ -188,22 +208,23 @@ class firebaseNotificationServices {
           "isActive": message.data['isActive'],
         });
       } else if (message.data["screen_name"] == "chatScreen") {
-        if (!ChatStateTracker.isChatCallScreenOpen) {
-          MemberData? memberData;
-          try {
-            memberData =
-                MemberData.fromJson(jsonDecode(message.data['memberData']));
-          } catch (e) {
-            debugPrint("Invalid memberData format: $e");
-          }
-          if (memberData != null) {
-            Get.toNamed(Routes.chatScreen, arguments: {
-              "userData": memberData,
-              "groupName": "",
-              "type": "chatScreen",
-            });
-          }
+        // if (!ChatStateTracker.isChatCallScreenOpen) {
+        MemberData? memberData;
+        try {
+          memberData =
+              MemberData.fromJson(jsonDecode(message.data['memberData']));
+        } catch (e) {
+          debugPrint("Invalid memberData format: $e");
         }
+        if (memberData != null) {
+          print("========MemberData====$memberData");
+          Get.toNamed(Routes.chatScreen, arguments: {
+            "userData": memberData,
+            "groupName": "Test",
+            "type": "chatScreen",
+          });
+        }
+        // }
       } else if (message.data['screen_name'] == 'incomingCall') {
         if (CallStateTracker.isIncomingCallScreenOpen) return;
 
@@ -218,25 +239,25 @@ class firebaseNotificationServices {
         );
       }
     } else {
+      if (Platform.isAndroid) {
+        if (message.data['screen_name'] == 'incomingCall') {
+          if (CallStateTracker.isIncomingCallScreenOpen) {
+            return;
+          }
+          final callMap = jsonDecode(message.data['callData']);
+          final call = IncomingCallModel.fromMap(callMap);
 
-      if (message.data['screen_name'] == 'incomingCall') {
-        if (CallStateTracker.isIncomingCallScreenOpen) {
-          return;
-        }
-        final callMap = jsonDecode(message.data['callData']);
-        final call = IncomingCallModel.fromMap(callMap);
+          CallStateTracker.isIncomingCallScreenOpen = true;
+          final appState = AppLifecycleTracker.state;
 
-        CallStateTracker.isIncomingCallScreenOpen = true;
-        final appState = AppLifecycleTracker.state;
-
-        if (appState == AppLifecycleState.resumed) {
-          Get.toNamed(
-            Routes.IncomingCallScreen,
-            arguments: {"callDetail": call},
-          );
+          if (appState == AppLifecycleState.resumed) {
+            Get.toNamed(
+              Routes.IncomingCallScreen,
+              arguments: {"callDetail": call},
+            );
+          }
         }
       }
-
     }
   }
 }

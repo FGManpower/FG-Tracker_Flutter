@@ -4,7 +4,7 @@ import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/constant/notification_holder.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
-import 'package:fgtracker/app/Data/Services/Custom_NotificationServices.dart';
+import 'package:fgtracker/app/Data/Services/CallEvents_NotificationServices.dart';
 import 'package:fgtracker/app/Data/Services/SignallingService.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -106,7 +106,9 @@ Future<void> handleTerminatedCallIfAny() async {
 
   await prefs.reload();
 
+
   bool isConsumed = prefs.getBool(_consumeKey) ?? true;
+  debugPrint("======isConsume-${isConsumed}");
   if (isConsumed) return;
   await prefs.setBool("notificationConsumed", true);
   NotificationResponse? response;
@@ -117,11 +119,11 @@ Future<void> handleTerminatedCallIfAny() async {
   if (details?.notificationResponse != null) {
     response = details!.notificationResponse;
   }
-
+  debugPrint("======response-${response}");
   response ??= NotificationHolder.pendingResponse;
 
   if (response == null || response.payload == null) return;
-
+  debugPrint("======responsePayload-${response.payload}");
   final callData = jsonDecode(response.payload!);
   final userId = Global.storageServices.get(PrefConst.userId)?.toString();
 
@@ -133,7 +135,7 @@ Future<void> handleTerminatedCallIfAny() async {
     );
     await Future.delayed(const Duration(milliseconds: 1000));
   }
-
+  debugPrint("======response.actionId-${response.actionId}");
   if (response.actionId == "CALL_ACCEPT") {
     await _ensureSocketReady();
 
@@ -144,8 +146,9 @@ Future<void> handleTerminatedCallIfAny() async {
   } else if (response.actionId == "CALL_DECLINE") {
     CustomNotificationServices().declineCall(callData);
   } else if (response.actionId == null) {
+    debugPrint("======response.actionIdNull-${response.actionId}");
     CustomNotificationServices().navigateToIncomingCallScreen(callData);
   }
-
+  debugPrint("======response.actionIdReturn-${response.actionId}");
   NotificationHolder.clear();
 }

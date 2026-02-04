@@ -1,6 +1,17 @@
+import 'dart:convert';
 import 'dart:developer';
-import 'package:fgtracker/app/Data/Services/Custom_NotificationServices.dart';
+import 'dart:io';
+import 'dart:ui';
+import 'package:fgtracker/app/Data/Services/CallEvents_NotificationServices.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:socket_io_client/socket_io_client.dart';
+
+import '../../Core/util/AppLifeCycle.dart';
+import '../../Model/call_model.dart';
+import '../../modules/Walkie-talkie/Controller/walkieController.dart';
+import '../../routes/app_pages.dart';
+import 'CallStateTracker.dart';
 
 class SignallingService {
   Socket? socket;
@@ -43,6 +54,37 @@ class SignallingService {
     socket!.onError((err) {
       log("Socket Error: $err");
     });
+
+    socket!.on("newCall", (data) {
+
+      // WalkieController().onIncoming(
+      //   remoteUserId: data['fromUserId'],
+      //   callerName: data['fromUserName'] ?? "Unknown",
+      //   profileImage: data['fromUserProfile'] ?? "",
+      //
+
+      if(Platform.isIOS){
+        if (CallStateTracker.isIncomingCallScreenOpen) {
+          return;
+        }
+        final callMap = jsonDecode(data['callData']);
+        final call = IncomingCallModel.fromMap(callMap);
+
+        CallStateTracker.isIncomingCallScreenOpen = true;
+        final appState = AppLifecycleTracker.state;
+
+        if (appState == AppLifecycleState.resumed) {
+          Get.toNamed(
+            Routes.IncomingCallScreen,
+            arguments: {"callDetail": call},
+          );
+        }
+      }
+
+
+
+    });
+
   }
 
   void disconnect() {

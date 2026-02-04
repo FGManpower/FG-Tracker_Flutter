@@ -1,10 +1,8 @@
 import 'dart:io';
 
-import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/deep_Link/uniservices.dart';
 import 'package:fgtracker/app/Core/theme/AppText.dart';
 import 'package:fgtracker/app/Data/Services/NotificationServices.dart';
-import 'package:fgtracker/app/Data/Services/walkie_native_service.dart';
 import 'package:fgtracker/app/modules/DashboardController.dart';
 import 'package:fgtracker/app/modules/Group/Controller/JoinGroup_Controller.dart';
 import 'package:fgtracker/app/modules/home/Controller/home_controller.dart';
@@ -12,6 +10,7 @@ import 'package:fgtracker/app/modules/home/Home_Widget/CreatedGroupUi.dart';
 import 'package:fgtracker/app/modules/home/Home_Widget/Home_widget.dart';
 import 'package:fgtracker/app/modules/home/Home_Widget/bannerUi.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:fgtracker/app/Core/values/Dialog/DialogBox.dart';
 import 'package:fgtracker/app/widgets/Appbar.dart';
@@ -24,7 +23,6 @@ import 'package:permission_handler/permission_handler.dart';
 import '../../../../gen/assets.gen.dart';
 import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
 import '../../../Core/global/global_notification_handler.dart';
-import '../../../Core/values/global.dart';
 
 import '../Home_Widget/NewlyGroupUi.dart';
 
@@ -51,6 +49,7 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
+      debugPrint("======HomeCalledon");
       handleTerminatedCallIfAny();
     });
     WidgetsBinding.instance.addPostFrameCallback((_) async {
@@ -61,13 +60,14 @@ class _HomeScreenState extends State<HomeScreen> {
     groupController.getGroupData();
 
     notificationServices.setupInteractMessage(context);
-    // checkDeeplink();
+    checkDeeplink();
   }
 
   Future<void> checkAndRequestPermissions(BuildContext context) async {
     // await WalkieNativeService.saveUserId(
     //   Global.storageServices.get(PrefConst.userId).toString(),
     // );
+    final settings = await FirebaseMessaging.instance.requestPermission();
 
     final permissions = [
       Permission.camera,
@@ -111,7 +111,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> checkDeeplink() async {
    // await Permission.systemAlertWindow.request();
-    await UniServices.init(context,onCompletion: (success) {
+    await UniServices.init(onCompletion: (success) {
 
     },);
   }
@@ -180,7 +180,7 @@ class _HomeScreenState extends State<HomeScreen> {
               return groupController.createdGroups.isEmpty
                   ? Center(
                       child: DataEmpty(
-                        imgname: Assets.images.notFound.path,
+                        imgname: Assets.images.notFount.path,
                         type: "png",
                       ),
                     )

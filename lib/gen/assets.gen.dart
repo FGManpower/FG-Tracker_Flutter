@@ -1,3 +1,5 @@
+// dart format width=80
+
 /// GENERATED CODE - DO NOT MODIFY BY HAND
 /// *****************************************************
 ///  FlutterGen
@@ -5,7 +7,7 @@
 
 // coverage:ignore-file
 // ignore_for_file: type=lint
-// ignore_for_file: directives_ordering,unnecessary_import,implicit_dynamic_list_literal,deprecated_member_use
+// ignore_for_file: deprecated_member_use,directives_ordering,implicit_dynamic_list_literal,unnecessary_import
 
 import 'package:flutter/widgets.dart';
 
@@ -102,7 +104,7 @@ class $AssetsImagesGen {
   AssetGenImage get message => const AssetGenImage('assets/images/message.png');
 
   /// File path: assets/images/not_fount.png
-  AssetGenImage get notFound =>
+  AssetGenImage get notFount =>
       const AssetGenImage('assets/images/not_fount.png');
 
   /// File path: assets/images/otpLock.png
@@ -143,38 +145,38 @@ class $AssetsImagesGen {
 
   /// List of all assets
   List<AssetGenImage> get values => [
-    qrCodeBg,
-    aboutUs,
-    appUpdate,
-    appIcon,
-    audio,
-    background,
-    emptyGroup,
-    group,
-    groupBg,
-    image1,
-    image2,
-    image3,
-    introduction1,
-    introduction2,
-    introduction3,
-    kaabaMarker,
-    kaaba,
-    loginIllustration,
-    lostInternets,
-    message,
-    notFound,
-    otpLock,
-    play,
-    playstore,
-    qibla,
-    registerationBg,
-    safe,
-    serverError,
-    splashBg,
-    userAvatar,
-    userVideo,
-  ];
+        qrCodeBg,
+        aboutUs,
+        appUpdate,
+        appIcon,
+        audio,
+        background,
+        emptyGroup,
+        group,
+        groupBg,
+        image1,
+        image2,
+        image3,
+        introduction1,
+        introduction2,
+        introduction3,
+        kaabaMarker,
+        kaaba,
+        loginIllustration,
+        lostInternets,
+        message,
+        notFount,
+        otpLock,
+        play,
+        playstore,
+        qibla,
+        registerationBg,
+        safe,
+        serverError,
+        splashBg,
+        userAvatar,
+        userVideo
+      ];
 }
 
 class $AssetsMusicGen {
@@ -186,11 +188,15 @@ class $AssetsMusicGen {
   /// File path: assets/music/recieve_notification.mp3
   String get recieveNotification => 'assets/music/recieve_notification.mp3';
 
+  /// File path: assets/music/ringing.mp3
+  String get ringing => 'assets/music/ringing.mp3';
+
   /// File path: assets/music/stop_job.mp3
   String get stopJob => 'assets/music/stop_job.mp3';
 
   /// List of all assets
-  List<String> get values => [incomingCall, recieveNotification, stopJob];
+  List<String> get values =>
+      [incomingCall, recieveNotification, ringing, stopJob];
 }
 
 class $AssetsSvgGen {
@@ -318,47 +324,47 @@ class $AssetsSvgGen {
 
   /// List of all assets
   List<String> get values => [
-    addProduct,
-    home,
-    light,
-    orders,
-    about,
-    android,
-    arrowDownLeft,
-    arrowDownRight,
-    arrowUpLeft,
-    arrowUpRight,
-    calendar,
-    calender,
-    call,
-    compass,
-    compassIcon,
-    dark,
-    darkMode,
-    delete,
-    email,
-    email1,
-    facebook,
-    headphones,
-    indian,
-    instagram,
-    ios,
-    language,
-    lock,
-    logout,
-    needle,
-    notificatioempty,
-    person,
-    playStore,
-    profile,
-    setting,
-    share,
-    support,
-    trainning,
-    twitter,
-    whatsapp,
-    youtube,
-  ];
+        addProduct,
+        home,
+        light,
+        orders,
+        about,
+        android,
+        arrowDownLeft,
+        arrowDownRight,
+        arrowUpLeft,
+        arrowUpRight,
+        calendar,
+        calender,
+        call,
+        compass,
+        compassIcon,
+        dark,
+        darkMode,
+        delete,
+        email,
+        email1,
+        facebook,
+        headphones,
+        indian,
+        instagram,
+        ios,
+        language,
+        lock,
+        logout,
+        needle,
+        notificatioempty,
+        person,
+        playStore,
+        profile,
+        setting,
+        share,
+        support,
+        trainning,
+        twitter,
+        whatsapp,
+        youtube
+      ];
 }
 
 class Assets {
@@ -376,12 +382,18 @@ class Assets {
 }
 
 class AssetGenImage {
-  const AssetGenImage(this._assetName, {this.size, this.flavors = const {}});
+  const AssetGenImage(
+    this._assetName, {
+    this.size,
+    this.flavors = const {},
+    this.animation,
+  });
 
   final String _assetName;
 
   final Size? size;
   final Set<String> flavors;
+  final AssetGenImageAnimation? animation;
 
   Image image({
     Key? key,
@@ -436,11 +448,30 @@ class AssetGenImage {
     );
   }
 
-  ImageProvider provider({AssetBundle? bundle, String? package}) {
-    return AssetImage(_assetName, bundle: bundle, package: package);
+  ImageProvider provider({
+    AssetBundle? bundle,
+    String? package,
+  }) {
+    return AssetImage(
+      _assetName,
+      bundle: bundle,
+      package: package,
+    );
   }
 
   String get path => _assetName;
 
   String get keyName => _assetName;
+}
+
+class AssetGenImageAnimation {
+  const AssetGenImageAnimation({
+    required this.isAnimation,
+    required this.duration,
+    required this.frames,
+  });
+
+  final bool isAnimation;
+  final Duration duration;
+  final int frames;
 }

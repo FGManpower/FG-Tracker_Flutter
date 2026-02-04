@@ -63,14 +63,18 @@ class CallScreen extends StatelessWidget {
                                       fontsize: 28,
                                       fontfamily: FontFamily.interSemiBold,
                                       color: ToggleThemeData.white),
-                                  Utility.isNullEmptyOrFalse(
-                                          controller.formattedDuration)
-                                      ? SizedBox()
+                                  Utility.isNullEmptyOrFalse(controller.formattedDuration)
+                                      ? reausabletext(
+                                      "Ringing..",
+                                      fontsize: 12,
+                                      fontfamily: FontFamily.interMedium,
+                                      color: ToggleThemeData.white)
                                       : reausabletext(
                                           controller.formattedDuration,
                                           fontsize: 12,
                                           fontfamily: FontFamily.interMedium,
                                           color: ToggleThemeData.white),
+
                                 ],
                               ),
                             ),

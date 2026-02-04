@@ -245,7 +245,7 @@ class MemberscreenScreen extends GetView<MemberController> {
                 } else if (controller.filteredMembers.isEmpty) {
                   return Expanded(
                       child: DataEmpty(
-                    imgname: Assets.images.notFound.path,
+                    imgname: Assets.images.notFount.path,
                     type: "png",
                   ));
                 } else {
@@ -262,7 +262,6 @@ class MemberscreenScreen extends GetView<MemberController> {
   Widget memberListUi({
     List<MemberData>? groupData,
     bool isLoading = false,
-    // int? _expandedIndex;
   }) {
     return MyCustomPullToRefresh(
       onTapCallback: () {

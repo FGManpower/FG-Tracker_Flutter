@@ -1,11 +1,13 @@
 [
   {
-    "relation": ["delegate_permission/common.handle_all_urls"],
+    "relation": [
+      "delegate_permission/common.handle_all_urls",
+      "delegate_permission/common.get_login_creds"
+    ],
     "target": {
       "namespace": "android_app",
       "package_name": "com.fg.fgtracker",
       "sha256_cert_fingerprints": [
-        "8F:EB:3E:92:E1:4C:C0:D7:96:0F:A5:FF:20:4B:74:1A:6C:25:E7:58:6C:E9:43:0E:E4:64:24:09:B6:6F:1D:E3",
         "37:CC:C8:F7:E9:73:91:8E:4B:EF:FE:85:13:65:43:F1:4D:92:B3:C8:62:4F:7C:B4:48:66:62:3C:7F:F7:32:A0"
       ]
     }

@@ -12,18 +12,16 @@ import '../../../Core/theme/AppText.dart';
 
 import '../../../Core/values/Dialog/Common_dialog.dart';
 
-import '../../../Data/Services/walkie_native_service.dart';
-import '../../../routes/app_pages.dart';
+
 import '../../Walkie-talkie/Controller/walkieController.dart';
 import '../widgets/ChatInputArea.dart';
 import '../widgets/ChatList.dart';
-
 
 class ChatScreen extends GetView<MessageController> {
   ChatScreen({super.key});
 
   final TextEditingController _controller = TextEditingController();
-  final MemberController groupController = Get.put(MemberController());
+
   final wc = Get.put(WalkieController());
 
   Future<void> _sendMessage() async {
@@ -63,19 +61,10 @@ class ChatScreen extends GetView<MessageController> {
                 callerName: controller.memberData.name,
               );
             }, onWalkieTalkieCall: () async {
-              // await WalkieNativeService.start(
-              //   myUserId:
-              //       Global.storageServices.get(PrefConst.userId).toString(),
-              //   remoteUserId: controller.memberData.userId.toString(),
-              // );
-              // await Future.delayed(const Duration(milliseconds: 500));
-              // Get.to(Routes.walkieTalkieScreen,arguments: {
-              //   "callerName": controller.memberData.name ?? "",
-              //   "profileUrl": controller.memberData.profileImage,
-              // });
-
-              WalkieController().startServices(callerName: controller.memberData.name.toString(),profileImage:controller.memberData.profileImage,remoteUserId: controller.memberData.userId.toString() );
-
+              WalkieController().startServices(
+                  callerName: controller.memberData.name.toString(),
+                  profileImage: controller.memberData.profileImage,
+                  remoteUserId: controller.memberData.userId.toString());
             });
           },
           onVideoTap: () {
@@ -92,7 +81,7 @@ class ChatScreen extends GetView<MessageController> {
               title: AppText.areYouSure,
               content: AppText.doYouWantToExitGroup,
               onConfirm: () {
-                groupController.exitGroup(context,
+                MemberController().exitGroup(context,
                     groupId: userData.groupId.toString());
               },
             );

@@ -24,6 +24,7 @@ class MemberController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+
     getMembersData(arguments?['groupId']);
   }
 

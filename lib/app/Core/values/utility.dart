@@ -2,6 +2,7 @@ class Utility {
   static bool isNullEmptyOrFalse(Object? o) {
     return o == null ||
         o == "0.0" ||
+        o == "00:00" ||
         o == "0" ||
         o == 0 ||
         false == o ||
