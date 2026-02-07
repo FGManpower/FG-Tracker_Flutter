@@ -31,6 +31,9 @@ class CallController extends GetxController {
   late String remoteUserId;
   late bool is_video;
   dynamic offer;
+  bool isSpeakerOn = false;
+
+
   final args = Get.arguments;
   Timer? callTimer;
   int callDurationSeconds = 0;
@@ -156,7 +159,7 @@ class CallController extends GetxController {
           ? {'facingMode': isFrontCamera ? 'user' : 'environment'}
           : false,
     });
-
+    await enableSpeaker();
     for (var t in localStream!.getTracks()) {
       peer!.addTrack(t, localStream!);
     }
@@ -256,6 +259,7 @@ class CallController extends GetxController {
     update();
   }
 
+
   void toggleCamera() {
     if (is_video == false) return;
     isVideoOn = !isVideoOn;
@@ -269,6 +273,21 @@ class CallController extends GetxController {
     localStream?.getVideoTracks().forEach((t) => t.switchCamera());
     update();
   }
+
+  Future<void> enableSpeaker() async {
+    await Helper.setSpeakerphoneOn(true);
+    isSpeakerOn = true;
+    update();
+  }
+  Future<void> toggleSpeaker() async {
+    isSpeakerOn = !isSpeakerOn;
+    await Helper.setSpeakerphoneOn(isSpeakerOn);
+
+    update();
+  }
+
+
+
 
   String get formattedDuration {
     final minutes = (callDurationSeconds ~/ 60).toString().padLeft(2, '0');

@@ -108,7 +108,7 @@ class CallScreen extends StatelessWidget {
                     child: Container(
                       height: 120.h,
                       padding: EdgeInsets.symmetric(
-                          horizontal: 60.w, vertical: 30.h),
+                          horizontal: 30.w, vertical: 30.h),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         boxShadow: [
@@ -123,6 +123,15 @@ class CallScreen extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
+                          IconButton(
+                            icon: reausableIcon(
+                              icon: c.isSpeakerOn ? Icons.volume_up : Icons.hearing,
+                              color: c.isSpeakerOn ? Colors.green : const Color(0xff6E6E6E),
+                              size: 35,
+                            ),
+                            onPressed: c.toggleSpeaker,
+                          ),
+
                           IconButton(
                             icon: reausableIcon(
                                 icon: c.isAudioOn ? Icons.mic : Icons.mic_off,
