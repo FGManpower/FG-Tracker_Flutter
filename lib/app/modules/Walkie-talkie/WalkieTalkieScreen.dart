@@ -88,7 +88,21 @@ class _WalkieTalkieScreenState extends State<WalkieTalkieScreen>
                   children: [
                     BackpressIcon(context, color: ToggleThemeData.white),
                     const Spacer(),
-                    Icon(Icons.hearing, color: Colors.white, size: 24.sp),
+                    IconButton(
+                      icon: Obx(() => Icon(
+                        walkie.isSpeakerOn.value
+                            ? Icons.volume_up
+                            : Icons.hearing,
+                        color: Colors.white,
+                      )),
+                      onPressed: () async {
+                        walkie.toggleSpeaker();
+                        await WalkietalkieService.instance
+                            .toggleSpeaker(walkie.isSpeakerOn.value);
+                      },
+                    ),
+
+                    // Icon(Icons.hearing, color: Colors.white, size: 24.sp),
                   ],
                 ),
               ),

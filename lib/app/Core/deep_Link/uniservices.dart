@@ -10,7 +10,7 @@ import 'package:app_links/app_links.dart';
 import 'package:get/get.dart';
 
 import '../../modules/Walkie-talkie/Controller/walkieController.dart';
-import '../../modules/Walkie-talkie/soundTesting.dart';
+// import '../../modules/Walkie-talkie/soundTesting.dart';
 import '../values/Context_Utility.dart';
 
 // final _appLinks = AppLinks();
@@ -170,21 +170,21 @@ class UniServices {
         // if (AppLinkStateTracker.isIncomingScreenOpened == false) {
 
 
-
-            Navigator.push(
-              ContextUtility.context!,
-              MaterialPageRoute(
-                builder: (context) => RealtimeAudioScreen(
-                ),
-              ),
-            ).then((value) {
-              print(
-                  "-------isIncomingScreenOpened---------${AppLinkStateTracker.isIncomingScreenOpened}");
-              if (value == "true") {
-                AppLinkStateTracker.isIncomingScreenOpened = false;
-                controller.DeeplinkWithStartJob.value = true;
-              }
-            });
+            //
+            // Navigator.push(
+            //   ContextUtility.context!,
+            //   MaterialPageRoute(
+            //     builder: (context) => RealtimeAudioScreen(
+            //     ),
+            //   ),
+            // ).then((value) {
+            //   print(
+            //       "-------isIncomingScreenOpened---------${AppLinkStateTracker.isIncomingScreenOpened}");
+            //   if (value == "true") {
+            //     AppLinkStateTracker.isIncomingScreenOpened = false;
+            //     controller.DeeplinkWithStartJob.value = true;
+            //   }
+            // });
 
         // }
       }

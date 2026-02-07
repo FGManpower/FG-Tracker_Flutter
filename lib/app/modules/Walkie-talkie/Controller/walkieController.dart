@@ -10,6 +10,7 @@ class WalkieController extends GetxController {
 
   bool get isTalking => audioState.value == WalkieAudioState.talking;
   bool get isListening => audioState.value == WalkieAudioState.listening;
+  final isSpeakerOn = true.obs;
 
 
   void onIncoming({
@@ -66,5 +67,8 @@ class WalkieController extends GetxController {
   void reset() {
     role.value = WalkieRole.caller;
     audioState.value = WalkieAudioState.idle;
+  }
+  void toggleSpeaker() {
+    isSpeakerOn.value = !isSpeakerOn.value;
   }
 }

@@ -1,10 +1,13 @@
 import 'dart:async';
 import 'dart:developer';
+import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:fgtracker/app/modules/Walkie-talkie/Controller/walkieController.dart';
+import 'package:audio_session/audio_session.dart';
+import 'package:fgtracker/app/Core/util/configureAudioSession.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:socket_io_client/socket_io_client.dart';
+import 'package:fgtracker/app/modules/Walkie-talkie/Controller/walkieController.dart';
 
 class WalkietalkieService {
   WalkietalkieService._();
@@ -12,7 +15,6 @@ class WalkietalkieService {
 
   Socket? socket;
 
-  // ================= AUDIO =================
   final FlutterSoundRecorder _recorder = FlutterSoundRecorder();
   final FlutterSoundPlayer _player = FlutterSoundPlayer();
 
@@ -24,6 +26,8 @@ class WalkietalkieService {
   static const int sampleRate = 16000;
   static const int channels = 1;
 
+  static const int frameSize = 640; // 16kHz * 20ms * 2 bytes
+
   // ============================================================
   // INIT
   // ============================================================
@@ -33,6 +37,8 @@ class WalkietalkieService {
   }) async {
     log("🚀 Walkie init");
 
+    await _configureAudioSession();
+
     socket = io(
       "$websocketUrl/walkie",
       {
@@ -40,7 +46,6 @@ class WalkietalkieService {
         "query": {"userId": selfUserId},
         "forceNew": true,
         "autoConnect": true,
-
       },
     );
 
@@ -50,56 +55,76 @@ class WalkietalkieService {
     await _initPlayer();
 
     socket!.on("audio_chunk", _onAudioChunk);
+
     socket!.on("walkie_stop", (_) {
       log("🛑 walkie_stop received");
     });
 
     socket!.on("walkie_incoming", (data) {
-
       WalkieController().onIncoming(
         remoteUserId: data['fromUserId'],
         callerName: data['fromUserName'] ?? "Unknown",
         profileImage: data['fromUserProfile'] ?? "",
       );
     });
-
   }
 
   // ============================================================
-  // PLAYER (SAFE MODE)
+  // AUDIO SESSION (CRITICAL FOR iOS)
+  // ============================================================
+  Future<void> _configureAudioSession() async {
+    final session = await AudioSession.instance;
+
+    await session.configure(
+      AudioSessionConfiguration(
+        avAudioSessionCategory: AVAudioSessionCategory.playAndRecord,
+        avAudioSessionMode: AVAudioSessionMode.voiceChat,
+        avAudioSessionCategoryOptions:
+        AVAudioSessionCategoryOptions.allowBluetooth |
+        AVAudioSessionCategoryOptions.defaultToSpeaker,
+        androidAudioAttributes: const AndroidAudioAttributes(
+          usage: AndroidAudioUsage.voiceCommunication,
+          contentType: AndroidAudioContentType.speech,
+        ),
+        androidAudioFocusGainType: AndroidAudioFocusGainType.gain,
+      ),
+    );
+
+    log("🎧 AudioSession configured");
+  }
+
+  // ============================================================
+  // PLAYER
   // ============================================================
   Future<void> _initPlayer() async {
     log("🔊 Opening player");
-    try {
-      await _player.openPlayer();
 
-      await _player.startPlayerFromStream(
-        codec: Codec.pcm16,
-        sampleRate: sampleRate,
-        numChannels: channels,
-        bufferSize: 1024,
-        interleaved: false,
-      );
+    await _player.openPlayer();
 
-      _playerReady = true;
-      log("✅ Player ready");
-    } catch (e) {
-      log("✅ Player is not ready");
-    }
+    await _player.startPlayerFromStream(
+      codec: Codec.pcm16,
+      sampleRate: sampleRate,
+      numChannels: channels,
+      bufferSize: 2048,
+      // interleaved: true,
+      interleaved: Platform.isIOS, // 🔥 CRITICAL
+    );
+
+    _playerReady = true;
+    log("✅ Player ready");
   }
 
   void _onAudioChunk(dynamic data) {
     if (!_playerReady) return;
 
-    final pcm = Uint8List.fromList(List<int>.from(data));
+    final Uint8List pcm = Uint8List.fromList(List<int>.from(data));
     log("⬇️ RX audio | bytes=${pcm.length}");
 
-    // 🔥 THIS IS THE SAFE LINE
     _player.uint8ListSink?.add(pcm);
   }
 
   // ============================================================
-  // RECORDER (SAFE MODE)
+  // RECORDER
   // ============================================================
   Future<void> initRecorder() async {
     if (_recorderReady) return;
@@ -110,10 +135,16 @@ class WalkietalkieService {
     _micStream = StreamController<Uint8List>();
 
     _micStream!.stream.listen((Uint8List buffer) {
-      if (socket?.connected == true) {
-        socket!.emit("audio_chunk", buffer);
-        log("🎤 TX audio | bytes=${buffer.length}");
+      if (socket?.connected != true) return;
+
+      int offset = 0;
+      while (offset + frameSize <= buffer.length) {
+        final frame = buffer.sublist(offset, offset + frameSize);
+        socket!.emit("audio_chunk", frame);
+        offset += frameSize;
       }
+
+      log("🎤 TX audio | bytes=${buffer.length}");
     });
 
     await _recorder.startRecorder(
@@ -151,6 +182,12 @@ class WalkietalkieService {
     log("📡 walkie_stop → $remoteUserId");
     socket?.emit("walkie_stop", remoteUserId);
   }
+
+  Future<void> toggleSpeaker(bool on) async {
+    log("🔊 Speaker = $on");
+    await WalkieConfiguration.configure(speakerOn: on);
+  }
+
 
   // ============================================================
   // CLEANUP
