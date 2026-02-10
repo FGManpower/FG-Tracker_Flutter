@@ -23,7 +23,6 @@ import 'app/Core/global/global_notification_handler.dart';
 import 'app/Core/util/CallUtils.dart';
 import 'app/Core/values/Context_Utility.dart';
 import 'app/Core/values/global.dart';
-import 'app/Data/Services/CallKitService.dart';
 import 'app/Data/Services/CallEvents_NotificationServices.dart';
 import 'app/Data/Services/NotificationServices.dart';
 import 'app/Data/Services/SignallingService.dart';
@@ -34,6 +33,7 @@ import 'app/modules/Track/Controller/SocketServices.dart';
 import 'app/modules/Track/Controller/TrackController.dart';
 import 'app/modules/Track/Controller/LocationService.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+
 import 'gen/assets.gen.dart';
 
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
@@ -51,17 +51,18 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool("notificationConsumed", false);
-      // if (Platform.isIOS) {
-      //   print("===showingincoming inios:");
-      //   // await CallKitService.showIncomingCall(callMap);
-      //
-      //   final callModel = IncomingCallModel.fromMap(callMap);
-      //
-      //   await CallUtils().showIncomingCall(callModel);
-      // } else {
+      if (Platform.isIOS) {
+        print("===showingincoming inios:");
+        // await CallKitService.showIncomingCall(callMap);
+
+        final callModel = IncomingCallModel.fromMap(callMap);
+
+        await CallUtils().showIncomingCall(data: callMap);
+      } else {
       // ANDROID: your existing custom notification
       await CustomNotificationServices.showIncomingCall(callMap);
-      // }
+      }
+      // CallUtils().showIncomingCall(data: callMap);
 
       FlutterRingtonePlayer()
           .play(asAlarm: false, fromAsset: Assets.music.incomingCall);
@@ -98,22 +99,7 @@ void onNotificationResponse(NotificationResponse response) async {
   NotificationHolder.pendingResponse = response;
 }
 
-// void listenCallKitEvents() {
-//   FlutterCallkitIncoming.onEvent.listen((event) async {
-//     final body = event?.body;
-//     final action = event?.event;
-//
-//     if (action == Event.actionCallAccept) {
-//       final callData = Map<String, dynamic>.from(body['extra']);
-//       CustomNotificationServices().navigateToCallScreen(callData);
-//     }
-//
-//     if (action == Event.actionCallDecline || action == Event.actionCallEnded) {
-//       final callData = Map<String, dynamic>.from(body['extra']);
-//       CustomNotificationServices().declineCall(callData);
-//     }
-//   });
-// }
+
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -176,7 +162,7 @@ Future<void> main() async {
     );
   }
   WalkieConfiguration.configureSpeakerAudioSession();
-
+  // CallUtils().listenCallKitEvents();
   runApp(const MyApp());
 }
 

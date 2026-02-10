@@ -1,3 +1,4 @@
+import 'package:fgtracker/app/Core/values/Dialog/Common_dialog.dart';
 import 'package:fgtracker/app/config/themes_data.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/modules/Track/Widget/TrackLAppBar.dart';
@@ -6,30 +7,30 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '../../../Core/theme/AppText.dart';
 import '../Controller/MessageController.dart';
 
 class CommonChatAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String profileImageUrl;
   final String userName;
   final String groupName;
+  final bool isCreator;
   final VoidCallback? onBackTap;
   final VoidCallback? onCallTap;
 
   final VoidCallback? onVideoTap;
   final VoidCallback? onGroupExit;
 
-
   CommonChatAppBar(
       {Key? key,
       required this.profileImageUrl,
       required this.userName,
+      required this.isCreator,
       this.onBackTap,
       this.onCallTap,
       this.onVideoTap,
-
       required this.groupName,
-        this.onGroupExit
-   })
+      this.onGroupExit})
       : super(key: key);
 
   @override
@@ -50,9 +51,13 @@ class CommonChatAppBar extends StatelessWidget implements PreferredSizeWidget {
               SizedBox(
                 width: 10.w,
               ),
-              reausableIcon(icon: Icons.arrow_back_ios,size: 25,ontap: () {
-                Navigator.pop(context);
-              },),
+              reausableIcon(
+                icon: Icons.arrow_back_ios,
+                size: 25,
+                ontap: () {
+                  Navigator.pop(context);
+                },
+              ),
               SizedBox(
                 width: 5.w,
               ),
@@ -126,35 +131,65 @@ class CommonChatAppBar extends StatelessWidget implements PreferredSizeWidget {
             SizedBox(
               width: 5.w,
             ),
-
-
-            PopupMenuButton<String>(
-              onSelected: (value) {},
-              color: Colors.white,
-              elevation: 5,
-              offset: Offset(0, 48),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12.r),
-              ),
-              icon: Icon(
-                FontAwesomeIcons.ellipsis,
-                color: ToggleThemeData.darkPurple,
-                size: 26.sp,
-              ),
-              itemBuilder: (context) => [
-                popupItem(
-                  context: context,
-                  value:  'exit',
-                  icon:  Icons.logout,
-                  text:  'Exit Group',
-                  onTap: () {
-
-                     onGroupExit!();
-
-                  },
-                ),
-              ],
-            ),
+            isCreator == true
+                ? PopupMenuButton<String>(
+                    onSelected: (value) {},
+                    color: Colors.white,
+                    elevation: 5,
+                    offset: Offset(0, 48),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
+                    icon: Icon(
+                      FontAwesomeIcons.ellipsis,
+                      color: ToggleThemeData.darkPurple,
+                      size: 26.sp,
+                    ),
+                    itemBuilder: (context) => [
+                      popupItem(
+                        context: context,
+                        value: 'exit',
+                        icon: Icons.logout,
+                        text: 'Exit Group',
+                        onTap: () {
+                          onGroupExit!();
+                        },
+                      ),
+                    ],
+                  )
+                : PopupMenuButton<String>(
+                    onSelected: (value) {},
+                    color: Colors.white,
+                    elevation: 5,
+                    offset: Offset(0, 48),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
+                    icon: Icon(
+                      Icons.more_vert,
+                      color: ToggleThemeData.darkPurple,
+                      size: 26.sp,
+                    ),
+                    itemBuilder: (context) => [
+                      popupItem(
+                        context: context,
+                        value: 'delete',
+                        icon: Icons.delete_outline,
+                        text: 'Group Delete',
+                        onTap: () {
+                          CommonDialog.ConfirmationDialog(
+                            title: AppText.areYouSure,
+                            content: AppText.doYouWantToDeleteGroup,
+                            onConfirm: () {
+                              // controller.deleteGroup(context,
+                              //     groupId: controller.arguments!['groupId']
+                              //         .toString());
+                            },
+                          );
+                        },
+                      ),
+                    ],
+                  ),
             SizedBox(
               width: 15.w,
             ),
@@ -231,5 +266,3 @@ class ImageViewerWidget extends StatelessWidget {
     );
   }
 }
-
-

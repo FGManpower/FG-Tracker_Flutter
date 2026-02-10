@@ -1,6 +1,7 @@
 import Flutter
 import UIKit
 import GoogleMaps
+import AVFoundation
 
 @main
 @objc class AppDelegate: FlutterAppDelegate {
@@ -13,19 +14,30 @@ import GoogleMaps
         return view
     }()
 
-    override func application(
-        _ application: UIApplication,
-        didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
-    ) -> Bool {
-        GMSServices.provideAPIKey("AIzaSyAgt-V8kmcQJb_6Cj6LHArWfhWjVPh7N_Q")
-        GeneratedPluginRegistrant.register(with: self)
 
-        #if !DEBUG
-        addSecuredView()
-        #endif
+override func application(
+    _ application: UIApplication,
+    didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
+) -> Bool {
 
-        return super.application(application, didFinishLaunchingWithOptions: launchOptions)
+    GMSServices.provideAPIKey("AIzaSyAgt-V8kmcQJb_6Cj6LHArWfhWjVPh7N_Q")
+    GeneratedPluginRegistrant.register(with: self)
+
+
+    do {
+        try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default)
+        try AVAudioSession.sharedInstance().setActive(true)
+    } catch {
+        print("Failed to set audio session")
     }
+
+    #if !DEBUG
+    addSecuredView()
+    #endif
+
+    return super.application(application, didFinishLaunchingWithOptions: launchOptions)
+}
+
 
     override func applicationWillResignActive(_ application: UIApplication) {
         secureOverlay.isHidden = false

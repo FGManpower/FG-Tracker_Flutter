@@ -45,6 +45,7 @@ class ChatScreen extends GetView<MessageController> {
           profileImageUrl:
               "${ConstRes.aImageBaseUrl}${userData.profileImage ?? ""}",
           userName: userData.name ?? "",
+          isCreator: userData.isCreator ?? false,
           groupName: controller.arguments?['groupName'],
           onBackTap: () {
             controller.handleBackPressed(context,

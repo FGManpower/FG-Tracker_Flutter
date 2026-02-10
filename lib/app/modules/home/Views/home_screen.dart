@@ -24,6 +24,7 @@ import '../../../../gen/assets.gen.dart';
 import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
 import '../../../Core/global/global_notification_handler.dart';
 
+import '../../../Core/util/CallUtils.dart';
 import '../Home_Widget/NewlyGroupUi.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -54,6 +55,7 @@ class _HomeScreenState extends State<HomeScreen> {
     });
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await checkAndRequestPermissions(context);
+      // CallUtils().listenCallKitEvents();
     });
 
     controller.getProfileData();
@@ -84,23 +86,23 @@ class _HomeScreenState extends State<HomeScreen> {
 
     // Debug: Print all permissions' statuses
     statuses.forEach((permission, status) {
-      debugPrint('${permission.toString()} status: ${status.toString()}');
+      // debugPrint('${permission.toString()} status: ${status.toString()}');
     });
 
-    PermissionStatus overlayStatus = PermissionStatus.granted;
-    if (Platform.isAndroid) {
-      overlayStatus = await Permission.systemAlertWindow.request();
-      debugPrint(
-          'Overlay (System Alert Window) status: ${overlayStatus.toString()}');
-    }
+    // PermissionStatus overlayStatus = PermissionStatus.granted;
+    // if (Platform.isAndroid) {
+    //   overlayStatus = await Permission.systemAlertWindow.request();
+    //   debugPrint(
+    //       'Overlay (System Alert Window) status: ${overlayStatus.toString()}');
+    // }
 
     bool anyDenied = statuses.values.any((status) => status.isDenied);
     bool anyPermanentlyDenied =
         statuses.values.any((status) => status.isPermanentlyDenied);
 
-    if ( !overlayStatus.isGranted) {
-      await Permission.systemAlertWindow.request();
-    }
+    // if ( !overlayStatus.isGranted) {
+    //   await Permission.systemAlertWindow.request();
+    // }
   }
 
   @override
