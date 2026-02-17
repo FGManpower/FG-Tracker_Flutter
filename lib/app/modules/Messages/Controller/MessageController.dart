@@ -180,6 +180,7 @@ class MessageController extends GetxController {
         "offer": offer,
         "is_video": is_video,
         "callerName": callerName,
+        "callType": "outGoing",
 
       },
     );

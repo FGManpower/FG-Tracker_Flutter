@@ -20,6 +20,7 @@ class CommonChatAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   final VoidCallback? onVideoTap;
   final VoidCallback? onGroupExit;
+  final VoidCallback? onDeleteGroup;
 
   CommonChatAppBar(
       {Key? key,
@@ -30,7 +31,7 @@ class CommonChatAppBar extends StatelessWidget implements PreferredSizeWidget {
       this.onCallTap,
       this.onVideoTap,
       required this.groupName,
-      this.onGroupExit})
+      this.onGroupExit,this.onDeleteGroup})
       : super(key: key);
 
   @override
@@ -131,8 +132,9 @@ class CommonChatAppBar extends StatelessWidget implements PreferredSizeWidget {
             SizedBox(
               width: 5.w,
             ),
-            isCreator == true
-                ? PopupMenuButton<String>(
+            // isCreator == true
+            //     ?
+            PopupMenuButton<String>(
                     onSelected: (value) {},
                     color: Colors.white,
                     elevation: 5,
@@ -156,40 +158,30 @@ class CommonChatAppBar extends StatelessWidget implements PreferredSizeWidget {
                         },
                       ),
                     ],
-                  )
-                : PopupMenuButton<String>(
-                    onSelected: (value) {},
-                    color: Colors.white,
-                    elevation: 5,
-                    offset: Offset(0, 48),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12.r),
-                    ),
-                    icon: Icon(
-                      Icons.more_vert,
-                      color: ToggleThemeData.darkPurple,
-                      size: 26.sp,
-                    ),
-                    itemBuilder: (context) => [
-                      popupItem(
-                        context: context,
-                        value: 'delete',
-                        icon: Icons.delete_outline,
-                        text: 'Group Delete',
-                        onTap: () {
-                          CommonDialog.ConfirmationDialog(
-                            title: AppText.areYouSure,
-                            content: AppText.doYouWantToDeleteGroup,
-                            onConfirm: () {
-                              // controller.deleteGroup(context,
-                              //     groupId: controller.arguments!['groupId']
-                              //         .toString());
-                            },
-                          );
-                        },
-                      ),
-                    ],
                   ),
+                // : PopupMenuButton<String>(
+                //     onSelected: (value) {},
+                //     color: Colors.white,
+                //     elevation: 5,
+                //     offset: Offset(0, 48),
+                //     shape: RoundedRectangleBorder(
+                //       borderRadius: BorderRadius.circular(12.r),
+                //     ),
+                //     icon: Icon(
+                //       Icons.more_vert,
+                //       color: ToggleThemeData.darkPurple,
+                //       size: 26.sp,
+                //     ),
+                //     itemBuilder: (context) => [
+                //       popupItem(
+                //         context: context,
+                //         value: 'delete',
+                //         icon: Icons.delete_outline,
+                //         text: 'Group Delete',
+                //         onTap: onDeleteGroup
+                //       ),
+                //     ],
+                //   ),
             SizedBox(
               width: 15.w,
             ),

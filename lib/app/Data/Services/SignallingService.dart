@@ -4,12 +4,10 @@ import 'dart:io';
 import 'dart:ui';
 import 'package:fgtracker/app/Data/Services/CallEvents_NotificationServices.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import 'package:socket_io_client/socket_io_client.dart';
 
 import '../../Core/util/AppLifeCycle.dart';
 import '../../Model/call_model.dart';
-import '../../modules/Walkie-talkie/Controller/walkieController.dart';
 import '../../routes/app_pages.dart';
 import 'CallStateTracker.dart';
 
@@ -56,14 +54,7 @@ class SignallingService {
     });
 
     socket!.on("newCall", (data) {
-
-      // WalkieController().onIncoming(
-      //   remoteUserId: data['fromUserId'],
-      //   callerName: data['fromUserName'] ?? "Unknown",
-      //   profileImage: data['fromUserProfile'] ?? "",
-      //
-
-      if(Platform.isIOS){
+      if (Platform.isIOS) {
         if (CallStateTracker.isIncomingCallScreenOpen) {
           return;
         }
@@ -80,11 +71,7 @@ class SignallingService {
           );
         }
       }
-
-
-
     });
-
   }
 
   void disconnect() {

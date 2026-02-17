@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:developer';
 import 'package:fgtracker/app/Data/Services/Walkie_NotificationSerives.dart';
+import 'package:fgtracker/app/Data/Services/ringtone_service.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'package:get/get.dart';
@@ -68,7 +69,7 @@ class CustomNotificationServices {
   }
 
   Future<void> declineCall(Map<String, dynamic> data) async {
-    FlutterRingtonePlayer().stop();
+    RingtoneService().stop();
     final call = IncomingCallModel.fromMap(data);
     final myId = Global.storageServices.get(PrefConst.userId).toString();
     socket?.emit("rejectCall", {
@@ -82,7 +83,7 @@ class CustomNotificationServices {
 
   Future<void> navigateToCallScreen(Map<String, dynamic> data) async {
     try {
-      FlutterRingtonePlayer().stop();
+      RingtoneService().stop();
       final call = IncomingCallModel.fromMap(data);
       CallStateTracker.isIncomingCallScreenOpen = false;
       Map<String, dynamic>? offer =
@@ -98,10 +99,11 @@ class CustomNotificationServices {
           "callerName": call.callerName,
           "callId": call.callId,
           "callerProfile": call.callerProfileImage,
+          "callType": "Incoming",
         },
       );
     } catch (e) {
-      FlutterRingtonePlayer().stop();
+      RingtoneService().stop();
       log("[CallKit] Navigation error: $e");
     }
   }
@@ -113,14 +115,14 @@ class CustomNotificationServices {
       if (CallStateTracker.isIncomingCallScreenOpen) {
         return;
       }
-
+      RingtoneService().stop();
       // CallStateTracker.isIncomingCallScreenOpen = true;
       Get.toNamed(
         Routes.IncomingCallScreen,
         arguments: {"callDetail": call},
       );
     } catch (e) {
-      FlutterRingtonePlayer().stop();
+      RingtoneService().stop();
       log("[CallKit] Navigation error: $e");
     }
   }
@@ -128,7 +130,7 @@ class CustomNotificationServices {
   void setupSocketCallEvents() {
     socket?.on("callEnded", (data) async {
       print("==========CallEndedSocketEvents");
-      FlutterRingtonePlayer().stop();
+      RingtoneService().stop();
       CallStateTracker.isIncomingCallScreenOpen = false;
       await flutterLocalNotificationsPlugin.cancelAll();
 
@@ -142,7 +144,7 @@ class CustomNotificationServices {
     });
 
     socket?.on("missedCall", (data) async {
-      FlutterRingtonePlayer().stop();
+      RingtoneService().stop();
       CallStateTracker.isIncomingCallScreenOpen = false;
       await flutterLocalNotificationsPlugin.cancelAll();
 

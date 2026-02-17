@@ -6,9 +6,9 @@ import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Data/Services/CallEvents_NotificationServices.dart';
 import 'package:fgtracker/app/Data/Services/SignallingService.dart';
+import 'package:fgtracker/app/Data/Services/ringtone_service.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../Data/Services/Walkie_NotificationSerives.dart';
 
@@ -45,7 +45,7 @@ class GlobalNotificationHandler with WidgetsBindingObserver {
 }
 
 Future<void> handlePendingNotification() async {
-  FlutterRingtonePlayer().stop();
+  RingtoneService().stop();
   NotificationResponse? response;
   final details =
       await flutterLocalNotificationsPlugin.getNotificationAppLaunchDetails();
@@ -60,7 +60,7 @@ Future<void> handlePendingNotification() async {
 
   final Map<String, dynamic> callData = jsonDecode(response.payload!);
 
-  FlutterRingtonePlayer().stop();
+
 
   if (response.actionId == "CALL_ACCEPT") {
     await _ensureSocketReady();
@@ -101,14 +101,14 @@ Future<void> _ensureSocketReady() async {
 }
 
 Future<void> handleTerminatedCallIfAny() async {
-  FlutterRingtonePlayer().stop();
+  RingtoneService().stop();
   final prefs = await SharedPreferences.getInstance();
 
   await prefs.reload();
 
 
   bool isConsumed = prefs.getBool(_consumeKey) ?? true;
-  debugPrint("======isConsume-${isConsumed}");
+
   if (isConsumed) return;
   await prefs.setBool("notificationConsumed", true);
   NotificationResponse? response;

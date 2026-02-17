@@ -17,17 +17,17 @@ class BannerController extends GetxController {
     bannerList.assignAll([
       {
         'bannerImage':
-        'https://images.unsplash.com/photo-1507525428034-b723cf961d3e',
+        'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ-HXvEjUZgwIHKWUSLpkhxu2CMM6GZQGtVGw&s',
         'bannerName': 'Travel The World',
       },
       {
         'bannerImage':
-        'https://images.unsplash.com/photo-1522202176988-66273c2fd55f',
+        'https://our.status.im/content/images/2020/03/Secure_Banner_copy.jpg',
         'bannerName': 'Explore Nature',
       },
       {
         'bannerImage':
-        'https://images.unsplash.com/photo-1506744038136-46273834b3fb',
+        'https://trackobit.com/wp-content/uploads/2025/06/bannerImg.png',
         'bannerName': 'Adventure Awaits',
       },
     ]);

@@ -2,18 +2,17 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
-import 'dart:ui';
 import 'package:android_intent_plus/android_intent.dart';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/constant/notification_holder.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
+import 'package:fgtracker/app/Core/util/WalkieUtils.dart';
 import 'package:fgtracker/app/Core/util/configureAudioSession.dart';
 import 'package:fgtracker/app/Data/Services/Walkie-Talkie-Service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -26,7 +25,8 @@ import 'app/Core/values/global.dart';
 import 'app/Data/Services/CallEvents_NotificationServices.dart';
 import 'app/Data/Services/NotificationServices.dart';
 import 'app/Data/Services/SignallingService.dart';
-import 'app/Model/call_model.dart';
+
+import 'app/Data/Services/ringtone_service.dart';
 import 'app/modules/Notification/Controller/cubit/notification_count_cubit.dart';
 import 'app/routes/app_pages.dart';
 import 'app/modules/Track/Controller/SocketServices.dart';
@@ -34,7 +34,6 @@ import 'app/modules/Track/Controller/TrackController.dart';
 import 'app/modules/Track/Controller/LocationService.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
-import 'gen/assets.gen.dart';
 
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
@@ -47,47 +46,42 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   if (message.data['screen_name'] == 'incomingCall') {
     final callMap = jsonDecode(message.data['callData']);
 
-    print("========callData==${callMap}");
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool("notificationConsumed", false);
-      if (Platform.isIOS) {
-        print("===showingincoming inios:");
-        // await CallKitService.showIncomingCall(callMap);
+      // if (Platform.isIOS) {
 
-        final callModel = IncomingCallModel.fromMap(callMap);
 
-        await CallUtils().showIncomingCall(data: callMap);
-      } else {
-      // ANDROID: your existing custom notification
-      await CustomNotificationServices.showIncomingCall(callMap);
-      }
-      // CallUtils().showIncomingCall(data: callMap);
-
-      FlutterRingtonePlayer()
-          .play(asAlarm: false, fromAsset: Assets.music.incomingCall);
-      Future.delayed(const Duration(seconds: 7), () {
-        FlutterRingtonePlayer().stop();
-      });
+        await CallUtils.instance.showIncomingCall(data: callMap);
+      // } else {
+      //   await CustomNotificationServices.showIncomingCall(callMap);
+      //   RingtoneService().start(timeoutSeconds: 5);
+      //
+      // }
     } catch (e) {
       debugPrint("Backgroundexception=======$e");
     }
   } else if (message.data['screen_name'] == 'walkie') {
-    final sharedpref = await SharedPreferences.getInstance();
-    await sharedpref.setString('fromUserId', message.data['fromUserId']);
+    var param = {"fromUserId": message.data['fromUserId']};
+    if (Platform.isIOS) {
+      await WalkieUtils().showIncomingWalkie(data: param);
+    } else {
+      final sharedpref = await SharedPreferences.getInstance();
+      await sharedpref.setString('fromUserId', message.data['fromUserId']);
 
-    var url = "${ConstRes.DeepLink_Url}/?page=Walkie";
-    log("====>AppLaunch Url is ======$url");
-    if (Platform.isAndroid) {
-      AndroidIntent intent = AndroidIntent(
-          action: 'action_view', data: url, package: "com.example.fgtracker");
-      await intent.launch().then((value) {
-        log("AppLaunch Success");
-      }).onError(
-        (error, stackTrace) {
-          log("AppLaunchIssue:$error,StackTrace is:$stackTrace");
-        },
-      );
+      var url = "${ConstRes.DeepLink_Url}/?page=Walkie";
+      log("====>AppLaunch Url is ======$url");
+      if (Platform.isAndroid) {
+        AndroidIntent intent = AndroidIntent(
+            action: 'action_view', data: url, package: "com.example.fgtracker");
+        await intent.launch().then((value) {
+          log("AppLaunch Success");
+        }).onError(
+          (error, stackTrace) {
+            log("AppLaunchIssue:$error,StackTrace is:$stackTrace");
+          },
+        );
+      }
     }
   }
 }
@@ -99,11 +93,11 @@ void onNotificationResponse(NotificationResponse response) async {
   NotificationHolder.pendingResponse = response;
 }
 
-
-
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+  CallUtils.instance.listenCallKitEvents();
+
   await Global.init();
   FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 
@@ -162,7 +156,8 @@ Future<void> main() async {
     );
   }
   WalkieConfiguration.configureSpeakerAudioSession();
-  // CallUtils().listenCallKitEvents();
+
+  WalkieUtils().listenWalkieEvents();
   runApp(const MyApp());
 }
 
@@ -177,7 +172,11 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
+    CallUtils.instance.listenCallKitEvents();
   }
+
+
+
 
   @override
   Widget build(BuildContext context) {

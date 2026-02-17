@@ -1,15 +1,19 @@
 import 'dart:async';
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
+import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Core/values/utility.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
+import 'package:flutter_callkit_incoming/flutter_callkit_incoming.dart';
 import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'package:get/get.dart' hide navigator;
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import '../../../../gen/assets.gen.dart';
 import '../../../../main.dart';
+import '../../../Core/global/launchedFromCall.dart';
 import '../../../Data/Services/SignallingService.dart';
 
 class CallController extends GetxController {
@@ -33,20 +37,16 @@ class CallController extends GetxController {
   dynamic offer;
   bool isSpeakerOn = false;
 
-
   final args = Get.arguments;
   Timer? callTimer;
   int callDurationSeconds = 0;
 
-
   @override
   void onInit() {
-
     callerId = args["callerId"];
     remoteUserId = args["remoteUserId"];
     offer = args["offer"];
     is_video = args["is_video"];
-
 
     if (args["callId"] != null) {
       callId = args["callId"];
@@ -56,12 +56,15 @@ class CallController extends GetxController {
 
     _setupPeer();
     _listenForCallEvents();
-    playSound();
+
+    if (args["callType"] == "outGoing") {
+      playSound();
+    }
+
     super.onInit();
   }
 
   void _listenForCallEvents() {
-
     socket?.off("callRejected");
     // Caller receives callId
     socket!.on("callCreated", (data) {
@@ -75,34 +78,73 @@ class CallController extends GetxController {
       update();
     });
 
+    socket!.on("callRejected", (data) async {
 
-    socket!.on("callRejected", (data) {
-      log("==================CallRejectedEventCalled");
       callTimer?.cancel();
       callTimer = null;
+      try {
+        if (Platform.isIOS) {
+          final callId = CallSessionState.currentCallKitId;
+
+          if (callId != null) {
+            await FlutterCallkitIncoming.endCall(
+                CallSessionState.currentCallKitId!);
+            CallSessionState.reset();
+          } else {
+            // Utils().fluttertoast("callid is not available");
+          }
+        }
+      } catch (e) {}
       resetPeer();
       Get.back();
+
       // Get.snackbar("Call", "Call rejected by ${data['rejectedBy']}");
     });
 
-    socket!.on("callEnded", (data) {
+    socket!.on("callEnded", (data) async {
       callTimer?.cancel();
       callTimer = null;
+      try {
+        if (Platform.isIOS) {
+          final callId = CallSessionState.currentCallKitId;
+
+          if (callId != null) {
+            await FlutterCallkitIncoming.endCall(
+                CallSessionState.currentCallKitId!);
+            CallSessionState.reset();
+          } else {
+            // Utils().fluttertoast("callid is not available");
+          }
+        }
+      } catch (e) {}
       resetPeer();
       Get.back();
+
       // Get.snackbar("Call", "Call ended by ${data['endedBy']}");
     });
 
-    socket!.on("missedCall", (data) {
+    socket!.on("missedCall", (data) async {
       callTimer?.cancel();
       callTimer = null;
+      try {
+        if (Platform.isIOS) {
+          final callId = CallSessionState.currentCallKitId;
+
+          if (callId != null) {
+            await FlutterCallkitIncoming.endCall(
+                CallSessionState.currentCallKitId!);
+            CallSessionState.reset();
+          } else {
+            // Utils().fluttertoast("callid is not available");
+          }
+        }
+      } catch (e) {}
       resetPeer();
       Get.back();
+
       // Get.snackbar("Call", "Call ended by ${data['endedBy']}");
     });
-
   }
-
 
   void resetPeer() {
     try {
@@ -226,13 +268,12 @@ class CallController extends GetxController {
     }
   }
 
-
-
-  void endCall() {
+  Future<void> endCall() async {
     callTimer?.cancel();
     callTimer = null;
     final myUserId = Global.storageServices.get(PrefConst.userId).toString();
-    final targetUser = (myUserId == callerId.toString()) ? remoteUserId : callerId;
+    final targetUser =
+        (myUserId == callerId.toString()) ? remoteUserId : callerId;
 
     print('======CallId==${callId}=======>MyUserId:${myUserId}');
     socket?.emit("endCall", {
@@ -244,21 +285,32 @@ class CallController extends GetxController {
     // if (Get.currentRoute != Routes.Home_Screen) {
     //   Get.back();
     // } else {
-      Get.offAllNamed(Routes.Home_Screen);
+    try {
+      if (Platform.isIOS) {
+        final callId = CallSessionState.currentCallKitId;
+
+        if (callId != null) {
+          await FlutterCallkitIncoming.endCall(
+              CallSessionState.currentCallKitId!);
+          CallSessionState.reset();
+        } else {
+          // Utils().fluttertoast("callid is not available");
+        }
+      }
+    } catch (e) {}
+
+    if (args["callType"] == "outGoing") {
+      stopSound();
+    }
+    Get.offAllNamed(Routes.Home_Screen);
     // }
-
-
-
   }
-
-
 
   void toggleMic() {
     isAudioOn = !isAudioOn;
     localStream?.getAudioTracks().forEach((t) => t.enabled = isAudioOn);
     update();
   }
-
 
   void toggleCamera() {
     if (is_video == false) return;
@@ -279,6 +331,7 @@ class CallController extends GetxController {
     isSpeakerOn = true;
     update();
   }
+
   Future<void> toggleSpeaker() async {
     isSpeakerOn = !isSpeakerOn;
     await Helper.setSpeakerphoneOn(isSpeakerOn);
@@ -286,14 +339,13 @@ class CallController extends GetxController {
     update();
   }
 
-
-
-
   String get formattedDuration {
     final minutes = (callDurationSeconds ~/ 60).toString().padLeft(2, '0');
     final seconds = (callDurationSeconds % 60).toString().padLeft(2, '0');
-    if( Utility.isNotNullEmptyOrFalse("$minutes:$seconds")){
-      stopSound();
+    if (Utility.isNotNullEmptyOrFalse("$minutes:$seconds")) {
+      if (args["callType"] == "outGoing") {
+        stopSound();
+      }
     }
     return "$minutes:$seconds";
   }
@@ -307,7 +359,7 @@ class CallController extends GetxController {
     });
   }
 
-  playSound(){
+  playSound() {
     FlutterRingtonePlayer().play(
       asAlarm: false,
       fromAsset: Assets.music.ringing,
@@ -315,16 +367,31 @@ class CallController extends GetxController {
       volume: 1.0,
     );
   }
-  stopSound(){
+
+  stopSound() {
     FlutterRingtonePlayer().stop();
   }
-
 
   @override
   void onClose() {
     resetPeer();
     localRenderer.dispose();
     remoteRenderer.dispose();
+    if (args["callType"] == "outGoing") {
+      stopSound();
+    }
     super.onClose();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    if (Platform.isIOS) {
+      FlutterCallkitIncoming.endCall(CallSessionState.currentCallKitId!);
+      CallSessionState.reset();
+    }
+    if (args["callType"] == "outGoing") {
+      stopSound();
+    }
   }
 }

@@ -20,6 +20,11 @@ class AuthRepo {
     var response = await HttpUtil().post(Urls.verifyOtp, data: param);
     return VeriefyOtpResponse.fromJson(response);
   }
+
+  static Future<CommonResponse> logOutUser() async {
+    var response = await HttpUtil().get(Urls.logOut);
+    return CommonResponse.fromJson(response);
+  }
   static Future<VeriefyOtpResponse> ResendOtp(dynamic param) async {
     var response = await HttpUtil().post(Urls.resendOtp, data: param);
     return VeriefyOtpResponse.fromJson(response);

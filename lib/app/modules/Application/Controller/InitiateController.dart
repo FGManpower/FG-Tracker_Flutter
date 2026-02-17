@@ -1,22 +1,24 @@
 import 'dart:async';
-import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:fgtracker/app/Core/values/global.dart';
-import 'package:fgtracker/app/Core/values/utility.dart';
-import 'package:fgtracker/app/modules/AppUpdate/Controller/UpdateCubit/update_cubit.dart';
-import 'package:fgtracker/app/modules/AppUpdate/Views/ShoreBird_AppUpdate_Screen.dart';
-import 'package:fgtracker/app/routes/app_pages.dart';
 
-import '../../../Core/constant/notification_holder.dart';
-import '../../../Core/values/Utils.dart';
-import '../../../Data/Services/CallEvents_NotificationServices.dart';
+import '../../../Core/constant/pref_res.dart';
+import '../../../Core/util/CallUtils.dart';
+import '../../../Core/values/global.dart';
+import '../../../Core/values/utility.dart';
+import '../../../routes/app_pages.dart';
+import '../../../Core/global/launchedFromCall.dart';
+import '../../../modules/AppUpdate/Controller/UpdateCubit/update_cubit.dart';
 
-class InitiateController extends GetxController with GetTickerProviderStateMixin {
+class InitiateController extends GetxController
+    with GetTickerProviderStateMixin {
   final UpdateCubit updateCubit = UpdateCubit();
+
   late AnimationController animationController;
   late Animation<double> scaleAnimation;
   late Animation<double> fadeAnimation;
+
+  Timer? _splashTimer;
 
   @override
   void onInit() {
@@ -37,45 +39,43 @@ class InitiateController extends GetxController with GetTickerProviderStateMixin
 
     animationController.forward();
 
-
-
-    Timer(const Duration(seconds: 4), () => checkLoginStatus());
-  }
-
-
-
-
-
-  Future<void> checkAppUpdates() async {
-    final isUpdateRequired = await updateCubit.checkForUpdate();
-    if (!isUpdateRequired) {
-      checkLoginStatus();
-    } else {
-      Future.delayed(const Duration(seconds: 1), () {
-        Get.offAll(() => const ShorebirdAppUpdateScreen());
-      });
+    if (CallSessionState.launchedFromCall || CallSessionState.isCallActive) {
+      return;
     }
+
+    _splashTimer = Timer(
+      const Duration(seconds: 4),
+      () => checkLoginStatus(),
+    );
   }
 
   void checkLoginStatus() async {
+    if (CallSessionState.isCallActive || CallSessionState.launchedFromCall) {
+      return;
+    }
+
     await Future.delayed(const Duration(seconds: 1));
-    if (Utility.isNotNullEmptyOrFalse(Global.storageServices.getaccesstoken()) &&
-        Utility.isNotNullEmptyOrFalse(Global.storageServices.get(PrefConst.isRegistered))) {
+
+    if (Utility.isNotNullEmptyOrFalse(
+            Global.storageServices.getaccesstoken()) &&
+        Utility.isNotNullEmptyOrFalse(
+            Global.storageServices.get(PrefConst.isRegistered))) {
       Get.offAllNamed(Routes.Home_Screen);
     } else {
+      final introDone =
+          await Global.storageServices.getBool(PrefConst.introStatus);
 
-      if(await Global.storageServices.getBool(PrefConst.introStatus)==true){
+      if (introDone == true) {
         Get.offAllNamed(Routes.Login);
-      }else{
+      } else {
         Get.offAllNamed(Routes.Intro);
       }
-
-
     }
   }
 
   @override
   void onClose() {
+    _splashTimer?.cancel();
     animationController.dispose();
     super.onClose();
   }

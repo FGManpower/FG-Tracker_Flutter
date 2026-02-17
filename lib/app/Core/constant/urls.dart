@@ -6,6 +6,7 @@ class Urls {
   ///------------------------ Urls ------------------------///
   static const String sendOtp = '${ConstRes.aBaseUrl}send-otp';
   static const String verifyOtp = '${ConstRes.aBaseUrl}verify-otp';
+  static const String logOut = '${ConstRes.aBaseUrl}logOut';
   static const String resendOtp = '${ConstRes.aBaseUrl}resendOtp';
   static const String updateProfile = '${ConstRes.aBaseUrl}updateProfile';
 

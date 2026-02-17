@@ -4,10 +4,11 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:audio_session/audio_session.dart';
-import 'package:fgtracker/app/Core/util/configureAudioSession.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:socket_io_client/socket_io_client.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Controller/walkieController.dart';
+
+import '../../Core/util/WalkieUtils.dart';
 
 class WalkietalkieService {
   WalkietalkieService._();
@@ -58,6 +59,7 @@ class WalkietalkieService {
 
     socket!.on("walkie_stop", (_) {
       log("🛑 walkie_stop received");
+      WalkieUtils().endWalkieCall();
     });
 
     socket!.on("walkie_incoming", (data) {
@@ -103,6 +105,7 @@ class WalkietalkieService {
 
     await _player.startPlayerFromStream(
       codec: Codec.pcm16,
+      // codec: Codec.pcm16,
       sampleRate: sampleRate,
       numChannels: channels,
       bufferSize: 2048,
@@ -114,14 +117,39 @@ class WalkietalkieService {
     log("✅ Player ready");
   }
 
+  // void _onAudioChunk(dynamic data) {
+  //   if (!_playerReady) return;
+  //
+  //   final Uint8List pcm = Uint8List.fromList(List<int>.from(data));
+  //   log("⬇️ RX audio | bytes=${pcm.length}");
+  //
+  //   _player.uint8ListSink?.add(pcm);
+  // }
+
+  Uint8List applyGain(Uint8List pcm, {double gain = 2.0}) {
+    final Int16List samples = pcm.buffer.asInt16List();
+    for (int i = 0; i < samples.length; i++) {
+      int boosted = (samples[i] * gain).toInt();
+
+      // clamp to int16 range
+      if (boosted > 32767) boosted = 32767;
+      if (boosted < -32768) boosted = -32768;
+
+      samples[i] = boosted;
+    }
+    return Uint8List.view(samples.buffer);
+  }
+
   void _onAudioChunk(dynamic data) {
     if (!_playerReady) return;
 
-    final Uint8List pcm = Uint8List.fromList(List<int>.from(data));
-    log("⬇️ RX audio | bytes=${pcm.length}");
+    Uint8List pcm = Uint8List.fromList(List<int>.from(data));
+
+    pcm = applyGain(pcm, gain: 2.5); //  BOOST HERE
 
     _player.uint8ListSink?.add(pcm);
   }
+
 
   // ============================================================
   // RECORDER
@@ -183,10 +211,45 @@ class WalkietalkieService {
     socket?.emit("walkie_stop", remoteUserId);
   }
 
-  Future<void> toggleSpeaker(bool on) async {
-    log("🔊 Speaker = $on");
-    await WalkieConfiguration.configure(speakerOn: on);
+  Future<void> toggleSpeaker(bool speakerOn) async {
+    log("🔊 Toggle Speaker → $speakerOn");
+
+    final session = await AudioSession.instance;
+
+    await session.configure(
+      AudioSessionConfiguration(
+        avAudioSessionCategory: AVAudioSessionCategory.playAndRecord,
+        avAudioSessionMode: AVAudioSessionMode.voiceChat,
+        avAudioSessionCategoryOptions:
+        (speakerOn
+            ? AVAudioSessionCategoryOptions.defaultToSpeaker
+            : AVAudioSessionCategoryOptions.none) |
+        AVAudioSessionCategoryOptions.allowBluetooth,
+        androidAudioAttributes: const AndroidAudioAttributes(
+          usage: AndroidAudioUsage.voiceCommunication,
+          contentType: AndroidAudioContentType.speech,
+        ),
+        androidAudioFocusGainType: AndroidAudioFocusGainType.gain,
+      ),
+    );
+
+    await session.setActive(true);
+
+    // 🔥 VERY IMPORTANT
+    if (_playerReady) {
+      await _player.stopPlayer();
+      await _player.startPlayerFromStream(
+        codec: Codec.pcm16,
+        sampleRate: sampleRate,
+        numChannels: channels,
+        bufferSize: 2048,
+        interleaved: Platform.isIOS,
+      );
+    }
+
+    log("✅ Speaker switched");
   }
+
 
 
   // ============================================================

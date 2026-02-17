@@ -9,7 +9,7 @@ class About extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(backgroundColor: Colors.white,
-      appBar: reusableAppbar("About Fg Tracker",
+      appBar: reusableAppbar("About FG Tracker",
           ontap: () => Navigator.pop(context)),
       body: Padding(
         padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),

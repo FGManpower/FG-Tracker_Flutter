@@ -8,6 +8,7 @@ import 'package:fgtracker/app/Core/values/logoutuser.dart';
 import 'package:fgtracker/app/Core/values/utility.dart';
 import 'package:fgtracker/app/config/themes_data.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
+import 'package:fgtracker/app/modules/auth/Controller/logout_controller.dart';
 import 'package:fgtracker/app/modules/home/Controller/home_controller.dart';
 import 'package:fgtracker/app/modules/home/Home_Widget/Home_widget.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
@@ -150,7 +151,7 @@ class Sidemenu extends StatelessWidget {
               onConfirm: () {
                 Navigator.pop(ContextUtility.context!); // Close dialog
                 Navigator.pop(context); // Close Drawer or current screen
-                LogoutUser().logout(); // Perform logout
+                logOutController().logOutUser(); // Perform logout
               },
               onCancel: () {
                 Navigator.pop(ContextUtility.context!); // Just close the dialog

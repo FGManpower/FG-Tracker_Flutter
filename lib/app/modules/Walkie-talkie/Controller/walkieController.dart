@@ -1,3 +1,4 @@
+import 'package:fgtracker/app/Core/util/WalkieUtils.dart';
 import 'package:get/get.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 
@@ -23,6 +24,7 @@ class WalkieController extends GetxController {
     role.value = WalkieRole.receiver;
     audioState.value = WalkieAudioState.listening;
 
+    print("===========WalkieScreen======>");
     Get.toNamed(
       Routes.walkieTalkieScreen,
       arguments: {
@@ -30,7 +32,13 @@ class WalkieController extends GetxController {
         "callerName": callerName,
         "profileUrl": profileImage,
       },
-    );
+    )?.then((value) {
+
+
+    },);
+    // Future.delayed(Duration(seconds: 2),() {
+    //   WalkieUtils().endWalkieCall();
+    // },);
   }
 
 

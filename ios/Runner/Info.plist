@@ -85,5 +85,13 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+
+	<key>BGTaskSchedulerPermittedIdentifiers</key>
+    <array>
+        <string>com.apple.voip.refresh</string>
+        <string>com.apple.callkit.call</string>
+    </array>
+
+
 </dict>
 </plist>

@@ -1,4 +1,3 @@
-
 import 'dart:developer';
 import 'package:flutter_callkit_incoming/entities/android_params.dart';
 import 'package:flutter_callkit_incoming/entities/call_event.dart';
@@ -13,24 +12,24 @@ import '../../Data/Services/SignallingService.dart';
 import '../../Model/call_model.dart';
 import '../../routes/app_pages.dart';
 import '../constant/pref_res.dart';
+import '../global/launchedFromCall.dart';
 import '../values/global.dart';
 import 'decomPress.dart';
 import 'package:uuid/uuid.dart';
 
 class CallUtils {
+  CallUtils._privateConstructor();
+
+  static final CallUtils instance = CallUtils._privateConstructor();
+
   final socket = SignallingService.instance.socket;
   final _uuid = const Uuid();
-  CallUtils() {
-    setupSocketCallEvents();
-  }
 
-
-
-  Future<void> showIncomingCall({required Map<String, dynamic>  data}) async {
+  Future<void> showIncomingCall({required Map<String, dynamic> data}) async {
     final String currentUuid = _uuid.v4();
+    CallSessionState.currentCallKitId = currentUuid;
 
     final isVideo = data['isVideo'] == true;
-
 
     final CallKitParams params = CallKitParams(
       id: currentUuid,
@@ -58,8 +57,8 @@ class CallUtils {
       ),
       android: const AndroidParams(
         isCustomNotification: true,
-        isShowLogo: false,
 
+        isShowLogo: false,
         ringtonePath: 'system_ringtone_default',
         backgroundColor: '#0955fa',
         actionColor: '#4CAF50',
@@ -95,21 +94,39 @@ class CallUtils {
 
       switch (event.event) {
         case Event.actionCallAccept:
+          print("============ActiveCallas:${CallSessionState.isCallActive}");
+          if (CallSessionState.isCallActive) return;
+
+          final callId = event.body['id'];
+
+          await FlutterCallkitIncoming.setCallConnected(callId);
+          CallSessionState.isCallActive = true;
+          CallSessionState.launchedFromCall = true;
+
           final extra = decomPress().extractExtra(event.body);
-          _navigateToCallScreen(extra);
+          navigateToCallScreen(extra);
           break;
 
         case Event.actionCallDecline:
+          CallSessionState.reset();
+          final callId = event.body['id'];
+          await FlutterCallkitIncoming.endCall(callId);
           final extra = decomPress().extractExtra(event.body);
           declineCall(extra);
           break;
 
         case Event.actionCallEnded:
+          final callId = event.body['id'];
+          await FlutterCallkitIncoming.endCall(callId);
+          CallSessionState.reset();
           final extra = decomPress().extractExtra(event.body);
           declineCall(extra);
           break;
 
         case Event.actionCallTimeout:
+          final callId = event.body['id'];
+          await FlutterCallkitIncoming.endCall(callId);
+          CallSessionState.reset();
           final extra = decomPress().extractExtra(event.body);
           _handleMissedCall(extra);
           break;
@@ -128,13 +145,13 @@ class CallUtils {
     });
 
     CallStateTracker.isIncomingCallScreenOpen = false;
-    FlutterCallkitIncoming.endAllCalls();
   }
 
   Future<void> declineCall(Map<String, dynamic> data) async {
     final call = IncomingCallModel.fromMap(data);
     final myId = Global.storageServices.get(PrefConst.userId).toString();
-    print("=======callRejected;=${data}");
+
+    log("=======callRejected;=${data}");
     // socket?.emit("rejectCall", {
     //   "remoteUserId": myId == call.callerId ? call.receiverId : call.callerId,
     // });
@@ -144,10 +161,9 @@ class CallUtils {
     });
 
     CallStateTracker.isIncomingCallScreenOpen = false;
-    FlutterCallkitIncoming.endAllCalls();
   }
 
-  Future<void> _navigateToCallScreen(Map<String, dynamic> data) async {
+  Future<void> navigateToCallScreen(Map<String, dynamic> data) async {
     try {
       print("=======navigatoretoCallscree;=${data}");
       final call = IncomingCallModel.fromMap(data);
@@ -167,32 +183,11 @@ class CallUtils {
           "callerName": call.callerName,
           "callId": call.callId,
           "callerProfile": call.callerProfileImage,
+          "callType": "Incoming",
         },
       );
     } catch (e) {
       log("[CallKit] Navigation error: $e");
     }
-  }
-
-  void setupSocketCallEvents() {
-    socket?.on("callEnded", (data) {
-      CallStateTracker.isIncomingCallScreenOpen = false;
-      FlutterCallkitIncoming.endAllCalls();
-
-      if (Get.isOverlaysOpen || Get.isDialogOpen == true) {
-        Get.back();
-      } else if (Get.currentRoute == Routes.callScreen) {
-        Get.back();
-      }
-    });
-
-    socket?.on("missedCall", (data) {
-      CallStateTracker.isIncomingCallScreenOpen = false;
-      FlutterCallkitIncoming.endAllCalls();
-
-      if (Get.currentRoute == Routes.callScreen) {
-        Get.back();
-      }
-    });
   }
 }

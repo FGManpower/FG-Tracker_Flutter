@@ -52,21 +52,31 @@ class ChatScreen extends GetView<MessageController> {
                 groupID: int.parse(userData.groupId.toString()));
           },
           onCallTap: () {
-            ChatBottomSheet.showCallOptions(context, onAudioCall: () {
-              controller.startCall(
-                context,
-                callerId:
-                    Global.storageServices.get(PrefConst.userId).toString(),
-                remoteUserId: controller.memberData.userId.toString(),
-                is_video: false,
-                callerName: controller.memberData.name,
-              );
-            }, onWalkieTalkieCall: () async {
-              WalkieController().startServices(
-                  callerName: controller.memberData.name.toString(),
-                  profileImage: controller.memberData.profileImage,
-                  remoteUserId: controller.memberData.userId.toString());
-            });
+            controller.startCall(
+              context,
+              callerId:
+              Global.storageServices.get(PrefConst.userId).toString(),
+              remoteUserId: controller.memberData.userId.toString(),
+              is_video: false,
+              callerName: controller.memberData.name,
+            );
+            // ChatBottomSheet.showCallOptions(context, onAudioCall: () {
+            //   controller.startCall(
+            //     context,
+            //     callerId:
+            //         Global.storageServices.get(PrefConst.userId).toString(),
+            //     remoteUserId: controller.memberData.userId.toString(),
+            //     is_video: false,
+            //     callerName: controller.memberData.name,
+            //   );
+            // },
+            //     onWalkieTalkieCall: () async {
+            //   WalkieController().startServices(
+            //       callerName: controller.memberData.name.toString(),
+            //       profileImage: controller.memberData.profileImage,
+            //       remoteUserId: controller.memberData.userId.toString());
+            // }
+            // );
           },
           onVideoTap: () {
             controller.startCall(
@@ -87,6 +97,17 @@ class ChatScreen extends GetView<MessageController> {
               },
             );
           },
+          // onDeleteGroup: () {
+          //   CommonDialog.ConfirmationDialog(
+          //     title: AppText.areYouSure,
+          //     content: AppText.doYouWantToDeleteGroup,
+          //     onConfirm: () {
+          //       MemberController().deleteGroup(context,
+          //           groupId: userData.groupId
+          //               .toString());
+          //     },
+          //   );
+          // },
         ),
         body: SafeArea(
           child: Column(

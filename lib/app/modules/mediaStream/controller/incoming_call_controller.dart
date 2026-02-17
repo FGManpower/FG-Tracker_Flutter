@@ -100,6 +100,7 @@ class IncomingCallController extends GetxController {
         "callerName": call.callerName,
         "callId": call.callId,
         "callerProfile": call.callerProfileImage,
+        "callType": "Incoming",
       },
     );
   }
