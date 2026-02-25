@@ -34,7 +34,6 @@ import 'app/modules/Track/Controller/TrackController.dart';
 import 'app/modules/Track/Controller/LocationService.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
-
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
 
@@ -49,15 +48,12 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool("notificationConsumed", false);
-      // if (Platform.isIOS) {
-
-
+      if (Platform.isIOS) {
         await CallUtils.instance.showIncomingCall(data: callMap);
-      // } else {
-      //   await CustomNotificationServices.showIncomingCall(callMap);
-      //   RingtoneService().start(timeoutSeconds: 5);
-      //
-      // }
+      } else {
+        await CustomNotificationServices.showIncomingCall(callMap);
+        RingtoneService().start(timeoutSeconds: 5);
+      }
     } catch (e) {
       debugPrint("Backgroundexception=======$e");
     }
@@ -174,9 +170,6 @@ class _MyAppState extends State<MyApp> {
     super.initState();
     CallUtils.instance.listenCallKitEvents();
   }
-
-
-
 
   @override
   Widget build(BuildContext context) {

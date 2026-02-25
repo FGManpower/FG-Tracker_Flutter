@@ -76,11 +76,13 @@ class MemberController extends GetxController {
   Future<void> exitGroup(
     BuildContext context, {
     required String groupId,
+    required String userId,
   }) async {
     try {
       Loading().showloading();
       dynamic param = {
         "groupId": groupId,
+        "userId": userId,
       };
       var result = await GroupRepo.exitGroups(param);
       if (result.status == true) {

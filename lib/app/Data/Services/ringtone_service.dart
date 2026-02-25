@@ -15,7 +15,7 @@ class RingtoneService {
   bool get isPlaying => _isPlaying;
 
   /// Start ringtone
-  void start({int timeoutSeconds = 20}) {
+  void start({int timeoutSeconds = 5}) {
     if (_isPlaying) return; // prevent multiple plays
 
     _isPlaying = true;

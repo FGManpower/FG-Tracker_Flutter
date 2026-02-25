@@ -13,7 +13,6 @@ class SocketMessageService extends GetxService {
 
   IO.Socket get socket {
     if (_socket == null) {
-      log("⚠️ Socket accessed before initialization");
       throw Exception("Socket not initialized");
     }
     return _socket!;
@@ -28,20 +27,15 @@ class SocketMessageService extends GetxService {
 
     _socket?.onConnect((_) {
       joinUserInGroup(userId, groupId);
-      log("✅ Message Socket connected");
-    });
+      markSeen(userId, groupId);
 
+    });
     _socket?.onAny((event, data) {
       log("MessageAllEventCalled: $event => $data");
     });
 
-    _socket?.onDisconnect((_) => log("❌ Socket disconnected"));
-    _socket?.onError((err) => log("❌ Socket error: $err"));
-
-    _socket?.on("call_ended", (data) {
-      log("Call ended: $data");
-      Get.back();
-    });
+    _socket?.onDisconnect((_) {});
+    _socket?.onError((err) {});
   }
 
   void joinUserInGroup(String userId, int groupId) {
@@ -66,12 +60,19 @@ class SocketMessageService extends GetxService {
   }) {
     final msg = {
       'senderId': Global.storageServices.get(PrefConst.userId),
-      'receiverId': receiverId, //as unique id
+      'receiverId': receiverId,
       'groupId': groupId,
       'content': content,
       'messageType': messageType,
     };
     _socket?.emit("send_message", msg);
+  }
+
+  void markSeen(String userId, int groupId) {
+    _socket?.emit("mark_seen", {
+      "userId": userId,
+      "groupId": groupId,
+    });
   }
 
   void RecievedMessage({
@@ -80,43 +81,43 @@ class SocketMessageService extends GetxService {
     required int groupId,
     Function(dynamic)? callback,
   }) {
-    socket.off('receive_message');
+    _socket?.off('receive_message');
 
-    socket.on('receive_message', (data) {
-      final dataGroupId = int.tryParse(data['groupId'].toString());
+    _socket?.on('receive_message', (data) {
+      final dataGroupId =
+      int.tryParse(data['groupId'].toString());
+
       if (dataGroupId == groupId) {
-        if ((data['senderId'] == senderId && data['receiverId'] == recieverId) ||
-            (data['senderId'] == recieverId && data['receiverId'] == senderId)) {
+        if ((data['senderId'] == senderId &&
+            data['receiverId'] == recieverId) ||
+            (data['senderId'] == recieverId &&
+                data['receiverId'] == senderId)) {
           callback?.call(data);
+
         }
       }
     });
   }
 
+  void listenSeenUpdate({
+    required int groupId,
+    required Function(dynamic) callback,
+  }) {
+    _socket?.off("messages_seen_update");
 
+    _socket?.on("messages_seen_update", (data) {
+      final dataGroupId =
+      int.tryParse(data["groupId"].toString());
 
-  void allSocketEvent(Function(String) callback) {
-    _socket?.onAny((event, data) {
-      log("📦 Received $event: $data");
+      if (dataGroupId == groupId) {
+        callback(data);
+      }
     });
   }
 
-  @override
-  void onClose() {
-    _socket?.dispose();
-    super.onClose();
-  }
-
-
   void disconnectSocket() {
-    if (_socket != null) {
-      _socket?.disconnect();
-      _socket?.dispose();
-      _socket = null;
-      log("🧹 Socket fully disconnected and cleared");
-    }
+    _socket?.disconnect();
+    _socket?.dispose();
+    _socket = null;
   }
-
 }
-
-

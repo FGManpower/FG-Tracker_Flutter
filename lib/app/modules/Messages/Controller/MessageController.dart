@@ -12,7 +12,6 @@ import 'package:get/get.dart';
 
 import '../../../routes/app_pages.dart';
 
-
 import 'Socket_Message_Services.dart';
 
 class MessageController extends GetxController {
@@ -27,17 +26,11 @@ class MessageController extends GetxController {
   late MemberData memberData;
   Map<String, dynamic>? arguments = Get.arguments;
 
-  // final wc = Get.put(WalkieController());
-
-
-  // var incomingSDPOffer = Rxn<Map>();
-
   @override
   void onInit() {
     super.onInit();
 
     memberData = arguments?['userData'];
-
 
     _initializeChat();
   }
@@ -48,9 +41,11 @@ class MessageController extends GetxController {
 
     ChatStateTracker.isChatCallScreenOpen = true;
 
-    socketService.init(groupId: groupId, userId: userId, ConstRes.socketUrl);
-
-    socketService.socket.off('receive_message');
+    socketService.init(
+      ConstRes.socketUrl,
+      userId: userId,
+      groupId: groupId,
+    );
 
     socketService.RecievedMessage(
       senderId: Global.storageServices.get(PrefConst.userId).toString(),
@@ -59,10 +54,40 @@ class MessageController extends GetxController {
       callback: (message) {
         messageData.add(MessageData.fromJson(message));
         scrollToBottom();
+
+        // if (isUserAtBottom()) {
+          socketService.markSeen(
+            Global.storageServices.get(PrefConst.userId).toString(),
+            groupId,
+          );
+        // }
       },
     );
 
+    socketService.listenSeenUpdate(
+      groupId: groupId,
+      callback: (data) {
+        final List updatedIds = data["messageIds"] ?? [];
+
+        for (var msg in messageData) {
+          if (updatedIds.contains(msg.id)) {
+            msg.seenCount = (msg.seenCount ?? 0) + 1;
+          }
+        }
+
+        messageData.refresh();
+      },
+    );
+
+
     getMessageHistory(userId, groupId);
+  }
+
+  bool isUserAtBottom() {
+    if (!scrollController.hasClients) return false;
+
+    return scrollController.position.pixels >=
+        scrollController.position.maxScrollExtent - 50;
   }
 
   Future<void> sendMessage(
@@ -125,6 +150,7 @@ class MessageController extends GetxController {
       );
 
       if (result.status == true) {
+        // socketService.markSeen(memberData.userId.toString(), groupId);
         messageData.value = result.messageData!;
         scrollToBottom();
       } else {
@@ -170,7 +196,6 @@ class MessageController extends GetxController {
     required bool is_video,
     dynamic offer,
     dynamic callerName,
-
   }) {
     Get.toNamed(
       Routes.callScreen,
@@ -181,7 +206,6 @@ class MessageController extends GetxController {
         "is_video": is_video,
         "callerName": callerName,
         "callType": "outGoing",
-
       },
     );
   }

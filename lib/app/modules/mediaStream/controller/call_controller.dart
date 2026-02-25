@@ -11,8 +11,8 @@ import 'package:flutter_callkit_incoming/flutter_callkit_incoming.dart';
 import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'package:get/get.dart' hide navigator;
 import 'package:flutter_webrtc/flutter_webrtc.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 import '../../../../gen/assets.gen.dart';
-import '../../../../main.dart';
 import '../../../Core/global/launchedFromCall.dart';
 import '../../../Data/Services/SignallingService.dart';
 
@@ -60,13 +60,13 @@ class CallController extends GetxController {
     if (args["callType"] == "outGoing") {
       playSound();
     }
-
+    WakelockPlus.enable();
     super.onInit();
   }
 
   void _listenForCallEvents() {
     socket?.off("callRejected");
-    // Caller receives callId
+
     socket!.on("callCreated", (data) {
       callId = data["callId"].toString();
       update();
@@ -79,70 +79,48 @@ class CallController extends GetxController {
     });
 
     socket!.on("callRejected", (data) async {
-
       callTimer?.cancel();
       callTimer = null;
-      try {
-        if (Platform.isIOS) {
-          final callId = CallSessionState.currentCallKitId;
 
-          if (callId != null) {
-            await FlutterCallkitIncoming.endCall(
-                CallSessionState.currentCallKitId!);
-            CallSessionState.reset();
-          } else {
-            // Utils().fluttertoast("callid is not available");
-          }
-        }
-      } catch (e) {}
+      if (Platform.isIOS) {
+        CallSessionState.reset();
+      }
+
       resetPeer();
       Get.back();
-
-      // Get.snackbar("Call", "Call rejected by ${data['rejectedBy']}");
     });
 
     socket!.on("callEnded", (data) async {
       callTimer?.cancel();
       callTimer = null;
-      try {
-        if (Platform.isIOS) {
-          final callId = CallSessionState.currentCallKitId;
 
-          if (callId != null) {
-            await FlutterCallkitIncoming.endCall(
-                CallSessionState.currentCallKitId!);
-            CallSessionState.reset();
-          } else {
-            // Utils().fluttertoast("callid is not available");
-          }
-        }
-      } catch (e) {}
       resetPeer();
-      Get.back();
+      if (Platform.isIOS) {
+        final callId = CallSessionState.currentCallKitId;
 
-      // Get.snackbar("Call", "Call ended by ${data['endedBy']}");
+        if (callId != null) {
+          await FlutterCallkitIncoming.endCall(
+              CallSessionState.currentCallKitId!);
+        } else {
+          // Utils().fluttertoast("callid is not available");
+        }
+        CallSessionState.reset();
+      }
+
+      if (args["callType"] == "outGoing") {
+        stopSound();
+      }
+      // await WakelockPlus.disable();
+      Get.offAllNamed(Routes.Home_Screen);
     });
 
     socket!.on("missedCall", (data) async {
       callTimer?.cancel();
       callTimer = null;
-      try {
-        if (Platform.isIOS) {
-          final callId = CallSessionState.currentCallKitId;
 
-          if (callId != null) {
-            await FlutterCallkitIncoming.endCall(
-                CallSessionState.currentCallKitId!);
-            CallSessionState.reset();
-          } else {
-            // Utils().fluttertoast("callid is not available");
-          }
-        }
-      } catch (e) {}
+      CallSessionState.reset();
       resetPeer();
       Get.back();
-
-      // Get.snackbar("Call", "Call ended by ${data['endedBy']}");
     });
   }
 
@@ -153,7 +131,7 @@ class CallController extends GetxController {
     } catch (_) {}
     peer = null;
     localStream = null;
-    iceCandidates.clear();
+    // iceCandidates.clear();
   }
 
   void safeAddCandidate(dynamic data) {
@@ -188,6 +166,7 @@ class CallController extends GetxController {
       ],
       'iceTransportPolicy': 'all',
     });
+
 
     peer!.onTrack = (event) {
       remoteRenderer.srcObject = event.streams[0];
@@ -275,35 +254,30 @@ class CallController extends GetxController {
     final targetUser =
         (myUserId == callerId.toString()) ? remoteUserId : callerId;
 
-    print('======CallId==${callId}=======>MyUserId:${myUserId}');
     socket?.emit("endCall", {
       "callId": callId,
       "remoteUserId": targetUser.toString(),
     });
 
     resetPeer();
-    // if (Get.currentRoute != Routes.Home_Screen) {
-    //   Get.back();
-    // } else {
-    try {
-      if (Platform.isIOS) {
-        final callId = CallSessionState.currentCallKitId;
 
-        if (callId != null) {
-          await FlutterCallkitIncoming.endCall(
-              CallSessionState.currentCallKitId!);
-          CallSessionState.reset();
-        } else {
-          // Utils().fluttertoast("callid is not available");
-        }
+    if (Platform.isIOS) {
+      final callId = CallSessionState.currentCallKitId;
+
+      if (callId != null) {
+        await FlutterCallkitIncoming.endCall(
+            CallSessionState.currentCallKitId!);
+      } else {
+        // Utils().fluttertoast("callid is not available");
       }
-    } catch (e) {}
+      CallSessionState.reset();
+    }
 
     if (args["callType"] == "outGoing") {
       stopSound();
     }
+    await WakelockPlus.disable();
     Get.offAllNamed(Routes.Home_Screen);
-    // }
   }
 
   void toggleMic() {
@@ -384,12 +358,9 @@ class CallController extends GetxController {
   }
 
   @override
-  void dispose() {
+  Future<void> dispose() async {
     super.dispose();
-    if (Platform.isIOS) {
-      FlutterCallkitIncoming.endCall(CallSessionState.currentCallKitId!);
-      CallSessionState.reset();
-    }
+
     if (args["callType"] == "outGoing") {
       stopSound();
     }

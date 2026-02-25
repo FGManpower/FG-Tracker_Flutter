@@ -22,7 +22,7 @@ class IncomingCallController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-  try{
+
     FlutterRingtonePlayer().play(
       asAlarm: false,
       fromAsset: Assets.music.incomingCall,
@@ -30,9 +30,7 @@ class IncomingCallController extends GetxController {
       volume: 1.0,
 
     );
-  }catch(e){
-    print("FlutterRingtomeException:${e}");
-  }
+
     call = args['callDetail'];
     update();
     offer = decomPress().decompressSDPOffer(call.sdpOfferCompressed);

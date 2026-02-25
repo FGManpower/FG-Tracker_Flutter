@@ -36,6 +36,7 @@ class MessageData {
   dynamic? messageType;
   dynamic? content;
   dynamic? timestamp;
+  dynamic? seenCount;
 
   MessageData(
       {this.id,
@@ -43,7 +44,7 @@ class MessageData {
         this.receiverId,
         this.messageType,
         this.content,
-        this.timestamp});
+        this.timestamp,this.seenCount});
 
   MessageData.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -52,6 +53,7 @@ class MessageData {
     messageType = json['messageType'];
     content = json['content'];
     timestamp = json['timestamp'];
+    seenCount = json['seenCount'];
   }
 
   Map<String, dynamic> toJson() {
@@ -62,6 +64,7 @@ class MessageData {
     data['messageType'] = this.messageType;
     data['content'] = this.content;
     data['timestamp'] = this.timestamp;
+    data['seenCount'] = this.seenCount;
     return data;
   }
 }

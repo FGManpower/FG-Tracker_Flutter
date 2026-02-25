@@ -57,15 +57,13 @@ class CallUtils {
       ),
       android: const AndroidParams(
         isCustomNotification: true,
-
         isShowLogo: false,
         ringtonePath: 'system_ringtone_default',
         backgroundColor: '#0955fa',
         actionColor: '#4CAF50',
         textColor: '#ffffff',
-        incomingCallNotificationChannelName: "Incoming Call",
-        missedCallNotificationChannelName: "Missed Call",
       ),
+
       ios: IOSParams(
         iconName: data['callerProfileImage'] ?? 'CallKitLogo',
         handleType: 'generic',

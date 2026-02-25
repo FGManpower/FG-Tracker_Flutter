@@ -313,6 +313,7 @@ class MemberscreenScreen extends GetView<MemberController> {
                       Get.toNamed(Routes.chatScreen, arguments: {
                         "userData": data,
                         "groupName": controller.arguments!['groupName'],
+                        "isCreator": controller.arguments!['isCreator'],
                         "type": "",
                       });
                     }

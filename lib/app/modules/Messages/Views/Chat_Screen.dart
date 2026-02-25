@@ -1,4 +1,3 @@
-import 'package:fgtracker/app/Core/constant/BottomSheet/ChatBottomSheet.dart';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
@@ -9,10 +8,7 @@ import 'package:fgtracker/app/modules/Messages/widgets/message_Widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../Core/theme/AppText.dart';
-
 import '../../../Core/values/Dialog/Common_dialog.dart';
-
-
 import '../../Walkie-talkie/Controller/walkieController.dart';
 import '../widgets/ChatInputArea.dart';
 import '../widgets/ChatList.dart';
@@ -54,8 +50,7 @@ class ChatScreen extends GetView<MessageController> {
           onCallTap: () {
             controller.startCall(
               context,
-              callerId:
-              Global.storageServices.get(PrefConst.userId).toString(),
+              callerId: Global.storageServices.get(PrefConst.userId).toString(),
               remoteUserId: controller.memberData.userId.toString(),
               is_video: false,
               callerName: controller.memberData.name,
@@ -92,8 +87,17 @@ class ChatScreen extends GetView<MessageController> {
               title: AppText.areYouSure,
               content: AppText.doYouWantToExitGroup,
               onConfirm: () {
-                MemberController().exitGroup(context,
-                    groupId: userData.groupId.toString());
+                if (controller.arguments!['isCreator'].toString() == "true") {
+                  MemberController().exitGroup(context,
+                      groupId: userData.groupId.toString(),
+                      userId: userData.userId.toString());
+                } else {
+                  MemberController().exitGroup(context,
+                      groupId: userData.groupId.toString(),
+                      userId: Global.storageServices
+                          .get(PrefConst.userId)
+                          .toString());
+                }
               },
             );
           },
