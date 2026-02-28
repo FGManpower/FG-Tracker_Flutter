@@ -9,9 +9,7 @@ import 'package:fgtracker/app/Model/GetMessage.dart';
 import 'package:fgtracker/app/Model/MemberDataRes.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
 import '../../../routes/app_pages.dart';
-
 import 'Socket_Message_Services.dart';
 
 class MessageController extends GetxController {
@@ -142,6 +140,19 @@ class MessageController extends GetxController {
     }
   }
 
+  Future<void> uploadAudio(String path) async {
+
+    var result = await MessageRepo.uploadChatAudio(path);
+
+    if (result.status == true) {
+      socketService.sendMessage(
+        messageType: "audio",
+        receiverId: memberData.userId.toString(),
+        groupId: memberData.groupId!,
+        content: result.filename!,
+      );
+    }
+  }
   Future<void> getMessageHistory(String recieverId, int groupId) async {
     try {
       var result = await MessageRepo.MessageHistory(

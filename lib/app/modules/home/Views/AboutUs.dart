@@ -6,7 +6,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../gen/fonts.gen.dart';
-import '../../../Core/values/Dialog/Common_dialog.dart';
 import 'About.dart';
 
 class AboutUs extends StatelessWidget {

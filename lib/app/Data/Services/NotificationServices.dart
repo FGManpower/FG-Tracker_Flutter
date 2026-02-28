@@ -1,9 +1,7 @@
 import 'dart:convert';
 import 'dart:math';
 
-import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/Context_Utility.dart';
-import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Model/MemberDataRes.dart';
 import 'package:fgtracker/app/Model/call_model.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
@@ -17,7 +15,6 @@ import 'dart:io';
 
 import '../../Core/util/AppLifeCycle.dart';
 import 'CallStateTracker.dart';
-import 'CallEvents_NotificationServices.dart';
 
 class firebaseNotificationServices {
   FirebaseMessaging messaging = FirebaseMessaging.instance;

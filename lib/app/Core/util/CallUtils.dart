@@ -17,6 +17,8 @@ import '../values/global.dart';
 import 'decomPress.dart';
 import 'package:uuid/uuid.dart';
 
+
+
 class CallUtils {
   CallUtils._privateConstructor();
 
@@ -55,13 +57,17 @@ class CallUtils {
         subtitle: 'Calling...',
         callbackText: 'Hang Up',
       ),
-      android: const AndroidParams(
+      android: AndroidParams(
         isCustomNotification: true,
         isShowLogo: false,
         ringtonePath: 'system_ringtone_default',
         backgroundColor: '#0955fa',
         actionColor: '#4CAF50',
         textColor: '#ffffff',
+        incomingCallNotificationChannelName: "Incoming Call",
+        missedCallNotificationChannelName: "Missed Call",
+        isShowCallID: false,
+        isShowFullLockedScreen: false,   // No full screen
       ),
 
       ios: IOSParams(

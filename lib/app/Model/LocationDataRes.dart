@@ -29,14 +29,14 @@ class LocationDataRes {
 
 class LocationData {
   // int? id;
-  dynamic? userId;
-  dynamic? groupId;
-  dynamic? latitude;
-  dynamic? longitude;
-  dynamic? lastSeen;
-  dynamic? isOnline;
-  dynamic? name;
-  dynamic? profileImage;
+  dynamic userId;
+  dynamic groupId;
+  dynamic latitude;
+  dynamic longitude;
+  dynamic lastSeen;
+  dynamic isOnline;
+  dynamic name;
+  dynamic profileImage;
 
   LocationData(
       {

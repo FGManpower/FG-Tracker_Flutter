@@ -1,6 +1,8 @@
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
+import 'package:fgtracker/app/Core/values/utility.dart';
+
 import 'package:fgtracker/app/config/themes_data.dart';
 import 'package:fgtracker/app/modules/Group/Controller/MemberController.dart';
 import 'package:fgtracker/app/modules/Messages/Controller/MessageController.dart';
@@ -132,6 +134,11 @@ class ChatScreen extends GetView<MessageController> {
                 onImageSelected: (path) {
                   controller.imagePath.value = path;
                 },
+               onVoiceSend: (voicePath) {
+                 if(Utility.isNotNullEmptyOrFalse(voicePath)){
+                   controller.uploadAudio(voicePath);
+                 }
+               },
               ),
             ],
           ),

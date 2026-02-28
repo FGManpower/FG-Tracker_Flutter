@@ -1,9 +1,7 @@
 import 'package:country_code_picker/country_code_picker.dart';
 import 'package:fgtracker/app/Core/theme/AppText.dart';
 import 'package:fgtracker/app/Core/values/Curve/Login_Curve.dart';
-import 'package:fgtracker/app/Core/values/colors.dart';
 import 'package:fgtracker/app/config/themes_data.dart';
-import 'package:fgtracker/app/modules/auth/Auth_Widget/Auth_widget.dart';
 import 'package:fgtracker/app/modules/auth/Controller/login_controller.dart';
 import 'package:fgtracker/gen/assets.gen.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';

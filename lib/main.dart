@@ -22,11 +22,9 @@ import 'app/Core/global/global_notification_handler.dart';
 import 'app/Core/util/CallUtils.dart';
 import 'app/Core/values/Context_Utility.dart';
 import 'app/Core/values/global.dart';
-import 'app/Data/Services/CallEvents_NotificationServices.dart';
 import 'app/Data/Services/NotificationServices.dart';
 import 'app/Data/Services/SignallingService.dart';
 
-import 'app/Data/Services/ringtone_service.dart';
 import 'app/modules/Notification/Controller/cubit/notification_count_cubit.dart';
 import 'app/routes/app_pages.dart';
 import 'app/modules/Track/Controller/SocketServices.dart';
@@ -48,12 +46,12 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool("notificationConsumed", false);
-      if (Platform.isIOS) {
+      // if (Platform.isIOS) {
         await CallUtils.instance.showIncomingCall(data: callMap);
-      } else {
-        await CustomNotificationServices.showIncomingCall(callMap);
-        RingtoneService().start(timeoutSeconds: 5);
-      }
+      // } else {
+      //   await CustomNotificationServices.showIncomingCall(callMap);
+      //   RingtoneService().start(timeoutSeconds: 5);
+      // }
     } catch (e) {
       debugPrint("Backgroundexception=======$e");
     }

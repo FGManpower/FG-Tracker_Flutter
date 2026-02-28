@@ -1,12 +1,9 @@
 import 'package:fgtracker/app/Core/constant/const_res.dart';
-import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/theme/AppText.dart';
 import 'package:fgtracker/app/Core/theme/appTheme.dart';
 import 'package:fgtracker/app/Core/values/Context_Utility.dart';
 import 'package:fgtracker/app/Core/values/Dialog/Common_dialog.dart';
-import 'package:fgtracker/app/Core/values/logoutuser.dart';
 import 'package:fgtracker/app/Core/values/utility.dart';
-import 'package:fgtracker/app/config/themes_data.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/modules/auth/Controller/logout_controller.dart';
 import 'package:fgtracker/app/modules/home/Controller/home_controller.dart';

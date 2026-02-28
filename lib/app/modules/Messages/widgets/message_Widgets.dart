@@ -1,4 +1,3 @@
-import 'package:fgtracker/app/Core/values/Dialog/Common_dialog.dart';
 import 'package:fgtracker/app/config/themes_data.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/modules/Track/Widget/TrackLAppBar.dart';
@@ -7,8 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import '../../../Core/theme/AppText.dart';
-import '../Controller/MessageController.dart';
 
 class CommonChatAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String profileImageUrl;

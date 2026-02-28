@@ -21,7 +21,6 @@ import 'package:skeletonizer/skeletonizer.dart';
 import '../../../Core/util/DateTime_Format.dart';
 import '../../../Data/Services/Tracking.dart';
 import '../../Track/Widget/TrackLAppBar.dart';
-import '../../Walkie-talkie/Controller/walkieController.dart';
 
 class MemberscreenScreen extends GetView<MemberController> {
   @override

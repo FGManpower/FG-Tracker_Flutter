@@ -1,17 +1,13 @@
 import 'dart:developer';
 
 import 'package:fgtracker/app/Core/values/global.dart';
-import 'package:fgtracker/app/Core/values/utility.dart';
 import 'package:fgtracker/app/modules/DashboardController.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'package:app_links/app_links.dart';
 import 'package:get/get.dart';
 
-import '../../modules/Walkie-talkie/Controller/walkieController.dart';
 // import '../../modules/Walkie-talkie/soundTesting.dart';
-import '../values/Context_Utility.dart';
 
 // final _appLinks = AppLinks();
 // final controller = Get.put(DashboardCtr());

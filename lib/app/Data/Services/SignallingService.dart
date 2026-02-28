@@ -38,12 +38,21 @@ class SignallingService {
       CustomNotificationServices().setupSocketCallEvents();
     });
 
+
+
     socket!.onDisconnect((_) {
       log("Call Socket Disconnected");
     });
 
-    socket?.onAny((event, data) {
-      log("CallAllEventCalled: $event => $data");
+    // socket?.onAny((event, data) {
+    //   log("CallAllEventCalled: $event => $data");
+    // });
+    socket?.onAny((event, dynamic data) {
+      print("Event: $event, Data: $data");
+    });
+
+    socket?.on('cancelMissedCallTimer', (data) {
+      print("Cancel missed call timer received");
     });
     socket!.onConnectError((err) {
       log("Connect Error: $err");

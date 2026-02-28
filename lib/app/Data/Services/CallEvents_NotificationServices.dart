@@ -3,7 +3,6 @@ import 'dart:developer';
 import 'package:fgtracker/app/Data/Services/Walkie_NotificationSerives.dart';
 import 'package:fgtracker/app/Data/Services/ringtone_service.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'package:get/get.dart';
 
 import '../../Core/constant/pref_res.dart';

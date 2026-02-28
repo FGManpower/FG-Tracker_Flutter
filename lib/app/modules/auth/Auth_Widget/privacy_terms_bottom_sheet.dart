@@ -5,7 +5,6 @@ import 'package:fgtracker/app/modules/auth/Auth_Widget/policy_texts.dart';
 import 'package:fgtracker/app/modules/auth/Controller/PrivacyTermsController.dart';
 import 'package:fgtracker/app/modules/auth/Controller/login_controller.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 

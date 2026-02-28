@@ -142,6 +142,10 @@
             android:foregroundServiceType="location" />
 
 
+        <service
+            android:name="com.hiennv.flutter_callkit_incoming.CallkitIncomingService"
+            android:exported="false"
+            android:foregroundServiceType="microphone|camera" />
 
 
 

@@ -1,6 +1,5 @@
 
 
-import 'dart:developer';
 
 import 'package:fgtracker/app/Core/theme/AppText.dart';
 import 'package:fgtracker/app/Core/values/colors.dart';

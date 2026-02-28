@@ -88,7 +88,7 @@ class SearchMembers extends GetView<SearchMemberController> {
         bool isOnline = (data.isOnline == true) ||
             (data.lastSeen != null &&
                 Tracking()
-                    .getTimeAgo(DateTime.parse(data!.lastSeen!))
+                    .getTimeAgo(DateTime.parse(data.lastSeen!))
                     .toLowerCase() ==
                     "just now");
         return GestureDetector(

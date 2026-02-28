@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:fgtracker/app/Core/deep_Link/uniservices.dart';
 import 'package:fgtracker/app/Core/theme/AppText.dart';
 import 'package:fgtracker/app/Data/Services/NotificationServices.dart';
@@ -56,58 +54,29 @@ class _HomeScreenState extends State<HomeScreen> {
       handleTerminatedCallIfAny();
     });
 
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await checkAndRequestPermissions(context);
-
-    });
-
-
-
-    controller.getProfileData();
-    groupController.getGroupData();
+    checkAndRequestPermissions(context);
 
     notificationServices.setupInteractMessage(context);
     checkDeeplink();
   }
 
   Future<void> checkAndRequestPermissions(BuildContext context) async {
-    // await WalkieNativeService.saveUserId(
-    //   Global.storageServices.get(PrefConst.userId).toString(),
-    // );
     final settings = await FirebaseMessaging.instance.requestPermission();
 
     final permissions = [
       Permission.camera,
       Permission.microphone,
-      Permission.locationAlways,
-      Permission.notification,
       Permission.audio,
       Permission.photos,
       Permission.contacts,
     ];
 
-    // await permissions.request();
     Map<Permission, PermissionStatus> statuses = await permissions.request();
 
-    // Debug: Print all permissions' statuses
-    statuses.forEach((permission, status) {
-      // debugPrint('${permission.toString()} status: ${status.toString()}');
-    });
+    statuses.forEach((permission, status) {});
 
-    // PermissionStatus overlayStatus = PermissionStatus.granted;
-    // if (Platform.isAndroid) {
-    //   overlayStatus = await Permission.systemAlertWindow.request();
-    //   debugPrint(
-    //       'Overlay (System Alert Window) status: ${overlayStatus.toString()}');
-    // }
-
-    bool anyDenied = statuses.values.any((status) => status.isDenied);
-    bool anyPermanentlyDenied =
-        statuses.values.any((status) => status.isPermanentlyDenied);
-
-    // if ( !overlayStatus.isGranted) {
-    //   await Permission.systemAlertWindow.request();
-    // }
+    await controller.getProfileData();
+    await groupController.getGroupData();
   }
 
   Future<void> checkActiveCallOnStart() async {
@@ -125,21 +94,17 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-
   @override
   void dispose() {
     super.dispose();
   }
 
-
   Future<void> checkDeeplink() async {
-   // await Permission.systemAlertWindow.request();
-    await UniServices.init(onCompletion: (success) {
-
-    },);
+    // await Permission.systemAlertWindow.request();
+    await UniServices.init(
+      onCompletion: (success) {},
+    );
   }
-
-
 
   @override
   Widget build(BuildContext context) {

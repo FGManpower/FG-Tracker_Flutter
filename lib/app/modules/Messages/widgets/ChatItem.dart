@@ -9,19 +9,7 @@ import '../../../Core/constant/const_res.dart';
 import '../../../Core/constant/pref_res.dart';
 import '../../../config/themes_data.dart';
 import '../../../global_widget/common_widget.dart';
-import 'message_Widgets.dart';
-
-import 'package:fgtracker/app/Core/util/DateTime_Format.dart';
-import 'package:fgtracker/app/Core/values/global.dart';
-import 'package:fgtracker/app/Model/GetMessage.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-
-import '../../../../gen/fonts.gen.dart';
-import '../../../Core/constant/const_res.dart';
-import '../../../Core/constant/pref_res.dart';
-import '../../../config/themes_data.dart';
-import '../../../global_widget/common_widget.dart';
+import 'AudioPlayerWidget.dart';
 import 'message_Widgets.dart';
 
 class ChatBubble extends StatelessWidget {
@@ -155,6 +143,11 @@ class ChatBubble extends StatelessWidget {
               fontsize: 11.sp,
             ),
         ],
+      );
+    } else if (message.messageType == "audio") {
+      return AudioBubble(
+        audioUrl: "${ConstRes.aImageBaseUrl}${message.content}",
+        isMe: false,
       );
     } else {
       return reausabletext(

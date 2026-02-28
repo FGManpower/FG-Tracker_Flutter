@@ -1,10 +1,7 @@
-import 'dart:convert';
-import 'package:archive/archive.dart';
 import 'package:fgtracker/gen/assets.gen.dart';
 import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'package:get/get.dart';
 import '../../../Core/constant/pref_res.dart';
-import '../../../Core/theme/AppText.dart';
 import '../../../Core/util/decomPress.dart';
 import '../../../Core/values/global.dart';
 import '../../../Data/Services/CallStateTracker.dart';

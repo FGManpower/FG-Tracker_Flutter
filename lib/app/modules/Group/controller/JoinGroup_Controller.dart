@@ -8,7 +8,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 
 import 'package:location/location.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 import '../../../Data/Services/LocationPermission.dart';
 import '../controller/Group_Controller.dart';

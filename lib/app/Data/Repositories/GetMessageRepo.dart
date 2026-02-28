@@ -34,4 +34,23 @@ class MessageRepo {
         .Authpost("/uploadChatImage", formdata: data, type: "formdata");
     return ChatImageUploadResponse.fromJson(response);
   }
+
+  static Future<ChatImageUploadResponse> uploadChatAudio(
+      String audioPath) async {
+
+    FormData data = FormData.fromMap({
+      "chatAudio": await MultipartFile.fromFile(
+        audioPath,
+        filename: audioPath.split('/').last,
+        contentType: MediaType('audio', 'm4a'),
+      )
+    });
+
+    var response = await HttpUtil()
+        .Authpost("/uploadAudio", formdata: data, type: "formdata");
+
+    return ChatImageUploadResponse.fromJson(response);
+  }
+
+
 }

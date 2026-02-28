@@ -27,7 +27,7 @@ class LocationService extends GetxService {
     bool serviceEnabled = await _location.serviceEnabled();
 
     if (hasPermission) {
-      log("ServiceEnable--------${serviceEnabled}");
+      log("ServiceEnable--------$serviceEnabled");
       if (serviceEnabled==false) {
         Completer<void> completer = Completer<void>();
 

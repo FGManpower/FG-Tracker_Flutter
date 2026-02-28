@@ -86,10 +86,6 @@ class GroupController extends GetxController {
           groupData.addAll(newlyCreatedGroups);
           groupData.addAll(createdGroups);
 
-          groupData.forEach((element) {
-            debugPrint("-------------GroupData--------${element.groupName}");
-
-          },);
 
           TrackingController.instance.inItAllGroups(groups: groupData);
 
