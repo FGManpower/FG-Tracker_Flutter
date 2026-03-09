@@ -63,7 +63,7 @@ class SignallingService {
     });
 
     socket!.on("newCall", (data) {
-      if (Platform.isIOS) {
+      // if (Platform.isIOS) {
         if (CallStateTracker.isIncomingCallScreenOpen) {
           return;
         }
@@ -79,7 +79,7 @@ class SignallingService {
             arguments: {"callDetail": call},
           );
         }
-      }
+      // }
     });
   }
 

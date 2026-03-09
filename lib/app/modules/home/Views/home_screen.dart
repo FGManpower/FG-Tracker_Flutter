@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:fgtracker/app/Core/deep_Link/uniservices.dart';
 import 'package:fgtracker/app/Core/theme/AppText.dart';
 import 'package:fgtracker/app/Data/Services/NotificationServices.dart';
@@ -60,6 +62,7 @@ class _HomeScreenState extends State<HomeScreen> {
     checkDeeplink();
   }
 
+
   Future<void> checkAndRequestPermissions(BuildContext context) async {
     final settings = await FirebaseMessaging.instance.requestPermission();
 
@@ -74,7 +77,6 @@ class _HomeScreenState extends State<HomeScreen> {
     Map<Permission, PermissionStatus> statuses = await permissions.request();
 
     statuses.forEach((permission, status) {});
-
     await controller.getProfileData();
     await groupController.getGroupData();
   }

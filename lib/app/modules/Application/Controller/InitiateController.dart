@@ -55,8 +55,7 @@ class InitiateController extends GetxController
 
     await Future.delayed(const Duration(seconds: 1));
 
-    if (Utility.isNotNullEmptyOrFalse(
-            Global.storageServices.getaccesstoken()) &&
+    if (Utility.isNotNullEmptyOrFalse(Global.storageServices.getaccesstoken()) &&
         Utility.isNotNullEmptyOrFalse(
             Global.storageServices.get(PrefConst.isRegistered))) {
       Get.offAllNamed(Routes.Home_Screen);

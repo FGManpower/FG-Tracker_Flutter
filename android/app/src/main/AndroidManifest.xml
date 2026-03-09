@@ -45,9 +45,14 @@
         android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
     <uses-permission
         android:name="android.permission.USE_FULL_SCREEN_INTENT"
-        tools:node="remove"/>
+        />
 
 
+
+<!--    <uses-permission-->
+<!--        android:name="android.permission.USE_FULL_SCREEN_INTENT"-->
+<!--        tools:node="remove"-->
+<!--        />-->
 
 
     <application
@@ -71,6 +76,8 @@
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
             android:hardwareAccelerated="true"
             android:windowSoftInputMode="adjustResize"
+            android:showWhenLocked="true"
+            android:turnScreenOn="true"
             tools:targetApi="33">
 
             <meta-data

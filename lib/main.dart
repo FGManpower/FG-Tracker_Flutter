@@ -39,23 +39,41 @@ final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
   log("[Background FCM] Raw Data: ${message.data}");
-
   if (message.data['screen_name'] == 'incomingCall') {
-    final callMap = jsonDecode(message.data['callData']);
-
     try {
+      final callDataString = message.data['callData'];
+
+      if (callDataString == null) return;
+
+      final callMap = jsonDecode(callDataString);
+
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool("notificationConsumed", false);
-      // if (Platform.isIOS) {
-        await CallUtils.instance.showIncomingCall(data: callMap);
-      // } else {
-      //   await CustomNotificationServices.showIncomingCall(callMap);
-      //   RingtoneService().start(timeoutSeconds: 5);
-      // }
+
+      await CallUtils.instance.showIncomingCall(data: callMap);
+
     } catch (e) {
-      debugPrint("Backgroundexception=======$e");
+      debugPrint("Background exception: $e");
     }
-  } else if (message.data['screen_name'] == 'walkie') {
+  }
+  // if (message.data['screen_name'] == 'incomingCall') {
+  //   final callMap = jsonDecode(message.data['callData']);
+  //
+  //   try {
+  //     final prefs = await SharedPreferences.getInstance();
+  //     await prefs.setBool("notificationConsumed", false);
+  //     // if (Platform.isIOS) {
+  //
+  //       await CallUtils.instance.showIncomingCall(data: callMap);
+  //     // } else {
+  //     //   await CustomNotificationServices.showIncomingCall(callMap);
+  //     //   RingtoneService().start(timeoutSeconds: 5);
+  //     // }
+  //   } catch (e) {
+  //     debugPrint("Backgroundexception=======$e");
+  //   }
+  // }
+  else if (message.data['screen_name'] == 'walkie') {
     var param = {"fromUserId": message.data['fromUserId']};
     if (Platform.isIOS) {
       await WalkieUtils().showIncomingWalkie(data: param);
@@ -87,6 +105,7 @@ void onNotificationResponse(NotificationResponse response) async {
   NotificationHolder.pendingResponse = response;
 }
 
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
@@ -95,6 +114,12 @@ Future<void> main() async {
   await Global.init();
   FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 
+  const channel = AndroidNotificationChannel(
+    'incoming_call_channel',
+    'Incoming Calls',
+    description: 'Channel for incoming calls',
+    importance: Importance.max,
+  );
   await firebaseNotificationServices().initialized();
 
   SystemChrome.setSystemUIOverlayStyle(

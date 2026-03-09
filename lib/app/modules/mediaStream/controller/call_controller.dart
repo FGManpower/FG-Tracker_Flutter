@@ -82,9 +82,9 @@ class CallController extends GetxController {
       callTimer?.cancel();
       callTimer = null;
 
-      if (Platform.isIOS) {
+      // if (Platform.isIOS) {
         CallSessionState.reset();
-      }
+      // }
 
       resetPeer();
       Get.back();
@@ -95,7 +95,7 @@ class CallController extends GetxController {
       callTimer = null;
 
       resetPeer();
-      if (Platform.isIOS) {
+      // if (Platform.isIOS) {
         final callId = CallSessionState.currentCallKitId;
 
         if (callId != null) {
@@ -105,7 +105,7 @@ class CallController extends GetxController {
           // Utils().fluttertoast("callid is not available");
         }
         CallSessionState.reset();
-      }
+      // }
 
       if (args["callType"] == "outGoing") {
         stopSound();
@@ -261,17 +261,17 @@ class CallController extends GetxController {
 
     resetPeer();
 
-    if (Platform.isIOS) {
-      final callId = CallSessionState.currentCallKitId;
+    // if (Platform.isIOS) {
+      final callIds = CallSessionState.currentCallKitId;
 
-      if (callId != null) {
+      if (callIds != null) {
         await FlutterCallkitIncoming.endCall(
             CallSessionState.currentCallKitId!);
       } else {
         // Utils().fluttertoast("callid is not available");
       }
       CallSessionState.reset();
-    }
+    // }
 
     if (args["callType"] == "outGoing") {
       stopSound();

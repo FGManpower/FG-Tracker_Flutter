@@ -24,13 +24,14 @@ class CallUtils {
 
   static final CallUtils instance = CallUtils._privateConstructor();
 
-  final socket = SignallingService.instance.socket;
+  // final socket = SignallingService.instance.socket;
   final _uuid = const Uuid();
 
   Future<void> showIncomingCall({required Map<String, dynamic> data}) async {
     final String currentUuid = _uuid.v4();
     CallSessionState.currentCallKitId = currentUuid;
-
+    print("=======currentUuid=====${currentUuid}");
+    print("=======NotificationData=====${data}");
     final isVideo = data['isVideo'] == true;
 
     final CallKitParams params = CallKitParams(
@@ -57,6 +58,7 @@ class CallUtils {
         subtitle: 'Calling...',
         callbackText: 'Hang Up',
       ),
+
       android: AndroidParams(
         isCustomNotification: true,
         isShowLogo: false,
@@ -67,7 +69,10 @@ class CallUtils {
         incomingCallNotificationChannelName: "Incoming Call",
         missedCallNotificationChannelName: "Missed Call",
         isShowCallID: false,
-        isShowFullLockedScreen: false,   // No full screen
+
+        // CHANGE THESE TWO:
+        isShowFullLockedScreen: true, // Required for terminated/locked state
+        isBot: true,
       ),
 
       ios: IOSParams(
@@ -85,7 +90,7 @@ class CallUtils {
         ringtonePath: 'system_ringtone_default',
       ),
     );
-
+    print("=======paramsofNotificaiton=====${params.extra}");
     await FlutterCallkitIncoming.showCallkitIncoming(params);
   }
 
@@ -144,9 +149,9 @@ class CallUtils {
   void _handleMissedCall(Map<String, dynamic> data) {
     final call = IncomingCallModel.fromMap(data);
 
-    socket?.emit("missedCall", {
-      "remoteUserId": call.callerId,
-    });
+    // socket?.emit("missedCall", {
+    //   "remoteUserId": call.callerId,
+    // });
 
     CallStateTracker.isIncomingCallScreenOpen = false;
   }
@@ -159,10 +164,10 @@ class CallUtils {
     // socket?.emit("rejectCall", {
     //   "remoteUserId": myId == call.callerId ? call.receiverId : call.callerId,
     // });
-    socket?.emit("rejectCall", {
-      "callId": call.callId,
-      "remoteUserId": myId,
-    });
+    // socket?.emit("rejectCall", {
+    //   "callId": call.callId,
+    //   "remoteUserId": myId,
+    // });
 
     CallStateTracker.isIncomingCallScreenOpen = false;
   }
