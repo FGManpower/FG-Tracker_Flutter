@@ -16,7 +16,7 @@ import 'package:fgtracker/app/Core/values/Dialog/DialogBox.dart';
 import 'package:fgtracker/app/widgets/Appbar.dart';
 import 'package:fgtracker/app/modules/home/Views/sidemenu.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
-import 'package:flutter_callkit_incoming/flutter_callkit_incoming.dart';
+
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -27,6 +27,7 @@ import '../../../Core/global/global_notification_handler.dart';
 
 import '../../../Core/global/launchedFromCall.dart';
 import '../../../Core/util/CallUtils.dart';
+import '../../../Core/util/callkit_service.dart';
 import '../../../Core/util/decomPress.dart';
 import '../Home_Widget/NewlyGroupUi.dart';
 
@@ -53,7 +54,8 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      handleTerminatedCallIfAny();
+      // handleTerminatedCallIfAny();
+      // await CallKitService.instance.checkCallOnLaunch();
     });
 
     checkAndRequestPermissions(context);
@@ -81,20 +83,20 @@ class _HomeScreenState extends State<HomeScreen> {
     await groupController.getGroupData();
   }
 
-  Future<void> checkActiveCallOnStart() async {
-    final calls = await FlutterCallkitIncoming.activeCalls();
-
-    if (calls is List && calls.isNotEmpty) {
-      final callData = calls[0];
-
-      CallSessionState.isCallActive = true;
-      CallSessionState.launchedFromCall = true;
-
-      final extra = decomPress().extractExtra(callData);
-
-      CallUtils.instance.navigateToCallScreen(extra);
-    }
-  }
+  // Future<void> checkActiveCallOnStart() async {
+  //   final calls = await FlutterCallkitIncoming.activeCalls();
+  //
+  //   if (calls is List && calls.isNotEmpty) {
+  //     final callData = calls[0];
+  //
+  //     CallSessionState.isCallActive = true;
+  //     CallSessionState.launchedFromCall = true;
+  //
+  //     final extra = decomPress().extractExtra(callData);
+  //
+  //     CallUtils.instance.navigateToCallScreen(extra);
+  //   }
+  // }
 
   @override
   void dispose() {

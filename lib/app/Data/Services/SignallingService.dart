@@ -35,7 +35,7 @@ class SignallingService {
 
     socket!.onConnect((_) {
       log("Call Socket Connected (ID: $selfCallerID)");
-      CustomNotificationServices().setupSocketCallEvents();
+      // CustomNotificationServices().setupSocketCallEvents();
     });
 
 
@@ -73,12 +73,12 @@ class SignallingService {
         CallStateTracker.isIncomingCallScreenOpen = true;
         final appState = AppLifecycleTracker.state;
 
-        if (appState == AppLifecycleState.resumed) {
-          Get.toNamed(
-            Routes.IncomingCallScreen,
-            arguments: {"callDetail": call},
-          );
-        }
+        // if (appState == AppLifecycleState.resumed) {
+        //   Get.toNamed(
+        //     Routes.IncomingCallScreen,
+        //     arguments: {"callDetail": call},
+        //   );
+        // }
       // }
     });
   }

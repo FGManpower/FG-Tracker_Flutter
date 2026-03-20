@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:math';
 
+import 'package:connectycube_flutter_call_kit/connectycube_flutter_call_kit.dart';
 import 'package:fgtracker/app/Core/values/Context_Utility.dart';
 import 'package:fgtracker/app/Model/MemberDataRes.dart';
 import 'package:fgtracker/app/Model/call_model.dart';
@@ -26,6 +27,7 @@ class firebaseNotificationServices {
 
   void inItLocalNotification(
       BuildContext context, RemoteMessage message) async {
+    print("RecivedMessaged=======>${message}");
     var androidinitializeSetting =
         const AndroidInitializationSettings("@mipmap/ic_launcher");
     var iosinitializeSetting = DarwinInitializationSettings();
@@ -236,25 +238,43 @@ class firebaseNotificationServices {
         );
       }
     } else {
-      if (Platform.isAndroid) {
-        if (message.data['screen_name'] == 'incomingCall') {
-          if (CallStateTracker.isIncomingCallScreenOpen) {
-            return;
-          }
-          final callMap = jsonDecode(message.data['callData']);
-          final call = IncomingCallModel.fromMap(callMap);
+      // if (Platform.isAndroid) {
+      //   if (message.data['screen_name'] == 'incomingCall') {
+      //     if (CallStateTracker.isIncomingCallScreenOpen) {
+      //       return;
+      //     }
+      //     final callMap = jsonDecode(message.data['callData']);
+      //     final call = IncomingCallModel.fromMap(callMap);
+      //
+      //     CallStateTracker.isIncomingCallScreenOpen = true;
+      //     final appState = AppLifecycleTracker.state;
+      //
+      //     if (appState == AppLifecycleState.resumed) {
+      //       Get.toNamed(
+      //         Routes.IncomingCallScreen,
+      //         arguments: {"callDetail": call},
+      //       );
+      //     }
+      //   }
 
-          CallStateTracker.isIncomingCallScreenOpen = true;
-          final appState = AppLifecycleTracker.state;
+      if (message.data['screen_name'] == "incomingCall") {
+        final callData = jsonDecode(message.data['callData']);
 
-          if (appState == AppLifecycleState.resumed) {
-            Get.toNamed(
-              Routes.IncomingCallScreen,
-              arguments: {"callDetail": call},
-            );
-          }
-        }
+        final Map<String, String> userInfo = callData.map<String, String>(
+            (key, value) => MapEntry(key.toString(), value.toString()));
+
+        await ConnectycubeFlutterCallKit.showCallNotification(
+          CallEvent(
+            sessionId: callData['callId'].toString(),
+            callerName: callData['callerName'],
+            callType: callData['isVideo'] == true ? 1 : 0,
+            opponentsIds: {int.parse(callData['callerId'])},
+            callerId: int.parse(callData['callerId']),
+            userInfo: userInfo,
+          ),
+        );
       }
+      // }
     }
   }
 }

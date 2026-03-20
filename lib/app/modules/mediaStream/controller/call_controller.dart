@@ -1,13 +1,13 @@
 import 'dart:async';
 import 'dart:developer';
-import 'dart:io';
 
+import 'package:connectycube_flutter_call_kit/connectycube_flutter_call_kit.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Core/values/utility.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
-import 'package:flutter_callkit_incoming/flutter_callkit_incoming.dart';
+
 import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'package:get/get.dart' hide navigator;
 import 'package:flutter_webrtc/flutter_webrtc.dart';
@@ -82,9 +82,13 @@ class CallController extends GetxController {
       callTimer?.cancel();
       callTimer = null;
 
-      // if (Platform.isIOS) {
-        CallSessionState.reset();
-      // }
+      if (CallSessionState.sessionId != null) {
+        ConnectycubeFlutterCallKit.clearCallData(
+          sessionId: CallSessionState.sessionId!,
+        );
+      }
+
+      CallSessionState.reset();
 
       resetPeer();
       Get.back();
@@ -95,17 +99,13 @@ class CallController extends GetxController {
       callTimer = null;
 
       resetPeer();
-      // if (Platform.isIOS) {
-        final callId = CallSessionState.currentCallKitId;
+      if (CallSessionState.sessionId != null) {
+        ConnectycubeFlutterCallKit.clearCallData(
+          sessionId: CallSessionState.sessionId!,
+        );
+      }
 
-        if (callId != null) {
-          await FlutterCallkitIncoming.endCall(
-              CallSessionState.currentCallKitId!);
-        } else {
-          // Utils().fluttertoast("callid is not available");
-        }
-        CallSessionState.reset();
-      // }
+      CallSessionState.reset();
 
       if (args["callType"] == "outGoing") {
         stopSound();
@@ -117,6 +117,11 @@ class CallController extends GetxController {
     socket!.on("missedCall", (data) async {
       callTimer?.cancel();
       callTimer = null;
+      if (CallSessionState.sessionId != null) {
+        ConnectycubeFlutterCallKit.clearCallData(
+          sessionId: CallSessionState.sessionId!,
+        );
+      }
 
       CallSessionState.reset();
       resetPeer();
@@ -159,14 +164,15 @@ class CallController extends GetxController {
           'urls': [
             'turn:89.116.23.2:3478?transport=udp',
             'turn:89.116.23.2:3478?transport=tcp',
+            'turns:89.116.23.2:443?transport=tcp',
           ],
           'username': 'fgtracker',
           'credential': 'FGM_Tracker@2025',
         }
       ],
       'iceTransportPolicy': 'all',
+      // 'iceTransportPolicy': 'relay', // it was working testing with divesh
     });
-
 
     peer!.onTrack = (event) {
       remoteRenderer.srcObject = event.streams[0];
@@ -204,13 +210,27 @@ class CallController extends GetxController {
       );
       final answer = await peer!.createAnswer();
       await peer!.setLocalDescription(answer);
-      log("---------------------CallId---$callId");
+
+
+      peer!.onIceCandidate = (c) {
+        if (c.candidate == null) return;
+        socket!.emit("IceCandidate", {
+          "remoteUserId": callerId,
+          "iceCandidate": {
+            "id": c.sdpMid,
+            "label": c.sdpMLineIndex,
+            "candidate": c.candidate,
+          },
+        });
+      };
+
       socket!.emit("answerCall", {
         "callId": callId,
         "callerId": callerId,
         "sdpAnswer": answer.toMap(),
       });
     } else {
+
       peer!.onIceCandidate = (c) => iceCandidates.add(c);
 
       socket!.on("callAnswered", (data) async {
@@ -220,18 +240,34 @@ class CallController extends GetxController {
             data["sdpAnswer"]["type"],
           ),
         );
+
+
         for (var c in iceCandidates) {
+          if (c.candidate == null) continue;
           socket!.emit("IceCandidate", {
             "remoteUserId": remoteUserId,
             "iceCandidate": {
               "id": c.sdpMid,
               "label": c.sdpMLineIndex,
-              "candidate": c.candidate
-            }
+              "candidate": c.candidate,
+            },
           });
         }
-      });
+        iceCandidates.clear();
 
+
+        peer!.onIceCandidate = (c) {
+          if (c.candidate == null) return;
+          socket!.emit("IceCandidate", {
+            "remoteUserId": remoteUserId,
+            "iceCandidate": {
+              "id": c.sdpMid,
+              "label": c.sdpMLineIndex,
+              "candidate": c.candidate,
+            },
+          });
+        };
+      });
       final sdpOffer = await peer!.createOffer();
       await peer!.setLocalDescription(sdpOffer);
 
@@ -261,17 +297,13 @@ class CallController extends GetxController {
 
     resetPeer();
 
-    // if (Platform.isIOS) {
-      final callIds = CallSessionState.currentCallKitId;
+    if (CallSessionState.sessionId != null) {
+      ConnectycubeFlutterCallKit.clearCallData(
+        sessionId: CallSessionState.sessionId!,
+      );
+    }
 
-      if (callIds != null) {
-        await FlutterCallkitIncoming.endCall(
-            CallSessionState.currentCallKitId!);
-      } else {
-        // Utils().fluttertoast("callid is not available");
-      }
-      CallSessionState.reset();
-    // }
+    CallSessionState.reset();
 
     if (args["callType"] == "outGoing") {
       stopSound();

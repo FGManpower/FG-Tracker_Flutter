@@ -110,7 +110,6 @@ class AppPages {
       binding: LocationTracking_Binding(),
       transitionDuration: const Duration(milliseconds: 500),
     ),
-
     GetPage(
       name: _Paths.QRScanScreen,
       page: () => QRScanScreen(),
@@ -118,7 +117,6 @@ class AppPages {
       binding: QrScanBinding(),
       transitionDuration: const Duration(milliseconds: 500),
     ),
-
     GetPage(
       name: _Paths.callScreen,
       page: () => CallScreen(),
@@ -126,7 +124,6 @@ class AppPages {
       binding: StreamBinding(),
       transitionDuration: const Duration(milliseconds: 500),
     ),
-
     GetPage(
       name: _Paths.IncomingCallScreen,
       page: () => IncomingCallScreen(),
@@ -134,7 +131,6 @@ class AppPages {
       binding: IncomingCallBinding(),
       transitionDuration: const Duration(milliseconds: 500),
     ),
-
     GetPage(
       name: _Paths.walkieTalkieScreen,
       page: () => WalkieTalkieScreen(),

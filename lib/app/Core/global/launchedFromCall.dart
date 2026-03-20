@@ -1,7 +1,7 @@
 class CallSessionState {
   static bool isCallActive = false;
   static bool launchedFromCall = false;
-  static String? currentCallKitId;
+  static String? sessionId;
 
 
   static Map<String, dynamic>? pendingCallData;
@@ -10,6 +10,6 @@ class CallSessionState {
     isCallActive = false;
     launchedFromCall = false;
     pendingCallData = null;
-    currentCallKitId = null;
+    sessionId = null;
   }
 }

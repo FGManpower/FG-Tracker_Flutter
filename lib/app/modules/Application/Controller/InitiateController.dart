@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
 import '../../../Core/constant/pref_res.dart';
+import '../../../Core/util/callkit_service.dart';
 import '../../../Core/values/global.dart';
 import '../../../Core/values/utility.dart';
 import '../../../routes/app_pages.dart';
@@ -39,23 +39,37 @@ class InitiateController extends GetxController
     animationController.forward();
 
     if (CallSessionState.launchedFromCall || CallSessionState.isCallActive) {
+      _splashTimer?.cancel();
       return;
     }
 
-    _splashTimer = Timer(
-      const Duration(seconds: 4),
-      () => checkLoginStatus(),
-    );
+    print("initialize of callkit");
+    Future.microtask(() async {
+      print("splash of cal of callkit");
+      await CallKitService.instance.checkCallOnLaunch();
+
+      if (CallSessionState.isCallActive || CallSessionState.launchedFromCall) {
+        return;
+      }
+
+      _splashTimer = Timer(
+        const Duration(seconds: 4),
+        () => checkLoginStatus(),
+      );
+    });
   }
 
   void checkLoginStatus() async {
     if (CallSessionState.isCallActive || CallSessionState.launchedFromCall) {
+      print("Call launched, skipping splash navigation");
       return;
     }
 
+    print("going to homescreen");
     await Future.delayed(const Duration(seconds: 1));
 
-    if (Utility.isNotNullEmptyOrFalse(Global.storageServices.getaccesstoken()) &&
+    if (Utility.isNotNullEmptyOrFalse(
+            Global.storageServices.getaccesstoken()) &&
         Utility.isNotNullEmptyOrFalse(
             Global.storageServices.get(PrefConst.isRegistered))) {
       Get.offAllNamed(Routes.Home_Screen);

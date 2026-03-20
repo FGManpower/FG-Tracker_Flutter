@@ -103,16 +103,11 @@ Future<void> _ensureSocketReady() async {
 Future<void> handleTerminatedCallIfAny() async {
   RingtoneService().stop();
   final prefs = await SharedPreferences.getInstance();
-
   await prefs.reload();
-
-
   bool isConsumed = prefs.getBool(_consumeKey) ?? true;
-
   if (isConsumed) return;
   await prefs.setBool("notificationConsumed", true);
   NotificationResponse? response;
-
   final details =
       await flutterLocalNotificationsPlugin.getNotificationAppLaunchDetails();
 

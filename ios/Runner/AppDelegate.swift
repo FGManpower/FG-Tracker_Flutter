@@ -24,6 +24,7 @@ override func application(
     GeneratedPluginRegistrant.register(with: self)
 
 
+
     do {
         try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default)
         try AVAudioSession.sharedInstance().setActive(true)

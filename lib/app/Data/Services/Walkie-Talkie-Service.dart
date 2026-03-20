@@ -59,7 +59,7 @@ class WalkietalkieService {
 
     socket!.on("walkie_stop", (_) {
       log("🛑 walkie_stop received");
-      WalkieUtils().endWalkieCall();
+      // WalkieUtils().endWalkieCall();
     });
 
     socket!.on("walkie_incoming", (data) {

@@ -3,10 +3,10 @@ import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 import 'package:android_intent_plus/android_intent.dart';
+import 'package:connectycube_flutter_call_kit/connectycube_flutter_call_kit.dart';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/constant/notification_holder.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
-import 'package:fgtracker/app/Core/util/WalkieUtils.dart';
 import 'package:fgtracker/app/Core/util/configureAudioSession.dart';
 import 'package:fgtracker/app/Data/Services/Walkie-Talkie-Service.dart';
 import 'package:flutter/material.dart';
@@ -19,12 +19,11 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'app/Core/global/global_notification_handler.dart';
-import 'app/Core/util/CallUtils.dart';
+import 'app/Core/util/callkit_service.dart';
 import 'app/Core/values/Context_Utility.dart';
 import 'app/Core/values/global.dart';
 import 'app/Data/Services/NotificationServices.dart';
 import 'app/Data/Services/SignallingService.dart';
-
 import 'app/modules/Notification/Controller/cubit/notification_count_cubit.dart';
 import 'app/routes/app_pages.dart';
 import 'app/modules/Track/Controller/SocketServices.dart';
@@ -39,62 +38,47 @@ final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
   log("[Background FCM] Raw Data: ${message.data}");
-  if (message.data['screen_name'] == 'incomingCall') {
-    try {
-      final callDataString = message.data['callData'];
 
-      if (callDataString == null) return;
+  if (message.data['screen_name'] == "incomingCall") {
+    final callData = jsonDecode(message.data['callData']);
 
-      final callMap = jsonDecode(callDataString);
+    final Map<String, String> userInfo = callData.map<String, String>(
+        (key, value) => MapEntry(key.toString(), value.toString()));
 
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool("notificationConsumed", false);
+    await ConnectycubeFlutterCallKit.showCallNotification(
+      CallEvent(
+        sessionId: callData['callId'].toString(),
+        callerName: callData['callerName'],
+        callType: callData['isVideo'] == true ? 1 : 0,
+        opponentsIds: {int.parse(callData['callerId'])},
+        callerId: int.parse(callData['callerId']),
+        userInfo: userInfo,
+      ),
+    );
 
-      await CallUtils.instance.showIncomingCall(data: callMap);
 
-    } catch (e) {
-      debugPrint("Background exception: $e");
-    }
-  }
-  // if (message.data['screen_name'] == 'incomingCall') {
-  //   final callMap = jsonDecode(message.data['callData']);
-  //
-  //   try {
-  //     final prefs = await SharedPreferences.getInstance();
-  //     await prefs.setBool("notificationConsumed", false);
-  //     // if (Platform.isIOS) {
-  //
-  //       await CallUtils.instance.showIncomingCall(data: callMap);
-  //     // } else {
-  //     //   await CustomNotificationServices.showIncomingCall(callMap);
-  //     //   RingtoneService().start(timeoutSeconds: 5);
-  //     // }
-  //   } catch (e) {
-  //     debugPrint("Backgroundexception=======$e");
-  //   }
-  // }
-  else if (message.data['screen_name'] == 'walkie') {
+  } else if (message.data['screen_name'] == 'walkie') {
     var param = {"fromUserId": message.data['fromUserId']};
-    if (Platform.isIOS) {
-      await WalkieUtils().showIncomingWalkie(data: param);
-    } else {
-      final sharedpref = await SharedPreferences.getInstance();
-      await sharedpref.setString('fromUserId', message.data['fromUserId']);
+    // if (Platform.isIOS) {
+    //   await WalkieUtils().showIncomingWalkie(data: param);
+    // } else {
+    final sharedpref = await SharedPreferences.getInstance();
+    await sharedpref.setString('fromUserId', message.data['fromUserId']);
 
-      var url = "${ConstRes.DeepLink_Url}/?page=Walkie";
-      log("====>AppLaunch Url is ======$url");
-      if (Platform.isAndroid) {
-        AndroidIntent intent = AndroidIntent(
-            action: 'action_view', data: url, package: "com.example.fgtracker");
-        await intent.launch().then((value) {
-          log("AppLaunch Success");
-        }).onError(
-          (error, stackTrace) {
-            log("AppLaunchIssue:$error,StackTrace is:$stackTrace");
-          },
-        );
-      }
+    var url = "${ConstRes.DeepLink_Url}/?page=Walkie";
+    log("====>AppLaunch Url is ======$url");
+    if (Platform.isAndroid) {
+      AndroidIntent intent = AndroidIntent(
+          action: 'action_view', data: url, package: "com.example.fgtracker");
+      await intent.launch().then((value) {
+        log("AppLaunch Success");
+      }).onError(
+        (error, stackTrace) {
+          log("AppLaunchIssue:$error,StackTrace is:$stackTrace");
+        },
+      );
     }
+    // }
   }
 }
 
@@ -105,11 +89,9 @@ void onNotificationResponse(NotificationResponse response) async {
   NotificationHolder.pendingResponse = response;
 }
 
-
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  CallUtils.instance.listenCallKitEvents();
 
   await Global.init();
   FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
@@ -120,7 +102,9 @@ Future<void> main() async {
     description: 'Channel for incoming calls',
     importance: Importance.max,
   );
+
   await firebaseNotificationServices().initialized();
+  CallKitService.instance.init();
 
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(statusBarColor: Colors.transparent),
@@ -176,7 +160,7 @@ Future<void> main() async {
   }
   WalkieConfiguration.configureSpeakerAudioSession();
 
-  WalkieUtils().listenWalkieEvents();
+  // WalkieUtils().listenWalkieEvents();
   runApp(const MyApp());
 }
 
@@ -191,7 +175,8 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    CallUtils.instance.listenCallKitEvents();
+    CallKitService.instance.init();
+    // CallUtils.instance.listenCallKitEvents();
   }
 
   @override
