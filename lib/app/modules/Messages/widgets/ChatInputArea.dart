@@ -1,6 +1,9 @@
 import 'dart:io';
 
+import 'package:fgtracker/app/Core/values/bottomSheet.dart';
+import 'package:fgtracker/app/Core/values/utility.dart';
 import 'package:fgtracker/app/config/themes_data.dart';
+import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/modules/Messages/Controller/VoiceRecordController.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
@@ -200,6 +203,32 @@ class ChatInputArea extends StatelessWidget {
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(30.r),
                                   borderSide: BorderSide.none,
+                                ),
+                                suffixIcon: Padding(
+                                  padding: EdgeInsets.all(3.r),
+                                  child: GestureDetector(
+                                    onTap: () {
+
+                                      ModalImage bottomNavbar = ModalImage(
+                                        isImageCroppable: true,
+                                        onImageSelect: (path) async {
+                                          if (Utility.isNotNullEmptyOrFalse(path)) {
+                                            onImageSelected(path);
+                                            Navigator.pop(context);
+                                          }
+                                        },
+                                      );
+                                      bottomNavbar.mainBottomSheet(context);
+                                    },
+                                    child: CircleAvatar(
+                                    backgroundColor: ToggleThemeData.white,
+                                    radius: 16,
+                                    child: reausableIcon(
+                                        icon: Icons.image_outlined,
+                                        color: ToggleThemeData.Appcolor,
+                                        size: 25),
+                                  ),)
+
                                 ),
                                 fillColor: ToggleThemeData.Appcolor,
                                 filled: true,
