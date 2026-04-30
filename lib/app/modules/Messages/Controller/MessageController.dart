@@ -7,6 +7,7 @@ import 'package:fgtracker/app/Data/Repositories/GetMessageRepo.dart';
 import 'package:fgtracker/app/Data/Services/CallStateTracker.dart';
 import 'package:fgtracker/app/Model/GetMessage.dart';
 import 'package:fgtracker/app/Model/MemberDataRes.dart';
+import 'package:fgtracker/app/modules/Track/Controller/TrackController.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../routes/app_pages.dart';
@@ -36,6 +37,11 @@ class MessageController extends GetxController {
   void _initializeChat() {
     final userId = memberData.userId.toString();
     final groupId = memberData.groupId!;
+    try{
+      TrackingController.instance.initializeLocation();
+    }catch(e){
+      log("==============MessageException======${e.toString()}");
+    }
 
     ChatStateTracker.isChatCallScreenOpen = true;
 
