@@ -63,7 +63,7 @@ class SignallingService {
     });
 
     socket!.on("newCall", (data) {
-      // if (Platform.isIOS) {
+      if (Platform.isIOS) {
         if (CallStateTracker.isIncomingCallScreenOpen) {
           return;
         }
@@ -73,13 +73,26 @@ class SignallingService {
         CallStateTracker.isIncomingCallScreenOpen = true;
         final appState = AppLifecycleTracker.state;
 
-        // if (appState == AppLifecycleState.resumed) {
-        //   Get.toNamed(
-        //     Routes.IncomingCallScreen,
-        //     arguments: {"callDetail": call},
-        //   );
-        // }
-      // }
+        if (appState == AppLifecycleState.resumed) {
+          Get.toNamed(
+            Routes.IncomingCallScreen,
+            arguments: {"callDetail": call},
+          );
+        }
+
+      }else{
+        if (CallStateTracker.isIncomingCallScreenOpen) {
+          return;
+        }
+        final callMap = jsonDecode(data['callData']);
+        final call = IncomingCallModel.fromMap(callMap);
+
+        CallStateTracker.isIncomingCallScreenOpen = true;
+        final appState = AppLifecycleTracker.state;
+
+      }
+
+
     });
   }
 

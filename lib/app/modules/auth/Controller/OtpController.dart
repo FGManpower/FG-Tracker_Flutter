@@ -1,11 +1,14 @@
 import 'dart:async';
 import 'dart:developer';
+import 'dart:io';
 
+import 'package:connectycube_flutter_call_kit/connectycube_flutter_call_kit.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/Dialog/Common_dialog.dart';
 import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Data/Repositories/Auth_repo.dart';
+import 'package:fgtracker/app/Data/Services/MethodChannel.dart';
 import 'package:fgtracker/app/Data/Services/NotificationServices.dart';
 import 'package:fgtracker/app/Data/Services/Walkie-Talkie-Service.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
@@ -36,11 +39,17 @@ class OtpController extends GetxController {
   void onInit() {
     super.onInit();
 
+    // if (Platform.isAndroid) {
     firebaseNotificationServices().getDiviceToken().then(
       (value) {
         deviceId.value = value;
       },
     );
+    // } else {
+    //   ConnectycubeFlutterCallKit.getToken().then((token) {
+    //     deviceId.value = token.toString();
+    //   });
+    // }
 
     otpController = OTPTextEditController(
       codeLength: 4,

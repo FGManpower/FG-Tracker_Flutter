@@ -23,12 +23,8 @@ import 'package:permission_handler/permission_handler.dart';
 
 import '../../../../gen/assets.gen.dart';
 import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
-import '../../../Core/global/global_notification_handler.dart';
 
-import '../../../Core/global/launchedFromCall.dart';
-import '../../../Core/util/CallUtils.dart';
 import '../../../Core/util/callkit_service.dart';
-import '../../../Core/util/decomPress.dart';
 import '../Home_Widget/NewlyGroupUi.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -55,7 +51,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       // handleTerminatedCallIfAny();
-      // await CallKitService.instance.checkCallOnLaunch();
+      if (Platform.isIOS) {
+        await CallKitService.instance.checkCallOnLaunch();
+      }
     });
 
     checkAndRequestPermissions(context);
@@ -63,7 +61,6 @@ class _HomeScreenState extends State<HomeScreen> {
     notificationServices.setupInteractMessage(context);
     checkDeeplink();
   }
-
 
   Future<void> checkAndRequestPermissions(BuildContext context) async {
     final settings = await FirebaseMessaging.instance.requestPermission();

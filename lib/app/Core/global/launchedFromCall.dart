@@ -11,5 +11,6 @@ class CallSessionState {
     launchedFromCall = false;
     pendingCallData = null;
     sessionId = null;
+
   }
 }

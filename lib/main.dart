@@ -7,8 +7,10 @@ import 'package:connectycube_flutter_call_kit/connectycube_flutter_call_kit.dart
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/constant/notification_holder.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
+import 'package:fgtracker/app/Core/util/CallUtils.dart';
 import 'package:fgtracker/app/Core/util/configureAudioSession.dart';
 import 'package:fgtracker/app/Data/Services/Walkie-Talkie-Service.dart';
+import 'package:fgtracker/app/Model/call_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -41,22 +43,24 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 
   if (message.data['screen_name'] == "incomingCall") {
     final callData = jsonDecode(message.data['callData']);
-
+    final callMap = jsonDecode(message.data['callData']);
     final Map<String, String> userInfo = callData.map<String, String>(
         (key, value) => MapEntry(key.toString(), value.toString()));
- 
-    await ConnectycubeFlutterCallKit.showCallNotification(
-      CallEvent(
-        sessionId: callData['callId'].toString(),
-        callerName: callData['callerName'],
-        callType: callData['isVideo'] == true ? 1 : 0,
-        opponentsIds: {int.parse(callData['callerId'])},
-        callerId: int.parse(callData['callerId']),
-        userInfo: userInfo,
-      ),
-    );
 
-
+    if (Platform.isIOS) {
+      CallUtils.instance.showIncomingCall(data: callMap);
+    } else {
+      await ConnectycubeFlutterCallKit.showCallNotification(
+        CallEvent(
+          sessionId: callData['callId'].toString(),
+          callerName: callData['callerName'],
+          callType: callData['isVideo'] == true ? 1 : 0,
+          opponentsIds: {int.parse(callData['callerId'])},
+          callerId: int.parse(callData['callerId']),
+          userInfo: userInfo,
+        ),
+      );
+    }
   } else if (message.data['screen_name'] == 'walkie') {
     var param = {"fromUserId": message.data['fromUserId']};
     // if (Platform.isIOS) {
@@ -85,7 +89,6 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 @pragma('vm:entry-point')
 void onNotificationResponse(NotificationResponse response) async {
   log("OnNotificationPress");
-
   NotificationHolder.pendingResponse = response;
 }
 
@@ -159,10 +162,51 @@ Future<void> main() async {
     );
   }
   WalkieConfiguration.configureSpeakerAudioSession();
+  setupVoipListener();
+  if(Platform.isIOS){
+    CallUtils.instance.listenCallKitEvents();
+  }
 
   // WalkieUtils().listenWalkieEvents();
   runApp(const MyApp());
 }
+
+const platform = MethodChannel("voip_channel");
+
+void setupVoipListener() {
+  platform.setMethodCallHandler((call) async {
+    if (call.method == "voipToken") {
+      final token = call.arguments;
+      print("🔥 VoIP Token: $token");
+    }
+
+    if (call.method == "incomingCall") {
+      final data = Map<String, dynamic>.from(call.arguments);
+
+      print("📞 Incoming Call Data: $data");
+
+      showIncomingCall(data);
+    }
+  });
+}
+
+void showIncomingCall(Map<String, dynamic> callData) async {
+  final userInfo = callData.map(
+    (k, v) => MapEntry(k.toString(), v.toString()),
+  );
+
+  await ConnectycubeFlutterCallKit.showCallNotification(
+    CallEvent(
+      sessionId: callData['callId'].toString(),
+      callerName: callData['callerName'],
+      callType: callData['isVideo'] == true ? 1 : 0,
+      opponentsIds: {int.parse(callData['callerId'].toString())},
+      callerId: int.parse(callData['callerId'].toString()),
+      userInfo: userInfo,
+    ),
+  );
+}
+
 
 class MyApp extends StatefulWidget {
   const MyApp({super.key});

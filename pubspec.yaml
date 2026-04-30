@@ -76,6 +76,7 @@ dependencies:
   just_audio: ^0.10.5
   waveform_flutter: ^1.2.0
   connectycube_flutter_call_kit: ^2.8.2
+  flutter_callkit_incoming: ^3.0.0
   
 
 

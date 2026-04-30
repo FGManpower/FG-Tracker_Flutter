@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:connectycube_flutter_call_kit/connectycube_flutter_call_kit.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
@@ -7,6 +8,7 @@ import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Core/values/utility.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
+import 'package:flutter_callkit_incoming/flutter_callkit_incoming.dart';
 
 import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'package:get/get.dart' hide navigator;
@@ -100,9 +102,15 @@ class CallController extends GetxController {
 
       resetPeer();
       if (CallSessionState.sessionId != null) {
-        ConnectycubeFlutterCallKit.clearCallData(
-          sessionId: CallSessionState.sessionId!,
-        );
+        if (Platform.isAndroid) {
+          ConnectycubeFlutterCallKit.clearCallData(
+            sessionId: CallSessionState.sessionId!,
+          );
+        } else {
+          FlutterCallkitIncoming.endCall(
+            CallSessionState.sessionId!,
+          );
+        }
       }
 
       CallSessionState.reset();
@@ -118,9 +126,15 @@ class CallController extends GetxController {
       callTimer?.cancel();
       callTimer = null;
       if (CallSessionState.sessionId != null) {
-        ConnectycubeFlutterCallKit.clearCallData(
-          sessionId: CallSessionState.sessionId!,
-        );
+        if (Platform.isAndroid) {
+          ConnectycubeFlutterCallKit.clearCallData(
+            sessionId: CallSessionState.sessionId!,
+          );
+        } else {
+          FlutterCallkitIncoming.endCall(
+            CallSessionState.sessionId!,
+          );
+        }
       }
 
       CallSessionState.reset();
@@ -211,7 +225,6 @@ class CallController extends GetxController {
       final answer = await peer!.createAnswer();
       await peer!.setLocalDescription(answer);
 
-
       peer!.onIceCandidate = (c) {
         if (c.candidate == null) return;
         socket!.emit("IceCandidate", {
@@ -230,7 +243,6 @@ class CallController extends GetxController {
         "sdpAnswer": answer.toMap(),
       });
     } else {
-
       peer!.onIceCandidate = (c) => iceCandidates.add(c);
 
       socket!.on("callAnswered", (data) async {
@@ -240,7 +252,6 @@ class CallController extends GetxController {
             data["sdpAnswer"]["type"],
           ),
         );
-
 
         for (var c in iceCandidates) {
           if (c.candidate == null) continue;
@@ -254,7 +265,6 @@ class CallController extends GetxController {
           });
         }
         iceCandidates.clear();
-
 
         peer!.onIceCandidate = (c) {
           if (c.candidate == null) return;
@@ -298,9 +308,15 @@ class CallController extends GetxController {
     resetPeer();
 
     if (CallSessionState.sessionId != null) {
-      ConnectycubeFlutterCallKit.clearCallData(
-        sessionId: CallSessionState.sessionId!,
-      );
+      if (Platform.isAndroid) {
+        ConnectycubeFlutterCallKit.clearCallData(
+          sessionId: CallSessionState.sessionId!,
+        );
+      } else {
+        FlutterCallkitIncoming.endCall(
+          CallSessionState.sessionId!,
+        );
+      }
     }
 
     CallSessionState.reset();

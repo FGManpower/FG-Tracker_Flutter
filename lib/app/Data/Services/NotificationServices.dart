@@ -190,6 +190,7 @@ class firebaseNotificationServices {
   static Future<String> getDeviceTokenToSendNotification() async {
     fcmToken = (await FirebaseMessaging.instance.getToken()).toString();
 
+    print("=============DeviceToken============${fcmToken}");
     return fcmToken;
   }
 
