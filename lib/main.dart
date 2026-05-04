@@ -114,6 +114,7 @@ Future<void> main() async {
   );
 
   Get.put<TrackingController>(TrackingController());
+
   Get.put<LocationService>(LocationService());
   Get.put<SocketService>(SocketService());
 
@@ -267,3 +268,6 @@ class _MyAppState extends State<MyApp> {
     );
   }
 }
+
+
+
