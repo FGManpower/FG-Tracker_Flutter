@@ -4,7 +4,7 @@ import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Core/values/utility.dart';
 
 import 'package:fgtracker/app/config/themes_data.dart';
-import 'package:fgtracker/app/modules/Group/Controller/MemberController.dart';
+import 'package:fgtracker/app/modules/Group/controller/MemberController.dart';
 import 'package:fgtracker/app/modules/Messages/Controller/MessageController.dart';
 import 'package:fgtracker/app/modules/Messages/widgets/message_Widgets.dart';
 import 'package:flutter/material.dart';

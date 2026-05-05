@@ -9,7 +9,7 @@ import 'package:fgtracker/app/Core/values/bottomSheet.dart';
 import 'package:fgtracker/app/Core/values/utility.dart';
 import 'package:fgtracker/app/config/themes_data.dart';
 import 'package:fgtracker/app/global_widget/input_widget.dart';
-import 'package:fgtracker/app/modules/Group/Controller/JoinGroup_Controller.dart';
+import 'package:fgtracker/app/modules/Group/controller/JoinGroup_Controller.dart';
 import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';

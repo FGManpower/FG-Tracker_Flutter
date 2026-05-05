@@ -4,7 +4,7 @@ import 'package:fgtracker/app/Core/deep_Link/uniservices.dart';
 import 'package:fgtracker/app/Core/theme/AppText.dart';
 import 'package:fgtracker/app/Data/Services/NotificationServices.dart';
 import 'package:fgtracker/app/modules/DashboardController.dart';
-import 'package:fgtracker/app/modules/Group/Controller/JoinGroup_Controller.dart';
+import 'package:fgtracker/app/modules/Group/controller/JoinGroup_Controller.dart';
 import 'package:fgtracker/app/modules/home/Controller/home_controller.dart';
 import 'package:fgtracker/app/modules/home/Home_Widget/CreatedGroupUi.dart';
 import 'package:fgtracker/app/modules/home/Home_Widget/Home_widget.dart';
