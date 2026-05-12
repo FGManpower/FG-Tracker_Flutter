@@ -43,7 +43,7 @@ class InitiateController extends GetxController
       return;
     }
 
-    print("initialize of callkit");
+
     Future.microtask(() async {
       print("splash of cal of callkit");
       await CallKitService.instance.checkCallOnLaunch();
@@ -61,11 +61,9 @@ class InitiateController extends GetxController
 
   void checkLoginStatus() async {
     if (CallSessionState.isCallActive || CallSessionState.launchedFromCall) {
-      print("Call launched, skipping splash navigation");
       return;
     }
 
-    print("going to homescreen");
     await Future.delayed(const Duration(seconds: 1));
 
     if (Utility.isNotNullEmptyOrFalse(

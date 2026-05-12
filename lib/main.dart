@@ -10,7 +10,6 @@ import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/util/CallUtils.dart';
 import 'package:fgtracker/app/Core/util/configureAudioSession.dart';
 import 'package:fgtracker/app/Data/Services/Walkie-Talkie-Service.dart';
-import 'package:fgtracker/app/Model/call_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -99,16 +98,8 @@ Future<void> main() async {
   await Global.init();
   FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 
-  const channel = AndroidNotificationChannel(
-    'incoming_call_channel',
-    'Incoming Calls',
-    description: 'Channel for incoming calls',
-    importance: Importance.max,
-  );
-
   await firebaseNotificationServices().initialized();
   CallKitService.instance.init();
-
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(statusBarColor: Colors.transparent),
   );
@@ -167,7 +158,6 @@ Future<void> main() async {
   if(Platform.isIOS){
     CallUtils.instance.listenCallKitEvents();
   }
-
   // WalkieUtils().listenWalkieEvents();
   runApp(const MyApp());
 }
@@ -178,7 +168,7 @@ void setupVoipListener() {
   platform.setMethodCallHandler((call) async {
     if (call.method == "voipToken") {
       final token = call.arguments;
-      print("🔥 VoIP Token: $token");
+      print("VoIP Token: $token");
     }
 
     if (call.method == "incomingCall") {

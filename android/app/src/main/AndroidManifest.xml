@@ -48,6 +48,8 @@
         android:foregroundServiceType="location"
         android:requestLegacyExternalStorage="true"
         android:enableOnBackInvokedCallback="true"
+        android:allowBackup="false"
+        android:fullBackupContent="false"
         tools:targetApi="31">
 
 
