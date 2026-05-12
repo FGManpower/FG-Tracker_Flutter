@@ -22,138 +22,73 @@ class LocationService extends GetxService {
   final SocketService socketService = SocketService.instance;
 
 
-  // Future<void> initLocationTracking({String? groupId}) async {
-  //   final hasPermission = await LocationPermissions().handleLocationPermission();
-  //   bool serviceEnabled = await _location.serviceEnabled();
-  //
-  //   if (hasPermission) {
-  //     log("ServiceEnable--------$serviceEnabled");
-  //     if (serviceEnabled==false) {
-  //       Completer<void> completer = Completer<void>();
-  //
-  //       CommonDialog.ConfirmationDialog(
-  //         icon: Icons.gps_off,
-  //         cancel: "Cancel",
-  //         confirm: "Enable",
-  //         onConfirm: () async {
-  //           Navigator.pop(ContextUtility.context!);
-  //           bool requested = await _location.requestService();
-  //           if (requested) {
-  //             completer.complete();
-  //           } else {
-  //             completer.completeError("GPS not enabled");
-  //           }
-  //         },
-  //         onCancel: () {
-  //           Navigator.pop(ContextUtility.context!);
-  //           completer.completeError("User cancelled GPS enable dialog");
-  //         },
-  //         title: "Enable GPS",
-  //         content: "To track your group in real time, please turn on your GPS.",
-  //       );
-  //
-  //       try {
-  //         await completer.future;
-  //       } catch (e) {
-  //         log("GPS Enable Canceled or Failed: $e");
-  //         return;
-  //       }
-  //     } else {
-  //
-  //       try {
-  //         // Loading().showloading();
-  //         await _location.enableBackgroundMode(enable: true);
-  //         _listenToLocationUpdates(Global.storageServices.get(PrefConst.userId).toString());
-  //         // Loading().dismissloading();
-  //       } catch (e) {
-  //         // Loading().dismissloading();
-  //       }
-  //     }
-  //   } else {
-  //    log("Permission Denied");
-  //   }
-  // }
-
-
-
   Future<void> initLocationTracking({String? groupId}) async {
-    final hasPermission =
-    await LocationPermissions().handleLocationPermission();
-
+    final hasPermission = await LocationPermissions().handleLocationPermission();
     bool serviceEnabled = await _location.serviceEnabled();
 
-    if (!hasPermission) {
-      log("Permission Denied");
-      return;
-    }
+    if (hasPermission) {
+      log("ServiceEnable--------$serviceEnabled");
+      if (serviceEnabled==false) {
+        Completer<void> completer = Completer<void>();
 
-    if (!serviceEnabled) {
-      Completer<void> completer = Completer<void>();
+        CommonDialog.ConfirmationDialog(
+          icon: Icons.gps_off,
+          cancel: "Cancel",
+          confirm: "Enable",
+          onConfirm: () async {
+            Navigator.pop(ContextUtility.context!);
+            bool requested = await _location.requestService();
+            if (requested) {
+              completer.complete();
 
-      CommonDialog.ConfirmationDialog(
-        icon: Icons.gps_off,
-        cancel: "Cancel",
-        confirm: "Enable",
-        onConfirm: () async {
-          Navigator.pop(ContextUtility.context!);
+            } else {
+              completer.completeError("GPS not enabled");
+            }
+          },
+          onCancel: () {
+            Navigator.pop(ContextUtility.context!);
+            completer.completeError("User cancelled GPS enable dialog");
+          },
+          title: "Enable GPS",
+          content: "To track your group in real time, please turn on your GPS.",
+        );
 
-          bool requested = await _location.requestService();
+        try {
+          await completer.future;
+          await _location.enableBackgroundMode(enable: true);
+          Future.delayed(Duration(seconds: 2),() {
+            _listenToLocationUpdates(
+              Global.storageServices
+                  .get(PrefConst.userId)
+                  .toString(),
+            );
+          },);
 
-          if (requested) {
-            completer.complete();
-          } else {
-            completer.completeError("GPS not enabled");
-          }
-        },
-        onCancel: () {
-          Navigator.pop(ContextUtility.context!);
-          completer.completeError(
-            "User cancelled GPS enable dialog",
-          );
-        },
-        title: "Enable GPS",
-        content:
-        "To track your group in real time, please turn on your GPS.",
-      );
 
-      try {
-        await completer.future;
 
-        // ===== IMPORTANT ===== //
-        serviceEnabled = await _location.serviceEnabled();
-
-        if (!serviceEnabled) {
-          log("GPS Still Disabled");
+        } catch (e) {
+          log("GPS Enable Canceled or Failed: $e");
           return;
         }
-      } catch (e) {
-        log("GPS Enable Canceled or Failed: $e");
-        return;
+      } else {
+
+        try {
+          // Loading().showloading();
+          await _location.enableBackgroundMode(enable: true);
+          _listenToLocationUpdates(Global.storageServices.get(PrefConst.userId).toString());
+          // Loading().dismissloading();
+        } catch (e) {
+          // Loading().dismissloading();
+        }
       }
-    }
-
-    // ===== START LOCATION TRACKING ===== //
-    try {
-      await _location.enableBackgroundMode(enable: true);
-
-      final userId = Global.storageServices
-          .get(PrefConst.userId)
-          .toString();
-
-      // Get initial location immediately
-      currentPosition = await _location.getLocation();
-
-      log(
-        "Initial Location => "
-            "${currentPosition?.latitude}, "
-            "${currentPosition?.longitude}",
-      );
-
-      _listenToLocationUpdates(userId);
-    } catch (e) {
-      log("Location Tracking Error => $e");
+    } else {
+     log("Permission Denied");
     }
   }
+
+
+
+
   void _listenToLocationUpdates( String userId) {
     _positionStream?.cancel();
     _positionStream = _location.onLocationChanged.listen((location) {
