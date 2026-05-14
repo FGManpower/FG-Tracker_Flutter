@@ -5,6 +5,7 @@ import 'package:fgtracker/app/Core/values/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:gal/gal.dart';
 import 'package:get/get.dart';
 import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
@@ -27,85 +28,82 @@ class QrController extends GetxController {
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
 
-  Future<void> shareQrCode(String groupCode) async {
-    try {
-      await Future.delayed(const Duration(milliseconds: 300));
+   Future<void> shareQrCode(String groupCode) async {
+     try {
+       await Future.delayed(const Duration(milliseconds: 300));
 
-      final image = await screenshotController.capture();
-      if (image == null) {
-        log("Screenshot failed");
-        return;
-      }
+       final image = await screenshotController.capture();
+       if (image == null) {
+         log("Screenshot failed");
+         return;
+       }
 
-      final tempDir = await getTemporaryDirectory();
-      final file = await File('${tempDir.path}/qr_code.png').create();
-      await file.writeAsBytes(image);
+       final tempDir = await getTemporaryDirectory();
+       final file = await File('${tempDir.path}/qr_code.png').create();
+       await file.writeAsBytes(image);
 
-      const String appLink =
-          'https://play.google.com/store/apps/details?id=com.fg.fgtracker';
-      final String message = '''
+       const String appLink =
+           'https://play.google.com/store/apps/details?id=com.fg.fgtracker';
+       final String message = '''
 📌 *Group Code*: $groupCode
 
 Join my group instantly using the QR code or the code above.
 📲 Download the app to stay connected: $appLink
 ''';
+       final box = Get.context?.findRenderObject() as RenderBox?;
+       await Share.shareXFiles(
+         [XFile(file.path)],
+         text: message,
+         sharePositionOrigin: box != null
+             ? box.localToGlobal(Offset.zero) & box.size
+             : Rect.fromLTWH(0, 0, 100, 100),
+       );
+     } catch (e) {
+       log("Error sharing QR code: $e");
+     }
+   }
 
-      // Share image and message
-      await Share.shareXFiles(
-        [XFile(file.path)],
-        text: message,
-      );
-    } catch (e) {
-      log("Error sharing QR code: $e");
-    }
-  }
+   Future<void> downloadQrCode(BuildContext context) async {
+     try {
 
-  Future<void> downloadQrCode(BuildContext context) async {
-    PermissionStatus imagePermission =
-        await Permission.photos.request(); // iOS / Android 13+
-    PermissionStatus videoPermission =
-        await Permission.videos.request(); // Android 13+
+       await Future.delayed(const Duration(milliseconds: 300));
 
-    bool isGranted = imagePermission.isGranted || videoPermission.isGranted;
+       final image = await screenshotController.capture();
 
-    if (!isGranted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            "Image/Storage permission denied. Please allow it to continue.",
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 13.sp,
-            ),
-          ),
-          action: SnackBarAction(
-            textColor: Colors.white,
-            label: "Open Settings",
-            backgroundColor: AppColors.darkBlue,
-            onPressed: () {
-              openAppSettings();
-            },
-          ),
-        ),
-      );
-      return;
-    }
+       if (image == null) {
+         log("Screenshot capture failed");
+         return;
+       }
 
-    final image = await screenshotController.capture();
-    if (image != null) {
-      final directory = await getTemporaryDirectory();
-      final filePath =
-          '${directory.path}/qr_code_${DateTime.now().millisecondsSinceEpoch}.png';
-      final file = File(filePath);
-      await file.writeAsBytes(image);
+       final directory = await getTemporaryDirectory();
 
-      _showDownloadNotification(filePath);
+       final filePath =
+           '${directory.path}/qr_code_${DateTime.now().millisecondsSinceEpoch}.png';
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("QR Code downloaded successfully")),
-      );
-    }
-  }
+       final file = File(filePath);
+
+       await file.writeAsBytes(image);
+
+
+       await Gal.putImage(file.path);
+
+       ScaffoldMessenger.of(context).showSnackBar(
+         const SnackBar(
+           content: Text("QR Code saved to gallery"),
+         ),
+       );
+
+     } catch (e) {
+
+       log("Download Error: $e");
+
+       ScaffoldMessenger.of(context).showSnackBar(
+         SnackBar(
+           content: Text("Error saving QR code"),
+         ),
+       );
+     }
+   }
 
   void _showDownloadNotification(String filePath) async {
     const AndroidNotificationDetails androidDetails =

@@ -28,7 +28,7 @@ class LocationDataRes {
 }
 
 class LocationData {
-  // int? id;
+   dynamic id;
   dynamic userId;
   dynamic groupId;
   dynamic latitude;
@@ -40,7 +40,7 @@ class LocationData {
 
   LocationData(
       {
-        // this.id,
+         this.id,
       this.userId,
       this.groupId,
       this.latitude,
@@ -51,12 +51,12 @@ class LocationData {
       this.profileImage});
 
   LocationData.fromJson(Map<String, dynamic> json) {
-    // id = json['id'];
+     id = json['id'];
     userId = json['userId'];
     groupId = json['groupId'];
-    latitude = json['latitude'];
-    longitude = json['longitude'];
-    lastSeen = json['lastSeen'];
+     latitude = (json['latitude'] as num?)?.toDouble();
+     longitude = (json['longitude'] as num?)?.toDouble();
+     lastSeen = json['lastSeen'];
     isOnline = json['isOnline'];
     name = json['name'];
     profileImage = json['ProfileImage'];
@@ -64,7 +64,7 @@ class LocationData {
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
-    // data['id'] = this.id;
+     data['id'] = this.id;
     data['userId'] = this.userId;
     data['groupId'] = this.groupId;
     data['latitude'] = this.latitude;
