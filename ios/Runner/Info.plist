@@ -47,7 +47,7 @@
 		<true/>
 	</dict>
 	<key>NSCameraUsageDescription</key>
-	<string>Need camera access for video calls</string>
+	<string>Need camera access for video calls and scan QR codes</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>Your location is continuously shared with your group for accurate real-time tracking, even when the app is in the background.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
@@ -57,7 +57,7 @@
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Need microphone access for audio calls</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>We need access to your photo library to allow you to set a profile image and upload photos of your site location.</string>
+	<string>We need access to your photo library to allow you to set a profile image and upload photos and get QR code from photo library of your site location.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
     <string>We need access to save QR codes to your gallery.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
