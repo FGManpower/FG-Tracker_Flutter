@@ -28,10 +28,11 @@ class Login_Controller extends GetxController {
     if (number.isEmpty) {
       mobileErrorText.value = AppText.mobNOIsRqrd;
       return false;
-    } else if (selectedDialCode == '+91' && number.length < 10) {
-      mobileErrorText.value = AppText.mobNoMustBe6Charactr;
-      return false;
     }
+    // else if (selectedDialCode == '+91' && number.length < 10) {
+    //   mobileErrorText.value = AppText.mobNoMustBe6Charactr;
+    //   return false;
+    // }
 
     mobileErrorText.value = '';
     return true;
@@ -51,7 +52,9 @@ class Login_Controller extends GetxController {
       Loading().showloading();
       dynamic param = {
         "MobileNo": mobNoController.text,
+        "countryCode": selectedDialCode,
       };
+
       var result = await AuthRepo.login(param);
       if (result.status == true) {
         Loading().dismissloading();
