@@ -28,37 +28,59 @@ class QrController extends GetxController {
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
 
-   Future<void> shareQrCode(String groupCode) async {
+   Future<void> shareQrCode(
+       BuildContext context,
+       String groupCode,
+       ) async {
+
      try {
-       await Future.delayed(const Duration(milliseconds: 300));
+
+       await Future.delayed(
+         const Duration(milliseconds: 300),
+       );
 
        final image = await screenshotController.capture();
+
        if (image == null) {
          log("Screenshot failed");
          return;
        }
 
        final tempDir = await getTemporaryDirectory();
-       final file = await File('${tempDir.path}/qr_code.png').create();
+
+       final file = await File(
+         '${tempDir.path}/qr_code.png',
+       ).create();
+
        await file.writeAsBytes(image);
 
        const String appLink =
            'https://play.google.com/store/apps/details?id=com.fg.fgtracker';
+
        final String message = '''
-📌 *Group Code*: $groupCode
+📌 Group Code: $groupCode
 
 Join my group instantly using the QR code or the code above.
-📲 Download the app to stay connected: $appLink
+
+📲 Download the app to stay connected:
+$appLink
 ''';
-       final box = Get.context?.findRenderObject() as RenderBox?;
+
+
+       final RenderBox box =
+       context.findRenderObject() as RenderBox;
+
        await Share.shareXFiles(
          [XFile(file.path)],
          text: message,
-         sharePositionOrigin: box != null
-             ? box.localToGlobal(Offset.zero) & box.size
-             : Rect.fromLTWH(0, 0, 100, 100),
+
+         sharePositionOrigin:
+         box.localToGlobal(Offset.zero) &
+         box.size,
        );
+
      } catch (e) {
+
        log("Error sharing QR code: $e");
      }
    }
@@ -75,6 +97,7 @@ Join my group instantly using the QR code or the code above.
          return;
        }
 
+
        final directory = await getTemporaryDirectory();
 
        final filePath =
@@ -84,24 +107,16 @@ Join my group instantly using the QR code or the code above.
 
        await file.writeAsBytes(image);
 
-
        await Gal.putImage(file.path);
 
-       ScaffoldMessenger.of(context).showSnackBar(
-         const SnackBar(
-           content: Text("QR Code saved to gallery"),
-         ),
-       );
+
+       _showDownloadNotification(filePath);
+
+       log("QR saved successfully");
 
      } catch (e) {
 
        log("Download Error: $e");
-
-       ScaffoldMessenger.of(context).showSnackBar(
-         SnackBar(
-           content: Text("Error saving QR code"),
-         ),
-       );
      }
    }
 

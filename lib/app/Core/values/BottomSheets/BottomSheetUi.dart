@@ -5,7 +5,14 @@ import 'package:fgtracker/app/config/themes_data.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:url_launcher/url_launcher.dart';
+
+import '../../../Model/MemberDataRes.dart';
+import '../../../routes/app_pages.dart';
+import '../../constant/pref_res.dart';
+import '../global.dart';
 
 class BottomSheetUi {
   void showMemberBottomSheet(BuildContext context, List<LocationData> members) {
@@ -84,47 +91,191 @@ class BottomSheetUi {
 
                             Expanded(
                               child: Column(
-                                crossAxisAlignment:
-                                CrossAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  reausabletext(
-                                    member.name ?? 'Unknown',
-                                    fontsize: 16,
-                                    fontweight: FontWeight.w600,
-                                  ),
 
-                                  SizedBox(height: 4.h),
 
                                   Row(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Icon(
-                                        Icons.circle,
-                                        size: 10.r,
-                                        color: isOnline
-                                            ? Colors.green
-                                            : Colors.grey,
-                                      ),
 
-                                      SizedBox(width: 6.w),
 
                                       Expanded(
-                                        child: reausabletext(
-                                          isOnline
-                                              ? "Online"
-                                              : "Last seen: ${Tracking().getTimeAgo(DateTime.parse(member.lastSeen ?? DateTime.now().toString()))}",
-                                          fontsize: 13,
-                                          color: Colors.grey[600],
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+
+                                            Text(
+                                              member.name ?? 'Unknown',
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: TextStyle(
+                                                fontSize: 16.sp,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+
+                                            SizedBox(height: 4.h),
+
+                                            Row(
+                                              children: [
+
+                                                Icon(
+                                                  Icons.circle,
+                                                  size: 10.r,
+                                                  color: isOnline
+                                                      ? Colors.green
+                                                      : Colors.grey,
+                                                ),
+
+                                                SizedBox(width: 6.w),
+
+                                                Expanded(
+                                                  child: reausabletext(
+                                                    isOnline
+                                                        ? "Online"
+                                                        : "Last seen: ${Tracking().getTimeAgo(DateTime.parse(member.lastSeen ?? DateTime.now().toString()))}",
+                                                    fontsize: 13,
+                                                    color: Colors.grey[600],
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      GestureDetector(
+                                        onTap: () {
+
+                                          Navigator.pop(context);
+
+                                          final MemberData memberData = MemberData(
+                                            id: member.id,
+                                            userId: member.userId,
+                                            groupId: member.groupId ?? 0,
+                                            name: member.name,
+                                            profileImage: member.profileImage,
+                                            lastSeen: member.lastSeen,
+                                            isOnline: member.isOnline,
+                                          );
+
+                                          Get.toNamed(
+                                            Routes.chatScreen,
+                                            arguments: {
+                                              "userData": memberData,
+                                              "groupName": "Members Chat",
+                                              "isCreator": false,
+                                              "type": "",
+                                            },
+                                          );
+                                        },
+                                        child: Container(
+                                          padding: EdgeInsets.all(9.w),
+                                          decoration: BoxDecoration(
+                                            color: ToggleThemeData.Appcolor.withOpacity(0.1),
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: Icon(
+                                            Icons.chat_bubble_outline,
+                                            color: ToggleThemeData.Appcolor,
+                                            size: 18.sp,
+                                          ),
+                                        ),
+                                      ),
+
+                                      SizedBox(width: 8.w),
+
+
+                                      GestureDetector(
+                                        onTap: () {
+
+                                          Navigator.pop(context);
+
+                                          Get.toNamed(
+                                            Routes.callScreen,
+                                            arguments: {
+                                              "callerId": Global.storageServices
+                                                  .get(PrefConst.userId)
+                                                  .toString(),
+
+                                              "remoteUserId":
+                                              member.userId.toString(),
+
+                                              "callerName":
+                                              member.name ?? "",
+
+                                              "offer": null,
+
+                                              "is_video": false,
+
+                                              "callType": "outGoing",
+                                            },
+                                          );
+                                        },
+                                        child: Container(
+                                          padding: EdgeInsets.all(9.w),
+                                          decoration: BoxDecoration(
+                                            color: Colors.green.withOpacity(0.1),
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: Icon(
+                                            Icons.call,
+                                            color: Colors.green,
+                                            size: 18.sp,
+                                          ),
+                                        ),
+                                      ),
+
+                                      SizedBox(width: 8.w),
+
+
+                                      GestureDetector(
+                                        onTap: () {
+
+                                          Navigator.pop(context);
+
+                                          Get.toNamed(
+                                            Routes.callScreen,
+                                            arguments: {
+                                              "callerId": Global.storageServices
+                                                  .get(PrefConst.userId)
+                                                  .toString(),
+
+                                              "remoteUserId":
+                                              member.userId.toString(),
+
+                                              "callerName":
+                                              member.name ?? "",
+
+                                              "offer": null,
+
+                                              "is_video": true,
+
+                                              "callType": "outGoing",
+                                            },
+                                          );
+                                        },
+                                        child: Container(
+                                          padding: EdgeInsets.all(9.w),
+                                          decoration: BoxDecoration(
+                                            color: Colors.red.withOpacity(0.1),
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: Icon(
+                                            Icons.videocam,
+                                            color: Colors.red,
+                                            size: 18.sp,
+                                          ),
                                         ),
                                       ),
                                     ],
                                   ),
-
-                                  SizedBox(height: 8.h),
-
+                                  SizedBox(height: 16.h),
                                   Align(
                                     alignment: Alignment.centerRight,
                                     child: ElevatedButton.icon(
                                       onPressed: () {
+
                                         Navigator.pop(context);
 
                                         final Uri mapsUri = Uri.parse(
@@ -136,19 +287,16 @@ class BottomSheetUi {
                                       icon: const Icon(Icons.navigation),
                                       label: const Text("Navigate"),
                                       style: ElevatedButton.styleFrom(
-                                        backgroundColor:
-                                        ToggleThemeData.Appcolor,
+                                        backgroundColor: ToggleThemeData.Appcolor,
                                         foregroundColor: Colors.white,
                                         shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                          BorderRadius.circular(10.r),
+                                          borderRadius: BorderRadius.circular(10.r),
                                         ),
                                         padding: EdgeInsets.symmetric(
-                                          horizontal: 12.w,
-                                          vertical: 8.h,
+                                          horizontal: 14.w,
+                                          vertical: 10.h,
                                         ),
-                                        textStyle:
-                                        TextStyle(fontSize: 13.sp),
+                                        textStyle: TextStyle(fontSize: 13.sp),
                                       ),
                                     ),
                                   ),
