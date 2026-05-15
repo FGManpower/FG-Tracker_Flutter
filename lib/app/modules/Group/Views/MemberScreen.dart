@@ -357,51 +357,92 @@ class MemberscreenScreen extends GetView<MemberController> {
                                   ),
                               ],
                             ),
-                            SizedBox(width: 16.w),
+
+                            SizedBox(width: 14.w),
+
                             Expanded(
                               child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
+
+
                                   Expanded(
                                     child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
+                                      mainAxisSize: MainAxisSize.min,
+                                      crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Expanded(
-                                              child: reausabletext(
-                                                data?.name ??
-                                                    AppText.unnamedMember,
-                                                fontsize: 15,
-                                                fontfamily:
-                                                    FontFamily.interSemiBold,
-                                              ),
-                                            ),
-                                            reausabletext(
-                                              Utility.isNotNullEmptyOrFalse(
-                                                      data?.lastSeen)
-                                                  ? formatTime(data!.lastSeen!)
-                                                  : "",
-                                              fontsize: 10,
-                                              fontfamily:
-                                                  FontFamily.interMedium,
-                                              color: Colors.grey.shade500,
-                                            ),
-                                          ],
+
+
+                                        reausabletext(
+                                          data?.name ?? AppText.unnamedMember,
+                                          fontsize: 15,
+                                          fontfamily: FontFamily.interSemiBold,
                                         ),
-                                        SizedBox(height: 4.h),
+
+
+                                        SizedBox(height: 2.h),
+
+
                                         MobileNumberView(
-                                          mobileNumber: data?.mobileNo ??
-                                              AppText.noNumber,
+                                          mobileNumber:
+                                          data?.mobileNo ?? AppText.noNumber,
                                         ),
                                       ],
                                     ),
                                   ),
+
+                                  SizedBox(width: 10.w),
+
+
+                                  Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: [
+
+
+                                      reausabletext(
+                                        Utility.isNotNullEmptyOrFalse(data?.lastSeen)
+                                            ? formatTime(data!.lastSeen!)
+                                            : "",
+                                        fontsize: 10,
+                                        fontfamily: FontFamily.interMedium,
+                                        color: Colors.grey.shade500,
+                                      ),
+
+                                      SizedBox(height: 8.h),
+
+                                      InkWell(
+                                        borderRadius: BorderRadius.circular(20.r),
+                                        onTap: () {
+                                          Get.toNamed(
+                                            Routes.LocationTracking,
+                                            arguments: {
+                                              "groupId": int.parse(
+                                                  controller.arguments!['groupId'].toString()),
+                                              "groupName":
+                                              controller.arguments!['groupName'],
+                                              "targetUserId":
+                                              data?.userId.toString(),
+                                            },
+                                          );
+                                        },
+                                        child: Container(
+                                          padding: EdgeInsets.all(8),
+                                          decoration: BoxDecoration(
+                                            color: ToggleThemeData.darkPurple
+                                                .withOpacity(0.08),
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: Icon(
+                                            Icons.near_me,
+                                            color: ToggleThemeData.darkPurple,
+                                            size: 18.sp,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+
                                   // InkWell(
                                   //   onTap: () {
                                   //     WalkieController().startServices(

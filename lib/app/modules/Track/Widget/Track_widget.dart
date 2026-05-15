@@ -12,10 +12,9 @@ Future<BitmapDescriptor> getCustomIcon(
   return MarkerWidget(imageUrl: imageUrl, isOnline: isOnline)
       .toBitmapDescriptor(
     logicalSize: Size(100.w, 120.h),
-    imageSize: Size(200.w, 240.h), // high-res (2x)
+    imageSize: Size(200.w, 240.h),
   );
 }
-
 class MarkerWidget extends StatelessWidget {
   final String imageUrl;
   final dynamic isOnline;
@@ -33,7 +32,6 @@ class MarkerWidget extends StatelessWidget {
       random.nextInt(256),
     );
   }
-
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -43,7 +41,6 @@ class MarkerWidget extends StatelessWidget {
       child: Stack(
         alignment: Alignment.topCenter,
         children: [
-          // Marker Pin
           Positioned(
             bottom: 0,
             child: Icon(
@@ -64,7 +61,10 @@ class MarkerWidget extends StatelessWidget {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: Colors.white,
-                    border: Border.all(color: Colors.red, width: 1),
+                    border: Border.all(
+                      color: isOnline == true ? Colors.green : Colors.red,
+                      width: 2,
+                    ),
                   ),
                   child: ClipOval(
                     child: Image.network(
@@ -100,8 +100,6 @@ class MarkerWidget extends StatelessWidget {
     );
   }
 }
-
-
 Widget buildNavActionButton(IconData icon, String label, VoidCallback onTap) {
   return GestureDetector(
     onTap: onTap,

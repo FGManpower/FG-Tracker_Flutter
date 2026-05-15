@@ -212,7 +212,7 @@ class _QrCodeScreenState extends State<QrCodeScreen>
                         Padding(padding: EdgeInsets.symmetric(horizontal: 10.w,vertical: 10.h),child:   Row(
                           children: [
                             Expanded(child:   reausablebutton(icon: Icons.share,title: "Share",iconColor: Color(0xffFFE400),borderradiues: 25,fontSize:14,backgroundColor: ToggleThemeData.Appcolor,iconSize:20,ontap: () => controller
-                                .shareQrCode(controller.groupCode.toString()),),),
+                                .shareQrCode(context,controller.groupCode.toString()),),),
 
                             SizedBox(width: 20.w,),
                             Expanded(child:   reausablebutton(icon: Icons.download_rounded,title: "Download",iconColor: Color(0xffFFE400),borderradiues: 25,fontSize:14,backgroundColor: ToggleThemeData.Appcolor,iconSize:20,ontap: () => controller.downloadQrCode(context),),),

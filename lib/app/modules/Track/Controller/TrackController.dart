@@ -30,6 +30,8 @@ class TrackingController extends GetxController {
   GoogleMapController? mapController;
 
   final groupWiseUserData = <String, List<LocationData>>{}.obs;
+  final _markerPositions = <String, LatLng>{};
+  final _activeAnimations = <String, bool>{};
   String? _alreadyListeningGroupId;
 
   Future<void> initSocketConnection() async {
@@ -57,7 +59,10 @@ class TrackingController extends GetxController {
   }
 
   void initGroupTracking(String groupId) {
-    groupWiseUserData[groupId] = [];
+
+    if (!groupWiseUserData.containsKey(groupId)) {
+      groupWiseUserData[groupId] = [];
+    }
     _initSocketTracking(groupId);
     _loadInitialMarkers(groupId);
   }
@@ -116,47 +121,56 @@ class TrackingController extends GetxController {
     }
   }
 
-  Future<void> searchUserAndZoom(String groupId, String userName) async {
-    final users = groupWiseUserData[groupId] ?? [];
-    final user = users.firstWhereOrNull((u) =>
-        u.name.toString().toLowerCase().contains(userName.toLowerCase()));
+  Future<void> searchUserAndZoom(String groupId, String userId) async {
 
-    if (user != null) {
-      final matchedMarker = markers.firstWhere(
-        (m) => m.markerId.value == user.userId.toString(),
-      );
-
-      if (mapController != null) {
-        await mapController!.animateCamera(
-          CameraUpdate.newLatLngZoom(matchedMarker.position, 18.5),
-        );
-      }
-    } else {
-      Get.snackbar("User Not Found", "No user with name '$userName' found.",
-          backgroundColor: Colors.redAccent, colorText: Colors.white);
+    int retries = 0;
+    while (markers.isEmpty && retries < 30) {
+      await Future.delayed(const Duration(milliseconds: 100));
+      retries++;
     }
-  }
 
-  Future<void> searchAndFocusUser(String groupId, String name) async {
-    final users = groupWiseUserData[groupId] ?? [];
-    final user = users
-        .firstWhereOrNull((u) => u.name.toLowerCase() == name.toLowerCase());
 
-    if (user != null && mapController != null) {
+    final matchedMarker = markers.toList().firstWhereOrNull(
+          (m) => m.markerId.value == userId,
+    );
+
+    if (matchedMarker != null && mapController != null) {
       await mapController!.animateCamera(
-        CameraUpdate.newLatLngZoom(
-            LatLng(user.latitude!, user.longitude!), 22.5),
+        CameraUpdate.newLatLngZoom(matchedMarker.position, 18.5),
       );
     } else {
-      Get.snackbar("User Not Found", "No user with name '$name' found.",
-          backgroundColor: Colors.redAccent, colorText: Colors.white);
+      Get.snackbar(
+        "User Not Found",
+        "No user with id '$userId' found.",
+        backgroundColor: Colors.redAccent,
+        colorText: Colors.white,
+      );
     }
   }
+
+  // Future<void> searchAndFocusUser(String groupId, String name) async {
+  //   final users = groupWiseUserData[groupId] ?? [];
+  //   final user = users
+  //       .firstWhereOrNull((u) => u.name.toLowerCase() == name.toLowerCase());
+  //
+  //   if (user != null && mapController != null) {
+  //     await mapController!.animateCamera(
+  //       CameraUpdate.newLatLngZoom(
+  //           LatLng(user.latitude!, user.longitude!), 22.5),
+  //     );
+  //   } else {
+  //     Get.snackbar("User Not Found", "No user with name '$name' found.",
+  //         backgroundColor: Colors.redAccent, colorText: Colors.white);
+  //   }
+  // }
 
   void removeUserMarker(String userId) {
     markers.removeWhere((m) => m.markerId.value == userId);
+    _markerPositions.remove(userId);
+    _activeAnimations[userId] = false;
     markers.refresh();
   }
+
 
   void showMarkersForGroup(String groupId) {
     markers.clear();
@@ -185,6 +199,41 @@ class TrackingController extends GetxController {
     for (var user in users) {
       updateGroupMarker(user);
     }
+  }
+  Future<void> _animateMarkerTo({
+    required String markerId,
+    required LatLng from,
+    required LatLng to,
+    required Marker Function(LatLng position) markerBuilder,
+    int steps = 40,
+    Duration duration = const Duration(milliseconds: 900),
+  }) async {
+    _activeAnimations[markerId] = false;
+    await Future.delayed(const Duration(milliseconds: 16));
+    _activeAnimations[markerId] = true;
+
+    final stepDuration = Duration(microseconds: duration.inMicroseconds ~/ steps);
+
+    for (int i = 1; i <= steps; i++) {
+      if (_activeAnimations[markerId] != true) return;
+
+      final t = i / steps;
+      final easedT = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+
+      final interpolated = LatLng(
+        from.latitude + (to.latitude - from.latitude) * easedT,
+        from.longitude + (to.longitude - from.longitude) * easedT,
+      );
+
+      markers.removeWhere((m) => m.markerId.value == markerId);
+      markers.add(markerBuilder(interpolated));
+      markers.refresh();
+
+      await Future.delayed(stepDuration);
+    }
+
+    _markerPositions[markerId] = to;
+    _activeAnimations[markerId] = false;
   }
 
   Future<void> updateGroupMarker(LocationData data) async {
@@ -216,25 +265,28 @@ class TrackingController extends GetxController {
 
     final icon = await getCustomIcon(profileImageUrl, isOnline);
 
-    final marker = Marker(
+
+    final newPosition = LatLng(data.latitude!, data.longitude!);
+    final oldPosition = _markerPositions[data.userId.toString()] ?? newPosition;
+
+    Marker markerBuilder(LatLng position) => Marker(
       markerId: MarkerId(data.userId.toString()),
-      position: LatLng(data.latitude!, data.longitude!),
+      position: position,
       icon: icon,
       onTap: () async {
-        if (locationService.currentPosition == null) return;
-
         final dest = LatLng(data.latitude!, data.longitude!);
-        final origin = LatLng(
-          locationService.currentPosition!.latitude!,
-          locationService.currentPosition!.longitude!,
-        );
+        double distanceKm = 0.0;
+        if (locationService.currentPosition != null) {
+          final origin = LatLng(
+            locationService.currentPosition!.latitude!,
+            locationService.currentPosition!.longitude!,
+          );
+          distanceKm = _calculateDistance(
+            origin.latitude, origin.longitude,
+            dest.latitude, dest.longitude,
+          );
+        }
 
-        final distanceKm = _calculateDistance(
-          origin.latitude,
-          origin.longitude,
-          dest.latitude,
-          dest.longitude,
-        );
 
         DialogBox().showRouteDetailsBottomSheet(
           destination: dest,
@@ -242,13 +294,27 @@ class TrackingController extends GetxController {
           name: data.name,
           imageUrl: profileImageUrl,
           lastSeen: Tracking().getTimeAgo(DateTime.parse(data.lastSeen!)),
+          userId: int.tryParse(data.userId.toString()),
+          groupId: int.tryParse(data.groupId.toString()),
+          id: int.tryParse(data.id.toString()),
+          status: data.isOnline,
         );
       },
     );
 
-    markers.removeWhere((m) => m.markerId.value == data.userId.toString());
-    markers.add(marker);
-    markers.refresh();
+    if (oldPosition == newPosition) {
+      markers.removeWhere((m) => m.markerId.value == data.userId.toString());
+      markers.add(markerBuilder(newPosition));
+      markers.refresh();
+      _markerPositions[data.userId.toString()] = newPosition;
+    } else {
+      _animateMarkerTo(
+        markerId: data.userId.toString(),
+        from: oldPosition,
+        to: newPosition,
+        markerBuilder: markerBuilder,
+      );
+    }
   }
 
   double _calculateDistance(

@@ -5,8 +5,10 @@ import '../../../../gen/fonts.gen.dart';
 import '../../../Core/constant/const_res.dart';
 import '../../../Core/theme/AppText.dart';
 import '../../../Data/Services/Tracking.dart';
+import '../../../Model/MemberDataRes.dart';
 import '../../../config/themes_data.dart';
 import '../../../global_widget/common_widget.dart';
+import '../../../routes/app_pages.dart';
 import '../Controller/SearchController.dart';
 
 class SearchMembers extends GetView<SearchMemberController> {
@@ -93,7 +95,7 @@ class SearchMembers extends GetView<SearchMemberController> {
                     "just now");
         return GestureDetector(
           onTap: () {
-            Navigator.pop(context,data.name);
+            Navigator.pop(context, data.userId.toString());
           },
           child: Container(
             color: Colors.white,
@@ -125,29 +127,88 @@ class SearchMembers extends GetView<SearchMemberController> {
                 ),
                 SizedBox(width: 16.w),
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            child: reausabletext(
-                                data.name ?? AppText.unnamedMember,
-                                fontsize: 15,
-                                fontfamily: FontFamily.interSemiBold),
-                          ),
-                          reausabletext("12:08 PM",
+
+
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            reausabletext(
+                              data.name ?? AppText.unnamedMember,
+                              fontsize: 15,
+                              fontfamily: FontFamily.interSemiBold,
+                            ),
+
+                            SizedBox(height: 4.h),
+
+                            reausabletext(
+                              "Online",
                               fontsize: 10,
                               fontfamily: FontFamily.interMedium,
-                              color: Colors.grey.shade500),
+                              color: ToggleThemeData.darkPurple,
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      SizedBox(width: 10.w),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+
+                          reausabletext(
+                            "12:08 PM",
+                            fontsize: 10,
+                            fontfamily: FontFamily.interMedium,
+                            color: Colors.grey.shade500,
+                          ),
+
+                          SizedBox(height: 8.h),
+
+                          InkWell(
+                            borderRadius: BorderRadius.circular(20.r),
+                            onTap: () {
+
+
+                              final MemberData memberData = MemberData(
+                                userId: data.userId,
+                                groupId: data.groupId ?? 0,
+                                name: data.name,
+                                profileImage: data.profileImage,
+                                lastSeen: data.lastSeen,
+                                isOnline: data.isOnline,
+                              );
+
+
+                              Get.toNamed(
+                                Routes.chatScreen,
+                                arguments: {
+                                  "userData": memberData,
+                                  "groupName": "Members Chat",
+                                  "isCreator": false,
+                                  "type": "",
+                                },
+                              );
+                            },
+                            child: Container(
+                              padding: EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: ToggleThemeData.darkPurple
+                                    .withOpacity(0.08),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                Icons.chat_bubble_outline,
+                                color: ToggleThemeData.darkPurple,
+                                size: 18.sp,
+                              ),
+                            ),
+                          ),
                         ],
                       ),
-                      SizedBox(height: 4.h),
-                      reausabletext("Online",
-                          fontsize: 10,
-                          fontfamily: FontFamily.interMedium,
-                          color: ToggleThemeData.darkPurple),
                     ],
                   ),
                 ),

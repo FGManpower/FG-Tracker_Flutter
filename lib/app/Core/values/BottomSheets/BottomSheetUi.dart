@@ -5,7 +5,14 @@ import 'package:fgtracker/app/config/themes_data.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:url_launcher/url_launcher.dart';
+
+import '../../../Model/MemberDataRes.dart';
+import '../../../routes/app_pages.dart';
+import '../../constant/pref_res.dart';
+import '../global.dart';
 
 class BottomSheetUi {
   void showMemberBottomSheet(BuildContext context, List<LocationData> members) {
@@ -17,128 +24,293 @@ class BottomSheetUi {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (_) {
-        return Padding(
-          padding: EdgeInsets.only(
-            left: 16.w,
-            right: 16.w,
-            top: 12.h,
-            bottom: MediaQuery.of(context).viewInsets.bottom + 5.h,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 50.w,
-                height: 5.h,
-                margin: EdgeInsets.only(bottom: 16.h),
-                decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(10.r),
+        return SizedBox(
+          height: MediaQuery.of(context).size.height * 0.8,
+          child: Padding(
+            padding: EdgeInsets.only(
+              left: 16.w,
+              right: 16.w,
+              top: 12.h,
+              bottom: MediaQuery.of(context).viewInsets.bottom + 5.h,
+            ),
+            child: Column(
+              children: [
+                Container(
+                  width: 50.w,
+                  height: 5.h,
+                  margin: EdgeInsets.only(bottom: 16.h),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(10.r),
+                  ),
                 ),
-              ),
-              reausabletext(
-                "Group Members",
-                fontsize: 18,
-                fontweight: FontWeight.w600,
-                align: TextAlign.center,
-              ),
-              SizedBox(height: 10.h),
-              ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: members.length,
-                itemBuilder: (_, index) {
-                  final member = members[index];
-                  final isOnline =
-                      member.isOnline == true || member.isOnline == 1;
-                  final profileUrl = (member.profileImage?.isNotEmpty ?? false)
-                      ? "${ConstRes.aImageBaseUrl}${member.profileImage}"
-                      : null;
 
-                  return Container(
-                    margin: EdgeInsets.symmetric(vertical: 8.h),
-                    padding: EdgeInsets.all(12.w),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey.shade300),
-                      borderRadius: BorderRadius.circular(12.r),
-                      color: Colors.grey.shade50,
-                    ),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        CircleAvatar(
-                          radius: 28.r,
-                          backgroundImage: profileUrl != null
-                              ? NetworkImage(profileUrl)
-                              : const AssetImage('assets/default_avatar.png')
-                                  as ImageProvider,
+                reausabletext(
+                  "Group Members",
+                  fontsize: 18,
+                  fontweight: FontWeight.w600,
+                  align: TextAlign.center,
+                ),
+
+                SizedBox(height: 10.h),
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: members.length,
+                    itemBuilder: (_, index) {
+                      final member = members[index];
+
+                      final isOnline =
+                          member.isOnline == true || member.isOnline == 1;
+
+                      final profileUrl =
+                      (member.profileImage?.isNotEmpty ?? false)
+                          ? "${ConstRes.aImageBaseUrl}${member.profileImage}"
+                          : null;
+
+                      return Container(
+                        margin: EdgeInsets.symmetric(vertical: 8.h),
+                        padding: EdgeInsets.all(12.w),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.grey.shade300),
+                          borderRadius: BorderRadius.circular(12.r),
+                          color: Colors.grey.shade50,
                         ),
-                        SizedBox(width: 12.w),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              reausabletext(
-                                member.name ?? 'Unknown',
-                                fontsize: 16,
-                                fontweight: FontWeight.w600,
-                              ),
-                              SizedBox(height: 4.h),
-                              Row(
-                                children: [
-                                  Icon(Icons.circle,
-                                      size: 10.r,
-                                      color: isOnline
-                                          ? Colors.green
-                                          : Colors.grey),
-                                  SizedBox(width: 6.w),
-                                  reausabletext(
-                                    isOnline
-                                        ? "Online"
-                                        : "Last seen:"
-                                        " ${Tracking().getTimeAgo(DateTime.parse(member.lastSeen ?? DateTime.now().toString()))}",
-                                    fontsize: 13,
-                                    color: Colors.grey[600],
-                                  ),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            CircleAvatar(
+                              radius: 28.r,
+                              backgroundImage: profileUrl != null
+                                  ? NetworkImage(profileUrl)
+                                  : const AssetImage(
+                                  'assets/default_avatar.png')
+                              as ImageProvider,
+                            ),
 
+                            SizedBox(width: 12.w),
+
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+
+
+                                  Row(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+
+
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+
+                                            Text(
+                                              member.name ?? 'Unknown',
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: TextStyle(
+                                                fontSize: 16.sp,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+
+                                            SizedBox(height: 4.h),
+
+                                            Row(
+                                              children: [
+
+                                                Icon(
+                                                  Icons.circle,
+                                                  size: 10.r,
+                                                  color: isOnline
+                                                      ? Colors.green
+                                                      : Colors.grey,
+                                                ),
+
+                                                SizedBox(width: 6.w),
+
+                                                Expanded(
+                                                  child: reausabletext(
+                                                    isOnline
+                                                        ? "Online"
+                                                        : "Last seen: ${Tracking().getTimeAgo(DateTime.parse(member.lastSeen ?? DateTime.now().toString()))}",
+                                                    fontsize: 13,
+                                                    color: Colors.grey[600],
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      GestureDetector(
+                                        onTap: () {
+
+                                          Navigator.pop(context);
+
+                                          final MemberData memberData = MemberData(
+                                            id: member.id,
+                                            userId: member.userId,
+                                            groupId: member.groupId ?? 0,
+                                            name: member.name,
+                                            profileImage: member.profileImage,
+                                            lastSeen: member.lastSeen,
+                                            isOnline: member.isOnline,
+                                          );
+
+                                          Get.toNamed(
+                                            Routes.chatScreen,
+                                            arguments: {
+                                              "userData": memberData,
+                                              "groupName": "Members Chat",
+                                              "isCreator": false,
+                                              "type": "",
+                                            },
+                                          );
+                                        },
+                                        child: Container(
+                                          padding: EdgeInsets.all(9.w),
+                                          decoration: BoxDecoration(
+                                            color: ToggleThemeData.Appcolor.withOpacity(0.1),
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: Icon(
+                                            Icons.chat_bubble_outline,
+                                            color: ToggleThemeData.Appcolor,
+                                            size: 18.sp,
+                                          ),
+                                        ),
+                                      ),
+
+                                      SizedBox(width: 8.w),
+
+
+                                      GestureDetector(
+                                        onTap: () {
+
+                                          Navigator.pop(context);
+
+                                          Get.toNamed(
+                                            Routes.callScreen,
+                                            arguments: {
+                                              "callerId": Global.storageServices
+                                                  .get(PrefConst.userId)
+                                                  .toString(),
+
+                                              "remoteUserId":
+                                              member.userId.toString(),
+
+                                              "callerName":
+                                              member.name ?? "",
+
+                                              "offer": null,
+
+                                              "is_video": false,
+
+                                              "callType": "outGoing",
+                                            },
+                                          );
+                                        },
+                                        child: Container(
+                                          padding: EdgeInsets.all(9.w),
+                                          decoration: BoxDecoration(
+                                            color: Colors.green.withOpacity(0.1),
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: Icon(
+                                            Icons.call,
+                                            color: Colors.green,
+                                            size: 18.sp,
+                                          ),
+                                        ),
+                                      ),
+
+                                      SizedBox(width: 8.w),
+
+
+                                      GestureDetector(
+                                        onTap: () {
+
+                                          Navigator.pop(context);
+
+                                          Get.toNamed(
+                                            Routes.callScreen,
+                                            arguments: {
+                                              "callerId": Global.storageServices
+                                                  .get(PrefConst.userId)
+                                                  .toString(),
+
+                                              "remoteUserId":
+                                              member.userId.toString(),
+
+                                              "callerName":
+                                              member.name ?? "",
+
+                                              "offer": null,
+
+                                              "is_video": true,
+
+                                              "callType": "outGoing",
+                                            },
+                                          );
+                                        },
+                                        child: Container(
+                                          padding: EdgeInsets.all(9.w),
+                                          decoration: BoxDecoration(
+                                            color: Colors.red.withOpacity(0.1),
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: Icon(
+                                            Icons.videocam,
+                                            color: Colors.red,
+                                            size: 18.sp,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  SizedBox(height: 16.h),
+                                  Align(
+                                    alignment: Alignment.centerRight,
+                                    child: ElevatedButton.icon(
+                                      onPressed: () {
+
+                                        Navigator.pop(context);
+
+                                        final Uri mapsUri = Uri.parse(
+                                          "https://www.google.com/maps/dir/?api=1&destination=${member.latitude},${member.longitude}&travelmode=walking",
+                                        );
+
+                                        launchUrl(mapsUri);
+                                      },
+                                      icon: const Icon(Icons.navigation),
+                                      label: const Text("Navigate"),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: ToggleThemeData.Appcolor,
+                                        foregroundColor: Colors.white,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(10.r),
+                                        ),
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: 14.w,
+                                          vertical: 10.h,
+                                        ),
+                                        textStyle: TextStyle(fontSize: 13.sp),
+                                      ),
+                                    ),
+                                  ),
                                 ],
                               ),
-                              SizedBox(height: 4.h),
-                              Align(
-                                alignment: Alignment.centerRight,
-                                child: ElevatedButton.icon(
-                                  onPressed: () {
-                                    Navigator.pop(context);
-                                    final Uri mapsUri = Uri.parse(
-                                        "https://www.google.com/maps/dir/?api=1&destination=${member.latitude},${member.longitude}&travelmode=walking");
-                                    launchUrl(mapsUri);
-                                  },
-                                  icon: const Icon(Icons.navigation),
-                                  label: const Text("Navigate"),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: ToggleThemeData.Appcolor,
-                                    foregroundColor: Colors.white,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius:
-                                      BorderRadius.circular(10.r),
-                                    ),
-                                    padding: EdgeInsets.symmetric(
-                                      horizontal: 12.w,
-                                      vertical: 8.h,
-                                    ),
-                                    textStyle: TextStyle(fontSize: 13.sp),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                  );
-                },
-              ),
-            ],
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
           ),
         );
       },

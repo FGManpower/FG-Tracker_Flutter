@@ -14,15 +14,21 @@ import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_mlkit_barcode_scanning/google_mlkit_barcode_scanning.dart';
 
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../Model/MemberDataRes.dart';
 import '../../../global_widget/common_widget.dart';
 
 import '../../../modules/auth/Auth_Widget/Auth_widget.dart';
+import '../../../routes/app_pages.dart';
+import '../../constant/pref_res.dart';
 import '../../theme/AppText.dart';
+import '../global.dart';
 import 'Common_dialog.dart';
 
 class DialogBox {
@@ -349,10 +355,12 @@ class DialogBox {
       onTap: onTap,
     );
   }
-
   void showRouteDetailsBottomSheet({
     required LatLng destination,
     required double distance,
+    int? userId,
+    int? groupId,
+    int? id,
     String? name,
     String? imageUrl,
     bool? status,
@@ -361,7 +369,7 @@ class DialogBox {
     bool isOnline = status == true || (lastSeen?.toLowerCase() == "just now");
 
     showModalBottomSheet(
-        context: ContextUtility.context!,
+      context: Get.context!,
         isScrollControlled: true,
         backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(
@@ -443,6 +451,178 @@ class DialogBox {
                         ],
                       ),
                     ),
+                    SizedBox(height: 24.h),
+                    SizedBox(height: 18.h),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: reausablebutton(
+                            title: "Chat",
+                            fontSize: 17,
+                            borderradiues: 50.r,
+                            icon: Icons.chat_bubble_outline,
+                            iconSize: 20.sp,
+                            iconColor: Colors.white,
+                            textcolor: Colors.white,
+                            height: 55,
+                            ontap: () {
+
+                              final MemberData memberData = MemberData(
+                                id: id,
+                                userId: userId,
+                                groupId: groupId ?? 0,
+                                name: name,
+                                profileImage: imageUrl,
+                                lastSeen: lastSeen,
+                                isOnline: status,
+                              );
+
+                              Navigator.pop(ctx);
+
+                              Get.toNamed(
+                                Routes.chatScreen,
+                                arguments: {
+                                  "userData": memberData,
+                                  "groupName": "Members Chat",
+                                  "isCreator": false,
+                                  "type": "",
+                                },
+                              );
+                            },
+                          ),
+                        ),
+
+                        SizedBox(width: 12.w),
+                        Expanded(
+                          child: reausablebutton(
+                            title: "Call",
+                            fontSize: 17,
+                            borderradiues: 50.r,
+                            icon: Icons.call,
+                            iconSize: 20.sp,
+                            iconColor: Colors.white,
+                            textcolor: Colors.white,
+                            height: 55,
+                            ontap: () {
+                              showModalBottomSheet(
+                                context: ctx,
+                                backgroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.vertical(
+                                    top: Radius.circular(24.r),
+                                  ),
+                                ),
+                                builder: (_) {
+                                  return Padding(
+                                    padding: EdgeInsets.all(20.w),
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+
+                                        reausabletext(
+                                          "Select Call Type",
+                                          fontsize: 18,
+                                          fontweight: FontWeight.bold,
+                                        ),
+
+                                        SizedBox(height: 20.h),
+                                        ListTile(
+                                          leading: CircleAvatar(
+                                            backgroundColor:
+                                            ToggleThemeData.darkPurple.withOpacity(0.1),
+                                            child: Icon(
+                                              Icons.call,
+                                              color: ToggleThemeData.darkPurple,
+                                            ),
+                                          ),
+                                          title: reausabletext(
+                                            "Audio Call",
+                                            fontsize: 15,
+                                            fontfamily: FontFamily.interMedium,
+                                          ),
+                                          onTap: () {
+
+                                            Navigator.pop(ctx);
+                                            Navigator.pop(ctx);
+
+                                            Get.toNamed(
+                                              Routes.callScreen,
+                                              arguments: {
+                                                "callerId": Global.storageServices
+                                                    .get(PrefConst.userId)
+                                                    .toString(),
+
+                                                "remoteUserId": userId?.toString() ?? "",
+
+
+                                                "callerName":
+                                                name ?? "",
+
+                                                "offer": null,
+
+                                                "is_video": false,
+
+                                                "callType": "outGoing",
+                                              },
+                                            );
+                                          },
+                                        ),
+
+                                        SizedBox(height: 10.h),
+                                        ListTile(
+                                          leading: CircleAvatar(
+                                            backgroundColor:
+                                            ToggleThemeData.darkPurple.withOpacity(0.1),
+                                            child: Icon(
+                                              Icons.videocam,
+                                              color: ToggleThemeData.darkPurple,
+                                            ),
+                                          ),
+                                          title: reausabletext(
+                                            "Video Call",
+                                            fontsize: 15,
+                                            fontfamily: FontFamily.interMedium,
+                                          ),
+                                          onTap: () {
+
+                                            Navigator.pop(ctx);
+                                            Navigator.pop(ctx);
+
+                                            Get.toNamed(
+                                              Routes.callScreen,
+                                              arguments: {
+                                                "callerId": Global.storageServices
+                                                    .get(PrefConst.userId)
+                                                    .toString(),
+
+                                                "remoteUserId":
+                                                userId.toString(),
+
+                                                "callerName":
+                                                name ?? "",
+
+                                                "offer": null,
+
+                                                "is_video": true,
+
+                                                "callType": "outGoing",
+                                              },
+                                            );
+                                          },
+                                        ),
+
+                                        SizedBox(height: 10.h),
+                                      ],
+                                    ),
+                                  );
+                                },
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+
                     SizedBox(height: 15.h),
                     reausablebutton(
                       title: AppText.getDirections,
@@ -456,16 +636,21 @@ class DialogBox {
                       ontap: () {
                         final Uri mapsUri = Uri.parse(
                           "https://www.google.com/maps/dir/?api=1"
-                          "&destination=${destination.latitude},${destination.longitude}"
-                          "&travelmode=walking",
+                              "&destination=${destination.latitude},${destination.longitude}"
+                              "&travelmode=walking",
                         );
-                        launchUrl(mapsUri,
-                            mode: LaunchMode.externalApplication);
+
+                        launchUrl(
+                          mapsUri,
+                          mode: LaunchMode.externalApplication,
+                        );
                       },
                     ),
-                  ],
-                ),
+    ],
+
               ),
-            ));
+            ),
+        ),
+    );
   }
 }
