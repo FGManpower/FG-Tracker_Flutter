@@ -98,8 +98,8 @@ class RegistrationScreen extends GetView<RegistrationController> {
                                 hintname: "Enter Contact Number",
                                 textctr: controller.phoneController,
                                 prefixicon: Icons.call,
-                                validators: (value) =>
-                                    Validator.validatePhone(value),
+                                // validators: (value) =>
+                                //     Validator.validatePhone(value),
                               ),
                               SizedBox(height: 15.h),
                               Card(

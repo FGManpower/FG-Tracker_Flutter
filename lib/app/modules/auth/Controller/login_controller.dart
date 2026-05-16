@@ -60,7 +60,8 @@ class Login_Controller extends GetxController {
         Loading().dismissloading();
 
         Get.toNamed(Routes.OTPScreen,arguments: {
-          "mobNo":mobNoController.text
+          "mobNo":mobNoController.text,
+          "countryCode": selectedDialCode,
         });
       } else {
         Loading().dismissloading();

@@ -100,6 +100,7 @@ class OtpController extends GetxController {
       Loading().showloading();
       dynamic param = {
         "MobileNo": arguments?['mobNo'],
+        "countryCode": arguments?['countryCode'],
       };
 
       var result = await AuthRepo.ResendOtp(param);
@@ -128,10 +129,12 @@ class OtpController extends GetxController {
     try {
       Loading().showloading();
       dynamic param = {
+        "countryCode": arguments?['countryCode'],
         "MobileNo": arguments?['mobNo'],
         "otp": otpController.text,
         'Device_Id': deviceId.value ?? "",
       };
+      print("==================VeriefyParam==========${param}");
       var result = await AuthRepo.VeriefyOtp(param);
       if (result.status == true) {
         Loading().dismissloading();
