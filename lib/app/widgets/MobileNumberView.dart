@@ -23,7 +23,7 @@ class MobileNumberView extends StatelessWidget {
     return Obx(() {
       String displayNumber;
       if (controller.obscureNumber.value) {
-        if (mobileNumber.length >= 10) {
+        if (mobileNumber.length >= 2) {
           displayNumber = '••••••${mobileNumber.substring(mobileNumber.length - 4)}';
         } else {
           displayNumber = '••••••';
@@ -45,19 +45,19 @@ class MobileNumberView extends StatelessWidget {
             ),
           ),
           SizedBox(width: 8.w),
-          GestureDetector(
-            onTap: controller.toggleObscure,
-            child: Padding(
-              padding: EdgeInsets.only(top: 2),
-              child: Obx(() => Icon(
-                controller.obscureNumber.value
-                    ? Icons.visibility_off
-                    : Icons.visibility,
-                size: 20.sp,
-                color: ToggleThemeData.darkPurple,
-              )),
-            ),
-          ),
+          // GestureDetector(
+          //   onTap: controller.toggleObscure,
+          //   child: Padding(
+          //     padding: EdgeInsets.only(top: 2),
+          //     child: Obx(() => Icon(
+          //       controller.obscureNumber.value
+          //           ? Icons.visibility_off
+          //           : Icons.visibility,
+          //       size: 20.sp,
+          //       color: ToggleThemeData.darkPurple,
+          //     )),
+          //   ),
+          // ),
         ],
       );
     });
