@@ -221,9 +221,6 @@ class firebaseNotificationServices {
           arguments: {"callDetail": call},
         );
       }
-      await notificationCtr.markAsRead(
-        int.parse(message.data["notificationId"].toString()),
-      );
     } else {
 
 
@@ -243,11 +240,9 @@ class firebaseNotificationServices {
             userInfo: userInfo,
           ),
         );
-        await notificationCtr.markAsRead(
-          int.parse(message.data["notificationId"].toString()),
-        );
+
       }
-      // }
+
     }
   }
 }

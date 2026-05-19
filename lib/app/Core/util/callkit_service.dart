@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:connectycube_flutter_call_kit/connectycube_flutter_call_kit.dart';
+import 'package:fgtracker/app/modules/Notification/Controller/Notification_Controller.dart';
 import 'package:get/get.dart';
 import '../../Data/Services/CallStateTracker.dart';
 import '../../Data/Services/SignallingService.dart';
@@ -50,7 +51,6 @@ class CallKitService {
 
   /// Reject Call
   Future<void> declineCall(Map<String, dynamic> data) async {
-
     final parsedData = {
       "callId": int.tryParse(data["callId"].toString()),
       "callerId": int.tryParse(data["callerId"].toString()),
@@ -120,6 +120,10 @@ class CallKitService {
           "callerProfile": call.callerProfileImage,
           "callType": "Incoming",
         },
+      );
+
+      await NotificationController().markAsRead(
+        int.parse(data["notificationId"].toString()),
       );
     } catch (e) {
       print("[CallKit] Navigation error: $e");

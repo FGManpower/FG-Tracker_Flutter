@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'package:fgtracker/app/modules/Notification/Controller/Notification_Controller.dart';
 import 'package:flutter_callkit_incoming/entities/android_params.dart';
 import 'package:flutter_callkit_incoming/entities/call_event.dart';
 import 'package:flutter_callkit_incoming/entities/call_kit_params.dart';
@@ -69,7 +70,7 @@ class CallUtils {
         missedCallNotificationChannelName: "Missed Call",
         isShowCallID: false,
 
-        // CHANGE THESE TWO:
+
         isShowFullLockedScreen: true, // Required for terminated/locked state
         isBot: true,
       ),
@@ -193,6 +194,9 @@ class CallUtils {
           "callerProfile": call.callerProfileImage,
           "callType": "Incoming",
         },
+      );
+      await NotificationController().markAsRead(
+        int.parse(data["notificationId"].toString()),
       );
     } catch (e) {
       log("[CallKit] Navigation error: $e");
