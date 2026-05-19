@@ -150,20 +150,17 @@ class MemberscreenScreen extends GetView<MemberController> {
                 : Padding(
                     padding:
                         EdgeInsets.symmetric(horizontal: 15.h, vertical: 10.h),
-                    child:reausablebutton(
+                    child: reausablebutton(
                         title: "Track",
                         icon: Icons.track_changes,
                         fontSize: 12,
                         borderradiues: 50,
                         ontap: () {
-                          Get.toNamed(Routes.LocationTracking,
-                              arguments: {
-                                "groupId": int.parse(controller
-                                    .arguments!['groupId']
-                                    .toString()),
-                                "groupName":
-                                controller.arguments!['groupName'],
-                              });
+                          Get.toNamed(Routes.LocationTracking, arguments: {
+                            "groupId": int.parse(
+                                controller.arguments!['groupId'].toString()),
+                            "groupName": controller.arguments!['groupName'],
+                          });
                         },
                         height: 55)
                     // Row(
@@ -196,7 +193,7 @@ class MemberscreenScreen extends GetView<MemberController> {
                     //             height: 55)),
                     //   ],
                     // ),
-                  ),
+                    ),
           ),
           body: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -357,35 +354,26 @@ class MemberscreenScreen extends GetView<MemberController> {
                                   ),
                               ],
                             ),
-
                             SizedBox(width: 14.w),
-
                             Expanded(
                               child: Row(
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
-
-
                                   Expanded(
                                     child: Column(
                                       mainAxisSize: MainAxisSize.min,
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
-
-
                                         reausabletext(
                                           data?.name ?? AppText.unnamedMember,
                                           fontsize: 15,
                                           fontfamily: FontFamily.interSemiBold,
                                         ),
-
-
                                         SizedBox(height: 2.h),
-
-
                                         MobileNumberView(
-                                          mobileNumber:
-                                          data?.mobileNo ?? AppText.noNumber,
+                                          mobileNumber: data?.mobileNo ??
+                                              AppText.noNumber,
                                         ),
                                       ],
                                     ),
@@ -393,36 +381,34 @@ class MemberscreenScreen extends GetView<MemberController> {
 
                                   SizedBox(width: 10.w),
 
-
                                   Column(
                                     mainAxisSize: MainAxisSize.min,
                                     crossAxisAlignment: CrossAxisAlignment.end,
                                     children: [
-
-
                                       reausabletext(
-                                        Utility.isNotNullEmptyOrFalse(data?.lastSeen)
+                                        Utility.isNotNullEmptyOrFalse(
+                                                data?.lastSeen)
                                             ? formatTime(data!.lastSeen!)
                                             : "",
                                         fontsize: 10,
                                         fontfamily: FontFamily.interMedium,
                                         color: Colors.grey.shade500,
                                       ),
-
                                       SizedBox(height: 8.h),
-
                                       InkWell(
-                                        borderRadius: BorderRadius.circular(20.r),
+                                        borderRadius:
+                                            BorderRadius.circular(20.r),
                                         onTap: () {
                                           Get.toNamed(
                                             Routes.LocationTracking,
                                             arguments: {
-                                              "groupId": int.parse(
-                                                  controller.arguments!['groupId'].toString()),
-                                              "groupName":
-                                              controller.arguments!['groupName'],
+                                              "groupId": int.parse(controller
+                                                  .arguments!['groupId']
+                                                  .toString()),
+                                              "groupName": controller
+                                                  .arguments!['groupName'],
                                               "targetUserId":
-                                              data?.userId.toString(),
+                                                  data?.userId.toString(),
                                             },
                                           );
                                         },

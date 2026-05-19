@@ -4,6 +4,7 @@ import 'package:fgtracker/app/modules/Group/Bindings/QRScan_Binding.dart';
 import 'package:fgtracker/app/modules/Group/Views/MemberScreen.dart';
 import 'package:fgtracker/app/modules/IntroScreen/IntroScreen.dart';
 import 'package:fgtracker/app/modules/Messages/Bindings/Chat_binding.dart';
+import 'package:fgtracker/app/modules/Notification/Views/Notification.dart';
 import 'package:fgtracker/app/modules/Track/Bindings/track_binding.dart';
 import 'package:fgtracker/app/modules/auth/Bindings/auth_binding.dart';
 import 'package:fgtracker/app/modules/auth/Views/Otp_Screen.dart';
@@ -134,6 +135,12 @@ class AppPages {
     GetPage(
       name: _Paths.walkieTalkieScreen,
       page: () => WalkieTalkieScreen(),
+      transition: Transition.rightToLeft,
+      transitionDuration: const Duration(milliseconds: 500),
+    ),
+    GetPage(
+      name: _Paths.notificationScreen,
+      page: () => NotificationScreen(),
       transition: Transition.rightToLeft,
       transitionDuration: const Duration(milliseconds: 500),
     ),

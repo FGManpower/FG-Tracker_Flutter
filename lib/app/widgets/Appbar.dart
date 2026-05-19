@@ -1,7 +1,10 @@
 import 'package:fgtracker/app/config/themes_data.dart';
 import 'package:fgtracker/app/modules/home/Controller/home_controller.dart';
+import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 
 class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
   final GlobalKey<ScaffoldState> scaffoldKey;
@@ -25,26 +28,31 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
 
         Padding(
           padding: EdgeInsets.only(right: 10.w),
-          child: Stack(
-            children: [
-              Icon(
-                Icons.notifications_sharp,
-                size: 30.sp,
-                color: ToggleThemeData.Appcolor,
-              ),
-              Visibility(
-                visible: true,
-                child: Positioned(
-                    right: 0,
-                    child: Container(
-                      height: 10,
-                      width: 10,
-                      decoration: BoxDecoration(
-                          color: Colors.red,
-                          borderRadius: BorderRadius.circular(10.r)),
-                    )),
-              )
-            ],
+          child: GestureDetector(
+            onTap: () {
+              Get.toNamed(Routes.notificationScreen);
+            },
+            child: Stack(
+              children: [
+                Icon(
+                  Icons.notifications_sharp,
+                  size: 30.sp,
+                  color: ToggleThemeData.Appcolor,
+                ),
+                Visibility(
+                  visible: true,
+                  child: Positioned(
+                      right: 0,
+                      child: Container(
+                        height: 10,
+                        width: 10,
+                        decoration: BoxDecoration(
+                            color: Colors.red,
+                            borderRadius: BorderRadius.circular(10.r)),
+                      )),
+                )
+              ],
+            ),
           ),
         )
       ],

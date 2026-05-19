@@ -3,8 +3,10 @@ import 'dart:math';
 
 import 'package:connectycube_flutter_call_kit/connectycube_flutter_call_kit.dart';
 import 'package:fgtracker/app/Core/values/Context_Utility.dart';
+import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Model/MemberDataRes.dart';
 import 'package:fgtracker/app/Model/call_model.dart';
+import 'package:fgtracker/app/modules/Notification/Controller/Notification_Controller.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -19,7 +21,7 @@ import 'CallStateTracker.dart';
 
 class firebaseNotificationServices {
   FirebaseMessaging messaging = FirebaseMessaging.instance;
-
+  final notificationCtr = Get.put(NotificationController());
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
 
@@ -27,7 +29,7 @@ class firebaseNotificationServices {
 
   void inItLocalNotification(
       BuildContext context, RemoteMessage message) async {
-    print("RecivedMessaged=======>${message}");
+
     var androidinitializeSetting =
         const AndroidInitializationSettings("@mipmap/ic_launcher");
     var iosinitializeSetting = DarwinInitializationSettings();
@@ -133,28 +135,9 @@ class firebaseNotificationServices {
     getDeviceTokenToSendNotification();
 
     FirebaseMessaging.instance.getInitialMessage().then((message) {});
-    //
-    // FirebaseMessaging.onMessage.listen((message) async {
-    //   await Global.storageServices.setBool(Constant.notificationBadge, true);
-    //   try {
-    //     BlocProvider.of<NotificationCountCubit>(
-    //             ContextUtility.navigatorkey.currentState!.context)
-    //         .showBadge();
-    //   } catch (e) {
-    //     debugPrint(e.toString());
-    //   }
-    //
-    //   if (Platform.isAndroid) {
-    //     inItLocalNotification(
-    //         ContextUtility.navigatorkey.currentState!.context, message);
-    //     showNotification(message);
-    //     handleMessage(
-    //         ContextUtility.navigatorkey.currentState!.context, message);
-    //   } else {}
-    // });
 
     FirebaseMessaging.onMessage.listen((message) async {
-      // await Global.storageServices.setBool(Constant.notificationBadge, true);
+
 
       final context =
           ContextUtility.navigatorkey.currentState?.overlay?.context;
@@ -163,13 +146,6 @@ class firebaseNotificationServices {
         debugPrint("⚠️ Context not ready, skipping UI actions");
         return;
       }
-
-      // SAFE Bloc access
-      // try {
-      //   BlocProvider.of<NotificationCountCubit>(context).showBadge();
-      // } catch (e) {
-      //   debugPrint("Bloc error: $e");
-      // }
 
       if (Platform.isAndroid) {
         inItLocalNotification(context, message);
@@ -196,9 +172,9 @@ class firebaseNotificationServices {
 
   Future<void> handleMessage(BuildContext context, RemoteMessage message,
       {String? type}) async {
-    print("==========HandleMessageREcieving===${message.data}");
+
     if (type == "recienvedmessage") {
-      print("messageRecieved--------${message.data}");
+
 
       if (message.data['screen_name'] == "MemberPage") {
         Get.toNamed(Routes.Memberscreen, arguments: {
@@ -207,6 +183,8 @@ class firebaseNotificationServices {
           "isCreator": message.data['isCreator'],
           "isActive": message.data['isActive'],
         });
+
+
       } else if (message.data["screen_name"] == "chatScreen") {
         // if (!ChatStateTracker.isChatCallScreenOpen) {
         MemberData? memberData;
@@ -223,7 +201,12 @@ class firebaseNotificationServices {
             "groupName": "Test",
             "type": "chatScreen",
           });
+          await notificationCtr.markAsRead(
+            int.parse(message.data["notificationId"].toString()),
+          );
+
         }
+
         // }
       } else if (message.data['screen_name'] == 'incomingCall') {
         if (CallStateTracker.isIncomingCallScreenOpen) return;
@@ -238,25 +221,11 @@ class firebaseNotificationServices {
           arguments: {"callDetail": call},
         );
       }
+      await notificationCtr.markAsRead(
+        int.parse(message.data["notificationId"].toString()),
+      );
     } else {
-      // if (Platform.isAndroid) {
-      //   if (message.data['screen_name'] == 'incomingCall') {
-      //     if (CallStateTracker.isIncomingCallScreenOpen) {
-      //       return;
-      //     }
-      //     final callMap = jsonDecode(message.data['callData']);
-      //     final call = IncomingCallModel.fromMap(callMap);
-      //
-      //     CallStateTracker.isIncomingCallScreenOpen = true;
-      //     final appState = AppLifecycleTracker.state;
-      //
-      //     if (appState == AppLifecycleState.resumed) {
-      //       Get.toNamed(
-      //         Routes.IncomingCallScreen,
-      //         arguments: {"callDetail": call},
-      //       );
-      //     }
-      //   }
+
 
       if (message.data['screen_name'] == "incomingCall") {
         final callData = jsonDecode(message.data['callData']);
@@ -273,6 +242,9 @@ class firebaseNotificationServices {
             callerId: int.parse(callData['callerId']),
             userInfo: userInfo,
           ),
+        );
+        await notificationCtr.markAsRead(
+          int.parse(message.data["notificationId"].toString()),
         );
       }
       // }

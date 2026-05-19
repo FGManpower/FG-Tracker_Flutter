@@ -1,47 +1,259 @@
+import 'dart:developer';
 
-import 'package:fgtracker/app/Core/constant/pref_res.dart';
-import 'package:fgtracker/app/Core/values/Context_Utility.dart';
-import 'package:fgtracker/app/Core/values/global.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 
-
-import '../../../Core/values/Dialog/Common_dialog.dart';
 import '../../../Data/Repositories/Notification_Repo.dart';
-import '../../../Model/NotificationData.dart';
-import 'cubit/notification_count_cubit.dart';
+import '../../../Model/notification_model.dart';
+
 
 class NotificationController extends GetxController {
-  final notificationdata = Rxn<NotificationRes>();
-  RxBool loading = false.obs;
-  var Respone_Error = "".obs;
+
+  RxList<NotificationModel> notifications =
+      <NotificationModel>[].obs;
+
+  RxList<NotificationModel> filteredNotifications =
+      <NotificationModel>[].obs;
+
+  RxInt unreadCount = 0.obs;
+
+  RxBool isLoading = false.obs;
+
+  RxString selectedFilter = "all".obs;
 
   @override
   void onInit() {
-    // TODO: implement onInit
     super.onInit();
-    Global.storageServices.setBool(PrefConst.notificationBadge, false);
-    BlocProvider.of<NotificationCountCubit>(ContextUtility.context!)
-        .showBadge();
-    getNotificationData();
+
+    getNotifications();
+    getUnreadCount();
   }
 
-  Future<void> getNotificationData() async {
-    try {
-      loading.value = true;
-      var result = await Notification_Repo.getNotificationData();
-      if (result.status == true) {
-        loading.value = false;
-        notificationdata.value = result;
+  Future<void> getNotifications() async {
 
-        Respone_Error.value = "";
-      } else {
-        loading.value = false;
-        CommonDialog.errorMessage(result.message.toString());
-      }
+    try {
+
+      isLoading.value = true;
+
+      final result =
+      await NotificationRepo.getNotifications();
+
+      notifications.value = result;
+
+      applyFilter();
+
     } catch (e) {
-      loading.value = false;
-      Respone_Error.value = e.toString();
+
+      log("Notification Error: $e");
+
+    } finally {
+
+      isLoading.value = false;
+    }
+  }
+
+  void applyFilter() {
+
+    print("===========APPLY FILTER START============");
+
+    print("Selected Filter : ${selectedFilter.value}");
+
+    if (selectedFilter.value == "all") {
+
+      print("===========FILTER : ALL============");
+
+      filteredNotifications.value = notifications;
+
+      print("Total Notifications : ${filteredNotifications.length}");
+
+    } else if (selectedFilter.value == "unread") {
+
+      print("===========FILTER : UNREAD============");
+
+      filteredNotifications.value =
+          notifications.where(
+                (e) => e.isRead == false,
+          ).toList();
+
+      print("Unread Notifications : ${filteredNotifications.length}");
+
+    } else if (selectedFilter.value == "chat") {
+
+      print("===========FILTER : CHAT============");
+
+      filteredNotifications.value =
+          notifications.where(
+                (e) => e.type == "chat",
+          ).toList();
+
+      print("Chat Notifications : ${filteredNotifications.length}");
+
+    } else if (selectedFilter.value == "call") {
+
+      print("===========FILTER : CALL============");
+
+      filteredNotifications.value =
+          notifications.where(
+                (e) =>
+            e.type == "voice_call" ||
+                e.type == "video_call" ||
+                e.type == "missed_call",
+          ).toList();
+
+      print("Call Notifications : ${filteredNotifications.length}");
+
+    } else if (selectedFilter.value == "clear_history") {
+
+      print("===========FILTER : CLEAR HISTORY============");
+
+      clearAllNotifications();
+
+      filteredNotifications.clear();
+
+      print("===========ALL FILTERED NOTIFICATIONS CLEARED============");
+    }
+
+    print("===========APPLY FILTER END============");
+  }
+
+  Future<void> getUnreadCount() async {
+
+    try {
+
+      unreadCount.value =
+      await NotificationRepo.getUnreadCount();
+
+    } catch (e) {
+
+      log("Unread Count Error: $e");
+    }
+  }
+
+  Future<void> markAsRead(int id) async {
+    try {
+
+      bool success =
+      await NotificationRepo.markAsRead(id);
+
+      if (success) {
+
+        int index = notifications.indexWhere(
+              (e) => e.id == id,
+        );
+
+        if (index != -1) {
+
+          notifications[index].isRead = true;
+
+          notifications.refresh();
+
+          applyFilter();
+        }
+
+        getUnreadCount();
+      }
+
+    } catch (e) {
+
+      log("Mark Read Error: $e");
+    }
+  }
+
+  Future<void> markAllAsRead() async {
+
+    try {
+
+      bool success =
+      await NotificationRepo.markAllAsRead();
+
+      if (success) {
+
+        for (var item in notifications) {
+
+          item.isRead = true;
+        }
+
+        notifications.refresh();
+
+        applyFilter();
+
+        unreadCount.value = 0;
+      }
+
+    } catch (e) {
+
+      log("Mark All Error: $e");
+    }
+  }
+
+  Future<void> clearAllNotifications() async {
+
+    try {
+
+      final response =
+      await NotificationRepo.clearAllNotifications();
+
+      if (response) {
+
+        notifications.clear();
+
+        unreadCount.value = 0;
+
+        Get.snackbar(
+          "Success",
+          "All notifications cleared successfully",
+          snackPosition: SnackPosition.BOTTOM,
+        );
+      }
+
+    } catch (e) {
+
+      log(e.toString());
+    }
+
+  }
+
+  String formatTime(String? date) {
+
+    if (date == null || date.isEmpty) {
+      return "";
+    }
+
+    try {
+
+      final notificationTime =
+      DateTime.parse(date).toLocal();
+
+      final now = DateTime.now();
+
+      final difference =
+      now.difference(notificationTime);
+
+      if (difference.inSeconds < 60) {
+        return "Just now";
+      }
+
+      if (difference.inMinutes < 60) {
+        return "${difference.inMinutes} min ago";
+      }
+
+      if (difference.inHours < 24) {
+        return "${difference.inHours} hr ago";
+      }
+
+      if (difference.inDays == 1) {
+        return "Yesterday";
+      }
+
+      if (difference.inDays < 7) {
+        return "${difference.inDays} days ago";
+      }
+
+      return
+        "${notificationTime.day}/${notificationTime.month}/${notificationTime.year}";
+
+    } catch (e) {
+
+      return "";
     }
   }
 }
