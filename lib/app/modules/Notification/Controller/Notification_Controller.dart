@@ -5,14 +5,10 @@ import 'package:get/get.dart';
 import '../../../Data/Repositories/Notification_Repo.dart';
 import '../../../Model/notification_model.dart';
 
-
 class NotificationController extends GetxController {
+  RxList<NotificationModel> notifications = <NotificationModel>[].obs;
 
-  RxList<NotificationModel> notifications =
-      <NotificationModel>[].obs;
-
-  RxList<NotificationModel> filteredNotifications =
-      <NotificationModel>[].obs;
+  RxList<NotificationModel> filteredNotifications = <NotificationModel>[].obs;
 
   RxInt unreadCount = 0.obs;
 
@@ -29,119 +25,86 @@ class NotificationController extends GetxController {
   }
 
   Future<void> getNotifications() async {
-
     try {
-
       isLoading.value = true;
 
-      final result =
-      await NotificationRepo.getNotifications();
+      final result = await NotificationRepo.getNotifications();
 
       notifications.value = result;
 
       applyFilter();
-
     } catch (e) {
-
       log("Notification Error: $e");
-
     } finally {
-
       isLoading.value = false;
     }
   }
 
   void applyFilter() {
 
-    print("===========APPLY FILTER START============");
-
-    print("Selected Filter : ${selectedFilter.value}");
 
     if (selectedFilter.value == "all") {
 
-      print("===========FILTER : ALL============");
-
       filteredNotifications.value = notifications;
-
-      print("Total Notifications : ${filteredNotifications.length}");
 
     } else if (selectedFilter.value == "unread") {
 
-      print("===========FILTER : UNREAD============");
 
-      filteredNotifications.value =
-          notifications.where(
-                (e) => e.isRead == false,
-          ).toList();
+      filteredNotifications.value = notifications
+          .where(
+            (e) => e.isRead == false,
+          )
+          .toList();
 
       print("Unread Notifications : ${filteredNotifications.length}");
-
     } else if (selectedFilter.value == "chat") {
-
       print("===========FILTER : CHAT============");
 
-      filteredNotifications.value =
-          notifications.where(
-                (e) => e.type == "chat",
-          ).toList();
+      filteredNotifications.value = notifications
+          .where(
+            (e) => e.type == "chat",
+          )
+          .toList();
 
       print("Chat Notifications : ${filteredNotifications.length}");
-
     } else if (selectedFilter.value == "call") {
-
       print("===========FILTER : CALL============");
 
-      filteredNotifications.value =
-          notifications.where(
-                (e) =>
-            e.type == "voice_call" ||
+      filteredNotifications.value = notifications
+          .where(
+            (e) =>
+                e.type == "voice_call" ||
                 e.type == "video_call" ||
                 e.type == "missed_call",
-          ).toList();
-
-      print("Call Notifications : ${filteredNotifications.length}");
+          )
+          .toList();
 
     } else if (selectedFilter.value == "clear_history") {
-
-      print("===========FILTER : CLEAR HISTORY============");
-
       clearAllNotifications();
 
       filteredNotifications.clear();
-
-      print("===========ALL FILTERED NOTIFICATIONS CLEARED============");
     }
 
-    print("===========APPLY FILTER END============");
   }
 
   Future<void> getUnreadCount() async {
-
     try {
-
-      unreadCount.value =
-      await NotificationRepo.getUnreadCount();
-
+      unreadCount.value = await NotificationRepo.getUnreadCount();
     } catch (e) {
-
       log("Unread Count Error: $e");
     }
   }
 
   Future<void> markAsRead(int id) async {
     try {
-
-      bool success =
-      await NotificationRepo.markAsRead(id);
+      bool success = await NotificationRepo.markAsRead(id);
 
       if (success) {
-
         int index = notifications.indexWhere(
-              (e) => e.id == id,
+          (e) => e.id == id,
         );
 
         if (index != -1) {
-
           notifications[index].isRead = true;
 
           notifications.refresh();
@@ -151,24 +114,17 @@ class NotificationController extends GetxController {
 
         getUnreadCount();
       }
-
     } catch (e) {
-
       log("Mark Read Error: $e");
     }
   }
 
   Future<void> markAllAsRead() async {
-
     try {
-
-      bool success =
-      await NotificationRepo.markAllAsRead();
+      bool success = await NotificationRepo.markAllAsRead();
 
       if (success) {
-
         for (var item in notifications) {
-
           item.isRead = true;
         }
 
@@ -178,22 +134,16 @@ class NotificationController extends GetxController {
 
         unreadCount.value = 0;
       }
-
     } catch (e) {
-
       log("Mark All Error: $e");
     }
   }
 
   Future<void> clearAllNotifications() async {
-
     try {
-
-      final response =
-      await NotificationRepo.clearAllNotifications();
+      final response = await NotificationRepo.clearAllNotifications();
 
       if (response) {
-
         notifications.clear();
 
         unreadCount.value = 0;
@@ -204,29 +154,22 @@ class NotificationController extends GetxController {
           snackPosition: SnackPosition.BOTTOM,
         );
       }
-
     } catch (e) {
-
       log(e.toString());
     }
-
   }
 
   String formatTime(String? date) {
-
     if (date == null || date.isEmpty) {
       return "";
     }
 
     try {
-
-      final notificationTime =
-      DateTime.parse(date).toLocal();
+      final notificationTime = DateTime.parse(date).toLocal();
 
       final now = DateTime.now();
 
-      final difference =
-      now.difference(notificationTime);
+      final difference = now.difference(notificationTime);
 
       if (difference.inSeconds < 60) {
         return "Just now";
@@ -248,11 +191,8 @@ class NotificationController extends GetxController {
         return "${difference.inDays} days ago";
       }
 
-      return
-        "${notificationTime.day}/${notificationTime.month}/${notificationTime.year}";
-
+      return "${notificationTime.day}/${notificationTime.month}/${notificationTime.year}";
     } catch (e) {
-
       return "";
     }
   }

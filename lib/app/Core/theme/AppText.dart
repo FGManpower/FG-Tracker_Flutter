@@ -181,6 +181,31 @@ static String unnamedMember  = "Unnamed Member";
 static String noNumber  = "No number";
 static String creator  = "Creator";
 
+
+
+
+  static String locationPermission = "Location Permission";
+  static String fgPartnerAppNeedYourPermission =
+      "FG Partner app needs your permission to track location while you are logged in.";
+  static String plsChooseAllowAllTheTime =
+      "Please choose 'Allow all the time' in the upcoming popup.";
+  static String thisAppCollectsLocationData =
+      "This app collects location data to ensure smooth job progress and provide efficient tracking, even when the app is closed or not in use.";
+
+  static String permissionSetup = "Permission Setup";
+  static String nextBtn = "Next";
+  static String locationPermissionGranted = "Location Permission Granted";
+  static String overlayPermissionGranted = "Overlay Permission Granted";
+  static String openPrompt = "Open Prompt";
+  static String locationPrmsn = "location";
+  static String   EnableGPS = "Enable GPS";
+  static String gpsRequiredToTrackGroup =
+      "GPS is required to track your group in real time.";
+
+  static String pleaseEnableYourDeviceGps =
+      "Please enable your device's GPS (Google Location).";
+  static String doYouWantToExit = "Do you want to exit the App";
+
 }
 
 
