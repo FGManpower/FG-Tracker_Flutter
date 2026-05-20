@@ -4,12 +4,12 @@ import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 class ConstRes {
   ///------------------------ Backend urls and key ------------------------///
 
-  // static const String development = 'http://10.153.132.163:4000/'; // Development
+  // static const String development = 'http://172.20.10.5:4000/'; // Development
   static const String production = 'http://fgtracker.in:3000/'; //Prod
   static const String aBaseUrl = '${production}api/';
   static const String aImageBaseUrl = production;
   static String socketUrl = "http://fgtracker.in:3000"; //pro
-  // static const String socketUrl = "http://10.153.132.163:4000"; //dev
+  // static const String socketUrl = "http://172.20.10.5:4000"; //dev
   static String DeepLink_Url = "https://fgtracker.in";
   static String gMapApiKey = "AIzaSyAgt-V8kmcQJb_6Cj6LHArWfhWjVPh7N_Q";
 
@@ -18,7 +18,6 @@ class ConstRes {
   );
 
   final Dio _dio = Dio();
-
   ConstRes() {
     BaseOptions options = BaseOptions(
       baseUrl: aBaseUrl,
@@ -26,6 +25,5 @@ class ConstRes {
     _dio.options = options;
     _dio.interceptors.add(PrettyDioLogger());
   }
-
   Dio get sendRequest => _dio;
 }
