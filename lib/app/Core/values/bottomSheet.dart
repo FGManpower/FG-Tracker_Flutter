@@ -15,6 +15,7 @@ import 'dart:io';
 import 'package:path_provider/path_provider.dart' as path_provider;
 
 import 'package:image_picker/image_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class ModalImage {
   final picker = ImagePicker();
@@ -260,4 +261,173 @@ class ModalImage {
   }
 
 
-}
+
+
+
+void locationPermissionBottomSheet(BuildContext context) {
+
+  showModalBottomSheet(
+
+    context: context,
+
+    isDismissible: false,
+    enableDrag: false,
+
+    backgroundColor: Colors.transparent,
+
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(
+        top: Radius.circular(24.r),
+      ),
+    ),
+
+    builder: (BuildContext context) {
+
+      return WillPopScope(
+
+        onWillPop: () async => false,
+
+        child: Container(
+
+          decoration: BoxDecoration(
+
+            color: Colors.white,
+
+            borderRadius: BorderRadius.vertical(
+              top: Radius.circular(24.r),
+            ),
+
+            boxShadow: [
+
+              BoxShadow(
+                color: Colors.black12.withOpacity(0.1),
+                blurRadius: 10.r,
+                spreadRadius: 2.r,
+              ),
+            ],
+          ),
+
+          padding: EdgeInsets.symmetric(
+            horizontal: 20.w,
+            vertical: 10.h,
+          ),
+
+          child: SafeArea(
+
+            top: false,
+
+            child: Column(
+
+              mainAxisSize: MainAxisSize.min,
+
+              children: [
+
+
+                Container(
+                  width: 50.w,
+                  height: 5.h,
+                  margin: EdgeInsets.only(bottom: 16.h),
+
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius:
+                    BorderRadius.circular(20.r),
+                  ),
+                ),
+
+
+                Container(
+
+                  padding: EdgeInsets.all(18.w),
+
+                  decoration: BoxDecoration(
+                    color: AppColors.darkBlue.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+
+                  child: Icon(
+                    Icons.location_on,
+                    color: AppColors.darkBlue,
+                    size: 38.sp,
+                  ),
+                ),
+
+                SizedBox(height: 18.h),
+
+                reausabletext(
+                  "Enable 'Always' Location Permission",
+                  fontsize: 18.sp,
+                  fontweight: FontWeight.bold,
+                ),
+
+                SizedBox(height: 14.h),
+
+                reausabletext(
+                  "To track your group in real time and in background, "
+                      "please set Location access to "
+                      "'Allow all the time' in App Settings.",
+                  fontsize: 14.sp,
+                  color: Colors.black54,
+                ),
+
+                SizedBox(height: 24.h),
+
+                SizedBox(
+
+                  width: double.infinity,
+
+                  child: ElevatedButton(
+
+                    onPressed: () async {
+
+                      await openAppSettings();
+
+                      while (true) {
+
+                        await Future.delayed(
+                          const Duration(seconds: 1),
+                        );
+
+                        var status =
+                        await Permission.locationAlways.status;
+
+                        if (status.isGranted) {
+
+                          Navigator.pop(context);
+
+                          break;
+                        }
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+
+                      backgroundColor: AppColors.darkBlue,
+
+                      padding: EdgeInsets.symmetric(
+                        vertical: 14.h,
+                      ),
+
+                      shape: RoundedRectangleBorder(
+                        borderRadius:
+                        BorderRadius.circular(14.r),
+                      ),
+                    ),
+
+                    child: reausabletext(
+                      "Open Settings",
+                      fontsize: 15.sp,
+                      color: Colors.white,
+                      fontweight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+
+                SizedBox(height: 10.h),
+              ],
+            ),
+          ),
+        ),
+      );
+    },
+  );
+}}

@@ -22,7 +22,7 @@ class LocationService extends GetxService {
   final SocketService socketService = SocketService.instance;
 
 
-  Future<void> initLocationTracking({String? groupId}) async {
+  Future<void> initLocationTracking() async {
     final hasPermission = await LocationPermissions().handleLocationPermission();
     bool serviceEnabled = await _location.serviceEnabled();
 

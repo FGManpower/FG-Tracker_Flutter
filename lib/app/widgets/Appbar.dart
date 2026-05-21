@@ -1,17 +1,22 @@
 import 'package:fgtracker/app/config/themes_data.dart';
+import 'package:fgtracker/app/modules/Notification/Controller/Notification_Controller.dart';
 import 'package:fgtracker/app/modules/home/Controller/home_controller.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 
 class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
+
   final GlobalKey<ScaffoldState> scaffoldKey;
   final HomeController controller;
-
-  HomeAppBar({Key? key, required this.scaffoldKey, required this.controller})
-      : super(key: key);
+  HomeAppBar({
+    Key? key,
+    required this.scaffoldKey,
+    required this.controller,
+  }) : super(key: key);
+  final notificationController =
+  Get.put(NotificationController());
 
   @override
   Widget build(BuildContext context) {
@@ -23,48 +28,105 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
       backgroundColor: ToggleThemeData.white,
       automaticallyImplyLeading: false,
       centerTitle: true,
+
       actions: [
-
-
         Padding(
           padding: EdgeInsets.only(right: 10.w),
+
           child: GestureDetector(
             onTap: () {
-              Get.toNamed(Routes.notificationScreen);
+
+              Get.toNamed(
+                Routes.notificationScreen,
+              );
             },
-            child: Stack(
-              children: [
-                Icon(
-                  Icons.notifications_sharp,
-                  size: 30.sp,
-                  color: ToggleThemeData.Appcolor,
-                ),
-                Visibility(
-                  visible: true,
-                  child: Positioned(
-                      right: 0,
+            child: Obx(() {
+              return Stack(
+                clipBehavior: Clip.none,
+                children: [
+
+                  Icon(
+                    Icons.notifications_rounded,
+                    size: 30.sp,
+                    color: ToggleThemeData.Appcolor,
+                  ),
+
+                  if (notificationController.unreadCount.value > 0)
+                    Positioned(
+                      right: -2.w,
+                      top: -2.h,
+
                       child: Container(
-                        height: 10,
-                        width: 10,
+
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 5.w,
+                          vertical: 2.h,
+                        ),
+
+                        constraints: BoxConstraints(
+                          minWidth: 18.w,
+                          minHeight: 18.h,
+                        ),
+
                         decoration: BoxDecoration(
-                            color: Colors.red,
-                            borderRadius: BorderRadius.circular(10.r)),
-                      )),
-                )
-              ],
-            ),
+                          color: Colors.red,
+
+                          borderRadius:
+                          BorderRadius.circular(100.r),
+
+                          border: Border.all(
+                            color: Colors.white,
+                            width: 1.5,
+                          ),
+
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.red.withOpacity(0.25),
+                              blurRadius: 6,
+                            ),
+                          ],
+                        ),
+
+                        child: Center(
+                          child: Text(
+
+                            notificationController
+                                .unreadCount.value > 99
+                                ? "99+"
+                                : notificationController
+                                .unreadCount.value
+                                .toString(),
+
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 9.sp,
+                              fontWeight: FontWeight.w700,
+                              height: 1,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              );
+            }),
           ),
         )
       ],
+
       leading: IconButton(
         icon: Icon(
           Icons.menu,
           size: 33.sp,
           color: ToggleThemeData.darkPurple,
         ),
+
         onPressed: () {
+
           if (scaffoldKey.currentState != null) {
+
             scaffoldKey.currentState!.openDrawer();
+
           }
         },
       ),
@@ -72,5 +134,6 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
   }
 
   @override
-  Size get preferredSize => Size.fromHeight(55.h);
+  Size get preferredSize =>
+      Size.fromHeight(55.h);
 }
