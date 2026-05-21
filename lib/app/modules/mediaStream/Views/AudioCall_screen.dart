@@ -33,19 +33,20 @@ class AudiocallScreen extends StatelessWidget {
               fontsize: 28,
               fontfamily: FontFamily.interSemiBold,
               color: ToggleThemeData.white),
-
           Obx(() {
-            final isConnected =
-                controller.callStatus.value == CallStatus.connected;
-            return reausabletext(
-              controller.callStatusText,
-              fontsize: isConnected ? 12 : 14,
-              fontfamily: isConnected
-                  ? FontFamily.interMedium
-                  : FontFamily.interRegular,
+            return controller.formattedDuration == "00:00"
+                ? reausabletext(
+              "${controller.callStatus.value}...",
+              color: ToggleThemeData.white,
+              fontsize: 14,
+            )
+                : reausabletext(
+              controller.formattedDuration,
+              fontsize: 12,
+              fontfamily: FontFamily.interMedium,
               color: ToggleThemeData.white,
             );
-          }),
+          })
         ],
       ),
     );

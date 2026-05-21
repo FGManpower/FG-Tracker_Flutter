@@ -63,17 +63,20 @@ class CallScreen extends StatelessWidget {
                                       fontsize: 28,
                                       fontfamily: FontFamily.interSemiBold,
                                       color: ToggleThemeData.white),
-                                  Utility.isNullEmptyOrFalse(controller.formattedDuration)
-                                      ? reausabletext(
-                                      "Ringing..",
+                                  Obx(() {
+                                    return controller.formattedDuration == "00:00"
+                                        ? reausabletext(
+                                      "${controller.callStatus.value}...",
+                                      color: ToggleThemeData.white,
+                                      fontsize: 14,
+                                    )
+                                        : reausabletext(
+                                      controller.formattedDuration,
                                       fontsize: 12,
                                       fontfamily: FontFamily.interMedium,
-                                      color: ToggleThemeData.white)
-                                      : reausabletext(
-                                          controller.formattedDuration,
-                                          fontsize: 12,
-                                          fontfamily: FontFamily.interMedium,
-                                          color: ToggleThemeData.white),
+                                      color: ToggleThemeData.white,
+                                    );
+                                  })
 
                                 ],
                               ),

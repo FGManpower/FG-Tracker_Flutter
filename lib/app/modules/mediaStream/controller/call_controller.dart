@@ -19,18 +19,17 @@ import '../../../../gen/assets.gen.dart';
 import '../../../Core/global/launchedFromCall.dart';
 import '../../../Data/Services/SignallingService.dart';
 
-enum CallStatus { calling, ringing, connecting, connected }
 class CallController extends GetxController {
   final socket = SignallingService.instance.socket;
 
   final localRenderer = RTCVideoRenderer();
   final remoteRenderer = RTCVideoRenderer();
-  final Rx<CallStatus> callStatus = CallStatus.calling.obs;
+
   RTCPeerConnection? peer;
   MediaStream? localStream;
 
   List<RTCIceCandidate> iceCandidates = [];
-
+  RxString callStatus = "Calling...".obs;
   bool isAudioOn = true;
   bool isVideoOn = true;
   bool isFrontCamera = true;
@@ -78,8 +77,6 @@ class CallController extends GetxController {
 
     socket!.on("callCreated", (data) {
       callId = data["callId"].toString();
-      callStatus.value = CallStatus.calling; // ✅ Calling...
-
       update();
     });
 
@@ -89,14 +86,6 @@ class CallController extends GetxController {
       update();
     });
 
-
-
-
-    // ✅ ADD THIS — only works after backend change below
-    socket!.on("callRinging", (data) {
-      callStatus.value = CallStatus.ringing; // ✅ Ringing...
-      update();
-    });
     socket!.on("callRejected", (data) async {
       callTimer?.cancel();
       callTimer = null;
@@ -158,6 +147,14 @@ class CallController extends GetxController {
       resetPeer();
       Get.back();
     });
+
+    socket?.on("callStatus", (data) {
+      log("CALL STATUS: $data");
+
+      if (data['status'] != null) {
+        callStatus.value = data['status'];
+      }
+    });
   }
 
   void resetPeer() {
@@ -202,12 +199,11 @@ class CallController extends GetxController {
         }
       ],
       'iceTransportPolicy': 'all',
-
+      // 'iceTransportPolicy': 'relay', // it was working testing with divesh
     });
 
     peer!.onTrack = (event) {
       remoteRenderer.srcObject = event.streams[0];
-      callStatus.value = CallStatus.connected;
       update();
       startCallTimer();
     };
@@ -264,7 +260,6 @@ class CallController extends GetxController {
       peer!.onIceCandidate = (c) => iceCandidates.add(c);
 
       socket!.on("callAnswered", (data) async {
-        callStatus.value = CallStatus.connecting;
         await peer!.setRemoteDescription(
           RTCSessionDescription(
             data["sdpAnswer"]["sdp"],
@@ -383,13 +378,16 @@ class CallController extends GetxController {
   String get formattedDuration {
     final minutes = (callDurationSeconds ~/ 60).toString().padLeft(2, '0');
     final seconds = (callDurationSeconds % 60).toString().padLeft(2, '0');
-    return "$minutes:$seconds"; // ✅ Clean getter, no stopSound here
+    if (Utility.isNotNullEmptyOrFalse("$minutes:$seconds")) {
+      if (args["callType"] == "outGoing") {
+        stopSound();
+      }
+    }
+    return "$minutes:$seconds";
   }
 
   void startCallTimer() {
     if (callTimer != null) return;
-
-    stopSound(); // ✅ Stop ringing sound when call connects
 
     callTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       callDurationSeconds++;
@@ -429,18 +427,4 @@ class CallController extends GetxController {
       stopSound();
     }
   }
-  String get callStatusText {
-    switch (callStatus.value) {
-      case CallStatus.calling:
-        return "Calling...";
-      case CallStatus.ringing:
-        return "Ringing...";
-      case CallStatus.connecting:
-        return "Connecting...";
-      case CallStatus.connected:
-        return formattedDuration;
-    }
-  }
 }
-
-

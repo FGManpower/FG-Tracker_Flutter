@@ -77,16 +77,9 @@ dependencies:
   waveform_flutter: ^1.2.0
   connectycube_flutter_call_kit: ^2.8.2
   flutter_callkit_incoming: ^3.0.0
-  mobile_scanner: 5.2.3
+  mobile_scanner: ^7.2.0
   flutter_animarker: ^3.2.0
   gal: ^2.3.0
-
-  
-
-
-
-
-
 
 
 

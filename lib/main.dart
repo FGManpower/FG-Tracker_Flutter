@@ -32,6 +32,7 @@ import 'app/modules/Track/Controller/TrackController.dart';
 import 'app/modules/Track/Controller/LocationService.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
+final socket = SignallingService.instance.socket;
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
 
@@ -45,6 +46,23 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     final callMap = jsonDecode(message.data['callData']);
     final Map<String, String> userInfo = callData.map<String, String>(
         (key, value) => MapEntry(key.toString(), value.toString()));
+
+    var pref = await SharedPreferences.getInstance();
+
+    final userId = pref.get(PrefConst.userId);
+
+    if (userId != null) {
+      SignallingService.instance.init(
+        websocketUrl: ConstRes.socketUrl,
+        selfCallerID: userId.toString(),
+      );
+
+      socket?.emit("CallingStatus", {
+        "callId": callData['callId'].toString(),
+        "remoteUserId": int.parse(callData['callerId']),
+        "callingStatus": "Ringing",
+      });
+    }
 
     if (Platform.isIOS) {
       CallUtils.instance.showIncomingCall(data: callMap);
@@ -155,7 +173,7 @@ Future<void> main() async {
   }
   WalkieConfiguration.configureSpeakerAudioSession();
   setupVoipListener();
-  if(Platform.isIOS){
+  if (Platform.isIOS) {
     CallUtils.instance.listenCallKitEvents();
   }
   // WalkieUtils().listenWalkieEvents();
@@ -258,6 +276,3 @@ class _MyAppState extends State<MyApp> {
     );
   }
 }
-
-
-
