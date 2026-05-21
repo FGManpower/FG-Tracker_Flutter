@@ -2,6 +2,7 @@ import 'package:fgtracker/app/modules/mediaStream/controller/call_controller.dar
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
 
 import '../../../Core/constant/const_res.dart';
 import '../../../Core/theme/appTheme.dart';
@@ -32,13 +33,19 @@ class AudiocallScreen extends StatelessWidget {
               fontsize: 28,
               fontfamily: FontFamily.interSemiBold,
               color: ToggleThemeData.white),
-          controller.formattedDuration == "00:00"
-              ? reausabletext("Calling...",
-                  color: ToggleThemeData.white, fontsize: 14)
-              : reausabletext(controller.formattedDuration,
-                  fontsize: 12,
-                  fontfamily: FontFamily.interMedium,
-                  color: ToggleThemeData.white),
+
+          Obx(() {
+            final isConnected =
+                controller.callStatus.value == CallStatus.connected;
+            return reausabletext(
+              controller.callStatusText,
+              fontsize: isConnected ? 12 : 14,
+              fontfamily: isConnected
+                  ? FontFamily.interMedium
+                  : FontFamily.interRegular,
+              color: ToggleThemeData.white,
+            );
+          }),
         ],
       ),
     );
