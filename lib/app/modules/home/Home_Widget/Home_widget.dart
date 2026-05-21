@@ -148,26 +148,29 @@ class GroupRow extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            reausabletext(
-              title,
-              fontfamily: FontFamily.interRegular,
-              fontsize: 9,
-            ),
-            SizedBox(height: 7.h),
-            reausabletext(
-              widths: 52,
-              value,
-              fontfamily: FontFamily.interSemiBold,
-              fontsize: 10,
-              color: const Color(0xff5045B9),
-              maxline: 1,
-              textoverflow: TextOverflow.ellipsis,
-            ),
-          ],
+
+        Flexible(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              reausabletext(
+                title,
+                fontfamily: FontFamily.interRegular,
+                fontsize: 9,
+              ),
+              SizedBox(height: 7.h),
+              reausabletext(
+                // widths: 52,
+                value,
+                fontfamily: FontFamily.interSemiBold,
+                fontsize: 10,
+                color: const Color(0xff5045B9),
+                maxline: 1,
+                textoverflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
         ),
         if (showDivider)
           Padding(

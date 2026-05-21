@@ -39,10 +39,10 @@ class CreatedGroupUi extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final double blockWidth = 1.sw - 24.w;
-    final double cardGap = 10.w;
+    final double cardGap = 12.w;
     final double cardWidth = (blockWidth - cardGap) / 2;
-    final double rowGap = 8.h;
-    final double blockHeight = 310.h;
+    final double rowGap = 12.h;
+    final double blockHeight = 380.h;
     final double cardHeight = (blockHeight - rowGap) / 2;
 
     final chunks = _buildChunks();
@@ -58,9 +58,7 @@ class CreatedGroupUi extends StatelessWidget {
           final chunk = chunks[chunkIndex];
           final List<List<GroupsResData?>> rows = [
             chunk.sublist(0, chunk.length >= 2 ? 2 : chunk.length),
-            chunk.length > 2
-                ? chunk.sublist(2, chunk.length)
-                : [],
+            chunk.length > 2 ? chunk.sublist(2, chunk.length) : [],
           ];
 
           return SizedBox(
@@ -69,8 +67,7 @@ class CreatedGroupUi extends StatelessWidget {
               children: List.generate(rows.length, (rowIndex) {
                 if (rows[rowIndex].isEmpty) return const SizedBox.shrink();
                 return Padding(
-                  padding: EdgeInsets.only(
-                      top: rowIndex == 0 ? 0 : rowGap),
+                  padding: EdgeInsets.only(top: rowIndex == 0 ? 0 : rowGap),
                   child: Row(
                     children: List.generate(rows[rowIndex].length, (colIndex) {
                       final data = rows[rowIndex][colIndex];
@@ -85,15 +82,12 @@ class CreatedGroupUi extends StatelessWidget {
                           child: GestureDetector(
                             onTap: () {
                               if (data?.isActive == true) {
-                                Get.toNamed(
-                                  Routes.Memberscreen,
-                                  arguments: {
-                                    "groupId": data!.id.toString(),
-                                    "groupName": data.groupName.toString(),
-                                    "isCreator": data.isCreator.toString(),
-                                    "isActive": data.isActive.toString(),
-                                  },
-                                )?.then((value) {
+                                Get.toNamed(Routes.Memberscreen, arguments: {
+                                  "groupId": data!.id.toString(),
+                                  "groupName": data.groupName.toString(),
+                                  "isCreator": data.isCreator.toString(),
+                                  "isActive": data.isActive.toString(),
+                                })?.then((value) {
                                   if (value == true) {
                                     groupController.getGroupData();
                                   }
@@ -113,134 +107,144 @@ class CreatedGroupUi extends StatelessWidget {
                                     opacity: 0.15,
                                   ),
                                   color: const Color(0xffF2F0FF),
-                                  borderRadius:
-                                  BorderRadius.circular(15.r),
+                                  borderRadius: BorderRadius.circular(15.r),
                                 ),
                                 child: Padding(
                                   padding: EdgeInsets.symmetric(
-                                      horizontal: 10.w,
-                                      vertical: 8.h),
+                                      horizontal: 10.w, vertical: 15.h),
                                   child: Column(
-                                    mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
+                                    mainAxisAlignment: MainAxisAlignment.start,
                                     crossAxisAlignment:
                                     CrossAxisAlignment.start,
                                     children: [
                                       Row(
                                         mainAxisAlignment:
-                                        MainAxisAlignment
-                                            .spaceBetween,
+                                        MainAxisAlignment.spaceBetween,
                                         children: [
                                           Flexible(
                                             child: reausabletext(
                                               data?.groupName ??
                                                   AppText.unnamedTrip,
-                                              fontsize: 12,
-                                              fontfamily: FontFamily
-                                                  .interSemiBold,
-                                              color:
-                                              ToggleThemeData.black,
+                                              fontsize: 14,
+                                              fontfamily:
+                                              FontFamily.interSemiBold,
+                                              color: ToggleThemeData.black,
                                               maxline: 2,
                                               textoverflow:
                                               TextOverflow.ellipsis,
                                             ),
                                           ),
                                           isCreator
-                                              ? Transform.scale(
-                                            scale: 0.7,
-                                            child: CupertinoSwitch(
-                                              value: isActive,
-                                              onChanged: (value) {
-                                                groupController
-                                                    .updateGroup(
-                                                  groupController,
-                                                  groupId: data!.id
-                                                      .toString(),
-                                                  groupStatus: value
-                                                      .toString(),
-                                                );
-                                              },
-                                              activeColor:
-                                              const Color(
-                                                  0xff5045B9),
-                                              trackColor:
-                                              Colors.black26,
+                                              ? Padding(
+                                            padding: EdgeInsets.only(
+                                                left: 7.w),
+                                            child: Transform.scale(
+                                              scale: 0.8,
+                                              child: CupertinoSwitch(
+                                                value: isActive,
+                                                onChanged: (value) {
+                                                  groupController
+                                                      .updateGroup(
+                                                    groupController,
+                                                    groupId: data!.id
+                                                        .toString(),
+                                                    groupStatus: value
+                                                        .toString(),
+                                                  );
+                                                },
+                                                activeColor: const Color(
+                                                    0xff5045B9),
+                                                trackColor:
+                                                Colors.black26,
+                                              ),
                                             ),
                                           )
-                                              : Icon(
-                                            isActive
-                                                ? Icons
-                                                .check_circle_outline
-                                                : Icons.cancel_sharp,
-                                            color: isActive
-                                                ? Colors.green
-                                                : Colors.redAccent,
-                                            size: 16.sp,
+                                              : Padding(
+                                            padding: EdgeInsets.only(
+                                                left: 7.w),
+                                            child: Icon(
+                                              isActive
+                                                  ? Icons
+                                                  .check_circle_outline
+                                                  : Icons.cancel_sharp,
+                                              color: isActive
+                                                  ? Colors.green
+                                                  : Colors.redAccent,
+                                              size: 20.sp,
+                                            ),
                                           ),
                                         ],
                                       ),
-                                      Column(
-                                        crossAxisAlignment:
-                                        CrossAxisAlignment.start,
+                                      SizedBox(height: 13.h),
+                                      Row(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
-                                          miniLabel("Code",
-                                              data?.groupCode ?? "-"),
-                                          SizedBox(height: 3.h),
-                                          miniLabel(
-                                              "By",
-                                              data?.isCreator == true
-                                                  ? "You"
-                                                  : "Other"),
-                                          SizedBox(height: 3.h),
-                                          miniLabel("Members",
-                                              "${data?.memberCount ?? 0}"),
+                                          Expanded(
+                                            child: GroupRow(
+                                              title: "Team Code",
+                                              value: data?.groupCode ?? "",
+                                            ),
+                                          ),
+                                          Expanded(
+                                            child: GroupRow(
+                                              title: "Created By",
+                                              value: data?.isCreator.toString() ?? "0",
+                                            ),
+                                          ),
+                                          Expanded(
+                                            child: GroupRow(
+                                              title: "No. Of Member",
+                                              value: "${data?.memberCount ?? 0}",
+                                              showDivider: false,
+                                            ),
+                                          ),
                                         ],
                                       ),
+                                      SizedBox(height: 15.h),
                                       GestureDetector(
                                         onTap: () {
                                           if (isActive) {
-                                            Get.toNamed(
-                                              Routes.QrCodeScreen,
-                                              arguments: {
-                                                "groupCode":
-                                                data?.groupCode
-                                              },
-                                            );
+                                            Get.toNamed(Routes.QrCodeScreen,
+                                                arguments: {
+                                                  "groupCode": data?.groupCode
+                                                });
                                           } else {
                                             Utils().fluttertoast(
                                                 "Activate the group to view QR");
                                           }
                                         },
                                         child: Row(
+                                          crossAxisAlignment:
+                                          CrossAxisAlignment.center,
                                           mainAxisAlignment:
-                                          MainAxisAlignment
-                                              .spaceBetween,
+                                          MainAxisAlignment.spaceBetween,
                                           children: [
                                             reausabletext(
-                                              "Show QR",
+                                              "Show QR Code",
                                               fontfamily:
                                               FontFamily.interMedium,
-                                              fontsize: 11,
-                                              color: ToggleThemeData
-                                                  .darkPurple,
+                                              fontsize: 12,
+                                              color:
+                                              ToggleThemeData.darkPurple,
                                             ),
                                             Container(
                                               decoration: BoxDecoration(
                                                 shape: BoxShape.circle,
                                                 border: Border.all(
-                                                  color: const Color(
-                                                      0xff5045B9),
-                                                  width: 1.5.w,
+                                                  color:
+                                                  const Color(0xff5045B9),
+                                                  width: 1.8.w,
                                                 ),
                                               ),
-                                              padding:
-                                              EdgeInsets.all(5.r),
-                                              child: reausableIcon(
-                                                icon: FontAwesomeIcons
-                                                    .qrcode,
-                                                size: 14,
-                                                color: const Color(
-                                                    0xff5045B9),
+                                              child: Padding(
+                                                padding: EdgeInsets.all(6.r),
+                                                child: reausableIcon(
+                                                  icon:
+                                                  FontAwesomeIcons.qrcode,
+                                                  size: 18,
+                                                  color:
+                                                  const Color(0xff5045B9),
+                                                ),
                                               ),
                                             ),
                                           ],
@@ -262,29 +266,6 @@ class CreatedGroupUi extends StatelessWidget {
           );
         },
       ),
-    );
-  }
-
-  Widget miniLabel(String title, String value) {
-    return Row(
-      children: [
-        reausabletext(
-          "$title: ",
-          fontsize: 10,
-          fontfamily: FontFamily.interMedium,
-          color: Colors.grey[600],
-        ),
-        Flexible(
-          child: reausabletext(
-            value,
-            fontsize: 10,
-            fontfamily: FontFamily.interSemiBold,
-            color: ToggleThemeData.black,
-            maxline: 1,
-            textoverflow: TextOverflow.ellipsis,
-          ),
-        ),
-      ],
     );
   }
 }
