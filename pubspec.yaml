@@ -110,6 +110,7 @@ flutter:
     - assets/svg/
     - assets/music/
     - shorebird.yaml
+    - assets/map_theme/dark_map.json
 
   fonts:
     - family: InterBlack

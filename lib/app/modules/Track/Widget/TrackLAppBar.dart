@@ -4,11 +4,14 @@ import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-AppBar buildTrackAppBar(BuildContext context,
-    {required String groupName,
-    void Function()? onPressMembers,
-    void Function()? onPressRefresh,
-    void Function()? onSearch}) {
+AppBar buildTrackAppBar(
+  BuildContext context, {
+  required String groupName,
+  void Function()? onPressMembers,
+  void Function()? onPressRefresh,
+  void Function()? onPressTheme,
+  void Function()? onSearch,
+}) {
   return AppBar(
     backgroundColor: ToggleThemeData.darkPurple,
     elevation: 4,
@@ -54,7 +57,7 @@ AppBar buildTrackAppBar(BuildContext context,
         onSelected: (value) {},
         color: Colors.white,
         elevation: 5,
-        offset: Offset(0, 48),
+        offset: const Offset(0, 48),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12.r),
         ),
@@ -73,11 +76,20 @@ AppBar buildTrackAppBar(BuildContext context,
           ),
           dividerMenuItem(),
           popupItem(
-              context: context,
-              value: "refresh_Maps",
-              icon: Icons.refresh,
-              text: "Refresh Map",
-              onTap: onPressRefresh),
+            context: context,
+            value: "refresh_Maps",
+            icon: Icons.refresh,
+            text: "Refresh Map",
+            onTap: onPressRefresh,
+          ),
+          dividerMenuItem(),
+          popupItem(
+            context: context,
+            value: "theme",
+            icon: Icons.layers,
+            text: "Theme",
+            onTap: onPressTheme,
+          ),
         ],
       ),
       SizedBox(width: 10.w),
@@ -85,18 +97,22 @@ AppBar buildTrackAppBar(BuildContext context,
   );
 }
 
-PopupMenuItem<String> popupItem(
-    {required BuildContext context,
-    required String value,
-    required IconData icon,
-    required String text,
-    void Function()? onTap}) {
+PopupMenuItem<String> popupItem({
+  required BuildContext context,
+  required String value,
+  required IconData icon,
+  required String text,
+  void Function()? onTap,
+}) {
   return PopupMenuItem<String>(
     value: value,
     onTap: () {
       onTap?.call();
     },
-    padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+    padding: EdgeInsets.symmetric(
+      horizontal: 12.w,
+      vertical: 8.h,
+    ),
     child: Row(
       children: [
         Container(

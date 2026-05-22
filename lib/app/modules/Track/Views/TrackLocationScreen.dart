@@ -27,26 +27,49 @@ class _LocationTrackingPageState extends State<LocationTrackingPage> {
     super.initState();
 
     final args = Get.arguments ?? {};
+
     groupId = args['groupId'];
     groupName = args['groupName'] ?? "Group";
+
     final String? targetUserId = args['targetUserId'];
 
     controller.clearMapMarkers();
+
+    controller.loadMapStyle();
+
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      controller.initGroupTracking(groupId.toString());
-      await controller.getGroupLocationData(context, groupId);
+      controller.initGroupTracking(
+        groupId.toString(),
+      );
+
+      await controller.getGroupLocationData(
+        context,
+        groupId,
+      );
 
       if (targetUserId != null && targetUserId.isNotEmpty) {
         int retries = 0;
+
         while (retries < 50) {
-          await Future.delayed(const Duration(milliseconds: 100));
-          final hasMarker = controller.markers
-              .toList()
-              .any((m) => m.markerId.value == targetUserId);
-          if (hasMarker && controller.mapController != null) break;
+          await Future.delayed(
+            const Duration(milliseconds: 100),
+          );
+
+          final hasMarker = controller.markers.toList().any(
+                (m) => m.markerId.value == targetUserId,
+              );
+
+          if (hasMarker && controller.mapController != null) {
+            break;
+          }
+
           retries++;
         }
-        controller.searchUserAndZoom(groupId.toString(), targetUserId);
+
+        controller.searchUserAndZoom(
+          groupId.toString(),
+          targetUserId,
+        );
       }
     });
   }
@@ -66,10 +89,20 @@ class _LocationTrackingPageState extends State<LocationTrackingPage> {
             );
           },
           onPressRefresh: () {
-            controller.initGroupTracking(groupId.toString());
-            controller.getGroupLocationData(context, groupId);
-          },
+            controller.initGroupTracking(
+              groupId.toString(),
+            );
 
+            controller.getGroupLocationData(
+              context,
+              groupId,
+            );
+          },
+          onPressTheme: () {
+            controller.showMapThemeBottomSheet(
+              context,
+            );
+          },
           onSearch: () {
             Get.toNamed(
               Routes.SearchMembers,
@@ -79,7 +112,10 @@ class _LocationTrackingPageState extends State<LocationTrackingPage> {
               },
             )?.then((value) {
               if (value != null && value.toString().isNotEmpty) {
-                controller.searchUserAndZoom(groupId.toString(), value);
+                controller.searchUserAndZoom(
+                  groupId.toString(),
+                  value,
+                );
               }
             });
           },
@@ -92,14 +128,24 @@ class _LocationTrackingPageState extends State<LocationTrackingPage> {
                       controller.locationService.currentPosition!.latitude!,
                       controller.locationService.currentPosition!.longitude!,
                     )
-                  : const LatLng(19.093394, 72.9137016),
+                  : const LatLng(
+                      19.093394,
+                      72.9137016,
+                    ),
               zoom: 15,
             ),
-            mapType: MapType.normal,
+            mapType: controller.currentMapType.value,
             myLocationEnabled: true,
             zoomControlsEnabled: true,
-            onMapCreated: (mapController) =>
-                controller.mapController = mapController,
+            onMapCreated: (mapController) async {
+              controller.mapController = mapController;
+
+              if (controller.isDarkMode) {
+                await mapController.setMapStyle(
+                  controller.darkMapStyle,
+                );
+              }
+            },
             markers: controller.markers.toSet(),
           ),
         ),
