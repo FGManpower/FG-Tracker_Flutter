@@ -29,7 +29,7 @@ class CallController extends GetxController {
   MediaStream? localStream;
 
   List<RTCIceCandidate> iceCandidates = [];
-  RxString callStatus = "Calling...".obs;
+  RxString callStatus = "Calling".obs;
   bool isAudioOn = true;
   bool isVideoOn = true;
   bool isFrontCamera = true;
@@ -75,15 +75,15 @@ class CallController extends GetxController {
   void _listenForCallEvents() {
     socket?.off("callRejected");
 
-    socket!.on("callCreated", (data) {
-      callId = data["callId"].toString();
-      update();
-    });
 
-    // Receiver: new incoming call received
+
     socket!.on("newCall", (data) {
-      callId = data["callId"].toString();
-      update();
+
+      socket?.emit("CallingStatus", {
+        "callId": data['callId'].toString(),
+        "remoteUserId": int.parse(data['callerId']),
+        "callingStatus": "Ringing",
+      });
     });
 
     socket!.on("callRejected", (data) async {

@@ -186,7 +186,6 @@ class firebaseNotificationServices {
 
 
       } else if (message.data["screen_name"] == "chatScreen") {
-        // if (!ChatStateTracker.isChatCallScreenOpen) {
         MemberData? memberData;
         try {
           memberData =
@@ -195,7 +194,6 @@ class firebaseNotificationServices {
           debugPrint("Invalid memberData format: $e");
         }
         if (memberData != null) {
-          print("========MemberData====$memberData");
           Get.toNamed(Routes.chatScreen, arguments: {
             "userData": memberData,
             "groupName": "Test",
@@ -207,7 +205,6 @@ class firebaseNotificationServices {
 
         }
 
-        // }
       } else if (message.data['screen_name'] == 'incomingCall') {
         if (CallStateTracker.isIncomingCallScreenOpen) return;
 
