@@ -45,7 +45,7 @@ class InitiateController extends GetxController
 
 
     Future.microtask(() async {
-      print("splash of cal of callkit");
+
       await CallKitService.instance.checkCallOnLaunch();
 
       if (CallSessionState.isCallActive || CallSessionState.launchedFromCall) {

@@ -36,16 +36,16 @@ class AudiocallScreen extends StatelessWidget {
           Obx(() {
             return controller.formattedDuration == "00:00"
                 ? reausabletext(
-              "${controller.callStatus.value}...",
-              color: ToggleThemeData.white,
-              fontsize: 14,
-            )
+                    "${controller.callStatus.value}...",
+                    color: ToggleThemeData.white,
+                    fontsize: 14,
+                  )
                 : reausabletext(
-              controller.formattedDuration,
-              fontsize: 12,
-              fontfamily: FontFamily.interMedium,
-              color: ToggleThemeData.white,
-            );
+                    controller.formattedDuration,
+                    fontsize: 12,
+                    fontfamily: FontFamily.interMedium,
+                    color: ToggleThemeData.white,
+                  );
           })
         ],
       ),
