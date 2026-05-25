@@ -84,25 +84,25 @@ class ChatScreen extends GetView<MessageController> {
               callerName: controller.memberData.name,
             );
           },
-          onGroupExit: () {
-            CommonDialog.ConfirmationDialog(
-              title: AppText.areYouSure,
-              content: AppText.doYouWantToExitGroup,
-              onConfirm: () {
-                if (controller.arguments!['isCreator'].toString() == "true") {
-                  MemberController().exitGroup(context,
-                      groupId: userData.groupId.toString(),
-                      userId: userData.userId.toString());
-                } else {
-                  MemberController().exitGroup(context,
-                      groupId: userData.groupId.toString(),
-                      userId: Global.storageServices
-                          .get(PrefConst.userId)
-                          .toString());
-                }
-              },
-            );
-          },
+          // onGroupExit: () {
+          //   CommonDialog.ConfirmationDialog(
+          //     title: AppText.areYouSure,
+          //     content: AppText.doYouWantToExitGroup,
+          //     onConfirm: () {
+          //       if (controller.arguments!['isCreator'].toString() == "true") {
+          //         MemberController().exitGroup(context,
+          //             groupId: userData.groupId.toString(),
+          //             userId: userData.userId.toString());
+          //       } else {
+          //         MemberController().exitGroup(context,
+          //             groupId: userData.groupId.toString(),
+          //             userId: Global.storageServices
+          //                 .get(PrefConst.userId)
+          //                 .toString());
+          //       }
+          //     },
+          //   );
+          // },
           // onDeleteGroup: () {
           //   CommonDialog.ConfirmationDialog(
           //     title: AppText.areYouSure,

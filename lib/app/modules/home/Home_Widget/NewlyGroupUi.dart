@@ -33,7 +33,6 @@ class NewlyGroupUi extends StatelessWidget {
     final double horizontalPadding = 24.w;
     final double blockWidth = screenWidth - horizontalPadding;
     final double cardWidth = (blockWidth - cardGap) / 2;
-    final double cardHeight = 185.h;
 
     final items = groupData ?? List<GroupsResData?>.filled(8, null);
 
@@ -50,200 +49,203 @@ class NewlyGroupUi extends StatelessWidget {
       itemBuilder: (context, rowIndex) {
         final row = rows[rowIndex];
 
-        return Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: List.generate(row.length, (colIndex) {
-            final data = row[colIndex];
-            final bool isActive = data?.isActive ?? false;
-            final bool isCreator = data?.isCreator ?? false;
+        return IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: List.generate(row.length, (colIndex) {
+              final data = row[colIndex];
+              final bool isActive = data?.isActive ?? false;
+              final bool isCreator = data?.isCreator ?? false;
 
-            return Padding(
-              padding: EdgeInsets.only(left: colIndex == 0 ? 0 : cardGap),
-              child: Skeletonizer(
-                enabled: isLoading,
-                child: GestureDetector(
-                  onTap: () {
-                    if (data?.isActive == true) {
-                      Get.toNamed(Routes.Memberscreen, arguments: {
-                        "groupId": data!.id.toString(),
-                        "groupName": data.groupName.toString(),
-                        "isCreator": data.isCreator.toString(),
-                        "isActive": data.isActive.toString(),
-                      })?.then((value) {
-                        if (value == true) {
-                          groupController.getGroupData();
-                        }
-                      });
-                    }
-                  },
-                  child: Opacity(
-                    opacity: isActive ? 1 : 0.7,
-                    child: Container(
-                      width: cardWidth,
-                      height: cardHeight,
-                      decoration: BoxDecoration(
-                        color: const Color(0xffF2F0FF),
-                        borderRadius: BorderRadius.circular(15.r),
-                        boxShadow: const [
-                          BoxShadow(
-                            color: Colors.black12,
-                            blurRadius: 4,
-                            offset: Offset(0, 3),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            height: 70.h,
-                            width: double.maxFinite,
-                            decoration: BoxDecoration(
-                              color: const Color(0xffE4E0FF),
-                              borderRadius: BorderRadius.only(
-                                topLeft: Radius.circular(10.r),
-                                topRight: Radius.circular(10.r),
+              return Padding(
+                padding: EdgeInsets.only(left: colIndex == 0 ? 0 : cardGap),
+                child: Skeletonizer(
+                  enabled: isLoading,
+                  child: GestureDetector(
+                    onTap: () {
+                      if (data?.isActive == true) {
+                        Get.toNamed(Routes.Memberscreen, arguments: {
+                          "groupId": data!.id.toString(),
+                          "groupName": data.groupName.toString(),
+                          "isCreator": data.isCreator.toString(),
+                          "isActive": data.isActive.toString(),
+                        })?.then((value) {
+                          if (value == true) {
+                            groupController.getGroupData();
+                          }
+                        });
+                      }
+                    },
+                    child: Opacity(
+                      opacity: isActive ? 1 : 0.7,
+                      child: Container(
+                        width: cardWidth,
+                        decoration: BoxDecoration(
+                          color: const Color(0xffF2F0FF),
+                          borderRadius: BorderRadius.circular(15.r),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Colors.black12,
+                              blurRadius: 4,
+                              offset: Offset(0, 3),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              height: 62.h,
+                              width: double.maxFinite,
+                              decoration: BoxDecoration(
+                                color: const Color(0xffE4E0FF),
+                                borderRadius: BorderRadius.only(
+                                  topLeft: Radius.circular(10.r),
+                                  topRight: Radius.circular(10.r),
+                                ),
+                              ),
+                              padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 8.h),
+                              child: reausabletext(
+                                data?.groupName ?? AppText.unnamedTrip,
+                                fontsize: 16,
+                                fontfamily: FontFamily.interSemiBold,
+                                color: ToggleThemeData.black,
+                                maxline: 2,
+                                textoverflow: TextOverflow.ellipsis,
                               ),
                             ),
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 10.w, vertical: 8.h),
-                            child: reausabletext(
-                              data?.groupName ?? AppText.unnamedTrip,
-                              fontsize: 16,
-                              fontfamily: FontFamily.interSemiBold,
-                              color: ToggleThemeData.black,
-                              maxline: 2,
-                              textoverflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          Padding(
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 10.w, vertical: 6.h),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    reausabletext(
-                                      "Team Code",
-                                      fontfamily: FontFamily.interRegular,
-                                      fontsize: 11,
-                                      color: Colors.black54,
-                                    ),
-                                    isCreator
-                                        ? Transform.scale(
-                                            scale: 0.8,
-                                            child: CupertinoSwitch(
-                                              value: isActive,
-                                              onChanged: (value) {
-                                                groupController.updateGroup(
-                                                  groupController,
-                                                  groupId: data!.id.toString(),
-                                                  groupStatus: value.toString(),
-                                                );
-                                              },
-                                              activeColor:
-                                                  const Color(0xff5045B9),
-                                              trackColor: Colors.black26,
-                                            ),
-                                          )
-                                        : Icon(
-                                            isActive
-                                                ? Icons.check_circle_outline
-                                                : Icons.cancel_sharp,
-                                            color: isActive
-                                                ? Colors.green
-                                                : Colors.redAccent,
-                                            size: 18.sp,
-                                          ),
-                                  ],
-                                ),
-                                SizedBox(height: 4.h),
-                                Row(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    Flexible(
-                                      child: reausabletext(
-                                        data?.groupCode ?? "",
-                                        fontfamily: FontFamily.interSemiBold,
-                                        fontsize: 11,
-                                        color: const Color(0xff5045B9),
-                                        maxline: 1,
-                                        textoverflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                    SizedBox(width: 6.w),
-                                    reausableIcon(
-                                      icon: Icons.copy,
-                                      size: 14,
-                                      color: Colors.black45,
-                                      ontap: () {
-                                        Clipboard.setData(ClipboardData(
-                                            text: data?.groupCode ?? ""));
-                                        Utils()
-                                            .fluttertoast("Group code copied!");
-                                      },
-                                    ),
-                                  ],
-                                ),
-                                SizedBox(height: 6.h),
-                                GestureDetector(
-                                  onTap: () {
-                                    if (isActive) {
-                                      Get.toNamed(Routes.QrCodeScreen,
-                                          arguments: {
-                                            "groupCode": data?.groupCode
-                                          });
-                                    } else {
-                                      Utils().fluttertoast(
-                                          "Activate the group to view QR");
-                                    }
-                                  },
-                                  child: Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
+                            Padding(
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 10.w, vertical: 5.h),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
                                     mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
+                                    MainAxisAlignment.spaceBetween,
                                     children: [
                                       reausabletext(
-                                        "Show QR Code",
-                                        fontfamily: FontFamily.interMedium,
+                                        "Team Code",
+                                        fontfamily: FontFamily.interRegular,
                                         fontsize: 11,
-                                        color: ToggleThemeData.darkPurple,
+                                        color: Colors.black54,
                                       ),
-                                      Container(
-                                        decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          border: Border.all(
-                                            color: const Color(0xff5045B9),
-                                            width: 1.5.w,
-                                          ),
+                                      isCreator
+                                          ? Transform.scale(
+                                        scale: 0.8,
+                                        child: CupertinoSwitch(
+                                          value: isActive,
+                                          onChanged: (value) {
+                                            groupController.updateGroup(
+                                              groupController,
+                                              groupId:
+                                              data!.id.toString(),
+                                              groupStatus:
+                                              value.toString(),
+                                            );
+                                          },
+                                          activeColor:
+                                          const Color(0xff5045B9),
+                                          trackColor: Colors.black26,
                                         ),
-                                        child: Padding(
-                                          padding: EdgeInsets.all(5.r),
-                                          child: reausableIcon(
-                                            icon: FontAwesomeIcons.qrcode,
-                                            size: 16,
-                                            color: const Color(0xff5045B9),
-                                          ),
-                                        ),
+                                      )
+                                          : Icon(
+                                        isActive
+                                            ? Icons.check_circle_outline
+                                            : Icons.cancel_sharp,
+                                        color: isActive
+                                            ? Colors.green
+                                            : Colors.redAccent,
+                                        size: 18.sp,
                                       ),
                                     ],
                                   ),
-                                ),
-                              ],
+                                  SizedBox(height: 3.h),
+                                  Row(
+                                    crossAxisAlignment:
+                                    CrossAxisAlignment.center,
+                                    children: [
+                                      Flexible(
+                                        child: reausabletext(
+                                          data?.groupCode ?? "",
+                                          fontfamily: FontFamily.interSemiBold,
+                                          fontsize: 11,
+                                          color: const Color(0xff5045B9),
+                                          maxline: 1,
+                                          textoverflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                      SizedBox(width: 6.w),
+                                      reausableIcon(
+                                        icon: Icons.copy,
+                                        size: 14,
+                                        color: Colors.black45,
+                                        ontap: () {
+                                          Clipboard.setData(ClipboardData(
+                                              text: data?.groupCode ?? ""));
+                                          Utils().fluttertoast(
+                                              "Group code copied!");
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                  SizedBox(height: 5.h),
+                                  GestureDetector(
+                                    onTap: () {
+                                      if (isActive) {
+                                        Get.toNamed(Routes.QrCodeScreen,
+                                            arguments: {
+                                              "groupCode": data?.groupCode
+                                            });
+                                      } else {
+                                        Utils().fluttertoast(
+                                            "Activate the group to view QR");
+                                      }
+                                    },
+                                    child: Row(
+                                      crossAxisAlignment:
+                                      CrossAxisAlignment.center,
+                                      mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        reausabletext(
+                                          "Show QR Code",
+                                          fontfamily: FontFamily.interMedium,
+                                          fontsize: 11,
+                                          color: ToggleThemeData.darkPurple,
+                                        ),
+                                        Container(
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            border: Border.all(
+                                              color: const Color(0xff5045B9),
+                                              width: 1.5.w,
+                                            ),
+                                          ),
+                                          child: Padding(
+                                            padding: EdgeInsets.all(5.r),
+                                            child: reausableIcon(
+                                              icon: FontAwesomeIcons.qrcode,
+                                              size: 16,
+                                              color: const Color(0xff5045B9),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-            );
-          }),
+              );
+            }),
+          ),
         );
       },
     );

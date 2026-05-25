@@ -107,82 +107,85 @@ class CommonChatAppBar extends StatelessWidget implements PreferredSizeWidget {
         ],
       ),
       actions: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            SizedBox(
-              width: 10.w,
-            ),
-            reausableIcon(
-                icon: Icons.call_rounded,
-                color: ToggleThemeData.darkPurple,
-                size: 26,
-                ontap: onCallTap),
-            SizedBox(
-              width: 15.w,
-            ),
-            reausableIcon(
-                icon: Icons.videocam,
-                color: ToggleThemeData.darkPurple,
-                size: 26,
-                ontap: onVideoTap),
-            SizedBox(
-              width: 5.w,
-            ),
-            // isCreator == true
-            //     ?
-            PopupMenuButton<String>(
-                    onSelected: (value) {},
-                    color: Colors.white,
-                    elevation: 5,
-                    offset: Offset(0, 48),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12.r),
-                    ),
-                    icon: Icon(
-                      FontAwesomeIcons.ellipsis,
-                      color: ToggleThemeData.darkPurple,
-                      size: 26.sp,
-                    ),
-                    itemBuilder: (context) => [
-                      popupItem(
-                        context: context,
-                        value: 'exit',
-                        icon: Icons.logout,
-                        text: 'Exit Group',
-                        onTap: () {
-                          onGroupExit!();
-                        },
-                      ),
-                    ],
-                  ),
-                // : PopupMenuButton<String>(
-                //     onSelected: (value) {},
-                //     color: Colors.white,
-                //     elevation: 5,
-                //     offset: Offset(0, 48),
-                //     shape: RoundedRectangleBorder(
-                //       borderRadius: BorderRadius.circular(12.r),
-                //     ),
-                //     icon: Icon(
-                //       Icons.more_vert,
-                //       color: ToggleThemeData.darkPurple,
-                //       size: 26.sp,
-                //     ),
-                //     itemBuilder: (context) => [
-                //       popupItem(
-                //         context: context,
-                //         value: 'delete',
-                //         icon: Icons.delete_outline,
-                //         text: 'Group Delete',
-                //         onTap: onDeleteGroup
-                //       ),
-                //     ],
-                //   ),
-            SizedBox(
-              width: 15.w,
-            ),
-          ],
+        Padding(
+          padding: EdgeInsets.only(right: 10.w),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              SizedBox(
+                width: 10.w,
+              ),
+              reausableIcon(
+                  icon: Icons.call_rounded,
+                  color: ToggleThemeData.darkPurple,
+                  size: 26,
+                  ontap: onCallTap),
+              SizedBox(
+                width: 15.w,
+              ),
+              reausableIcon(
+                  icon: Icons.videocam,
+                  color: ToggleThemeData.darkPurple,
+                  size: 26,
+                  ontap: onVideoTap),
+              SizedBox(
+                width: 5.w,
+              ),
+              // isCreator == true
+              //     ?
+              // PopupMenuButton<String>(
+              //         onSelected: (value) {},
+              //         color: Colors.white,
+              //         elevation: 5,
+              //         offset: Offset(0, 48),
+              //         shape: RoundedRectangleBorder(
+              //           borderRadius: BorderRadius.circular(12.r),
+              //         ),
+              //         icon: Icon(
+              //           FontAwesomeIcons.ellipsis,
+              //           color: ToggleThemeData.darkPurple,
+              //           size: 26.sp,
+              //         ),
+              //         itemBuilder: (context) => [
+              //           popupItem(
+              //             context: context,
+              //             value: 'exit',
+              //             icon: Icons.logout,
+              //             text: 'Exit Group',
+              //             onTap: () {
+              //               onGroupExit!();
+              //             },
+              //           ),
+              //         ],
+              //       ),
+                  // : PopupMenuButton<String>(
+                  //     onSelected: (value) {},
+                  //     color: Colors.white,
+                  //     elevation: 5,
+                  //     offset: Offset(0, 48),
+                  //     shape: RoundedRectangleBorder(
+                  //       borderRadius: BorderRadius.circular(12.r),
+                  //     ),
+                  //     icon: Icon(
+                  //       Icons.more_vert,
+                  //       color: ToggleThemeData.darkPurple,
+                  //       size: 26.sp,
+                  //     ),
+                  //     itemBuilder: (context) => [
+                  //       popupItem(
+                  //         context: context,
+                  //         value: 'delete',
+                  //         icon: Icons.delete_outline,
+                  //         text: 'Group Delete',
+                  //         onTap: onDeleteGroup
+                  //       ),
+                  //     ],
+                  //   ),
+              SizedBox(
+                width: 15.w,
+              ),
+            ],
+          ),
         )
       ],
     );

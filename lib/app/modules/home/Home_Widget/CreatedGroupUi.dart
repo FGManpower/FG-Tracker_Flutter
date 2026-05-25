@@ -39,7 +39,7 @@ class CreatedGroupUi extends StatelessWidget {
         crossAxisCount: 2,
         crossAxisSpacing: 10.w,
         mainAxisSpacing: 10.h,
-        mainAxisExtent: 155.h,
+        mainAxisExtent: 150.h,
       ),
       itemCount: isLoading ? 6 : safeGroupData.length,
       itemBuilder: (context, index) {
@@ -85,15 +85,17 @@ class CreatedGroupUi extends StatelessWidget {
                   borderRadius: BorderRadius.circular(16.r),
                 ),
                 child: Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 10.w,
-                    vertical: 8.h,
+                  padding: EdgeInsets.only(
+                    left: 10.w,
+                    right: 10.w,
+                    top: 12.h,
+                    bottom: 3.h,
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           Expanded(
                             child: reausabletext(
@@ -103,6 +105,7 @@ class CreatedGroupUi extends StatelessWidget {
                               color: ToggleThemeData.black,
                               maxline: 2,
                               textoverflow: TextOverflow.ellipsis,
+                              height: 1.2,
                             ),
                           ),
                           SizedBox(width: 4.w),
@@ -139,7 +142,7 @@ class CreatedGroupUi extends StatelessWidget {
                                 ),
                         ],
                       ),
-                      SizedBox(height: 6.h),
+                      SizedBox(height: 8.h),
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -275,7 +278,7 @@ class CreatedGroupUi extends StatelessWidget {
                                 ),
                               ),
                               child: Padding(
-                                padding: EdgeInsets.all(5.r),
+                                padding: EdgeInsets.all(6.r),
                                 child: reausableIcon(
                                   icon: FontAwesomeIcons.qrcode,
                                   size: 15,
