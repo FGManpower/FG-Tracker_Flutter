@@ -513,35 +513,38 @@ class DialogBox {
                                   ),
                                 ),
                                 builder: (_) {
-                                  return Padding(
-                                    padding: EdgeInsets.all(20.w),
+                                  return Container(
+                                    padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 24.h),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.vertical(
+                                        top: Radius.circular(28.r),
+                                      ),
+                                    ),
                                     child: Column(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
-
-                                        reausabletext(
-                                          "Select Call Type",
-                                          fontsize: 18,
-                                          fontweight: FontWeight.bold,
+                                        Container(
+                                          width: 45.w,
+                                          height: 5.h,
+                                          decoration: BoxDecoration(
+                                            color: Colors.grey.shade300,
+                                            borderRadius: BorderRadius.circular(20.r),
+                                          ),
                                         ),
 
                                         SizedBox(height: 20.h),
-                                        ListTile(
-                                          leading: CircleAvatar(
-                                            backgroundColor:
-                                            ToggleThemeData.darkPurple.withOpacity(0.1),
-                                            child: Icon(
-                                              Icons.call,
-                                              color: ToggleThemeData.darkPurple,
-                                            ),
-                                          ),
-                                          title: reausabletext(
-                                            "Audio Call",
-                                            fontsize: 15,
-                                            fontfamily: FontFamily.interMedium,
-                                          ),
-                                          onTap: () {
 
+                                        reausabletext(
+                                          "Select Call Type",
+                                          fontsize: 20,
+                                          fontweight: FontWeight.w700,
+                                          color: Colors.black,
+                                        ),
+
+                                        SizedBox(height: 22.h),
+                                        GestureDetector(
+                                          onTap: () {
                                             Navigator.pop(ctx);
                                             Navigator.pop(ctx);
 
@@ -551,40 +554,75 @@ class DialogBox {
                                                 "callerId": Global.storageServices
                                                     .get(PrefConst.userId)
                                                     .toString(),
-
                                                 "remoteUserId": userId?.toString() ?? "",
-
-
-                                                "callerName":
-                                                name ?? "",
-
+                                                "callerName": name ?? "",
                                                 "offer": null,
-
                                                 "is_video": false,
-
                                                 "callType": "outGoing",
                                               },
                                             );
                                           },
-                                        ),
+                                          child: Container(
+                                            padding: EdgeInsets.symmetric(
+                                              horizontal: 16.w,
+                                              vertical: 14.h,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xffF6F4FF),
+                                              borderRadius: BorderRadius.circular(7.r),
+                                            ),
+                                            child: Row(
+                                              children: [
 
-                                        SizedBox(height: 10.h),
-                                        ListTile(
-                                          leading: CircleAvatar(
-                                            backgroundColor:
-                                            ToggleThemeData.darkPurple.withOpacity(0.1),
-                                            child: Icon(
-                                              Icons.videocam,
-                                              color: ToggleThemeData.darkPurple,
+                                                Container(
+                                                  padding: EdgeInsets.all(12.r),
+                                                  decoration: BoxDecoration(
+                                                    shape: BoxShape.circle,
+                                                    color: ToggleThemeData.darkPurple.withOpacity(0.12),
+                                                  ),
+                                                  child: Icon(
+                                                    Icons.call,
+                                                    color: ToggleThemeData.darkPurple,
+                                                    size: 22.sp,
+                                                  ),
+                                                ),
+
+                                                SizedBox(width: 16.w),
+
+                                                Expanded(
+                                                  child: Column(
+                                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                                    children: [
+                                                      reausabletext(
+                                                        "Audio Call",
+                                                        fontsize: 16,
+                                                        fontfamily: FontFamily.interSemiBold,
+                                                      ),
+
+                                                      SizedBox(height: 2.h),
+
+                                                      reausabletext(
+                                                        "Start voice conversation",
+                                                        fontsize: 11,
+                                                        color: Colors.black54,
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+
+                                                Icon(
+                                                  Icons.arrow_forward_ios_rounded,
+                                                  size: 16.sp,
+                                                  color: Colors.black45,
+                                                ),
+                                              ],
                                             ),
                                           ),
-                                          title: reausabletext(
-                                            "Video Call",
-                                            fontsize: 15,
-                                            fontfamily: FontFamily.interMedium,
-                                          ),
-                                          onTap: () {
+                                        ),
 
+                                        SizedBox(height: 14.h),
+                                        GestureDetector(
+                                          onTap: () {
                                             Navigator.pop(ctx);
                                             Navigator.pop(ctx);
 
@@ -594,24 +632,71 @@ class DialogBox {
                                                 "callerId": Global.storageServices
                                                     .get(PrefConst.userId)
                                                     .toString(),
-
-                                                "remoteUserId":
-                                                userId.toString(),
-
-                                                "callerName":
-                                                name ?? "",
-
+                                                "remoteUserId": userId.toString(),
+                                                "callerName": name ?? "",
                                                 "offer": null,
-
                                                 "is_video": true,
-
                                                 "callType": "outGoing",
                                               },
                                             );
                                           },
-                                        ),
+                                          child: Container(
+                                            padding: EdgeInsets.symmetric(
+                                              horizontal: 16.w,
+                                              vertical: 14.h,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xffF6F4FF),
+                                              borderRadius: BorderRadius.circular(18.r),
+                                            ),
+                                            child: Row(
+                                              children: [
 
-                                        SizedBox(height: 10.h),
+                                                Container(
+                                                  padding: EdgeInsets.all(12.r),
+                                                  decoration: BoxDecoration(
+                                                    shape: BoxShape.circle,
+                                                    color: ToggleThemeData.darkPurple.withOpacity(0.12),
+                                                  ),
+                                                  child: Icon(
+                                                    Icons.videocam_rounded,
+                                                    color: ToggleThemeData.darkPurple,
+                                                    size: 22.sp,
+                                                  ),
+                                                ),
+
+                                                SizedBox(width: 16.w),
+
+                                                Expanded(
+                                                  child: Column(
+                                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                                    children: [
+                                                      reausabletext(
+                                                        "Video Call",
+                                                        fontsize: 16,
+                                                        fontfamily: FontFamily.interSemiBold,
+                                                      ),
+
+                                                      SizedBox(height: 2.h),
+
+                                                      reausabletext(
+                                                        "Start video conversation",
+                                                        fontsize: 11,
+                                                        color: Colors.black54,
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+
+                                                Icon(
+                                                  Icons.arrow_forward_ios_rounded,
+                                                  size: 16.sp,
+                                                  color: Colors.black45,
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
                                       ],
                                     ),
                                   );

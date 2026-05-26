@@ -87,7 +87,7 @@ class CreatedGroupUi extends StatelessWidget {
                 child: Padding(
                   padding: EdgeInsets.only(
                     left: 10.w,
-                    right: 10.w,
+                    right: 5.w,
                     top: 12.h,
                     bottom: 3.h,
                   ),
@@ -110,36 +110,41 @@ class CreatedGroupUi extends StatelessWidget {
                           ),
                           SizedBox(width: 4.w),
                           isCreator
-                              ? Transform.scale(
-                                  scale: 0.50,
-                                  child: CupertinoSwitch(
-                                    value: isActive,
-                                    onChanged: (value) {
-                                      if (data == null) {
-                                        return;
-                                      }
+                              ? Transform.translate(
+                            offset: Offset(8.w, 0),
+                            child: Transform.scale(
+                              scale: 0.50,
+                              child: CupertinoSwitch(
+                                value: isActive,
+                                onChanged: (value) {
+                                  if (data == null) return;
 
-                                      groupController.updateGroup(
-                                        groupController,
-                                        groupId: data.id?.toString() ?? "",
-                                        groupStatus: value.toString(),
-                                      );
-                                    },
-                                    activeColor: const Color(
-                                      0xff5045B9,
-                                    ),
-                                    trackColor: Colors.black26,
-                                  ),
-                                )
-                              : Icon(
-                                  isActive
-                                      ? Icons.check_circle_outline
-                                      : Icons.cancel_sharp,
-                                  color: isActive
-                                      ? Colors.green
-                                      : Colors.redAccent,
-                                  size: 18.sp,
-                                ),
+                                  groupController.updateGroup(
+                                    groupController,
+                                    groupId: data.id?.toString() ?? "",
+                                    groupStatus: value.toString(),
+                                  );
+                                },
+                                activeColor: const Color(0xff5045B9),
+                                trackColor: Colors.black26,
+                              ),
+                            ),
+                          )
+                              :  SizedBox(
+                            width: 40.w,
+                            height: 38.h,
+                            child: Center(
+                              child: Icon(
+                                isActive
+                                    ? Icons.check_circle_outline
+                                    : Icons.cancel_sharp,
+                                color: isActive
+                                    ? Colors.green
+                                    : Colors.redAccent,
+                                size: 20.sp,
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                       SizedBox(height: 8.h),
