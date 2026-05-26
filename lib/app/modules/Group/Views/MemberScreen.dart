@@ -197,7 +197,7 @@ class MemberscreenScreen extends GetView<MemberController> {
                       Expanded(
                           child: reausablebutton(
                               title: "Group Message",
-                              icon: Icons.group,
+                              icon:Icons.mark_chat_unread_rounded,
                               fontSize: 12,
                               borderradiues: 50,
                               ontap: () {
