@@ -95,7 +95,7 @@ class NewlyGroupUi extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Container(
-                              height: 62.h,
+                              height: 49.h,
                               width: double.maxFinite,
                               decoration: BoxDecoration(
                                 color: const Color(0xffE4E0FF),
@@ -110,7 +110,7 @@ class NewlyGroupUi extends StatelessWidget {
                                 fontsize: 16,
                                 fontfamily: FontFamily.interSemiBold,
                                 color: ToggleThemeData.black,
-                                maxline: 2,
+                                maxline: 1,
                                 textoverflow: TextOverflow.ellipsis,
                               ),
                             ),
