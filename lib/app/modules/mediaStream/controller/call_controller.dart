@@ -103,6 +103,7 @@ class CallController extends GetxController {
     });
 
     socket!.on("callEnded", (data) async {
+      log("======================CallEnded==========$data");
       callTimer?.cancel();
       callTimer = null;
 
@@ -313,11 +314,12 @@ class CallController extends GetxController {
     final myUserId = Global.storageServices.get(PrefConst.userId).toString();
     final targetUser =
         (myUserId == callerId.toString()) ? remoteUserId : callerId;
-
-    socket?.emit("endCall", {
+    var param = {
       "callId": callId,
       "remoteUserId": targetUser.toString(),
-    });
+    };
+    log("=================EndCallDetail=========$param");
+    socket?.emit("endCall",param);
 
     resetPeer();
 

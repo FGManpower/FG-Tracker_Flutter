@@ -10,6 +10,7 @@ import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/util/CallUtils.dart';
 import 'package:fgtracker/app/Core/util/configureAudioSession.dart';
 import 'package:fgtracker/app/Data/Services/Walkie-Talkie-Service.dart';
+import 'package:fgtracker/app/Data/Services/call_recover_services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -78,6 +79,7 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
         ),
       );
     }
+
   } else if (message.data['screen_name'] == 'walkie') {
     var param = {"fromUserId": message.data['fromUserId']};
     // if (Platform.isIOS) {
@@ -176,6 +178,7 @@ Future<void> main() async {
   if (Platform.isIOS) {
     CallUtils.instance.listenCallKitEvents();
   }
+  await CallRecoveryService.instance.checkCallOnLaunch();
   // WalkieUtils().listenWalkieEvents();
   runApp(const MyApp());
 }

@@ -1,6 +1,9 @@
 import 'dart:convert';
+import 'dart:developer';
+import 'dart:io';
 import 'package:connectycube_flutter_call_kit/connectycube_flutter_call_kit.dart';
 import 'package:fgtracker/app/modules/Notification/Controller/Notification_Controller.dart';
+import 'package:flutter_callkit_incoming/flutter_callkit_incoming.dart';
 import 'package:get/get.dart';
 import '../../Data/Services/CallStateTracker.dart';
 import '../../Data/Services/SignallingService.dart';
@@ -143,9 +146,12 @@ class CallKitService {
       final state =
           await ConnectycubeFlutterCallKit.getCallState(sessionId: sessionId);
 
-      print("Call state: $state");
+
 
       if (state == "accepted") {
+
+      } else {
+        log("=================EndCallDetailfromCallKit=========");
         CallSessionState.sessionId = sessionId;
 
         final callData =
@@ -161,11 +167,33 @@ class CallKitService {
           } else if (userInfoRaw is Map) {
             data = Map<String, dynamic>.from(userInfoRaw);
           }
+          final myUserId =
+          Global.storageServices.get(PrefConst.userId).toString();
+          final targetUser =
+          (myUserId == data['callerId'].toString()) ? myUserId : data['callerId'].toString();
+          var param = {
+            "callId": data['callId'].toString(),
+            "remoteUserId": targetUser.toString(),
+          };
 
-          print("Recovered call data: $data");
+          socket?.emit("endCall", param);
 
-          navigateToCallScreen(data);
+          if (CallSessionState.sessionId != null) {
+            if (Platform.isAndroid) {
+              ConnectycubeFlutterCallKit.clearCallData(
+                sessionId: CallSessionState.sessionId!,
+              );
+            } else {
+              FlutterCallkitIncoming.endCall(
+                CallSessionState.sessionId!,
+              );
+            }
+          }
+
+          CallSessionState.reset();
         }
+
+
       }
     } catch (e) {
       print("checkCallOnLaunch error: $e");
