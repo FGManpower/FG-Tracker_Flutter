@@ -29,7 +29,6 @@ class firebaseNotificationServices {
 
   void inItLocalNotification(
       BuildContext context, RemoteMessage message) async {
-
     var androidinitializeSetting =
         const AndroidInitializationSettings("@mipmap/ic_launcher");
     var iosinitializeSetting = DarwinInitializationSettings();
@@ -137,8 +136,6 @@ class firebaseNotificationServices {
     FirebaseMessaging.instance.getInitialMessage().then((message) {});
 
     FirebaseMessaging.onMessage.listen((message) async {
-
-
       final context =
           ContextUtility.navigatorkey.currentState?.overlay?.context;
 
@@ -172,10 +169,7 @@ class firebaseNotificationServices {
 
   Future<void> handleMessage(BuildContext context, RemoteMessage message,
       {String? type}) async {
-
     if (type == "recienvedmessage") {
-
-
       if (message.data['screen_name'] == "MemberPage") {
         Get.toNamed(Routes.Memberscreen, arguments: {
           "groupId": message.data['groupId'],
@@ -183,8 +177,6 @@ class firebaseNotificationServices {
           "isCreator": message.data['isCreator'],
           "isActive": message.data['isActive'],
         });
-
-
       } else if (message.data["screen_name"] == "chatScreen") {
         MemberData? memberData;
         try {
@@ -202,9 +194,19 @@ class firebaseNotificationServices {
           await notificationCtr.markAsRead(
             int.parse(message.data["notificationId"].toString()),
           );
-
         }
-
+      } else if (message.data["screen_name"] == "groupChatScreen") {
+        Get.toNamed(
+          Routes.groupChatScreen,
+          arguments: {
+            "groupId": int.parse(message.data["groupId"].toString()).toString(),
+            "groupName": message.data["groupName"],
+            "groupImage": "",
+          },
+        );
+        await notificationCtr.markAsRead(
+          int.parse(message.data["notificationId"].toString()),
+        );
       } else if (message.data['screen_name'] == 'incomingCall') {
         if (CallStateTracker.isIncomingCallScreenOpen) return;
 
@@ -219,8 +221,6 @@ class firebaseNotificationServices {
         );
       }
     } else {
-
-
       if (message.data['screen_name'] == "incomingCall") {
         final callData = jsonDecode(message.data['callData']);
 
@@ -237,9 +237,7 @@ class firebaseNotificationServices {
             userInfo: userInfo,
           ),
         );
-
       }
-
     }
   }
 }

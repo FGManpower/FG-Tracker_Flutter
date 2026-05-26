@@ -1,4 +1,3 @@
-// ignore_for_file: unnecessary_question_mark
 
 class GetMessage {
   bool? status;
@@ -37,6 +36,8 @@ class MessageData {
   dynamic? content;
   dynamic? timestamp;
   dynamic? seenCount;
+  dynamic? senderName;
+  dynamic? senderImage;
 
   MessageData(
       {this.id,
@@ -44,7 +45,7 @@ class MessageData {
         this.receiverId,
         this.messageType,
         this.content,
-        this.timestamp,this.seenCount});
+        this.timestamp,this.seenCount,this.senderImage,this.senderName});
 
   MessageData.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -54,6 +55,8 @@ class MessageData {
     content = json['content'];
     timestamp = json['timestamp'];
     seenCount = json['seenCount'];
+    senderName = json['senderName'];
+    senderImage = json['senderImage'];
   }
 
   Map<String, dynamic> toJson() {
@@ -65,6 +68,8 @@ class MessageData {
     data['content'] = this.content;
     data['timestamp'] = this.timestamp;
     data['seenCount'] = this.seenCount;
+    data['senderName'] = this.senderName;
+    data['senderImage'] = this.senderImage;
     return data;
   }
 }

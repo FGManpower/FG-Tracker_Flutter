@@ -21,6 +21,7 @@ abstract class Routes {
   static const IncomingCallScreen = _Paths.IncomingCallScreen;
   static const walkieTalkieScreen = _Paths.walkieTalkieScreen;
   static const notificationScreen = _Paths.notificationScreen;
+  static const groupChatScreen = _Paths.groupChatScreen;
 
 
 }
@@ -45,6 +46,7 @@ abstract class _Paths {
   static const IncomingCallScreen = '/IncomingCallScreen';
   static const walkieTalkieScreen = '/WalkieTalkieScreen';
   static const notificationScreen = '/NotificationScreen';
+  static const groupChatScreen = '/groupChatScreen';
 
 
 

@@ -4,6 +4,7 @@ import 'package:fgtracker/app/modules/Group/Bindings/QRScan_Binding.dart';
 import 'package:fgtracker/app/modules/Group/Views/MemberScreen.dart';
 import 'package:fgtracker/app/modules/IntroScreen/IntroScreen.dart';
 import 'package:fgtracker/app/modules/Messages/Bindings/Chat_binding.dart';
+import 'package:fgtracker/app/modules/Messages/Views/GroupChatScreen.dart';
 import 'package:fgtracker/app/modules/Notification/Views/Notification.dart';
 import 'package:fgtracker/app/modules/Track/Bindings/track_binding.dart';
 import 'package:fgtracker/app/modules/auth/Bindings/auth_binding.dart';
@@ -102,6 +103,13 @@ class AppPages {
       page: () => ChatScreen(),
       transition: Transition.rightToLeft,
       binding: ChatBinding(),
+      transitionDuration: const Duration(milliseconds: 500),
+    ),
+    GetPage(
+      name: _Paths.groupChatScreen,
+      page: () => GroupChatScreen(),
+      transition: Transition.rightToLeft,
+      binding: GroupChatBinding(),
       transitionDuration: const Duration(milliseconds: 500),
     ),
     GetPage(

@@ -175,55 +175,52 @@ class MemberscreenScreen extends GetView<MemberController> {
               : Padding(
                   padding:
                       EdgeInsets.symmetric(horizontal: 15.h, vertical: 10.h),
-                  child: reausablebutton(
-                      title: "Track",
-                      icon: Icons.track_changes,
-                      fontSize: 12,
-                      borderradiues: 50,
-                      ontap: () {
-                        Get.toNamed(Routes.LocationTracking, arguments: {
-                          "groupId": int.parse(
-                              controller.arguments!['groupId'].toString()),
-                          "groupName": controller.arguments!['groupName'],
-                        });
-                      },
-                      height: 55)
-                  // Row(
-                  //   children: [
-                  //     // Expanded(
-                  //     //     child: reausablebutton(
-                  //     //         title: "Walkie-Talkie",
-                  //     //         icon: Icons.groups,
-                  //     //         fontSize: 12,
-                  //     //         borderradiues: 50,
-                  //     //         ontap: () {},
-                  //     //         height: 55)),
-                  //     // SizedBox(width: 40.w),
-                  //     Expanded(
-                  //         child: reausablebutton(
-                  //             title: "Track",
-                  //             icon: Icons.track_changes,
-                  //             fontSize: 12,
-                  //             borderradiues: 50,
-                  //             ontap: () {
-                  //               Get.toNamed(Routes.LocationTracking,
-                  //                   arguments: {
-                  //                     "groupId": int.parse(controller
-                  //                         .arguments!['groupId']
-                  //                         .toString()),
-                  //                     "groupName":
-                  //                         controller.arguments!['groupName'],
-                  //                   });
-                  //             },
-                  //             height: 55)),
-                  //   ],
-                  // ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: reausablebutton(
+                            title: "Track",
+                            icon: Icons.track_changes,
+                            fontSize: 12,
+                            borderradiues: 50,
+                            ontap: () {
+                              Get.toNamed(Routes.LocationTracking, arguments: {
+                                "groupId": int.parse(controller
+                                    .arguments!['groupId']
+                                    .toString()),
+                                "groupName": controller.arguments!['groupName'],
+                              });
+                            },
+                            height: 55),
+                      ),
+                      SizedBox(width: 40.w),
+                      Expanded(
+                          child: reausablebutton(
+                              title: "Group Message",
+                              icon: Icons.group,
+                              fontSize: 12,
+                              borderradiues: 50,
+                              ontap: () {
+                                Get.toNamed(
+                                  Routes.groupChatScreen,
+                                  arguments: {
+                                    "groupId": int.parse(controller.arguments!['groupId'].toString())
+                                        .toString(),
+                                    "groupName":
+                                        controller.arguments!['groupName'],
+                                    "groupImage": "",
+
+                                  },
+                                );
+                              },
+                              height: 55)),
+                    ],
                   ),
+                ),
         ),
         body: CustomScrollView(
           physics: const BouncingScrollPhysics(),
           slivers: [
-            /// GROUP INFO SECTION
             SliverToBoxAdapter(
               child: Padding(
                 padding: EdgeInsets.only(
@@ -274,8 +271,6 @@ class MemberscreenScreen extends GetView<MemberController> {
                 ),
               ),
             ),
-
-
             if (controller.responseError.value.isNotEmpty)
               SliverFillRemaining(
                 child: LostinternetConnection(
@@ -287,8 +282,6 @@ class MemberscreenScreen extends GetView<MemberController> {
                   messgae: controller.responseError.value.toString(),
                 ),
               )
-
-
             else if (controller.memberDataLoading.value)
               SliverToBoxAdapter(
                 child: SizedBox(
@@ -296,7 +289,6 @@ class MemberscreenScreen extends GetView<MemberController> {
                   child: memberListUi(isLoading: true),
                 ),
               )
-
             else if (controller.filteredMembers.isEmpty)
               SliverFillRemaining(
                 child: DataEmpty(
@@ -517,203 +509,193 @@ class MemberscreenScreen extends GetView<MemberController> {
                             "just now");
 
                 return TweenAnimationBuilder(
-                    duration: Duration(
-                      milliseconds: 350 + (index * 80),
-                    ),
-
-                    tween: Tween<double>(
-                      begin: 0,
-                      end: 1,
-                    ),
-
-                    curve: Curves.easeOut,
-
-                    builder: (context, double value, child) {
-
-                      return Opacity(
-                        opacity: value,
-
-                        child: Transform.translate(
-                          offset: Offset(
-                            0,
-                            30 * (1 - value),
-                          ),
-
-                          child: child,
+                  duration: Duration(
+                    milliseconds: 350 + (index * 80),
+                  ),
+                  tween: Tween<double>(
+                    begin: 0,
+                    end: 1,
+                  ),
+                  curve: Curves.easeOut,
+                  builder: (context, double value, child) {
+                    return Opacity(
+                      opacity: value,
+                      child: Transform.translate(
+                        offset: Offset(
+                          0,
+                          30 * (1 - value),
                         ),
-                      );
+                        child: child,
+                      ),
+                    );
+                  },
+                  child: GestureDetector(
+                    onTap: () {
+                      if (Global.storageServices
+                              .get(PrefConst.userId)
+                              .toString() !=
+                          data?.userId.toString()) {
+                        Get.toNamed(
+                          Routes.chatScreen,
+                          arguments: {
+                            "userData": data,
+                            "groupName": controller.arguments!['groupName'],
+                            "isCreator": controller.arguments!['isCreator'],
+                            "type": "",
+                          },
+                        );
+                      }
                     },
-
-                    child: GestureDetector(
-                      onTap: () {
-
-                        if (Global.storageServices
-                            .get(PrefConst.userId)
-                            .toString() !=
-                            data?.userId.toString()) {
-
-                          Get.toNamed(
-                            Routes.chatScreen,
-                            arguments: {
-                              "userData": data,
-                              "groupName":
-                              controller.arguments!['groupName'],
-                              "isCreator":
-                              controller.arguments!['isCreator'],
-                              "type": "",
-                            },
-                          );
-                        }
-                      },
-
-                      child: Column(
-
-                    children: [
-                      Container(
-                        padding: EdgeInsets.symmetric(
-                            horizontal: 16.h, vertical: 10.h),
-                        decoration: const BoxDecoration(
-                          color: Colors.white,
-                        ),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Stack(
-                              clipBehavior: Clip.none,
-                              children: [
-                                CircleAvatar(
-                                  radius: 30.r,
-                                  backgroundImage: NetworkImage(
-                                    "${ConstRes.aImageBaseUrl}${data?.profileImage ?? ""}",
+                    child: Column(
+                      children: [
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 16.h, vertical: 10.h),
+                          decoration: const BoxDecoration(
+                            color: Colors.white,
+                          ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Stack(
+                                clipBehavior: Clip.none,
+                                children: [
+                                  CircleAvatar(
+                                    radius: 30.r,
+                                    backgroundImage: NetworkImage(
+                                      "${ConstRes.aImageBaseUrl}${data?.profileImage ?? ""}",
+                                    ),
+                                    backgroundColor: Colors.grey.shade200,
                                   ),
-                                  backgroundColor: Colors.grey.shade200,
-                                ),
-                                if (true)
-                                  Positioned(
-                                    // bottom: 0,
-                                    right: 4.w,
-                                    child: Container(
-                                      height: 12.w,
-                                      width: 12.w,
-                                      decoration: BoxDecoration(
-                                        color: isOnline
-                                            ? Colors.green
-                                            : Colors.red,
-                                        shape: BoxShape.circle,
-                                        border: Border.all(
-                                            color: Colors.white, width: 1.5.w),
+                                  if (true)
+                                    Positioned(
+                                      // bottom: 0,
+                                      right: 4.w,
+                                      child: Container(
+                                        height: 12.w,
+                                        width: 12.w,
+                                        decoration: BoxDecoration(
+                                          color: isOnline
+                                              ? Colors.green
+                                              : Colors.red,
+                                          shape: BoxShape.circle,
+                                          border: Border.all(
+                                              color: Colors.white,
+                                              width: 1.5.w),
+                                        ),
                                       ),
                                     ),
-                                  ),
-                              ],
-                            ),
-                            SizedBox(width: 14.w),
-                            Expanded(
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Expanded(
-                                    child: Column(
+                                ],
+                              ),
+                              SizedBox(width: 14.w),
+                              Expanded(
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Expanded(
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          reausabletext(
+                                            data?.name ?? AppText.unnamedMember,
+                                            fontsize: 15,
+                                            fontfamily:
+                                                FontFamily.interSemiBold,
+                                          ),
+                                          SizedBox(height: 2.h),
+                                          MobileNumberView(
+                                            mobileNumber: data?.mobileNo ??
+                                                AppText.noNumber,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+
+                                    SizedBox(width: 10.w),
+
+                                    Column(
                                       mainAxisSize: MainAxisSize.min,
                                       crossAxisAlignment:
-                                          CrossAxisAlignment.start,
+                                          CrossAxisAlignment.end,
                                       children: [
                                         reausabletext(
-                                          data?.name ?? AppText.unnamedMember,
-                                          fontsize: 15,
-                                          fontfamily: FontFamily.interSemiBold,
+                                          Utility.isNotNullEmptyOrFalse(
+                                                  data?.lastSeen)
+                                              ? formatTime(data!.lastSeen!)
+                                              : "",
+                                          fontsize: 10,
+                                          fontfamily: FontFamily.interMedium,
+                                          color: Colors.grey.shade500,
                                         ),
-                                        SizedBox(height: 2.h),
-                                        MobileNumberView(
-                                          mobileNumber: data?.mobileNo ??
-                                              AppText.noNumber,
+                                        SizedBox(height: 8.h),
+                                        InkWell(
+                                          borderRadius:
+                                              BorderRadius.circular(20.r),
+                                          onTap: () {
+                                            Get.toNamed(
+                                              Routes.LocationTracking,
+                                              arguments: {
+                                                "groupId": int.parse(controller
+                                                    .arguments!['groupId']
+                                                    .toString()),
+                                                "groupName": controller
+                                                    .arguments!['groupName'],
+                                                "targetUserId":
+                                                    data?.userId.toString(),
+                                              },
+                                            );
+                                          },
+                                          child: Container(
+                                            padding: EdgeInsets.all(8),
+                                            decoration: BoxDecoration(
+                                              color: ToggleThemeData.darkPurple
+                                                  .withOpacity(0.08),
+                                              shape: BoxShape.circle,
+                                            ),
+                                            child: Icon(
+                                              Icons.near_me,
+                                              color: ToggleThemeData.darkPurple,
+                                              size: 18.sp,
+                                            ),
+                                          ),
                                         ),
                                       ],
                                     ),
-                                  ),
 
-                                  SizedBox(width: 10.w),
-
-                                  Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    crossAxisAlignment: CrossAxisAlignment.end,
-                                    children: [
-                                      reausabletext(
-                                        Utility.isNotNullEmptyOrFalse(
-                                                data?.lastSeen)
-                                            ? formatTime(data!.lastSeen!)
-                                            : "",
-                                        fontsize: 10,
-                                        fontfamily: FontFamily.interMedium,
-                                        color: Colors.grey.shade500,
-                                      ),
-                                      SizedBox(height: 8.h),
-                                      InkWell(
-                                        borderRadius:
-                                            BorderRadius.circular(20.r),
-                                        onTap: () {
-                                          Get.toNamed(
-                                            Routes.LocationTracking,
-                                            arguments: {
-                                              "groupId": int.parse(controller
-                                                  .arguments!['groupId']
-                                                  .toString()),
-                                              "groupName": controller
-                                                  .arguments!['groupName'],
-                                              "targetUserId":
-                                                  data?.userId.toString(),
-                                            },
-                                          );
-                                        },
-                                        child: Container(
-                                          padding: EdgeInsets.all(8),
-                                          decoration: BoxDecoration(
-                                            color: ToggleThemeData.darkPurple
-                                                .withOpacity(0.08),
-                                            shape: BoxShape.circle,
-                                          ),
-                                          child: Icon(
-                                            Icons.near_me,
-                                            color: ToggleThemeData.darkPurple,
-                                            size: 18.sp,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-
-                                  // InkWell(
-                                  //   onTap: () {
-                                  //     WalkieController().startServices(
-                                  //         callerName: data!.name.toString(),
-                                  //         profileImage: data.profileImage,
-                                  //         remoteUserId:
-                                  //             data!.userId.toString());
-                                  //   },
-                                  //   child: Padding(
-                                  //     padding: EdgeInsets.only(left: 50.w),
-                                  //     child: Image.asset(
-                                  //       Assets.icons.walkieTalkie.path,
-                                  //       height: 28.h,
-                                  //       width: 28.w,
-                                  //     ),
-                                  //   ),
-                                  // )
-                                ],
+                                    // InkWell(
+                                    //   onTap: () {
+                                    //     WalkieController().startServices(
+                                    //         callerName: data!.name.toString(),
+                                    //         profileImage: data.profileImage,
+                                    //         remoteUserId:
+                                    //             data!.userId.toString());
+                                    //   },
+                                    //   child: Padding(
+                                    //     padding: EdgeInsets.only(left: 50.w),
+                                    //     child: Image.asset(
+                                    //       Assets.icons.walkieTalkie.path,
+                                    //       height: 28.h,
+                                    //       width: 28.w,
+                                    //     ),
+                                    //   ),
+                                    // )
+                                  ],
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
-                      if (index != (groupData?.length ?? 10) - 1)
-                        Container(
-                          margin: EdgeInsets.symmetric(horizontal: 16.w),
-                          height: 1,
-                          color: Colors.grey.withOpacity(0.2),
-                        ),
-                    ],
-                  ),
+                        if (index != (groupData?.length ?? 10) - 1)
+                          Container(
+                            margin: EdgeInsets.symmetric(horizontal: 16.w),
+                            height: 1,
+                            color: Colors.grey.withOpacity(0.2),
+                          ),
+                      ],
                     ),
+                  ),
                 );
               },
             )),

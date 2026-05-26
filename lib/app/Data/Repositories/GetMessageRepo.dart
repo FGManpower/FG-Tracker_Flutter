@@ -13,10 +13,23 @@ import '../../Core/values/utility.dart';
 import '../../Model/CommonRes.dart';
 
 class MessageRepo {
-  static Future<GetMessage> MessageHistory({required String recieverId,required int groupId}) async {
+  static Future<GetMessage> MessageHistory(
+      {required String recieverId, required int groupId}) async {
     var response = await HttpUtil().get(
         "/getMessageHistory?senderId=${Global.storageServices.get(PrefConst.userId)}&receiverId=$recieverId&groupId=$groupId");
     return GetMessage.fromJson(response);
+  }
+
+  static Future<GetMessage> groupMessageHistory({
+    required int groupId,
+  }) async {
+    var response = await HttpUtil().get(
+      "/getGroupMessageHistory?groupId=$groupId",
+    );
+
+    return GetMessage.fromJson(
+      response,
+    );
   }
 
   static Future<ChatImageUploadResponse> uploadChatImage(var imagePath) async {
@@ -37,7 +50,6 @@ class MessageRepo {
 
   static Future<ChatImageUploadResponse> uploadChatAudio(
       String audioPath) async {
-
     FormData data = FormData.fromMap({
       "chatAudio": await MultipartFile.fromFile(
         audioPath,
@@ -51,6 +63,4 @@ class MessageRepo {
 
     return ChatImageUploadResponse.fromJson(response);
   }
-
-
 }

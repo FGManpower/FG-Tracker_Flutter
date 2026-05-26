@@ -28,7 +28,6 @@ class SocketMessageService extends GetxService {
     _socket?.onConnect((_) {
       joinUserInGroup(userId, groupId);
       markSeen(userId, groupId);
-
     });
     _socket?.onAny((event, data) {
       log("MessageAllEventCalled: $event => $data");
@@ -84,16 +83,14 @@ class SocketMessageService extends GetxService {
     _socket?.off('receive_message');
 
     _socket?.on('receive_message', (data) {
-      final dataGroupId =
-      int.tryParse(data['groupId'].toString());
+      final dataGroupId = int.tryParse(data['groupId'].toString());
 
       if (dataGroupId == groupId) {
         if ((data['senderId'] == senderId &&
-            data['receiverId'] == recieverId) ||
+                data['receiverId'] == recieverId) ||
             (data['senderId'] == recieverId &&
                 data['receiverId'] == senderId)) {
           callback?.call(data);
-
         }
       }
     });
@@ -106,13 +103,53 @@ class SocketMessageService extends GetxService {
     _socket?.off("messages_seen_update");
 
     _socket?.on("messages_seen_update", (data) {
-      final dataGroupId =
-      int.tryParse(data["groupId"].toString());
+      final dataGroupId = int.tryParse(data["groupId"].toString());
 
       if (dataGroupId == groupId) {
         callback(data);
       }
     });
+  }
+
+  //======================= Group Message ============= //
+  void joinGroupChat({
+    required int groupId,
+    required String userId,
+  }) {
+    socket.emit(
+      "join_group_chat",
+      {
+        "groupId": groupId,
+        "userId": userId,
+      },
+    );
+  }
+
+  void sendGroupMessage({
+    required int groupId,
+    required String content,
+    required String messageType,
+  }) {
+    socket.emit(
+      "send_group_message",
+      {
+        "senderId": Global.storageServices.get(PrefConst.userId).toString(),
+        "groupId": groupId,
+        "content": content,
+        "messageType": messageType,
+      },
+    );
+  }
+
+  void receiveGroupMessage({
+    required Function(dynamic) callback,
+  }) {
+    socket.on(
+      "receive_group_message",
+      (data) {
+        callback(data);
+      },
+    );
   }
 
   void disconnectSocket() {
