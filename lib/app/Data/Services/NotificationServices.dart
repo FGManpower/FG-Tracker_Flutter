@@ -169,6 +169,7 @@ class firebaseNotificationServices {
 
   Future<void> handleMessage(BuildContext context, RemoteMessage message,
       {String? type}) async {
+    print("=============NotificationMessage${message.data}");
     if (type == "recienvedmessage") {
       if (message.data['screen_name'] == "MemberPage") {
         Get.toNamed(Routes.Memberscreen, arguments: {

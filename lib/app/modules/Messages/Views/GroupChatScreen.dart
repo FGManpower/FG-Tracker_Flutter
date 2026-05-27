@@ -2,29 +2,19 @@ import 'package:fgtracker/app/modules/Messages/widgets/ChatInputArea.dart';
 import 'package:fgtracker/app/modules/Messages/widgets/ChatList.dart';
 import 'package:flutter/material.dart';
 
-
 import 'package:get/get.dart';
-
-
-
 
 import '../Controller/GroupChatController.dart';
 
-class GroupChatScreen
-    extends GetView<GroupMessageController> {
-
+class GroupChatScreen extends GetView<GroupMessageController> {
   GroupChatScreen({super.key});
 
-  final TextEditingController
-  textController =
-  TextEditingController();
+  final TextEditingController textController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       backgroundColor: const Color(0xffF5F7FB),
-
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.white,
@@ -40,21 +30,18 @@ class GroupChatScreen
                 color: Colors.deepPurple,
               ),
             ),
-
             SizedBox(width: 12),
-
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  controller.groupName,
+                  controller.groupName==""?"Unknow":controller.groupName,
                   style: TextStyle(
                     color: Colors.black87,
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-
                 Text(
                   "Group Chat",
                   style: TextStyle(
@@ -67,18 +54,15 @@ class GroupChatScreen
           ],
         ),
       ),
-
       body: SafeArea(
         child: Column(
           children: [
-
             Expanded(
               child: GroupChatList(
                 controller: controller,
                 scrollController: controller.scrollController,
               ),
             ),
-
             Container(
               padding: EdgeInsets.fromLTRB(12, 8, 12, 16),
               decoration: BoxDecoration(
@@ -97,17 +81,14 @@ class GroupChatScreen
                 isSending: controller.isSending,
                 textController: textController,
                 scrollController: controller.scrollController,
-
                 onSend: () {
                   controller.sendMessage(
                     textController: textController,
                   );
                 },
-
                 onImageSelected: (path) {
                   controller.imagePath.value = path;
                 },
-
                 onVoiceSend: (voicePath) {
                   controller.uploadAudio(voicePath);
                 },

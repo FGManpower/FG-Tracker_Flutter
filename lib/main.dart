@@ -79,7 +79,6 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
         ),
       );
     }
-
   } else if (message.data['screen_name'] == 'walkie') {
     var param = {"fromUserId": message.data['fromUserId']};
     // if (Platform.isIOS) {
