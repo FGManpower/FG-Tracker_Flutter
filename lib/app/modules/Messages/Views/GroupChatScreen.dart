@@ -1,6 +1,10 @@
+import 'package:fgtracker/app/Core/values/BottomSheets/BottomSheetUi.dart';
+import 'package:fgtracker/app/config/themes_data.dart';
 import 'package:fgtracker/app/modules/Messages/widgets/ChatInputArea.dart';
 import 'package:fgtracker/app/modules/Messages/widgets/ChatList.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '../../../Core/constant/const_res.dart';
 
 import 'package:get/get.dart';
 
@@ -20,38 +24,81 @@ class GroupChatScreen extends GetView<GroupMessageController> {
         backgroundColor: Colors.white,
         surfaceTintColor: Colors.white,
         titleSpacing: 0,
-        title: Row(
-          children: [
-            CircleAvatar(
-              radius: 20,
-              backgroundColor: Colors.deepPurple.shade100,
+        leading: IconButton(
+          onPressed: () => Navigator.pop(context),
+          padding: EdgeInsets.zero,
+          icon: Container(
+            height: 28.w,
+            width: 28.w,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border:
+              Border.all(color: ToggleThemeData.darkPurple, width: 2.w),
+            ),
+            child: Center(
               child: Icon(
-                Icons.group,
-                color: Colors.deepPurple,
+                Icons.arrow_back_outlined,
+                color: ToggleThemeData.darkPurple,
+                size: 22.sp,
               ),
             ),
-            SizedBox(width: 12),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  controller.groupName==""?"Unknow":controller.groupName,
-                  style: TextStyle(
-                    color: Colors.black87,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
+          ),
+        ),
+
+        title: GestureDetector(
+          onTap: () {
+            BottomSheetUi().showMemberBottomSheet(
+              context,
+              controller.groupMembers.toList(),
+              isGroupChat: true,
+              groupId: int.parse(controller.groupId.toString()),
+              groupName: controller.groupName,
+            );
+          },
+          child: Row(
+            children: [
+              CircleAvatar(
+                radius: 20,
+                backgroundImage: controller.groupImage.isNotEmpty
+                    ? NetworkImage(
+                        "${ConstRes.aImageBaseUrl}${controller.groupImage}",
+                      )
+                    : null,
+                backgroundColor: Colors.deepPurple.shade100,
+                child: controller.groupImage.isEmpty
+                    ? Icon(
+                        Icons.group,
+                        color: Colors.deepPurple,
+                      )
+                    : null,
+              ),
+              SizedBox(width: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    controller.groupName == ""
+                        ? "Unknown"
+                        : controller.groupName,
+                    style: TextStyle(
+                      color: Colors.black87,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
-                ),
-                Text(
-                  "Group Chat",
-                  style: TextStyle(
-                    color: Colors.grey,
-                    fontSize: 12,
+                  Obx(
+                    () => Text(
+                      "${controller.groupMembers.length} Members",
+                      style: TextStyle(
+                        color: Colors.grey,
+                        fontSize: 12,
+                      ),
+                    ),
                   ),
-                ),
-              ],
-            ),
-          ],
+                ],
+              ),
+            ],
+          ),
         ),
       ),
       body: SafeArea(

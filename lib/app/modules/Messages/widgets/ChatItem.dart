@@ -1,8 +1,11 @@
 import 'package:fgtracker/app/Core/util/DateTime_Format.dart';
+import 'package:fgtracker/app/Core/values/BottomSheets/BottomSheetUi.dart';
+import 'package:fgtracker/app/Core/values/Dialog/DialogBox.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Model/GetMessage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import '../../../../gen/fonts.gen.dart';
 import '../../../Core/constant/const_res.dart';
@@ -165,12 +168,16 @@ class GroupChatBubble extends StatelessWidget {
   final MessageData message;
   final BuildContext context;
   final bool isGroup;
+  final int? groupId;
+  final String? groupName;
 
   const GroupChatBubble({
     Key? key,
     required this.message,
     required this.context,
     this.isGroup = false,
+    this.groupId,
+    this.groupName,
   }) : super(key: key);
 
   @override
@@ -226,24 +233,43 @@ class GroupChatBubble extends StatelessWidget {
             Padding(
               padding: EdgeInsets.only(
                 right: 8.w,
-                top: 2.h,
+                top: 18.h,
               ),
-              child: CircleAvatar(
-                radius: 18.r,
-                backgroundImage:
-                message.senderImage != null &&
-                    message.senderImage!.isNotEmpty
-                    ? NetworkImage(
-                  "${ConstRes.aImageBaseUrl}${message.senderImage}",
-                )
-                    : null,
-                child: message.senderImage == null ||
-                    message.senderImage!.isEmpty
-                    ? Icon(
-                  Icons.person,
-                  size: 18.sp,
-                )
-                    : null,
+              child: GestureDetector(
+                onTap: () {
+                  DialogBox().showRouteDetailsBottomSheet(
+                    destination: const LatLng(0, 0),
+                    distance: 0,
+                    userId: int.tryParse(
+                      message.senderId.toString(),
+                    ) ??
+                        0,
+                    groupId: groupId,
+                    groupName: groupName,
+                    name: message.senderName,
+                    imageUrl: message.senderImage,
+                    status: true,
+                    lastSeen: "",
+                    isGroupChat: true,
+                  );
+                },
+                child: CircleAvatar(
+                  radius: 20.r,
+                  backgroundImage:
+                  message.senderImage != null &&
+                      message.senderImage!.isNotEmpty
+                      ? NetworkImage(
+                    "${ConstRes.aImageBaseUrl}${message.senderImage}",
+                  )
+                      : null,
+                  child: message.senderImage == null ||
+                      message.senderImage!.isEmpty
+                      ? Icon(
+                    Icons.person,
+                    size: 18.sp,
+                  )
+                      : null,
+                ),
               ),
             ),
 
@@ -253,30 +279,69 @@ class GroupChatBubble extends StatelessWidget {
                   ? CrossAxisAlignment.end
                   : CrossAxisAlignment.start,
               children: [
+
                 if (isGroup)
                   Padding(
                     padding: EdgeInsets.only(
                       left: isSentByMe ? 0 : 4.w,
                       right: isSentByMe ? 4.w : 0,
                       bottom: 4.h,
+                      top: 20.h,
                     ),
-                    child: Text(
-                      message.senderName?.toString() ?? "",
-                      style: TextStyle(
-                        fontSize: 11.sp,
-                        fontWeight: FontWeight.w700,
-                        color: isSentByMe
-                            ? ToggleThemeData.darkPurple
-                            : Colors.deepPurple,
-                      ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: isSentByMe
+                          ? MainAxisAlignment.end
+                          : MainAxisAlignment.start,
+                      children: [
+
+                        if (!isSentByMe) ...[
+                          Text(
+                            message.senderName?.toString() ?? "",
+                            style: TextStyle(
+                              fontSize: 11.sp,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.black,
+                            ),
+                          ),
+
+                          SizedBox(width: 6.w),
+
+                          Text(
+                            formatTime(message.timestamp ?? ""),
+                            style: TextStyle(
+                              fontSize: 10.sp,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                        ] else ...[
+                          Text(
+                            formatTime(message.timestamp ?? ""),
+                            style: TextStyle(
+                              fontSize: 10.sp,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+
+                          SizedBox(width: 6.w),
+
+                          Text(
+                            message.senderName?.toString() ?? "",
+                            style: TextStyle(
+                              fontSize: 11.sp,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.black,
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
                   ),
 
                 Container(
                   constraints: BoxConstraints(
                     maxWidth:
-                    MediaQuery.of(context).size.width *
-                        0.72,
+                    MediaQuery.of(context).size.width * 0.72,
                   ),
                   padding: EdgeInsets.symmetric(
                     horizontal: 12.w,
@@ -301,68 +366,68 @@ class GroupChatBubble extends StatelessWidget {
 
                 SizedBox(height: 4.h),
 
-                Padding(
-                  padding: EdgeInsets.only(
-                    left: isSentByMe ? 0 : 6.w,
-                    right: isSentByMe ? 6.w : 0,
+                if (isSentByMe)
+                  Padding(
+                    padding: EdgeInsets.only(
+                      right: 4.w,
+                    ),
+                    child: Icon(
+                      (message.seenCount ?? 0) > 0
+                          ? Icons.done_all
+                          : Icons.done,
+                      size: 14.sp,
+                      color: (message.seenCount ?? 0) > 0
+                          ? Colors.blueAccent
+                          : Colors.grey,
+                    ),
                   ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      reausabletext(
-                        formatTime(
-                          message.timestamp ?? "",
-                        ),
-                        fontsize: 10.sp,
-                        color: Colors.grey[500],
-                      ),
-
-                      if (isSentByMe)
-                        SizedBox(width: 4.w),
-
-                      if (isSentByMe)
-                        Icon(
-                          (message.seenCount ?? 0) > 0
-                              ? Icons.done_all
-                              : Icons.done,
-                          size: 16.sp,
-                          color:
-                          (message.seenCount ?? 0) > 0
-                              ? Colors.blueAccent
-                              : Colors.grey,
-                        ),
-                    ],
-                  ),
-                ),
               ],
             ),
           ),
-
           if (isGroup && isSentByMe)
             Padding(
               padding: EdgeInsets.only(
                 left: 8.w,
-                top: 2.h,
+                top: 20.h,
               ),
-              child: CircleAvatar(
-                radius: 18.r,
-                backgroundImage:
-                message.senderImage != null &&
-                    message.senderImage!.isNotEmpty
-                    ? NetworkImage(
-                  "${ConstRes.aImageBaseUrl}${message.senderImage}",
-                )
-                    : null,
-                child: message.senderImage == null ||
-                    message.senderImage!.isEmpty
-                    ? Icon(
-                  Icons.person,
-                  size: 18.sp,
-                )
-                    : null,
+              child: GestureDetector(
+                onTap: () {
+                  DialogBox().showRouteDetailsBottomSheet(
+                    destination: const LatLng(0, 0),
+                    distance: 0,
+                    userId: int.tryParse(
+                      message.senderId.toString(),
+                    ) ?? 0,
+                    groupId: groupId,
+                    groupName: groupName,
+                    name: message.senderName,
+                    imageUrl: message.senderImage,
+                    status: true,
+                    lastSeen: "",
+                    isGroupChat: true,
+                  );
+                },
+                child: CircleAvatar(
+                  radius: 20.r,
+                  backgroundImage: message.senderImage != null &&
+                      message.senderImage!.isNotEmpty
+                      ? NetworkImage(
+                    "${ConstRes.aImageBaseUrl}${message.senderImage}",
+                  )
+                      : null,
+                  child: message.senderImage == null ||
+                      message.senderImage!.isEmpty
+                      ? Icon(
+                    Icons.person,
+                    size: 18.sp,
+                  )
+                      : null,
+                ),
               ),
             ),
         ],
+
+
       ),
     );
   }

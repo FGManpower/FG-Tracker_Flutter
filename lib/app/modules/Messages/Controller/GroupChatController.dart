@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:fgtracker/app/Model/LocationDataRes.dart';
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
@@ -22,6 +23,10 @@ class GroupMessageController extends GetxController {
   final ScrollController scrollController = ScrollController();
 
   RxList<MessageData> messageData = <MessageData>[].obs;
+
+  RxList<LocationData> groupMembers = <LocationData>[].obs;
+
+  RxBool isLoadingMembers = false.obs;
 
   RxString imagePath = "".obs;
 
@@ -76,6 +81,9 @@ class GroupMessageController extends GetxController {
     );
 
     getGroupMessages();
+
+
+    getGroupMembers();
   }
 
   Future<void> sendMessage({
@@ -181,6 +189,42 @@ class GroupMessageController extends GetxController {
       log(
         "GROUP HISTORY ERROR => $e",
       );
+    }
+  }
+  Future<void> getGroupMembers() async {
+
+    print(
+      "MY USER ID => ${Global.storageServices.get(PrefConst.userId)}",
+    );
+    try {
+
+      isLoadingMembers.value = true;
+
+      var result = await MessageRepo.getGroupMembers(
+        groupId: groupId,
+      );
+
+      print(
+        "GROUP MEMBERS => ${result.locations?.length}",
+      );
+
+      if (result.status == true) {
+
+        groupMembers.value =
+            result.locations ?? [];
+
+      }
+
+    } catch (e) {
+
+      log(
+        "GROUP MEMBERS ERROR => $e",
+      );
+
+    } finally {
+
+      isLoadingMembers.value = false;
+
     }
   }
 

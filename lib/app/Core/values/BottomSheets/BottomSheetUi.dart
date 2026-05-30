@@ -15,7 +15,13 @@ import '../../constant/pref_res.dart';
 import '../global.dart';
 
 class BottomSheetUi {
-  void showMemberBottomSheet(BuildContext context, List<LocationData> members) {
+  void showMemberBottomSheet(
+      BuildContext context,
+      List<LocationData> members, {
+        bool isGroupChat = false,
+        int? groupId,
+        String? groupName,
+      }){
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -69,7 +75,7 @@ class BottomSheetUi {
 
                       return Container(
                         margin: EdgeInsets.symmetric(vertical: 8.h),
-                        padding: EdgeInsets.all(12.w),
+                        padding: EdgeInsets.all(10.w),
                         decoration: BoxDecoration(
                           border: Border.all(color: Colors.grey.shade300),
                           borderRadius: BorderRadius.circular(12.r),
@@ -79,7 +85,7 @@ class BottomSheetUi {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             CircleAvatar(
-                              radius: 28.r,
+                              radius: 24.r,
                               backgroundImage: profileUrl != null
                                   ? NetworkImage(profileUrl)
                                   : const AssetImage(
@@ -270,22 +276,36 @@ class BottomSheetUi {
                                       ),
                                     ],
                                   ),
-                                  SizedBox(height: 16.h),
+                                  SizedBox(height: 10.h),
                                   Align(
                                     alignment: Alignment.centerRight,
                                     child: ElevatedButton.icon(
                                       onPressed: () {
-
                                         Navigator.pop(context);
 
-                                        final Uri mapsUri = Uri.parse(
-                                          "https://www.google.com/maps/dir/?api=1&destination=${member.latitude},${member.longitude}&travelmode=walking",
-                                        );
+                                        if (isGroupChat) {
+                                          Get.toNamed(
+                                            Routes.LocationTracking,
+                                            arguments: {
+                                              "groupId": groupId,
+                                              "groupName": groupName,
+                                              "targetUserId": member.userId.toString(),
+                                            },
+                                          );
+                                        } else {
+                                          final Uri mapsUri = Uri.parse(
+                                            "https://www.google.com/maps/dir/?api=1&destination=${member.latitude},${member.longitude}&travelmode=walking",
+                                          );
 
-                                        launchUrl(mapsUri);
+                                          launchUrl(mapsUri);
+                                        }
                                       },
-                                      icon: const Icon(Icons.navigation),
-                                      label: const Text("Navigate"),
+                                      icon: Icon(
+                                        isGroupChat ? Icons.navigation : Icons.navigation,
+                                      ),
+                                      label: Text(
+                                        isGroupChat ? "Track" : "Navigate",
+                                      ),
                                       style: ElevatedButton.styleFrom(
                                         backgroundColor: ToggleThemeData.Appcolor,
                                         foregroundColor: Colors.white,
@@ -293,8 +313,8 @@ class BottomSheetUi {
                                           borderRadius: BorderRadius.circular(10.r),
                                         ),
                                         padding: EdgeInsets.symmetric(
-                                          horizontal: 14.w,
-                                          vertical: 10.h,
+                                          horizontal: 12.w,
+                                          vertical: 8.h,
                                         ),
                                         textStyle: TextStyle(fontSize: 13.sp),
                                       ),

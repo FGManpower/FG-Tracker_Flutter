@@ -60,6 +60,7 @@ class CreatedGroupUi extends StatelessWidget {
                   arguments: {
                     "groupId": data.id?.toString() ?? "",
                     "groupName": data.groupName ?? "",
+                    "groupCode": data.groupCode ?? "",
                     "isCreator": data.isCreator?.toString() ?? "false",
                     "isActive": data.isActive?.toString() ?? "false",
                   },

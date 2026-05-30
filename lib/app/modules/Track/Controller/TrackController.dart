@@ -409,7 +409,7 @@ class TrackingController extends GetxController {
       await mapController!.animateCamera(
         CameraUpdate.newLatLngZoom(
           matchedMarker.position,
-          18.5,
+          30.5,
         ),
       );
     } else {
@@ -630,6 +630,7 @@ class TrackingController extends GetxController {
               destination: dest,
               distance: distanceKm,
               name: data.name,
+              isGroupChat: false,
               imageUrl: profileImageUrl,
               lastSeen: Tracking().getTimeAgo(
                 DateTime.parse(
@@ -638,6 +639,7 @@ class TrackingController extends GetxController {
               ),
               userId: int.tryParse(
                 data.userId.toString(),
+
               ),
               groupId: int.tryParse(
                 data.groupId.toString(),

@@ -102,7 +102,13 @@ class GroupChatList extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             if (showHeader) _buildDateHeader(messageDate),
-            GroupChatBubble(message: msg, context: context,isGroup: true,),
+            GroupChatBubble(
+              message: msg,
+              context: context,
+              isGroup: true,
+              groupId: int.parse(controller.groupId.toString()),
+              groupName: controller.groupName,
+            ),
           ],
         );
       },

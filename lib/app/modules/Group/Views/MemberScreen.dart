@@ -300,6 +300,76 @@ class MemberscreenScreen extends GetView<MemberController> {
               SliverList(
                 delegate: SliverChildBuilderDelegate(
                   (context, index) {
+
+                    if (index == controller.filteredMembers.length) {
+                      return Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 16.w,
+                          vertical: 20.h,
+                        ),
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(16.r),
+                          onTap: () {
+                            print("MemberScreen Args => ${controller.arguments}");
+                            print("Opening QR => ${controller.arguments!['groupCode']}");
+                            Get.toNamed(
+                              Routes.QrCodeScreen,
+                              arguments: {
+                                "groupCode":
+                                controller.arguments!["groupCode"].toString(),
+                              },
+                            );
+                          },
+                          child: Container(
+                            padding: EdgeInsets.all(18.w),
+                            decoration: BoxDecoration(
+                              color: const Color(0xffF2F0FF),
+                              borderRadius: BorderRadius.circular(16.r),
+                              border: Border.all(
+                                color: ToggleThemeData.darkPurple,
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.person_add_alt_1,
+                                  color: ToggleThemeData.darkPurple,
+                                  size: 24.sp,
+                                ),
+                                SizedBox(width: 12.w),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                    CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        "Add Member",
+                                        style: TextStyle(
+                                          fontSize: 15.sp,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                      SizedBox(height: 2.h),
+                                      Text(
+                                        "Share QR code to invite members",
+                                        style: TextStyle(
+                                          fontSize: 12.sp,
+                                          color: Colors.black54,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Icon(
+                                  Icons.qr_code,
+                                  color: ToggleThemeData.darkPurple,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    }
                     final data = controller.filteredMembers[index];
 
                     bool isOnline = (data.isOnline == true) ||
@@ -470,7 +540,7 @@ class MemberscreenScreen extends GetView<MemberController> {
                       ),
                     );
                   },
-                  childCount: controller.filteredMembers.length,
+                  childCount: controller.filteredMembers.length + 1,
                 ),
               ),
           ],

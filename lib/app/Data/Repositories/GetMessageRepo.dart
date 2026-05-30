@@ -5,6 +5,7 @@ import 'package:fgtracker/app/Core/util/http/http_util.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Model/ChatImageUploadResponse.dart';
 import 'package:fgtracker/app/Model/GetMessage.dart';
+import 'package:fgtracker/app/Model/LocationDataRes.dart';
 import 'package:fgtracker/app/Model/ProfileRes.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:dio/dio.dart';
@@ -62,5 +63,16 @@ class MessageRepo {
         .Authpost("/uploadAudio", formdata: data, type: "formdata");
 
     return ChatImageUploadResponse.fromJson(response);
+  }
+
+  static Future<LocationDataRes> getGroupMembers({
+    required int groupId,
+  }) async {
+
+    var response = await HttpUtil().get(
+        "/getMembers?groupId=$groupId",
+    );
+
+    return LocationDataRes.fromJson(response);
   }
 }

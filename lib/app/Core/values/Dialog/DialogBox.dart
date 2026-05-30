@@ -364,7 +364,7 @@ class DialogBox {
     String? name,
     String? imageUrl,
     bool? status,
-    String? lastSeen,
+    String? lastSeen, String? groupName, required bool isGroupChat,
   }) {
     bool isOnline = status == true || (lastSeen?.toLowerCase() == "just now");
 
@@ -426,32 +426,31 @@ class DialogBox {
                         ),
                       ),
                     SizedBox(height: 24.h),
-                    Container(
-                      width: double.infinity,
-                      padding: EdgeInsets.symmetric(vertical: 16.h),
-                      decoration: BoxDecoration(
-                        color: const Color(0xffA8A3DC).withOpacity(0.16),
-                        borderRadius: BorderRadius.circular(50.r),
+                    if (!isGroupChat) ...[
+                      Container(
+                        width: double.infinity,
+                        padding: EdgeInsets.symmetric(vertical: 16.h),
+                        decoration: BoxDecoration(
+                          color: const Color(0xffA8A3DC).withOpacity(0.16),
+                          borderRadius: BorderRadius.circular(50.r),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            reausableIcon(
+                              icon: Icons.location_on_outlined,
+                              color: ToggleThemeData.darkPurple,
+                              size: 22.sp,
+                            ),
+                            SizedBox(width: 8.w),
+                            reausabletext(
+                              "${AppText.distance}${distance.toStringAsFixed(2)} Km",
+                            ),
+                          ],
+                        ),
                       ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          reausableIcon(
-                            icon: Icons.location_on_outlined,
-                            color: ToggleThemeData.darkPurple,
-                            size: 22.sp,
-                          ),
-                          SizedBox(width: 8.w),
-                          reausabletext(
-                            "${AppText.distance}${distance.toStringAsFixed(2)} Km",
-                            fontsize: 15.sp,
-                            fontfamily: FontFamily.interMedium,
-                            color: ToggleThemeData.darkPurple,
-                          ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(height: 24.h),
+                      SizedBox(height: 24.h),
+                    ],
                     SizedBox(height: 18.h),
                     Row(
                       children: [
@@ -710,25 +709,44 @@ class DialogBox {
 
                     SizedBox(height: 15.h),
                     reausablebutton(
-                      title: AppText.getDirections,
+                      title: isGroupChat ? "Track" : AppText.getDirections,
+                      icon: isGroupChat
+                          ? Icons.track_changes
+                          : Icons.directions,
                       fontSize: 19,
                       borderradiues: 50.r,
-                      icon: Icons.directions,
                       iconSize: 23.sp,
                       iconColor: Colors.white,
                       textcolor: Colors.white,
                       height: 58,
                       ontap: () {
-                        final Uri mapsUri = Uri.parse(
-                          "https://www.google.com/maps/dir/?api=1"
-                              "&destination=${destination.latitude},${destination.longitude}"
-                              "&travelmode=walking",
-                        );
 
-                        launchUrl(
-                          mapsUri,
-                          mode: LaunchMode.externalApplication,
-                        );
+                        if (isGroupChat) {
+
+                          Navigator.pop(ctx);
+
+                          Get.toNamed(
+                            Routes.LocationTracking,
+                            arguments: {
+                              "groupId": groupId,
+                              "groupName": groupName,
+                              "targetUserId": userId.toString(),
+                            },
+                          );
+
+                        } else {
+
+                          final Uri mapsUri = Uri.parse(
+                            "https://www.google.com/maps/dir/?api=1"
+                                "&destination=${destination.latitude},${destination.longitude}"
+                                "&travelmode=walking",
+                          );
+
+                          launchUrl(
+                            mapsUri,
+                            mode: LaunchMode.externalApplication,
+                          );
+                        }
                       },
                     ),
     ],

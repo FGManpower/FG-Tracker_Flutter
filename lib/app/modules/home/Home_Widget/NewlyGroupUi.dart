@@ -67,6 +67,7 @@ class NewlyGroupUi extends StatelessWidget {
                         Get.toNamed(Routes.Memberscreen, arguments: {
                           "groupId": data!.id.toString(),
                           "groupName": data.groupName.toString(),
+                          "groupCode": data.groupCode.toString(),
                           "isCreator": data.isCreator.toString(),
                           "isActive": data.isActive.toString(),
                         })?.then((value) {
