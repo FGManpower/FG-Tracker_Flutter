@@ -80,7 +80,7 @@ dependencies:
   mobile_scanner: ^7.2.0
   flutter_animarker: ^3.2.0
   gal: ^2.3.0
-
+  fluster: ^1.2.0
 
 
 dev_dependencies:

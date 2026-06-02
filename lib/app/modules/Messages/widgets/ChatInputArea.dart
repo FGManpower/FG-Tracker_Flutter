@@ -210,7 +210,7 @@ class ChatInputArea extends StatelessWidget {
                                     onTap: () {
 
                                       ModalImage bottomNavbar = ModalImage(
-                                        isImageCroppable: true,
+                                        isImageCroppable: false,
                                         onImageSelect: (path) async {
                                           if (Utility.isNotNullEmptyOrFalse(path)) {
                                             onImageSelected(path);

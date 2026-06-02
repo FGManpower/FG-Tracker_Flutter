@@ -14,7 +14,8 @@ class CommonChatAppBar extends StatelessWidget implements PreferredSizeWidget {
   final bool isCreator;
   final VoidCallback? onBackTap;
   final VoidCallback? onCallTap;
-
+  final VoidCallback? onUpdateGroupName;
+  final VoidCallback? onDeleteMember;
   final VoidCallback? onVideoTap;
   final VoidCallback? onGroupExit;
   final VoidCallback? onDeleteGroup;
@@ -27,6 +28,8 @@ class CommonChatAppBar extends StatelessWidget implements PreferredSizeWidget {
       this.onBackTap,
       this.onCallTap,
       this.onVideoTap,
+        this.onUpdateGroupName,
+        this.onDeleteMember,
       required this.groupName,
       this.onGroupExit,this.onDeleteGroup})
       : super(key: key);
@@ -181,6 +184,64 @@ class CommonChatAppBar extends StatelessWidget implements PreferredSizeWidget {
                   //       ),
                   //     ],
                   //   ),
+              if (isCreator)
+                GestureDetector(
+                  onTap: () {
+                    showModalBottomSheet(
+                      context: context,
+                      backgroundColor: Colors.transparent,
+                      builder: (_) {
+                        return Container(
+                          padding: EdgeInsets.all(20.r),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.vertical(
+                              top: Radius.circular(24.r),
+                            ),
+                          ),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+
+                              ListTile(
+                                leading: Icon(
+                                  Icons.edit,
+                                  color: ToggleThemeData.darkPurple,
+                                ),
+                                title: Text(
+                                  "Update Group Name",
+                                ),
+                                onTap: () {
+                                  Navigator.pop(context);
+                                  onUpdateGroupName?.call();
+                                },
+                              ),
+
+                              ListTile(
+                                leading: Icon(
+                                  Icons.person_remove,
+                                  color: Colors.red,
+                                ),
+                                title: Text(
+                                  "Delete Member",
+                                ),
+                                onTap: () {
+                                  Navigator.pop(context);
+                                  onDeleteMember?.call();
+                                },
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    );
+                  },
+                  child: Icon(
+                    Icons.more_vert,
+                    color: ToggleThemeData.darkPurple,
+                    size: 26.sp,
+                  ),
+                ),
               SizedBox(
                 width: 15.w,
               ),

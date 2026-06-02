@@ -25,6 +25,9 @@ import '../Widget/Track_widget.dart';
 class TrackingController extends GetxController {
   static TrackingController get instance => Get.put(TrackingController());
 
+
+  static const String _clusterManagerId = 'users_cluster';
+
   final markers = <Marker>{}.obs;
 
   String? userId;
@@ -53,6 +56,149 @@ class TrackingController extends GetxController {
 
   String? _alreadyListeningGroupId;
 
+  @override
+  void onInit() {
+    super.onInit();
+  }
+
+
+  Future<void> onClusterTap(Cluster cluster) async {
+
+    final clusterUserIds = cluster.markerIds.map((id) => id.value).toSet();
+
+    final List<LocationData> clusterUsers = [];
+    for (final group in groupWiseUserData.values) {
+      for (final user in group) {
+        if (clusterUserIds.contains(user.userId.toString())) {
+          final alreadyAdded = clusterUsers.any(
+                (u) => u.userId.toString() == user.userId.toString(),
+          );
+          if (!alreadyAdded) clusterUsers.add(user);
+        }
+      }
+    }
+
+    _showClusterMembersSheet(clusterUsers);
+  }
+
+  void _showClusterMembersSheet(List<LocationData> users) {
+    Get.bottomSheet(
+      Container(
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 42,
+              height: 5,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(100),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              '${users.length} Members',
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: Colors.black,
+              ),
+            ),
+            const SizedBox(height: 12),
+            ConstrainedBox(
+              constraints: BoxConstraints(maxHeight: Get.height * 0.45),
+              child: ListView.separated(
+                shrinkWrap: true,
+                itemCount: users.length,
+                separatorBuilder: (_, __) => const Divider(height: 1),
+                itemBuilder: (context, index) {
+                  final user = users[index];
+                  final imageUrl = user.profileImage?.toString() ?? '';
+                  final bool isOnline = user.isOnline == true;
+
+                  return ListTile(
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    leading: Stack(
+                      children: [
+                        CircleAvatar(
+                          radius: 24,
+                          backgroundColor: Colors.grey.shade200,
+                          backgroundImage: imageUrl.isNotEmpty
+                              ? NetworkImage(ConstRes.aImageBaseUrl + imageUrl)
+                              : null,
+                          child: imageUrl.isEmpty
+                              ? const Icon(Icons.person, color: Colors.grey)
+                              : null,
+                        ),
+                        Positioned(
+                          bottom: 0,
+                          right: 0,
+                          child: Container(
+                            width: 12,
+                            height: 12,
+                            decoration: BoxDecoration(
+                              color: isOnline ? Colors.green : Colors.red,
+                              shape: BoxShape.circle,
+                              border: Border.all(color: Colors.white, width: 2),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    title: Text(
+                      user.name?.toString() ?? 'Unknown',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 15,
+                      ),
+                    ),
+                    subtitle: Text(
+                      isOnline
+                          ? 'Online'
+                          : user.lastSeen != null
+                          ? Tracking().getTimeAgo(
+                        DateTime.parse(user.lastSeen!),
+                      )
+                          : 'Offline',
+                      style: TextStyle(
+                        color: isOnline ? Colors.green : Colors.grey,
+                        fontSize: 12,
+                      ),
+                    ),
+                    onTap: () async {
+                      Get.back();
+
+                      await Future.delayed(const Duration(milliseconds: 350));
+                      if (user.latitude != null && user.longitude != null) {
+                        await mapController?.animateCamera(
+                          CameraUpdate.newLatLngZoom(
+                            LatLng(user.latitude!, user.longitude!),
+                            20.0,
+                          ),
+                        );
+                      }
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+    );
+  }
+
+
   Future<void> loadMapStyle() async {
     darkMapStyle = await rootBundle.loadString(
       'assets/map_theme/dark_map.json',
@@ -60,9 +206,9 @@ class TrackingController extends GetxController {
   }
 
   Future<void> changeMapTheme(
-    MapType type, {
-    bool darkTheme = false,
-  }) async {
+      MapType type, {
+        bool darkTheme = false,
+      }) async {
     currentMapType.value = type;
 
     isDarkMode = darkTheme;
@@ -70,13 +216,9 @@ class TrackingController extends GetxController {
     if (mapController == null) return;
 
     if (darkTheme) {
-      await mapController!.setMapStyle(
-        darkMapStyle,
-      );
+      await mapController!.setMapStyle(darkMapStyle);
     } else {
-      await mapController!.setMapStyle(
-        null,
-      );
+      await mapController!.setMapStyle(null);
     }
 
     update();
@@ -149,7 +291,6 @@ class TrackingController extends GetxController {
               separatorBuilder: (_, __) => SizedBox(height: 14.h),
               itemBuilder: (context, index) {
                 final theme = themes[index];
-
                 final bool isSelected = theme['selected'] == true;
 
                 return GestureDetector(
@@ -234,9 +375,7 @@ class TrackingController extends GetxController {
   Future<void> initSocketConnection() async {
     userId = Global.storageServices.get(PrefConst.userId).toString();
 
-    await socketService.init(
-      ConstRes.socketUrl,
-    );
+    await socketService.init(ConstRes.socketUrl);
   }
 
   void initializeLocation() {
@@ -250,9 +389,7 @@ class TrackingController extends GetxController {
 
     for (var group in groups!) {
       if (group.isActive == true) {
-        joinedGroupIds.add(
-          group.id.toString(),
-        );
+        joinedGroupIds.add(group.id.toString());
 
         socketService.joinGroup(
           groupId: group.id.toString(),
@@ -261,17 +398,9 @@ class TrackingController extends GetxController {
       }
     }
 
-    socketService.onUserLeft(
-      (userId) => removeUserMarker(userId),
-    );
-
-    socketService.onGroupDeleted(
-      (groupId) => deleteGroupMarker(groupId),
-    );
-
-    socketService.onUserOffline(
-      (userId) => updateOfflineMarker(userId),
-    );
+    socketService.onUserLeft((userId) => removeUserMarker(userId));
+    socketService.onGroupDeleted((groupId) => deleteGroupMarker(groupId));
+    socketService.onUserOffline((userId) => updateOfflineMarker(userId));
 
     initializeLocation();
   }
@@ -282,48 +411,31 @@ class TrackingController extends GetxController {
     }
 
     _initSocketTracking(groupId);
-
     _loadInitialMarkers(groupId);
   }
 
   Future<void> getGroupLocationData(
-    BuildContext context,
-    int groupId,
-  ) async {
+      BuildContext context,
+      int groupId,
+      ) async {
     try {
-      Loading().showloading(
-        context: context,
-      );
+      Loading().showloading(context: context);
 
-      var result = await TrackRepo.getUserLocationData(
-        groupId,
-      );
+      var result = await TrackRepo.getUserLocationData(groupId);
 
       if (result.status == true) {
-        Loading().dismissloading(
-          context: context,
-        );
+        Loading().dismissloading(context: context);
 
         for (var data in result.locations!) {
           updateGroupMarker(data);
         }
       } else {
-        Loading().dismissloading(
-          context: context,
-        );
-
-        CommonDialog.errorMessage(
-          result.message,
-        );
+        Loading().dismissloading(context: context);
+        CommonDialog.errorMessage(result.message);
       }
     } catch (e) {
-      Loading().dismissloading(
-        context: context,
-      );
-
-      CommonDialog.errorMessage(
-        e.toString(),
-      );
+      Loading().dismissloading(context: context);
+      CommonDialog.errorMessage(e.toString());
     }
   }
 
@@ -331,16 +443,15 @@ class TrackingController extends GetxController {
     groupWiseUserData.remove(groupId);
 
     markers.removeWhere(
-      (marker) {
+          (marker) {
         return groupWiseUserData[groupId]?.any(
               (user) => user.userId.toString() == marker.markerId.value,
-            ) ??
+        ) ??
             false;
       },
     );
 
     joinedGroupIds.remove(groupId);
-
     markers.refresh();
   }
 
@@ -353,13 +464,8 @@ class TrackingController extends GetxController {
     Function(bool)? onCompletion,
   }) {
     if (userId != null) {
-      socketService.leaveGroup(
-        groupId: groupId,
-        userId: userId!,
-      );
-
+      socketService.leaveGroup(groupId: groupId, userId: userId!);
       joinedGroupIds.remove(groupId);
-
       onCompletion?.call(true);
     }
   }
@@ -368,49 +474,35 @@ class TrackingController extends GetxController {
     required String groupId,
     Function(bool)? onCompletion,
   }) {
-    socketService.deleteGroup(
-      groupId: groupId,
-    );
-
+    socketService.deleteGroup(groupId: groupId);
     joinedGroupIds.remove(groupId);
-
     onCompletion?.call(true);
   }
 
   Future<void> clearSearchZoomOut() async {
     if (mapController != null) {
-      await mapController!.animateCamera(
-        CameraUpdate.zoomTo(11.0),
-      );
+      await mapController!.animateCamera(CameraUpdate.zoomTo(11.0));
     }
   }
 
   Future<void> searchUserAndZoom(
-    String groupId,
-    String userId,
-  ) async {
+      String groupId,
+      String userId,
+      ) async {
     int retries = 0;
 
     while (markers.isEmpty && retries < 30) {
-      await Future.delayed(
-        const Duration(
-          milliseconds: 100,
-        ),
-      );
-
+      await Future.delayed(const Duration(milliseconds: 100));
       retries++;
     }
 
     final matchedMarker = markers.toList().firstWhereOrNull(
           (m) => m.markerId.value == userId,
-        );
+    );
 
     if (matchedMarker != null && mapController != null) {
       await mapController!.animateCamera(
-        CameraUpdate.newLatLngZoom(
-          matchedMarker.position,
-          30.5,
-        ),
+        CameraUpdate.newLatLngZoom(matchedMarker.position, 30.5),
       );
     } else {
       Get.snackbar(
@@ -422,38 +514,16 @@ class TrackingController extends GetxController {
     }
   }
 
-  // Future<void> searchAndFocusUser(String groupId, String name) async {
-  //   final users = groupWiseUserData[groupId] ?? [];
-  //   final user = users
-  //       .firstWhereOrNull((u) => u.name.toLowerCase() == name.toLowerCase());
-  //
-  //   if (user != null && mapController != null) {
-  //     await mapController!.animateCamera(
-  //       CameraUpdate.newLatLngZoom(
-  //           LatLng(user.latitude!, user.longitude!), 22.5),
-  //     );
-  //   } else {
-  //     Get.snackbar("User Not Found", "No user with name '$name' found.",
-  //         backgroundColor: Colors.redAccent, colorText: Colors.white);
-  //   }
-  // }
   void removeUserMarker(String userId) {
-    markers.removeWhere(
-      (m) => m.markerId.value == userId,
-    );
-
+    markers.removeWhere((m) => m.markerId.value == userId);
     _markerPositions.remove(userId);
-
     _activeAnimations[userId] = false;
-
     markers.refresh();
   }
 
   void showMarkersForGroup(String groupId) {
     markers.clear();
-
     final users = groupWiseUserData[groupId] ?? [];
-
     for (var user in users) {
       updateGroupMarker(user);
     }
@@ -467,12 +537,9 @@ class TrackingController extends GetxController {
     socketService.onGroupLocationUpdateOff();
 
     socketService.onGroupLocationUpdate(
-      (data) {
+          (data) {
         if (data["groupId"].toString() == groupId) {
-          final location = LocationData.fromJson(
-            data,
-          );
-
+          final location = LocationData.fromJson(data);
           updateGroupMarker(location);
         }
       },
@@ -481,9 +548,7 @@ class TrackingController extends GetxController {
 
   void _loadInitialMarkers(String groupId) {
     markers.clear();
-
     final users = groupWiseUserData[groupId] ?? [];
-
     for (var user in users) {
       updateGroupMarker(user);
     }
@@ -493,19 +558,13 @@ class TrackingController extends GetxController {
     required String markerId,
     required LatLng from,
     required LatLng to,
-    required Marker Function(
-      LatLng position,
-    ) markerBuilder,
+    required Marker Function(LatLng position) markerBuilder,
     int steps = 40,
-    Duration duration = const Duration(
-      milliseconds: 900,
-    ),
+    Duration duration = const Duration(milliseconds: 900),
   }) async {
     _activeAnimations[markerId] = false;
 
-    await Future.delayed(
-      const Duration(milliseconds: 16),
-    );
+    await Future.delayed(const Duration(milliseconds: 16));
 
     _activeAnimations[markerId] = true;
 
@@ -517,7 +576,6 @@ class TrackingController extends GetxController {
       if (_activeAnimations[markerId] != true) return;
 
       final t = i / steps;
-
       final easedT = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
 
       final interpolated = LatLng(
@@ -525,146 +583,104 @@ class TrackingController extends GetxController {
         from.longitude + (to.longitude - from.longitude) * easedT,
       );
 
-      markers.removeWhere(
-        (m) => m.markerId.value == markerId,
-      );
-
-      markers.add(
-        markerBuilder(interpolated),
-      );
-
+      markers.removeWhere((m) => m.markerId.value == markerId);
+      markers.add(markerBuilder(interpolated));
       markers.refresh();
 
-      await Future.delayed(
-        stepDuration,
-      );
+      await Future.delayed(stepDuration);
     }
 
     _markerPositions[markerId] = to;
-
     _activeAnimations[markerId] = false;
   }
 
   Future<void> updateGroupMarker(LocationData data) async {
     final groupId = data.groupId.toString();
-
     final profileImageUrl = data.profileImage?.toString() ?? '';
 
     bool isOnline = (data.isOnline == true) ||
         (data.lastSeen != null &&
             Tracking()
-                    .getTimeAgo(
-                      DateTime.parse(
-                        data.lastSeen!,
-                      ),
-                    )
-                    .toLowerCase() ==
+                .getTimeAgo(DateTime.parse(data.lastSeen!))
+                .toLowerCase() ==
                 "just now");
 
     final groupList = groupWiseUserData[groupId] ?? [];
 
     groupList.removeWhere(
-      (u) => u.userId.toString() == data.userId.toString(),
+          (u) => u.userId.toString() == data.userId.toString(),
     );
 
     groupList.add(data);
-
     groupWiseUserData[groupId] = groupList;
 
     try {
       if (profileImageUrl.isNotEmpty) {
         await precacheImage(
-          NetworkImage(
-            ConstRes.aImageBaseUrl + profileImageUrl,
-          ),
+          NetworkImage(ConstRes.aImageBaseUrl + profileImageUrl),
           Get.context!,
         );
       }
     } catch (e) {
-      log(
-        "❌ Failed to preload image: $e",
-      );
+      log("❌ Failed to preload image: $e");
     }
 
-    final icon = await getCustomIcon(
-      profileImageUrl,
-      isOnline,
-    );
+    final icon = await getCustomIcon(profileImageUrl, isOnline);
 
-    final newPosition = LatLng(
-      data.latitude!,
-      data.longitude!,
-    );
-
+    final newPosition = LatLng(data.latitude!, data.longitude!);
     final oldPosition = _markerPositions[data.userId.toString()] ?? newPosition;
 
     Marker markerBuilder(LatLng position) => Marker(
-          markerId: MarkerId(
-            data.userId.toString(),
+      markerId: MarkerId(data.userId.toString()),
+      position: position,
+      icon: icon,
+
+      clusterManagerId: const ClusterManagerId(_clusterManagerId),
+      onTap: () async {
+        final dest = LatLng(data.latitude!, data.longitude!);
+        double distanceKm = 0.0;
+
+        if (locationService.currentPosition != null) {
+          final origin = LatLng(
+            locationService.currentPosition!.latitude!,
+            locationService.currentPosition!.longitude!,
+          );
+
+          distanceKm = _calculateDistance(
+            origin.latitude,
+            origin.longitude,
+            dest.latitude,
+            dest.longitude,
+          );
+        }
+
+        DialogBox().showRouteDetailsBottomSheet(
+          destination: dest,
+          distance: distanceKm,
+          name: data.name,
+          isGroupChat: false,
+          imageUrl: profileImageUrl,
+          lastSeen: Tracking().getTimeAgo(
+            DateTime.parse(data.lastSeen!),
           ),
-          position: position,
-          icon: icon,
-          onTap: () async {
-            final dest = LatLng(
-              data.latitude!,
-              data.longitude!,
-            );
-
-            double distanceKm = 0.0;
-
-            if (locationService.currentPosition != null) {
-              final origin = LatLng(
-                locationService.currentPosition!.latitude!,
-                locationService.currentPosition!.longitude!,
-              );
-
-              distanceKm = _calculateDistance(
-                origin.latitude,
-                origin.longitude,
-                dest.latitude,
-                dest.longitude,
-              );
-            }
-
-            DialogBox().showRouteDetailsBottomSheet(
-              destination: dest,
-              distance: distanceKm,
-              name: data.name,
-              isGroupChat: false,
-              imageUrl: profileImageUrl,
-              lastSeen: Tracking().getTimeAgo(
-                DateTime.parse(
-                  data.lastSeen!,
-                ),
-              ),
-              userId: int.tryParse(
-                data.userId.toString(),
-
-              ),
-              groupId: int.tryParse(
-                data.groupId.toString(),
-              ),
-              id: int.tryParse(
-                data.id.toString(),
-              ),
-              status: data.isOnline,
-            );
-          },
+          userId: int.tryParse(data.userId.toString()),
+          groupId: int.tryParse(data.groupId.toString()),
+          id: int.tryParse(data.id.toString()),
+          status: data.isOnline,
         );
+      },
+    );
 
-    if (oldPosition == newPosition) {
-      markers.removeWhere(
-        (m) => m.markerId.value == data.userId.toString(),
-      );
+    markers.removeWhere((m) => m.markerId.value == data.userId.toString());
+    markers.add(markerBuilder(newPosition));
+    markers.refresh();
+    _markerPositions[data.userId.toString()] = newPosition;
 
-      markers.add(
-        markerBuilder(newPosition),
-      );
+    final bool positionChanged =
+        oldPosition.latitude != newPosition.latitude ||
+            oldPosition.longitude != newPosition.longitude;
 
-      markers.refresh();
-
-      _markerPositions[data.userId.toString()] = newPosition;
-    } else {
+    if (positionChanged) {
       _animateMarkerTo(
         markerId: data.userId.toString(),
         from: oldPosition,
@@ -675,34 +691,24 @@ class TrackingController extends GetxController {
   }
 
   double _calculateDistance(
-    double lat1,
-    double lon1,
-    double lat2,
-    double lon2,
-  ) {
+      double lat1,
+      double lon1,
+      double lat2,
+      double lon2,
+      ) {
     const R = 6371;
-
     final dLat = (lat2 - lat1) * (pi / 180);
-
     final dLon = (lon2 - lon1) * (pi / 180);
-
     final a = sin(dLat / 2) * sin(dLat / 2) +
         cos(lat1 * (pi / 180)) *
             cos(lat2 * (pi / 180)) *
             sin(dLon / 2) *
             sin(dLon / 2);
-
-    return R *
-        2 *
-        atan2(
-          sqrt(a),
-          sqrt(1 - a),
-        );
+    return R * 2 * atan2(sqrt(a), sqrt(1 - a));
   }
 
   void clearMapMarkers() {
     markers.clear();
-
     update();
   }
 }
