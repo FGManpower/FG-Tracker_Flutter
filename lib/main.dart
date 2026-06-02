@@ -43,8 +43,9 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   log("[Background FCM] Raw Data: ${message.data}");
 
   if (message.data['screen_name'] == "incomingCall") {
-    final callData = jsonDecode(message.data['callData']);
     final callMap = jsonDecode(message.data['callData']);
+
+    final callData = jsonDecode(message.data['callData']);
     final Map<String, String> userInfo = callData.map<String, String>(
         (key, value) => MapEntry(key.toString(), value.toString()));
 

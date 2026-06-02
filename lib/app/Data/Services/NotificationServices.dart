@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:connectycube_flutter_call_kit/connectycube_flutter_call_kit.dart';
+import 'package:fgtracker/app/Core/global/launchedFromCall.dart';
 import 'package:fgtracker/app/Core/values/Context_Utility.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Model/MemberDataRes.dart';
@@ -16,6 +17,7 @@ import 'package:get/get.dart';
 
 import 'dart:io';
 
+import '../../Core/constant/pref_res.dart';
 import '../../Core/util/AppLifeCycle.dart';
 import 'CallStateTracker.dart';
 
@@ -220,6 +222,20 @@ class firebaseNotificationServices {
           Routes.IncomingCallScreen,
           arguments: {"callDetail": call},
         );
+      } else if (message.data['screen_name'] == "missed_call") {
+        final bool isVideo = message.data['callData']["isVideo"] == true;
+
+        Get.toNamed(
+          Routes.callScreen,
+          arguments: {
+            "callerId": Global.storageServices.get(PrefConst.userId).toString(),
+            "remoteUserId": message.data['callData']["callerId"].toString(),
+            "callerName": message.data['callData']["callerName"] ?? "",
+            "offer": null,
+            "is_video": isVideo,
+            "callType": "outGoing",
+          },
+        );
       }
     } else {
       if (message.data['screen_name'] == "incomingCall") {
@@ -236,8 +252,10 @@ class firebaseNotificationServices {
             opponentsIds: {int.parse(callData['callerId'])},
             callerId: int.parse(callData['callerId']),
             userInfo: userInfo,
+
           ),
         );
+        CallSessionState.sessionId = callData['callId'].toString();
       }
     }
   }

@@ -118,6 +118,7 @@ class AppText {
 
 // Dialog box
 static String createNewGroup = "Create New Group";
+static String updateGroup = "Update Group";
 static String groupName = "Group Name";
 static String enterGroupName = "Enter group name";
 static String groupNameCnntEmpty = "Group Name cannot be empty";

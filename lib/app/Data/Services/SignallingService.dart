@@ -2,7 +2,10 @@ import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 import 'dart:ui';
+import 'package:connectycube_flutter_call_kit/connectycube_flutter_call_kit.dart';
+import 'package:fgtracker/app/Core/global/launchedFromCall.dart';
 import 'package:fgtracker/app/Data/Services/CallEvents_NotificationServices.dart';
+import 'package:flutter_callkit_incoming/flutter_callkit_incoming.dart';
 import 'package:get/get.dart';
 import 'package:socket_io_client/socket_io_client.dart';
 
@@ -35,13 +38,36 @@ class SignallingService {
 
     socket!.onConnect((_) {
       log("Call Socket Connected (ID: $selfCallerID)");
+
       // CustomNotificationServices().setupSocketCallEvents();
     });
 
-
-
     socket!.onDisconnect((_) {
       log("Call Socket Disconnected");
+    });
+
+    socket!.on("callRejected", (data) async {
+      log('==========CallRejectedbyRemoteUserass');
+    });
+
+    socket!.on("missedCall", (data) async {
+      log('==========MissedCallFromRemoteParam========${data}');
+      CallSessionState.sessionId = data['sessionId'].toString();
+      log('==========MissedCallFromRemoteParam========${data}');
+      log('==========MissedCallFromRemote========${CallSessionState.sessionId }');
+      if (CallSessionState.sessionId != null) {
+        if (Platform.isAndroid) {
+          ConnectycubeFlutterCallKit.clearCallData(
+            sessionId: CallSessionState.sessionId!,
+          );
+        } else {
+          FlutterCallkitIncoming.endCall(
+            CallSessionState.sessionId!,
+          );
+        }
+      }
+
+      CallSessionState.reset();
     });
 
     // socket?.onAny((event, data) {
@@ -79,8 +105,7 @@ class SignallingService {
             arguments: {"callDetail": call},
           );
         }
-
-      }else{
+      } else {
         if (CallStateTracker.isIncomingCallScreenOpen) {
           return;
         }
@@ -89,12 +114,10 @@ class SignallingService {
 
         CallStateTracker.isIncomingCallScreenOpen = true;
         final appState = AppLifecycleTracker.state;
-
       }
-
-
     });
   }
+
 
   void disconnect() {
     if (socket != null) {

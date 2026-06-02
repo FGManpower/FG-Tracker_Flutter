@@ -28,10 +28,11 @@ class CommonChatAppBar extends StatelessWidget implements PreferredSizeWidget {
       this.onBackTap,
       this.onCallTap,
       this.onVideoTap,
-        this.onUpdateGroupName,
-        this.onDeleteMember,
+      this.onUpdateGroupName,
+      this.onDeleteMember,
       required this.groupName,
-      this.onGroupExit,this.onDeleteGroup})
+      this.onGroupExit,
+      this.onDeleteGroup})
       : super(key: key);
 
   @override
@@ -161,87 +162,131 @@ class CommonChatAppBar extends StatelessWidget implements PreferredSizeWidget {
               //           ),
               //         ],
               //       ),
-                  // : PopupMenuButton<String>(
-                  //     onSelected: (value) {},
-                  //     color: Colors.white,
-                  //     elevation: 5,
-                  //     offset: Offset(0, 48),
-                  //     shape: RoundedRectangleBorder(
-                  //       borderRadius: BorderRadius.circular(12.r),
-                  //     ),
-                  //     icon: Icon(
-                  //       Icons.more_vert,
-                  //       color: ToggleThemeData.darkPurple,
-                  //       size: 26.sp,
-                  //     ),
-                  //     itemBuilder: (context) => [
-                  //       popupItem(
-                  //         context: context,
-                  //         value: 'delete',
-                  //         icon: Icons.delete_outline,
-                  //         text: 'Group Delete',
-                  //         onTap: onDeleteGroup
-                  //       ),
-                  //     ],
-                  //   ),
-              if (isCreator)
-                GestureDetector(
-                  onTap: () {
-                    showModalBottomSheet(
-                      context: context,
-                      backgroundColor: Colors.transparent,
-                      builder: (_) {
-                        return Container(
-                          padding: EdgeInsets.all(20.r),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.vertical(
-                              top: Radius.circular(24.r),
+              // : PopupMenuButton<String>(
+              //     onSelected: (value) {},
+              //     color: Colors.white,
+              //     elevation: 5,
+              //     offset: Offset(0, 48),
+              //     shape: RoundedRectangleBorder(
+              //       borderRadius: BorderRadius.circular(12.r),
+              //     ),
+              //     icon: Icon(
+              //       Icons.more_vert,
+              //       color: ToggleThemeData.darkPurple,
+              //       size: 26.sp,
+              //     ),
+              //     itemBuilder: (context) => [
+              //       popupItem(
+              //         context: context,
+              //         value: 'delete',
+              //         icon: Icons.delete_outline,
+              //         text: 'Group Delete',
+              //         onTap: onDeleteGroup
+              //       ),
+              //     ],
+              //   ),
+              // if (isCreator)
+              GestureDetector(
+                onTap: () {
+                  showModalBottomSheet(
+                    context: context,
+                    backgroundColor: Colors.transparent,
+                    isScrollControlled: true,
+                    builder: (_) {
+                      return Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 20.w,
+                          vertical: 16.h,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.vertical(
+                            top: Radius.circular(30.r),
+                          ),
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 50.w,
+                              height: 5.h,
+                              decoration: BoxDecoration(
+                                color: Colors.grey.shade300,
+                                borderRadius: BorderRadius.circular(20.r),
+                              ),
                             ),
-                          ),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-
-                              ListTile(
-                                leading: Icon(
-                                  Icons.edit,
-                                  color: ToggleThemeData.darkPurple,
-                                ),
-                                title: Text(
-                                  "Update Group Name",
-                                ),
-                                onTap: () {
-                                  Navigator.pop(context);
-                                  onUpdateGroupName?.call();
-                                },
+                            SizedBox(height: 20.h),
+                            Text(
+                              "Group Actions",
+                              style: TextStyle(
+                                fontSize: 20.sp,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.black87,
                               ),
-
-                              ListTile(
-                                leading: Icon(
-                                  Icons.person_remove,
-                                  color: Colors.red,
-                                ),
-                                title: Text(
-                                  "Delete Member",
-                                ),
-                                onTap: () {
-                                  Navigator.pop(context);
-                                  onDeleteMember?.call();
-                                },
+                            ),
+                            SizedBox(height: 6.h),
+                            Text(
+                              "Manage your group settings",
+                              style: TextStyle(
+                                fontSize: 13.sp,
+                                color: Colors.grey.shade600,
                               ),
-                            ],
-                          ),
-                        );
-                      },
-                    );
-                  },
-                  child: Icon(
-                    Icons.more_vert,
-                    color: ToggleThemeData.darkPurple,
-                    size: 26.sp,
-                  ),
+                            ),
+                            SizedBox(height: 24.h),
+                            actionTile(
+                              icon: Icons.edit_rounded,
+                              iconColor: ToggleThemeData.darkPurple,
+                              title: "Update Group Name",
+                              subtitle: "Change the current group name",
+                              onTap: () {
+                                Navigator.pop(context);
+                                onUpdateGroupName?.call();
+                              },
+                            ),
+                            SizedBox(height: 12.h),
+                            actionTile(
+                              icon: Icons.person_remove_rounded,
+                              iconColor: Colors.red,
+                              title: "Delete Member",
+                              subtitle: "Remove a member from this group",
+                              onTap: () {
+                                Navigator.pop(context);
+                                onDeleteMember?.call();
+                              },
+                            ),
+                            SizedBox(height: 20.h),
+                            SizedBox(
+                              width: double.infinity,
+                              child: OutlinedButton(
+                                style: OutlinedButton.styleFrom(
+                                  minimumSize: Size(double.infinity, 52.h),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(14.r),
+                                  ),
+                                ),
+                                onPressed: () => Navigator.pop(context),
+                                child: Text(
+                                  "Cancel",
+                                  style: TextStyle(
+                                    fontSize: 15.sp,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            SizedBox(height: 10.h),
+                          ],
+                        ),
+                      );
+                    },
+                  );
+                },
+                child: Icon(
+                  Icons.more_vert,
+                  color: ToggleThemeData.darkPurple,
+                  size: 26.sp,
                 ),
+              ),
               SizedBox(
                 width: 15.w,
               ),
@@ -318,4 +363,69 @@ class ImageViewerWidget extends StatelessWidget {
       ),
     );
   }
+}
+
+Widget actionTile({
+  required IconData icon,
+  required Color iconColor,
+  required String title,
+  required String subtitle,
+  required VoidCallback onTap,
+}) {
+  return Material(
+    color: Colors.grey.shade50,
+    borderRadius: BorderRadius.circular(18.r),
+    child: InkWell(
+      borderRadius: BorderRadius.circular(18.r),
+      onTap: onTap,
+      child: Padding(
+        padding: EdgeInsets.all(14.w),
+        child: Row(
+          children: [
+            Container(
+              height: 48.h,
+              width: 48.w,
+              decoration: BoxDecoration(
+                color: iconColor.withOpacity(.1),
+                borderRadius: BorderRadius.circular(14.r),
+              ),
+              child: Icon(
+                icon,
+                color: iconColor,
+                size: 24.sp,
+              ),
+            ),
+            SizedBox(width: 14.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 15.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  SizedBox(height: 3.h),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.arrow_forward_ios_rounded,
+              size: 16.sp,
+              color: Colors.grey,
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
 }

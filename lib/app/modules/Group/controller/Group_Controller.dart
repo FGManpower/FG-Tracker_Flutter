@@ -2,8 +2,10 @@ import 'package:fgtracker/app/Core/values/Dialog/Common_dialog.dart';
 import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/Core/values/loading.dart';
 import 'package:fgtracker/app/Data/Repositories/GroupRepo.dart';
+import 'package:fgtracker/app/modules/Group/controller/MemberController.dart';
 import 'package:fgtracker/app/modules/Track/Controller/TrackController.dart';
 import 'package:fgtracker/app/Model/GroupRes.dart';
+import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:google_mlkit_barcode_scanning/google_mlkit_barcode_scanning.dart';
@@ -43,8 +45,6 @@ class GroupController extends GetxController {
   Future<bool> createGroup(BuildContext context,
       {required GroupController controller}) async {
     if (!createGroupKey.currentState!.validate()) return false;
-
-    // TrackingController.instance.locationService.initLocationTracking();
     try {
       Loading().showloading();
       dynamic param = {
@@ -69,6 +69,31 @@ class GroupController extends GetxController {
       Loading().dismissloading();
       CommonDialog.errorMessage(e.toString());
       return false;
+    }
+  }
+
+  Future<void> updateGroupDetail({required String groupId}) async {
+
+    try {
+      Loading().showloading();
+      dynamic param = {
+        "groupName": groupName.text,
+        "groupId": groupId,
+      };
+      var result = await GroupRepo.updateGroup(param);
+      if (result.status == true) {
+
+        Loading().dismissloading();
+        Get.offAllNamed(Routes.Home_Screen);
+
+
+      } else {
+        Loading().dismissloading();
+        CommonDialog.errorMessage(result.message);
+      }
+    } catch (e) {
+      Loading().dismissloading();
+      CommonDialog.errorMessage(e.toString());
     }
   }
 
@@ -116,6 +141,31 @@ class GroupController extends GetxController {
         Loading().dismissloading();
         Utils().fluttertoast(result.message.toString());
         controller.getGroupData();
+      } else {
+        Loading().dismissloading();
+        CommonDialog.errorMessage(result.message);
+      }
+    } catch (e) {
+      Loading().dismissloading();
+      CommonDialog.errorMessage(e.toString());
+    }
+  }
+
+  Future<void> deleteGroupMember(
+      BuildContext context, {
+        required String groupId,
+        required String groupMemberId,
+      }) async {
+    try {
+      Loading().showloading();
+      dynamic param = {
+        "groupId": groupId,
+        "groupMemberId": groupMemberId,
+      };
+      var result = await GroupRepo.deleteGroupsMember(param);
+      if (result.status == true) {
+        Loading().dismissloading();
+        MemberController().leaveGroup(context, groupId: groupId);
       } else {
         Loading().dismissloading();
         CommonDialog.errorMessage(result.message);

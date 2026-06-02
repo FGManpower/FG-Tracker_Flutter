@@ -20,15 +20,15 @@ class CallKitService {
 
   final socket = SignallingService.instance.socket;
 
-  /// Initialize CallKit
   void init() {
+
     ConnectycubeFlutterCallKit.instance.init(
       icon: 'ic_launcher',
       color: '#0955fa',
 
-      /// ACCEPT CALL
+
       onCallAccepted: (CallEvent event) async {
-        print("Call Accepted: ${event.sessionId}");
+
 
         CallSessionState.sessionId = event.sessionId;
 
@@ -38,10 +38,7 @@ class CallKitService {
           navigateToCallScreen(data);
         }
       },
-
-      /// REJECT CALL
       onCallRejected: (CallEvent event) async {
-        print("Call Rejected: ${event.sessionId}");
 
         final data = Map<String, dynamic>.from(event.userInfo ?? {});
 
@@ -49,10 +46,15 @@ class CallKitService {
           declineCall(data);
         }
       },
+      onCallIncoming: (CallEvent event) async{
+        print("onCallIncommingCalled");
+        CallSessionState.sessionId = event.sessionId;
+      },
+
     );
+
   }
 
-  /// Reject Call
   Future<void> declineCall(Map<String, dynamic> data) async {
     final parsedData = {
       "callId": int.tryParse(data["callId"].toString()),
@@ -65,27 +67,18 @@ class CallKitService {
     };
 
     final call = IncomingCallModel.fromMap(parsedData);
-
-    final myId = Global.storageServices.get(PrefConst.userId).toString();
-
     CallStateTracker.isIncomingCallScreenOpen = false;
 
     if (CallSessionState.sessionId != null) {
       await ConnectycubeFlutterCallKit.clearCallData(
           sessionId: CallSessionState.sessionId!);
     }
-
-    socket?.emit("rejectCall", {
-      "remoteUserId": myId == call.callerId ? call.receiverId : call.callerId,
-    });
-
-    socket?.emit("rejectCall", {
+    SignallingService.instance.socket?.emit("rejectCall", {
       "callId": call.callId,
-      "remoteUserId": myId,
+      "remoteUserId": call.callerId,
     });
   }
 
-  /// Navigate to Call Screen
   Future<void> navigateToCallScreen(Map<String, dynamic> data) async {
     try {
       if (CallSessionState.isCallActive) return;
@@ -103,7 +96,7 @@ class CallKitService {
         "sdpOfferCompressed": data["sdpOfferCompressed"],
       };
 
-      print("Parsed Call Data: $parsedData");
+
 
       final call = IncomingCallModel.fromMap(parsedData);
 
@@ -129,11 +122,11 @@ class CallKitService {
         int.parse(data["notificationId"].toString()),
       );
     } catch (e) {
-      print("[CallKit] Navigation error: $e");
+      log("[CallKit] Navigation error: $e");
     }
   }
 
-  /// Recover call when app launches from terminated state
+
   Future<void> checkCallOnLaunch() async {
     try {
       final sessionId = await ConnectycubeFlutterCallKit.getLastCallId();
@@ -146,10 +139,7 @@ class CallKitService {
       final state =
           await ConnectycubeFlutterCallKit.getCallState(sessionId: sessionId);
 
-
-
       if (state == "accepted") {
-
       } else {
         log("=================EndCallDetailfromCallKit=========");
         CallSessionState.sessionId = sessionId;
@@ -168,9 +158,10 @@ class CallKitService {
             data = Map<String, dynamic>.from(userInfoRaw);
           }
           final myUserId =
-          Global.storageServices.get(PrefConst.userId).toString();
-          final targetUser =
-          (myUserId == data['callerId'].toString()) ? myUserId : data['callerId'].toString();
+              Global.storageServices.get(PrefConst.userId).toString();
+          final targetUser = (myUserId == data['callerId'].toString())
+              ? myUserId
+              : data['callerId'].toString();
           var param = {
             "callId": data['callId'].toString(),
             "remoteUserId": targetUser.toString(),
@@ -192,8 +183,6 @@ class CallKitService {
 
           CallSessionState.reset();
         }
-
-
       }
     } catch (e) {
       print("checkCallOnLaunch error: $e");

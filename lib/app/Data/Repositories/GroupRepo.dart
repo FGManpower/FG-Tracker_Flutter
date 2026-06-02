@@ -9,6 +9,11 @@ class GroupRepo{
     return CommonResponse.fromJson(response);
   }
 
+  static Future<CommonResponse> updateGroup(dynamic data) async {
+    var response = await HttpUtil().Authpost("/updateGroup",data: data);
+    return CommonResponse.fromJson(response);
+  }
+
   static Future<GroupRes> getGroupData() async {
     var response = await HttpUtil().get("/getGroup");
     return GroupRes.fromJson(response);
@@ -34,6 +39,11 @@ class GroupRepo{
 
   static Future<CommonResponse> exitGroups(dynamic data) async {
     var response = await HttpUtil().Authpost("/exitGroup",data: data);
+    return CommonResponse.fromJson(response);
+  }
+
+  static Future<CommonResponse> deleteGroupsMember(dynamic data) async {
+    var response = await HttpUtil().Authpost("/deleteGroupMember",data: data);
     return CommonResponse.fromJson(response);
   }
 

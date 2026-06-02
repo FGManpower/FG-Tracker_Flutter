@@ -44,6 +44,8 @@ class CallController extends GetxController {
   Timer? callTimer;
   int callDurationSeconds = 0;
 
+  Timer? missedCallTimer;
+  int missCallDurationSeconds = 20;
   @override
   void onInit() {
     callerId = args["callerId"];
@@ -64,9 +66,9 @@ class CallController extends GetxController {
       playSound();
     }
     WakelockPlus.enable();
-    try{
+    try {
       TrackingController.instance.initializeLocation();
-    }catch(e){
+    } catch (e) {
       log("==============CallLocationException======${e.toString()}");
     }
     super.onInit();
@@ -75,15 +77,13 @@ class CallController extends GetxController {
   void _listenForCallEvents() {
     socket?.off("callRejected");
 
-
-
     socket!.on("newCall", (data) {
-
       socket?.emit("CallingStatus", {
         "callId": data['callId'].toString(),
         "remoteUserId": int.parse(data['callerId']),
         "callingStatus": "Ringing",
       });
+
     });
 
     socket!.on("callRejected", (data) async {
@@ -97,7 +97,8 @@ class CallController extends GetxController {
       }
 
       CallSessionState.reset();
-
+      missedCallTimer?.cancel();
+      missedCallTimer = null;
       resetPeer();
       Get.back();
     });
@@ -125,11 +126,14 @@ class CallController extends GetxController {
       if (args["callType"] == "outGoing") {
         stopSound();
       }
+      missedCallTimer?.cancel();
+      missedCallTimer = null;
       // await WakelockPlus.disable();
       Get.offAllNamed(Routes.Home_Screen);
     });
 
     socket!.on("missedCall", (data) async {
+      print("==========MissedCallCalled=======");
       callTimer?.cancel();
       callTimer = null;
       if (CallSessionState.sessionId != null) {
@@ -155,6 +159,15 @@ class CallController extends GetxController {
       if (data['status'] != null) {
         callStatus.value = data['status'];
       }
+    });
+
+
+
+    socket?.on("callCreated", (data) {
+
+      print("===========CallCreatedResponseData======${data}");
+      callId = data['callId'];
+      startMissedCallTimer();
     });
   }
 
@@ -200,13 +213,15 @@ class CallController extends GetxController {
         }
       ],
       'iceTransportPolicy': 'all',
-      // 'iceTransportPolicy': 'relay', // it was working testing with divesh
     });
 
     peer!.onTrack = (event) {
       remoteRenderer.srcObject = event.streams[0];
       update();
+      missedCallTimer?.cancel();
+      missedCallTimer = null;
       startCallTimer();
+
     };
 
     localStream = await navigator.mediaDevices.getUserMedia({
@@ -308,7 +323,7 @@ class CallController extends GetxController {
     }
   }
 
-  Future<void> endCall() async {
+  Future<void> endCall({ String? type}) async {
     callTimer?.cancel();
     callTimer = null;
     final myUserId = Global.storageServices.get(PrefConst.userId).toString();
@@ -318,8 +333,13 @@ class CallController extends GetxController {
       "callId": callId,
       "remoteUserId": targetUser.toString(),
     };
-    log("=================EndCallDetail=========$param");
-    socket?.emit("endCall",param);
+
+    if(type=="missedCall"){
+
+    }else{
+      socket?.emit("endCall", param);
+    }
+
 
     resetPeer();
 
@@ -395,6 +415,34 @@ class CallController extends GetxController {
       callDurationSeconds++;
       update();
     });
+  }
+
+  void startMissedCallTimer() {
+    missedCallTimer?.cancel();
+
+    missedCallTimer = Timer.periodic(
+      const Duration(seconds: 1),
+          (timer) {
+        missCallDurationSeconds--;
+
+        update();
+
+        print("=============missCallDurationSeconds${missCallDurationSeconds}");
+        if (missCallDurationSeconds == 0) {
+          timer.cancel();
+
+          var param ={
+            "callId": callId,
+            "remoteUserId": remoteUserId,
+            "sessionId": remoteUserId,
+          };
+          socket?.emit("missCall",param );
+          log("=======MissedCallParam===$param");
+
+          endCall(type: "missedCall");
+        }
+      },
+    );
   }
 
   playSound() {

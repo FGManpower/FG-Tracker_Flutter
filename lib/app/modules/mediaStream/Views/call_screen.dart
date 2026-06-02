@@ -141,7 +141,9 @@ class CallScreen extends StatelessWidget {
                             onPressed: c.toggleMic,
                           ),
                           InkWell(
-                            onTap: c.endCall,
+                            onTap: () {
+                              c.endCall();
+                            },
                             child: CircleAvatar(
                               radius: 30.r,
                               backgroundColor: Colors.red,

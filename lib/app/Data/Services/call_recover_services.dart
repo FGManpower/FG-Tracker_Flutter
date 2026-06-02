@@ -15,9 +15,9 @@ class CallRecoveryService {
   static final instance = CallRecoveryService._();
 
   Future<void> checkCallOnLaunch() async {
+    print("===============checkCallOnLaunch=============>");
     try {
-      final sessionId =
-      await ConnectycubeFlutterCallKit.getLastCallId();
+      final sessionId = await ConnectycubeFlutterCallKit.getLastCallId();
 
       if (sessionId == null) {
         log("No last call session");
@@ -86,4 +86,6 @@ class CallRecoveryService {
       log("checkCallOnLaunch error: $e");
     }
   }
+
+
 }
