@@ -185,7 +185,7 @@ class CommonChatAppBar extends StatelessWidget implements PreferredSizeWidget {
               //       ),
               //     ],
               //   ),
-              // if (isCreator)
+              //   if (isCreator)
               GestureDetector(
                 onTap: () {
                   showModalBottomSheet(
@@ -219,12 +219,12 @@ class CommonChatAppBar extends StatelessWidget implements PreferredSizeWidget {
                             Text(
                               "Group Actions",
                               style: TextStyle(
-                                fontSize: 20.sp,
-                                fontWeight: FontWeight.w700,
+                                fontSize: 22.sp,
+                                fontWeight: FontWeight.w800,
                                 color: Colors.black87,
                               ),
                             ),
-                            SizedBox(height: 6.h),
+                            // SizedBox(height: 2.h),
                             Text(
                               "Manage your group settings",
                               style: TextStyle(
@@ -236,8 +236,8 @@ class CommonChatAppBar extends StatelessWidget implements PreferredSizeWidget {
                             actionTile(
                               icon: Icons.edit_rounded,
                               iconColor: ToggleThemeData.darkPurple,
-                              title: "Update Group Name",
-                              subtitle: "Change the current group name",
+                              title: "Update Group ",
+                              subtitle: "Change the current group detail",
                               onTap: () {
                                 Navigator.pop(context);
                                 onUpdateGroupName?.call();
@@ -257,21 +257,14 @@ class CommonChatAppBar extends StatelessWidget implements PreferredSizeWidget {
                             SizedBox(height: 20.h),
                             SizedBox(
                               width: double.infinity,
-                              child: OutlinedButton(
-                                style: OutlinedButton.styleFrom(
-                                  minimumSize: Size(double.infinity, 52.h),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(14.r),
-                                  ),
-                                ),
-                                onPressed: () => Navigator.pop(context),
-                                child: Text(
-                                  "Cancel",
-                                  style: TextStyle(
-                                    fontSize: 15.sp,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
+                              child: reausablebutton(
+                                title: "Cancel",
+                                ontap: () => Navigator.pop(context),
+                                height: 52,
+                                borderradiues: 50,
+                                backgroundColor: ToggleThemeData.darkPurple,
+                                textcolor: Colors.white,
+                                fontSize: 15,
                               ),
                             ),
                             SizedBox(height: 10.h),
@@ -372,30 +365,36 @@ Widget actionTile({
   required String subtitle,
   required VoidCallback onTap,
 }) {
-  return Material(
-    color: Colors.grey.shade50,
-    borderRadius: BorderRadius.circular(18.r),
+  return Container(
+    decoration:  BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(10.r),
+      border: BoxBorder.all(color: Colors.grey.shade200)
+    ),
+
     child: InkWell(
-      borderRadius: BorderRadius.circular(18.r),
+
+      borderRadius: BorderRadius.circular(10.r),
+
       onTap: onTap,
       child: Padding(
-        padding: EdgeInsets.all(14.w),
+        padding: EdgeInsets.symmetric(
+          horizontal: 16.w,
+          vertical: 14.h,
+        ),
         child: Row(
           children: [
-            Container(
-              height: 48.h,
-              width: 48.w,
-              decoration: BoxDecoration(
-                color: iconColor.withOpacity(.1),
-                borderRadius: BorderRadius.circular(14.r),
-              ),
+            CircleAvatar(
+              backgroundColor: Colors.grey.shade200,
               child: Icon(
                 icon,
                 color: iconColor,
-                size: 24.sp,
+                size: 22.sp,
               ),
             ),
+
             SizedBox(width: 14.w),
+
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -403,25 +402,30 @@ Widget actionTile({
                   Text(
                     title,
                     style: TextStyle(
-                      fontSize: 15.sp,
+                      fontSize: 14.5.sp,
                       fontWeight: FontWeight.w600,
+                      color: Colors.black87,
                     ),
                   ),
-                  SizedBox(height: 3.h),
+
+                  SizedBox(height: 2.h),
+
                   Text(
                     subtitle,
                     style: TextStyle(
-                      fontSize: 12.sp,
+                      fontSize: 11.5.sp,
                       color: Colors.grey.shade600,
+                      height: 1.3,
                     ),
                   ),
                 ],
               ),
             ),
+
             Icon(
               Icons.arrow_forward_ios_rounded,
-              size: 16.sp,
-              color: Colors.grey,
+              size: 14.sp,
+              color: Colors.grey.shade400,
             ),
           ],
         ),
