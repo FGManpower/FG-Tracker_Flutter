@@ -38,8 +38,6 @@ class SignallingService {
 
     socket!.onConnect((_) {
       log("Call Socket Connected (ID: $selfCallerID)");
-
-      // CustomNotificationServices().setupSocketCallEvents();
     });
 
     socket!.onDisconnect((_) {
@@ -54,15 +52,19 @@ class SignallingService {
       log('==========MissedCallFromRemoteParam========${data}');
       CallSessionState.sessionId = data['sessionId'].toString();
       log('==========MissedCallFromRemoteParam========${data}');
-      log('==========MissedCallFromRemote========${CallSessionState.sessionId }');
+      log('==========MissedCallFromRemote========${CallSessionState.sessionId}');
       if (CallSessionState.sessionId != null) {
         if (Platform.isAndroid) {
-          ConnectycubeFlutterCallKit.clearCallData(
-            sessionId: CallSessionState.sessionId!,
+          await ConnectycubeFlutterCallKit.reportCallEnded(
+            sessionId: data['sessionId'].toString(),
+          );
+
+          await ConnectycubeFlutterCallKit.clearCallData(
+            sessionId: data['sessionId'].toString(),
           );
         } else {
           FlutterCallkitIncoming.endCall(
-            CallSessionState.sessionId!,
+            data['sessionId'].toString(),
           );
         }
       }
@@ -117,7 +119,6 @@ class SignallingService {
       }
     });
   }
-
 
   void disconnect() {
     if (socket != null) {

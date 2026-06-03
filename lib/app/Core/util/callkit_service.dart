@@ -46,10 +46,7 @@ class CallKitService {
           declineCall(data);
         }
       },
-      onCallIncoming: (CallEvent event) async{
-        print("onCallIncommingCalled");
-        CallSessionState.sessionId = event.sessionId;
-      },
+
 
     );
 

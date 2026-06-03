@@ -12,6 +12,7 @@ import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_callkit_incoming/flutter_callkit_incoming.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
 
@@ -172,6 +173,7 @@ class firebaseNotificationServices {
   Future<void> handleMessage(BuildContext context, RemoteMessage message,
       {String? type}) async {
     print("=============NotificationMessage${message.data}");
+
     if (type == "recienvedmessage") {
       if (message.data['screen_name'] == "MemberPage") {
         Get.toNamed(Routes.Memberscreen, arguments: {
@@ -222,7 +224,7 @@ class firebaseNotificationServices {
           Routes.IncomingCallScreen,
           arguments: {"callDetail": call},
         );
-      } else if (message.data['screen_name'] == "missed_call") {
+      } else if (message.data['screen_name'] == "missedCall") {
         final bool isVideo = message.data['callData']["isVideo"] == true;
 
         Get.toNamed(
@@ -244,6 +246,7 @@ class firebaseNotificationServices {
         final Map<String, String> userInfo = callData.map<String, String>(
             (key, value) => MapEntry(key.toString(), value.toString()));
 
+        print("SenderSessionId============${callData['callId'].toString()}");
         await ConnectycubeFlutterCallKit.showCallNotification(
           CallEvent(
             sessionId: callData['callId'].toString(),
@@ -252,10 +255,28 @@ class firebaseNotificationServices {
             opponentsIds: {int.parse(callData['callerId'])},
             callerId: int.parse(callData['callerId']),
             userInfo: userInfo,
-
           ),
         );
         CallSessionState.sessionId = callData['callId'].toString();
+      } else if (message.data['screen_name'] == "missedCall") {
+        // final callData = jsonDecode(message.data['callData']);
+        // print("ClearCallData1============${message.data}");
+        //
+        // if (Platform.isAndroid) {
+        //   print("ClearCallData============${callData['callId'].toString()}");
+        //   await ConnectycubeFlutterCallKit.reportCallEnded(
+        //     sessionId: callData['callId'].toString(),
+        //   );
+        //   await ConnectycubeFlutterCallKit.clearCallData(
+        //     sessionId: callData['callId'].toString(),
+        //   );
+        // } else {
+        //   FlutterCallkitIncoming.endCall(
+        //     message.data['sessionId'].toString(),
+        //   );
+        // }
+        //
+        // CallSessionState.reset();
       }
     }
   }
