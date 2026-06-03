@@ -3,26 +3,29 @@ class GetMessage {
   bool? status;
   String? message;
   List<MessageData>? messageData;
+  bool? isCreator;
 
-  GetMessage({this.status, this.message, this.messageData});
+  GetMessage({this.status, this.message, this.messageData,this.isCreator});
 
   GetMessage.fromJson(Map<String, dynamic> json) {
     status = json['status'];
     message = json['message'];
+    isCreator = json['isCreator'];
     if (json['MessageData'] != null) {
       messageData = <MessageData>[];
       json['MessageData'].forEach((v) {
-        messageData!.add(new MessageData.fromJson(v));
+        messageData!.add(MessageData.fromJson(v));
       });
     }
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['status'] = this.status;
-    data['message'] = this.message;
-    if (this.messageData != null) {
-      data['MessageData'] = this.messageData!.map((v) => v.toJson()).toList();
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['status'] = status;
+    data['message'] = message;
+    data['isCreator'] = isCreator;
+    if (messageData != null) {
+      data['MessageData'] = messageData!.map((v) => v.toJson()).toList();
     }
     return data;
   }
@@ -30,14 +33,14 @@ class GetMessage {
 
 class MessageData {
   int? id;
-  dynamic? senderId;
-  dynamic? receiverId;
-  dynamic? messageType;
-  dynamic? content;
-  dynamic? timestamp;
-  dynamic? seenCount;
-  dynamic? senderName;
-  dynamic? senderImage;
+  dynamic senderId;
+  dynamic receiverId;
+  dynamic messageType;
+  dynamic content;
+  dynamic timestamp;
+  dynamic seenCount;
+  dynamic senderName;
+  dynamic senderImage;
 
   MessageData(
       {this.id,
@@ -60,16 +63,16 @@ class MessageData {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['id'] = this.id;
-    data['senderId'] = this.senderId;
-    data['receiverId'] = this.receiverId;
-    data['messageType'] = this.messageType;
-    data['content'] = this.content;
-    data['timestamp'] = this.timestamp;
-    data['seenCount'] = this.seenCount;
-    data['senderName'] = this.senderName;
-    data['senderImage'] = this.senderImage;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['id'] = id;
+    data['senderId'] = senderId;
+    data['receiverId'] = receiverId;
+    data['messageType'] = messageType;
+    data['content'] = content;
+    data['timestamp'] = timestamp;
+    data['seenCount'] = seenCount;
+    data['senderName'] = senderName;
+    data['senderImage'] = senderImage;
     return data;
   }
 }

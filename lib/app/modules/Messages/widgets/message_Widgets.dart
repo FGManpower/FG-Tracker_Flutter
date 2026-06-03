@@ -1,5 +1,6 @@
 import 'package:fgtracker/app/config/themes_data.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
+import 'package:fgtracker/app/modules/Messages/Controller/MessageController.dart';
 import 'package:fgtracker/app/modules/Track/Widget/TrackLAppBar.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
@@ -11,7 +12,7 @@ class CommonChatAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String profileImageUrl;
   final String userName;
   final String groupName;
-  final bool isCreator;
+  final MessageController controller;
   final VoidCallback? onBackTap;
   final VoidCallback? onCallTap;
   final VoidCallback? onUpdateGroupName;
@@ -24,7 +25,7 @@ class CommonChatAppBar extends StatelessWidget implements PreferredSizeWidget {
       {Key? key,
       required this.profileImageUrl,
       required this.userName,
-      required this.isCreator,
+      required this.controller,
       this.onBackTap,
       this.onCallTap,
       this.onVideoTap,
@@ -186,100 +187,103 @@ class CommonChatAppBar extends StatelessWidget implements PreferredSizeWidget {
               //     ],
               //   ),
               //   if (isCreator)
-              GestureDetector(
-                onTap: () {
-                  showModalBottomSheet(
-                    context: context,
-                    backgroundColor: Colors.transparent,
-                    isScrollControlled: true,
-                    builder: (_) {
-                      return Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 20.w,
-                          vertical: 16.h,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.vertical(
-                            top: Radius.circular(30.r),
+
+              Obx(() {
+                return controller.isCreator==true?GestureDetector(
+                  onTap: () {
+                    showModalBottomSheet(
+                      context: context,
+                      backgroundColor: Colors.transparent,
+                      isScrollControlled: true,
+                      builder: (_) {
+                        return Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 20.w,
+                            vertical: 16.h,
                           ),
-                        ),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Container(
-                              width: 50.w,
-                              height: 5.h,
-                              decoration: BoxDecoration(
-                                color: Colors.grey.shade300,
-                                borderRadius: BorderRadius.circular(20.r),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.vertical(
+                              top: Radius.circular(30.r),
+                            ),
+                          ),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                width: 50.w,
+                                height: 5.h,
+                                decoration: BoxDecoration(
+                                  color: Colors.grey.shade300,
+                                  borderRadius: BorderRadius.circular(20.r),
+                                ),
                               ),
-                            ),
-                            SizedBox(height: 20.h),
-                            Text(
-                              "Group Actions",
-                              style: TextStyle(
-                                fontSize: 22.sp,
-                                fontWeight: FontWeight.w800,
-                                color: Colors.black87,
+                              SizedBox(height: 20.h),
+                              Text(
+                                "Group Actions",
+                                style: TextStyle(
+                                  fontSize: 22.sp,
+                                  fontWeight: FontWeight.w800,
+                                  color: Colors.black87,
+                                ),
                               ),
-                            ),
-                            // SizedBox(height: 2.h),
-                            Text(
-                              "Manage your group settings",
-                              style: TextStyle(
-                                fontSize: 13.sp,
-                                color: Colors.grey.shade600,
+                              // SizedBox(height: 2.h),
+                              Text(
+                                "Manage your group settings",
+                                style: TextStyle(
+                                  fontSize: 13.sp,
+                                  color: Colors.grey.shade600,
+                                ),
                               ),
-                            ),
-                            SizedBox(height: 24.h),
-                            actionTile(
-                              icon: Icons.edit_rounded,
-                              iconColor: ToggleThemeData.darkPurple,
-                              title: "Update Group ",
-                              subtitle: "Change the current group detail",
-                              onTap: () {
-                                Navigator.pop(context);
-                                onUpdateGroupName?.call();
-                              },
-                            ),
-                            SizedBox(height: 12.h),
-                            actionTile(
-                              icon: Icons.person_remove_rounded,
-                              iconColor: Colors.red,
-                              title: "Delete Member",
-                              subtitle: "Remove a member from this group",
-                              onTap: () {
-                                Navigator.pop(context);
-                                onDeleteMember?.call();
-                              },
-                            ),
-                            SizedBox(height: 20.h),
-                            SizedBox(
-                              width: double.infinity,
-                              child: reausablebutton(
-                                title: "Cancel",
-                                ontap: () => Navigator.pop(context),
-                                height: 52,
-                                borderradiues: 50,
-                                backgroundColor: ToggleThemeData.darkPurple,
-                                textcolor: Colors.white,
-                                fontSize: 15,
+                              SizedBox(height: 24.h),
+                              actionTile(
+                                icon: Icons.edit_rounded,
+                                iconColor: ToggleThemeData.darkPurple,
+                                title: "Update Group ",
+                                subtitle: "Change the current group detail",
+                                onTap: () {
+                                  Navigator.pop(context);
+                                  onUpdateGroupName?.call();
+                                },
                               ),
-                            ),
-                            SizedBox(height: 10.h),
-                          ],
-                        ),
-                      );
-                    },
-                  );
-                },
-                child: Icon(
-                  Icons.more_vert,
-                  color: ToggleThemeData.darkPurple,
-                  size: 26.sp,
-                ),
-              ),
+                              SizedBox(height: 12.h),
+                              actionTile(
+                                icon: Icons.person_remove_rounded,
+                                iconColor: Colors.red,
+                                title: "Delete Member",
+                                subtitle: "Remove a member from this group",
+                                onTap: () {
+                                  Navigator.pop(context);
+                                  onDeleteMember?.call();
+                                },
+                              ),
+                              SizedBox(height: 20.h),
+                              SizedBox(
+                                width: double.infinity,
+                                child: reausablebutton(
+                                  title: "Cancel",
+                                  ontap: () => Navigator.pop(context),
+                                  height: 52,
+                                  borderradiues: 50,
+                                  backgroundColor: ToggleThemeData.darkPurple,
+                                  textcolor: Colors.white,
+                                  fontSize: 15,
+                                ),
+                              ),
+                              SizedBox(height: 10.h),
+                            ],
+                          ),
+                        );
+                      },
+                    );
+                  },
+                  child: Icon(
+                    Icons.more_vert,
+                    color: ToggleThemeData.darkPurple,
+                    size: 26.sp,
+                  ),
+                ):SizedBox();
+              },),
               SizedBox(
                 width: 15.w,
               ),

@@ -24,13 +24,12 @@ class MessageController extends GetxController {
 
   late MemberData memberData;
   Map<String, dynamic>? arguments = Get.arguments;
+  RxBool isCreator=false.obs;
 
   @override
   void onInit() {
     super.onInit();
-
     memberData = arguments?['userData'];
-
     _initializeChat();
   }
 
@@ -58,6 +57,7 @@ class MessageController extends GetxController {
       callback: (message) {
         messageData.add(MessageData.fromJson(message));
         scrollToBottom();
+
 
         // if (isUserAtBottom()) {
           socketService.markSeen(
@@ -169,6 +169,7 @@ class MessageController extends GetxController {
       if (result.status == true) {
         // socketService.markSeen(memberData.userId.toString(), groupId);
         messageData.value = result.messageData!;
+        isCreator.value= result.isCreator!;
         scrollToBottom();
       } else {
         CommonDialog.errorMessage(result.message);
