@@ -1,15 +1,456 @@
+// import 'dart:async';
+// import 'dart:developer';
+//
+// import 'package:fgtracker/app/Core/constant/pref_res.dart';
+// import 'package:fgtracker/app/Core/values/global.dart';
+// import 'package:fgtracker/app/Core/values/utility.dart';
+// import 'package:fgtracker/app/modules/Track/Controller/TrackController.dart';
+// import 'package:fgtracker/app/routes/app_pages.dart';
+//
+// import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
+// import 'package:get/get.dart' hide navigator;
+// import 'package:flutter_webrtc/flutter_webrtc.dart';
+// import 'package:wakelock_plus/wakelock_plus.dart';
+// import '../../../../gen/assets.gen.dart';
+// import '../../../Core/global/launchedFromCall.dart';
+// import '../../../Data/Services/SignallingService.dart';
+//
+// class CallController extends GetxController {
+//   final socket = SignallingService.instance.socket;
+//
+//   final localRenderer = RTCVideoRenderer();
+//   final remoteRenderer = RTCVideoRenderer();
+//
+//   RTCPeerConnection? peer;
+//   MediaStream? localStream;
+//
+//   List<RTCIceCandidate> iceCandidates = [];
+//   RxString callStatus = "Calling".obs;
+//   bool isAudioOn = true;
+//   bool isVideoOn = true;
+//   bool isFrontCamera = true;
+//   var callId;
+//   late String callerId;
+//   late String remoteUserId;
+//   late bool is_video;
+//   dynamic offer;
+//   bool isSpeakerOn = false;
+//
+//   final args = Get.arguments;
+//   Timer? callTimer;
+//   int callDurationSeconds = 0;
+//
+//   Timer? missedCallTimer;
+//   var missCallDurationSeconds = 40.obs;
+//   @override
+//   void onInit() {
+//     callerId = args["callerId"];
+//     remoteUserId = args["remoteUserId"];
+//     offer = args["offer"];
+//     is_video = args["is_video"];
+//
+//     if (args["callId"] != null) {
+//       callId = args["callId"];
+//     }
+//     localRenderer.initialize();
+//     remoteRenderer.initialize();
+//
+//     _setupPeer();
+//     _listenForCallEvents();
+//
+//     if (args["callType"] == "outGoing") {
+//       playSound();
+//     }
+//     WakelockPlus.enable();
+//     try {
+//       TrackingController.instance.initializeLocation();
+//     } catch (e) {
+//       log("==============CallLocationException======${e.toString()}");
+//     }
+//     super.onInit();
+//   }
+//
+//   void _listenForCallEvents() {
+//     socket?.off("callRejected");
+//
+//     socket!.on("newCall", (data) {
+//       socket?.emit("CallingStatus", {
+//         "callId": data['callId'].toString(),
+//         "remoteUserId": int.parse(data['callerId']),
+//         "callingStatus": "Ringing",
+//       });
+//     });
+//
+//     socket!.on("callRejected", (data) async {
+//       callTimer?.cancel();
+//       callTimer = null;
+//       missedCallTimer?.cancel();
+//       missedCallTimer = null;
+//
+//       if (CallSessionState.sessionId != null) {
+//         callEnded(CallSessionState.sessionId.toString());
+//       }
+//
+//       resetPeer();
+//       Get.back();
+//     });
+//
+//     socket!.on("callEnded", (data) async {
+//       log("======================CallEnded==========$data");
+//       callTimer?.cancel();
+//       callTimer = null;
+//
+//       resetPeer();
+//       if (CallSessionState.sessionId != null) {
+//         callEnded(CallSessionState.sessionId.toString());
+//       }
+//
+//       if (args["callType"] == "outGoing") {
+//         stopSound();
+//       }
+//       missedCallTimer?.cancel();
+//       missedCallTimer = null;
+//       // await WakelockPlus.disable();
+//       if (Get.currentRoute != Routes.Home_Screen) {
+//         missCallDurationSeconds.value=0;
+//         Get.offAllNamed(Routes.Home_Screen);
+//       }
+//     });
+//
+//     socket!.on("missedCall", (data) async {
+//       print("==========MissedCallCalled=======");
+//       callTimer?.cancel();
+//       callTimer = null;
+//       if (CallSessionState.sessionId != null) {
+//         callEnded(CallSessionState.sessionId.toString());
+//       }
+//
+//       resetPeer();
+//       Get.back();
+//     });
+//
+//     socket?.on("callStatus", (data) {
+//       log("CALL STATUS: $data");
+//
+//       if (data['status'] != null) {
+//         callStatus.value = data['status'];
+//       }
+//     });
+//
+//     socket?.on("callCreated", (data) {
+//       print("===========CallCreatedResponseData======${data}");
+//       callId = data['callId'];
+//       startMissedCallTimer();
+//     });
+//   }
+//
+//   void resetPeer() {
+//     try {
+//       peer?.close();
+//       localStream?.dispose();
+//     } catch (_) {}
+//     peer = null;
+//     localStream = null;
+//     // iceCandidates.clear();
+//   }
+//
+//   void safeAddCandidate(dynamic data) {
+//     if (peer == null) return;
+//     final c = RTCIceCandidate(
+//       data["iceCandidate"]["candidate"],
+//       data["iceCandidate"]["id"],
+//       data["iceCandidate"]["label"],
+//     );
+//     peer!.addCandidate(c);
+//   }
+//
+//   Future<void> _setupPeer() async {
+//     resetPeer();
+//
+//     socket!.off("IceCandidate");
+//     socket!.off("callAnswered");
+//
+//     peer = await createPeerConnection({
+//       'iceServers': [
+//         {
+//           'urls': ['stun:stun.l.google.com:19302'],
+//         },
+//         {
+//           'urls': [
+//             'turn:89.116.23.2:3478?transport=udp',
+//             'turn:89.116.23.2:3478?transport=tcp',
+//             'turns:89.116.23.2:443?transport=tcp',
+//           ],
+//           'username': 'fgtracker',
+//           'credential': 'FGM_Tracker@2025',
+//         }
+//       ],
+//       'iceTransportPolicy': 'all',
+//     });
+//
+//     peer!.onTrack = (event) {
+//       remoteRenderer.srcObject = event.streams[0];
+//       update();
+//       missedCallTimer?.cancel();
+//       missedCallTimer = null;
+//       startCallTimer();
+//     };
+//
+//     localStream = await navigator.mediaDevices.getUserMedia({
+//       'audio': true,
+//       'video': is_video == true
+//           ? {'facingMode': isFrontCamera ? 'user' : 'environment'}
+//           : false,
+//     });
+//     await enableSpeaker();
+//     for (var t in localStream!.getTracks()) {
+//       peer!.addTrack(t, localStream!);
+//     }
+//
+//     localRenderer.srcObject = localStream;
+//     update();
+//
+//     socket!.on("IceCandidate", (data) {
+//       if (peer == null) {
+//         Future.delayed(const Duration(milliseconds: 300), () {
+//           if (peer != null) safeAddCandidate(data);
+//         });
+//         return;
+//       }
+//       safeAddCandidate(data);
+//     });
+//
+//     if (offer != null) {
+//       await peer!.setRemoteDescription(
+//         RTCSessionDescription(offer["sdp"], offer["type"]),
+//       );
+//       final answer = await peer!.createAnswer();
+//       await peer!.setLocalDescription(answer);
+//
+//       peer!.onIceCandidate = (c) {
+//         if (c.candidate == null) return;
+//         socket!.emit("IceCandidate", {
+//           "remoteUserId": callerId,
+//           "iceCandidate": {
+//             "id": c.sdpMid,
+//             "label": c.sdpMLineIndex,
+//             "candidate": c.candidate,
+//           },
+//         });
+//       };
+//
+//       socket!.emit("answerCall", {
+//         "callId": callId,
+//         "callerId": callerId,
+//         "sdpAnswer": answer.toMap(),
+//       });
+//     } else {
+//       peer!.onIceCandidate = (c) => iceCandidates.add(c);
+//
+//       socket!.on("callAnswered", (data) async {
+//         await peer!.setRemoteDescription(
+//           RTCSessionDescription(
+//             data["sdpAnswer"]["sdp"],
+//             data["sdpAnswer"]["type"],
+//           ),
+//         );
+//
+//         for (var c in iceCandidates) {
+//           if (c.candidate == null) continue;
+//           socket!.emit("IceCandidate", {
+//             "remoteUserId": remoteUserId,
+//             "iceCandidate": {
+//               "id": c.sdpMid,
+//               "label": c.sdpMLineIndex,
+//               "candidate": c.candidate,
+//             },
+//           });
+//         }
+//         iceCandidates.clear();
+//
+//         peer!.onIceCandidate = (c) {
+//           if (c.candidate == null) return;
+//           socket!.emit("IceCandidate", {
+//             "remoteUserId": remoteUserId,
+//             "iceCandidate": {
+//               "id": c.sdpMid,
+//               "label": c.sdpMLineIndex,
+//               "candidate": c.candidate,
+//             },
+//           });
+//         };
+//       });
+//       final sdpOffer = await peer!.createOffer();
+//       await peer!.setLocalDescription(sdpOffer);
+//
+//       socket!.emit("makeCall", {
+//         "remoteUserId": remoteUserId,
+//         "sdpOffer": sdpOffer.toMap(),
+//         "is_video": is_video,
+//         "callerId": Global.storageServices.get(PrefConst.userId),
+//
+//         // "caller_name":  args["caller_name"],
+//         // "caller_profile_image":args["caller_profile_image"] ?? MyAppTheme.notFoundImg,
+//       });
+//     }
+//   }
+//
+//   Future<void> endCall({String? type}) async {
+//     callTimer?.cancel();
+//     missedCallTimer?.cancel();
+//     callTimer = null;
+//
+//     final myUserId = Global.storageServices.get(PrefConst.userId).toString();
+//     final targetUser =
+//         (myUserId == callerId.toString()) ? remoteUserId : callerId;
+//     var param = {
+//       "callId": callId,
+//       "remoteUserId": targetUser.toString(),
+//     };
+//
+//     if (type == "missedCall") {
+//     } else {
+//       socket?.emit("endCall", param);
+//     }
+//
+//     resetPeer();
+//
+//     if (CallSessionState.sessionId != null) {
+//       callEnded(CallSessionState.sessionId.toString());
+//     }
+//
+//     if (args["callType"] == "outGoing") {
+//       stopSound();
+//     }
+//     await WakelockPlus.disable();
+//     if (Get.currentRoute != Routes.Home_Screen) {
+//       missCallDurationSeconds.value=0;
+//       Get.offAllNamed(Routes.Home_Screen);
+//     }
+//   }
+//
+//   void toggleMic() {
+//     isAudioOn = !isAudioOn;
+//     localStream?.getAudioTracks().forEach((t) => t.enabled = isAudioOn);
+//     update();
+//   }
+//
+//   void toggleCamera() {
+//     if (is_video == false) return;
+//     isVideoOn = !isVideoOn;
+//     localStream?.getVideoTracks().forEach((t) => t.enabled = isVideoOn);
+//     update();
+//   }
+//
+//   void switchCamera() {
+//     if (is_video == false) return;
+//     isFrontCamera = !isFrontCamera;
+//     localStream?.getVideoTracks().forEach((t) => t.switchCamera());
+//     update();
+//   }
+//
+//   Future<void> enableSpeaker() async {
+//     await Helper.setSpeakerphoneOn(true);
+//     isSpeakerOn = true;
+//     update();
+//   }
+//
+//   Future<void> toggleSpeaker() async {
+//     isSpeakerOn = !isSpeakerOn;
+//     await Helper.setSpeakerphoneOn(isSpeakerOn);
+//
+//     update();
+//   }
+//
+//   String get formattedDuration {
+//     final minutes = (callDurationSeconds ~/ 60).toString().padLeft(2, '0');
+//     final seconds = (callDurationSeconds % 60).toString().padLeft(2, '0');
+//     if (Utility.isNotNullEmptyOrFalse("$minutes:$seconds")) {
+//       if (args["callType"] == "outGoing") {
+//         stopSound();
+//       }
+//     }
+//     return "$minutes:$seconds";
+//   }
+//
+//   void startCallTimer() {
+//     if (callTimer != null) return;
+//
+//     callTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+//       callDurationSeconds++;
+//       update();
+//     });
+//   }
+//
+//   void startMissedCallTimer() {
+//     missedCallTimer?.cancel();
+//
+//     missedCallTimer = Timer.periodic(
+//       const Duration(seconds: 1),
+//       (timer) {
+//         missCallDurationSeconds.value--;
+//
+//         // update();
+//
+//         print("=============missCallDurationSeconds${missCallDurationSeconds.value}");
+//         if (missCallDurationSeconds.value == 0) {
+//           timer.cancel();
+//
+//           var param = {
+//             "callId": callId,
+//             "remoteUserId": remoteUserId,
+//             "sessionId": remoteUserId,
+//           };
+//           socket?.emit("missCall", param);
+//           log("=======MissedCallParam===$param");
+//
+//           endCall(type: "missedCall");
+//         }
+//       },
+//     );
+//   }
+//
+//   playSound() {
+//     FlutterRingtonePlayer().play(
+//       asAlarm: false,
+//       fromAsset: Assets.music.ringing,
+//       looping: true,
+//       volume: 1.0,
+//     );
+//   }
+//
+//   stopSound() {
+//     FlutterRingtonePlayer().stop();
+//   }
+//
+//   @override
+//   void onClose() {
+//     resetPeer();
+//     localRenderer.dispose();
+//     remoteRenderer.dispose();
+//     if (args["callType"] == "outGoing") {
+//       stopSound();
+//     }
+//     super.onClose();
+//   }
+//
+//   @override
+//   Future<void> dispose() async {
+//     super.dispose();
+//
+//     if (args["callType"] == "outGoing") {
+//       stopSound();
+//     }
+//   }
+// }
 import 'dart:async';
 import 'dart:developer';
-import 'dart:io';
 
-import 'package:connectycube_flutter_call_kit/connectycube_flutter_call_kit.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
-import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Core/values/utility.dart';
 import 'package:fgtracker/app/modules/Track/Controller/TrackController.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
-import 'package:flutter_callkit_incoming/flutter_callkit_incoming.dart';
 
 import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'package:get/get.dart' hide navigator;
@@ -45,7 +486,8 @@ class CallController extends GetxController {
   int callDurationSeconds = 0;
 
   Timer? missedCallTimer;
-  int missCallDurationSeconds = 20;
+  var missCallDurationSeconds = 40.obs;
+
   @override
   void onInit() {
     callerId = args["callerId"];
@@ -83,72 +525,44 @@ class CallController extends GetxController {
         "remoteUserId": int.parse(data['callerId']),
         "callingStatus": "Ringing",
       });
-
     });
 
     socket!.on("callRejected", (data) async {
-      callTimer?.cancel();
-      callTimer = null;
+      _clearTimers();
 
       if (CallSessionState.sessionId != null) {
-        ConnectycubeFlutterCallKit.clearCallData(
-          sessionId: CallSessionState.sessionId!,
-        );
+        callEnded(CallSessionState.sessionId.toString());
       }
 
-      CallSessionState.reset();
-      missedCallTimer?.cancel();
-      missedCallTimer = null;
       resetPeer();
       Get.back();
     });
 
     socket!.on("callEnded", (data) async {
       log("======================CallEnded==========$data");
-      callTimer?.cancel();
-      callTimer = null;
+      _clearTimers();
 
       resetPeer();
       if (CallSessionState.sessionId != null) {
-        if (Platform.isAndroid) {
-          ConnectycubeFlutterCallKit.clearCallData(
-            sessionId: CallSessionState.sessionId!,
-          );
-        } else {
-          FlutterCallkitIncoming.endCall(
-            CallSessionState.sessionId!,
-          );
-        }
+        callEnded(CallSessionState.sessionId.toString());
       }
-
-      CallSessionState.reset();
 
       if (args["callType"] == "outGoing") {
         stopSound();
       }
-      missedCallTimer?.cancel();
-      missedCallTimer = null;
-      // await WakelockPlus.disable();
-      Get.offAllNamed(Routes.Home_Screen);
+
+      if (Get.currentRoute != Routes.Home_Screen) {
+        Get.offAllNamed(Routes.Home_Screen);
+      }
     });
 
     socket!.on("missedCall", (data) async {
       print("==========MissedCallCalled=======");
-      callTimer?.cancel();
-      callTimer = null;
+      _clearTimers();
       if (CallSessionState.sessionId != null) {
-        if (Platform.isAndroid) {
-          ConnectycubeFlutterCallKit.clearCallData(
-            sessionId: CallSessionState.sessionId!,
-          );
-        } else {
-          FlutterCallkitIncoming.endCall(
-            CallSessionState.sessionId!,
-          );
-        }
+        callEnded(CallSessionState.sessionId.toString());
       }
 
-      CallSessionState.reset();
       resetPeer();
       Get.back();
     });
@@ -161,10 +575,7 @@ class CallController extends GetxController {
       }
     });
 
-
-
     socket?.on("callCreated", (data) {
-
       print("===========CallCreatedResponseData======${data}");
       callId = data['callId'];
       startMissedCallTimer();
@@ -178,7 +589,6 @@ class CallController extends GetxController {
     } catch (_) {}
     peer = null;
     localStream = null;
-    // iceCandidates.clear();
   }
 
   void safeAddCandidate(dynamic data) {
@@ -218,10 +628,11 @@ class CallController extends GetxController {
     peer!.onTrack = (event) {
       remoteRenderer.srcObject = event.streams[0];
       update();
+
       missedCallTimer?.cancel();
       missedCallTimer = null;
-      startCallTimer();
 
+      startCallTimer();
     };
 
     localStream = await navigator.mediaDevices.getUserMedia({
@@ -316,16 +727,13 @@ class CallController extends GetxController {
         "sdpOffer": sdpOffer.toMap(),
         "is_video": is_video,
         "callerId": Global.storageServices.get(PrefConst.userId),
-
-        // "caller_name":  args["caller_name"],
-        // "caller_profile_image":args["caller_profile_image"] ?? MyAppTheme.notFoundImg,
       });
     }
   }
 
-  Future<void> endCall({ String? type}) async {
-    callTimer?.cancel();
-    callTimer = null;
+  Future<void> endCall({String? type}) async {
+    _clearTimers(); // Fix: Stop loops before executing transition blocks
+
     final myUserId = Global.storageServices.get(PrefConst.userId).toString();
     final targetUser =
         (myUserId == callerId.toString()) ? remoteUserId : callerId;
@@ -334,34 +742,23 @@ class CallController extends GetxController {
       "remoteUserId": targetUser.toString(),
     };
 
-    if(type=="missedCall"){
-
-    }else{
+    if (type != "missedCall") {
       socket?.emit("endCall", param);
     }
-
 
     resetPeer();
 
     if (CallSessionState.sessionId != null) {
-      if (Platform.isAndroid) {
-        ConnectycubeFlutterCallKit.clearCallData(
-          sessionId: CallSessionState.sessionId!,
-        );
-      } else {
-        FlutterCallkitIncoming.endCall(
-          CallSessionState.sessionId!,
-        );
-      }
+      callEnded(CallSessionState.sessionId.toString());
     }
-
-    CallSessionState.reset();
 
     if (args["callType"] == "outGoing") {
       stopSound();
     }
     await WakelockPlus.disable();
-    Get.offAllNamed(Routes.Home_Screen);
+    if (Get.currentRoute != Routes.Home_Screen) {
+      Get.offAllNamed(Routes.Home_Screen);
+    }
   }
 
   void toggleMic() {
@@ -393,7 +790,6 @@ class CallController extends GetxController {
   Future<void> toggleSpeaker() async {
     isSpeakerOn = !isSpeakerOn;
     await Helper.setSpeakerphoneOn(isSpeakerOn);
-
     update();
   }
 
@@ -419,30 +815,46 @@ class CallController extends GetxController {
 
   void startMissedCallTimer() {
     missedCallTimer?.cancel();
+    missCallDurationSeconds.value = 40;
 
     missedCallTimer = Timer.periodic(
       const Duration(seconds: 1),
-          (timer) {
-        missCallDurationSeconds--;
+      (timer) {
+        if (isClosed) {
+          timer.cancel();
+          return;
+        }
 
-        update();
+        if (missCallDurationSeconds.value > 0) {
+          missCallDurationSeconds.value--;
+        }
 
-        print("=============missCallDurationSeconds${missCallDurationSeconds}");
-        if (missCallDurationSeconds == 0) {
+        print(
+            "=============missCallDurationSeconds: ${missCallDurationSeconds.value}");
+
+        if (missCallDurationSeconds.value == 0) {
           timer.cancel();
 
-          var param ={
+          var param = {
             "callId": callId,
             "remoteUserId": remoteUserId,
             "sessionId": remoteUserId,
           };
-          socket?.emit("missCall",param );
+          socket?.emit("missCall", param);
           log("=======MissedCallParam===$param");
 
           endCall(type: "missedCall");
         }
       },
     );
+  }
+
+  void _clearTimers() {
+    callTimer?.cancel();
+    missedCallTimer?.cancel();
+    callTimer = null;
+    missedCallTimer = null;
+    missCallDurationSeconds.value = 0;
   }
 
   playSound() {
@@ -460,21 +872,14 @@ class CallController extends GetxController {
 
   @override
   void onClose() {
+    _clearTimers();
     resetPeer();
     localRenderer.dispose();
     remoteRenderer.dispose();
     if (args["callType"] == "outGoing") {
       stopSound();
     }
+    WakelockPlus.disable();
     super.onClose();
-  }
-
-  @override
-  Future<void> dispose() async {
-    super.dispose();
-
-    if (args["callType"] == "outGoing") {
-      stopSound();
-    }
   }
 }

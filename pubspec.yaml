@@ -3,7 +3,7 @@ description: "A new Flutter project."
 
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
-version: 1.6.2
+version: 1.6.3
 
 environment:
   sdk: ^3.6.1
@@ -81,6 +81,7 @@ dependencies:
   flutter_animarker: ^3.2.0
   gal: ^2.3.0
   fluster: ^1.2.0
+  upgrader: ^13.5.0
 
 
 dev_dependencies:

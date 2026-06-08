@@ -21,35 +21,30 @@ class CallKitService {
   final socket = SignallingService.instance.socket;
 
   void init() {
-
+    print("=============ConnectivityCueKit");
     ConnectycubeFlutterCallKit.instance.init(
       icon: 'ic_launcher',
       color: '#0955fa',
-
-
       onCallAccepted: (CallEvent event) async {
-
-
+        print("======AcceptUserInfoDetail===========${event.userInfo}");
+        print("======AcceptUserInfoDetail1===========${event.sessionId}");
         CallSessionState.sessionId = event.sessionId;
 
         final data = Map<String, dynamic>.from(event.userInfo ?? {});
-
+        print("======AcceptUserInfoDetailData===========${data}");
         if (data.isNotEmpty) {
+          print("======IsNotEmptyAcceptUserInfoDetailData===========$data");
           navigateToCallScreen(data);
         }
       },
       onCallRejected: (CallEvent event) async {
-
         final data = Map<String, dynamic>.from(event.userInfo ?? {});
 
         if (data.isNotEmpty) {
           declineCall(data);
         }
       },
-
-
     );
-
   }
 
   Future<void> declineCall(Map<String, dynamic> data) async {
@@ -67,9 +62,9 @@ class CallKitService {
     CallStateTracker.isIncomingCallScreenOpen = false;
 
     if (CallSessionState.sessionId != null) {
-      await ConnectycubeFlutterCallKit.clearCallData(
-          sessionId: CallSessionState.sessionId!);
+      callEnded(CallSessionState.sessionId.toString());
     }
+
     SignallingService.instance.socket?.emit("rejectCall", {
       "callId": call.callId,
       "remoteUserId": call.callerId,
@@ -79,10 +74,10 @@ class CallKitService {
   Future<void> navigateToCallScreen(Map<String, dynamic> data) async {
     try {
       if (CallSessionState.isCallActive) return;
-
+      print("======IsNotEmptyAcceptUserInfoDetailData1===========$data");
       CallSessionState.isCallActive = true;
       CallSessionState.launchedFromCall = true;
-
+      print("======IsNotEmptyAcceptUserInfoDetailData2===========$data");
       final parsedData = {
         "callId": int.tryParse(data["callId"].toString()),
         "callerId": int.tryParse(data["callerId"].toString()),
@@ -92,14 +87,12 @@ class CallKitService {
         "callerProfileImage": data["callerProfileImage"],
         "sdpOfferCompressed": data["sdpOfferCompressed"],
       };
-
-
-
+      print("======IsNotEmptyAcceptUserInfoDetailData3===========$parsedData");
       final call = IncomingCallModel.fromMap(parsedData);
 
       Map<String, dynamic>? offer =
           await decomPress().decompressSDPOffer(call.sdpOfferCompressed);
-
+      print("======IsNotEmptyAcceptUserInfoDetailData4===========$offer");
       Get.offNamed(
         Routes.callScreen,
         arguments: {
@@ -114,20 +107,19 @@ class CallKitService {
           "callType": "Incoming",
         },
       );
-
+      print("======IsNotEmptyAcceptUserInfoDetailData5===========");
       await NotificationController().markAsRead(
         int.parse(data["notificationId"].toString()),
       );
     } catch (e) {
-      log("[CallKit] Navigation error: $e");
+      print("[CallKit] Navigation error: $e");
     }
   }
-
 
   Future<void> checkCallOnLaunch() async {
     try {
       final sessionId = await ConnectycubeFlutterCallKit.getLastCallId();
-
+      print("No last call session1");
       if (sessionId == null) {
         print("No last call session");
         return;
@@ -137,7 +129,30 @@ class CallKitService {
           await ConnectycubeFlutterCallKit.getCallState(sessionId: sessionId);
 
       if (state == "accepted") {
-      } else {
+        final callData =
+        await ConnectycubeFlutterCallKit.getCallData(
+          sessionId: sessionId,
+        );
+
+        final userInfoRaw = callData?["user_info"];
+
+        Map<String, dynamic> data = {};
+
+        if (userInfoRaw is String) {
+          data = jsonDecode(userInfoRaw);
+        } else if (userInfoRaw is Map) {
+          data = Map<String, dynamic>.from(userInfoRaw);
+        }
+
+        print("======AcceptUserInfoDetailData=========== $data");
+
+        CallSessionState.sessionId = sessionId;
+
+        if (data.isNotEmpty) {
+          navigateToCallScreen(data);
+        }
+      }
+      else {
         log("=================EndCallDetailfromCallKit=========");
         CallSessionState.sessionId = sessionId;
 

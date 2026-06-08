@@ -71,6 +71,9 @@ class InitiateController extends GetxController
         Utility.isNotNullEmptyOrFalse(
             Global.storageServices.get(PrefConst.isRegistered))) {
       Get.offAllNamed(Routes.Home_Screen);
+
+
+
     } else {
       final introDone =
           await Global.storageServices.getBool(PrefConst.introStatus);

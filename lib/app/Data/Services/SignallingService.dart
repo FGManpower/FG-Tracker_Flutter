@@ -51,25 +51,14 @@ class SignallingService {
     socket!.on("missedCall", (data) async {
       log('==========MissedCallFromRemoteParam========${data}');
       CallSessionState.sessionId = data['sessionId'].toString();
-      log('==========MissedCallFromRemoteParam========${data}');
-      log('==========MissedCallFromRemote========${CallSessionState.sessionId}');
-      if (CallSessionState.sessionId != null) {
-        if (Platform.isAndroid) {
-          await ConnectycubeFlutterCallKit.reportCallEnded(
-            sessionId: data['sessionId'].toString(),
-          );
+      callEnded(data['sessionId'].toString());
+    });
 
-          await ConnectycubeFlutterCallKit.clearCallData(
-            sessionId: data['sessionId'].toString(),
-          );
-        } else {
-          FlutterCallkitIncoming.endCall(
-            data['sessionId'].toString(),
-          );
-        }
-      }
+    socket!.on("callEnded", (data) async {
+      log('==========CallEndedFromRemoteParam========${data}');
+      CallSessionState.sessionId = data['sessionId'].toString();
 
-      CallSessionState.reset();
+      callEnded(data['sessionId'].toString());
     });
 
     // socket?.onAny((event, data) {
@@ -128,4 +117,22 @@ class SignallingService {
       socket = null;
     }
   }
+}
+
+callEnded(String sessionId) async {
+  if (Platform.isAndroid) {
+    await ConnectycubeFlutterCallKit.reportCallEnded(
+      sessionId: sessionId,
+    );
+
+    await ConnectycubeFlutterCallKit.clearCallData(
+      sessionId: sessionId,
+    );
+  } else {
+    FlutterCallkitIncoming.endCall(
+      sessionId,
+    );
+  }
+
+  CallSessionState.reset();
 }

@@ -225,14 +225,16 @@ class firebaseNotificationServices {
           arguments: {"callDetail": call},
         );
       } else if (message.data['screen_name'] == "missedCall") {
-        final bool isVideo = message.data['callData']["isVideo"] == true;
+
+        final callData = jsonDecode(message.data['callData']);
+        final bool isVideo = callData["isVideo"] == true;
 
         Get.toNamed(
           Routes.callScreen,
           arguments: {
             "callerId": Global.storageServices.get(PrefConst.userId).toString(),
-            "remoteUserId": message.data['callData']["callerId"].toString(),
-            "callerName": message.data['callData']["callerName"] ?? "",
+            "remoteUserId": callData["callerId"].toString(),
+            "callerName": callData["callerName"] ?? "",
             "offer": null,
             "is_video": isVideo,
             "callType": "outGoing",
@@ -258,25 +260,6 @@ class firebaseNotificationServices {
           ),
         );
         CallSessionState.sessionId = callData['callId'].toString();
-      } else if (message.data['screen_name'] == "missedCall") {
-        // final callData = jsonDecode(message.data['callData']);
-        // print("ClearCallData1============${message.data}");
-        //
-        // if (Platform.isAndroid) {
-        //   print("ClearCallData============${callData['callId'].toString()}");
-        //   await ConnectycubeFlutterCallKit.reportCallEnded(
-        //     sessionId: callData['callId'].toString(),
-        //   );
-        //   await ConnectycubeFlutterCallKit.clearCallData(
-        //     sessionId: callData['callId'].toString(),
-        //   );
-        // } else {
-        //   FlutterCallkitIncoming.endCall(
-        //     message.data['sessionId'].toString(),
-        //   );
-        // }
-        //
-        // CallSessionState.reset();
       }
     }
   }

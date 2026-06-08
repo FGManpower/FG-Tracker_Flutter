@@ -63,7 +63,7 @@ class CallScreen extends StatelessWidget {
                                       color: ToggleThemeData.white),
                                   Obx(() {
                                     return controller.formattedDuration == "00:00"
-                                        ? reausabletext(
+                                        ?reausabletext(
                                       "${controller.callStatus.value}...",
                                       color: ToggleThemeData.white,
                                       fontsize: 14,

@@ -10,7 +10,6 @@ import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/util/CallUtils.dart';
 import 'package:fgtracker/app/Core/util/configureAudioSession.dart';
 import 'package:fgtracker/app/Data/Services/Walkie-Talkie-Service.dart';
-import 'package:fgtracker/app/Data/Services/call_recover_services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -24,6 +23,7 @@ import 'app/Core/global/global_notification_handler.dart';
 import 'app/Core/util/callkit_service.dart';
 import 'app/Core/values/Context_Utility.dart';
 import 'app/Core/values/global.dart';
+import 'app/Data/Repositories/call_repo.dart';
 import 'app/Data/Services/NotificationServices.dart';
 import 'app/Data/Services/SignallingService.dart';
 import 'app/modules/Notification/Controller/cubit/notification_count_cubit.dart';
@@ -66,9 +66,19 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
       });
     }
 
+    try {
+      final isActive =
+      await CallRepo().isCallActive(callData['callId'].toString());
+
+      if (!isActive) {
+        print("Call already missed/rejected/ended");
+        return;
+      }
+
     if (Platform.isIOS) {
       CallUtils.instance.showIncomingCall(data: callMap);
     } else {
+      print("======UserInfoDetail===========$userInfo");
       await ConnectycubeFlutterCallKit.showCallNotification(
         CallEvent(
           sessionId: callData['callId'].toString(),
@@ -80,6 +90,44 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
         ),
       );
     }
+
+    } catch (e) {
+      print("==========InitiateCallBack5");
+      print(e.toString());
+    }
+    //  try {
+    //    print("==========InitiateCallBack");
+    //   var result = await CallRepo.callDetailData(callData['callId'].toString());
+    //   if (result.status == true) {
+    //     print("==========InitiateCallBack1");
+    //     log(result.message.toString());
+    //     if(result.callDetail?.status=="missed" || result.callDetail?.status=="rejected"){
+    //       print("==========InitiateCallBack2");
+    //     }else{
+    //       if (Platform.isIOS) {
+    //         CallUtils.instance.showIncomingCall(data: callMap);
+    //       } else {
+    //         await ConnectycubeFlutterCallKit.showCallNotification(
+    //           CallEvent(
+    //             sessionId: callData['callId'].toString(),
+    //             callerName: callData['callerName'],
+    //             callType: callData['isVideo'] == true ? 1 : 0,
+    //             opponentsIds: {int.parse(callData['callerId'])},
+    //             callerId: int.parse(callData['callerId']),
+    //             userInfo: userInfo,
+    //           ),
+    //         );
+    //       }
+    //     }
+    //     print("==========InitiateCallBack3");
+    //   } else {
+    //     print("==========InitiateCallBack4");
+    //     log(result.message.toString());
+    //   }
+    // } catch (e) {
+    //    print("==========InitiateCallBack5");
+    //    print(e.toString());
+    // }
   } else if (message.data['screen_name'] == 'walkie') {
     var param = {"fromUserId": message.data['fromUserId']};
     // if (Platform.isIOS) {
@@ -178,7 +226,7 @@ Future<void> main() async {
   if (Platform.isIOS) {
     CallUtils.instance.listenCallKitEvents();
   }
-  await CallRecoveryService.instance.checkCallOnLaunch();
+
   // WalkieUtils().listenWalkieEvents();
   runApp(const MyApp());
 }

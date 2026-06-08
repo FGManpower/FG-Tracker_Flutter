@@ -42,6 +42,10 @@ class ModalImage {
     }
   }
 
+
+
+
+
   Future<void> callCamera(BuildContext context,{String? type}) async {
     try {
       XFile? image = await picker.pickImage(source: ImageSource.camera);

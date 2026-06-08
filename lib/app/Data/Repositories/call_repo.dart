@@ -1,0 +1,53 @@
+import 'package:fgtracker/app/Core/util/http/http_util.dart';
+import 'package:fgtracker/app/Core/values/global.dart';
+import 'package:fgtracker/app/Model/CommonRes.dart';
+import 'package:fgtracker/app/Model/GroupRes.dart';
+import 'package:fgtracker/app/Model/MemberDataRes.dart';
+import 'package:fgtracker/app/Model/callDetailRes.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../Core/constant/const_res.dart' show ConstRes;
+import '../../Core/constant/pref_res.dart';
+class CallRepo {
+  static Future<callDetailRes> callDetailData(String callId) async {
+    var response = await HttpUtil().get("/getCallDetail?callId=$callId");
+    return callDetailRes.fromJson(response);
+  }
+
+
+
+  Future<bool> isCallActive(String callId) async {
+    try {
+      var pref = await SharedPreferences.getInstance();
+
+      final token = pref.get(PrefConst.STORAGE_USER_TOKEN_KEY);
+      final response = await http.get(
+        Uri.parse(
+          '${ConstRes.aBaseUrl}/getCallDetail?callId=$callId',
+        ),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ${token}',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        print("========REsponseData======${data}");
+
+        final status =
+        data['callDetail']?['status']?.toString().toLowerCase();
+
+        return !(status == 'missed' ||
+            status == 'rejected' ||
+            status == 'ended');
+      }
+    } catch (e) {
+      print("Call Status Check Error => $e");
+    }
+
+    return false;
+  }
+}

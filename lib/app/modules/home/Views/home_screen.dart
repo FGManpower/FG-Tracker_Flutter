@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:fgtracker/app/Core/deep_Link/uniservices.dart';
+import 'package:fgtracker/app/Core/global/global_notification_handler.dart';
 import 'package:fgtracker/app/Core/theme/AppText.dart';
 import 'package:fgtracker/app/Data/Services/NotificationServices.dart';
 import 'package:fgtracker/app/Data/Services/PermissionGuard.dart';
@@ -21,6 +22,8 @@ import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:upgrader/upgrader.dart';
+
 
 import '../../../../gen/assets.gen.dart';
 import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
@@ -71,35 +74,12 @@ class _HomeScreenState extends State<HomeScreen> {
     );
     final settings = await FirebaseMessaging.instance.requestPermission();
 
-    final permissions = [
-      Permission.camera,
-      Permission.microphone,
-      Permission.audio,
-      Permission.photos,
-      Permission.contacts,
-    ];
 
-    Map<Permission, PermissionStatus> statuses = await permissions.request();
-
-    statuses.forEach((permission, status) {});
     await controller.getProfileData();
     await groupController.getGroupData();
   }
 
-  // Future<void> checkActiveCallOnStart() async {
-  //   final calls = await FlutterCallkitIncoming.activeCalls();
-  //
-  //   if (calls is List && calls.isNotEmpty) {
-  //     final callData = calls[0];
-  //
-  //     CallSessionState.isCallActive = true;
-  //     CallSessionState.launchedFromCall = true;
-  //
-  //     final extra = decomPress().extractExtra(callData);
-  //
-  //     CallUtils.instance.navigateToCallScreen(extra);
-  //   }
-  // }
+
 
   @override
   void dispose() {
@@ -115,119 +95,121 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      key: _scaffoldKey,
-      drawer: Sidemenu(scaffoldKey: _scaffoldKey),
-      appBar: HomeAppBar(
-        scaffoldKey: _scaffoldKey,
-        controller: controller,
-      ),
-      body: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 12.w),
-        child: ListView(
-          children: [
-            headerUi(controller),
-            BannerUi(),
-            Padding(
-              padding: EdgeInsets.only(left: 5.w, top: 10.h, bottom: 10.h),
-              child: reausabletext(
-                "Newly Created Group",
-                // "Newly Created Group",
-                fontfamily: FontFamily.interSemiBold,
-                fontsize: 18,
-              ),
-            ),
-            Obx(() {
-              if (groupController.responseError.value.isNotEmpty) {
-                return LostinternetConnection(
-                  retry: groupController.getGroupData,
-                  messgae: groupController.responseError.value.toString(),
-                );
-              } else if (groupController.groupDataLoading.value) {
-                return NewlyGroupUi(
-                  isLoading: true,
-                  groupController: groupController,
-                );
-              } else if (groupController.newlyCreatedGroups.isEmpty) {
-                return Center(
-                  child: reausabletext(
-                    AppText.youHaventJoindOrCreatedGroup,
-                    align: TextAlign.center,
-                    color: Colors.grey[600],
-                    fontsize: 14,
-                  ),
-                );
-              } else {
-                return NewlyGroupUi(
-                  groupData: groupController.newlyCreatedGroups,
-                  isLoading: false,
-                  groupController: groupController,
-                );
-              }
-            }),
-            Padding(
-              padding: EdgeInsets.only(left: 5.w, top: 15.h),
-              child: reausabletext(
-                "Created Group",
-                fontfamily: FontFamily.interSemiBold,
-                fontsize: 18,
-              ),
-            ),
-            Obx(() {
-              return groupController.createdGroups.isEmpty
-                  ? Center(
-                      child: DataEmpty(
-                        imgname: Assets.images.notFount.path,
-                        type: "png",
-                      ),
-                    )
-                  : CreatedGroupUi(
-                      groupData: groupController.createdGroups,
-                      isLoading: false,
-                      groupController: groupController,
-                    );
-            }),
-          ],
+    return UpgradeAlert(
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        key: _scaffoldKey,
+        drawer: Sidemenu(scaffoldKey: _scaffoldKey),
+        appBar: HomeAppBar(
+          scaffoldKey: _scaffoldKey,
+          controller: controller,
         ),
-      ),
-      bottomNavigationBar: BottomAppBar(
-        color: Colors.white,
-        child: Row(
-          children: [
-            Expanded(
-              child: reausablebutton(
-                title: AppText.joinGroup,
-                icon: Icons.group,
-                fontSize: 12,
-                borderradiues: 50,
-                height: 55,
-                ontap: () {
-                  DialogBox().showQRScanOptions(
-                    context,
-                    controller: joinGroupController,
+        body: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 12.w),
+          child: ListView(
+            children: [
+              headerUi(controller),
+              BannerUi(),
+              Padding(
+                padding: EdgeInsets.only(left: 5.w, top: 10.h, bottom: 10.h),
+                child: reausabletext(
+                  "Newly Created Group",
+                  // "Newly Created Group",
+                  fontfamily: FontFamily.interSemiBold,
+                  fontsize: 18,
+                ),
+              ),
+              Obx(() {
+                if (groupController.responseError.value.isNotEmpty) {
+                  return LostinternetConnection(
+                    retry: groupController.getGroupData,
+                    messgae: groupController.responseError.value.toString(),
+                  );
+                } else if (groupController.groupDataLoading.value) {
+                  return NewlyGroupUi(
+                    isLoading: true,
                     groupController: groupController,
                   );
-                },
-              ),
-            ),
-            SizedBox(width: 40.w),
-            Expanded(
-              child: reausablebutton(
-                title: AppText.createGroup,
-                icon: Icons.group_add,
-                fontSize: 12,
-                borderradiues: 50,
-                height: 55,
-                ontap: () {
-                  DialogBox().showCreateGroupBottomSheet(
-                    context: context,
-                    controller: groupController,
+                } else if (groupController.newlyCreatedGroups.isEmpty) {
+                  return Center(
+                    child: reausabletext(
+                      AppText.youHaventJoindOrCreatedGroup,
+                      align: TextAlign.center,
+                      color: Colors.grey[600],
+                      fontsize: 14,
+                    ),
                   );
-                },
+                } else {
+                  return NewlyGroupUi(
+                    groupData: groupController.newlyCreatedGroups,
+                    isLoading: false,
+                    groupController: groupController,
+                  );
+                }
+              }),
+              Padding(
+                padding: EdgeInsets.only(left: 5.w, top: 15.h),
+                child: reausabletext(
+                  "Created Group",
+                  fontfamily: FontFamily.interSemiBold,
+                  fontsize: 18,
+                ),
               ),
-            ),
-          ],
+              Obx(() {
+                return groupController.createdGroups.isEmpty
+                    ? Center(
+                        child: DataEmpty(
+                          imgname: Assets.images.notFount.path,
+                          type: "png",
+                        ),
+                      )
+                    : CreatedGroupUi(
+                        groupData: groupController.createdGroups,
+                        isLoading: false,
+                        groupController: groupController,
+                      );
+              }),
+            ],
+          ),
+        ),
+        bottomNavigationBar: BottomAppBar(
+          color: Colors.white,
+          child: Row(
+            children: [
+              Expanded(
+                child: reausablebutton(
+                  title: AppText.joinGroup,
+                  icon: Icons.group,
+                  fontSize: 12,
+                  borderradiues: 50,
+                  height: 55,
+                  ontap: () {
+                    DialogBox().showQRScanOptions(
+                      context,
+                      controller: joinGroupController,
+                      groupController: groupController,
+                    );
+                  },
+                ),
+              ),
+              SizedBox(width: 40.w),
+              Expanded(
+                child: reausablebutton(
+                  title: AppText.createGroup,
+                  icon: Icons.group_add,
+                  fontSize: 12,
+                  borderradiues: 50,
+                  height: 55,
+                  ontap: () {
+                    DialogBox().showCreateGroupBottomSheet(
+                      context: context,
+                      controller: groupController,
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
