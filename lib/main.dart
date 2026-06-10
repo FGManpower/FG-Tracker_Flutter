@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
+import 'dart:ui';
 import 'package:android_intent_plus/android_intent.dart';
 import 'package:connectycube_flutter_call_kit/connectycube_flutter_call_kit.dart';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
@@ -12,13 +13,17 @@ import 'package:fgtracker/app/Core/util/configureAudioSession.dart';
 import 'package:fgtracker/app/Data/Services/Walkie-Talkie-Service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:location/location.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:socket_io_client/socket_io_client.dart';
+import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'app/Core/global/global_notification_handler.dart';
 import 'app/Core/util/callkit_service.dart';
 import 'app/Core/values/Context_Utility.dart';
@@ -159,6 +164,126 @@ void onNotificationResponse(NotificationResponse response) async {
   NotificationHolder.pendingResponse = response;
 }
 
+
+// Future<void> initializeService() async {
+//   final service = FlutterBackgroundService();
+//
+//   await service.configure(
+//     iosConfiguration: IosConfiguration(
+//       autoStart: true,
+//       onForeground: onStart,
+//       onBackground: onIosBackground,
+//     ),
+//     androidConfiguration: AndroidConfiguration(
+//       autoStart: true,
+//       autoStartOnBoot: true,
+//       isForegroundMode: true,
+//       foregroundServiceNotificationId: 888,
+//       foregroundServiceTypes: [
+//         AndroidForegroundType.location,
+//       ],
+//       onStart: onStart,
+//     ),
+//   );
+//
+//   service.startService();
+// }
+//
+// @pragma('vm:entry-point')
+// Future<bool> onIosBackground(ServiceInstance service) async {
+//   WidgetsFlutterBinding.ensureInitialized();
+//   return true;
+// }
+//
+// @pragma('vm:entry-point')
+// void onStart(ServiceInstance service) async {
+//   WidgetsFlutterBinding.ensureInitialized();
+//
+//   if (service is AndroidServiceInstance) {
+//     service.setForegroundNotificationInfo(
+//       title: "FG Tracker",
+//       content: "Sharing live location",
+//     );
+//   }
+//
+//   final location = Location();
+//
+//   bool serviceEnabled = await location.serviceEnabled();
+//   if (!serviceEnabled) {
+//     serviceEnabled = await location.requestService();
+//     if (!serviceEnabled) {
+//       return;
+//     }
+//   }
+//
+//   PermissionStatus permission =
+//   await location.hasPermission();
+//
+//   if (permission == PermissionStatus.denied) {
+//     permission = await location.requestPermission();
+//
+//     if (permission != PermissionStatus.granted) {
+//       return;
+//     }
+//   }
+//
+//   await location.enableBackgroundMode(enable: true);
+//
+//   final socket = IO.io(
+//     "http://fgtracker.in:3000/location",
+//     IO.OptionBuilder()
+//         .setTransports(['websocket'])
+//         .enableAutoConnect()
+//         .build(),
+//   );
+//
+//   socket.connect();
+//
+//   socket.onConnect((_) {
+//     debugPrint("Socket Connected");
+//   });
+//
+//   socket.onDisconnect((_) {
+//     debugPrint("Socket Disconnected");
+//   });
+//
+//   service.on("stop").listen((event) {
+//     socket.dispose();
+//     service.stopSelf();
+//   });
+//
+//   Timer.periodic(
+//     const Duration(seconds: 10),
+//         (timer) async {
+//
+//
+//       try {
+//         final currentLocation =
+//         await location.getLocation();
+//
+//         final pref = await SharedPreferences.getInstance();
+//         final userId = pref.get("userId");
+//         final groupId = "GROUP_ID";
+//
+//         socket.emit("send-location", {
+//           "userId": userId,
+//           "groupId": groupId,
+//           "lat": currentLocation.latitude,
+//           "lng": currentLocation.longitude,
+//         });
+//
+//         debugPrint(
+//           "Location Sent: ${currentLocation.latitude}, ${currentLocation.longitude}",
+//         );
+//       } catch (e) {
+//         debugPrint("Location Error: $e");
+//       }
+//     },
+//   );
+// }
+
+
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
@@ -167,6 +292,7 @@ Future<void> main() async {
   FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 
   await firebaseNotificationServices().initialized();
+  // await initializeService();
   CallKitService.instance.init();
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(statusBarColor: Colors.transparent),

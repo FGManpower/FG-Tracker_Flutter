@@ -101,6 +101,7 @@ class SocketService extends GetxService {
   }
 
 
+
   void onUserLeft(Function(String userId) callback) {
     _socket?.on("user-left", (data) {
       callback(data["userId"]);

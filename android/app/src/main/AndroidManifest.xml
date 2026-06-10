@@ -14,6 +14,7 @@
         tools:targetApi="eclair" />
 
 
+
     <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
@@ -37,6 +38,7 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_PHONE_CALL" />
     <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+
 
 
     <application
@@ -138,6 +140,13 @@
             android:name="com.connectycube.flutter.calls.CallService"
             android:exported="false"
             android:foregroundServiceType="phoneCall" />
+
+        <!--Add this-->
+        <service
+            android:name="id.flutter.flutter_background_service.BackgroundService"
+            android:foregroundServiceType="WhatForegroundServiceTypeDoYouWant"
+            />
+        <!--end-->
 
     </application>
 

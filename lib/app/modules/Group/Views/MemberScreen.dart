@@ -310,8 +310,6 @@ class MemberscreenScreen extends GetView<MemberController> {
                         child: InkWell(
                           borderRadius: BorderRadius.circular(16.r),
                           onTap: () {
-                            print("MemberScreen Args => ${controller.arguments}");
-                            print("Opening QR => ${controller.arguments!['groupCode']}");
                             Get.toNamed(
                               Routes.QrCodeScreen,
                               arguments: {
@@ -363,6 +361,7 @@ class MemberscreenScreen extends GetView<MemberController> {
                                 Icon(
                                   Icons.qr_code,
                                   color: ToggleThemeData.darkPurple,
+                                  size: 25.sp,
                                 ),
                               ],
                             ),
