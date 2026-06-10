@@ -2,6 +2,7 @@ import 'package:fgtracker/app/Core/values/Dialog/Common_dialog.dart';
 import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/Core/values/loading.dart';
 import 'package:fgtracker/app/Data/Repositories/GroupRepo.dart';
+import 'package:fgtracker/app/Model/user_profileList_res.dart';
 import 'package:fgtracker/app/modules/Group/controller/MemberController.dart';
 import 'package:fgtracker/app/modules/Track/Controller/TrackController.dart';
 import 'package:fgtracker/app/Model/GroupRes.dart';
@@ -20,6 +21,8 @@ class GroupController extends GetxController {
   var newlyCreatedGroups = <GroupsResData>[].obs;
   var createdGroups = <GroupsResData>[].obs;
   var responseError = "".obs;
+
+
 
   Future<void> decodeQRCodeFromGallery() async {
     final picker = ImagePicker();
@@ -175,4 +178,7 @@ class GroupController extends GetxController {
       CommonDialog.errorMessage(e.toString());
     }
   }
+
+
+
 }

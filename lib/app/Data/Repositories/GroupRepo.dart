@@ -2,6 +2,7 @@ import 'package:fgtracker/app/Core/util/http/http_util.dart';
 import 'package:fgtracker/app/Model/CommonRes.dart';
 import 'package:fgtracker/app/Model/GroupRes.dart';
 import 'package:fgtracker/app/Model/MemberDataRes.dart';
+import 'package:fgtracker/app/Model/user_profileList_res.dart';
 
 class GroupRepo{
   static Future<CommonResponse> createGroup(dynamic data) async {
@@ -17,6 +18,12 @@ class GroupRepo{
   static Future<GroupRes> getGroupData() async {
     var response = await HttpUtil().get("/getGroup");
     return GroupRes.fromJson(response);
+  }
+
+
+  static Future<UserProfileListRes> getAllUserData() async {
+    var response = await HttpUtil().get("/getAllUser");
+    return UserProfileListRes.fromJson(response);
   }
 
 

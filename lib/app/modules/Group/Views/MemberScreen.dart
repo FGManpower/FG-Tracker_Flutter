@@ -1,8 +1,10 @@
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/theme/AppText.dart';
+import 'package:fgtracker/app/Core/values/BottomSheets/userSheet_Ui.dart';
 import 'package:fgtracker/app/Core/values/Dialog/Common_dialog.dart';
 import 'package:fgtracker/app/Core/values/LiquidPullToRefresh_Indicatore.dart';
+import 'package:fgtracker/app/Core/values/colors.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Core/values/utility.dart';
 import 'package:fgtracker/app/Model/MemberDataRes.dart';
@@ -197,19 +199,20 @@ class MemberscreenScreen extends GetView<MemberController> {
                       Expanded(
                           child: reausablebutton(
                               title: "Group Message",
-                              icon:Icons.mark_chat_unread_rounded,
+                              icon: Icons.mark_chat_unread_rounded,
                               fontSize: 12,
                               borderradiues: 50,
                               ontap: () {
                                 Get.toNamed(
                                   Routes.groupChatScreen,
                                   arguments: {
-                                    "groupId": int.parse(controller.arguments!['groupId'].toString())
+                                    "groupId": int.parse(controller
+                                            .arguments!['groupId']
+                                            .toString())
                                         .toString(),
                                     "groupName":
                                         controller.arguments!['groupName'],
                                     "groupImage": "",
-
                                   },
                                 );
                               },
@@ -300,7 +303,6 @@ class MemberscreenScreen extends GetView<MemberController> {
               SliverList(
                 delegate: SliverChildBuilderDelegate(
                   (context, index) {
-
                     if (index == controller.filteredMembers.length) {
                       return Padding(
                         padding: EdgeInsets.symmetric(
@@ -313,8 +315,8 @@ class MemberscreenScreen extends GetView<MemberController> {
                             Get.toNamed(
                               Routes.QrCodeScreen,
                               arguments: {
-                                "groupCode":
-                                controller.arguments!["groupCode"].toString(),
+                                "groupCode": controller.arguments!["groupCode"]
+                                    .toString(),
                               },
                             );
                           },
@@ -338,7 +340,7 @@ class MemberscreenScreen extends GetView<MemberController> {
                                 Expanded(
                                   child: Column(
                                     crossAxisAlignment:
-                                    CrossAxisAlignment.start,
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         "Add Member",
@@ -543,6 +545,17 @@ class MemberscreenScreen extends GetView<MemberController> {
                 ),
               ),
           ],
+        ),
+        floatingActionButton: InkWell(
+          onTap: () {
+            UserSheetUi().showAllUserBottomSheet(context);
+          },
+          child: CircleAvatar(
+            radius: 25.sp,
+            backgroundColor: AppColors.primaryDarkblue,
+            child: reausableIcon(
+                icon: Icons.add, size: 26, color: AppColors.white),
+          ),
         ),
       ),
     );
