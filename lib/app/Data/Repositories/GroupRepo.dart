@@ -34,8 +34,8 @@ class GroupRepo{
   }
 
 
-  static Future<CommonResponse> joinGroup(dynamic data) async {
-    var response = await HttpUtil().Authpost("/joinGroup",data: data);
+  static Future<CommonResponse> joinGroup(dynamic data,{String url = "joinGroup"}) async {
+    var response = await HttpUtil().Authpost("/${url}",data: data);
     return CommonResponse.fromJson(response);
   }
 

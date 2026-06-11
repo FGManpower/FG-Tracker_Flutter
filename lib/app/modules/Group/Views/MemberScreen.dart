@@ -11,6 +11,7 @@ import 'package:fgtracker/app/Model/MemberDataRes.dart';
 import 'package:fgtracker/app/config/themes_data.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/modules/Group/controller/MemberController.dart';
+import 'package:fgtracker/app/modules/Group/controller/search_controller.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:fgtracker/app/widgets/MobileNumberView.dart';
 import 'package:fgtracker/gen/assets.gen.dart';
@@ -373,16 +374,22 @@ class MemberscreenScreen extends GetView<MemberController> {
                     }
                     final data = controller.filteredMembers[index];
 
-                    bool isOnline = (data.isOnline == true) ||
-                        (data.lastSeen != null &&
-                            Tracking()
-                                    .getTimeAgo(
-                                      DateTime.parse(
-                                        data.lastSeen!,
-                                      ),
-                                    )
-                                    .toLowerCase() ==
-                                "just now");
+                    bool isOnline = data.isOnline == true;
+
+                    if (!isOnline &&
+                        data.lastSeen != null &&
+                        data.lastSeen!.isNotEmpty) {
+                      try {
+                        isOnline = Tracking()
+                            .getTimeAgo(
+                          DateTime.parse(data.lastSeen!),
+                        )
+                            .toLowerCase() ==
+                            "just now";
+                      } catch (_) {
+                        isOnline = false;
+                      }
+                    }
 
                     return GestureDetector(
                       onTap: () {
@@ -400,6 +407,7 @@ class MemberscreenScreen extends GetView<MemberController> {
                             },
                           );
                         }
+
                       },
                       child: Column(
                         children: [
@@ -547,8 +555,17 @@ class MemberscreenScreen extends GetView<MemberController> {
           ],
         ),
         floatingActionButton: InkWell(
-          onTap: () {
-            UserSheetUi().showAllUserBottomSheet(context);
+          onTap: () async {
+            var result = await UserSheetUi().showAllUserBottomSheet(context);
+            if (result != null) {
+              SearchUserController().joinGroup(context,
+                  controller: controller,
+                  groupCode: controller.arguments!['groupCode'].toString(),
+              groupId:controller.arguments!["groupId"]
+                  .toString(),
+              userId: result.userId.toString(),
+              );
+            }
           },
           child: CircleAvatar(
             radius: 25.sp,
