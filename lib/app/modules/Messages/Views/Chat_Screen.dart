@@ -151,6 +151,7 @@ class ChatScreen extends GetView<MessageController> {
               ChatInputArea(
                 messageText: controller.messageText,
                 imagePath: controller.imagePath,
+                videoPath: controller.videoPath,
                 isSending: controller.isSending,
                 textController: _controller,
                 scrollController: controller.scrollController,
@@ -163,7 +164,16 @@ class ChatScreen extends GetView<MessageController> {
                     controller.uploadAudio(voicePath);
                   }
                 },
+                onvideoSelected: (path) {
+                  Navigator.pop(context);
+                  if (Utility.isNotNullEmptyOrFalse(path)) {
+                    controller.videoPath.value = path;
+                    controller.isSending.value=true;
+                    // controller.uploadVideo(path);
+                  }
+                },
               ),
+
             ],
           ),
         ),

@@ -5,7 +5,6 @@ import '../../../global_widget/common_widget.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:get/get.dart';
 
-
 class ChatBottomSheet {
   static Future<void> showCallOptions(
     BuildContext context, {
@@ -77,6 +76,118 @@ class ChatBottomSheet {
           },
         );
       },
+    );
+  }
+
+  static Future<void> showFileOptions(
+    BuildContext context, {
+    required VoidCallback onGallery,
+    required VoidCallback onVideo,
+    required VoidCallback onDocument,
+    required VoidCallback onContact,
+  }) async {
+    return showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) {
+        return DraggableScrollableSheet(
+          initialChildSize: 0.33,
+          maxChildSize: 0.45,
+          minChildSize: 0.25,
+          builder: (_, controller) {
+            return Container(
+              padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 14.h),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 40.w,
+                      height: 5.h,
+                      margin: EdgeInsets.only(bottom: 10.h),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade300,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
+                  Center(
+                    child: reausabletext(
+                      "Upload File",
+                      fontsize: 18,
+                      fontfamily: FontFamily.interBold,
+                    ),
+                  ),
+                  SizedBox(height: 12.h),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      rowFile(
+                          title: "Gallery",
+                          icon: Icons.browse_gallery,
+                          iconColor: Colors.blue,
+                          onTap: onGallery),
+                      rowFile(
+                        title: "Video",
+                        icon: Icons.videocam_outlined,
+                        iconColor: Colors.purple,
+                        onTap: onVideo,
+                      ),
+                      rowFile(
+                        title: "Document",
+                        icon: Icons.file_copy_outlined,
+                        iconColor: Colors.deepPurple,
+                        onTap: onDocument,
+                      ),
+                      rowFile(
+                        title: "Contact",
+                        icon: Icons.person,
+                        iconColor: Colors.grey,
+                        onTap: onContact,
+                      ),
+                    ],
+                  )
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  static Widget rowFile(
+      {required String title,
+      required IconData icon,
+      Color iconColor = Colors.black,
+      required GestureTapCallback onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(25.r),
+                border: Border.all(color: Colors.grey.shade300)),
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 7.h),
+              child: reausableIcon(icon: icon, size: 20, color: iconColor),
+            ),
+          ),
+          SizedBox(
+            height: 4.h,
+          ),
+          reausabletext(title, color: Colors.black, fontsize: 14),
+        ],
+      ),
     );
   }
 

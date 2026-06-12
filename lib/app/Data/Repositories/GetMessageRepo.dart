@@ -65,6 +65,23 @@ class MessageRepo {
     return ChatImageUploadResponse.fromJson(response);
   }
 
+
+  static Future<ChatImageUploadResponse> uploadChatVideo(
+      String audioPath) async {
+    FormData data = FormData.fromMap({
+      "chatVideo": await MultipartFile.fromFile(
+        audioPath,
+        filename: audioPath.split('/').last,
+        contentType: MediaType('video', 'm4a'),
+      )
+    });
+
+    var response = await HttpUtil()
+        .Authpost("/uploadVideo", formdata: data, type: "formdata");
+
+    return ChatImageUploadResponse.fromJson(response);
+  }
+
   static Future<LocationDataRes> getGroupMembers({
     required int groupId,
   }) async {

@@ -19,6 +19,7 @@ class MessageController extends GetxController {
 
   RxList<MessageData> messageData = <MessageData>[].obs;
   RxString imagePath = "".obs;
+  RxString videoPath = "".obs;
   RxBool isSending = false.obs;
   RxString messageText = "".obs;
 
@@ -153,6 +154,20 @@ class MessageController extends GetxController {
     if (result.status == true) {
       socketService.sendMessage(
         messageType: "audio",
+        receiverId: memberData.userId.toString(),
+        groupId: memberData.groupId!,
+        content: result.filename!,
+      );
+    }
+  }
+
+  Future<void> uploadVideo(String path) async {
+
+    var result = await MessageRepo.uploadChatAudio(path);
+
+    if (result.status == true) {
+      socketService.sendMessage(
+        messageType: "video",
         receiverId: memberData.userId.toString(),
         groupId: memberData.groupId!,
         content: result.filename!,

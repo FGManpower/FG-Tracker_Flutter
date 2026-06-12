@@ -5,8 +5,6 @@ import 'package:fgtracker/app/Data/Repositories/GroupRepo.dart';
 import 'package:fgtracker/app/Data/Services/LocationPermission.dart';
 import 'package:fgtracker/app/Data/Services/contact_services.dart';
 import 'package:fgtracker/app/Model/user_profileList_res.dart';
-import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
-import 'package:fgtracker/app/modules/Group/controller/MemberController.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:location/location.dart';
@@ -16,12 +14,9 @@ class SearchUserController extends GetxController {
 
   RxBool contactLoading = false.obs;
   RxBool isSearching = false.obs;
-
   var allUserProfileData = <UserListData>[].obs;
   var filteredUsers = <UserListData>[].obs;
-
   var responseError = "".obs;
-
   TextEditingController searchValues = TextEditingController();
 
   @override
@@ -35,7 +30,6 @@ class SearchUserController extends GetxController {
       contactLoading.value = true;
       responseError.value = "";
 
-
       final contactNumbers = await _contactService.getMobileNumbers();
 
       if (contactNumbers.isEmpty) {
@@ -44,7 +38,6 @@ class SearchUserController extends GetxController {
         responseError.value = "No contacts found";
         return;
       }
-
 
       final result = await GroupRepo.getAllUserData();
 
@@ -69,13 +62,10 @@ class SearchUserController extends GetxController {
             );
           }
 
-
           return contactNumberSet.contains(mobileNo);
         }).toList();
 
-
         allUserProfileData.value = matchedUsers;
-
 
         filteredUsers.value = matchedUsers;
       } else {
@@ -99,7 +89,6 @@ class SearchUserController extends GetxController {
     filteredUsers.value = allUserProfileData.where((user) {
       final name = (user.name ?? '').toLowerCase();
 
-
       final mobile = (user.mobileNo ?? '').toLowerCase();
 
       return name.contains(value) || mobile.contains(value);
@@ -117,9 +106,7 @@ class SearchUserController extends GetxController {
 
   Future<bool> joinGroup(
     BuildContext context, {
-    required MemberController controller,
     required String groupCode,
-    required String groupId,
     required String userId,
     bool validateForm = true,
     String? type,
@@ -149,12 +136,11 @@ class SearchUserController extends GetxController {
         "groupCode": groupCode,
         "userId": userId,
       };
-      final result = await GroupRepo.joinGroup(url: "joingGroupMember",param);
+      final result = await GroupRepo.joinGroup(url: "joingGroupMember", param);
       Loading().dismissloading();
 
       if (result.status == true) {
         Utils().fluttertoast(result.message.toString());
-        controller.getMembersData(groupId);
 
         return true;
       } else {
@@ -167,4 +153,5 @@ class SearchUserController extends GetxController {
       return false;
     }
   }
+
 }

@@ -1,7 +1,9 @@
 import 'dart:io';
 
+import 'package:fgtracker/app/Core/constant/BottomSheet/ChatBottomSheet.dart';
 import 'package:fgtracker/app/Core/values/bottomSheet.dart';
 import 'package:fgtracker/app/Core/values/utility.dart';
+import 'package:fgtracker/app/Data/Services/file_services.dart';
 import 'package:fgtracker/app/config/themes_data.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/modules/Messages/Controller/VoiceRecordController.dart';
@@ -9,29 +11,32 @@ import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import 'package:waveform_flutter/waveform_flutter.dart';
 import 'message_Widgets.dart';
 
 class ChatInputArea extends StatelessWidget {
   final RxString messageText;
   final RxString imagePath;
+  final RxString videoPath;
   final RxBool isSending;
   final TextEditingController textController;
   final ScrollController scrollController;
   final VoidCallback onSend;
   void Function(String)? onVoiceSend;
   final Function(String path) onImageSelected;
+  final Function(String path) onvideoSelected;
 
   ChatInputArea(
       {Key? key,
       required this.messageText,
       required this.imagePath,
+      required this.videoPath,
       required this.isSending,
       required this.textController,
       required this.scrollController,
       required this.onSend,
       required this.onImageSelected,
+      required this.onvideoSelected,
       required this.onVoiceSend})
       : super(key: key);
 
@@ -45,6 +50,7 @@ class ChatInputArea extends StatelessWidget {
 
         final isMessageNotEmpty = messageText.value.trim().isNotEmpty;
         final isImageSelected = imagePath.value.isNotEmpty;
+        final isVideoSelected = videoPath.value.isNotEmpty;
         final shouldShowSend = isMessageNotEmpty || isImageSelected;
 
         return Column(
@@ -74,6 +80,81 @@ class ChatInputArea extends StatelessWidget {
                         ),
                       ),
                     )
+                  ],
+                ),
+              ),
+            if (isVideoSelected!)
+              Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: 12.w,
+                  vertical: 6.h,
+                ),
+                child: Stack(
+                  children: [
+                    Container(
+                      width: 250.w,
+                      height: 180.h,
+                      decoration: BoxDecoration(
+                        color: Colors.black87,
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          CircleAvatar(
+                            radius: 28.r,
+                            backgroundColor: Colors.white24,
+                            child: Icon(
+                              Icons.play_arrow_rounded,
+                              color: Colors.white,
+                              size: 35.sp,
+                            ),
+                          ),
+                          SizedBox(height: 10.h),
+                          Text(
+                            "Video Selected",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 14.sp,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          SizedBox(height: 4.h),
+                          Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 15.w),
+                            child: Text(
+                              videoPath.value.split('/').last,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: Colors.white70,
+                                fontSize: 12.sp,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Positioned(
+                      right: 8.w,
+                      top: 8.h,
+                      child: GestureDetector(
+                        onTap: () {
+                          videoPath.value = '';
+                          // isVideoSelected = false;
+                          // update();
+                        },
+                        child: CircleAvatar(
+                          radius: 14.r,
+                          backgroundColor: Colors.black54,
+                          child: Icon(
+                            Icons.close,
+                            size: 16.sp,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -205,33 +286,50 @@ class ChatInputArea extends StatelessWidget {
                                   borderSide: BorderSide.none,
                                 ),
                                 suffixIcon: Padding(
-                                  padding: EdgeInsets.all(3.r),
-                                  child: GestureDetector(
-                                    onTap: () {
-
-                                      ModalImage bottomNavbar = ModalImage(
-                                        isImageCroppable: false,
-                                        onImageSelect: (path) async {
-                                          print("OnImagesSelect========>${path}");
-                                          if (Utility.isNotNullEmptyOrFalse(path)) {
-                                            onImageSelected(path);
-                                            print("OnImagesSelect========>${path}");
-                                            Navigator.pop(context);
-                                          }
-                                        },
-                                      );
-                                      bottomNavbar.mainBottomSheet(context);
-                                    },
-                                    child: CircleAvatar(
-                                    backgroundColor: ToggleThemeData.white,
-                                    radius: 16,
-                                    child: reausableIcon(
-                                        icon: Icons.image_outlined,
-                                        color: ToggleThemeData.Appcolor,
-                                        size: 25),
-                                  ),)
-
-                                ),
+                                    padding: EdgeInsets.all(3.r),
+                                    child: GestureDetector(
+                                      onTap: () {
+                                        ChatBottomSheet.showFileOptions(
+                                          context,
+                                          onGallery: () {
+                                            ModalImage bottomNavbar =
+                                                ModalImage(
+                                              isImageCroppable: false,
+                                              onImageSelect: (path) async {
+                                                print("OnImagesSelect========>${path}");
+                                                if (Utility
+                                                    .isNotNullEmptyOrFalse(
+                                                        path)) {
+                                                  Navigator.pop(context);
+                                                  onImageSelected(path);
+                                                  print("OnImagesSelect========>${path}");
+                                                  Navigator.pop(context);
+                                                }
+                                              },
+                                            );
+                                            bottomNavbar
+                                                .mainBottomSheet(context);
+                                          },
+                                          onVideo: () async {
+                                            var path = await FileServices()
+                                                .pickVideoFromGallery();
+                                            print(
+                                                "===============SelectedVideoPath==========>${path?.path}");
+                                            onvideoSelected(path?.path ?? "");
+                                          },
+                                          onDocument: () {},
+                                          onContact: () {},
+                                        );
+                                      },
+                                      child: CircleAvatar(
+                                        backgroundColor: ToggleThemeData.white,
+                                        radius: 16,
+                                        child: reausableIcon(
+                                            icon: Icons.file_present_outlined,
+                                            color: ToggleThemeData.Appcolor,
+                                            size: 25),
+                                      ),
+                                    )),
                                 fillColor: ToggleThemeData.Appcolor,
                                 filled: true,
                                 contentPadding: EdgeInsets.symmetric(

@@ -82,7 +82,6 @@ class GroupMessageController extends GetxController {
 
     getGroupMessages();
 
-
     getGroupMembers();
   }
 
@@ -170,6 +169,24 @@ class GroupMessageController extends GetxController {
     }
   }
 
+  Future<void> uploadVideo(String path) async {
+    try {
+      var result = await MessageRepo.uploadChatVideo(path);
+
+      if (result.status == true) {
+        socketService.sendGroupMessage(
+          groupId: groupId,
+          content: result.filename!,
+          messageType: "video",
+        );
+      }
+    } catch (e) {
+      log(
+        "GROUP AUDIO ERROR => $e",
+      );
+    }
+  }
+
   Future<void> getGroupMessages() async {
     try {
       var result = await MessageRepo.groupMessageHistory(
@@ -191,13 +208,12 @@ class GroupMessageController extends GetxController {
       );
     }
   }
-  Future<void> getGroupMembers() async {
 
+  Future<void> getGroupMembers() async {
     print(
       "MY USER ID => ${Global.storageServices.get(PrefConst.userId)}",
     );
     try {
-
       isLoadingMembers.value = true;
 
       var result = await MessageRepo.getGroupMembers(
@@ -209,22 +225,14 @@ class GroupMessageController extends GetxController {
       );
 
       if (result.status == true) {
-
-        groupMembers.value =
-            result.locations ?? [];
-
+        groupMembers.value = result.locations ?? [];
       }
-
     } catch (e) {
-
       log(
         "GROUP MEMBERS ERROR => $e",
       );
-
     } finally {
-
       isLoadingMembers.value = false;
-
     }
   }
 

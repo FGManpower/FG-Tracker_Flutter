@@ -135,6 +135,7 @@ static String noValidQrCodeFound = "No valid QR code found.";
 static String noQrFoundCodeFound = "No QR code found in the selected image.";
 static String errorDecodingQrFromGallery = "Error decoding QR from gallery: ";
 static String enterGroupCodeManually = "Enter Group Code Manually";
+  static String joinGroupFromContacts = "Join Group from Contacts";
 static String memberInfo = "Member’s Info";
 static String member = "Member";
 static String estimatedTime = "Estimated Time: ";

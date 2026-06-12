@@ -381,10 +381,10 @@ class MemberscreenScreen extends GetView<MemberController> {
                         data.lastSeen!.isNotEmpty) {
                       try {
                         isOnline = Tracking()
-                            .getTimeAgo(
-                          DateTime.parse(data.lastSeen!),
-                        )
-                            .toLowerCase() ==
+                                .getTimeAgo(
+                                  DateTime.parse(data.lastSeen!),
+                                )
+                                .toLowerCase() ==
                             "just now";
                       } catch (_) {
                         isOnline = false;
@@ -407,7 +407,6 @@ class MemberscreenScreen extends GetView<MemberController> {
                             },
                           );
                         }
-
                       },
                       child: Column(
                         children: [
@@ -558,13 +557,15 @@ class MemberscreenScreen extends GetView<MemberController> {
           onTap: () async {
             var result = await UserSheetUi().showAllUserBottomSheet(context);
             if (result != null) {
-              SearchUserController().joinGroup(context,
-                  controller: controller,
-                  groupCode: controller.arguments!['groupCode'].toString(),
-              groupId:controller.arguments!["groupId"]
-                  .toString(),
-              userId: result.userId.toString(),
+              var success = await SearchUserController().joinGroup(
+                context,
+                groupCode: controller.arguments!['groupCode'].toString(),
+                userId: result.userId.toString(),
               );
+              if (success) {
+                controller.getMembersData(
+                    controller.arguments!["groupId"].toString());
+              }
             }
           },
           child: CircleAvatar(

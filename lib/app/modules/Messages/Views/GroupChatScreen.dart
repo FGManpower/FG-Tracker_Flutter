@@ -32,8 +32,7 @@ class GroupChatScreen extends GetView<GroupMessageController> {
             width: 28.w,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              border:
-              Border.all(color: ToggleThemeData.darkPurple, width: 2.w),
+              border: Border.all(color: ToggleThemeData.darkPurple, width: 2.w),
             ),
             child: Center(
               child: Icon(
@@ -44,7 +43,6 @@ class GroupChatScreen extends GetView<GroupMessageController> {
             ),
           ),
         ),
-
         title: GestureDetector(
           onTap: () {
             BottomSheetUi().showMemberBottomSheet(
@@ -139,6 +137,10 @@ class GroupChatScreen extends GetView<GroupMessageController> {
                 onVoiceSend: (voicePath) {
                   controller.uploadAudio(voicePath);
                 },
+                onvideoSelected: (path) {
+                  controller.uploadVideo(path);
+                },
+                videoPath: "".obs,
               ),
             ),
           ],

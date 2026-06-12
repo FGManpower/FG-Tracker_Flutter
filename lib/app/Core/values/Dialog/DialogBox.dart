@@ -1,10 +1,8 @@
 import 'dart:developer';
 import 'dart:io';
-
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/theme/appTheme.dart';
 import 'package:fgtracker/app/Core/util/validator.dart';
-import 'package:fgtracker/app/Core/values/Context_Utility.dart';
 import 'package:fgtracker/app/Core/values/bottomSheet.dart';
 import 'package:fgtracker/app/Core/values/utility.dart';
 import 'package:fgtracker/app/config/themes_data.dart';
@@ -15,15 +13,11 @@ import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_mlkit_barcode_scanning/google_mlkit_barcode_scanning.dart';
-
 import 'package:url_launcher/url_launcher.dart';
-
 import '../../../Model/MemberDataRes.dart';
 import '../../../global_widget/common_widget.dart';
-
 import '../../../modules/auth/Auth_Widget/Auth_widget.dart';
 import '../../../routes/app_pages.dart';
 import '../../constant/pref_res.dart';
@@ -109,11 +103,10 @@ class DialogBox {
     );
   }
 
-  void showUpdateGroupBottomSheet({
-    required BuildContext context,
-    required GroupController controller,
-    required String groupId
-  }) {
+  void showUpdateGroupBottomSheet(
+      {required BuildContext context,
+      required GroupController controller,
+      required String groupId}) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -124,56 +117,55 @@ class DialogBox {
       builder: (context) {
         return SafeArea(
             child: Padding(
-              padding: EdgeInsets.only(
-                bottom: MediaQuery.of(context).viewInsets.bottom,
-                top: 20.h,
-                left: 20.w,
-                right: 20.w,
-              ),
-              child: SingleChildScrollView(
-                child: Form(
-                  key: controller.createGroupKey,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        width: 50.w,
-                        height: 5.h,
-                        decoration: BoxDecoration(
-                          color: Colors.grey[300],
-                          borderRadius: BorderRadius.circular(10.r),
-                        ),
-                      ),
-                      SizedBox(height: 15.h),
-                      reausabletext(AppText.updateGroup,
-                          fontsize: 18.sp, fontfamily: FontFamily.interSemiBold),
-                      SizedBox(height: 20.h),
-                      inputField(
-                        context,
-                        title: AppText.groupName,
-                        maxLength: 50,
-                        maxLines: 1,
-                        textctr: controller.groupName,
-                        validators: (value) =>
-                            Validator.validate(value: value, title: "Group Name"),
-                      ),
-                      SizedBox(height: 25.h),
-                      reausablebutton(
-                        title: "Update",
-                        ontap: () async {
-                          if (controller.createGroupKey.currentState!.validate()) {
-                            controller.updateGroupDetail(groupId: groupId);
-
-                          }
-                        },
-                        borderradiues: 50.r,
-                      ),
-                      SizedBox(height: 15.h),
-                    ],
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+            top: 20.h,
+            left: 20.w,
+            right: 20.w,
+          ),
+          child: SingleChildScrollView(
+            child: Form(
+              key: controller.createGroupKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 50.w,
+                    height: 5.h,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[300],
+                      borderRadius: BorderRadius.circular(10.r),
+                    ),
                   ),
-                ),
+                  SizedBox(height: 15.h),
+                  reausabletext(AppText.updateGroup,
+                      fontsize: 18.sp, fontfamily: FontFamily.interSemiBold),
+                  SizedBox(height: 20.h),
+                  inputField(
+                    context,
+                    title: AppText.groupName,
+                    maxLength: 50,
+                    maxLines: 1,
+                    textctr: controller.groupName,
+                    validators: (value) =>
+                        Validator.validate(value: value, title: "Group Name"),
+                  ),
+                  SizedBox(height: 25.h),
+                  reausablebutton(
+                    title: "Update",
+                    ontap: () async {
+                      if (controller.createGroupKey.currentState!.validate()) {
+                        controller.updateGroupDetail(groupId: groupId);
+                      }
+                    },
+                    borderradiues: 50.r,
+                  ),
+                  SizedBox(height: 15.h),
+                ],
               ),
-            ));
+            ),
+          ),
+        ));
       },
     );
   }
@@ -351,7 +343,7 @@ class DialogBox {
                             groupType: "joinGroup");
                       },
                     ),
-                    const SizedBox(height: 10),
+                    SizedBox(height: 10.h),
                     _buildOptionTile(
                       title: AppText.enterGroupCodeManually,
                       icon: Icons.keyboard,
@@ -363,7 +355,7 @@ class DialogBox {
                             groupController: groupController);
                       },
                     ),
-                    const SizedBox(height: 20),
+                    SizedBox(height: 20.h),
                   ],
                 ),
               ),
