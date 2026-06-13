@@ -22,6 +22,7 @@ abstract class Routes {
   static const walkieTalkieScreen = _Paths.walkieTalkieScreen;
   static const notificationScreen = _Paths.notificationScreen;
   static const groupChatScreen = _Paths.groupChatScreen;
+  static const videoPlayerScreen = _Paths.videoPlayerScreen;
 
 
 }
@@ -47,6 +48,8 @@ abstract class _Paths {
   static const walkieTalkieScreen = '/WalkieTalkieScreen';
   static const notificationScreen = '/NotificationScreen';
   static const groupChatScreen = '/groupChatScreen';
+  static const videoPlayerScreen = '/VideoPlayerScreen';
+
 
 
 

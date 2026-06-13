@@ -1,9 +1,14 @@
 import 'dart:developer';
+import 'dart:io';
+import 'dart:typed_data';
 
+import 'package:fgtracker/app/Core/util/DateTime_Format.dart';
 import 'package:fgtracker/app/Model/LocationDataRes.dart';
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
+import 'package:video_player/video_player.dart';
+import 'package:video_thumbnail/video_thumbnail.dart';
 
 import '../../../Core/constant/const_res.dart';
 import '../../../Core/constant/pref_res.dart';
@@ -23,13 +28,14 @@ class GroupMessageController extends GetxController {
   final ScrollController scrollController = ScrollController();
 
   RxList<MessageData> messageData = <MessageData>[].obs;
-
+  final Rx<Uint8List?> videoThumbnail = Rx<Uint8List?>(null);
+  final RxString videoDuration = ''.obs;
   RxList<LocationData> groupMembers = <LocationData>[].obs;
 
   RxBool isLoadingMembers = false.obs;
 
   RxString imagePath = "".obs;
-
+  RxString videoPath = "".obs;
   RxBool isSending = false.obs;
 
   RxString messageText = "".obs;
@@ -130,6 +136,19 @@ class GroupMessageController extends GetxController {
 
         imagePath.value = "";
 
+        textController.clear();
+      } else if (videoPath.isNotEmpty) {
+        await uploadVideo(videoPath.value);
+        if (text.isNotEmpty) {
+          await Future.delayed(const Duration(milliseconds: 300));
+          socketService.sendGroupMessage(
+            messageType: "text",
+            groupId: groupId,
+            content: text,
+          );
+        }
+
+        videoPath.value = "";
         textController.clear();
       } else if (text.isNotEmpty) {
         socketService.sendGroupMessage(
@@ -253,6 +272,33 @@ class GroupMessageController extends GetxController {
         }
       },
     );
+  }
+
+  Future<void> generateVideoPreview(
+    String path,
+  ) async {
+    try {
+      videoThumbnail.value = await VideoThumbnail.thumbnailData(
+        video: path,
+        imageFormat: ImageFormat.JPEG,
+        maxWidth: 400,
+        quality: 80,
+      );
+
+      final controller = VideoPlayerController.file(
+        File(path),
+      );
+
+      await controller.initialize();
+
+      final duration = controller.value.duration;
+
+      videoDuration.value = formatDuration(duration);
+
+      await controller.dispose();
+    } catch (e) {
+      debugPrint(e.toString());
+    }
   }
 
   void handleBackPressed(BuildContext context) {

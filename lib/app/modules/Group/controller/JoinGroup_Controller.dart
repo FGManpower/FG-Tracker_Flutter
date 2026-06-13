@@ -12,28 +12,12 @@ import 'package:location/location.dart';
 import '../../../Data/Services/LocationPermission.dart';
 import '../controller/Group_Controller.dart';
 
-
 class JoinGroupController extends GetxController {
   GlobalKey<FormState> joinGroupKey = GlobalKey<FormState>();
   final groupCodeController = TextEditingController();
   var responseError = "".obs;
 
-
-
-
-
-
   Future<void> scanQRCodeFromCamera() async {
-    // final status = await Permission.camera.request();
-    // if (status.isGranted) {
-    //   final scannedResult = await Get.toNamed(Routes.QRScanScreen);
-    //   if (scannedResult != null) {
-    //     print("QR Code: $scannedResult");
-    //   }
-    // } else {
-    //   Get.snackbar(
-    //       "Permission Denied", "Camera access is needed to scan QR codes");
-    // }
     Get.toNamed(Routes.QRScanScreen);
   }
 
@@ -45,7 +29,7 @@ class JoinGroupController extends GetxController {
     String? type,
   }) async {
     final hasPermission =
-        await  LocationPermissions().handleLocationPermission();
+        await LocationPermissions().handleLocationPermission();
     if (!hasPermission) {
       CommonDialog.errorMessage(
           "Location permission is required to join a group.");
@@ -88,8 +72,4 @@ class JoinGroupController extends GetxController {
       return false;
     }
   }
-
-
-
-
 }

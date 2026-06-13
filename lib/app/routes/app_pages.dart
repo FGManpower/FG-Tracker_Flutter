@@ -4,7 +4,9 @@ import 'package:fgtracker/app/modules/Group/Bindings/QRScan_Binding.dart';
 import 'package:fgtracker/app/modules/Group/Views/MemberScreen.dart';
 import 'package:fgtracker/app/modules/IntroScreen/IntroScreen.dart';
 import 'package:fgtracker/app/modules/Messages/Bindings/Chat_binding.dart';
+import 'package:fgtracker/app/modules/Messages/Bindings/video_binding.dart';
 import 'package:fgtracker/app/modules/Messages/Views/GroupChatScreen.dart';
+import 'package:fgtracker/app/modules/Messages/Views/videoPlayerScreen.dart';
 import 'package:fgtracker/app/modules/Notification/Views/Notification.dart';
 import 'package:fgtracker/app/modules/Track/Bindings/track_binding.dart';
 import 'package:fgtracker/app/modules/auth/Bindings/auth_binding.dart';
@@ -150,6 +152,14 @@ class AppPages {
       name: _Paths.notificationScreen,
       page: () => NotificationScreen(),
       transition: Transition.rightToLeft,
+      transitionDuration: const Duration(milliseconds: 500),
+    ),
+
+    GetPage(
+      name: _Paths.videoPlayerScreen,
+      page: () => VideoPlayerScreen(),
+      transition: Transition.rightToLeft,
+      binding: VideoBinding(),
       transitionDuration: const Duration(milliseconds: 500),
     ),
   ];

@@ -1,6 +1,9 @@
 import 'dart:developer';
+import 'dart:io';
+import 'dart:typed_data';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
+import 'package:fgtracker/app/Core/util/DateTime_Format.dart';
 import 'package:fgtracker/app/Core/values/Dialog/Common_dialog.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Data/Repositories/GetMessageRepo.dart';
@@ -10,6 +13,8 @@ import 'package:fgtracker/app/Model/MemberDataRes.dart';
 import 'package:fgtracker/app/modules/Track/Controller/TrackController.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:video_player/video_player.dart';
+import 'package:video_thumbnail/video_thumbnail.dart';
 import '../../../routes/app_pages.dart';
 import 'Socket_Message_Services.dart';
 
@@ -25,7 +30,10 @@ class MessageController extends GetxController {
 
   late MemberData memberData;
   Map<String, dynamic>? arguments = Get.arguments;
-  RxBool isCreator=false.obs;
+  RxBool isCreator = false.obs;
+
+  final Rx<Uint8List?> videoThumbnail = Rx<Uint8List?>(null);
+  final RxString videoDuration = ''.obs;
 
   @override
   void onInit() {
@@ -37,9 +45,9 @@ class MessageController extends GetxController {
   void _initializeChat() {
     final userId = memberData.userId.toString();
     final groupId = memberData.groupId!;
-    try{
+    try {
       TrackingController.instance.initializeLocation();
-    }catch(e){
+    } catch (e) {
       log("==============MessageException======${e.toString()}");
     }
 
@@ -59,12 +67,11 @@ class MessageController extends GetxController {
         messageData.add(MessageData.fromJson(message));
         scrollToBottom();
 
-
         // if (isUserAtBottom()) {
-          socketService.markSeen(
-            Global.storageServices.get(PrefConst.userId).toString(),
-            groupId,
-          );
+        socketService.markSeen(
+          Global.storageServices.get(PrefConst.userId).toString(),
+          groupId,
+        );
         // }
       },
     );
@@ -83,7 +90,6 @@ class MessageController extends GetxController {
         messageData.refresh();
       },
     );
-
 
     getMessageHistory(userId, groupId);
   }
@@ -129,6 +135,20 @@ class MessageController extends GetxController {
 
         imagePath.value = "";
         textController.clear();
+      } else if (videoPath.isNotEmpty) {
+        await uploadVideo(videoPath.value);
+        if (text.isNotEmpty) {
+          await Future.delayed(const Duration(milliseconds: 300));
+          socketService.sendMessage(
+            messageType: "text",
+            receiverId: memberData.userId.toString(),
+            groupId: memberData.groupId!,
+            content: text,
+          );
+        }
+
+        videoPath.value = "";
+        textController.clear();
       } else if (text.isNotEmpty) {
         socketService.sendMessage(
           messageType: "text",
@@ -148,7 +168,6 @@ class MessageController extends GetxController {
   }
 
   Future<void> uploadAudio(String path) async {
-
     var result = await MessageRepo.uploadChatAudio(path);
 
     if (result.status == true) {
@@ -162,8 +181,7 @@ class MessageController extends GetxController {
   }
 
   Future<void> uploadVideo(String path) async {
-
-    var result = await MessageRepo.uploadChatAudio(path);
+    var result = await MessageRepo.uploadChatVideo(path);
 
     if (result.status == true) {
       socketService.sendMessage(
@@ -174,6 +192,7 @@ class MessageController extends GetxController {
       );
     }
   }
+
   Future<void> getMessageHistory(String recieverId, int groupId) async {
     try {
       var result = await MessageRepo.MessageHistory(
@@ -184,7 +203,7 @@ class MessageController extends GetxController {
       if (result.status == true) {
         // socketService.markSeen(memberData.userId.toString(), groupId);
         messageData.value = result.messageData!;
-        isCreator.value= result.isCreator!;
+        isCreator.value = result.isCreator!;
         scrollToBottom();
       } else {
         CommonDialog.errorMessage(result.message);
@@ -242,4 +261,38 @@ class MessageController extends GetxController {
       },
     );
   }
+
+
+  Future<void> generateVideoPreview(
+      String path,
+      ) async {
+    try {
+      videoThumbnail.value =
+      await VideoThumbnail.thumbnailData(
+        video: path,
+        imageFormat: ImageFormat.JPEG,
+        maxWidth: 400,
+        quality: 80,
+      );
+
+      final controller =
+      VideoPlayerController.file(
+        File(path),
+      );
+
+      await controller.initialize();
+
+      final duration =
+          controller.value.duration;
+
+      videoDuration.value =
+          formatDuration(duration);
+
+      await controller.dispose();
+    } catch (e) {
+      debugPrint(e.toString());
+    }
+  }
+
+
 }

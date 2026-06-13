@@ -1,10 +1,14 @@
 import 'package:fgtracker/app/Core/util/DateTime_Format.dart';
-import 'package:fgtracker/app/Core/values/BottomSheets/BottomSheetUi.dart';
 import 'package:fgtracker/app/Core/values/Dialog/DialogBox.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Model/GetMessage.dart';
+import 'package:fgtracker/app/modules/Messages/Views/videoPlayerScreen.dart';
+import 'package:fgtracker/app/modules/Messages/widgets/videoThumbnailWidget.dart';
+import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import '../../../../gen/fonts.gen.dart';
@@ -119,7 +123,11 @@ class ChatBubble extends StatelessWidget {
     );
   }
 
-  Widget _buildMessageContent(MessageData message, Color textColor) {
+
+  Widget _buildMessageContent(
+    MessageData message,
+    Color textColor,
+  ) {
     if (message.messageType == "image" || message.messageType == "image_text") {
       final parts = message.content?.split("||") ?? [];
       final imagePart = parts.isNotEmpty ? parts[0] : "";
@@ -131,8 +139,9 @@ class ChatBubble extends StatelessWidget {
           ClipRRect(
             borderRadius: BorderRadius.circular(12.r),
             child: ImageViewerWidget(
-              imageProvider:
-                  NetworkImage("${ConstRes.aImageBaseUrl}$imagePart"),
+              imageProvider: NetworkImage(
+                "${ConstRes.aImageBaseUrl}$imagePart",
+              ),
               width: 220,
               height: 200,
               borderRadius: 10,
@@ -152,7 +161,22 @@ class ChatBubble extends StatelessWidget {
         audioUrl: "${ConstRes.aImageBaseUrl}${message.content}",
         isMe: false,
       );
-    } else {
+    } else if (message.messageType == "video") {
+      final videoUrl =
+          "${ConstRes.aImageBaseUrl}${message.content}";
+
+      return VideoThumbnailWidget(
+        videoUrl: videoUrl,
+        onTap: () {
+          Get.toNamed(
+            Routes.videoPlayerScreen,
+            arguments: {
+              "videoUrl": message.content,
+            },
+          );
+        },
+      );
+    }else {
       return reausabletext(
         message.content.toString(),
         color: textColor,
@@ -162,7 +186,6 @@ class ChatBubble extends StatelessWidget {
     }
   }
 }
-
 
 class GroupChatBubble extends StatelessWidget {
   final MessageData message;
@@ -183,51 +206,45 @@ class GroupChatBubble extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final currentUserId =
-    Global.storageServices.get(PrefConst.userId).toString();
+        Global.storageServices.get(PrefConst.userId).toString();
 
-    final isSentByMe =
-        message.senderId.toString() == currentUserId;
+    final isSentByMe = message.senderId.toString() == currentUserId;
 
     final bgColor = isSentByMe
         ? const LinearGradient(
-      colors: [
-        ToggleThemeData.darkPurple,
-        ToggleThemeData.Appcolor
-      ],
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-    )
+            colors: [ToggleThemeData.darkPurple, ToggleThemeData.Appcolor],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          )
         : const LinearGradient(
-      colors: [
-        Colors.white,
-        Colors.white,
-      ],
-    );
+            colors: [
+              Colors.white,
+              Colors.white,
+            ],
+          );
 
-    final textColor =
-    isSentByMe ? Colors.white : Colors.black87;
+    final textColor = isSentByMe ? Colors.white : Colors.black87;
 
     final borderRadius = isSentByMe
         ? const BorderRadius.only(
-      topLeft: Radius.circular(16),
-      topRight: Radius.circular(2),
-      bottomLeft: Radius.circular(16),
-      bottomRight: Radius.circular(16),
-    )
+            topLeft: Radius.circular(16),
+            topRight: Radius.circular(2),
+            bottomLeft: Radius.circular(16),
+            bottomRight: Radius.circular(16),
+          )
         : const BorderRadius.only(
-      topLeft: Radius.circular(2),
-      topRight: Radius.circular(16),
-      bottomLeft: Radius.circular(16),
-      bottomRight: Radius.circular(16),
-    );
+            topLeft: Radius.circular(2),
+            topRight: Radius.circular(16),
+            bottomLeft: Radius.circular(16),
+            bottomRight: Radius.circular(16),
+          );
 
     return Container(
       margin: EdgeInsets.symmetric(vertical: 6.h),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: isSentByMe
-            ? MainAxisAlignment.end
-            : MainAxisAlignment.start,
+        mainAxisAlignment:
+            isSentByMe ? MainAxisAlignment.end : MainAxisAlignment.start,
         children: [
           if (isGroup && !isSentByMe)
             Padding(
@@ -241,8 +258,8 @@ class GroupChatBubble extends StatelessWidget {
                     destination: const LatLng(0, 0),
                     distance: 0,
                     userId: int.tryParse(
-                      message.senderId.toString(),
-                    ) ??
+                          message.senderId.toString(),
+                        ) ??
                         0,
                     groupId: groupId,
                     groupName: groupName,
@@ -255,31 +272,28 @@ class GroupChatBubble extends StatelessWidget {
                 },
                 child: CircleAvatar(
                   radius: 20.r,
-                  backgroundImage:
-                  message.senderImage != null &&
-                      message.senderImage!.isNotEmpty
+                  backgroundImage: message.senderImage != null &&
+                          message.senderImage!.isNotEmpty
                       ? NetworkImage(
-                    "${ConstRes.aImageBaseUrl}${message.senderImage}",
-                  )
+                          "${ConstRes.aImageBaseUrl}${message.senderImage}",
+                        )
                       : null,
                   child: message.senderImage == null ||
-                      message.senderImage!.isEmpty
+                          message.senderImage!.isEmpty
                       ? Icon(
-                    Icons.person,
-                    size: 18.sp,
-                  )
+                          Icons.person,
+                          size: 18.sp,
+                        )
                       : null,
                 ),
               ),
             ),
-
           Flexible(
             child: Column(
               crossAxisAlignment: isSentByMe
                   ? CrossAxisAlignment.end
                   : CrossAxisAlignment.start,
               children: [
-
                 if (isGroup)
                   Padding(
                     padding: EdgeInsets.only(
@@ -294,7 +308,6 @@ class GroupChatBubble extends StatelessWidget {
                           ? MainAxisAlignment.end
                           : MainAxisAlignment.start,
                       children: [
-
                         if (!isSentByMe) ...[
                           Text(
                             message.senderName?.toString() ?? "",
@@ -304,9 +317,7 @@ class GroupChatBubble extends StatelessWidget {
                               color: Colors.black,
                             ),
                           ),
-
                           SizedBox(width: 6.w),
-
                           Text(
                             formatTime(message.timestamp ?? ""),
                             style: TextStyle(
@@ -322,9 +333,7 @@ class GroupChatBubble extends StatelessWidget {
                               color: Colors.grey[600],
                             ),
                           ),
-
                           SizedBox(width: 6.w),
-
                           Text(
                             message.senderName?.toString() ?? "",
                             style: TextStyle(
@@ -337,11 +346,9 @@ class GroupChatBubble extends StatelessWidget {
                       ],
                     ),
                   ),
-
                 Container(
                   constraints: BoxConstraints(
-                    maxWidth:
-                    MediaQuery.of(context).size.width * 0.72,
+                    maxWidth: MediaQuery.of(context).size.width * 0.72,
                   ),
                   padding: EdgeInsets.symmetric(
                     horizontal: 12.w,
@@ -363,9 +370,7 @@ class GroupChatBubble extends StatelessWidget {
                     textColor,
                   ),
                 ),
-
                 SizedBox(height: 4.h),
-
                 if (isSentByMe)
                   Padding(
                     padding: EdgeInsets.only(
@@ -396,8 +401,9 @@ class GroupChatBubble extends StatelessWidget {
                     destination: const LatLng(0, 0),
                     distance: 0,
                     userId: int.tryParse(
-                      message.senderId.toString(),
-                    ) ?? 0,
+                          message.senderId.toString(),
+                        ) ??
+                        0,
                     groupId: groupId,
                     groupName: groupName,
                     name: message.senderName,
@@ -410,50 +416,43 @@ class GroupChatBubble extends StatelessWidget {
                 child: CircleAvatar(
                   radius: 20.r,
                   backgroundImage: message.senderImage != null &&
-                      message.senderImage!.isNotEmpty
+                          message.senderImage!.isNotEmpty
                       ? NetworkImage(
-                    "${ConstRes.aImageBaseUrl}${message.senderImage}",
-                  )
+                          "${ConstRes.aImageBaseUrl}${message.senderImage}",
+                        )
                       : null,
                   child: message.senderImage == null ||
-                      message.senderImage!.isEmpty
+                          message.senderImage!.isEmpty
                       ? Icon(
-                    Icons.person,
-                    size: 18.sp,
-                  )
+                          Icons.person,
+                          size: 18.sp,
+                        )
                       : null,
                 ),
               ),
             ),
         ],
-
-
       ),
     );
   }
+
+
+
 
   Widget _buildMessageContent(
       MessageData message,
       Color textColor,
       ) {
-    if (message.messageType == "image" ||
-        message.messageType == "image_text") {
-      final parts =
-          message.content?.split("||") ?? [];
-
-      final imagePart =
-      parts.isNotEmpty ? parts[0] : "";
-
-      final textPart =
-      parts.length > 1 ? parts[1] : "";
+    if (message.messageType == "image" || message.messageType == "image_text") {
+      final parts = message.content?.split("||") ?? [];
+      final imagePart = parts.isNotEmpty ? parts[0] : "";
+      final textPart = parts.length > 1 ? parts[1] : "";
 
       return Column(
-        crossAxisAlignment:
-        CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ClipRRect(
-            borderRadius:
-            BorderRadius.circular(12.r),
+            borderRadius: BorderRadius.circular(12.r),
             child: ImageViewerWidget(
               imageProvider: NetworkImage(
                 "${ConstRes.aImageBaseUrl}$imagePart",
@@ -463,10 +462,7 @@ class GroupChatBubble extends StatelessWidget {
               borderRadius: 10,
             ),
           ),
-
-          if (textPart.isNotEmpty)
-            SizedBox(height: 8.h),
-
+          if (textPart.isNotEmpty) SizedBox(height: 8.h),
           if (textPart.isNotEmpty)
             reausabletext(
               textPart,
@@ -477,15 +473,25 @@ class GroupChatBubble extends StatelessWidget {
       );
     } else if (message.messageType == "audio") {
       return AudioBubble(
-        audioUrl:
-        "${ConstRes.aImageBaseUrl}${message.content}",
-        isMe:
-        message.senderId.toString() ==
-            Global.storageServices
-                .get(PrefConst.userId)
-                .toString(),
+        audioUrl: "${ConstRes.aImageBaseUrl}${message.content}",
+        isMe: false,
       );
-    } else {
+    } else if (message.messageType == "video") {
+      final videoUrl =
+          "${ConstRes.aImageBaseUrl}${message.content}";
+
+      return VideoThumbnailWidget(
+        videoUrl: videoUrl,
+        onTap: () {
+          Get.toNamed(
+            Routes.videoPlayerScreen,
+            arguments: {
+              "videoUrl": message.content,
+            },
+          );
+        },
+      );
+    }else {
       return reausabletext(
         message.content.toString(),
         color: textColor,

@@ -1,4 +1,5 @@
 import 'package:fgtracker/app/Core/values/BottomSheets/BottomSheetUi.dart';
+import 'package:fgtracker/app/Core/values/utility.dart';
 import 'package:fgtracker/app/config/themes_data.dart';
 import 'package:fgtracker/app/modules/Messages/widgets/ChatInputArea.dart';
 import 'package:fgtracker/app/modules/Messages/widgets/ChatList.dart';
@@ -123,9 +124,12 @@ class GroupChatScreen extends GetView<GroupMessageController> {
               child: ChatInputArea(
                 messageText: controller.messageText,
                 imagePath: controller.imagePath,
+                videoPath: controller.videoPath,
                 isSending: controller.isSending,
                 textController: textController,
                 scrollController: controller.scrollController,
+                videoDuration: controller.videoDuration,
+                videoThumbnail: controller.videoThumbnail,
                 onSend: () {
                   controller.sendMessage(
                     textController: textController,
@@ -137,10 +141,21 @@ class GroupChatScreen extends GetView<GroupMessageController> {
                 onVoiceSend: (voicePath) {
                   controller.uploadAudio(voicePath);
                 },
-                onvideoSelected: (path) {
-                  controller.uploadVideo(path);
+                onvideoSelected: (path) async {
+                  Navigator.pop(context);
+                  if (Utility.isNotNullEmptyOrFalse(path)) {
+                    controller.videoPath.value = path;
+
+
+                      await controller.generateVideoPreview(
+                        path,
+                      );
+
+                      controller.update();
+
+                  }
                 },
-                videoPath: "".obs,
+
               ),
             ),
           ],

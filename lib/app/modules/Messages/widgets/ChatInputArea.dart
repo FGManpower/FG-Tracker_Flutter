@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:fgtracker/app/Core/constant/BottomSheet/ChatBottomSheet.dart';
 import 'package:fgtracker/app/Core/values/bottomSheet.dart';
@@ -25,6 +26,8 @@ class ChatInputArea extends StatelessWidget {
   void Function(String)? onVoiceSend;
   final Function(String path) onImageSelected;
   final Function(String path) onvideoSelected;
+  final Rx<Uint8List?> videoThumbnail;
+  final RxString videoDuration;
 
   ChatInputArea(
       {Key? key,
@@ -37,7 +40,7 @@ class ChatInputArea extends StatelessWidget {
       required this.onSend,
       required this.onImageSelected,
       required this.onvideoSelected,
-      required this.onVoiceSend})
+      required this.onVoiceSend,required this.videoDuration,required this.videoThumbnail})
       : super(key: key);
 
   final voiceController = Get.put(VoiceRecordController());
@@ -51,7 +54,8 @@ class ChatInputArea extends StatelessWidget {
         final isMessageNotEmpty = messageText.value.trim().isNotEmpty;
         final isImageSelected = imagePath.value.isNotEmpty;
         final isVideoSelected = videoPath.value.isNotEmpty;
-        final shouldShowSend = isMessageNotEmpty || isImageSelected;
+        final shouldShowSend =
+            isMessageNotEmpty || isImageSelected || isVideoSelected;
 
         return Column(
           mainAxisSize: MainAxisSize.min,
@@ -83,7 +87,7 @@ class ChatInputArea extends StatelessWidget {
                   ],
                 ),
               ),
-            if (isVideoSelected!)
+            if (isVideoSelected)
               Padding(
                 padding: EdgeInsets.symmetric(
                   horizontal: 12.w,
@@ -95,44 +99,116 @@ class ChatInputArea extends StatelessWidget {
                       width: 250.w,
                       height: 180.h,
                       decoration: BoxDecoration(
-                        color: Colors.black87,
-                        borderRadius: BorderRadius.circular(12.r),
+                        borderRadius:
+                        BorderRadius.circular(12.r),
                       ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          CircleAvatar(
-                            radius: 28.r,
-                            backgroundColor: Colors.white24,
-                            child: Icon(
-                              Icons.play_arrow_rounded,
-                              color: Colors.white,
-                              size: 35.sp,
-                            ),
-                          ),
-                          SizedBox(height: 10.h),
-                          Text(
-                            "Video Selected",
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 14.sp,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          SizedBox(height: 4.h),
-                          Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 15.w),
-                            child: Text(
-                              videoPath.value.split('/').last,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                color: Colors.white70,
-                                fontSize: 12.sp,
+                      child: ClipRRect(
+                        borderRadius:
+                        BorderRadius.circular(12.r),
+                        child: Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            Obx(
+                                  () => videoThumbnail
+                                  .value !=
+                                  null
+                                  ? Image.memory(
+                               videoThumbnail
+                                    .value!,
+                                fit: BoxFit.cover,
+                              )
+                                  : Container(
+                                color:
+                                Colors.black87,
                               ),
                             ),
-                          ),
-                        ],
+                            Container(
+                              decoration: BoxDecoration(
+                                gradient:
+                                LinearGradient(
+                                  begin:
+                                  Alignment.bottomCenter,
+                                  end:
+                                  Alignment.center,
+                                  colors: [
+                                    Colors.black
+                                        .withOpacity(
+                                        .75),
+                                    Colors.transparent,
+                                  ],
+                                ),
+                              ),
+                            ),
+                            Center(
+                              child: Container(
+                                width: 60.w,
+                                height: 60.w,
+                                decoration:
+                                BoxDecoration(
+                                  color:
+                                  Colors.black45,
+                                  shape:
+                                  BoxShape.circle,
+                                ),
+                                child: Icon(
+                                  Icons
+                                      .play_arrow_rounded,
+                                  color:
+                                  Colors.white,
+                                  size: 40.sp,
+                                ),
+                              ),
+                            ),
+                            Positioned(
+                              left: 10.w,
+                              right: 10.w,
+                              bottom: 10.h,
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      videoPath.value
+                                          .split('/')
+                                          .last,
+                                      maxLines: 1,
+                                      overflow:
+                                      TextOverflow
+                                          .ellipsis,
+                                      style:
+                                      TextStyle(
+                                        color: Colors
+                                            .white,
+                                        fontSize:
+                                        11.sp,
+                                        fontWeight:
+                                        FontWeight
+                                            .w500,
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(
+                                      width: 8.w),
+                                  Obx(
+                                        () => Text(
+                                      videoDuration
+                                          .value,
+                                      style:
+                                      TextStyle(
+                                        color: Colors
+                                            .white,
+                                        fontSize:
+                                        11.sp,
+                                        fontWeight:
+                                        FontWeight
+                                            .w600,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                     Positioned(
@@ -141,12 +217,15 @@ class ChatInputArea extends StatelessWidget {
                       child: GestureDetector(
                         onTap: () {
                           videoPath.value = '';
-                          // isVideoSelected = false;
-                          // update();
+                         videoThumbnail
+                              .value = null;
+                         videoDuration
+                              .value = '';
                         },
                         child: CircleAvatar(
                           radius: 14.r,
-                          backgroundColor: Colors.black54,
+                          backgroundColor:
+                          Colors.black54,
                           child: Icon(
                             Icons.close,
                             size: 16.sp,
@@ -296,13 +375,12 @@ class ChatInputArea extends StatelessWidget {
                                                 ModalImage(
                                               isImageCroppable: false,
                                               onImageSelect: (path) async {
-                                                print("OnImagesSelect========>${path}");
                                                 if (Utility
                                                     .isNotNullEmptyOrFalse(
                                                         path)) {
                                                   Navigator.pop(context);
                                                   onImageSelected(path);
-                                                  print("OnImagesSelect========>${path}");
+
                                                   Navigator.pop(context);
                                                 }
                                               },
@@ -313,8 +391,6 @@ class ChatInputArea extends StatelessWidget {
                                           onVideo: () async {
                                             var path = await FileServices()
                                                 .pickVideoFromGallery();
-                                            print(
-                                                "===============SelectedVideoPath==========>${path?.path}");
                                             onvideoSelected(path?.path ?? "");
                                           },
                                           onDocument: () {},
