@@ -4,8 +4,7 @@ import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 class ConstRes {
   ///------------------------ Backend urls and key ------------------------///
 
-  static const String development =
-      'http://10.123.255.163:4000/'; // Development
+  static const String development = 'http://10.123.255.163:4000/'; // Development
   // static const String production = 'http://fgtracker.in:3000/'; //Prod
   static const String aBaseUrl = '${development}api/';
   static const String aImageBaseUrl = development;

@@ -7,7 +7,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gal/gal.dart';
 import 'package:get/get.dart';
-import 'package:open_file/open_file.dart';
+
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:screenshot/screenshot.dart';
@@ -158,8 +158,8 @@ $appLink
   }
 
   Future<void> onNotificationClick(String? payload) async {
-    if (payload != null) {
-      await OpenFile.open(payload);
-    }
+    // if (payload != null) {
+    //   await OpenFile.open(payload);
+    // }
   }
 }

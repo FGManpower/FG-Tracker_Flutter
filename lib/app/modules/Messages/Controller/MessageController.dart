@@ -25,6 +25,7 @@ class MessageController extends GetxController {
   RxList<MessageData> messageData = <MessageData>[].obs;
   RxString imagePath = "".obs;
   RxString videoPath = "".obs;
+  RxString documentPath = "".obs;
   RxBool isSending = false.obs;
   RxString messageText = "".obs;
 
@@ -149,6 +150,19 @@ class MessageController extends GetxController {
 
         videoPath.value = "";
         textController.clear();
+      } else if (documentPath.isNotEmpty) {
+        await uploadDocument(documentPath.value);
+        if (text.isNotEmpty) {
+          await Future.delayed(const Duration(milliseconds: 300));
+          socketService.sendMessage(
+            messageType: "text",
+            receiverId: memberData.userId.toString(),
+            groupId: memberData.groupId!,
+            content: text,
+          );
+        }
+        documentPath.value = "";
+        textController.clear();
       } else if (text.isNotEmpty) {
         socketService.sendMessage(
           messageType: "text",
@@ -186,6 +200,19 @@ class MessageController extends GetxController {
     if (result.status == true) {
       socketService.sendMessage(
         messageType: "video",
+        receiverId: memberData.userId.toString(),
+        groupId: memberData.groupId!,
+        content: result.filename!,
+      );
+    }
+  }
+
+  Future<void> uploadDocument(String path) async {
+    var result = await MessageRepo.uploadChatDocument(path);
+
+    if (result.status == true) {
+      socketService.sendMessage(
+        messageType: "document",
         receiverId: memberData.userId.toString(),
         groupId: memberData.groupId!,
         content: result.filename!,
@@ -262,37 +289,30 @@ class MessageController extends GetxController {
     );
   }
 
-
   Future<void> generateVideoPreview(
-      String path,
-      ) async {
+    String path,
+  ) async {
     try {
-      videoThumbnail.value =
-      await VideoThumbnail.thumbnailData(
+      videoThumbnail.value = await VideoThumbnail.thumbnailData(
         video: path,
         imageFormat: ImageFormat.JPEG,
         maxWidth: 400,
         quality: 80,
       );
 
-      final controller =
-      VideoPlayerController.file(
+      final controller = VideoPlayerController.file(
         File(path),
       );
 
       await controller.initialize();
 
-      final duration =
-          controller.value.duration;
+      final duration = controller.value.duration;
 
-      videoDuration.value =
-          formatDuration(duration);
+      videoDuration.value = formatDuration(duration);
 
       await controller.dispose();
     } catch (e) {
       debugPrint(e.toString());
     }
   }
-
-
 }

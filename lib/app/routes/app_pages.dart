@@ -5,6 +5,7 @@ import 'package:fgtracker/app/modules/Group/Views/MemberScreen.dart';
 import 'package:fgtracker/app/modules/IntroScreen/IntroScreen.dart';
 import 'package:fgtracker/app/modules/Messages/Bindings/Chat_binding.dart';
 import 'package:fgtracker/app/modules/Messages/Bindings/video_binding.dart';
+import 'package:fgtracker/app/modules/Messages/Views/DocumentViewerScreen.dart';
 import 'package:fgtracker/app/modules/Messages/Views/GroupChatScreen.dart';
 import 'package:fgtracker/app/modules/Messages/Views/videoPlayerScreen.dart';
 import 'package:fgtracker/app/modules/Notification/Views/Notification.dart';
@@ -152,6 +153,14 @@ class AppPages {
       name: _Paths.notificationScreen,
       page: () => NotificationScreen(),
       transition: Transition.rightToLeft,
+      transitionDuration: const Duration(milliseconds: 500),
+    ),
+
+    GetPage(
+      name: _Paths.documentViewerScreen,
+      page: () => DocumentViewerScreen(),
+      transition: Transition.rightToLeft,
+      binding: DocumentBinding(),
       transitionDuration: const Duration(milliseconds: 500),
     ),
 

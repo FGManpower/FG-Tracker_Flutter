@@ -66,10 +66,8 @@ class MessageRepo {
     return ChatImageUploadResponse.fromJson(response);
   }
 
-
   static Future<ChatImageUploadResponse> uploadChatVideo(
       String videoPath) async {
-
     final ext = p.extension(videoPath).replaceFirst('.', '');
 
     FormData data = FormData.fromMap({
@@ -89,12 +87,32 @@ class MessageRepo {
     return ChatImageUploadResponse.fromJson(response);
   }
 
+  static Future<ChatImageUploadResponse> uploadChatDocument(
+      String documentPath) async {
+    final ext = p.extension(documentPath).replaceFirst('.', '');
+
+    FormData data = FormData.fromMap({
+      "chatDocument": await MultipartFile.fromFile(
+        documentPath,
+        filename: p.basename(documentPath),
+        contentType: MediaType('document', ext),
+      )
+    });
+
+    var response = await HttpUtil().Authpost(
+      "/uploadDocument",
+      formdata: data,
+      type: "formdata",
+    );
+
+    return ChatImageUploadResponse.fromJson(response);
+  }
+
   static Future<LocationDataRes> getGroupMembers({
     required int groupId,
   }) async {
-
     var response = await HttpUtil().get(
-        "/getMembers?groupId=$groupId",
+      "/getMembers?groupId=$groupId",
     );
 
     return LocationDataRes.fromJson(response);

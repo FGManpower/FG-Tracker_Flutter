@@ -36,6 +36,7 @@ class GroupMessageController extends GetxController {
 
   RxString imagePath = "".obs;
   RxString videoPath = "".obs;
+  RxString documentPath = "".obs;
   RxBool isSending = false.obs;
 
   RxString messageText = "".obs;
@@ -150,6 +151,19 @@ class GroupMessageController extends GetxController {
 
         videoPath.value = "";
         textController.clear();
+      }else if (documentPath.isNotEmpty) {
+        await uploadDocument(documentPath.value);
+        if (text.isNotEmpty) {
+          await Future.delayed(const Duration(milliseconds: 300));
+          socketService.sendGroupMessage(
+            messageType: "text",
+            groupId: groupId,
+            content: text,
+          );
+        }
+
+        documentPath.value = "";
+        textController.clear();
       } else if (text.isNotEmpty) {
         socketService.sendGroupMessage(
           groupId: groupId,
@@ -205,6 +219,25 @@ class GroupMessageController extends GetxController {
       );
     }
   }
+
+  Future<void> uploadDocument(String path) async {
+    try {
+      var result = await MessageRepo.uploadChatDocument(path);
+
+      if (result.status == true) {
+        socketService.sendGroupMessage(
+          groupId: groupId,
+          content: result.filename!,
+          messageType: "document",
+        );
+      }
+    } catch (e) {
+      log(
+        "GROUP AUDIO ERROR => $e",
+      );
+    }
+  }
+
 
   Future<void> getGroupMessages() async {
     try {

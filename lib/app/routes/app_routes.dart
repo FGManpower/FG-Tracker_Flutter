@@ -23,6 +23,7 @@ abstract class Routes {
   static const notificationScreen = _Paths.notificationScreen;
   static const groupChatScreen = _Paths.groupChatScreen;
   static const videoPlayerScreen = _Paths.videoPlayerScreen;
+  static const documentViewerScreen = _Paths.documentViewerScreen;
 
 
 }
@@ -49,6 +50,7 @@ abstract class _Paths {
   static const notificationScreen = '/NotificationScreen';
   static const groupChatScreen = '/groupChatScreen';
   static const videoPlayerScreen = '/VideoPlayerScreen';
+  static const documentViewerScreen = '/DocumentViewerScreen';
 
 
 

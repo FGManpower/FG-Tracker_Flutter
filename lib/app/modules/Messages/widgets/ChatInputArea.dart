@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:fgtracker/app/Core/constant/BottomSheet/ChatBottomSheet.dart';
+import 'package:fgtracker/app/Core/util/file_helper.dart';
 import 'package:fgtracker/app/Core/values/bottomSheet.dart';
 import 'package:fgtracker/app/Core/values/utility.dart';
 import 'package:fgtracker/app/Data/Services/file_services.dart';
@@ -19,6 +20,7 @@ class ChatInputArea extends StatelessWidget {
   final RxString messageText;
   final RxString imagePath;
   final RxString videoPath;
+  final RxString documentPath;
   final RxBool isSending;
   final TextEditingController textController;
   final ScrollController scrollController;
@@ -26,6 +28,7 @@ class ChatInputArea extends StatelessWidget {
   void Function(String)? onVoiceSend;
   final Function(String path) onImageSelected;
   final Function(String path) onvideoSelected;
+  final Function(String path) onDocumentSelected;
   final Rx<Uint8List?> videoThumbnail;
   final RxString videoDuration;
 
@@ -40,7 +43,11 @@ class ChatInputArea extends StatelessWidget {
       required this.onSend,
       required this.onImageSelected,
       required this.onvideoSelected,
-      required this.onVoiceSend,required this.videoDuration,required this.videoThumbnail})
+      required this.onVoiceSend,
+      required this.videoDuration,
+      required this.videoThumbnail,
+      required this.onDocumentSelected,
+      required this.documentPath})
       : super(key: key);
 
   final voiceController = Get.put(VoiceRecordController());
@@ -54,8 +61,11 @@ class ChatInputArea extends StatelessWidget {
         final isMessageNotEmpty = messageText.value.trim().isNotEmpty;
         final isImageSelected = imagePath.value.isNotEmpty;
         final isVideoSelected = videoPath.value.isNotEmpty;
-        final shouldShowSend =
-            isMessageNotEmpty || isImageSelected || isVideoSelected;
+        final isDocumentSelected = documentPath.value.isNotEmpty;
+        final shouldShowSend = isMessageNotEmpty ||
+            isImageSelected ||
+            isVideoSelected ||
+            isDocumentSelected;
 
         return Column(
           mainAxisSize: MainAxisSize.min,
@@ -99,41 +109,30 @@ class ChatInputArea extends StatelessWidget {
                       width: 250.w,
                       height: 180.h,
                       decoration: BoxDecoration(
-                        borderRadius:
-                        BorderRadius.circular(12.r),
+                        borderRadius: BorderRadius.circular(12.r),
                       ),
                       child: ClipRRect(
-                        borderRadius:
-                        BorderRadius.circular(12.r),
+                        borderRadius: BorderRadius.circular(12.r),
                         child: Stack(
                           fit: StackFit.expand,
                           children: [
                             Obx(
-                                  () => videoThumbnail
-                                  .value !=
-                                  null
+                              () => videoThumbnail.value != null
                                   ? Image.memory(
-                               videoThumbnail
-                                    .value!,
-                                fit: BoxFit.cover,
-                              )
+                                      videoThumbnail.value!,
+                                      fit: BoxFit.cover,
+                                    )
                                   : Container(
-                                color:
-                                Colors.black87,
-                              ),
+                                      color: Colors.black87,
+                                    ),
                             ),
                             Container(
                               decoration: BoxDecoration(
-                                gradient:
-                                LinearGradient(
-                                  begin:
-                                  Alignment.bottomCenter,
-                                  end:
-                                  Alignment.center,
+                                gradient: LinearGradient(
+                                  begin: Alignment.bottomCenter,
+                                  end: Alignment.center,
                                   colors: [
-                                    Colors.black
-                                        .withOpacity(
-                                        .75),
+                                    Colors.black.withOpacity(.75),
                                     Colors.transparent,
                                   ],
                                 ),
@@ -143,18 +142,13 @@ class ChatInputArea extends StatelessWidget {
                               child: Container(
                                 width: 60.w,
                                 height: 60.w,
-                                decoration:
-                                BoxDecoration(
-                                  color:
-                                  Colors.black45,
-                                  shape:
-                                  BoxShape.circle,
+                                decoration: BoxDecoration(
+                                  color: Colors.black45,
+                                  shape: BoxShape.circle,
                                 ),
                                 child: Icon(
-                                  Icons
-                                      .play_arrow_rounded,
-                                  color:
-                                  Colors.white,
+                                  Icons.play_arrow_rounded,
+                                  color: Colors.white,
                                   size: 40.sp,
                                 ),
                               ),
@@ -167,40 +161,24 @@ class ChatInputArea extends StatelessWidget {
                                 children: [
                                   Expanded(
                                     child: Text(
-                                      videoPath.value
-                                          .split('/')
-                                          .last,
+                                      videoPath.value.split('/').last,
                                       maxLines: 1,
-                                      overflow:
-                                      TextOverflow
-                                          .ellipsis,
-                                      style:
-                                      TextStyle(
-                                        color: Colors
-                                            .white,
-                                        fontSize:
-                                        11.sp,
-                                        fontWeight:
-                                        FontWeight
-                                            .w500,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 11.sp,
+                                        fontWeight: FontWeight.w500,
                                       ),
                                     ),
                                   ),
-                                  SizedBox(
-                                      width: 8.w),
+                                  SizedBox(width: 8.w),
                                   Obx(
-                                        () => Text(
-                                      videoDuration
-                                          .value,
-                                      style:
-                                      TextStyle(
-                                        color: Colors
-                                            .white,
-                                        fontSize:
-                                        11.sp,
-                                        fontWeight:
-                                        FontWeight
-                                            .w600,
+                                    () => Text(
+                                      videoDuration.value,
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 11.sp,
+                                        fontWeight: FontWeight.w600,
                                       ),
                                     ),
                                   ),
@@ -217,10 +195,106 @@ class ChatInputArea extends StatelessWidget {
                       child: GestureDetector(
                         onTap: () {
                           videoPath.value = '';
-                         videoThumbnail
-                              .value = null;
-                         videoDuration
-                              .value = '';
+                          videoThumbnail.value = null;
+                          videoDuration.value = '';
+                        },
+                        child: CircleAvatar(
+                          radius: 14.r,
+                          backgroundColor: Colors.black54,
+                          child: Icon(
+                            Icons.close,
+                            size: 16.sp,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            if (isDocumentSelected)
+              Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: 12.w,
+                  vertical: 6.h,
+                ),
+                child: Stack(
+                  children: [
+                    Container(
+                      width: 280.w,
+                      padding: EdgeInsets.all(14.w),
+                      decoration: BoxDecoration(
+                        color: const Color(0xff1F2937),
+                        borderRadius: BorderRadius.circular(14.r),
+                        border: Border.all(
+                          color: Colors.white.withOpacity(.08),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 55.w,
+                            height: 55.w,
+                            decoration: BoxDecoration(
+                              color: getFileColor(
+                                documentPath.value,
+                              ),
+                              borderRadius:
+                              BorderRadius.circular(12.r),
+                            ),
+                            child: Icon(
+                              getFileIcon(
+                                documentPath.value,
+                              ),
+                              color: Colors.white,
+                              size: 28.sp,
+                            ),
+                          ),
+                          SizedBox(width: 12.w),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment:
+                              CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  documentPath.value
+                                      .split('/')
+                                      .last,
+                                  maxLines: 2,
+                                  overflow:
+                                  TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 13.sp,
+                                    fontWeight:
+                                    FontWeight.w600,
+                                  ),
+                                ),
+                                SizedBox(height: 5.h),
+                                Text(
+                                  getFileExtension(
+                                    documentPath.value,
+                                  ).toUpperCase(),
+                                  style: TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 11.sp,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Positioned(
+                      right: 8.w,
+                      top: 8.h,
+                      child: GestureDetector(
+                        onTap: () {
+                          documentPath.value = '';
+                          // isDocumentSelected = false;
+                          // update();
                         },
                         child: CircleAvatar(
                           radius: 14.r,
@@ -393,7 +467,18 @@ class ChatInputArea extends StatelessWidget {
                                                 .pickVideoFromGallery();
                                             onvideoSelected(path?.path ?? "");
                                           },
-                                          onDocument: () {},
+                                          onDocument: () async {
+                                            final file = await FileServices()
+                                                .pickDocument();
+
+                                            if (file != null) {
+                                              print(
+                                                "Selected Document: ${file.path}",
+                                              );
+                                              onDocumentSelected(
+                                                  file.path ?? "");
+                                            }
+                                          },
                                           onContact: () {},
                                         );
                                       },

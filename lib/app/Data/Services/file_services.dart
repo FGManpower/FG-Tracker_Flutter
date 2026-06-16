@@ -4,6 +4,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart' as path_provider;
+import 'package:file_picker/file_picker.dart';
 
 class FileServices {
   final ImagePicker _picker = ImagePicker();
@@ -16,14 +17,12 @@ class FileServices {
 
       if (image == null) return null;
 
-      final dir =
-      await path_provider.getTemporaryDirectory();
+      final dir = await path_provider.getTemporaryDirectory();
 
       final targetPath =
           '${dir.path}/${DateTime.now().millisecondsSinceEpoch}.jpg';
 
-      final result =
-      await FlutterImageCompress.compressAndGetFile(
+      final result = await FlutterImageCompress.compressAndGetFile(
         image.path,
         targetPath,
         quality: 85,
@@ -31,9 +30,7 @@ class FileServices {
         minHeight: 720,
       );
 
-      return result != null
-          ? File(result.path)
-          : File(image.path);
+      return result != null ? File(result.path) : File(image.path);
     } catch (e) {
       return null;
     }
@@ -58,7 +55,7 @@ class FileServices {
 
   Future<File?> pickDocument() async {
     try {
-      final result = await FilePicker.platform.pickFiles(
+      FilePickerResult? result = await FilePicker.pickFiles(
         type: FileType.custom,
         allowedExtensions: [
           'pdf',
@@ -69,18 +66,21 @@ class FileServices {
           'ppt',
           'pptx',
           'txt',
+          'csv',
         ],
       );
 
-      if (result == null ||
-          result.files.single.path == null) {
-        return null;
+      if (result != null && result.files.single.path != null) {
+        return File(
+          result.files.single.path!,
+        );
       }
 
-      return File(
-        result.files.single.path!,
-      );
+      return null;
     } catch (e) {
+      print(
+        "Document Picker Error: $e",
+      );
       return null;
     }
   }

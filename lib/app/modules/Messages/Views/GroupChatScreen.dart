@@ -125,6 +125,7 @@ class GroupChatScreen extends GetView<GroupMessageController> {
                 messageText: controller.messageText,
                 imagePath: controller.imagePath,
                 videoPath: controller.videoPath,
+                documentPath: controller.documentPath,
                 isSending: controller.isSending,
                 textController: textController,
                 scrollController: controller.scrollController,
@@ -152,6 +153,17 @@ class GroupChatScreen extends GetView<GroupMessageController> {
                       );
 
                       controller.update();
+
+                  }
+                },
+                onDocumentSelected: (path) async {
+                  Navigator.pop(context);
+                  if (Utility.isNotNullEmptyOrFalse(path)) {
+                    controller.documentPath.value = path;
+                    // await controller.generateVideoPreview(
+                    //   path,
+                    // );
+                    // controller.update();
 
                   }
                 },

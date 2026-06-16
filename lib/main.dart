@@ -71,14 +71,12 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
       await CallRepo().isCallActive(callData['callId'].toString());
 
       if (!isActive) {
-        print("Call already missed/rejected/ended");
         return;
       }
 
     if (Platform.isIOS) {
       CallUtils.instance.showIncomingCall(data: callMap);
     } else {
-      print("======UserInfoDetail===========$userInfo");
       await ConnectycubeFlutterCallKit.showCallNotification(
         CallEvent(
           sessionId: callData['callId'].toString(),
@@ -92,8 +90,7 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     }
 
     } catch (e) {
-      print("==========InitiateCallBack5");
-      print(e.toString());
+      log("callError=======${e.toString()}");
     }
     //  try {
     //    print("==========InitiateCallBack");
@@ -237,13 +234,11 @@ void setupVoipListener() {
   platform.setMethodCallHandler((call) async {
     if (call.method == "voipToken") {
       final token = call.arguments;
-      print("VoIP Token: $token");
     }
 
     if (call.method == "incomingCall") {
       final data = Map<String, dynamic>.from(call.arguments);
 
-      print("📞 Incoming Call Data: $data");
 
       showIncomingCall(data);
     }

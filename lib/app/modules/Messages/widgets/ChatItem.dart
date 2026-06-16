@@ -1,6 +1,7 @@
 import 'package:fgtracker/app/Core/util/DateTime_Format.dart';
 import 'package:fgtracker/app/Core/values/Dialog/DialogBox.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
+import 'package:fgtracker/app/Data/Services/DocumentService.dart';
 import 'package:fgtracker/app/Model/GetMessage.dart';
 import 'package:fgtracker/app/modules/Messages/Views/videoPlayerScreen.dart';
 import 'package:fgtracker/app/modules/Messages/widgets/videoThumbnailWidget.dart';
@@ -16,6 +17,7 @@ import '../../../Core/constant/const_res.dart';
 import '../../../Core/constant/pref_res.dart';
 import '../../../config/themes_data.dart';
 import '../../../global_widget/common_widget.dart';
+import '../Controller/DocumentViewerController.dart';
 import 'AudioPlayerWidget.dart';
 import 'message_Widgets.dart';
 
@@ -123,7 +125,6 @@ class ChatBubble extends StatelessWidget {
     );
   }
 
-
   Widget _buildMessageContent(
     MessageData message,
     Color textColor,
@@ -162,8 +163,7 @@ class ChatBubble extends StatelessWidget {
         isMe: false,
       );
     } else if (message.messageType == "video") {
-      final videoUrl =
-          "${ConstRes.aImageBaseUrl}${message.content}";
+      final videoUrl = "${ConstRes.aImageBaseUrl}${message.content}";
 
       return VideoThumbnailWidget(
         videoUrl: videoUrl,
@@ -176,7 +176,112 @@ class ChatBubble extends StatelessWidget {
           );
         },
       );
-    }else {
+    } else if (message.messageType == "document") {
+      final parts = message.content?.split("||") ?? [];
+
+      final documentUrl = parts.isNotEmpty ? parts[0] : "";
+
+      final documentName =
+          parts.length > 1 ? parts[1] : documentUrl.split('/').last;
+
+      final extension = documentName.split('.').last.toLowerCase();
+
+      IconData icon;
+      Color iconColor;
+
+      switch (extension) {
+        case "pdf":
+          icon = Icons.picture_as_pdf;
+          iconColor = Colors.red;
+          break;
+
+        case "doc":
+        case "docx":
+          icon = Icons.description;
+          iconColor = Colors.blue;
+          break;
+
+        case "xls":
+        case "xlsx":
+          icon = Icons.table_chart;
+          iconColor = Colors.green;
+          break;
+
+        case "ppt":
+        case "pptx":
+          icon = Icons.slideshow;
+          iconColor = Colors.orange;
+          break;
+
+        default:
+          icon = Icons.insert_drive_file;
+          iconColor = Colors.grey;
+      }
+
+      return InkWell(
+        onTap: () async {
+          await DocumentService().openDocument(
+            "${ConstRes.aImageBaseUrl}${documentUrl}",
+          );
+        },
+        child: Container(
+          width: 240.w,
+          padding: EdgeInsets.all(12.w),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(.08),
+            borderRadius: BorderRadius.circular(12.r),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 50.w,
+                height: 50.w,
+                decoration: BoxDecoration(
+                  color: iconColor,
+                  borderRadius: BorderRadius.circular(10.r),
+                ),
+                child: Icon(
+                  icon,
+                  color: Colors.white,
+                  size: 26.sp,
+                ),
+              ),
+              SizedBox(width: 10.w),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      documentName,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: textColor,
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    SizedBox(height: 4.h),
+                    Text(
+                      extension.toUpperCase(),
+                      style: TextStyle(
+                        color: Colors.grey,
+                        fontSize: 10.sp,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.download_rounded,
+                color: textColor,
+                size: 20.sp,
+              ),
+            ],
+          ),
+        ),
+      );
+    } else {
       return reausabletext(
         message.content.toString(),
         color: textColor,
@@ -436,13 +541,10 @@ class GroupChatBubble extends StatelessWidget {
     );
   }
 
-
-
-
   Widget _buildMessageContent(
-      MessageData message,
-      Color textColor,
-      ) {
+    MessageData message,
+    Color textColor,
+  ) {
     if (message.messageType == "image" || message.messageType == "image_text") {
       final parts = message.content?.split("||") ?? [];
       final imagePart = parts.isNotEmpty ? parts[0] : "";
@@ -477,8 +579,7 @@ class GroupChatBubble extends StatelessWidget {
         isMe: false,
       );
     } else if (message.messageType == "video") {
-      final videoUrl =
-          "${ConstRes.aImageBaseUrl}${message.content}";
+      final videoUrl = "${ConstRes.aImageBaseUrl}${message.content}";
 
       return VideoThumbnailWidget(
         videoUrl: videoUrl,
@@ -491,7 +592,112 @@ class GroupChatBubble extends StatelessWidget {
           );
         },
       );
-    }else {
+    } else if (message.messageType == "document") {
+      final parts = message.content?.split("||") ?? [];
+
+      final documentUrl = parts.isNotEmpty ? parts[0] : "";
+
+      final documentName =
+      parts.length > 1 ? parts[1] : documentUrl.split('/').last;
+
+      final extension = documentName.split('.').last.toLowerCase();
+
+      IconData icon;
+      Color iconColor;
+
+      switch (extension) {
+        case "pdf":
+          icon = Icons.picture_as_pdf;
+          iconColor = Colors.red;
+          break;
+
+        case "doc":
+        case "docx":
+          icon = Icons.description;
+          iconColor = Colors.blue;
+          break;
+
+        case "xls":
+        case "xlsx":
+          icon = Icons.table_chart;
+          iconColor = Colors.green;
+          break;
+
+        case "ppt":
+        case "pptx":
+          icon = Icons.slideshow;
+          iconColor = Colors.orange;
+          break;
+
+        default:
+          icon = Icons.insert_drive_file;
+          iconColor = Colors.grey;
+      }
+
+      return InkWell(
+        onTap: () async {
+          await DocumentService().openDocument(
+            "${ConstRes.aImageBaseUrl}${documentUrl}",
+          );
+        },
+        child: Container(
+          width: 240.w,
+          padding: EdgeInsets.all(12.w),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(.08),
+            borderRadius: BorderRadius.circular(12.r),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 50.w,
+                height: 50.w,
+                decoration: BoxDecoration(
+                  color: iconColor,
+                  borderRadius: BorderRadius.circular(10.r),
+                ),
+                child: Icon(
+                  icon,
+                  color: Colors.white,
+                  size: 26.sp,
+                ),
+              ),
+              SizedBox(width: 10.w),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      documentName,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: textColor,
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    SizedBox(height: 4.h),
+                    Text(
+                      extension.toUpperCase(),
+                      style: TextStyle(
+                        color: Colors.grey,
+                        fontSize: 10.sp,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.download_rounded,
+                color: textColor,
+                size: 20.sp,
+              ),
+            ],
+          ),
+        ),
+      );
+    } else {
       return reausabletext(
         message.content.toString(),
         color: textColor,

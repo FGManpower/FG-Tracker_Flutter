@@ -45,7 +45,7 @@ class ChatScreen extends GetView<MessageController> {
           profileImageUrl:
               "${ConstRes.aImageBaseUrl}${userData.profileImage ?? ""}",
           userName: userData.name ?? "",
-         controller: controller,
+          controller: controller,
           groupName: controller.arguments?['groupName'],
           onBackTap: () {
             controller.handleBackPressed(context,
@@ -129,7 +129,7 @@ class ChatScreen extends GetView<MessageController> {
             CommonDialog.ConfirmationDialog(
               title: "Remove Member",
               content:
-              "Are you sure you want to remove this member from the group? This action cannot be undone.",
+                  "Are you sure you want to remove this member from the group? This action cannot be undone.",
               confirm: "Remove",
               onConfirm: () {
                 groupController.deleteGroupMember(context,
@@ -152,6 +152,7 @@ class ChatScreen extends GetView<MessageController> {
                 messageText: controller.messageText,
                 imagePath: controller.imagePath,
                 videoPath: controller.videoPath,
+                documentPath: controller.documentPath,
                 isSending: controller.isSending,
                 textController: _controller,
                 scrollController: controller.scrollController,
@@ -174,11 +175,15 @@ class ChatScreen extends GetView<MessageController> {
                       path,
                     );
                     controller.update();
-
+                  }
+                },
+                onDocumentSelected: (path) async {
+                  Navigator.pop(context);
+                  if (Utility.isNotNullEmptyOrFalse(path)) {
+                    controller.documentPath.value = path;
                   }
                 },
               ),
-
             ],
           ),
         ),

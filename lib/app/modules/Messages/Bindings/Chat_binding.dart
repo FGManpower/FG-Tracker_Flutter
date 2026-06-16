@@ -1,3 +1,4 @@
+import 'package:fgtracker/app/modules/Messages/Controller/DocumentViewerController.dart';
 import 'package:fgtracker/app/modules/Messages/Controller/GroupChatController.dart';
 import 'package:fgtracker/app/modules/Messages/Controller/MessageController.dart';
 import 'package:get/get.dart';
@@ -16,6 +17,16 @@ class GroupChatBinding extends Bindings {
   void dependencies() {
     Get.lazyPut<GroupMessageController>(
       () => GroupMessageController(),
+    );
+  }
+}
+
+
+class DocumentBinding extends Bindings {
+  @override
+  void dependencies() {
+    Get.lazyPut<DocumentViewerController>(
+          () => DocumentViewerController(),
     );
   }
 }

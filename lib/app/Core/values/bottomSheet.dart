@@ -1,7 +1,6 @@
 import 'package:fgtracker/app/Core/theme/AppText.dart';
 import 'package:fgtracker/app/Core/values/colors.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -51,25 +50,6 @@ class ModalImage {
       }
     } catch (e) {
       // log("${AppText.errorPckngImgFrmCamera.tr}$e");
-    }
-  }
-
-  Future<void> callFilePicker(
-    BuildContext context,
-  ) async {
-    try {
-      FilePickerResult? result = await FilePicker.platform.pickFiles();
-      if (result != null) {
-        String? filePath = result.files.single.path;
-        if (onFileSelect != null && filePath != null) {
-          onFileSelect!(filePath);
-          // Navigator.pop(context);  // Close the dialog after file selection
-        } else {
-          // log(AppText.fileSelectCallbackNtProvided.tr);
-        }
-      }
-    } catch (e) {
-      // log("${AppText.errorPickingFile.tr}$e");
     }
   }
 
@@ -192,15 +172,6 @@ class ModalImage {
                     await callCamera(context, type: groupType);
                   },
                 ),
-                if (type == "File")
-                  _buildOption(
-                    icon: Icons.insert_drive_file_rounded,
-                    text: AppText.file,
-                    color: Colors.teal,
-                    onTap: () async {
-                      await callFilePicker(context);
-                    },
-                  ),
                 _buildOption(
                   icon: Icons.cancel_rounded,
                   text: AppText.cancel.tr,
