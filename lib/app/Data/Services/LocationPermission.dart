@@ -2,10 +2,7 @@ import 'package:fgtracker/app/Core/values/Context_Utility.dart';
 import 'package:fgtracker/app/Core/values/bottomSheet.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:permission_handler/permission_handler.dart';
 
-import '../../Core/values/Dialog/Common_dialog.dart';
-import '../../Core/values/bottomSheet.dart';
 
 class LocationPermissions {
 

@@ -239,8 +239,7 @@ class ChatInputArea extends StatelessWidget {
                               color: getFileColor(
                                 documentPath.value,
                               ),
-                              borderRadius:
-                              BorderRadius.circular(12.r),
+                              borderRadius: BorderRadius.circular(12.r),
                             ),
                             child: Icon(
                               getFileIcon(
@@ -253,22 +252,17 @@ class ChatInputArea extends StatelessWidget {
                           SizedBox(width: 12.w),
                           Expanded(
                             child: Column(
-                              crossAxisAlignment:
-                              CrossAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Text(
-                                  documentPath.value
-                                      .split('/')
-                                      .last,
+                                  documentPath.value.split('/').last,
                                   maxLines: 2,
-                                  overflow:
-                                  TextOverflow.ellipsis,
+                                  overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
                                     color: Colors.white,
                                     fontSize: 13.sp,
-                                    fontWeight:
-                                    FontWeight.w600,
+                                    fontWeight: FontWeight.w600,
                                   ),
                                 ),
                                 SizedBox(height: 5.h),
@@ -293,13 +287,11 @@ class ChatInputArea extends StatelessWidget {
                       child: GestureDetector(
                         onTap: () {
                           documentPath.value = '';
-                          // isDocumentSelected = false;
-                          // update();
+
                         },
                         child: CircleAvatar(
                           radius: 14.r,
-                          backgroundColor:
-                          Colors.black54,
+                          backgroundColor: Colors.black54,
                           child: Icon(
                             Icons.close,
                             size: 16.sp,
@@ -472,14 +464,11 @@ class ChatInputArea extends StatelessWidget {
                                                 .pickDocument();
 
                                             if (file != null) {
-                                              print(
-                                                "Selected Document: ${file.path}",
-                                              );
                                               onDocumentSelected(
                                                   file.path ?? "");
                                             }
                                           },
-                                          onContact: () {},
+                                          // onContact: () {},
                                         );
                                       },
                                       child: CircleAvatar(

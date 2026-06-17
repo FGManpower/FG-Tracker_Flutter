@@ -61,3 +61,23 @@ Color getFileColor(String path) {
 String getFileExtension(String path) {
   return path.split('.').last;
 }
+
+String removeDuplicateExtension(String name) {
+  final extensions = [
+    '.pdf',
+    '.doc',
+    '.docx',
+    '.xls',
+    '.xlsx',
+    '.ppt',
+    '.pptx',
+  ];
+
+  for (final ext in extensions) {
+    if (name.endsWith('$ext$ext')) {
+      return name.replaceFirst('$ext$ext', ext);
+    }
+  }
+
+  return name;
+}

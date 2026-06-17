@@ -1,8 +1,4 @@
 import 'package:fgtracker/app/Core/util/http/http_util.dart';
-import 'package:fgtracker/app/Core/values/global.dart';
-import 'package:fgtracker/app/Model/CommonRes.dart';
-import 'package:fgtracker/app/Model/GroupRes.dart';
-import 'package:fgtracker/app/Model/MemberDataRes.dart';
 import 'package:fgtracker/app/Model/callDetailRes.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;

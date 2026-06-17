@@ -1,4 +1,5 @@
 import 'package:fgtracker/app/Core/util/DateTime_Format.dart';
+import 'package:fgtracker/app/Core/util/file_helper.dart';
 import 'package:fgtracker/app/Core/values/Dialog/DialogBox.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Data/Services/DocumentService.dart';
@@ -17,7 +18,7 @@ import '../../../Core/constant/const_res.dart';
 import '../../../Core/constant/pref_res.dart';
 import '../../../config/themes_data.dart';
 import '../../../global_widget/common_widget.dart';
-import '../Controller/DocumentViewerController.dart';
+
 import 'AudioPlayerWidget.dart';
 import 'message_Widgets.dart';
 
@@ -181,8 +182,12 @@ class ChatBubble extends StatelessWidget {
 
       final documentUrl = parts.isNotEmpty ? parts[0] : "";
 
-      final documentName =
+      String documentName =
           parts.length > 1 ? parts[1] : documentUrl.split('/').last;
+
+      documentName = removeDuplicateExtension(
+        documentName,
+      );
 
       final extension = documentName.split('.').last.toLowerCase();
 
@@ -221,7 +226,7 @@ class ChatBubble extends StatelessWidget {
       return InkWell(
         onTap: () async {
           await DocumentService().openDocument(
-            "${ConstRes.aImageBaseUrl}${documentUrl}",
+            "${ConstRes.aImageBaseUrl}$documentUrl",
           );
         },
         child: Container(
@@ -597,8 +602,12 @@ class GroupChatBubble extends StatelessWidget {
 
       final documentUrl = parts.isNotEmpty ? parts[0] : "";
 
-      final documentName =
-      parts.length > 1 ? parts[1] : documentUrl.split('/').last;
+      String documentName =
+          parts.length > 1 ? parts[1] : documentUrl.split('/').last;
+
+      documentName = removeDuplicateExtension(
+        documentName,
+      );
 
       final extension = documentName.split('.').last.toLowerCase();
 

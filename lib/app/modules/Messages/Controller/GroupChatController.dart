@@ -159,6 +159,7 @@ class GroupMessageController extends GetxController {
             messageType: "text",
             groupId: groupId,
             content: text,
+
           );
         }
 
@@ -227,7 +228,7 @@ class GroupMessageController extends GetxController {
       if (result.status == true) {
         socketService.sendGroupMessage(
           groupId: groupId,
-          content: result.filename!,
+          content: "${result.filename}||${result.originalName!}",
           messageType: "document",
         );
       }

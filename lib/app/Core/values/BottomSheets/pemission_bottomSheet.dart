@@ -3,8 +3,6 @@ import 'dart:io';
 
 import 'package:fgtracker/app/Core/theme/AppText.dart';
 import 'package:fgtracker/app/Core/values/Dialog/Common_dialog.dart';
-import 'package:fgtracker/app/Core/values/global.dart';
-import 'package:fgtracker/app/Core/values/utility.dart';
 import 'package:fgtracker/app/modules/home/Controller/permission_controller.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';

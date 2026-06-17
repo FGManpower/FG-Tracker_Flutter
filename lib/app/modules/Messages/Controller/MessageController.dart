@@ -215,7 +215,7 @@ class MessageController extends GetxController {
         messageType: "document",
         receiverId: memberData.userId.toString(),
         groupId: memberData.groupId!,
-        content: result.filename!,
+        content: "${result.filename}||${result.originalName!}",
       );
     }
   }
