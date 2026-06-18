@@ -21,8 +21,8 @@ if (flutterRoot == null) {
     throw new GradleException("Flutter SDK not found. Define location with flutter.sdk in the local.properties file.")
 }
 
-def flutterVersionCode = localProperties.getProperty('flutter.versionCode', '162')
-def flutterVersionName = localProperties.getProperty('flutter.versionName', '1.6.3')
+def flutterVersionCode = localProperties.getProperty('flutter.versionCode', '165')
+def flutterVersionName = localProperties.getProperty('flutter.versionName', '1.6.4')
 
 
 def keystoreProperties = new Properties()
