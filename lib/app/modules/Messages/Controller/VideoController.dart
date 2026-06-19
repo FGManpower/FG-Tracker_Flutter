@@ -1,7 +1,10 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:fgtracker/app/Core/constant/const_res.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
+import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:video_player/video_player.dart';
@@ -19,6 +22,9 @@ class VideoControllerX extends GetxController {
 
   Timer? hideTimer;
 
+  final FlutterLocalNotificationsPlugin _localNotifications =
+  FlutterLocalNotificationsPlugin();
+
   @override
   void onInit() {
     super.onInit();
@@ -32,7 +38,30 @@ class VideoControllerX extends GetxController {
       Uri.parse(videoUrl),
     );
 
+    _initLocalNotifications();
+
     initializeVideo();
+  }
+
+  Future<void> _initLocalNotifications() async {
+    const androidInitSetting =
+    AndroidInitializationSettings("@mipmap/ic_launcher");
+    final iosInitSetting = DarwinInitializationSettings();
+
+    final initSettings = InitializationSettings(
+      android: androidInitSetting,
+      iOS: iosInitSetting,
+    );
+
+    await _localNotifications.initialize(
+      initSettings,
+      onDidReceiveNotificationResponse: (response) {
+        final filePath = response.payload;
+        if (filePath != null && filePath.isNotEmpty) {
+          OpenFile.open(filePath);
+        }
+      },
+    );
   }
 
   Future<void> initializeVideo() async {
@@ -162,16 +191,61 @@ class VideoControllerX extends GetxController {
         filePath,
       );
 
-      Get.snackbar(
-        "Success",
-        "Video downloaded successfully",
+      await _showLocalNotification(
+        title: "Download complete",
+        body: "Tap to open the video",
+        payload: filePath,
       );
     } catch (e) {
-      Get.snackbar(
-        "Error",
-        "Download failed",
+      await _showLocalNotification(
+        title: "Download failed",
+        body: "Unable to download video",
       );
     }
+  }
+
+  Future<void> _showLocalNotification({
+    required String title,
+    required String body,
+    String? payload,
+  }) async {
+    final channelId = Random.secure().nextInt(10000).toString();
+
+    final AndroidNotificationChannel channel = AndroidNotificationChannel(
+      channelId,
+      "Download Notification",
+      importance: Importance.max,
+    );
+
+    final AndroidNotificationDetails androidDetails =
+    AndroidNotificationDetails(
+      channel.id,
+      channel.name,
+      channelDescription: "Video download status",
+      importance: Importance.high,
+      priority: Priority.high,
+      ticker: "ticker",
+    );
+
+    const DarwinNotificationDetails darwinDetails =
+    DarwinNotificationDetails(
+      presentAlert: true,
+      presentBadge: true,
+      presentSound: true,
+    );
+
+    final NotificationDetails notificationDetails = NotificationDetails(
+      android: androidDetails,
+      iOS: darwinDetails,
+    );
+
+    await _localNotifications.show(
+      DateTime.now().millisecondsSinceEpoch.remainder(100000),
+      title,
+      body,
+      notificationDetails,
+      payload: payload,
+    );
   }
 
   @override

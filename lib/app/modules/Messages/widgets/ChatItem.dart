@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:fgtracker/app/Core/util/DateTime_Format.dart';
 import 'package:fgtracker/app/Core/util/file_helper.dart';
@@ -17,6 +18,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:video_thumbnail/video_thumbnail.dart';
 
 import '../../../../gen/fonts.gen.dart';
 import '../../../Core/constant/const_res.dart';
@@ -553,7 +555,24 @@ class GroupChatBubble extends StatelessWidget {
   }
 }
 
-
+// ============================================================================
+// ChatMediaDownloadTile
+// ----------------------------------------------------------------------------
+// WhatsApp-style download-on-demand tile for VIDEO and DOCUMENT messages.
+//
+// - On open: checks local app storage for an already-downloaded copy.
+//     -> Already downloaded  : shows the "ready" view, no download icon.
+//     -> Not downloaded yet  : fetches file size (HEAD request) and shows a
+//                              download icon + size, exactly like WhatsApp.
+// - Tap on download icon: downloads the file with a visible progress ring.
+// - Once downloaded: permanently switches to the "ready" view (never shows
+//   the download icon again for that file, since it's cached on disk).
+//
+// IMPORTANT: For video, "downloaded" only unlocks the existing
+// VideoThumbnailWidget + Routes.videoPlayerScreen flow, which still streams
+// from the remote URL exactly as before — the local file is only used as the
+// "has this been fetched once" marker, per requirement.
+// ============================================================================
 class ChatMediaDownloadTile extends StatefulWidget {
   final String fileUrl;
   final String fileName;
@@ -583,11 +602,15 @@ class _ChatMediaDownloadTileState extends State<ChatMediaDownloadTile> {
   double _progress = 0.0;
   String? _localPath;
   String _sizeLabel = '';
+  Uint8List? _previewThumbnail;
 
   @override
   void initState() {
     super.initState();
     if (widget.isSentByMe) {
+      // Messages sent by me are already on the server successfully (tick
+      // marks confirm that) — never show a download affordance for my own
+      // outgoing media, exactly like WhatsApp.
       _status = _TileStatus.downloaded;
       return;
     }
@@ -619,9 +642,31 @@ class _ChatMediaDownloadTileState extends State<ChatMediaDownloadTile> {
       }
 
       await _fetchSize();
+      if (widget.isVideo) {
+        _fetchPreviewThumbnail();
+      }
     } catch (e) {
       if (!mounted) return;
       setState(() => _status = _TileStatus.notDownloaded);
+    }
+  }
+
+  // Fetches a single lightweight preview frame for an un-downloaded video so
+  // the tile shows a real (lightly tinted) banner instead of a blank box —
+  // this does NOT download the full video, just one small thumbnail frame.
+  Future<void> _fetchPreviewThumbnail() async {
+    try {
+      final bytes = await VideoThumbnail.thumbnailData(
+        video: widget.fileUrl,
+        imageFormat: ImageFormat.JPEG,
+        maxWidth: 300,
+        quality: 50,
+      );
+      if (mounted && bytes != null) {
+        setState(() => _previewThumbnail = bytes);
+      }
+    } catch (e) {
+      // Silently ignore — falls back to the plain icon banner.
     }
   }
 
@@ -713,6 +758,8 @@ class _ChatMediaDownloadTileState extends State<ChatMediaDownloadTile> {
     if (_localPath != null) {
       await OpenFile.open(_localPath);
     } else {
+      // My own sent document — never downloaded locally by this tile, so
+      // fall back to opening it straight from the server, same as before.
       await DocumentService().openDocument(widget.fileUrl);
     }
   }
@@ -725,8 +772,10 @@ class _ChatMediaDownloadTileState extends State<ChatMediaDownloadTile> {
     return _buildDocumentTile();
   }
 
+  // -------------------- VIDEO --------------------
   Widget _buildVideoTile() {
     if (_status == _TileStatus.downloaded) {
+      // Already fetched once -> show existing thumbnail/player flow as-is.
       return VideoThumbnailWidget(
         videoUrl: widget.fileUrl,
         onTap: () => widget.onOpenVideo?.call(),
@@ -735,36 +784,49 @@ class _ChatMediaDownloadTileState extends State<ChatMediaDownloadTile> {
 
     return GestureDetector(
       onTap: _status == _TileStatus.downloading ? null : _startDownload,
-      child: Container(
-        width: 220.w,
-        height: 140.h,
-        decoration: BoxDecoration(
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12.r),
+        child: Container(
+          width: 220.w,
+          height: 140.h,
           color: Colors.black.withOpacity(0.06),
-          borderRadius: BorderRadius.circular(12.r),
-        ),
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            Icon(
-              Icons.videocam_rounded,
-              size: 40.sp,
-              color: widget.textColor.withOpacity(0.4),
-            ),
-            _buildDownloadOverlay(),
-            Positioned(
-              bottom: 8.h,
-              left: 0,
-              right: 0,
-              child: Center(
-                child: _buildStatusLabel(),
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              // Lightweight preview banner (single fetched frame), shown
+              // as a "blurred" look via a dark tint overlay on top — the
+              // video itself never plays here, only a still preview.
+              if (_previewThumbnail != null)
+                Image.memory(
+                  _previewThumbnail!,
+                  fit: BoxFit.cover,
+                ),
+              if (_previewThumbnail == null)
+                Center(
+                  child: Icon(
+                    Icons.videocam_rounded,
+                    size: 40.sp,
+                    color: widget.textColor.withOpacity(0.4),
+                  ),
+                ),
+              // Light dark tint so the badge stays readable over the
+              // preview frame, like WhatsApp's faded banner look.
+              if (_previewThumbnail != null)
+                Container(color: Colors.black.withOpacity(0.32)),
+
+              // single combined pill: icon/loader + size/% text together,
+              // forced dead-center of the tile regardless of its own size.
+              Center(
+                child: _buildDownloadBadge(),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
 
+  // -------------------- DOCUMENT --------------------
   Widget _buildDocumentTile() {
     final extension = widget.fileName.split('.').last.toLowerCase();
     final icon = getFileIcon(widget.fileName);
@@ -869,6 +931,7 @@ class _ChatMediaDownloadTileState extends State<ChatMediaDownloadTile> {
       );
     }
 
+    // notDownloaded / checking -> download affordance
     return Icon(
       Icons.download_rounded,
       color: widget.textColor,
@@ -876,68 +939,73 @@ class _ChatMediaDownloadTileState extends State<ChatMediaDownloadTile> {
     );
   }
 
-  Widget _buildDownloadOverlay() {
+  // -------------------- shared bits for video overlay --------------------
+
+  // Single combined pill (icon/loader + text together), WhatsApp-style:
+  // one rounded dark badge showing the download icon and size/percentage
+  // side by side — not two separate widgets.
+  Widget _buildDownloadBadge() {
+    Widget leading;
+    String? label;
+
     if (_status == _TileStatus.downloading) {
-      return SizedBox(
-        width: 36.w,
-        height: 36.w,
+      leading = SizedBox(
+        width: 16.w,
+        height: 16.w,
         child: CircularProgressIndicator(
           value: _progress > 0 ? _progress : null,
-          strokeWidth: 3,
-          color: widget.textColor,
-          backgroundColor: Colors.black.withOpacity(0.15),
-        ),
-      );
-    }
-
-    if (_status == _TileStatus.error) {
-      return Container(
-        width: 36.w,
-        height: 36.w,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: Colors.black.withOpacity(0.45),
-        ),
-        child: Icon(
-          Icons.refresh_rounded,
+          strokeWidth: 2,
           color: Colors.white,
-          size: 20.sp,
+          backgroundColor: Colors.white.withOpacity(0.25),
         ),
       );
+      label = '${(_progress * 100).clamp(0, 100).toStringAsFixed(0)}%';
+    } else if (_status == _TileStatus.error) {
+      leading = Icon(
+        Icons.refresh_rounded,
+        color: Colors.white,
+        size: 18.sp,
+      );
+      label = 'Tap to retry';
+    } else {
+      // notDownloaded / checking
+      leading = Icon(
+        Icons.download_rounded,
+        color: Colors.white,
+        size: 18.sp,
+      );
+      label = _sizeLabel.isNotEmpty ? _sizeLabel : null;
     }
 
     return Container(
-      width: 36.w,
-      height: 36.w,
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 7.h),
       decoration: BoxDecoration(
-        shape: BoxShape.circle,
         color: Colors.black.withOpacity(0.45),
+        borderRadius: BorderRadius.circular(20.r),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.25),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
-      child: Icon(
-        Icons.download_rounded,
-        color: Colors.white,
-        size: 20.sp,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          leading,
+          if (label != null) SizedBox(width: 8.w),
+          if (label != null)
+            Text(
+              label,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 12.sp,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+        ],
       ),
-    );
-  }
-
-  Widget _buildStatusLabel() {
-    if (_status == _TileStatus.error) {
-      return Text(
-        'Tap to retry',
-        style: TextStyle(color: Colors.white, fontSize: 10.sp),
-      );
-    }
-    if (_status == _TileStatus.downloading) {
-      return Text(
-        '${(_progress * 100).clamp(0, 100).toStringAsFixed(0)}%',
-        style: TextStyle(color: Colors.white, fontSize: 10.sp),
-      );
-    }
-    if (_sizeLabel.isEmpty) return const SizedBox.shrink();
-    return Text(
-      _sizeLabel,
-      style: TextStyle(color: Colors.white, fontSize: 10.sp),
     );
   }
 }
