@@ -60,15 +60,15 @@ class GroupChatScreen extends GetView<GroupMessageController> {
                 radius: 20,
                 backgroundImage: controller.groupImage.isNotEmpty
                     ? NetworkImage(
-                        "${ConstRes.aImageBaseUrl}${controller.groupImage}",
-                      )
+                  "${ConstRes.aImageBaseUrl}${controller.groupImage}",
+                )
                     : null,
                 backgroundColor: Colors.deepPurple.shade100,
                 child: controller.groupImage.isEmpty
                     ? Icon(
-                        Icons.group,
-                        color: Colors.deepPurple,
-                      )
+                  Icons.group,
+                  color: Colors.deepPurple,
+                )
                     : null,
               ),
               SizedBox(width: 12),
@@ -86,7 +86,7 @@ class GroupChatScreen extends GetView<GroupMessageController> {
                     ),
                   ),
                   Obx(
-                    () => Text(
+                        () => Text(
                       "${controller.groupMembers.length} Members",
                       style: TextStyle(
                         color: Colors.grey,
@@ -109,66 +109,48 @@ class GroupChatScreen extends GetView<GroupMessageController> {
                 scrollController: controller.scrollController,
               ),
             ),
-            Container(
-              padding: EdgeInsets.fromLTRB(12, 8, 12, 16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black12,
-                    blurRadius: 10,
-                    offset: Offset(0, -2),
-                  ),
-                ],
-              ),
-              child: ChatInputArea(
-                messageText: controller.messageText,
-                imagePath: controller.imagePath,
-                videoPath: controller.videoPath,
-                documentPath: controller.documentPath,
-                isSending: controller.isSending,
-                textController: textController,
-                scrollController: controller.scrollController,
-                videoDuration: controller.videoDuration,
-                videoThumbnail: controller.videoThumbnail,
-                onSend: () {
-                  controller.sendMessage(
-                    textController: textController,
+            // Directly use ChatInputArea – no extra container
+            ChatInputArea(
+              messageText: controller.messageText,
+              imagePath: controller.imagePath,
+              videoPath: controller.videoPath,
+              documentPath: controller.documentPath,
+              isSending: controller.isSending,
+              textController: textController,
+              scrollController: controller.scrollController,
+              videoDuration: controller.videoDuration,
+              videoThumbnail: controller.videoThumbnail,
+              onSend: () {
+                controller.sendMessage(
+                  textController: textController,
+                );
+              },
+              onImageSelected: (path) {
+                controller.imagePath.value = path;
+              },
+              onVoiceSend: (voicePath) {
+                controller.uploadAudio(voicePath);
+              },
+              onvideoSelected: (path) async {
+                Navigator.pop(context);
+                if (Utility.isNotNullEmptyOrFalse(path)) {
+                  controller.videoPath.value = path;
+                  await controller.generateVideoPreview(
+                    path,
                   );
-                },
-                onImageSelected: (path) {
-                  controller.imagePath.value = path;
-                },
-                onVoiceSend: (voicePath) {
-                  controller.uploadAudio(voicePath);
-                },
-                onvideoSelected: (path) async {
-                  Navigator.pop(context);
-                  if (Utility.isNotNullEmptyOrFalse(path)) {
-                    controller.videoPath.value = path;
-
-
-                      await controller.generateVideoPreview(
-                        path,
-                      );
-
-                      controller.update();
-
-                  }
-                },
-                onDocumentSelected: (path) async {
-                  Navigator.pop(context);
-                  if (Utility.isNotNullEmptyOrFalse(path)) {
-                    controller.documentPath.value = path;
-                    // await controller.generateVideoPreview(
-                    //   path,
-                    // );
-                    // controller.update();
-
-                  }
-                },
-
-              ),
+                  controller.update();
+                }
+              },
+              onDocumentSelected: (path) async {
+                Navigator.pop(context);
+                if (Utility.isNotNullEmptyOrFalse(path)) {
+                  controller.documentPath.value = path;
+                  // await controller.generateVideoPreview(
+                  //   path,
+                  // );
+                  // controller.update();
+                }
+              },
             ),
           ],
         ),
