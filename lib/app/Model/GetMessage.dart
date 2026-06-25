@@ -1,11 +1,10 @@
-
 class GetMessage {
   bool? status;
   String? message;
   List<MessageData>? messageData;
   bool? isCreator;
 
-  GetMessage({this.status, this.message, this.messageData,this.isCreator});
+  GetMessage({this.status, this.message, this.messageData, this.isCreator});
 
   GetMessage.fromJson(Map<String, dynamic> json) {
     status = json['status'];
@@ -41,14 +40,19 @@ class MessageData {
   dynamic seenCount;
   dynamic senderName;
   dynamic senderImage;
+  dynamic thumbnail;
 
   MessageData(
       {this.id,
-        this.senderId,
-        this.receiverId,
-        this.messageType,
-        this.content,
-        this.timestamp,this.seenCount,this.senderImage,this.senderName});
+      this.senderId,
+      this.receiverId,
+      this.messageType,
+      this.content,
+      this.timestamp,
+      this.seenCount,
+      this.senderImage,
+      this.senderName,
+      this.thumbnail});
 
   MessageData.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -60,6 +64,7 @@ class MessageData {
     seenCount = json['seenCount'];
     senderName = json['senderName'];
     senderImage = json['senderImage'];
+    thumbnail = json['thumbnail'];
   }
 
   Map<String, dynamic> toJson() {
@@ -73,6 +78,7 @@ class MessageData {
     data['seenCount'] = seenCount;
     data['senderName'] = senderName;
     data['senderImage'] = senderImage;
+    data['thumbnail'] = thumbnail;
     return data;
   }
 }

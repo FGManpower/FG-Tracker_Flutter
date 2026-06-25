@@ -285,8 +285,8 @@ class CreatedGroupUi extends StatelessWidget {
                               ),
                               child: Padding(
                                 padding: EdgeInsets.all(6.r),
-                                child: reausableIcon(
-                                  icon: FontAwesomeIcons.qrcode,
+                                child: FaIcon(
+                                  FontAwesomeIcons.qrcode,
                                   size: 15,
                                   color: const Color(
                                     0xff5045B9,

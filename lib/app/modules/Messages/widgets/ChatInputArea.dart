@@ -92,9 +92,9 @@ class ChatInputArea extends StatelessWidget {
                   if (isImageSelected) _buildLargeImagePreview(),
                   if (isVideoSelected) _buildLargeVideoPreview(),
                   if (isDocumentSelected) _buildLargeDocumentPreview(),
-
                   Obx(() {
-                    if (!voiceController.isRecording.value) return const SizedBox();
+                    if (!voiceController.isRecording.value)
+                      return const SizedBox();
 
                     return Container(
                       margin: EdgeInsets.only(bottom: 8.h),
@@ -136,10 +136,10 @@ class ChatInputArea extends StatelessWidget {
                                     stream: voiceController.amplitudeStream,
                                     barBuilder: (animation, amplitude) =>
                                         WaveFormBar(
-                                          animation: animation,
-                                          amplitude: amplitude,
-                                          color: ToggleThemeData.darkPurple,
-                                        ),
+                                      animation: animation,
+                                      amplitude: amplitude,
+                                      color: ToggleThemeData.darkPurple,
+                                    ),
                                   ),
                                 ),
                               ],
@@ -169,7 +169,8 @@ class ChatInputArea extends StatelessWidget {
                           SizedBox(width: 12.w),
                           GestureDetector(
                             onTap: () async {
-                              final path = await voiceController.stopRecording();
+                              final path =
+                                  await voiceController.stopRecording();
                               if (path != null) {
                                 onVoiceSend!(path);
                               }
@@ -185,7 +186,6 @@ class ChatInputArea extends StatelessWidget {
                       ),
                     );
                   }),
-
                   Row(
                     children: [
                       SizedBox(width: 5.w),
@@ -232,8 +232,8 @@ class ChatInputArea extends StatelessWidget {
                                         onvideoSelected(path?.path ?? "");
                                       },
                                       onDocument: () async {
-                                        final file = await FileServices()
-                                            .pickDocument();
+                                        final file =
+                                            await FileServices().pickDocument();
                                         if (file != null) {
                                           onDocumentSelected(file.path ?? "");
                                         }
@@ -271,15 +271,15 @@ class ChatInputArea extends StatelessWidget {
                       else
                         !voiceController.isRecording.value
                             ? GestureDetector(
-                          onTap: () async {
-                            await voiceController.startRecording();
-                          },
-                          child: CircleAvatar(
-                            radius: 24.r,
-                            backgroundColor: ToggleThemeData.darkPurple,
-                            child: Icon(Icons.mic, color: Colors.white),
-                          ),
-                        )
+                                onTap: () async {
+                                  await voiceController.startRecording();
+                                },
+                                child: CircleAvatar(
+                                  radius: 24.r,
+                                  backgroundColor: ToggleThemeData.darkPurple,
+                                  child: Icon(Icons.mic, color: Colors.white),
+                                ),
+                              )
                             : const SizedBox()
                     ],
                   ),
@@ -291,7 +291,6 @@ class ChatInputArea extends StatelessWidget {
       }),
     );
   }
-
 
   Widget _buildLargeImagePreview() {
     return Padding(
@@ -338,11 +337,11 @@ class ChatInputArea extends StatelessWidget {
                 fit: StackFit.expand,
                 children: [
                   Obx(
-                        () => videoThumbnail.value != null
+                    () => videoThumbnail.value != null
                         ? Image.memory(
-                      videoThumbnail.value!,
-                      fit: BoxFit.cover,
-                    )
+                            videoThumbnail.value!,
+                            fit: BoxFit.cover,
+                          )
                         : Container(color: Colors.black87),
                   ),
                   Container(
@@ -392,7 +391,7 @@ class ChatInputArea extends StatelessWidget {
                         ),
                         SizedBox(width: 8.w),
                         Obx(
-                              () => Text(
+                          () => Text(
                             videoDuration.value,
                             style: TextStyle(
                               color: Colors.white,

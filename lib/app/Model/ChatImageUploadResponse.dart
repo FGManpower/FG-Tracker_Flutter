@@ -4,21 +4,38 @@ class ChatImageUploadResponse {
   String? originalName;
   String? imageUrl;
 
-  ChatImageUploadResponse({this.status, this.filename, this.imageUrl,this.originalName});
+  String? videoUrl;
+  String? thumbnail;
 
-  ChatImageUploadResponse.fromJson(Map<String, dynamic> json) {
+  ChatImageUploadResponse({
+    this.status,
+    this.filename,
+    this.originalName,
+    this.imageUrl,
+    this.videoUrl,
+    this.thumbnail,
+  });
+
+  ChatImageUploadResponse.fromJson(
+      Map<String, dynamic> json,
+      ) {
     status = json['status'];
     filename = json['filename'];
     originalName = json['originalName'];
     imageUrl = json['imageUrl'];
+
+    videoUrl = json['videoUrl'];
+    thumbnail = json['thumbnail'];
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
-    data['status'] = this.status;
-    data['filename'] = this.filename;
-    data['originalName'] = this.originalName;
-    data['imageUrl'] = this.imageUrl;
-    return data;
+    return {
+      'status': status,
+      'filename': filename,
+      'originalName': originalName,
+      'imageUrl': imageUrl,
+      'videoUrl': videoUrl,
+      'thumbnail': thumbnail,
+    };
   }
 }

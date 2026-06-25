@@ -10,6 +10,7 @@ import 'package:fgtracker/app/Data/Repositories/GetMessageRepo.dart';
 import 'package:fgtracker/app/Data/Services/CallStateTracker.dart';
 import 'package:fgtracker/app/Model/GetMessage.dart';
 import 'package:fgtracker/app/Model/MemberDataRes.dart';
+import 'package:fgtracker/app/modules/Messages/widgets/videoThumbnailWidget.dart';
 import 'package:fgtracker/app/modules/Track/Controller/TrackController.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -147,7 +148,6 @@ class MessageController extends GetxController {
             content: text,
           );
         }
-
         videoPath.value = "";
         textController.clear();
       } else if (documentPath.isNotEmpty) {
@@ -194,15 +194,24 @@ class MessageController extends GetxController {
     }
   }
 
-  Future<void> uploadVideo(String path) async {
-    var result = await MessageRepo.uploadChatVideo(path);
+  Future<void> uploadVideo(
+    String path,
+  ) async {
+    final thumbnailPath = await generateThumbnailFile(path);
 
+    if (thumbnailPath == null) {
+      return;
+    }
+    var result = await MessageRepo.uploadChatVideo(
+      videoPath: path,
+      thumbnailPath: thumbnailPath,
+    );
     if (result.status == true) {
       socketService.sendMessage(
         messageType: "video",
         receiverId: memberData.userId.toString(),
         groupId: memberData.groupId!,
-        content: result.filename!,
+        content: "${result.videoUrl}||${result.thumbnail}",
       );
     }
   }

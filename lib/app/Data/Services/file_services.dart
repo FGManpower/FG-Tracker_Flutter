@@ -1,10 +1,10 @@
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart' as path_provider;
-import 'package:file_picker/file_picker.dart';
 
 class FileServices {
   final ImagePicker _picker = ImagePicker();
@@ -38,17 +38,38 @@ class FileServices {
 
   Future<File?> pickVideoFromGallery() async {
     try {
-      final XFile? video = await _picker.pickVideo(
-        source: ImageSource.gallery,
-        maxDuration: const Duration(
-          minutes: 5,
-        ),
+      FilePickerResult? result =
+      await FilePicker.pickFiles(
+        type: FileType.video,
+        allowMultiple: false,
       );
 
-      if (video == null) return null;
+      if (result == null) {
+        return null;
+      }
 
-      return File(video.path);
+      final path =
+          result.files.single.path;
+
+      if (path == null || path.isEmpty) {
+        debugPrint("Video path is null");
+        return null;
+      }
+
+      final file = File(path);
+
+      if (!await file.exists()) {
+        debugPrint(
+          "Selected video file does not exist",
+        );
+        return null;
+      }
+
+      return file;
     } catch (e) {
+      debugPrint(
+        "Video Picker Error => $e",
+      );
       return null;
     }
   }

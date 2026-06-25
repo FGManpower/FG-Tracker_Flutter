@@ -42,7 +42,7 @@ class VideoPlayerScreen extends GetView<VideoControllerX> {
                   ),
                 ),
                 Obx(
-                      () => AnimatedOpacity(
+                  () => AnimatedOpacity(
                     duration: const Duration(milliseconds: 300),
                     opacity: c.showControls.value ? 1 : 0,
                     child: Container(
@@ -51,7 +51,7 @@ class VideoPlayerScreen extends GetView<VideoControllerX> {
                   ),
                 ),
                 Obx(
-                      () => AnimatedPositioned(
+                  () => AnimatedPositioned(
                     duration: const Duration(milliseconds: 300),
                     top: c.showControls.value ? 0 : -120.h,
                     left: 0,
@@ -100,50 +100,50 @@ class VideoPlayerScreen extends GetView<VideoControllerX> {
                   ),
                 ),
                 Obx(
-                      () => c.showControls.value
+                  () => c.showControls.value
                       ? Center(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        _buildCenterSeekButton(
-                          icon: Icons.replay_10,
-                          onTap: c.seekBackward,
-                        ),
-                        SizedBox(width: 25.w),
-                        GestureDetector(
-                          onTap: c.togglePlayPause,
-                          child: Container(
-                            width: 85.w,
-                            height: 85.w,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Colors.white.withOpacity(0.2),
-                              border: Border.all(
-                                color: Colors.white30,
-                                width: 1.5,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              _buildCenterSeekButton(
+                                icon: Icons.replay_10,
+                                onTap: c.seekBackward,
                               ),
-                            ),
-                            child: Icon(
-                              c.videoController.value.isPlaying
-                                  ? Icons.pause_rounded
-                                  : Icons.play_arrow_rounded,
-                              color: Colors.white,
-                              size: 50.sp,
-                            ),
+                              SizedBox(width: 25.w),
+                              GestureDetector(
+                                onTap: c.togglePlayPause,
+                                child: Container(
+                                  width: 85.w,
+                                  height: 85.w,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Colors.white.withOpacity(0.2),
+                                    border: Border.all(
+                                      color: Colors.white30,
+                                      width: 1.5,
+                                    ),
+                                  ),
+                                  child: Icon(
+                                    c.videoController.value.isPlaying
+                                        ? Icons.pause_rounded
+                                        : Icons.play_arrow_rounded,
+                                    color: Colors.white,
+                                    size: 50.sp,
+                                  ),
+                                ),
+                              ),
+                              SizedBox(width: 25.w),
+                              _buildCenterSeekButton(
+                                icon: Icons.forward_10,
+                                onTap: c.seekForward,
+                              ),
+                            ],
                           ),
-                        ),
-                        SizedBox(width: 25.w),
-                        _buildCenterSeekButton(
-                          icon: Icons.forward_10,
-                          onTap: c.seekForward,
-                        ),
-                      ],
-                    ),
-                  )
+                        )
                       : const SizedBox(),
                 ),
                 Obx(
-                      () => AnimatedPositioned(
+                  () => AnimatedPositioned(
                     duration: const Duration(milliseconds: 300),
                     bottom: c.showControls.value ? 0 : -150.h,
                     left: 0,
@@ -180,9 +180,9 @@ class VideoPlayerScreen extends GetView<VideoControllerX> {
                               value: c.position.value.inMilliseconds
                                   .toDouble()
                                   .clamp(
-                                0,
-                                c.duration.value.inMilliseconds.toDouble(),
-                              ),
+                                    0,
+                                    c.duration.value.inMilliseconds.toDouble(),
+                                  ),
                               min: 0,
                               max: c.duration.value.inMilliseconds <= 0
                                   ? 1
@@ -205,7 +205,9 @@ class VideoPlayerScreen extends GetView<VideoControllerX> {
                                     color: Colors.white.withOpacity(0.9),
                                     fontSize: 12.sp,
                                     fontWeight: FontWeight.w500,
-                                    fontFeatures: const [FontFeature.tabularFigures()],
+                                    fontFeatures: const [
+                                      FontFeature.tabularFigures()
+                                    ],
                                   ),
                                 ),
                                 Text(
@@ -214,7 +216,9 @@ class VideoPlayerScreen extends GetView<VideoControllerX> {
                                     color: Colors.white.withOpacity(0.9),
                                     fontSize: 12.sp,
                                     fontWeight: FontWeight.w500,
-                                    fontFeatures: const [FontFeature.tabularFigures()],
+                                    fontFeatures: const [
+                                      FontFeature.tabularFigures()
+                                    ],
                                   ),
                                 ),
                               ],

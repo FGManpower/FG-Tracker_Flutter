@@ -66,16 +66,23 @@ class MessageRepo {
     return ChatImageUploadResponse.fromJson(response);
   }
 
-  static Future<ChatImageUploadResponse> uploadChatVideo(
-      String videoPath) async {
+  static Future<ChatImageUploadResponse> uploadChatVideo({
+    required String videoPath,
+    required String thumbnailPath,
+  }) async {
     final ext = p.extension(videoPath).replaceFirst('.', '');
 
     FormData data = FormData.fromMap({
       "chatVideo": await MultipartFile.fromFile(
         videoPath,
         filename: p.basename(videoPath),
-        contentType: MediaType('video', ext),
-      )
+        contentType: MediaType("video", ext),
+      ),
+      "thumbnail": await MultipartFile.fromFile(
+        thumbnailPath,
+        filename: p.basename(thumbnailPath),
+        contentType: MediaType("image", "jpeg"),
+      ),
     });
 
     var response = await HttpUtil().Authpost(

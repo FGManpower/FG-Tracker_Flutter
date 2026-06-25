@@ -1,29 +1,18 @@
-import 'dart:io';
-
 import 'package:fgtracker/app/Core/util/DateTime_Format.dart';
-import 'package:fgtracker/app/Core/util/file_helper.dart';
 import 'package:fgtracker/app/Core/values/Dialog/DialogBox.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
-import 'package:fgtracker/app/Data/Services/DocumentService.dart';
 import 'package:fgtracker/app/Model/GetMessage.dart';
-import 'package:fgtracker/app/modules/Messages/Views/videoPlayerScreen.dart';
 import 'package:fgtracker/app/modules/Messages/widgets/videoThumbnailWidget.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:http/http.dart' as http;
-import 'package:open_file/open_file.dart';
-import 'package:path_provider/path_provider.dart';
-
 import '../../../../gen/fonts.gen.dart';
 import '../../../Core/constant/const_res.dart';
 import '../../../Core/constant/pref_res.dart';
 import '../../../config/themes_data.dart';
 import '../../../global_widget/common_widget.dart';
-
 import 'AudioPlayerWidget.dart';
 import 'message_Widgets.dart';
 
@@ -40,41 +29,41 @@ class ChatBubble extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final currentUserId =
-    Global.storageServices.get(PrefConst.userId).toString();
+        Global.storageServices.get(PrefConst.userId).toString();
 
     final isSentByMe = message.senderId.toString() == currentUserId;
 
     final bgColor = isSentByMe
         ? const LinearGradient(
-      colors: [ToggleThemeData.darkPurple, ToggleThemeData.Appcolor],
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-    )
+            colors: [ToggleThemeData.darkPurple, ToggleThemeData.Appcolor],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          )
         : const LinearGradient(
-      colors: [Colors.white, Colors.white],
-    );
+            colors: [Colors.white, Colors.white],
+          );
 
     final textColor = isSentByMe ? Colors.white : Colors.black87;
 
     final borderRadius = isSentByMe
         ? const BorderRadius.only(
-      topLeft: Radius.circular(16),
-      topRight: Radius.circular(2),
-      bottomLeft: Radius.circular(16),
-      bottomRight: Radius.circular(16),
-    )
+            topLeft: Radius.circular(16),
+            topRight: Radius.circular(2),
+            bottomLeft: Radius.circular(16),
+            bottomRight: Radius.circular(16),
+          )
         : const BorderRadius.only(
-      topLeft: Radius.circular(2),
-      topRight: Radius.circular(16),
-      bottomLeft: Radius.circular(16),
-      bottomRight: Radius.circular(16),
-    );
+            topLeft: Radius.circular(2),
+            topRight: Radius.circular(16),
+            bottomLeft: Radius.circular(16),
+            bottomRight: Radius.circular(16),
+          );
 
     return Container(
       margin: EdgeInsets.symmetric(vertical: 6.h),
       child: Column(
         crossAxisAlignment:
-        isSentByMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+            isSentByMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
         children: [
           Container(
             constraints: BoxConstraints(
@@ -92,7 +81,7 @@ class ChatBubble extends StatelessWidget {
                 )
               ],
             ),
-            child: _buildMessageContent(message, textColor, isSentByMe),
+            child: _buildMessageContent(message, textColor),
           ),
           SizedBox(height: 4.h),
           Padding(
@@ -102,7 +91,7 @@ class ChatBubble extends StatelessWidget {
             ),
             child: Align(
               alignment:
-              isSentByMe ? Alignment.centerRight : Alignment.centerLeft,
+                  isSentByMe ? Alignment.centerRight : Alignment.centerLeft,
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -132,10 +121,9 @@ class ChatBubble extends StatelessWidget {
   }
 
   Widget _buildMessageContent(
-      MessageData message,
-      Color textColor,
-      bool isSentByMe,
-      ) {
+    MessageData message,
+    Color textColor,
+  ) {
     if (message.messageType == "image" || message.messageType == "image_text") {
       final parts = message.content?.split("||") ?? [];
       final imagePart = parts.isNotEmpty ? parts[0] : "";
@@ -170,41 +158,23 @@ class ChatBubble extends StatelessWidget {
         isMe: false,
       );
     } else if (message.messageType == "video") {
-      final videoUrl = "${ConstRes.aImageBaseUrl}${message.content}";
+      final parts = message.content?.split("||") ?? [];
 
-      return ChatMediaDownloadTile(
-        fileUrl: videoUrl,
-        fileName: message.content?.split('/').last ?? 'video.mp4',
-        isVideo: true,
-        isSentByMe: isSentByMe,
-        textColor: textColor,
-        onOpenVideo: () {
+      final videoPath = parts.isNotEmpty ? parts[0] : "";
+
+      final thumbnailPath = parts.length > 1 ? parts[1] : "";
+
+      return VideoThumbnailWidget(
+        videoUrl: videoPath,
+        thumbnail: thumbnailPath,
+        onTap: () {
           Get.toNamed(
             Routes.videoPlayerScreen,
             arguments: {
-              "videoUrl": message.content,
+              "videoUrl": "${ConstRes.aImageBaseUrl}$videoPath",
             },
           );
         },
-      );
-    } else if (message.messageType == "document") {
-      final parts = message.content?.split("||") ?? [];
-
-      final documentUrl = parts.isNotEmpty ? parts[0] : "";
-
-      String documentName =
-      parts.length > 1 ? parts[1] : documentUrl.split('/').last;
-
-      documentName = removeDuplicateExtension(
-        documentName,
-      );
-
-      return ChatMediaDownloadTile(
-        fileUrl: "${ConstRes.aImageBaseUrl}$documentUrl",
-        fileName: documentName,
-        isVideo: false,
-        isSentByMe: isSentByMe,
-        textColor: textColor,
       );
     } else {
       return reausabletext(
@@ -236,45 +206,45 @@ class GroupChatBubble extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final currentUserId =
-    Global.storageServices.get(PrefConst.userId).toString();
+        Global.storageServices.get(PrefConst.userId).toString();
 
     final isSentByMe = message.senderId.toString() == currentUserId;
 
     final bgColor = isSentByMe
         ? const LinearGradient(
-      colors: [ToggleThemeData.darkPurple, ToggleThemeData.Appcolor],
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-    )
+            colors: [ToggleThemeData.darkPurple, ToggleThemeData.Appcolor],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          )
         : const LinearGradient(
-      colors: [
-        Colors.white,
-        Colors.white,
-      ],
-    );
+            colors: [
+              Colors.white,
+              Colors.white,
+            ],
+          );
 
     final textColor = isSentByMe ? Colors.white : Colors.black87;
 
     final borderRadius = isSentByMe
         ? const BorderRadius.only(
-      topLeft: Radius.circular(16),
-      topRight: Radius.circular(2),
-      bottomLeft: Radius.circular(16),
-      bottomRight: Radius.circular(16),
-    )
+            topLeft: Radius.circular(16),
+            topRight: Radius.circular(2),
+            bottomLeft: Radius.circular(16),
+            bottomRight: Radius.circular(16),
+          )
         : const BorderRadius.only(
-      topLeft: Radius.circular(2),
-      topRight: Radius.circular(16),
-      bottomLeft: Radius.circular(16),
-      bottomRight: Radius.circular(16),
-    );
+            topLeft: Radius.circular(2),
+            topRight: Radius.circular(16),
+            bottomLeft: Radius.circular(16),
+            bottomRight: Radius.circular(16),
+          );
 
     return Container(
       margin: EdgeInsets.symmetric(vertical: 6.h),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment:
-        isSentByMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+            isSentByMe ? MainAxisAlignment.end : MainAxisAlignment.start,
         children: [
           if (isGroup && !isSentByMe)
             Padding(
@@ -288,8 +258,8 @@ class GroupChatBubble extends StatelessWidget {
                     destination: const LatLng(0, 0),
                     distance: 0,
                     userId: int.tryParse(
-                      message.senderId.toString(),
-                    ) ??
+                          message.senderId.toString(),
+                        ) ??
                         0,
                     groupId: groupId,
                     groupName: groupName,
@@ -303,17 +273,17 @@ class GroupChatBubble extends StatelessWidget {
                 child: CircleAvatar(
                   radius: 20.r,
                   backgroundImage: message.senderImage != null &&
-                      message.senderImage!.isNotEmpty
+                          message.senderImage!.isNotEmpty
                       ? NetworkImage(
-                    "${ConstRes.aImageBaseUrl}${message.senderImage}",
-                  )
+                          "${ConstRes.aImageBaseUrl}${message.senderImage}",
+                        )
                       : null,
                   child: message.senderImage == null ||
-                      message.senderImage!.isEmpty
+                          message.senderImage!.isEmpty
                       ? Icon(
-                    Icons.person,
-                    size: 18.sp,
-                  )
+                          Icons.person,
+                          size: 18.sp,
+                        )
                       : null,
                 ),
               ),
@@ -398,7 +368,6 @@ class GroupChatBubble extends StatelessWidget {
                   child: _buildMessageContent(
                     message,
                     textColor,
-                    isSentByMe,
                   ),
                 ),
                 SizedBox(height: 4.h),
@@ -432,8 +401,8 @@ class GroupChatBubble extends StatelessWidget {
                     destination: const LatLng(0, 0),
                     distance: 0,
                     userId: int.tryParse(
-                      message.senderId.toString(),
-                    ) ??
+                          message.senderId.toString(),
+                        ) ??
                         0,
                     groupId: groupId,
                     groupName: groupName,
@@ -447,17 +416,17 @@ class GroupChatBubble extends StatelessWidget {
                 child: CircleAvatar(
                   radius: 20.r,
                   backgroundImage: message.senderImage != null &&
-                      message.senderImage!.isNotEmpty
+                          message.senderImage!.isNotEmpty
                       ? NetworkImage(
-                    "${ConstRes.aImageBaseUrl}${message.senderImage}",
-                  )
+                          "${ConstRes.aImageBaseUrl}${message.senderImage}",
+                        )
                       : null,
                   child: message.senderImage == null ||
-                      message.senderImage!.isEmpty
+                          message.senderImage!.isEmpty
                       ? Icon(
-                    Icons.person,
-                    size: 18.sp,
-                  )
+                          Icons.person,
+                          size: 18.sp,
+                        )
                       : null,
                 ),
               ),
@@ -468,10 +437,9 @@ class GroupChatBubble extends StatelessWidget {
   }
 
   Widget _buildMessageContent(
-      MessageData message,
-      Color textColor,
-      bool isSentByMe,
-      ) {
+    MessageData message,
+    Color textColor,
+  ) {
     if (message.messageType == "image" || message.messageType == "image_text") {
       final parts = message.content?.split("||") ?? [];
       final imagePart = parts.isNotEmpty ? parts[0] : "";
@@ -506,41 +474,23 @@ class GroupChatBubble extends StatelessWidget {
         isMe: false,
       );
     } else if (message.messageType == "video") {
-      final videoUrl = "${ConstRes.aImageBaseUrl}${message.content}";
+      final parts = message.content?.split("||") ?? [];
 
-      return ChatMediaDownloadTile(
-        fileUrl: videoUrl,
-        fileName: message.content?.split('/').last ?? 'video.mp4',
-        isVideo: true,
-        isSentByMe: isSentByMe,
-        textColor: textColor,
-        onOpenVideo: () {
+      final videoPath = parts.isNotEmpty ? parts[0] : "";
+
+      final thumbnailPath = parts.length > 1 ? parts[1] : "";
+
+      return VideoThumbnailWidget(
+        videoUrl: videoPath,
+        thumbnail: thumbnailPath,
+        onTap: () {
           Get.toNamed(
             Routes.videoPlayerScreen,
             arguments: {
-              "videoUrl": message.content,
+              "videoUrl": "${ConstRes.aImageBaseUrl}$videoPath",
             },
           );
         },
-      );
-    } else if (message.messageType == "document") {
-      final parts = message.content?.split("||") ?? [];
-
-      final documentUrl = parts.isNotEmpty ? parts[0] : "";
-
-      String documentName =
-      parts.length > 1 ? parts[1] : documentUrl.split('/').last;
-
-      documentName = removeDuplicateExtension(
-        documentName,
-      );
-
-      return ChatMediaDownloadTile(
-        fileUrl: "${ConstRes.aImageBaseUrl}$documentUrl",
-        fileName: documentName,
-        isVideo: false,
-        isSentByMe: isSentByMe,
-        textColor: textColor,
       );
     } else {
       return reausabletext(
@@ -550,394 +500,5 @@ class GroupChatBubble extends StatelessWidget {
         fontfamily: FontFamily.interMedium,
       );
     }
-  }
-}
-
-
-class ChatMediaDownloadTile extends StatefulWidget {
-  final String fileUrl;
-  final String fileName;
-  final bool isVideo;
-  final bool isSentByMe;
-  final Color textColor;
-  final VoidCallback? onOpenVideo;
-
-  const ChatMediaDownloadTile({
-    Key? key,
-    required this.fileUrl,
-    required this.fileName,
-    required this.isVideo,
-    required this.isSentByMe,
-    required this.textColor,
-    this.onOpenVideo,
-  }) : super(key: key);
-
-  @override
-  State<ChatMediaDownloadTile> createState() => _ChatMediaDownloadTileState();
-}
-
-enum _TileStatus { checking, notDownloaded, downloading, downloaded, error }
-
-class _ChatMediaDownloadTileState extends State<ChatMediaDownloadTile> {
-  _TileStatus _status = _TileStatus.checking;
-  double _progress = 0.0;
-  String? _localPath;
-  String _sizeLabel = '';
-
-  @override
-  void initState() {
-    super.initState();
-    if (widget.isSentByMe) {
-      _status = _TileStatus.downloaded;
-      return;
-    }
-    _checkLocalFile();
-  }
-
-  Future<String> _getLocalDirPath() async {
-    final dir = await getApplicationDocumentsDirectory();
-    final mediaDir = Directory('${dir.path}/chat_media');
-    if (!await mediaDir.exists()) {
-      await mediaDir.create(recursive: true);
-    }
-    return mediaDir.path;
-  }
-
-  Future<void> _checkLocalFile() async {
-    try {
-      final dirPath = await _getLocalDirPath();
-      final filePath = '$dirPath/${widget.fileName}';
-      final file = File(filePath);
-
-      if (await file.exists()) {
-        if (!mounted) return;
-        setState(() {
-          _localPath = filePath;
-          _status = _TileStatus.downloaded;
-        });
-        return;
-      }
-
-      await _fetchSize();
-    } catch (e) {
-      if (!mounted) return;
-      setState(() => _status = _TileStatus.notDownloaded);
-    }
-  }
-
-  Future<void> _fetchSize() async {
-    try {
-      final response = await http
-          .head(Uri.parse(widget.fileUrl))
-          .timeout(const Duration(seconds: 8));
-      final lengthHeader = response.headers['content-length'];
-      if (lengthHeader != null) {
-        final bytes = int.tryParse(lengthHeader) ?? 0;
-        _sizeLabel = _formatBytes(bytes);
-      }
-    } catch (e) {
-      _sizeLabel = '';
-    } finally {
-      if (mounted) {
-        setState(() => _status = _TileStatus.notDownloaded);
-      }
-    }
-  }
-
-  String _formatBytes(int bytes) {
-    if (bytes <= 0) return '';
-    const suffixes = ['B', 'KB', 'MB', 'GB'];
-    var i = 0;
-    double size = bytes.toDouble();
-    while (size >= 1024 && i < suffixes.length - 1) {
-      size /= 1024;
-      i++;
-    }
-    return '${size.toStringAsFixed(size < 10 && i > 0 ? 1 : 0)} ${suffixes[i]}';
-  }
-
-  Future<void> _startDownload() async {
-    if (_status == _TileStatus.downloading) return;
-
-    setState(() {
-      _status = _TileStatus.downloading;
-      _progress = 0.0;
-    });
-
-    File? tempFile;
-    try {
-      final dirPath = await _getLocalDirPath();
-      final filePath = '$dirPath/${widget.fileName}';
-      final tempPath = '$filePath.part';
-      tempFile = File(tempPath);
-
-      final request = http.Request('GET', Uri.parse(widget.fileUrl));
-      final streamedResponse = await request.send();
-
-      if (streamedResponse.statusCode != 200) {
-        throw Exception('Download failed: ${streamedResponse.statusCode}');
-      }
-
-      final contentLength = streamedResponse.contentLength ?? 0;
-      var received = 0;
-
-      final sink = tempFile.openWrite();
-      await for (final chunk in streamedResponse.stream) {
-        received += chunk.length;
-        sink.add(chunk);
-        if (contentLength > 0 && mounted) {
-          setState(() {
-            _progress = received / contentLength;
-          });
-        }
-      }
-      await sink.close();
-
-      final finalFile = await tempFile.rename(filePath);
-
-      if (!mounted) return;
-      setState(() {
-        _localPath = finalFile.path;
-        _status = _TileStatus.downloaded;
-      });
-    } catch (e) {
-      if (tempFile != null && await tempFile.exists()) {
-        await tempFile.delete();
-      }
-      if (!mounted) return;
-      setState(() => _status = _TileStatus.error);
-    }
-  }
-
-  Future<void> _openDocument() async {
-    if (_localPath != null) {
-      await OpenFile.open(_localPath);
-    } else {
-      await DocumentService().openDocument(widget.fileUrl);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (widget.isVideo) {
-      return _buildVideoTile();
-    }
-    return _buildDocumentTile();
-  }
-
-  Widget _buildVideoTile() {
-    if (_status == _TileStatus.downloaded) {
-      return VideoThumbnailWidget(
-        videoUrl: widget.fileUrl,
-        onTap: () => widget.onOpenVideo?.call(),
-      );
-    }
-
-    return GestureDetector(
-      onTap: _status == _TileStatus.downloading ? null : _startDownload,
-      child: Container(
-        width: 220.w,
-        height: 140.h,
-        decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.06),
-          borderRadius: BorderRadius.circular(12.r),
-        ),
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            Icon(
-              Icons.videocam_rounded,
-              size: 40.sp,
-              color: widget.textColor.withOpacity(0.4),
-            ),
-            _buildDownloadOverlay(),
-            Positioned(
-              bottom: 8.h,
-              left: 0,
-              right: 0,
-              child: Center(
-                child: _buildStatusLabel(),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDocumentTile() {
-    final extension = widget.fileName.split('.').last.toLowerCase();
-    final icon = getFileIcon(widget.fileName);
-    final iconColor = getFileColor(widget.fileName);
-    final isReady = _status == _TileStatus.downloaded;
-
-    return InkWell(
-      onTap: () {
-        if (isReady) {
-          _openDocument();
-        } else if (_status != _TileStatus.downloading) {
-          _startDownload();
-        }
-      },
-      child: Container(
-        width: 240.w,
-        padding: EdgeInsets.all(12.w),
-        decoration: BoxDecoration(
-          color: Colors.white.withOpacity(.08),
-          borderRadius: BorderRadius.circular(12.r),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 50.w,
-              height: 50.w,
-              decoration: BoxDecoration(
-                color: iconColor,
-                borderRadius: BorderRadius.circular(10.r),
-              ),
-              child: Icon(
-                icon,
-                color: Colors.white,
-                size: 26.sp,
-              ),
-            ),
-            SizedBox(width: 10.w),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    widget.fileName,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: widget.textColor,
-                      fontSize: 12.sp,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  SizedBox(height: 4.h),
-                  Text(
-                    isReady
-                        ? extension.toUpperCase()
-                        : [
-                      extension.toUpperCase(),
-                      if (_sizeLabel.isNotEmpty) _sizeLabel,
-                    ].join(' · '),
-                    style: TextStyle(
-                      color: widget.textColor.withOpacity(0.6),
-                      fontSize: 10.sp,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(width: 8.w),
-            _buildTrailingIcon(isReady: isReady),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTrailingIcon({required bool isReady}) {
-    if (isReady) {
-      return Icon(
-        Icons.insert_drive_file_outlined,
-        color: widget.textColor,
-        size: 20.sp,
-      );
-    }
-
-    if (_status == _TileStatus.downloading) {
-      return SizedBox(
-        width: 22.w,
-        height: 22.w,
-        child: CircularProgressIndicator(
-          value: _progress > 0 ? _progress : null,
-          strokeWidth: 2.5,
-          color: widget.textColor,
-        ),
-      );
-    }
-
-    if (_status == _TileStatus.error) {
-      return Icon(
-        Icons.refresh_rounded,
-        color: widget.textColor,
-        size: 22.sp,
-      );
-    }
-
-    return Icon(
-      Icons.download_rounded,
-      color: widget.textColor,
-      size: 22.sp,
-    );
-  }
-
-  Widget _buildDownloadOverlay() {
-    if (_status == _TileStatus.downloading) {
-      return SizedBox(
-        width: 36.w,
-        height: 36.w,
-        child: CircularProgressIndicator(
-          value: _progress > 0 ? _progress : null,
-          strokeWidth: 3,
-          color: widget.textColor,
-          backgroundColor: Colors.black.withOpacity(0.15),
-        ),
-      );
-    }
-
-    if (_status == _TileStatus.error) {
-      return Container(
-        width: 36.w,
-        height: 36.w,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: Colors.black.withOpacity(0.45),
-        ),
-        child: Icon(
-          Icons.refresh_rounded,
-          color: Colors.white,
-          size: 20.sp,
-        ),
-      );
-    }
-
-    return Container(
-      width: 36.w,
-      height: 36.w,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: Colors.black.withOpacity(0.45),
-      ),
-      child: Icon(
-        Icons.download_rounded,
-        color: Colors.white,
-        size: 20.sp,
-      ),
-    );
-  }
-
-  Widget _buildStatusLabel() {
-    if (_status == _TileStatus.error) {
-      return Text(
-        'Tap to retry',
-        style: TextStyle(color: Colors.white, fontSize: 10.sp),
-      );
-    }
-    if (_status == _TileStatus.downloading) {
-      return Text(
-        '${(_progress * 100).clamp(0, 100).toStringAsFixed(0)}%',
-        style: TextStyle(color: Colors.white, fontSize: 10.sp),
-      );
-    }
-    if (_sizeLabel.isEmpty) return const SizedBox.shrink();
-    return Text(
-      _sizeLabel,
-      style: TextStyle(color: Colors.white, fontSize: 10.sp),
-    );
   }
 }

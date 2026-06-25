@@ -4,6 +4,7 @@ import 'dart:typed_data';
 
 import 'package:fgtracker/app/Core/util/DateTime_Format.dart';
 import 'package:fgtracker/app/Model/LocationDataRes.dart';
+import 'package:fgtracker/app/modules/Messages/widgets/videoThumbnailWidget.dart';
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
@@ -148,10 +149,9 @@ class GroupMessageController extends GetxController {
             content: text,
           );
         }
-
         videoPath.value = "";
         textController.clear();
-      }else if (documentPath.isNotEmpty) {
+      } else if (documentPath.isNotEmpty) {
         await uploadDocument(documentPath.value);
         if (text.isNotEmpty) {
           await Future.delayed(const Duration(milliseconds: 300));
@@ -159,7 +159,6 @@ class GroupMessageController extends GetxController {
             messageType: "text",
             groupId: groupId,
             content: text,
-
           );
         }
 
@@ -205,7 +204,13 @@ class GroupMessageController extends GetxController {
 
   Future<void> uploadVideo(String path) async {
     try {
-      var result = await MessageRepo.uploadChatVideo(path);
+      final thumbnailPath = await generateThumbnailFile(path);
+
+      if (thumbnailPath == null) {
+        return;
+      }
+      var result = await MessageRepo.uploadChatVideo(
+          videoPath: path, thumbnailPath: thumbnailPath);
 
       if (result.status == true) {
         socketService.sendGroupMessage(
@@ -238,7 +243,6 @@ class GroupMessageController extends GetxController {
       );
     }
   }
-
 
   Future<void> getGroupMessages() async {
     try {

@@ -33,10 +33,10 @@ Widget exitdialogbtn({void Function()? ontap}) {
               color: AppColors.darkRed,
             ),
             child: Center(
-              child: Icon(
+              child: FaIcon(
                 FontAwesomeIcons.close,
-                size: 15.sp, //Icon Size
-                color: AppColors.white, //Color Of Icon
+                size: 15.sp,
+                color: AppColors.white,
               ),
             ),
           ),
@@ -430,7 +430,7 @@ AppBar reusableAppbar(
           padding: EdgeInsets.only(right: 5.w),
           child: InkWell(
             onTap: () async {},
-            child: Icon(
+            child: FaIcon(
               FontAwesomeIcons.ellipsisVertical,
               color: Colors.white,
               size: 25.sp,

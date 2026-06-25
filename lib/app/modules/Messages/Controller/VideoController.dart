@@ -1,6 +1,4 @@
 import 'dart:async';
-
-import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:get/get.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -25,9 +23,7 @@ class VideoControllerX extends GetxController {
 
     final args = Get.arguments ?? {};
 
-    videoUrl =
-    "${ConstRes.aImageBaseUrl}${args["videoUrl"]}";
-
+    videoUrl = "${args["videoUrl"]}";
     videoController = VideoPlayerController.networkUrl(
       Uri.parse(videoUrl),
     );
@@ -82,13 +78,10 @@ class VideoControllerX extends GetxController {
   }
 
   void seekBackward() {
-    final newPosition =
-        position.value - const Duration(seconds: 10);
+    final newPosition = position.value - const Duration(seconds: 10);
 
     videoController.seekTo(
-      newPosition.isNegative
-          ? Duration.zero
-          : newPosition,
+      newPosition.isNegative ? Duration.zero : newPosition,
     );
   }
 
@@ -97,7 +90,7 @@ class VideoControllerX extends GetxController {
 
     hideTimer = Timer(
       const Duration(seconds: 3),
-          () {
+      () {
         if (videoController.value.isPlaying) {
           showControls.value = false;
         }
@@ -106,16 +99,13 @@ class VideoControllerX extends GetxController {
   }
 
   String formatDuration(Duration duration) {
-    String twoDigits(int n) =>
-        n.toString().padLeft(2, '0');
+    String twoDigits(int n) => n.toString().padLeft(2, '0');
 
     final hours = duration.inHours;
 
-    final minutes =
-    twoDigits(duration.inMinutes.remainder(60));
+    final minutes = twoDigits(duration.inMinutes.remainder(60));
 
-    final seconds =
-    twoDigits(duration.inSeconds.remainder(60));
+    final seconds = twoDigits(duration.inSeconds.remainder(60));
 
     if (hours > 0) {
       return "$hours:$minutes:$seconds";
