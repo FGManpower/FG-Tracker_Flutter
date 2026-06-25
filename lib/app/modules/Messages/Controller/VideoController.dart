@@ -90,7 +90,7 @@ class VideoControllerX extends GetxController {
 
     hideTimer = Timer(
       const Duration(seconds: 3),
-      () {
+          () {
         if (videoController.value.isPlaying) {
           showControls.value = false;
         }
