@@ -157,21 +157,28 @@ class ChatBubble extends StatelessWidget {
         audioUrl: "${ConstRes.aImageBaseUrl}${message.content}",
         isMe: false,
       );
-    } else if (message.messageType == "video") {
+    }else if (message.messageType == "video") {
       final parts = message.content?.split("||") ?? [];
 
-      final videoPath = parts.isNotEmpty ? parts[0] : "";
+      final videoPath =
+      parts.isNotEmpty ? parts[0] : "";
 
-      final thumbnailPath = parts.length > 1 ? parts[1] : "";
+      final thumbnailPath =
+      parts.length > 1 ? parts[1] : "";
+
+      final duration =
+      parts.length > 2 ? parts[2] : "--:--";
 
       return VideoThumbnailWidget(
-        videoUrl: videoPath,
+        videoUrl: "${ConstRes.aImageBaseUrl}$videoPath",
         thumbnail: thumbnailPath,
+        duration: duration,
         onTap: () {
           Get.toNamed(
             Routes.videoPlayerScreen,
             arguments: {
-              "videoUrl": "${ConstRes.aImageBaseUrl}$videoPath",
+              "videoUrl":
+              "${ConstRes.aImageBaseUrl}$videoPath",
             },
           );
         },
@@ -476,18 +483,25 @@ class GroupChatBubble extends StatelessWidget {
     } else if (message.messageType == "video") {
       final parts = message.content?.split("||") ?? [];
 
-      final videoPath = parts.isNotEmpty ? parts[0] : "";
+      final videoPath =
+      parts.isNotEmpty ? parts[0] : "";
 
-      final thumbnailPath = parts.length > 1 ? parts[1] : "";
+      final thumbnailPath =
+      parts.length > 1 ? parts[1] : "";
+
+      final duration =
+      parts.length > 2 ? parts[2] : "--:--";
 
       return VideoThumbnailWidget(
-        videoUrl: videoPath,
+        videoUrl: "${ConstRes.aImageBaseUrl}$videoPath",
         thumbnail: thumbnailPath,
+        duration: duration,
         onTap: () {
           Get.toNamed(
             Routes.videoPlayerScreen,
             arguments: {
-              "videoUrl": "${ConstRes.aImageBaseUrl}$videoPath",
+              "videoUrl":
+              "${ConstRes.aImageBaseUrl}$videoPath",
             },
           );
         },

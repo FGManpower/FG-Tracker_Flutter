@@ -19,8 +19,7 @@ class FileServices {
 
       final dir = await path_provider.getTemporaryDirectory();
 
-      final targetPath =
-          '${dir.path}/${DateTime.now().millisecondsSinceEpoch}.jpg';
+      final targetPath = '${dir.path}/${DateTime.now().millisecondsSinceEpoch}.jpg';
 
       final result = await FlutterImageCompress.compressAndGetFile(
         image.path,
@@ -38,38 +37,39 @@ class FileServices {
 
   Future<File?> pickVideoFromGallery() async {
     try {
-      FilePickerResult? result =
-      await FilePicker.pickFiles(
-        type: FileType.video,
-        allowMultiple: false,
+
+
+      final picker = ImagePicker();
+
+      final XFile? video = await picker.pickVideo(
+        source: ImageSource.gallery,
       );
 
-      if (result == null) {
+      debugPrint("Video = $video");
+
+      if (video != null) {
+        debugPrint("Path = ${video.path}");
+        debugPrint("Name = ${video.name}");
+
+        final file = File(video.path);
+
+        debugPrint("Exists = ${await file.exists()}");
+      }
+
+      if (video == null) {
         return null;
       }
 
-      final path =
-          result.files.single.path;
-
-      if (path == null || path.isEmpty) {
-        debugPrint("Video path is null");
-        return null;
-      }
-
-      final file = File(path);
+      final file = File(video.path);
 
       if (!await file.exists()) {
-        debugPrint(
-          "Selected video file does not exist",
-        );
+        debugPrint("Selected video does not exist");
         return null;
       }
 
       return file;
     } catch (e) {
-      debugPrint(
-        "Video Picker Error => $e",
-      );
+      debugPrint("Video Picker Error: $e");
       return null;
     }
   }

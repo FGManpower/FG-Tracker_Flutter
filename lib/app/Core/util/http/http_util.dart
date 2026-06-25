@@ -42,6 +42,7 @@ class HttpUtil {
       {dynamic data,
       Map<String, dynamic>? queryParameteres,
       FormData? formdata,
+        ProgressCallback? onSendProgress,
       String? type}) async {
     try {
       api.sendRequest.options.headers["authorization"] =
@@ -49,6 +50,7 @@ class HttpUtil {
       api.sendRequest.options.headers['accept'] = 'application/json';
       var response = await api.sendRequest.post(path,
           data: type == "formdata" ? formdata : data,
+          onSendProgress: onSendProgress,
           queryParameters: queryParameteres);
       return response.data;
     } catch (e) {

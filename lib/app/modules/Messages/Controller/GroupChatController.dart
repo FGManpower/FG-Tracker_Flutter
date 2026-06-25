@@ -34,7 +34,8 @@ class GroupMessageController extends GetxController {
   RxList<LocationData> groupMembers = <LocationData>[].obs;
 
   RxBool isLoadingMembers = false.obs;
-
+  final RxBool isUploadingVideo = false.obs;
+  final RxDouble uploadProgress = 0.0.obs;
   RxString imagePath = "".obs;
   RxString videoPath = "".obs;
   RxString documentPath = "".obs;
@@ -210,13 +211,21 @@ class GroupMessageController extends GetxController {
         return;
       }
       var result = await MessageRepo.uploadChatVideo(
-          videoPath: path, thumbnailPath: thumbnailPath);
+        videoPath: path,
+        thumbnailPath: thumbnailPath,
+        onSendProgress: (sent, total) {
+          if (total > 0) {
+            uploadProgress.value = sent / total;
+          }
+        },
+      );
 
       if (result.status == true) {
         socketService.sendGroupMessage(
           groupId: groupId,
-          content: result.filename!,
           messageType: "video",
+          content:
+              "${result.videoUrl}||${result.thumbnail}||${result.duration}",
         );
       }
     } catch (e) {
@@ -239,7 +248,7 @@ class GroupMessageController extends GetxController {
       }
     } catch (e) {
       log(
-        "GROUP AUDIO ERROR => $e",
+        "GROUP Video ERROR => $e",
       );
     }
   }

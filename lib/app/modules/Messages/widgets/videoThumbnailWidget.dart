@@ -12,12 +12,14 @@ import 'package:video_thumbnail/video_thumbnail.dart';
 class VideoThumbnailWidget extends StatefulWidget {
   final String videoUrl;
   final String thumbnail;
+  final String duration;
   final VoidCallback onTap;
 
   const VideoThumbnailWidget({
     super.key,
     required this.videoUrl,
     required this.thumbnail,
+    required this.duration,
     required this.onTap,
   });
 
@@ -26,7 +28,7 @@ class VideoThumbnailWidget extends StatefulWidget {
 }
 
 class _VideoThumbnailWidgetState extends State<VideoThumbnailWidget> {
-  String durationText = "";
+
 
   @override
   Widget build(BuildContext context) {
@@ -87,7 +89,7 @@ class _VideoThumbnailWidgetState extends State<VideoThumbnailWidget> {
                     ),
                   ),
                   child: Text(
-                    durationText.isEmpty ? "--:--" : durationText,
+                    widget.duration ?? "",
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 10.sp,

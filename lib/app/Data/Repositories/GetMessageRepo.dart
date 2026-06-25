@@ -69,6 +69,7 @@ class MessageRepo {
   static Future<ChatImageUploadResponse> uploadChatVideo({
     required String videoPath,
     required String thumbnailPath,
+    ProgressCallback? onSendProgress,
   }) async {
     final ext = p.extension(videoPath).replaceFirst('.', '');
 
@@ -85,10 +86,11 @@ class MessageRepo {
       ),
     });
 
-    var response = await HttpUtil().Authpost(
+    final response = await HttpUtil().Authpost(
       "/uploadVideo",
       formdata: data,
       type: "formdata",
+      onSendProgress: onSendProgress,
     );
 
     return ChatImageUploadResponse.fromJson(response);

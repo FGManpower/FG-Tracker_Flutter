@@ -29,7 +29,8 @@ class MessageController extends GetxController {
   RxString documentPath = "".obs;
   RxBool isSending = false.obs;
   RxString messageText = "".obs;
-
+  final RxBool isUploadingVideo = false.obs;
+  final RxDouble uploadProgress = 0.0.obs;
   late MemberData memberData;
   Map<String, dynamic>? arguments = Get.arguments;
   RxBool isCreator = false.obs;
@@ -197,6 +198,7 @@ class MessageController extends GetxController {
   Future<void> uploadVideo(
     String path,
   ) async {
+    isUploadingVideo.value=true;
     final thumbnailPath = await generateThumbnailFile(path);
 
     if (thumbnailPath == null) {
@@ -205,14 +207,20 @@ class MessageController extends GetxController {
     var result = await MessageRepo.uploadChatVideo(
       videoPath: path,
       thumbnailPath: thumbnailPath,
+      onSendProgress: (sent, total) {
+        if (total > 0) {
+          uploadProgress.value = sent / total;
+        }
+      },
     );
     if (result.status == true) {
       socketService.sendMessage(
         messageType: "video",
         receiverId: memberData.userId.toString(),
         groupId: memberData.groupId!,
-        content: "${result.videoUrl}||${result.thumbnail}",
+        content: "${result.videoUrl}||${result.thumbnail}||${result.duration}",
       );
+      isUploadingVideo.value=false;
     }
   }
 

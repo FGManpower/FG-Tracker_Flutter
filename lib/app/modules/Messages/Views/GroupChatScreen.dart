@@ -141,6 +141,8 @@ class GroupChatScreen extends GetView<GroupMessageController> {
                   controller.update();
                 }
               },
+              isUploadingVideo: controller.isUploadingVideo,
+              uploadProgress: controller.uploadProgress,
               onDocumentSelected: (path) async {
                 Navigator.pop(context);
                 if (Utility.isNotNullEmptyOrFalse(path)) {

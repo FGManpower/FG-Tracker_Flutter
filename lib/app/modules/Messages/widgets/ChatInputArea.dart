@@ -31,24 +31,28 @@ class ChatInputArea extends StatelessWidget {
   final Function(String path) onDocumentSelected;
   final Rx<Uint8List?> videoThumbnail;
   final RxString videoDuration;
+  final RxBool isUploadingVideo;
+  final RxDouble uploadProgress;
 
-  ChatInputArea({
-    Key? key,
-    required this.messageText,
-    required this.imagePath,
-    required this.videoPath,
-    required this.isSending,
-    required this.textController,
-    required this.scrollController,
-    required this.onSend,
-    required this.onImageSelected,
-    required this.onvideoSelected,
-    required this.onVoiceSend,
-    required this.videoDuration,
-    required this.videoThumbnail,
-    required this.onDocumentSelected,
-    required this.documentPath,
-  }) : super(key: key);
+  ChatInputArea(
+      {Key? key,
+      required this.messageText,
+      required this.imagePath,
+      required this.videoPath,
+      required this.isSending,
+      required this.textController,
+      required this.scrollController,
+      required this.onSend,
+      required this.onImageSelected,
+      required this.onvideoSelected,
+      required this.onVoiceSend,
+      required this.videoDuration,
+      required this.videoThumbnail,
+      required this.onDocumentSelected,
+      required this.documentPath,
+      required this.isUploadingVideo,
+      required this.uploadProgress})
+      : super(key: key);
 
   final voiceController = Get.put(VoiceRecordController());
 
@@ -93,8 +97,9 @@ class ChatInputArea extends StatelessWidget {
                   if (isVideoSelected) _buildLargeVideoPreview(),
                   if (isDocumentSelected) _buildLargeDocumentPreview(),
                   Obx(() {
-                    if (!voiceController.isRecording.value)
+                    if (!voiceController.isRecording.value) {
                       return const SizedBox();
+                    }
 
                     return Container(
                       margin: EdgeInsets.only(bottom: 8.h),
@@ -227,8 +232,7 @@ class ChatInputArea extends StatelessWidget {
                                         bottomNavbar.mainBottomSheet(context);
                                       },
                                       onVideo: () async {
-                                        var path = await FileServices()
-                                            .pickVideoFromGallery();
+                                        var path = await FileServices().pickVideoFromGallery();
                                         onvideoSelected(path?.path ?? "");
                                       },
                                       onDocument: () async {
@@ -342,7 +346,9 @@ class ChatInputArea extends StatelessWidget {
                             videoThumbnail.value!,
                             fit: BoxFit.cover,
                           )
-                        : Container(color: Colors.black87),
+                        : Container(
+                            color: Colors.black87,
+                          ),
                   ),
                   Container(
                     decoration: BoxDecoration(
@@ -356,21 +362,61 @@ class ChatInputArea extends StatelessWidget {
                       ),
                     ),
                   ),
-                  Center(
-                    child: Container(
-                      width: 60.w,
-                      height: 60.w,
-                      decoration: BoxDecoration(
-                        color: Colors.black45,
-                        shape: BoxShape.circle,
+                  Obx(() {
+                    if (!isUploadingVideo.value) {
+                      return Center(
+                        child: Container(
+                          width: 60.w,
+                          height: 60.w,
+                          decoration: BoxDecoration(
+                            color: Colors.black45,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            Icons.play_arrow_rounded,
+                            color: Colors.white,
+                            size: 40.sp,
+                          ),
+                        ),
+                      );
+                    }
+
+                    return Container(
+                      color: Colors.black.withOpacity(.45),
+                      child: Center(
+                        child: SizedBox(
+                          width: 70.w,
+                          height: 70.w,
+                          child: Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              SizedBox(
+                                width: 70.w,
+                                height: 70.w,
+                                child: CircularProgressIndicator(
+                                  value: uploadProgress.value,
+                                  strokeWidth: 4,
+                                  backgroundColor: Colors.white24,
+                                  valueColor:
+                                      const AlwaysStoppedAnimation<Color>(
+                                    Colors.white,
+                                  ),
+                                ),
+                              ),
+                              Text(
+                                "${(uploadProgress.value * 100).toInt()}%",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 13.sp,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
-                      child: Icon(
-                        Icons.play_arrow_rounded,
-                        color: Colors.white,
-                        size: 40.sp,
-                      ),
-                    ),
-                  ),
+                    );
+                  }),
                   Positioned(
                     left: 10.w,
                     right: 10.w,
@@ -412,14 +458,23 @@ class ChatInputArea extends StatelessWidget {
             top: 8.h,
             child: GestureDetector(
               onTap: () {
+                // if (isUploadingVideo.value) return;
+
                 videoPath.value = '';
                 videoThumbnail.value = null;
                 videoDuration.value = '';
+                isUploadingVideo.value=false;
+                uploadProgress.value=0.0;
+
               },
               child: CircleAvatar(
                 radius: 14.r,
                 backgroundColor: Colors.black54,
-                child: Icon(Icons.close, size: 16.sp, color: Colors.white),
+                child: Icon(
+                  Icons.close,
+                  size: 16.sp,
+                  color: Colors.white,
+                ),
               ),
             ),
           ),

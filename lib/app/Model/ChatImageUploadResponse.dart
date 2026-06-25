@@ -6,6 +6,7 @@ class ChatImageUploadResponse {
 
   String? videoUrl;
   String? thumbnail;
+  String? duration;
 
   ChatImageUploadResponse({
     this.status,
@@ -14,6 +15,7 @@ class ChatImageUploadResponse {
     this.imageUrl,
     this.videoUrl,
     this.thumbnail,
+    this.duration,
   });
 
   ChatImageUploadResponse.fromJson(
@@ -26,6 +28,7 @@ class ChatImageUploadResponse {
 
     videoUrl = json['videoUrl'];
     thumbnail = json['thumbnail'];
+    duration = json['duration'];
   }
 
   Map<String, dynamic> toJson() {
@@ -36,6 +39,7 @@ class ChatImageUploadResponse {
       'imageUrl': imageUrl,
       'videoUrl': videoUrl,
       'thumbnail': thumbnail,
+      'duration': duration,
     };
   }
 }
