@@ -14,12 +14,13 @@ import 'package:fgtracker/app/modules/Messages/widgets/videoThumbnailWidget.dart
 import 'package:fgtracker/app/modules/Track/Controller/TrackController.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:video_player/video_player.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
 import '../../../routes/app_pages.dart';
 import 'Socket_Message_Services.dart';
 
-class MessageController extends GetxController {
+class MessageController extends GetxController with WidgetsBindingObserver {
   final socketService = SocketMessageService.instance;
   final ScrollController scrollController = ScrollController();
 
@@ -41,8 +42,37 @@ class MessageController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    WidgetsBinding.instance.addObserver(this);
     memberData = arguments?['userData'];
     _initializeChat();
+  }
+
+  @override
+  void onClose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.onClose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) async {
+    if (state == AppLifecycleState.resumed) {
+      final picker = ImagePicker();
+      try {
+        final LostDataResponse response = await picker.retrieveLostData();
+        if (!response.isEmpty && response.file != null) {
+          final file = File(response.file!.path);
+          if (await file.exists()) {
+            debugPrint("Recovered lost video: ${file.path}");
+            videoPath.value = file.path;
+            await generateVideoPreview(file.path);
+          }
+        } else if (response.exception != null) {
+          debugPrint("Lost data exception: ${response.exception}");
+        }
+      } catch (e) {
+        debugPrint("retrieveLostData error: $e");
+      }
+    }
   }
 
   void _initializeChat() {
@@ -196,8 +226,8 @@ class MessageController extends GetxController {
   }
 
   Future<void> uploadVideo(
-    String path,
-  ) async {
+      String path,
+      ) async {
     isUploadingVideo.value=true;
     final thumbnailPath = await generateThumbnailFile(path);
 
@@ -286,13 +316,13 @@ class MessageController extends GetxController {
   }
 
   startCall(
-    BuildContext context, {
-    required String callerId,
-    required String remoteUserId,
-    required bool is_video,
-    dynamic offer,
-    dynamic callerName,
-  }) {
+      BuildContext context, {
+        required String callerId,
+        required String remoteUserId,
+        required bool is_video,
+        dynamic offer,
+        dynamic callerName,
+      }) {
     Get.toNamed(
       Routes.callScreen,
       arguments: {
@@ -307,8 +337,8 @@ class MessageController extends GetxController {
   }
 
   Future<void> generateVideoPreview(
-    String path,
-  ) async {
+      String path,
+      ) async {
     try {
       videoThumbnail.value = await VideoThumbnail.thumbnailData(
         video: path,

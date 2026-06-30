@@ -6,6 +6,7 @@ import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart' as path_provider;
 
+
 class FileServices {
   final ImagePicker _picker = ImagePicker();
 
@@ -34,42 +35,47 @@ class FileServices {
       return null;
     }
   }
-
   Future<File?> pickVideoFromGallery() async {
     try {
+      print("Opening gallery...");
 
-
-      final picker = ImagePicker();
-
-      final XFile? video = await picker.pickVideo(
+      final XFile? video = await _picker.pickVideo(
         source: ImageSource.gallery,
       );
 
-      debugPrint("Video = $video");
-
-      if (video != null) {
-        debugPrint("Path = ${video.path}");
-        debugPrint("Name = ${video.name}");
-
-        final file = File(video.path);
-
-        debugPrint("Exists = ${await file.exists()}");
-      }
+      print("Video picked: ${video?.path}");
 
       if (video == null) {
+        print("Video is NULL");
         return null;
       }
 
       final file = File(video.path);
 
-      if (!await file.exists()) {
-        debugPrint("Selected video does not exist");
-        return null;
-      }
+      print("File exists: ${await file.exists()}");
 
       return file;
+    } catch (e, s) {
+      print("Video Picker Error: $e");
+      print(s);
+      return null;
+    }
+  }
+
+  Future<File?> retrieveLostVideo() async {
+    try {
+      final LostDataResponse response = await _picker.retrieveLostData();
+      if (response.isEmpty) return null;
+      if (response.file != null) {
+        final file = File(response.file!.path);
+        if (await file.exists()) return file;
+      }
+      if (response.exception != null) {
+        debugPrint("Lost data exception: ${response.exception}");
+      }
+      return null;
     } catch (e) {
-      debugPrint("Video Picker Error: $e");
+      debugPrint("retrieveLostData error: $e");
       return null;
     }
   }
@@ -105,4 +111,5 @@ class FileServices {
       return null;
     }
   }
+
 }

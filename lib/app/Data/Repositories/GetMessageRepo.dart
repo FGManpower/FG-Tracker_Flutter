@@ -1,5 +1,7 @@
 // ignore_for_file: unused_import
 
+import 'dart:io';
+
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/util/http/http_util.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
@@ -71,6 +73,11 @@ class MessageRepo {
     required String thumbnailPath,
     ProgressCallback? onSendProgress,
   }) async {
+    print("Video Path: $videoPath");
+    print("Thumbnail Path: $thumbnailPath");
+    print("Video Exists: ${await File(videoPath).exists()}");
+    print("Video Size: ${await File(videoPath).length()}");
+    print("Extension: ${p.extension(videoPath)}");
     final ext = p.extension(videoPath).replaceFirst('.', '');
 
     FormData data = FormData.fromMap({
