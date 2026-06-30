@@ -1,66 +1,35 @@
-import Flutter
 import UIKit
+import Flutter
+import Firebase
 import GoogleMaps
-import AVFoundation
 
 @main
 @objc class AppDelegate: FlutterAppDelegate {
-
-    private let secureOverlay: UIView = {
-        let view = UIView()
-        view.backgroundColor = UIColor.black
-        view.alpha = 1.0
-        view.isHidden = true
-        return view
-    }()
-
-
-override func application(
-    _ application: UIApplication,
-    didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
-) -> Bool {
-
-    GMSServices.provideAPIKey("AIzaSyAgt-V8kmcQJb_6Cj6LHArWfhWjVPh7N_Q")
-    GeneratedPluginRegistrant.register(with: self)
-
-
-
-    do {
-        try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default)
-        try AVAudioSession.sharedInstance().setActive(true)
-    } catch {
-        print("Failed to set audio session")
+    override func application(
+        _ application: UIApplication,
+        didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
+    ) -> Bool {
+        FirebaseApp.configure()
+        GMSServices.provideAPIKey("")
+        GeneratedPluginRegistrant.register(with: self)
+        return super.application(application, didFinishLaunchingWithOptions: launchOptions)
     }
 
-    #if !DEBUG
-    addSecuredView()
-    #endif
-
-    return super.application(application, didFinishLaunchingWithOptions: launchOptions)
-}
-
-
-    override func applicationWillResignActive(_ application: UIApplication) {
-        secureOverlay.isHidden = false
-    }
-
-    override func applicationDidBecomeActive(_ application: UIApplication) {
-        secureOverlay.isHidden = true
-    }
-
-    private func addSecuredView() {
-        guard let window = UIApplication.shared.windows.first else { return }
-
-        if !window.subviews.contains(secureOverlay) {
-            secureOverlay.translatesAutoresizingMaskIntoConstraints = false
-            window.addSubview(secureOverlay)
-
-            NSLayoutConstraint.activate([
-                secureOverlay.topAnchor.constraint(equalTo: window.topAnchor),
-                secureOverlay.bottomAnchor.constraint(equalTo: window.bottomAnchor),
-                secureOverlay.leadingAnchor.constraint(equalTo: window.leadingAnchor),
-                secureOverlay.trailingAnchor.constraint(equalTo: window.trailingAnchor)
-            ])
+    override func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
+        if let flutterViewController = window?.rootViewController as? FlutterViewController {
+            let channel = FlutterMethodChannel(name: "com.yourapp.notifications", binaryMessenger: flutterViewController.binaryMessenger)
+            channel.invokeMethod("handleDeepLink", arguments: url.absoluteString)
         }
+        return true
+    }
+
+    override func application(_ application: UIApplication, continue userActivity: NSUserActivity, restorationHandler: @escaping ([UIUserActivityRestoring]?) -> Void) -> Bool {
+        if let url = userActivity.webpageURL {
+            if let flutterViewController = window?.rootViewController as? FlutterViewController {
+                let channel = FlutterMethodChannel(name: "com.yourapp.notifications", binaryMessenger: flutterViewController.binaryMessenger)
+                channel.invokeMethod("handleDeepLink", arguments: url.absoluteString)
+            }
+        }
+        return true
     }
 }

@@ -7,7 +7,6 @@ import 'package:flutter_callkit_incoming/entities/ios_params.dart';
 import 'package:flutter_callkit_incoming/entities/notification_params.dart';
 import 'package:flutter_callkit_incoming/flutter_callkit_incoming.dart';
 import 'package:get/get.dart';
-
 import '../../Data/Services/CallStateTracker.dart';
 import '../../Data/Services/SignallingService.dart';
 import '../../Model/call_model.dart';
@@ -17,8 +16,6 @@ import '../global/launchedFromCall.dart';
 import '../values/global.dart';
 import 'decomPress.dart';
 import 'package:uuid/uuid.dart';
-
-
 
 class CallUtils {
   CallUtils._privateConstructor();
@@ -41,8 +38,9 @@ class CallUtils {
       avatar: data['callerProfileImage'] ?? '',
       handle: data['callerId'] ?? '',
       type: isVideo ? 1 : 0,
-      textAccept: 'Accept',
-      textDecline: 'Decline',
+
+      // textAccept: 'Accept',
+      // textDecline: 'Decline',
       duration: 30000,
       extra: data,
       headers: {'apiKey': 'Abc@123!', 'platform': 'flutter'},
@@ -70,7 +68,6 @@ class CallUtils {
         missedCallNotificationChannelName: "Missed Call",
         isShowCallID: false,
 
-
         isShowFullLockedScreen: true, // Required for terminated/locked state
         isBot: true,
       ),
@@ -94,67 +91,108 @@ class CallUtils {
     await FlutterCallkitIncoming.showCallkitIncoming(params);
   }
 
-  void listenCallKitEvents() {
-    FlutterCallkitIncoming.onEvent.listen((CallEvent? event) async {
-      if (event == null) return;
+  Future<void> listenCallKitEvents() async {
+    FlutterCallkitIncoming.onEvent.listen((event) async {
+      log("[CallKit Event] ${event?.eventName}");
 
-      log("[CallKit Event] ${event.event.name}");
-      log("[CallKit Body] ${event.body}");
+      switch (event) {
+        case CallEventActionCallIncoming():
+          log("Incoming Call");
+          break;
 
-      switch (event.event) {
-        case Event.actionCallAccept:
-          print("============ActiveCallas:${CallSessionState.isCallActive}");
+        case CallEventActionCallStart():
+          log("Outgoing Call Started");
+          break;
+
+        case CallEventActionCallAccept():
+          print("============ActiveCall:${CallSessionState.isCallActive}");
+
           if (CallSessionState.isCallActive) return;
 
-          final callId = event.body['id'];
+          final params = event.callKitParams;
 
-          await FlutterCallkitIncoming.setCallConnected(callId);
+          await FlutterCallkitIncoming.setCallConnected(params.id);
+
           CallSessionState.isCallActive = true;
           CallSessionState.launchedFromCall = true;
 
-          final extra = decomPress().extractExtra(event.body);
+          final extra = decomPress().extractExtra(params.extra ?? {});
           navigateToCallScreen(extra);
           break;
 
-        case Event.actionCallDecline:
+        case CallEventActionCallDecline():
+          final params = event.callKitParams;
+
           CallSessionState.reset();
-          final callId = event.body['id'];
-          await FlutterCallkitIncoming.endCall(callId);
-          final extra = decomPress().extractExtra(event.body);
+
+          await FlutterCallkitIncoming.endCall(params.id);
+
+          final extra = decomPress().extractExtra(params.extra ?? {});
           declineCall(extra);
           break;
 
-        case Event.actionCallEnded:
-          final callId = event.body['id'];
-          await FlutterCallkitIncoming.endCall(callId);
+        case CallEventActionCallEnded():
+          final params = event.callKitParams;
+
           CallSessionState.reset();
-          final extra = decomPress().extractExtra(event.body);
+
+          final extra = decomPress().extractExtra(params.extra ?? {});
           declineCall(extra);
           break;
 
-        case Event.actionCallTimeout:
-          final callId = event.body['id'];
-          await FlutterCallkitIncoming.endCall(callId);
-          CallSessionState.reset();
-          final extra = decomPress().extractExtra(event.body);
-          _handleMissedCall(extra);
+        // case CallEventActionCallTimeout():
+        //   final params = event.callKitParams;
+        //
+        //   CallSessionState.reset();
+        //
+        //   final extra = decomPress().extractExtra(params.extra ?? {});
+        //   _handleMissedCall(extra);
+        //   break;
+
+        case CallEventActionCallCallback():
+          log("Call Callback");
+          break;
+
+        case CallEventActionCallToggleHold():
+          log("Hold");
+          break;
+
+        case CallEventActionCallToggleMute():
+          log("Mute");
+          break;
+
+        case CallEventActionCallToggleDmtf():
+          log("DTMF");
+          break;
+
+        case CallEventActionCallToggleGroup():
+          log("Group");
+          break;
+
+        case CallEventActionCallToggleAudioSession():
+          log("Audio Session");
+          break;
+
+        case CallEventActionDidUpdateDevicePushTokenVoip():
+          log("VoIP Token Updated");
           break;
 
         default:
+          log("Unhandled Event: ${event?.eventName}");
           break;
       }
     });
   }
 
-  void _handleMissedCall(Map<String, dynamic> data) {
-    final call = IncomingCallModel.fromMap(data);
-
-    // socket?.emit("missedCall", {
-    //   "remoteUserId": call.callerId,
-    // });
-
-    CallStateTracker.isIncomingCallScreenOpen = false;
-  }
+  // void _handleMissedCall(Map<String, dynamic> data) {
+  //   final call = IncomingCallModel.fromMap(data);
+  //
+  //   // socket?.emit("missedCall", {
+  //   //   "remoteUserId": call.callerId,
+  //   // });
+  //
+  //   CallStateTracker.isIncomingCallScreenOpen = false;
+  // }
 
   Future<void> declineCall(Map<String, dynamic> data) async {
     final call = IncomingCallModel.fromMap(data);
@@ -203,5 +241,3 @@ class CallUtils {
     }
   }
 }
-
-

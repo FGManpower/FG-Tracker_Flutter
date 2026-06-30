@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/Dialog/Common_dialog.dart';
@@ -12,6 +14,7 @@ import 'package:fgtracker/app/modules/Messages/Controller/MessageController.dart
 import 'package:fgtracker/app/modules/Messages/widgets/message_Widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../Walkie-talkie/Controller/walkieController.dart';
 import '../widgets/ChatInputArea.dart';
 import '../widgets/ChatList.dart';
@@ -142,50 +145,76 @@ class ChatScreen extends GetView<MessageController> {
         body: SafeArea(
           child: Column(
             children: [
-              Expanded(
-                child: ChatList(
-                  controller: controller,
-                  scrollController: controller.scrollController,
-                ),
-              ),
-              ChatInputArea(
-                messageText: controller.messageText,
-                imagePath: controller.imagePath,
-                videoPath: controller.videoPath,
-                documentPath: controller.documentPath,
-                isSending: controller.isSending,
-                textController: _controller,
-                scrollController: controller.scrollController,
-                videoDuration: controller.videoDuration,
-                videoThumbnail: controller.videoThumbnail,
-                onSend: _sendMessage,
-                onImageSelected: (path) {
-                  controller.imagePath.value = path;
-                },
-                onVoiceSend: (voicePath) {
-                  if (Utility.isNotNullEmptyOrFalse(voicePath)) {
-                    controller.uploadAudio(voicePath);
-                  }
-                },
-                onvideoSelected: (path) async {
-                  Navigator.pop(context);
-                  if (Utility.isNotNullEmptyOrFalse(path)) {
-                    controller.videoPath.value = path;
-                    await controller.generateVideoPreview(
-                      path,
+              ElevatedButton(onPressed: () async {
+
+                  try {
+                    final ImagePicker picker = ImagePicker();
+
+                    final XFile? pickedVideo = await picker.pickVideo(
+                      source: ImageSource.gallery,
                     );
-                    controller.update();
+
+                    if (pickedVideo == null) {
+                      debugPrint("User cancelled video selection.");
+                      return null;
+                    }
+
+                    final File videoFile = File(pickedVideo.path);
+
+                    debugPrint("Video Path: ${videoFile.path}");
+                    debugPrint("Video Name: ${pickedVideo.name}");
+
+
+                  } catch (e) {
+                    debugPrint("Error picking video: $e");
+                    return null;
                   }
-                },
-                isUploadingVideo: controller.isUploadingVideo,
-                uploadProgress: controller.uploadProgress,
-                onDocumentSelected: (path) async {
-                  Navigator.pop(context);
-                  if (Utility.isNotNullEmptyOrFalse(path)) {
-                    controller.documentPath.value = path;
-                  }
-                },
-              ),
+
+              }, child: Text("Upload video"))
+              // Expanded(
+              //   child: ChatList(
+              //     controller: controller,
+              //     scrollController: controller.scrollController,
+              //   ),
+              // ),
+              // ChatInputArea(
+              //   messageText: controller.messageText,
+              //   imagePath: controller.imagePath,
+              //   videoPath: controller.videoPath,
+              //   documentPath: controller.documentPath,
+              //   isSending: controller.isSending,
+              //   textController: _controller,
+              //   scrollController: controller.scrollController,
+              //   videoDuration: controller.videoDuration,
+              //   videoThumbnail: controller.videoThumbnail,
+              //   onSend: _sendMessage,
+              //   onImageSelected: (path) {
+              //     controller.imagePath.value = path;
+              //   },
+              //   onVoiceSend: (voicePath) {
+              //     if (Utility.isNotNullEmptyOrFalse(voicePath)) {
+              //       controller.uploadAudio(voicePath);
+              //     }
+              //   },
+              //   onvideoSelected: (path) async {
+              //     Navigator.pop(context);
+              //     if (Utility.isNotNullEmptyOrFalse(path)) {
+              //       controller.videoPath.value = path;
+              //       await controller.generateVideoPreview(
+              //         path,
+              //       );
+              //       controller.update();
+              //     }
+              //   },
+              //   isUploadingVideo: controller.isUploadingVideo,
+              //   uploadProgress: controller.uploadProgress,
+              //   onDocumentSelected: (path) async {
+              //     Navigator.pop(context);
+              //     if (Utility.isNotNullEmptyOrFalse(path)) {
+              //       controller.documentPath.value = path;
+              //     }
+              //   },
+              // ),
             ],
           ),
         ),
