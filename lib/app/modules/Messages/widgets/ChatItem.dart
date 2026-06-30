@@ -1,6 +1,7 @@
 import 'package:fgtracker/app/Core/util/DateTime_Format.dart';
 import 'package:fgtracker/app/Core/values/Dialog/DialogBox.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
+import 'package:fgtracker/app/Data/Services/DocumentService.dart';
 import 'package:fgtracker/app/Model/GetMessage.dart';
 import 'package:fgtracker/app/modules/Messages/widgets/videoThumbnailWidget.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
@@ -11,6 +12,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../../../gen/fonts.gen.dart';
 import '../../../Core/constant/const_res.dart';
 import '../../../Core/constant/pref_res.dart';
+import '../../../Core/util/file_helper.dart';
 import '../../../config/themes_data.dart';
 import '../../../global_widget/common_widget.dart';
 import 'AudioPlayerWidget.dart';
@@ -182,6 +184,116 @@ class ChatBubble extends StatelessWidget {
             },
           );
         },
+      );
+    }else if (message.messageType == "document") {
+      final parts = message.content?.split("||") ?? [];
+
+      final documentUrl = parts.isNotEmpty ? parts[0] : "";
+
+      String documentName =
+      parts.length > 1 ? parts[1] : documentUrl.split('/').last;
+
+      documentName = removeDuplicateExtension(
+        documentName,
+      );
+
+      final extension = documentName.split('.').last.toLowerCase();
+
+      IconData icon;
+      Color iconColor;
+
+      switch (extension) {
+        case "pdf":
+          icon = Icons.picture_as_pdf;
+          iconColor = Colors.red;
+          break;
+
+        case "doc":
+        case "docx":
+          icon = Icons.description;
+          iconColor = Colors.blue;
+          break;
+
+        case "xls":
+        case "xlsx":
+          icon = Icons.table_chart;
+          iconColor = Colors.green;
+          break;
+
+        case "ppt":
+        case "pptx":
+          icon = Icons.slideshow;
+          iconColor = Colors.orange;
+          break;
+
+        default:
+          icon = Icons.insert_drive_file;
+          iconColor = Colors.grey;
+      }
+
+      return InkWell(
+        onTap: () async {
+
+          await DocumentService().openDocument(
+            "${ConstRes.aImageBaseUrl}$documentUrl",
+          );
+        },
+        child: Container(
+          width: 240.w,
+          padding: EdgeInsets.all(12.w),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(.08),
+            borderRadius: BorderRadius.circular(12.r),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 50.w,
+                height: 50.w,
+                decoration: BoxDecoration(
+                  color: iconColor,
+                  borderRadius: BorderRadius.circular(10.r),
+                ),
+                child: Icon(
+                  icon,
+                  color: Colors.white,
+                  size: 26.sp,
+                ),
+              ),
+              SizedBox(width: 10.w),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      documentName,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: textColor,
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    SizedBox(height: 4.h),
+                    Text(
+                      extension.toUpperCase(),
+                      style: TextStyle(
+                        color: Colors.grey,
+                        fontSize: 10.sp,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.download_rounded,
+                color: textColor,
+                size: 20.sp,
+              ),
+            ],
+          ),
+        ),
       );
     } else {
       return reausabletext(
@@ -505,6 +617,116 @@ class GroupChatBubble extends StatelessWidget {
             },
           );
         },
+      );
+    }else if (message.messageType == "document") {
+      final parts = message.content?.split("||") ?? [];
+
+      final documentUrl = parts.isNotEmpty ? parts[0] : "";
+
+      String documentName =
+      parts.length > 1 ? parts[1] : documentUrl.split('/').last;
+
+      documentName = removeDuplicateExtension(
+        documentName,
+      );
+
+      final extension = documentName.split('.').last.toLowerCase();
+
+      IconData icon;
+      Color iconColor;
+
+      switch (extension) {
+        case "pdf":
+          icon = Icons.picture_as_pdf;
+          iconColor = Colors.red;
+          break;
+
+        case "doc":
+        case "docx":
+          icon = Icons.description;
+          iconColor = Colors.blue;
+          break;
+
+        case "xls":
+        case "xlsx":
+          icon = Icons.table_chart;
+          iconColor = Colors.green;
+          break;
+
+        case "ppt":
+        case "pptx":
+          icon = Icons.slideshow;
+          iconColor = Colors.orange;
+          break;
+
+        default:
+          icon = Icons.insert_drive_file;
+          iconColor = Colors.grey;
+      }
+
+      return InkWell(
+        onTap: () async {
+
+          await DocumentService().openDocument(
+            "${ConstRes.aImageBaseUrl}$documentUrl",
+          );
+        },
+        child: Container(
+          width: 240.w,
+          padding: EdgeInsets.all(12.w),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(.08),
+            borderRadius: BorderRadius.circular(12.r),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 50.w,
+                height: 50.w,
+                decoration: BoxDecoration(
+                  color: iconColor,
+                  borderRadius: BorderRadius.circular(10.r),
+                ),
+                child: Icon(
+                  icon,
+                  color: Colors.white,
+                  size: 26.sp,
+                ),
+              ),
+              SizedBox(width: 10.w),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      documentName,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: textColor,
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    SizedBox(height: 4.h),
+                    Text(
+                      extension.toUpperCase(),
+                      style: TextStyle(
+                        color: Colors.grey,
+                        fontSize: 10.sp,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.download_rounded,
+                color: textColor,
+                size: 20.sp,
+              ),
+            ],
+          ),
+        ),
       );
     } else {
       return reausabletext(
