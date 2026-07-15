@@ -226,9 +226,9 @@ class MessageController extends GetxController with WidgetsBindingObserver {
   }
 
   Future<void> uploadVideo(
-      String path,
-      ) async {
-    isUploadingVideo.value=true;
+    String path,
+  ) async {
+    isUploadingVideo.value = true;
     final thumbnailPath = await generateThumbnailFile(path);
 
     if (thumbnailPath == null) {
@@ -250,7 +250,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         groupId: memberData.groupId!,
         content: "${result.videoUrl}||${result.thumbnail}||${result.duration}",
       );
-      isUploadingVideo.value=false;
+      isUploadingVideo.value = false;
     }
   }
 
@@ -316,13 +316,13 @@ class MessageController extends GetxController with WidgetsBindingObserver {
   }
 
   startCall(
-      BuildContext context, {
-        required String callerId,
-        required String remoteUserId,
-        required bool is_video,
-        dynamic offer,
-        dynamic callerName,
-      }) {
+    BuildContext context, {
+    required String callerId,
+    required String remoteUserId,
+    required bool is_video,
+    dynamic offer,
+    dynamic callerName,
+  }) {
     Get.toNamed(
       Routes.callScreen,
       arguments: {
@@ -337,8 +337,8 @@ class MessageController extends GetxController with WidgetsBindingObserver {
   }
 
   Future<void> generateVideoPreview(
-      String path,
-      ) async {
+    String path,
+  ) async {
     try {
       videoThumbnail.value = await VideoThumbnail.thumbnailData(
         video: path,
