@@ -8,7 +8,6 @@ import 'package:flutter_sound/flutter_sound.dart';
 import 'package:socket_io_client/socket_io_client.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Controller/walkieController.dart';
 
-import '../../Core/util/WalkieUtils.dart';
 
 class WalkietalkieService {
   WalkietalkieService._();

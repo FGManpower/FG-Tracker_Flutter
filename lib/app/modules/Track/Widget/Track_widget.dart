@@ -100,27 +100,5 @@ class MarkerWidget extends StatelessWidget {
     );
   }
 }
-Widget buildNavActionButton(IconData icon, String label, VoidCallback onTap) {
-  return GestureDetector(
-    onTap: onTap,
-    child: Column(
-      children: [
-        Container(
-          padding: EdgeInsets.all(10.r),
-          decoration: BoxDecoration(
-            color: Colors.blueAccent.withOpacity(0.1),
-            shape: BoxShape.circle,
-          ),
-          child: Icon(icon, size: 24.sp, color: Colors.blueAccent),
-        ),
-        SizedBox(height: 4.h),
-        reausabletext(
-          label,
-          fontsize: 12, color: Colors.black87,
-        ),
-      ],
-    ),
-  );
-}
 
 

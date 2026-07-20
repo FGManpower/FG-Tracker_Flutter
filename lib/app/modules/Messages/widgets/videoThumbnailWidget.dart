@@ -1,3 +1,5 @@
+// ignore_for_file: unused_import
+
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -89,7 +91,7 @@ class _VideoThumbnailWidgetState extends State<VideoThumbnailWidget> {
                     ),
                   ),
                   child: Text(
-                    widget.duration ?? "",
+                    widget.duration,
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 10.sp,

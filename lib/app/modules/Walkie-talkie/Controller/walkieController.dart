@@ -1,3 +1,5 @@
+// ignore_for_file: unused_import
+
 import 'package:fgtracker/app/Core/util/WalkieUtils.dart';
 import 'package:get/get.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';

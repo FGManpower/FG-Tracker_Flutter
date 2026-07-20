@@ -15,10 +15,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:workmanager/workmanager.dart';
 import 'app/Core/global/global_notification_handler.dart';
 import 'app/Core/util/callkit_service.dart';
 import 'app/Core/values/Context_Utility.dart';
@@ -68,68 +70,30 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 
     try {
       final isActive =
-      await CallRepo().isCallActive(callData['callId'].toString());
+          await CallRepo().isCallActive(callData['callId'].toString());
 
       if (!isActive) {
         return;
       }
 
-    if (Platform.isIOS) {
-      CallUtils.instance.showIncomingCall(data: callMap);
-    } else {
-      await ConnectycubeFlutterCallKit.showCallNotification(
-        CallEvent(
-          sessionId: callData['callId'].toString(),
-          callerName: callData['callerName'],
-          callType: callData['isVideo'] == true ? 1 : 0,
-          opponentsIds: {int.parse(callData['callerId'])},
-          callerId: int.parse(callData['callerId']),
-          userInfo: userInfo,
-        ),
-      );
-    }
-
+      if (Platform.isIOS) {
+        CallUtils.instance.showIncomingCall(data: callMap);
+      } else {
+        await ConnectycubeFlutterCallKit.showCallNotification(
+          CallEvent(
+            sessionId: callData['callId'].toString(),
+            callerName: callData['callerName'],
+            callType: callData['isVideo'] == true ? 1 : 0,
+            opponentsIds: {int.parse(callData['callerId'])},
+            callerId: int.parse(callData['callerId']),
+            userInfo: userInfo,
+          ),
+        );
+      }
     } catch (e) {
       log("callError=======${e.toString()}");
     }
-    //  try {
-    //    print("==========InitiateCallBack");
-    //   var result = await CallRepo.callDetailData(callData['callId'].toString());
-    //   if (result.status == true) {
-    //     print("==========InitiateCallBack1");
-    //     log(result.message.toString());
-    //     if(result.callDetail?.status=="missed" || result.callDetail?.status=="rejected"){
-    //       print("==========InitiateCallBack2");
-    //     }else{
-    //       if (Platform.isIOS) {
-    //         CallUtils.instance.showIncomingCall(data: callMap);
-    //       } else {
-    //         await ConnectycubeFlutterCallKit.showCallNotification(
-    //           CallEvent(
-    //             sessionId: callData['callId'].toString(),
-    //             callerName: callData['callerName'],
-    //             callType: callData['isVideo'] == true ? 1 : 0,
-    //             opponentsIds: {int.parse(callData['callerId'])},
-    //             callerId: int.parse(callData['callerId']),
-    //             userInfo: userInfo,
-    //           ),
-    //         );
-    //       }
-    //     }
-    //     print("==========InitiateCallBack3");
-    //   } else {
-    //     print("==========InitiateCallBack4");
-    //     log(result.message.toString());
-    //   }
-    // } catch (e) {
-    //    print("==========InitiateCallBack5");
-    //    print(e.toString());
-    // }
   } else if (message.data['screen_name'] == 'walkie') {
-    var param = {"fromUserId": message.data['fromUserId']};
-    // if (Platform.isIOS) {
-    //   await WalkieUtils().showIncomingWalkie(data: param);
-    // } else {
     final sharedpref = await SharedPreferences.getInstance();
     await sharedpref.setString('fromUserId', message.data['fromUserId']);
 
@@ -146,7 +110,6 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
         },
       );
     }
-    // }
   }
 }
 
@@ -155,6 +118,80 @@ void onNotificationResponse(NotificationResponse response) async {
   log("OnNotificationPress");
   NotificationHolder.pendingResponse = response;
 }
+
+
+// @pragma('vm:entry-point')
+// Future<void> callbackDispatcher() async {
+//   WidgetsFlutterBinding.ensureInitialized();
+//   await Firebase.initializeApp();
+//
+//   Workmanager().executeTask((task, inputData) async {
+//     switch (task) {
+//       case "fg_partner_fetch_location_taskSamad":
+//         try {
+//           final pref = await SharedPreferences.getInstance();
+//           var token = pref.getString("token");
+//
+//           if (token != null && token.isNotEmpty) {
+//             Position position = await Geolocator.getCurrentPosition(
+//                 desiredAccuracy: LocationAccuracy.high);
+//
+//             LocationPermission permission = await Geolocator.checkPermission();
+//             if (permission != LocationPermission.denied &&
+//                 permission != LocationPermission.deniedForever) {
+//               SharedpUserDataModel userData = SharedpUserDataModel.fromJson(
+//                   jsonDecode(pref.getString('userdata')!));
+//
+//               DatabaseReference? postref;
+//               if (Constant.Baseurl == "$ProductionUrl/api") {
+//                 postref = FirebaseDatabase.instance
+//                     .ref()
+//                     .child("ProductionLabourcoordinates");
+//               } else if (Constant.Baseurl == "$TestingUrl/api") {
+//                 postref = FirebaseDatabase.instance
+//                     .ref()
+//                     .child("DevelopmentLabourcoordinates");
+//               }
+//               try {
+//                 postref
+//                     ?.child(userData.labourId.toString())
+//                     .set({
+//                   'latitude': position.latitude,
+//                   'longitude': position.longitude,
+//                   'address': "Mumbai",
+//                   "deviceType": Platform.isAndroid ? "android" : "ios",
+//                   'Labour_id': userData.labourId.toString(),
+//                   'Labour_name': userData.labourName ?? "",
+//                   'last_location_time': DateTime.now().toString(),
+//                   // "Internet": internetStatus ?? "",
+//                   "Permission": permission.toString().split('.').last,
+//                   "AppStatus": "Terminated",
+//                 })
+//                     .then(
+//                       (value) async {},
+//                 )
+//                     .catchError((error) async {
+//
+//                 });
+//               } catch (e) {
+//
+//               }
+//             }
+//           } else {
+//             log("Authentication failed..");
+//           }
+//         } catch (e) {
+//           log("$e");
+//           // await _showNotification(
+//           //   title: "FG Partner",
+//           //   body: "$e",
+//           // );
+//         }
+//         break;
+//     }
+//     return Future.value(true);
+//   });
+// }
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -238,7 +275,6 @@ void setupVoipListener() {
 
     if (call.method == "incomingCall") {
       final data = Map<String, dynamic>.from(call.arguments);
-
 
       showIncomingCall(data);
     }

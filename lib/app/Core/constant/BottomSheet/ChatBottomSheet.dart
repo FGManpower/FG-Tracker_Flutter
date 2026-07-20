@@ -3,7 +3,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../config/themes_data.dart';
 import '../../../global_widget/common_widget.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
-import 'package:get/get.dart';
 
 class ChatBottomSheet {
   static Future<void> showCallOptions(
@@ -80,11 +79,11 @@ class ChatBottomSheet {
   }
 
   static Future<void> showFileOptions(
-      BuildContext context, {
-        required VoidCallback onGallery,
-        required VoidCallback onVideo,
-        required VoidCallback onDocument,
-      }) async {
+    BuildContext context, {
+    required VoidCallback onGallery,
+    required VoidCallback onVideo,
+    required VoidCallback onDocument,
+  }) async {
     return showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -111,9 +110,7 @@ class ChatBottomSheet {
                   borderRadius: BorderRadius.circular(20.r),
                 ),
               ),
-
               SizedBox(height: 18.h),
-
               Text(
                 "Attach",
                 style: TextStyle(
@@ -121,12 +118,9 @@ class ChatBottomSheet {
                   fontWeight: FontWeight.w700,
                 ),
               ),
-
               SizedBox(height: 24.h),
-
               Row(
-                mainAxisAlignment:
-                MainAxisAlignment.spaceEvenly,
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   _attachmentItem(
                     icon: Icons.photo,
@@ -157,7 +151,6 @@ class ChatBottomSheet {
                   ),
                 ],
               ),
-
               SizedBox(height: 20.h),
             ],
           ),

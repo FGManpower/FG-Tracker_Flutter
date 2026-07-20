@@ -1,8 +1,5 @@
-
-
 import 'dart:convert';
 import 'dart:math';
-
 import 'package:connectycube_flutter_call_kit/connectycube_flutter_call_kit.dart';
 import 'package:fgtracker/app/Core/global/launchedFromCall.dart';
 import 'package:fgtracker/app/Core/values/Context_Utility.dart';
@@ -14,14 +11,10 @@ import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_callkit_incoming/flutter_callkit_incoming.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
-
 import 'dart:io';
-
 import '../../Core/constant/pref_res.dart';
-import '../../Core/util/AppLifeCycle.dart';
 import 'CallStateTracker.dart';
 
 class firebaseNotificationServices {
@@ -227,7 +220,6 @@ class firebaseNotificationServices {
           arguments: {"callDetail": call},
         );
       } else if (message.data['screen_name'] == "missedCall") {
-
         final callData = jsonDecode(message.data['callData']);
         final bool isVideo = callData["isVideo"] == true;
 

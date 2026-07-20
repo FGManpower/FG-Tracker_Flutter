@@ -1,3 +1,5 @@
+// ignore_for_file: unused_import
+
 import 'package:fgtracker/app/config/themes_data.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';

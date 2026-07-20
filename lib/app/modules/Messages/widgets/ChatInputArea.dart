@@ -1,3 +1,5 @@
+// ignore_for_file: dead_null_aware_expression
+
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -203,7 +205,9 @@ class ChatInputArea extends StatelessWidget {
                                 color: ToggleThemeData.white,
                                 fontFamily: FontFamily.interMedium,
                                 fontSize: 16.sp),
-                            maxLines: null,
+                            maxLines: 4,
+                            minLines: 1,
+                            expands: false,
                             decoration: InputDecoration(
                               hintText: "Type a message",
                               hintStyle: TextStyle(color: Colors.white),
@@ -232,7 +236,8 @@ class ChatInputArea extends StatelessWidget {
                                         bottomNavbar.mainBottomSheet(context);
                                       },
                                       onVideo: () async {
-                                        var path = await FileServices().pickVideoFromGallery();
+                                        var path = await FileServices()
+                                            .pickVideoFromGallery();
                                         onvideoSelected(path?.path ?? "");
                                       },
                                       onDocument: () async {
@@ -463,9 +468,8 @@ class ChatInputArea extends StatelessWidget {
                 videoPath.value = '';
                 videoThumbnail.value = null;
                 videoDuration.value = '';
-                isUploadingVideo.value=false;
-                uploadProgress.value=0.0;
-
+                isUploadingVideo.value = false;
+                uploadProgress.value = 0.0;
               },
               child: CircleAvatar(
                 radius: 14.r,
