@@ -226,8 +226,7 @@ class ChatInputArea extends StatelessWidget {
                                         ModalImage bottomNavbar = ModalImage(
                                           isImageCroppable: false,
                                           onImageSelect: (path) async {
-                                            if (Utility.isNotNullEmptyOrFalse(
-                                                path)) {
+                                            if (Utility.isNotNullEmptyOrFalse(path)) {
                                               Navigator.pop(context);
                                               onImageSelected(path);
                                               Navigator.pop(context);
@@ -237,20 +236,34 @@ class ChatInputArea extends StatelessWidget {
                                         bottomNavbar.mainBottomSheet(context);
                                       },
                                       onVideo: () async {
-                                        var path = await FileServices()
-                                            .pickVideoFromGallery();
+                                        Navigator.pop(context);
+                                        var path = await FileServices().pickVideoFromGallery();
                                         onvideoSelected(path?.path ?? "");
                                       },
                                       onDocument: () async {
-                                        final file =
-                                            await FileServices().pickDocument();
+                                        Navigator.pop(context);
+                                        final file = await FileServices().pickDocument();
                                         if (file != null) {
                                           onDocumentSelected(file.path ?? "");
                                         }
                                       },
                                       onCamera: () {
-                                     Get.toNamed(Routes.cameraScreen);
+                                        Navigator.pop(context);
 
+                                        WidgetsBinding.instance.addPostFrameCallback((_) async {
+                                          final result = await Get.toNamed(Routes.cameraScreen);
+
+                                          if (result != null && result is String && result.isNotEmpty) {
+                                            final ext = result.split('.').last.toLowerCase();
+                                            const videoExtensions = ['mp4', 'mov', 'avi', 'mkv', '3gp', 'webm'];
+
+                                            if (videoExtensions.contains(ext)) {
+                                              onvideoSelected(result);
+                                            } else {
+                                              onImageSelected(result);
+                                            }
+                                          }
+                                        });
                                       },
                                     );
                                   },

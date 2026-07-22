@@ -104,13 +104,12 @@ class CameraScreen extends StatelessWidget {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
-                          // Gallery Button
                           GestureDetector(
                             onTap: () async {
-                              final path =
+                              final file =
                                   await FileServices().pickVideoFromGallery();
-                              if (path != null) {
-                                Get.back(result: path);
+                              if (file != null) {
+                                Get.back(result: file.path);
                               }
                             },
                             child: Container(
@@ -129,11 +128,15 @@ class CameraScreen extends StatelessWidget {
                             ),
                           ),
 
-                          // Shutter Button
                           GestureDetector(
                             onTap: () async {
                               if (controller.selectedMode.value == "VIDEO") {
-                                await controller.toggleVideoRecording;
+                                final XFile? file =
+                                    await controller.toggleVideoRecording();
+                                if (file != null) {
+                                  Get.back(result: file.path);
+                                }
+
                               } else {
                                 final XFile? file =
                                     await controller.takePictureWithReturn();
