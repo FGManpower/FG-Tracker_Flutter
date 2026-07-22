@@ -119,6 +119,7 @@ class GroupChatScreen extends GetView<GroupMessageController> {
               scrollController: controller.scrollController,
               videoDuration: controller.videoDuration,
               videoThumbnail: controller.videoThumbnail,
+              groupMembers: controller.groupMembers,
               onSend: () {
                 controller.sendMessage(
                   textController: textController,
@@ -131,7 +132,6 @@ class GroupChatScreen extends GetView<GroupMessageController> {
                 controller.uploadAudio(voicePath);
               },
               onvideoSelected: (path) async {
-                // Navigator.pop(context);
                 if (Utility.isNotNullEmptyOrFalse(path)) {
                   controller.videoPath.value = path;
                   await controller.generateVideoPreview(
@@ -143,7 +143,6 @@ class GroupChatScreen extends GetView<GroupMessageController> {
               isUploadingVideo: controller.isUploadingVideo,
               uploadProgress: controller.uploadProgress,
               onDocumentSelected: (path) async {
-                // Navigator.pop(context);
                 if (Utility.isNotNullEmptyOrFalse(path)) {
                   controller.documentPath.value = path;
                 }

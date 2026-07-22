@@ -205,7 +205,7 @@ class GroupMessageController extends GetxController {
 
   Future<void> uploadVideo(String path) async {
     try {
-      isUploadingVideo.value=true;
+      isUploadingVideo.value = true;
       final thumbnailPath = await generateThumbnailFile(path);
 
       if (thumbnailPath == null) {
@@ -228,7 +228,7 @@ class GroupMessageController extends GetxController {
           content:
               "${result.videoUrl}||${result.thumbnail}||${result.duration}",
         );
-        isUploadingVideo.value=false;
+        isUploadingVideo.value = false;
       }
     } catch (e) {
       log(
@@ -363,6 +363,12 @@ class GroupMessageController extends GetxController {
 
     Navigator.of(context).pop();
   }
+
+
+  final RxBool showMentionList = false.obs;
+
+
+
 
   @override
   void onClose() {

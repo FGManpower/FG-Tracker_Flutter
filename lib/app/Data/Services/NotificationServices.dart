@@ -88,7 +88,6 @@ class firebaseNotificationServices {
         await FirebaseMessaging.instance.getInitialMessage();
 
     if (initialMessage != null) {
-      // handleMessage(context, initialMessage);
       handleMessage(context, initialMessage, type: "recienvedmessage");
     }
 

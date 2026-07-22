@@ -455,6 +455,7 @@ import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'package:get/get.dart' hide navigator;
 import 'package:flutter_webrtc/flutter_webrtc.dart';
+import 'package:proximity_screen_lock/proximity_screen_lock.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 import '../../../../gen/assets.gen.dart';
 import '../../../Core/global/launchedFromCall.dart';
@@ -557,7 +558,7 @@ class CallController extends GetxController {
     });
 
     socket!.on("missedCall", (data) async {
-      print("==========MissedCallCalled=======");
+      log("==========MissedCallCalled=======");
       _clearTimers();
       if (CallSessionState.sessionId != null) {
         callEnded(CallSessionState.sessionId.toString());
@@ -576,7 +577,7 @@ class CallController extends GetxController {
     });
 
     socket?.on("callCreated", (data) {
-      print("===========CallCreatedResponseData======${data}");
+      log("===========CallCreatedResponseData======${data}");
       callId = data['callId'];
       startMissedCallTimer();
     });
@@ -732,7 +733,7 @@ class CallController extends GetxController {
   }
 
   Future<void> endCall({String? type}) async {
-    _clearTimers(); // Fix: Stop loops before executing transition blocks
+    _clearTimers();
 
     final myUserId = Global.storageServices.get(PrefConst.userId).toString();
     final targetUser =
@@ -789,7 +790,15 @@ class CallController extends GetxController {
 
   Future<void> toggleSpeaker() async {
     isSpeakerOn = !isSpeakerOn;
+
     await Helper.setSpeakerphoneOn(isSpeakerOn);
+
+    if (isSpeakerOn) {
+      await ProximityScreenLock.setActive(false);
+    } else {
+      await ProximityScreenLock.setActive(true);
+    }
+
     update();
   }
 
@@ -829,9 +838,6 @@ class CallController extends GetxController {
           missCallDurationSeconds.value--;
         }
 
-        print(
-            "=============missCallDurationSeconds: ${missCallDurationSeconds.value}");
-
         if (missCallDurationSeconds.value == 0) {
           timer.cancel();
 
@@ -868,6 +874,16 @@ class CallController extends GetxController {
 
   stopSound() {
     FlutterRingtonePlayer().stop();
+  }
+
+  Future<void> startAudioCall() async {
+    await WakelockPlus.enable();
+    await ProximityScreenLock.setActive(true);
+  }
+
+  Future<void> endAudioCall() async {
+    await WakelockPlus.disable();
+    await ProximityScreenLock.setActive(false);
   }
 
   @override

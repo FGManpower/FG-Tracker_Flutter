@@ -210,39 +210,39 @@ Future<void> main() async {
 
   Get.put<LocationService>(LocationService());
   Get.put<SocketService>(SocketService());
-
-  const AndroidInitializationSettings androidInit =
-      AndroidInitializationSettings('@mipmap/ic_launcher');
-
-  final DarwinInitializationSettings iosInit = DarwinInitializationSettings(
-    notificationCategories: [
-      DarwinNotificationCategory(
-        'INCOMING_CALL',
-        actions: [
-          DarwinNotificationAction.plain(
-            'CALL_ACCEPT',
-            'Accept',
-            options: {DarwinNotificationActionOption.foreground},
-          ),
-          DarwinNotificationAction.plain(
-            'CALL_DECLINE',
-            'Decline',
-            options: {DarwinNotificationActionOption.destructive},
-          ),
-        ],
-      ),
-    ],
-  );
-
-  await flutterLocalNotificationsPlugin.initialize(
-    InitializationSettings(
-      android: androidInit,
-      iOS: iosInit,
-    ),
-    onDidReceiveNotificationResponse: onNotificationResponse,
-  );
-
-  GlobalNotificationHandler.instance.init();
+  //
+  // const AndroidInitializationSettings androidInit =
+  //     AndroidInitializationSettings('@mipmap/ic_launcher');
+  //
+  // final DarwinInitializationSettings iosInit = DarwinInitializationSettings(
+  //   notificationCategories: [
+  //     DarwinNotificationCategory(
+  //       'INCOMING_CALL',
+  //       actions: [
+  //         DarwinNotificationAction.plain(
+  //           'CALL_ACCEPT',
+  //           'Accept',
+  //           options: {DarwinNotificationActionOption.foreground},
+  //         ),
+  //         DarwinNotificationAction.plain(
+  //           'CALL_DECLINE',
+  //           'Decline',
+  //           options: {DarwinNotificationActionOption.destructive},
+  //         ),
+  //       ],
+  //     ),
+  //   ],
+  // );
+  //
+  // await flutterLocalNotificationsPlugin.initialize(
+  //   InitializationSettings(
+  //     android: androidInit,
+  //     iOS: iosInit,
+  //   ),
+  //   onDidReceiveNotificationResponse: onNotificationResponse,
+  // );
+  //
+  // GlobalNotificationHandler.instance.init();
   final userId = Global.storageServices.get(PrefConst.userId)?.toString();
 
   if (userId != null) {
@@ -255,7 +255,7 @@ Future<void> main() async {
       selfUserId: userId,
     );
   }
-  WalkieConfiguration.configureSpeakerAudioSession();
+  // WalkieConfiguration.configureSpeakerAudioSession();
   setupVoipListener();
   if (Platform.isIOS) {
     CallUtils.instance.listenCallKitEvents();

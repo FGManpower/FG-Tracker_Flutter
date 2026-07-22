@@ -55,6 +55,8 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
 
+    checkAndRequestPermissions(context);
+    notificationServices.setupInteractMessage(context);
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       // handleTerminatedCallIfAny();
       if (Platform.isIOS) {
@@ -62,9 +64,8 @@ class _HomeScreenState extends State<HomeScreen> {
       }
     });
 
-    checkAndRequestPermissions(context);
 
-    notificationServices.setupInteractMessage(context);
+
     checkDeeplink();
   }
 

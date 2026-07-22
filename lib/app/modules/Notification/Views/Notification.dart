@@ -58,7 +58,7 @@ class NotificationScreen extends StatelessWidget {
         centerTitle: true,
         automaticallyImplyLeading: true,
         leading: InkWell(
-          onTap: ()=>Navigator.pop(context),
+          onTap: () => Navigator.pop(context),
           child:
               reausableIcon(icon: Icons.arrow_back_ios, color: AppColors.white),
         ),
@@ -146,6 +146,19 @@ class NotificationScreen extends StatelessWidget {
                                       },
                                     );
                                   } else if (data["screen_name"] ==
+                                      "groupChatScreen") {
+                                    Get.toNamed(
+                                      Routes.groupChatScreen,
+                                      arguments: {
+                                        "groupId":
+                                            int.parse(item.groupId.toString())
+                                                .toString(),
+                                        "groupName":
+                                            item.data?['groupName'].toString(),
+                                        "groupImage": "",
+                                      },
+                                    );
+                                  } else if (data["screen_name"] ==
                                           "incomingCall" ||
                                       item.type == "missed_call") {
                                     final bool isVideo =
@@ -176,58 +189,47 @@ class NotificationScreen extends StatelessWidget {
                                 }
                               },
                         child: AnimatedContainer(
-                      duration: const Duration(
-                        milliseconds: 250,
-                      ),
-
-                      margin: EdgeInsets.only(
-                        bottom: 12.h,
-                      ),
-
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 14.w,
-                        vertical: 12.h,
-                      ),
-
-                      constraints: BoxConstraints(
-                        minHeight: 86.h,
-                      ),
-
-                      decoration: BoxDecoration(
-                        gradient: item?.isRead == false
-                            ? LinearGradient(
-                          colors: [
-                            const Color(0xffF8F5FF),
-                            Colors.white,
-                          ],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        )
-                            : null,
-
-                        color: item?.isRead == true
-                            ? Colors.white
-                            : null,
-
-                        borderRadius: BorderRadius.circular(18.r),
-
-                        border: Border.all(
-                          color: item?.isRead == false
-                              ? Colors.deepPurple.shade100
-                              : Colors.grey.shade200,
-                          width: 1,
-                        ),
-
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.04),
-                            blurRadius: 16,
-                            offset: const Offset(0, 6),
+                          duration: const Duration(
+                            milliseconds: 250,
                           ),
-                        ],
-                      ),
-
-                      child: Row(
+                          margin: EdgeInsets.only(
+                            bottom: 12.h,
+                          ),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 14.w,
+                            vertical: 12.h,
+                          ),
+                          constraints: BoxConstraints(
+                            minHeight: 86.h,
+                          ),
+                          decoration: BoxDecoration(
+                            gradient: item?.isRead == false
+                                ? LinearGradient(
+                                    colors: [
+                                      const Color(0xffF8F5FF),
+                                      Colors.white,
+                                    ],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                  )
+                                : null,
+                            color: item?.isRead == true ? Colors.white : null,
+                            borderRadius: BorderRadius.circular(18.r),
+                            border: Border.all(
+                              color: item?.isRead == false
+                                  ? Colors.deepPurple.shade100
+                                  : Colors.grey.shade200,
+                              width: 1,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.04),
+                                blurRadius: 16,
+                                offset: const Offset(0, 6),
+                              ),
+                            ],
+                          ),
+                          child: Row(
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
                               Stack(
@@ -246,7 +248,8 @@ class NotificationScreen extends StatelessWidget {
                                       ),
                                       boxShadow: [
                                         BoxShadow(
-                                          color: Colors.deepPurple.withOpacity(0.18),
+                                          color: Colors.deepPurple
+                                              .withOpacity(0.18),
                                           blurRadius: 12,
                                           offset: const Offset(0, 4),
                                         ),
@@ -254,34 +257,35 @@ class NotificationScreen extends StatelessWidget {
                                     ),
                                     padding: EdgeInsets.all(2.w),
                                     child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(100.r),
+                                      borderRadius:
+                                          BorderRadius.circular(100.r),
                                       child: profileImage != null
                                           ? Image.network(
-                                        "${ConstRes.aImageBaseUrl}$profileImage",
-                                        fit: BoxFit.cover,
-                                        errorBuilder: (
-                                            context,
-                                            error,
-                                            stackTrace,
-                                            ) {
-                                          return Container(
-                                            color: Colors.white,
-                                            child: Icon(
-                                              Icons.person,
-                                              size: 26.sp,
-                                              color: Colors.deepPurple,
-                                            ),
-                                          );
-                                        },
-                                      )
+                                              "${ConstRes.aImageBaseUrl}$profileImage",
+                                              fit: BoxFit.cover,
+                                              errorBuilder: (
+                                                context,
+                                                error,
+                                                stackTrace,
+                                              ) {
+                                                return Container(
+                                                  color: Colors.white,
+                                                  child: Icon(
+                                                    Icons.person,
+                                                    size: 26.sp,
+                                                    color: Colors.deepPurple,
+                                                  ),
+                                                );
+                                              },
+                                            )
                                           : Container(
-                                        color: Colors.white,
-                                        child: Icon(
-                                          Icons.person,
-                                          size: 26.sp,
-                                          color: Colors.deepPurple,
-                                        ),
-                                      ),
+                                              color: Colors.white,
+                                              child: Icon(
+                                                Icons.person,
+                                                size: 26.sp,
+                                                color: Colors.deepPurple,
+                                              ),
+                                            ),
                                     ),
                                   ),
                                   Positioned(
@@ -301,7 +305,8 @@ class NotificationScreen extends StatelessWidget {
                                         ),
                                         boxShadow: [
                                           BoxShadow(
-                                            color: Colors.black.withOpacity(0.08),
+                                            color:
+                                                Colors.black.withOpacity(0.08),
                                             blurRadius: 6,
                                           ),
                                         ],
@@ -317,7 +322,6 @@ class NotificationScreen extends StatelessWidget {
                                   ),
                                 ],
                               ),
-
                               SizedBox(width: 14.w),
                               Expanded(
                                 child: Column(
@@ -325,11 +329,13 @@ class NotificationScreen extends StatelessWidget {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Row(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Expanded(
                                           child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
                                             children: [
                                               Text(
                                                 item?.title ?? "Loading...",
@@ -339,31 +345,31 @@ class NotificationScreen extends StatelessWidget {
                                                   fontSize: 15.5.sp,
                                                   fontWeight: FontWeight.w700,
                                                   letterSpacing: 0.2,
-                                                  color: const Color(0xff111827),
+                                                  color:
+                                                      const Color(0xff111827),
                                                 ),
                                               ),
-
                                               SizedBox(height: 4.h),
-
                                               Text(
-                                                item?.body ?? "Loading notification",
+                                                item?.body ??
+                                                    "Loading notification",
                                                 maxLines: 2,
                                                 overflow: TextOverflow.ellipsis,
                                                 style: TextStyle(
                                                   fontSize: 12.8.sp,
                                                   height: 1.45,
-                                                  color: const Color(0xff6B7280),
+                                                  color:
+                                                      const Color(0xff6B7280),
                                                   fontWeight: FontWeight.w500,
                                                 ),
                                               ),
                                             ],
                                           ),
                                         ),
-
                                         SizedBox(width: 8.w),
-
                                         Column(
-                                          crossAxisAlignment: CrossAxisAlignment.end,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.end,
                                           children: [
                                             Container(
                                               padding: EdgeInsets.symmetric(
@@ -372,20 +378,18 @@ class NotificationScreen extends StatelessWidget {
                                               ),
                                               decoration: BoxDecoration(
                                                 color: const Color(0xffF3F4F6),
-                                                borderRadius: BorderRadius.circular(20.r),
+                                                borderRadius:
+                                                    BorderRadius.circular(20.r),
                                               ),
                                               child: Row(
                                                 mainAxisSize: MainAxisSize.min,
                                                 children: [
-
                                                   Icon(
                                                     Icons.access_time_rounded,
                                                     size: 9.sp,
                                                     color: Colors.grey.shade600,
                                                   ),
-
                                                   SizedBox(width: 3.w),
-
                                                   Text(
                                                     controller.formatTime(
                                                       item?.createdAt ?? "",
@@ -393,25 +397,26 @@ class NotificationScreen extends StatelessWidget {
                                                     style: TextStyle(
                                                       fontSize: 9.5.sp,
                                                       height: 1,
-                                                      fontWeight: FontWeight.w600,
-                                                      color: Colors.grey.shade700,
+                                                      fontWeight:
+                                                          FontWeight.w600,
+                                                      color:
+                                                          Colors.grey.shade700,
                                                     ),
                                                   ),
                                                 ],
                                               ),
                                             ),
-
                                             SizedBox(height: 10.h),
                                             Row(
                                               mainAxisSize: MainAxisSize.min,
                                               children: [
-
                                                 if (item?.isRead == false)
                                                   Container(
                                                     width: 9.w,
                                                     height: 9.w,
                                                     decoration: BoxDecoration(
-                                                      gradient: const LinearGradient(
+                                                      gradient:
+                                                          const LinearGradient(
                                                         colors: [
                                                           Color(0xff4F46E5),
                                                           Color(0xff7C3AED),
@@ -420,17 +425,19 @@ class NotificationScreen extends StatelessWidget {
                                                       shape: BoxShape.circle,
                                                       boxShadow: [
                                                         BoxShadow(
-                                                          color: Colors.deepPurple.withOpacity(0.25),
+                                                          color: Colors
+                                                              .deepPurple
+                                                              .withOpacity(
+                                                                  0.25),
                                                           blurRadius: 6,
                                                         ),
                                                       ],
                                                     ),
                                                   ),
-
                                                 SizedBox(width: 10.w),
-
                                                 Icon(
-                                                  Icons.arrow_forward_ios_rounded,
+                                                  Icons
+                                                      .arrow_forward_ios_rounded,
                                                   size: 13.sp,
                                                   color: Colors.grey.shade400,
                                                 ),
@@ -486,31 +493,24 @@ class NotificationScreen extends StatelessWidget {
   }
 
   void _showFilterBottomSheet(
-      BuildContext context,
-      ) {
+    BuildContext context,
+  ) {
     Get.bottomSheet(
-
       SafeArea(
         child: Container(
-
           width: double.infinity,
-
           constraints: BoxConstraints(
             maxHeight: MediaQuery.of(context).size.height * 0.72,
           ),
-
           padding: EdgeInsets.symmetric(
             horizontal: 18.w,
             vertical: 18.h,
           ),
-
           decoration: BoxDecoration(
             color: Colors.white,
-
             borderRadius: BorderRadius.vertical(
               top: Radius.circular(28.r),
             ),
-
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.08),
@@ -519,140 +519,103 @@ class NotificationScreen extends StatelessWidget {
               ),
             ],
           ),
-
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-
               Container(
                 width: 42.w,
                 height: 4.5.h,
-
                 decoration: BoxDecoration(
                   color: Colors.grey.shade300,
                   borderRadius: BorderRadius.circular(20.r),
                 ),
               ),
-
               SizedBox(height: 18.h),
               Text(
                 "Filter Notifications",
-
                 style: TextStyle(
                   fontSize: 17.sp,
                   fontWeight: FontWeight.w700,
                   color: Colors.black87,
                 ),
               ),
-
               SizedBox(height: 18.h),
               Flexible(
                 child: ListView.builder(
                   shrinkWrap: true,
                   physics: const BouncingScrollPhysics(),
-
                   itemCount: filters.length,
-
                   itemBuilder: (context, index) {
-
                     final e = filters[index];
 
                     return Obx(() {
-
                       final selected =
-                          controller.selectedFilter.value ==
-                              e["value"];
+                          controller.selectedFilter.value == e["value"];
 
                       return Padding(
                         padding: EdgeInsets.only(
                           bottom: 10.h,
                         ),
-
                         child: Material(
                           color: Colors.transparent,
-
                           child: InkWell(
-
-                            borderRadius:
-                            BorderRadius.circular(18.r),
-
+                            borderRadius: BorderRadius.circular(18.r),
                             onTap: () {
-
-                              controller.selectedFilter.value =
-                              e["value"];
+                              controller.selectedFilter.value = e["value"];
 
                               controller.applyFilter();
 
                               Get.back();
-
                             },
-
                             child: AnimatedContainer(
-
                               duration: const Duration(
                                 milliseconds: 220,
                               ),
-
                               padding: EdgeInsets.symmetric(
                                 horizontal: 16.w,
                                 vertical: 14.h,
                               ),
-
                               decoration: BoxDecoration(
-
                                 color: selected
                                     ? Colors.deepPurple.shade50
                                     : Colors.grey.shade100,
-
-                                borderRadius:
-                                BorderRadius.circular(18.r),
-
+                                borderRadius: BorderRadius.circular(18.r),
                                 border: Border.all(
                                   color: selected
                                       ? Colors.deepPurple
                                       : Colors.transparent,
-
                                   width: 1.2,
                                 ),
-
                                 boxShadow: selected
                                     ? [
-                                  BoxShadow(
-                                    color: Colors.deepPurple
-                                        .withOpacity(0.08),
-                                    blurRadius: 10,
-                                    offset: const Offset(0, 3),
-                                  ),
-                                ]
+                                        BoxShadow(
+                                          color: Colors.deepPurple
+                                              .withOpacity(0.08),
+                                          blurRadius: 10,
+                                          offset: const Offset(0, 3),
+                                        ),
+                                      ]
                                     : [],
                               ),
-
                               child: Row(
                                 children: [
                                   Container(
-
                                     width: 38.w,
                                     height: 38.w,
-
                                     decoration: BoxDecoration(
                                       color: selected
                                           ? Colors.deepPurple
                                           : Colors.white,
-
                                       shape: BoxShape.circle,
                                     ),
-
                                     child: Icon(
                                       e["icon"],
-
                                       size: 18.sp,
-
                                       color: selected
                                           ? Colors.white
                                           : Colors.black87,
                                     ),
                                   ),
-
                                   SizedBox(width: 14.w),
                                   Expanded(
                                     child: Text(
@@ -660,7 +623,6 @@ class NotificationScreen extends StatelessWidget {
                                       style: TextStyle(
                                         fontSize: 14.sp,
                                         fontWeight: FontWeight.w600,
-
                                         color: selected
                                             ? Colors.deepPurple
                                             : Colors.black87,
@@ -671,18 +633,17 @@ class NotificationScreen extends StatelessWidget {
                                     duration: const Duration(
                                       milliseconds: 250,
                                     ),
-
                                     child: selected
                                         ? Icon(
-                                      Icons.check_circle,
-                                      key: ValueKey(true),
-                                      color: Colors.deepPurple,
-                                      size: 22.sp,
-                                    )
+                                            Icons.check_circle,
+                                            key: ValueKey(true),
+                                            color: Colors.deepPurple,
+                                            size: 22.sp,
+                                          )
                                         : SizedBox(
-                                      key: ValueKey(false),
-                                      width: 22.w,
-                                    ),
+                                            key: ValueKey(false),
+                                            width: 22.w,
+                                          ),
                                   ),
                                 ],
                               ),
@@ -698,7 +659,6 @@ class NotificationScreen extends StatelessWidget {
           ),
         ),
       ),
-
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
     );

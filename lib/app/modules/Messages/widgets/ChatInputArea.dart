@@ -1,15 +1,14 @@
-// ignore_for_file: dead_null_aware_expression
-
 import 'dart:io';
 import 'dart:typed_data';
-
 import 'package:fgtracker/app/Core/constant/BottomSheet/ChatBottomSheet.dart';
 import 'package:fgtracker/app/Core/util/file_helper.dart';
 import 'package:fgtracker/app/Core/values/bottomSheet.dart';
 import 'package:fgtracker/app/Core/values/utility.dart';
 import 'package:fgtracker/app/Data/Services/file_services.dart';
+import 'package:fgtracker/app/Model/LocationDataRes.dart';
 import 'package:fgtracker/app/config/themes_data.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
+import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
 import 'package:fgtracker/app/modules/Messages/Controller/VoiceRecordController.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
@@ -36,6 +35,8 @@ class ChatInputArea extends StatelessWidget {
   final RxString videoDuration;
   final RxBool isUploadingVideo;
   final RxDouble uploadProgress;
+  RxList<LocationData>? groupMembers;
+
 
   ChatInputArea(
       {Key? key,
@@ -54,7 +55,9 @@ class ChatInputArea extends StatelessWidget {
       required this.onDocumentSelected,
       required this.documentPath,
       required this.isUploadingVideo,
-      required this.uploadProgress})
+      required this.uploadProgress,
+       this.groupMembers,
+    })
       : super(key: key);
 
   final voiceController = Get.put(VoiceRecordController());
@@ -201,7 +204,11 @@ class ChatInputArea extends StatelessWidget {
                         Expanded(
                           child: TextField(
                             controller: textController,
-                            onChanged: (val) => messageText.value = val,
+                            onChanged: (val) {
+                              messageText.value = val;
+
+
+                            },
                             style: TextStyle(
                                 color: ToggleThemeData.white,
                                 fontFamily: FontFamily.interMedium,
@@ -226,7 +233,8 @@ class ChatInputArea extends StatelessWidget {
                                         ModalImage bottomNavbar = ModalImage(
                                           isImageCroppable: false,
                                           onImageSelect: (path) async {
-                                            if (Utility.isNotNullEmptyOrFalse(path)) {
+                                            if (Utility.isNotNullEmptyOrFalse(
+                                                path)) {
                                               Navigator.pop(context);
                                               onImageSelected(path);
                                               Navigator.pop(context);
@@ -237,12 +245,14 @@ class ChatInputArea extends StatelessWidget {
                                       },
                                       onVideo: () async {
                                         Navigator.pop(context);
-                                        var path = await FileServices().pickVideoFromGallery();
+                                        var path = await FileServices()
+                                            .pickVideoFromGallery();
                                         onvideoSelected(path?.path ?? "");
                                       },
                                       onDocument: () async {
                                         Navigator.pop(context);
-                                        final file = await FileServices().pickDocument();
+                                        final file =
+                                            await FileServices().pickDocument();
                                         if (file != null) {
                                           onDocumentSelected(file.path ?? "");
                                         }
@@ -250,12 +260,26 @@ class ChatInputArea extends StatelessWidget {
                                       onCamera: () {
                                         Navigator.pop(context);
 
-                                        WidgetsBinding.instance.addPostFrameCallback((_) async {
-                                          final result = await Get.toNamed(Routes.cameraScreen);
+                                        WidgetsBinding.instance
+                                            .addPostFrameCallback((_) async {
+                                          final result = await Get.toNamed(
+                                              Routes.cameraScreen);
 
-                                          if (result != null && result is String && result.isNotEmpty) {
-                                            final ext = result.split('.').last.toLowerCase();
-                                            const videoExtensions = ['mp4', 'mov', 'avi', 'mkv', '3gp', 'webm'];
+                                          if (result != null &&
+                                              result is String &&
+                                              result.isNotEmpty) {
+                                            final ext = result
+                                                .split('.')
+                                                .last
+                                                .toLowerCase();
+                                            const videoExtensions = [
+                                              'mp4',
+                                              'mov',
+                                              'avi',
+                                              'mkv',
+                                              '3gp',
+                                              'webm'
+                                            ];
 
                                             if (videoExtensions.contains(ext)) {
                                               onvideoSelected(result);

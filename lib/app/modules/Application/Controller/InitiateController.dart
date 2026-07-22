@@ -43,9 +43,7 @@ class InitiateController extends GetxController
       return;
     }
 
-
     Future.microtask(() async {
-
       await CallKitService.instance.checkCallOnLaunch();
 
       if (CallSessionState.isCallActive || CallSessionState.launchedFromCall) {
@@ -71,9 +69,6 @@ class InitiateController extends GetxController
         Utility.isNotNullEmptyOrFalse(
             Global.storageServices.get(PrefConst.isRegistered))) {
       Get.offAllNamed(Routes.Home_Screen);
-
-
-
     } else {
       final introDone =
           await Global.storageServices.getBool(PrefConst.introStatus);
