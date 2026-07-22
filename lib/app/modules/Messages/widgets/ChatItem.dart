@@ -1,11 +1,13 @@
 import 'package:fgtracker/app/Core/util/DateTime_Format.dart';
 import 'package:fgtracker/app/Core/values/Dialog/DialogBox.dart';
+import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Data/Services/DocumentService.dart';
 import 'package:fgtracker/app/Model/GetMessage.dart';
 import 'package:fgtracker/app/modules/Messages/widgets/videoThumbnailWidget.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -159,17 +161,14 @@ class ChatBubble extends StatelessWidget {
         audioUrl: "${ConstRes.aImageBaseUrl}${message.content}",
         isMe: false,
       );
-    }else if (message.messageType == "video") {
+    } else if (message.messageType == "video") {
       final parts = message.content?.split("||") ?? [];
 
-      final videoPath =
-      parts.isNotEmpty ? parts[0] : "";
+      final videoPath = parts.isNotEmpty ? parts[0] : "";
 
-      final thumbnailPath =
-      parts.length > 1 ? parts[1] : "";
+      final thumbnailPath = parts.length > 1 ? parts[1] : "";
 
-      final duration =
-      parts.length > 2 ? parts[2] : "--:--";
+      final duration = parts.length > 2 ? parts[2] : "--:--";
 
       return VideoThumbnailWidget(
         videoUrl: "${ConstRes.aImageBaseUrl}$videoPath",
@@ -179,19 +178,18 @@ class ChatBubble extends StatelessWidget {
           Get.toNamed(
             Routes.videoPlayerScreen,
             arguments: {
-              "videoUrl":
-              "${ConstRes.aImageBaseUrl}$videoPath",
+              "videoUrl": "${ConstRes.aImageBaseUrl}$videoPath",
             },
           );
         },
       );
-    }else if (message.messageType == "document") {
+    } else if (message.messageType == "document") {
       final parts = message.content?.split("||") ?? [];
 
       final documentUrl = parts.isNotEmpty ? parts[0] : "";
 
       String documentName =
-      parts.length > 1 ? parts[1] : documentUrl.split('/').last;
+          parts.length > 1 ? parts[1] : documentUrl.split('/').last;
 
       documentName = removeDuplicateExtension(
         documentName,
@@ -233,7 +231,6 @@ class ChatBubble extends StatelessWidget {
 
       return InkWell(
         onTap: () async {
-
           await DocumentService().openDocument(
             "${ConstRes.aImageBaseUrl}$documentUrl",
           );
@@ -595,14 +592,11 @@ class GroupChatBubble extends StatelessWidget {
     } else if (message.messageType == "video") {
       final parts = message.content?.split("||") ?? [];
 
-      final videoPath =
-      parts.isNotEmpty ? parts[0] : "";
+      final videoPath = parts.isNotEmpty ? parts[0] : "";
 
-      final thumbnailPath =
-      parts.length > 1 ? parts[1] : "";
+      final thumbnailPath = parts.length > 1 ? parts[1] : "";
 
-      final duration =
-      parts.length > 2 ? parts[2] : "--:--";
+      final duration = parts.length > 2 ? parts[2] : "--:--";
 
       return VideoThumbnailWidget(
         videoUrl: "${ConstRes.aImageBaseUrl}$videoPath",
@@ -612,19 +606,18 @@ class GroupChatBubble extends StatelessWidget {
           Get.toNamed(
             Routes.videoPlayerScreen,
             arguments: {
-              "videoUrl":
-              "${ConstRes.aImageBaseUrl}$videoPath",
+              "videoUrl": "${ConstRes.aImageBaseUrl}$videoPath",
             },
           );
         },
       );
-    }else if (message.messageType == "document") {
+    } else if (message.messageType == "document") {
       final parts = message.content?.split("||") ?? [];
 
       final documentUrl = parts.isNotEmpty ? parts[0] : "";
 
       String documentName =
-      parts.length > 1 ? parts[1] : documentUrl.split('/').last;
+          parts.length > 1 ? parts[1] : documentUrl.split('/').last;
 
       documentName = removeDuplicateExtension(
         documentName,
@@ -666,7 +659,6 @@ class GroupChatBubble extends StatelessWidget {
 
       return InkWell(
         onTap: () async {
-
           await DocumentService().openDocument(
             "${ConstRes.aImageBaseUrl}$documentUrl",
           );
@@ -729,11 +721,19 @@ class GroupChatBubble extends StatelessWidget {
         ),
       );
     } else {
-      return reausabletext(
-        message.content.toString(),
-        color: textColor,
-        fontsize: 12.sp,
-        fontfamily: FontFamily.interMedium,
+      return GestureDetector(
+        onLongPress: () async {
+          await Clipboard.setData(
+            ClipboardData(text: message.content.toString()),
+          );
+          Utils().fluttertoast("Message copied...");
+        },
+        child: reausabletext(
+          message.content.toString(),
+          color: textColor,
+          fontsize: 12.sp,
+          fontfamily: FontFamily.interMedium,
+        ),
       );
     }
   }

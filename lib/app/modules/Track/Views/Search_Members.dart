@@ -70,7 +70,7 @@ class SearchMembers extends GetView<SearchMemberController> {
           ),
         ),
         body: Container(
-          color: const Color(0xffF2F0FF),
+          color: Colors.white,
           child: controller.filteredMembers.isEmpty
               ? Center(
                   child: Text("No members found",

@@ -109,7 +109,7 @@ class GroupChatScreen extends GetView<GroupMessageController> {
                 scrollController: controller.scrollController,
               ),
             ),
-            // Directly use ChatInputArea – no extra container
+
             ChatInputArea(
               messageText: controller.messageText,
               imagePath: controller.imagePath,
@@ -148,10 +148,6 @@ class GroupChatScreen extends GetView<GroupMessageController> {
                 Navigator.pop(context);
                 if (Utility.isNotNullEmptyOrFalse(path)) {
                   controller.documentPath.value = path;
-                  // await controller.generateVideoPreview(
-                  //   path,
-                  // );
-                  // controller.update();
                 }
               },
             ),

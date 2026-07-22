@@ -7,6 +7,7 @@ import 'package:fgtracker/app/modules/Messages/Bindings/Chat_binding.dart';
 import 'package:fgtracker/app/modules/Messages/Bindings/video_binding.dart';
 import 'package:fgtracker/app/modules/Messages/Views/DocumentViewerScreen.dart';
 import 'package:fgtracker/app/modules/Messages/Views/GroupChatScreen.dart';
+import 'package:fgtracker/app/modules/Messages/Views/cameraScreen.dart';
 import 'package:fgtracker/app/modules/Messages/Views/videoPlayerScreen.dart';
 import 'package:fgtracker/app/modules/Notification/Views/Notification.dart';
 import 'package:fgtracker/app/modules/Track/Bindings/track_binding.dart';
@@ -155,7 +156,6 @@ class AppPages {
       transition: Transition.rightToLeft,
       transitionDuration: const Duration(milliseconds: 500),
     ),
-
     GetPage(
       name: _Paths.documentViewerScreen,
       page: () => DocumentViewerScreen(),
@@ -163,12 +163,18 @@ class AppPages {
       binding: DocumentBinding(),
       transitionDuration: const Duration(milliseconds: 500),
     ),
-
     GetPage(
       name: _Paths.videoPlayerScreen,
       page: () => VideoPlayerScreen(),
       transition: Transition.rightToLeft,
       binding: VideoBinding(),
+      transitionDuration: const Duration(milliseconds: 500),
+    ),
+    GetPage(
+      name: _Paths.cameraScreen,
+      page: () => CameraScreen(),
+      transition: Transition.rightToLeft,
+      // binding: VideoBinding(),
       transitionDuration: const Duration(milliseconds: 500),
     ),
   ];

@@ -1,6 +1,5 @@
-
-
 part of 'app_pages.dart';
+
 abstract class Routes {
   Routes._();
   static const Splash = _Paths.Splash;
@@ -24,8 +23,7 @@ abstract class Routes {
   static const groupChatScreen = _Paths.groupChatScreen;
   static const videoPlayerScreen = _Paths.videoPlayerScreen;
   static const documentViewerScreen = _Paths.documentViewerScreen;
-
-
+  static const cameraScreen = _Paths.cameraScreen;
 }
 
 abstract class _Paths {
@@ -51,10 +49,5 @@ abstract class _Paths {
   static const groupChatScreen = '/groupChatScreen';
   static const videoPlayerScreen = '/VideoPlayerScreen';
   static const documentViewerScreen = '/DocumentViewerScreen';
-
-
-
-
-
-
+  static const cameraScreen = '/CameraScreen';
 }

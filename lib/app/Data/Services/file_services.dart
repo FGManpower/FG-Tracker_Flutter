@@ -6,12 +6,13 @@ import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart' as path_provider;
 
-
 class FileServices {
   final ImagePicker _picker = ImagePicker();
 
   Future<File?> pickImageFromGallery() async {
     try {
+
+
       final XFile? image = await _picker.pickImage(
         source: ImageSource.gallery,
       );
@@ -20,7 +21,8 @@ class FileServices {
 
       final dir = await path_provider.getTemporaryDirectory();
 
-      final targetPath = '${dir.path}/${DateTime.now().millisecondsSinceEpoch}.jpg';
+      final targetPath =
+          '${dir.path}/${DateTime.now().millisecondsSinceEpoch}.jpg';
 
       final result = await FlutterImageCompress.compressAndGetFile(
         image.path,
@@ -35,28 +37,21 @@ class FileServices {
       return null;
     }
   }
+
   Future<File?> pickVideoFromGallery() async {
     try {
-      print("Opening gallery...");
-
       final XFile? video = await _picker.pickVideo(
         source: ImageSource.gallery,
       );
 
-      print("Video picked: ${video?.path}");
-
       if (video == null) {
-        print("Video is NULL");
         return null;
       }
 
       final file = File(video.path);
 
-      print("File exists: ${await file.exists()}");
-
       return file;
     } catch (e, s) {
-      print("Video Picker Error: $e");
       print(s);
       return null;
     }
@@ -111,5 +106,4 @@ class FileServices {
       return null;
     }
   }
-
 }

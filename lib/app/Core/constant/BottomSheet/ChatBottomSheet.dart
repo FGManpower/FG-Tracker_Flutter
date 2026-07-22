@@ -81,6 +81,7 @@ class ChatBottomSheet {
   static Future<void> showFileOptions(
     BuildContext context, {
     required VoidCallback onGallery,
+    required VoidCallback onCamera,
     required VoidCallback onVideo,
     required VoidCallback onDocument,
   }) async {
@@ -149,8 +150,20 @@ class ChatBottomSheet {
                       onDocument();
                     },
                   ),
+
+                  _attachmentItem(
+                    icon: Icons.camera_alt_outlined,
+                    color: const Color(0xff4F8EF7),
+                    title: "Camera",
+                    subtitle: "camera",
+                    onTap: () {
+
+                      onCamera();
+                    },
+                  ),
                 ],
               ),
+
               SizedBox(height: 20.h),
             ],
           ),
