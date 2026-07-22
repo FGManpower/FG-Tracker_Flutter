@@ -59,29 +59,33 @@ class CameraControllerX extends GetxController {
   }
 
   Future<void> toggleFlash() async {
-    if (cameraController == null || !cameraController!.value.isInitialized)
+    if (cameraController == null || !cameraController!.value.isInitialized) {
       return;
+    }
     isFlashOn.value = !isFlashOn.value;
     await cameraController!.setFlashMode(
       isFlashOn.value ? FlashMode.torch : FlashMode.off,
     );
   }
 
-  Future<void> takePicture() async {
-    if (cameraController == null || !cameraController!.value.isInitialized)
-      return;
+  Future<XFile?> takePictureWithReturn() async {
+    if (cameraController == null || !cameraController!.value.isInitialized) {
+      return null;
+    }
     try {
       final XFile file = await cameraController!.takePicture();
-      Get.snackbar("Success", "Photo saved",
-          snackPosition: SnackPosition.BOTTOM);
+      return file;
     } catch (e) {
       Get.snackbar("Error", "Failed to take photo");
+      return null;
     }
   }
 
-  void toggleVideoRecording() async {
-    if (cameraController == null || !cameraController!.value.isInitialized)
-      return;
+
+  Future<XFile?> toggleVideoRecording() async {
+    if (cameraController == null || !cameraController!.value.isInitialized) {
+      return null;
+    }
 
     try {
       if (isRecording.value) {
@@ -89,14 +93,16 @@ class CameraControllerX extends GetxController {
         _timer?.cancel();
         isRecording.value = false;
         recordingSeconds.value = 0;
-        Get.snackbar("Success", "Video saved");
+        return file;
       } else {
         await cameraController!.startVideoRecording();
         isRecording.value = true;
         _startTimer();
+        return null;
       }
     } catch (e) {
       Get.snackbar("Error", "Recording failed");
+      return null;
     }
   }
 
@@ -108,17 +114,6 @@ class CameraControllerX extends GetxController {
     });
   }
 
-  Future<XFile?> takePictureWithReturn() async {
-    if (cameraController == null || !cameraController!.value.isInitialized) return null;
-    try {
-      final XFile file = await cameraController!.takePicture();
-      return file;
-    } catch (e) {
-      Get.snackbar("Error", "Failed to take photo");
-      return null;
-    }
-  }
-
   @override
   void onClose() {
     _timer?.cancel();
@@ -126,4 +121,3 @@ class CameraControllerX extends GetxController {
     super.onClose();
   }
 }
-
