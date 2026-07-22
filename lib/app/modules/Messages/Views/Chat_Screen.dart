@@ -169,7 +169,6 @@ class ChatScreen extends GetView<MessageController> {
                   }
                 },
                 onvideoSelected: (path) async {
-                  Navigator.pop(context);
                   if (Utility.isNotNullEmptyOrFalse(path)) {
                     controller.videoPath.value = path;
                     await controller.generateVideoPreview(
