@@ -9,34 +9,69 @@ import 'package:path_provider/path_provider.dart' as path_provider;
 class FileServices {
   final ImagePicker _picker = ImagePicker();
 
-  Future<File?> pickImageFromGallery() async {
+
+  Future<List<File>> pickMultipleImagesFromGallery() async {
     try {
+      final List<XFile> images = await _picker.pickMultiImage();
 
-
-      final XFile? image = await _picker.pickImage(
-        source: ImageSource.gallery,
-      );
-
-      if (image == null) return null;
+      if (images.isEmpty) return [];
 
       final dir = await path_provider.getTemporaryDirectory();
 
-      final targetPath =
-          '${dir.path}/${DateTime.now().millisecondsSinceEpoch}.jpg';
+      final futures = images.asMap().entries.map((entry) async {
+        final index = entry.key;
+        final image = entry.value;
 
-      final result = await FlutterImageCompress.compressAndGetFile(
-        image.path,
-        targetPath,
-        quality: 85,
-        minWidth: 720,
-        minHeight: 720,
-      );
+        final targetPath =
+            '${dir.path}/${DateTime.now().millisecondsSinceEpoch}_$index.jpg';
 
-      return result != null ? File(result.path) : File(image.path);
+        final result = await FlutterImageCompress.compressAndGetFile(
+          image.path,
+          targetPath,
+          quality: 85,
+          minWidth: 720,
+          minHeight: 720,
+        );
+
+        return result != null ? File(result.path) : File(image.path);
+      });
+
+      return await Future.wait(futures);
     } catch (e) {
-      return null;
+      debugPrint("Image Picker Error: $e");
+      return [];
     }
   }
+  // Future<File?> pickImageFromGallery() async {
+  //   try {
+  //
+  //
+  //     final XFile? image = await _picker.pickImage(
+  //       source: ImageSource.gallery,
+  //
+  //
+  //     );
+  //
+  //     if (image == null) return null;
+  //
+  //     final dir = await path_provider.getTemporaryDirectory();
+  //
+  //     final targetPath =
+  //         '${dir.path}/${DateTime.now().millisecondsSinceEpoch}.jpg';
+  //
+  //     final result = await FlutterImageCompress.compressAndGetFile(
+  //       image.path,
+  //       targetPath,
+  //       quality: 85,
+  //       minWidth: 720,
+  //       minHeight: 720,
+  //     );
+  //
+  //     return result != null ? File(result.path) : File(image.path);
+  //   } catch (e) {
+  //     return null;
+  //   }
+  // }
 
   Future<File?> pickVideoFromGallery() async {
     try {

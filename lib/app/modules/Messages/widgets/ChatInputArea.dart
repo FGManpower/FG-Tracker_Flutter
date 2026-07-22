@@ -20,7 +20,7 @@ import 'message_Widgets.dart';
 
 class ChatInputArea extends StatelessWidget {
   final RxString messageText;
-  final RxString imagePath;
+  final RxList<File> imagePath;
   final RxString videoPath;
   final RxString documentPath;
   final RxBool isSending;
@@ -28,7 +28,8 @@ class ChatInputArea extends StatelessWidget {
   final ScrollController scrollController;
   final VoidCallback onSend;
   void Function(String)? onVoiceSend;
-  final Function(String path) onImageSelected;
+
+  final Function(List<File> path) onImageSelected;
   final Function(String path) onvideoSelected;
   final Function(String path) onDocumentSelected;
   final Rx<Uint8List?> videoThumbnail;
@@ -37,28 +38,26 @@ class ChatInputArea extends StatelessWidget {
   final RxDouble uploadProgress;
   RxList<LocationData>? groupMembers;
 
-
-  ChatInputArea(
-      {Key? key,
-      required this.messageText,
-      required this.imagePath,
-      required this.videoPath,
-      required this.isSending,
-      required this.textController,
-      required this.scrollController,
-      required this.onSend,
-      required this.onImageSelected,
-      required this.onvideoSelected,
-      required this.onVoiceSend,
-      required this.videoDuration,
-      required this.videoThumbnail,
-      required this.onDocumentSelected,
-      required this.documentPath,
-      required this.isUploadingVideo,
-      required this.uploadProgress,
-       this.groupMembers,
-    })
-      : super(key: key);
+  ChatInputArea({
+    Key? key,
+    required this.messageText,
+    required this.imagePath,
+    required this.videoPath,
+    required this.isSending,
+    required this.textController,
+    required this.scrollController,
+    required this.onSend,
+    required this.onImageSelected,
+    required this.onvideoSelected,
+    required this.onVoiceSend,
+    required this.videoDuration,
+    required this.videoThumbnail,
+    required this.onDocumentSelected,
+    required this.documentPath,
+    required this.isUploadingVideo,
+    required this.uploadProgress,
+    this.groupMembers,
+  }) : super(key: key);
 
   final voiceController = Get.put(VoiceRecordController());
 
@@ -206,8 +205,6 @@ class ChatInputArea extends StatelessWidget {
                             controller: textController,
                             onChanged: (val) {
                               messageText.value = val;
-
-
                             },
                             style: TextStyle(
                                 color: ToggleThemeData.white,
@@ -229,19 +226,15 @@ class ChatInputArea extends StatelessWidget {
                                   onTap: () {
                                     ChatBottomSheet.showFileOptions(
                                       context,
-                                      onGallery: () {
-                                        ModalImage bottomNavbar = ModalImage(
-                                          isImageCroppable: false,
-                                          onImageSelect: (path) async {
-                                            if (Utility.isNotNullEmptyOrFalse(
-                                                path)) {
-                                              Navigator.pop(context);
-                                              onImageSelected(path);
-                                              Navigator.pop(context);
-                                            }
-                                          },
-                                        );
-                                        bottomNavbar.mainBottomSheet(context);
+                                      onGallery: () async {
+                                        final List<File> images =
+                                            await FileServices()
+                                                .pickMultipleImagesFromGallery();
+
+                                        if (images.isNotEmpty) {
+                                          onImageSelected(images);
+                                          Navigator.pop(context);
+                                        }
                                       },
                                       onVideo: () async {
                                         Navigator.pop(context);
@@ -284,7 +277,9 @@ class ChatInputArea extends StatelessWidget {
                                             if (videoExtensions.contains(ext)) {
                                               onvideoSelected(result);
                                             } else {
-                                              onImageSelected(result);
+                                              if (result.isNotEmpty) {
+                                                onImageSelected([File(result)]);
+                                              }
                                             }
                                           }
                                         });
@@ -344,30 +339,47 @@ class ChatInputArea extends StatelessWidget {
   }
 
   Widget _buildLargeImagePreview() {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 6.h),
-      child: Stack(
-        children: [
-          ImageViewerWidget(
-            imageProvider: FileImage(File(imagePath.value)),
-            width: 250,
-            height: 180,
-            borderRadius: 12,
-          ),
-          Positioned(
-            right: 8.w,
-            top: 8.h,
-            child: GestureDetector(
-              onTap: () => imagePath.value = '',
-              child: CircleAvatar(
-                radius: 14,
-                backgroundColor: Colors.black54,
-                child: Icon(Icons.close, size: 16, color: Colors.white),
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      padding: EdgeInsets.all(8.w),
+      itemCount: imagePath.length,
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 3,
+        crossAxisSpacing: 8.w,
+        mainAxisSpacing: 8.h,
+      ),
+      itemBuilder: (context, index) {
+        return Stack(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12.r),
+              child: ImageViewerWidget(
+                imageProvider: FileImage(imagePath[index]),
+                width: double.infinity,
+                height: double.infinity,
+                borderRadius: 12,
               ),
             ),
-          ),
-        ],
-      ),
+            Positioned(
+              top: 4.h,
+              right: 4.w,
+              child: InkWell(
+                onTap: () => imagePath.removeAt(index),
+                child: CircleAvatar(
+                  radius: 12.r,
+                  backgroundColor: Colors.black54,
+                  child: Icon(
+                    Icons.close,
+                    size: 14.sp,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 

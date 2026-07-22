@@ -62,20 +62,20 @@ class CallScreen extends StatelessWidget {
                                       fontfamily: FontFamily.interSemiBold,
                                       color: ToggleThemeData.white),
                                   Obx(() {
-                                    return controller.formattedDuration == "00:00"
-                                        ?reausabletext(
-                                      "${controller.callStatus.value}...",
-                                      color: ToggleThemeData.white,
-                                      fontsize: 14,
-                                    )
+                                    return controller.formattedDuration ==
+                                            "00:00"
+                                        ? reausabletext(
+                                            "${controller.callStatus.value}...",
+                                            color: ToggleThemeData.white,
+                                            fontsize: 14,
+                                          )
                                         : reausabletext(
-                                      controller.formattedDuration,
-                                      fontsize: 12,
-                                      fontfamily: FontFamily.interMedium,
-                                      color: ToggleThemeData.white,
-                                    );
+                                            controller.formattedDuration,
+                                            fontsize: 12,
+                                            fontfamily: FontFamily.interMedium,
+                                            color: ToggleThemeData.white,
+                                          );
                                   })
-
                                 ],
                               ),
                             ),
@@ -126,13 +126,16 @@ class CallScreen extends StatelessWidget {
                         children: [
                           IconButton(
                             icon: reausableIcon(
-                              icon: c.isSpeakerOn ? Icons.volume_up : Icons.hearing,
-                              color: c.isSpeakerOn ? Colors.green : const Color(0xff6E6E6E),
+                              icon: c.isSpeakerOn
+                                  ? Icons.volume_up
+                                  : Icons.hearing,
+                              color: c.isSpeakerOn
+                                  ? Colors.green
+                                  : const Color(0xff6E6E6E),
                               size: 35,
                             ),
                             onPressed: c.toggleSpeaker,
                           ),
-
                           IconButton(
                             icon: reausableIcon(
                                 icon: c.isAudioOn ? Icons.mic : Icons.mic_off,

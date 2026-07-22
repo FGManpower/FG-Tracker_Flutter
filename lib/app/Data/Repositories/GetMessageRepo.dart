@@ -36,19 +36,21 @@ class MessageRepo {
     );
   }
 
-  static Future<ChatImageUploadResponse> uploadChatImage(var imagePath) async {
+  static Future<ChatImageUploadResponse> uploadChatImage(File imageFile) async {
     FormData data = FormData.fromMap({
-      "chatImage": Utility.isNotNullEmptyOrFalse(imagePath)
-          ? await MultipartFile.fromFile(imagePath.toString(),
-              filename: imagePath.toString(),
-              contentType: MediaType(
-                'image',
-                'jpeg',
-              ))
-          : "",
+      "chatImage": await MultipartFile.fromFile(
+        imageFile.path,
+        filename: imageFile.path.split('/').last,
+        contentType: MediaType('image', 'jpeg'),
+      ),
     });
-    var response = await HttpUtil()
-        .Authpost("/uploadChatImage", formdata: data, type: "formdata");
+
+    var response = await HttpUtil().Authpost(
+      "/uploadChatImage",
+      formdata: data,
+      type: "formdata",
+    );
+
     return ChatImageUploadResponse.fromJson(response);
   }
 

@@ -36,7 +36,7 @@ class GroupMessageController extends GetxController {
   RxBool isLoadingMembers = false.obs;
   final RxBool isUploadingVideo = false.obs;
   final RxDouble uploadProgress = 0.0.obs;
-  RxString imagePath = "".obs;
+  RxList<File> imagePaths = <File>[].obs;
   RxString videoPath = "".obs;
   RxString documentPath = "".obs;
   RxBool isSending = false.obs;
@@ -106,41 +106,36 @@ class GroupMessageController extends GetxController {
     try {
       final text = textController.text.trim();
 
-      if (imagePath.value.isNotEmpty) {
-        var result = await MessageRepo.uploadChatImage(
-          imagePath.value,
-        );
+      if (imagePaths.isNotEmpty) {
+        for (final image in imagePaths) {
+          final result = await MessageRepo.uploadChatImage(image);
 
-        if (result.status == true && result.filename != null) {
-          socketService.sendGroupMessage(
-            groupId: groupId,
-            content: result.filename!,
-            messageType: "image",
-          );
-
-          if (text.isNotEmpty) {
-            await Future.delayed(
-              const Duration(
-                milliseconds: 300,
-              ),
-            );
-
+          if (result.status == true && result.filename != null) {
             socketService.sendGroupMessage(
               groupId: groupId,
-              content: text,
-              messageType: "text",
+              content: result.filename!,
+              messageType: "image",
             );
+          } else {
+            CommonDialog.errorMessage("Failed to upload ${image.path}");
           }
-        } else {
-          CommonDialog.errorMessage(
-            "Image upload failed",
+        }
+
+
+        if (text.isNotEmpty) {
+          await Future.delayed(const Duration(milliseconds: 300));
+
+          socketService.sendGroupMessage(
+            groupId: groupId,
+            content: text,
+            messageType: "text",
           );
         }
 
-        imagePath.value = "";
-
+        imagePaths.clear();
         textController.clear();
-      } else if (videoPath.isNotEmpty) {
+      }
+      else if (videoPath.isNotEmpty) {
         await uploadVideo(videoPath.value);
         if (text.isNotEmpty) {
           await Future.delayed(const Duration(milliseconds: 300));
@@ -357,7 +352,7 @@ class GroupMessageController extends GetxController {
 
     messageText.value = "";
 
-    imagePath.value = "";
+    imagePaths.clear();
 
     isSending.value = false;
 

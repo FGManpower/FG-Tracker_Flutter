@@ -25,7 +25,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
   final ScrollController scrollController = ScrollController();
 
   RxList<MessageData> messageData = <MessageData>[].obs;
-  RxString imagePath = "".obs;
+  RxList<File> imagePaths = <File>[].obs;
   RxString videoPath = "".obs;
   RxString documentPath = "".obs;
   RxBool isSending = false.obs;
@@ -142,31 +142,34 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     final text = textController.text.trim();
 
     try {
-      if (imagePath.isNotEmpty) {
-        var result = await MessageRepo.uploadChatImage(imagePath.value);
+      if (imagePaths.isNotEmpty) {
+        for (final image in imagePaths) {
+          final result = await MessageRepo.uploadChatImage(image);
 
-        if (result.status == true && result.filename != null) {
-          socketService.sendMessage(
-            messageType: "image",
-            receiverId: memberData.userId.toString(),
-            groupId: memberData.groupId!,
-            content: result.filename!,
-          );
-
-          if (text.isNotEmpty) {
-            await Future.delayed(const Duration(milliseconds: 300));
+          if (result.status == true && result.filename != null) {
             socketService.sendMessage(
-              messageType: "text",
+              messageType: "image",
               receiverId: memberData.userId.toString(),
               groupId: memberData.groupId!,
-              content: text,
+              content: result.filename!,
             );
+          } else {
+            CommonDialog.errorMessage("Failed to upload ${image.path}");
           }
-        } else {
-          CommonDialog.errorMessage("Image upload failed.");
         }
 
-        imagePath.value = "";
+        if (text.isNotEmpty) {
+          await Future.delayed(const Duration(milliseconds: 300));
+          socketService.sendMessage(
+            messageType: "text",
+            receiverId: memberData.userId.toString(),
+            groupId: memberData.groupId!,
+            content: text,
+          );
+        }
+
+        imagePaths.clear();
+        ;
         textController.clear();
       } else if (videoPath.isNotEmpty) {
         await uploadVideo(videoPath.value);
@@ -307,7 +310,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
     messageData.clear();
     messageText.value = "";
-    imagePath.value = "";
+    imagePaths.clear();
     isSending.value = false;
 
     ChatStateTracker.isChatCallScreenOpen = false;

@@ -17,7 +17,7 @@ class CameraScreen extends StatelessWidget {
       body: Obx(() => Stack(
             fit: StackFit.expand,
             children: [
-              // Camera Preview
+
               if (controller.isCameraInitialized.value &&
                   controller.cameraController != null &&
                   controller.cameraController!.value.isInitialized)
@@ -26,7 +26,7 @@ class CameraScreen extends StatelessWidget {
                 const Center(
                     child: CircularProgressIndicator(color: Colors.white)),
 
-              // Top Header
+
               SafeArea(
                 child: Align(
                   alignment: Alignment.topCenter,
@@ -102,31 +102,32 @@ class CameraScreen extends StatelessWidget {
 
                       // Capture Row
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          GestureDetector(
-                            onTap: () async {
-                              final file =
-                                  await FileServices().pickVideoFromGallery();
-                              if (file != null) {
-                                Get.back(result: file.path);
-                              }
-                            },
-                            child: Container(
-                              width: 55.w,
-                              height: 55.w,
-                              decoration: BoxDecoration(
-                                border:
-                                    Border.all(color: Colors.white70, width: 2),
-                                borderRadius: BorderRadius.circular(12.r),
-                                image: const DecorationImage(
-                                  image: NetworkImage(
-                                      "https://picsum.photos/id/1015/200/200"),
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                            ),
-                          ),
+                          // GestureDetector(
+                          //   onTap: () async {
+                          //     final file =
+                          //         await FileServices().pickVideoFromGallery();
+                          //     if (file != null) {
+                          //       Get.back(result: file.path);
+                          //     }
+                          //   },
+                          //   child: Container(
+                          //     width: 55.w,
+                          //     height: 55.w,
+                          //     decoration: BoxDecoration(
+                          //       border:
+                          //           Border.all(color: Colors.white70, width: 2),
+                          //       borderRadius: BorderRadius.circular(12.r),
+                          //       image: const DecorationImage(
+                          //         image: NetworkImage(
+                          //             "https://picsum.photos/id/1015/200/200"),
+                          //         fit: BoxFit.cover,
+                          //       ),
+                          //     ),
+                          //   ),
+                          // ),
 
                           GestureDetector(
                             onTap: () async {
@@ -178,7 +179,7 @@ class CameraScreen extends StatelessWidget {
                             ),
                           ),
 
-                          SizedBox(width: 55.w),
+                          // SizedBox(width: 55.w),
                         ],
                       ),
                     ],

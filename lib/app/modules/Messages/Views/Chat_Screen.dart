@@ -151,7 +151,7 @@ class ChatScreen extends GetView<MessageController> {
               ),
               ChatInputArea(
                 messageText: controller.messageText,
-                imagePath: controller.imagePath,
+                imagePath: controller.imagePaths,
                 videoPath: controller.videoPath,
                 documentPath: controller.documentPath,
                 isSending: controller.isSending,
@@ -161,7 +161,7 @@ class ChatScreen extends GetView<MessageController> {
                 videoThumbnail: controller.videoThumbnail,
                 onSend: _sendMessage,
                 onImageSelected: (path) {
-                  controller.imagePath.value = path;
+                  controller.imagePaths.value = path;
                 },
                 onVoiceSend: (voicePath) {
                   if (Utility.isNotNullEmptyOrFalse(voicePath)) {
