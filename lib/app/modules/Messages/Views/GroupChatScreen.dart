@@ -60,15 +60,15 @@ class GroupChatScreen extends GetView<GroupMessageController> {
                 radius: 20,
                 backgroundImage: controller.groupImage.isNotEmpty
                     ? NetworkImage(
-                  "${ConstRes.aImageBaseUrl}${controller.groupImage}",
-                )
+                        "${ConstRes.aImageBaseUrl}${controller.groupImage}",
+                      )
                     : null,
                 backgroundColor: Colors.deepPurple.shade100,
                 child: controller.groupImage.isEmpty
                     ? Icon(
-                  Icons.group,
-                  color: Colors.deepPurple,
-                )
+                        Icons.group,
+                        color: Colors.deepPurple,
+                      )
                     : null,
               ),
               SizedBox(width: 12),
@@ -86,7 +86,7 @@ class GroupChatScreen extends GetView<GroupMessageController> {
                     ),
                   ),
                   Obx(
-                        () => Text(
+                    () => Text(
                       "${controller.groupMembers.length} Members",
                       style: TextStyle(
                         color: Colors.grey,
@@ -109,7 +109,6 @@ class GroupChatScreen extends GetView<GroupMessageController> {
                 scrollController: controller.scrollController,
               ),
             ),
-
             ChatInputArea(
               messageText: controller.messageText,
               imagePath: controller.imagePath,
@@ -120,7 +119,6 @@ class GroupChatScreen extends GetView<GroupMessageController> {
               scrollController: controller.scrollController,
               videoDuration: controller.videoDuration,
               videoThumbnail: controller.videoThumbnail,
-
               onSend: () {
                 controller.sendMessage(
                   textController: textController,
