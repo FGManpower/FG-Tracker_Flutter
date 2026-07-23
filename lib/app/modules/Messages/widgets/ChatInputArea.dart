@@ -1,15 +1,15 @@
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:fgtracker/app/Core/constant/BottomSheet/ChatBottomSheet.dart';
+import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/util/file_helper.dart';
-import 'package:fgtracker/app/Core/values/bottomSheet.dart';
-import 'package:fgtracker/app/Core/values/utility.dart';
 import 'package:fgtracker/app/Data/Services/file_services.dart';
 import 'package:fgtracker/app/Model/LocationDataRes.dart';
 import 'package:fgtracker/app/config/themes_data.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
-import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
+import 'package:fgtracker/app/modules/Messages/Controller/GroupChatController.dart';
 import 'package:fgtracker/app/modules/Messages/Controller/VoiceRecordController.dart';
+import 'package:fgtracker/app/modules/Messages/widgets/mentionList_item.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
@@ -38,26 +38,28 @@ class ChatInputArea extends StatelessWidget {
   final RxDouble uploadProgress;
   RxList<LocationData>? groupMembers;
 
-  ChatInputArea({
-    Key? key,
-    required this.messageText,
-    required this.imagePath,
-    required this.videoPath,
-    required this.isSending,
-    required this.textController,
-    required this.scrollController,
-    required this.onSend,
-    required this.onImageSelected,
-    required this.onvideoSelected,
-    required this.onVoiceSend,
-    required this.videoDuration,
-    required this.videoThumbnail,
-    required this.onDocumentSelected,
-    required this.documentPath,
-    required this.isUploadingVideo,
-    required this.uploadProgress,
-    this.groupMembers,
-  }) : super(key: key);
+  GroupMessageController? groupMessageController;
+
+  ChatInputArea(
+      {super.key,
+      required this.messageText,
+      required this.imagePath,
+      required this.videoPath,
+      required this.isSending,
+      required this.textController,
+      required this.scrollController,
+      required this.onSend,
+      required this.onImageSelected,
+      required this.onvideoSelected,
+      required this.onVoiceSend,
+      required this.videoDuration,
+      required this.videoThumbnail,
+      required this.onDocumentSelected,
+      required this.documentPath,
+      required this.isUploadingVideo,
+      required this.uploadProgress,
+      this.groupMembers,
+      this.groupMessageController});
 
   final voiceController = Get.put(VoiceRecordController());
 
@@ -201,132 +203,175 @@ class ChatInputArea extends StatelessWidget {
                       SizedBox(width: 5.w),
                       if (!voiceController.isRecording.value)
                         Expanded(
-                          child: TextField(
-                            controller: textController,
-                            onChanged: (val) {
-                              messageText.value = val;
-                            },
-                            style: TextStyle(
-                                color: ToggleThemeData.white,
-                                fontFamily: FontFamily.interMedium,
-                                fontSize: 16.sp),
-                            maxLines: 4,
-                            minLines: 1,
-                            expands: false,
-                            decoration: InputDecoration(
-                              hintText: "Type a message",
-                              hintStyle: TextStyle(color: Colors.white),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(30.r),
-                                borderSide: BorderSide.none,
+                            child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (groupMessageController != null &&
+                                groupMessageController!.showMentionList.value &&
+                                groupMessageController!
+                                    .filteredMembers.isNotEmpty)
+                              MentionlistItem(
+                                filteredMembers:
+                                    groupMessageController!.filteredMembers,
+                                onTap: (member) {
+                                  groupMessageController!.insertMention(
+                                    member: member,
+                                    textController: textController,
+                                  );
+                                },
                               ),
-                              suffixIcon: Padding(
-                                padding: EdgeInsets.all(3.r),
-                                child: GestureDetector(
-                                  onTap: () {
-                                    ChatBottomSheet.showFileOptions(
-                                      context,
-                                      onGallery: () async {
-                                        final List<File> images =
-                                            await FileServices()
-                                                .pickMultipleImagesFromGallery();
+                            Row(
+                              children: [
+                                Flexible(
+                                  child: TextField(
+                                    controller: textController,
+                                    onChanged: (val) {
+                                      messageText.value = val;
+                                      if (groupMembers?.isNotEmpty == true) {
+                                        groupMessageController?.onTextChanged(
+                                          textController: textController,
+                                        );
+                                      }
+                                    },
+                                    style: TextStyle(
+                                        color: ToggleThemeData.white,
+                                        fontFamily: FontFamily.interMedium,
+                                        fontSize: 16.sp),
+                                    maxLines: 4,
+                                    minLines: 1,
+                                    expands: false,
+                                    decoration: InputDecoration(
+                                      hintText: "Type a message",
+                                      hintStyle: TextStyle(color: Colors.white),
+                                      border: OutlineInputBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(30.r),
+                                        borderSide: BorderSide.none,
+                                      ),
+                                      suffixIcon: Padding(
+                                        padding: EdgeInsets.all(3.r),
+                                        child: GestureDetector(
+                                          onTap: () {
+                                            ChatBottomSheet.showFileOptions(
+                                              context,
+                                              onGallery: () async {
+                                                final List<File> images =
+                                                    await FileServices()
+                                                        .pickMultipleImagesFromGallery();
 
-                                        if (images.isNotEmpty) {
-                                          onImageSelected(images);
-                                          Navigator.pop(context);
-                                        }
-                                      },
-                                      onVideo: () async {
-                                        Navigator.pop(context);
-                                        var path = await FileServices()
-                                            .pickVideoFromGallery();
-                                        onvideoSelected(path?.path ?? "");
-                                      },
-                                      onDocument: () async {
-                                        Navigator.pop(context);
-                                        final file =
-                                            await FileServices().pickDocument();
-                                        if (file != null) {
-                                          onDocumentSelected(file.path ?? "");
-                                        }
-                                      },
-                                      onCamera: () {
-                                        Navigator.pop(context);
+                                                if (images.isNotEmpty) {
+                                                  onImageSelected(images);
+                                                  Navigator.pop(context);
+                                                }
+                                              },
+                                              onVideo: () async {
+                                                Navigator.pop(context);
+                                                var path = await FileServices()
+                                                    .pickVideoFromGallery();
+                                                onvideoSelected(
+                                                    path?.path ?? "");
+                                              },
+                                              onDocument: () async {
+                                                Navigator.pop(context);
+                                                final file =
+                                                    await FileServices()
+                                                        .pickDocument();
+                                                if (file != null) {
+                                                  onDocumentSelected(
+                                                      file.path ?? "");
+                                                }
+                                              },
+                                              onCamera: () {
+                                                Navigator.pop(context);
 
-                                        WidgetsBinding.instance
-                                            .addPostFrameCallback((_) async {
-                                          final result = await Get.toNamed(
-                                              Routes.cameraScreen);
+                                                WidgetsBinding.instance
+                                                    .addPostFrameCallback(
+                                                        (_) async {
+                                                  final result =
+                                                      await Get.toNamed(
+                                                          Routes.cameraScreen);
 
-                                          if (result != null &&
-                                              result is String &&
-                                              result.isNotEmpty) {
-                                            final ext = result
-                                                .split('.')
-                                                .last
-                                                .toLowerCase();
-                                            const videoExtensions = [
-                                              'mp4',
-                                              'mov',
-                                              'avi',
-                                              'mkv',
-                                              '3gp',
-                                              'webm'
-                                            ];
+                                                  if (result != null &&
+                                                      result is String &&
+                                                      result.isNotEmpty) {
+                                                    final ext = result
+                                                        .split('.')
+                                                        .last
+                                                        .toLowerCase();
+                                                    const videoExtensions = [
+                                                      'mp4',
+                                                      'mov',
+                                                      'avi',
+                                                      'mkv',
+                                                      '3gp',
+                                                      'webm'
+                                                    ];
 
-                                            if (videoExtensions.contains(ext)) {
-                                              onvideoSelected(result);
-                                            } else {
-                                              if (result.isNotEmpty) {
-                                                onImageSelected([File(result)]);
-                                              }
-                                            }
-                                          }
-                                        });
-                                      },
-                                    );
-                                  },
-                                  child: CircleAvatar(
-                                    backgroundColor: ToggleThemeData.white,
-                                    radius: 16,
-                                    child: reausableIcon(
-                                      icon: Icons.file_present_outlined,
-                                      color: ToggleThemeData.Appcolor,
-                                      size: 25,
+                                                    if (videoExtensions
+                                                        .contains(ext)) {
+                                                      onvideoSelected(result);
+                                                    } else {
+                                                      if (result.isNotEmpty) {
+                                                        onImageSelected(
+                                                            [File(result)]);
+                                                      }
+                                                    }
+                                                  }
+                                                });
+                                              },
+                                            );
+                                          },
+                                          child: CircleAvatar(
+                                            backgroundColor:
+                                                ToggleThemeData.white,
+                                            radius: 16,
+                                            child: reausableIcon(
+                                              icon: Icons.file_present_outlined,
+                                              color: ToggleThemeData.Appcolor,
+                                              size: 25,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      fillColor: ToggleThemeData.Appcolor,
+                                      filled: true,
+                                      contentPadding: EdgeInsets.symmetric(
+                                          horizontal: 15.w, vertical: 14.h),
                                     ),
                                   ),
                                 ),
-                              ),
-                              fillColor: ToggleThemeData.Appcolor,
-                              filled: true,
-                              contentPadding: EdgeInsets.symmetric(
-                                  horizontal: 15.w, vertical: 14.h),
-                            ),
-                          ),
-                        ),
-                      SizedBox(width: 8.w),
-                      if (shouldShowSend && !voiceController.isRecording.value)
-                        GestureDetector(
-                          onTap: isSending.value ? null : onSend,
-                          child: CircleAvatar(
-                            radius: 24.r,
-                            backgroundColor: ToggleThemeData.darkPurple,
-                            child: Icon(Icons.send, color: Colors.white),
-                          ),
-                        )
-                      else
-                        !voiceController.isRecording.value
-                            ? GestureDetector(
-                                onTap: () async {
-                                  await voiceController.startRecording();
-                                },
-                                child: CircleAvatar(
-                                  radius: 24.r,
-                                  backgroundColor: ToggleThemeData.darkPurple,
-                                  child: Icon(Icons.mic, color: Colors.white),
-                                ),
-                              )
-                            : const SizedBox()
+                                SizedBox(width: 8.w),
+                                if (shouldShowSend &&
+                                    !voiceController.isRecording.value)
+                                  GestureDetector(
+                                    onTap: isSending.value ? null : onSend,
+                                    child: CircleAvatar(
+                                      radius: 24.r,
+                                      backgroundColor:
+                                          ToggleThemeData.darkPurple,
+                                      child:
+                                          Icon(Icons.send, color: Colors.white),
+                                    ),
+                                  )
+                                else if (!voiceController.isRecording.value)
+                                  GestureDetector(
+                                    onTap: () async {
+                                      await voiceController.startRecording();
+                                    },
+                                    child: CircleAvatar(
+                                      radius: 24.r,
+                                      backgroundColor:
+                                          ToggleThemeData.darkPurple,
+                                      child:
+                                          Icon(Icons.mic, color: Colors.white),
+                                    ),
+                                  )
+                                else
+                                  const SizedBox(),
+                              ],
+                            )
+                          ],
+                        )),
                     ],
                   ),
                 ],

@@ -120,6 +120,7 @@ class GroupChatScreen extends GetView<GroupMessageController> {
               videoDuration: controller.videoDuration,
               videoThumbnail: controller.videoThumbnail,
               groupMembers: controller.groupMembers,
+              groupMessageController: controller,
               onSend: () {
                 controller.sendMessage(
                   textController: textController,

@@ -121,7 +121,6 @@ class GroupMessageController extends GetxController {
           }
         }
 
-
         if (text.isNotEmpty) {
           await Future.delayed(const Duration(milliseconds: 300));
 
@@ -134,8 +133,7 @@ class GroupMessageController extends GetxController {
 
         imagePaths.clear();
         textController.clear();
-      }
-      else if (videoPath.isNotEmpty) {
+      } else if (videoPath.isNotEmpty) {
         await uploadVideo(videoPath.value);
         if (text.isNotEmpty) {
           await Future.delayed(const Duration(milliseconds: 300));
@@ -360,17 +358,105 @@ class GroupMessageController extends GetxController {
   }
 
 
+
+  final FocusNode focusNode = FocusNode();
+
+  // Make these observable for UI reactivity
+  final RxList<LocationData> filteredMembers = <LocationData>[].obs; // Change 'dynamic' to your Member Model
   final RxBool showMentionList = false.obs;
+  RxInt? mentionStartIndex = RxInt(-1);
 
 
 
+
+  void onTextChanged({
+    required TextEditingController textController,
+  }) {
+    messageText.value = textController.text;
+    print("==========MessageText${messageText.value}");
+    handleMentionDetection(textController: textController);
+  }
+
+  void handleMentionDetection({
+    required TextEditingController textController,
+  }) {
+    final text = textController.text;
+    final cursorPos = textController.selection.baseOffset;
+
+    if (cursorPos <= 0) {
+      hideMentionList();
+      return;
+    }
+
+    final textBeforeCursor = text.substring(0, cursorPos);
+    final lastAtIndex = textBeforeCursor.lastIndexOf('@');
+
+    if (lastAtIndex == -1) {
+      hideMentionList();
+      return;
+    }
+
+    final wordAfterAt = textBeforeCursor.substring(lastAtIndex);
+    if (wordAfterAt.contains(' ')) {
+      hideMentionList();
+      return;
+    }
+
+    mentionStartIndex!.value = lastAtIndex;
+    final query = wordAfterAt.substring(1).toLowerCase().trim();
+
+    // Filter members
+    filteredMembers.value = groupMembers
+        .where((member) =>
+    (member.name?.toLowerCase().contains(query) ?? false) ||
+        (member.name?.toLowerCase().contains(query) ?? false))
+        .toList();
+
+    showMentionList.value = filteredMembers.isNotEmpty;
+  }
+
+  void insertMention({
+    required dynamic member, // Change 'dynamic' to your actual model (e.g. GroupMember)
+    required TextEditingController textController,
+  }) {
+    if (mentionStartIndex!.value < 0) return;
+
+    final text = textController.text;
+    final cursorPos = textController.selection.baseOffset;
+
+    final displayName = (member.name ?? member.username ?? "User").toString();
+
+    final start = mentionStartIndex!.value;           // int
+    final replacement = "@$displayName ";
+
+    final newText = text.replaceRange(
+      start,
+      cursorPos,
+      replacement,
+    );
+
+    textController.text = newText;
+
+    // Fixed offset calculation with explicit int casting
+    final newCursorOffset = start + replacement.length;
+
+    textController.selection = TextSelection.collapsed(
+      offset: newCursorOffset,
+    );
+
+    hideMentionList();
+    messageText.value = newText;
+  }
+
+  void hideMentionList() {
+    showMentionList.value = false;
+    filteredMembers.clear();
+    mentionStartIndex!.value = -1;
+  }
 
   @override
   void onClose() {
-    socketService.disconnectSocket();
-
-    scrollController.dispose();
-
+    focusNode.dispose();
     super.onClose();
   }
 }
