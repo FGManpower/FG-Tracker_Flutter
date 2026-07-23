@@ -1,5 +1,5 @@
+import 'dart:developer';
 import 'dart:io';
-
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
@@ -8,7 +8,6 @@ import 'package:path_provider/path_provider.dart' as path_provider;
 
 class FileServices {
   final ImagePicker _picker = ImagePicker();
-
 
   Future<List<File>> pickMultipleImagesFromGallery() async {
     try {
@@ -38,40 +37,10 @@ class FileServices {
 
       return await Future.wait(futures);
     } catch (e) {
-      debugPrint("Image Picker Error: $e");
+      log("Image Picker Error: $e");
       return [];
     }
   }
-  // Future<File?> pickImageFromGallery() async {
-  //   try {
-  //
-  //
-  //     final XFile? image = await _picker.pickImage(
-  //       source: ImageSource.gallery,
-  //
-  //
-  //     );
-  //
-  //     if (image == null) return null;
-  //
-  //     final dir = await path_provider.getTemporaryDirectory();
-  //
-  //     final targetPath =
-  //         '${dir.path}/${DateTime.now().millisecondsSinceEpoch}.jpg';
-  //
-  //     final result = await FlutterImageCompress.compressAndGetFile(
-  //       image.path,
-  //       targetPath,
-  //       quality: 85,
-  //       minWidth: 720,
-  //       minHeight: 720,
-  //     );
-  //
-  //     return result != null ? File(result.path) : File(image.path);
-  //   } catch (e) {
-  //     return null;
-  //   }
-  // }
 
   Future<File?> pickVideoFromGallery() async {
     try {
@@ -124,6 +93,9 @@ class FileServices {
           'pptx',
           'txt',
           'csv',
+          'zip',
+          'rar',
+          '7z',
         ],
       );
 
@@ -132,10 +104,9 @@ class FileServices {
           result.files.single.path!,
         );
       }
-
       return null;
     } catch (e) {
-      print(
+      log(
         "Document Picker Error: $e",
       );
       return null;

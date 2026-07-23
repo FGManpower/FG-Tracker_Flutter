@@ -53,13 +53,14 @@ class MentionlistItem extends StatelessWidget {
                 leading: CircleAvatar(
                   radius: 22.r,
                   backgroundImage: member.profileImage != null
-                      ? NetworkImage("${ConstRes.aImageBaseUrl}${member.profileImage}")
+                      ? NetworkImage(
+                          "${ConstRes.aImageBaseUrl}${member.profileImage}")
                       : null,
                   child: (member.profileImage == null && member.name != null)
                       ? Text(
-                    (member.name!)[0].toUpperCase(),
-                    style: const TextStyle(color: Colors.white),
-                  )
+                          (member.name!)[0].toUpperCase(),
+                          style: const TextStyle(color: Colors.white),
+                        )
                       : null,
                 ),
                 title: Text(

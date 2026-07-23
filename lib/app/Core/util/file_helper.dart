@@ -1,10 +1,7 @@
-
-
 import 'package:flutter/material.dart';
 
 IconData getFileIcon(String path) {
-  final ext =
-  path.split('.').last.toLowerCase();
+  final ext = getFileExtension(path).toLowerCase();
 
   switch (ext) {
     case 'pdf':
@@ -28,14 +25,22 @@ IconData getFileIcon(String path) {
     case 'csv':
       return Icons.grid_on;
 
+    case 'zip':
+      return Icons.folder_zip;
+
+    case 'rar':
+      return Icons.folder_zip;
+
+    case '7z':
+      return Icons.folder_zip;
+
     default:
       return Icons.insert_drive_file;
   }
 }
 
 Color getFileColor(String path) {
-  final ext =
-  path.split('.').last.toLowerCase();
+  final ext = getFileExtension(path).toLowerCase();
 
   switch (ext) {
     case 'pdf':
@@ -53,13 +58,25 @@ Color getFileColor(String path) {
     case 'pptx':
       return Colors.orange;
 
+    case 'txt':
+      return Colors.grey.shade700;
+
+    case 'csv':
+      return Colors.teal;
+
+    case 'zip':
+    case 'rar':
+    case '7z':
+      return Colors.deepPurple;
+
     default:
       return Colors.grey;
   }
 }
 
 String getFileExtension(String path) {
-  return path.split('.').last;
+  if (!path.contains('.')) return "";
+  return path.split('.').last.toLowerCase();
 }
 
 String removeDuplicateExtension(String name) {
@@ -71,11 +88,20 @@ String removeDuplicateExtension(String name) {
     '.xlsx',
     '.ppt',
     '.pptx',
+    '.txt',
+    '.csv',
+    '.zip',
+    '.rar',
+    '.7z',
   ];
 
   for (final ext in extensions) {
-    if (name.endsWith('$ext$ext')) {
-      return name.replaceFirst('$ext$ext', ext);
+    if (name.toLowerCase().endsWith('$ext$ext')) {
+      return name.replaceFirst(
+        RegExp('$ext\$',
+            caseSensitive: false),
+        '',
+      );
     }
   }
 
