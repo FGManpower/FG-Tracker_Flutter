@@ -105,60 +105,40 @@ class GroupMessageController extends GetxController {
 
     try {
       final text = textController.text.trim();
-
+print("TEXT=======$text");
       if (imagePaths.isNotEmpty) {
         for (final image in imagePaths) {
           final result = await MessageRepo.uploadChatImage(image);
-
+          print("ttryu=======$result");
           if (result.status == true && result.filename != null) {
             socketService.sendGroupMessage(
               groupId: groupId,
               content: result.filename!,
               messageType: "image",
+              caption: text,
+
             );
           } else {
             CommonDialog.errorMessage("Failed to upload ${image.path}");
           }
         }
 
-        if (text.isNotEmpty) {
-          await Future.delayed(const Duration(milliseconds: 300));
 
-          socketService.sendGroupMessage(
-            groupId: groupId,
-            content: text,
-            messageType: "text",
-          );
-        }
 
         imagePaths.clear();
         textController.clear();
       } else if (videoPath.isNotEmpty) {
-        await uploadVideo(videoPath.value);
-        if (text.isNotEmpty) {
-          await Future.delayed(const Duration(milliseconds: 300));
-          socketService.sendGroupMessage(
-            messageType: "text",
-            groupId: groupId,
-            content: text,
-          );
-        }
+        await uploadVideo(videoPath.value, text);
         videoPath.value = "";
         textController.clear();
       } else if (documentPath.isNotEmpty) {
-        await uploadDocument(documentPath.value);
-        if (text.isNotEmpty) {
-          await Future.delayed(const Duration(milliseconds: 300));
-          socketService.sendGroupMessage(
-            messageType: "text",
-            groupId: groupId,
-            content: text,
-          );
-        }
+        await uploadDocument(documentPath.value, text);
 
         documentPath.value = "";
         textController.clear();
       } else if (text.isNotEmpty) {
+
+        print("hhhhh$text");
         socketService.sendGroupMessage(
           groupId: groupId,
           content: text,
@@ -196,14 +176,16 @@ class GroupMessageController extends GetxController {
     }
   }
 
-  Future<void> uploadVideo(String path) async {
+  Future<void> uploadVideo(String path, String caption) async {
     try {
       isUploadingVideo.value = true;
+
       final thumbnailPath = await generateThumbnailFile(path);
 
       if (thumbnailPath == null) {
         return;
       }
+
       var result = await MessageRepo.uploadChatVideo(
         videoPath: path,
         thumbnailPath: thumbnailPath,
@@ -219,18 +201,19 @@ class GroupMessageController extends GetxController {
           groupId: groupId,
           messageType: "video",
           content:
-              "${result.videoUrl}||${result.thumbnail}||${result.duration}",
+          "${result.videoUrl}||${result.thumbnail}||${result.duration}",
+          caption: caption,
         );
-        isUploadingVideo.value = false;
       }
     } catch (e) {
-      log(
-        "GROUP AUDIO ERROR => $e",
-      );
+      log("GROUP AUDIO ERROR => $e");
+    } finally {
+      isUploadingVideo.value = false;
     }
   }
 
-  Future<void> uploadDocument(String path) async {
+  Future<void> uploadDocument(String path,   String caption,
+      ) async {
     try {
       var result = await MessageRepo.uploadChatDocument(path);
 
@@ -239,6 +222,8 @@ class GroupMessageController extends GetxController {
           groupId: groupId,
           content: "${result.filename}||${result.originalName!}",
           messageType: "document",
+          caption: caption,
+
         );
       }
     } catch (e) {

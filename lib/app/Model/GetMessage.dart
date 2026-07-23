@@ -41,6 +41,7 @@ class MessageData {
   dynamic senderName;
   dynamic senderImage;
   dynamic thumbnail;
+  dynamic caption;
 
   MessageData(
       {this.id,
@@ -52,6 +53,7 @@ class MessageData {
       this.seenCount,
       this.senderImage,
       this.senderName,
+        this.caption,
       this.thumbnail});
 
   MessageData.fromJson(Map<String, dynamic> json) {
@@ -65,6 +67,7 @@ class MessageData {
     senderName = json['senderName'];
     senderImage = json['senderImage'];
     thumbnail = json['thumbnail'];
+    caption = json["caption"];
   }
 
   Map<String, dynamic> toJson() {
@@ -79,6 +82,7 @@ class MessageData {
     data['senderName'] = senderName;
     data['senderImage'] = senderImage;
     data['thumbnail'] = thumbnail;
+    data['caption'] = caption;
     return data;
   }
 }

@@ -152,61 +152,34 @@ class MessageController extends GetxController with WidgetsBindingObserver {
               receiverId: memberData.userId.toString(),
               groupId: memberData.groupId!,
               content: result.filename!,
+              caption: text,
             );
           } else {
             CommonDialog.errorMessage("Failed to upload ${image.path}");
           }
         }
-
-        if (text.isNotEmpty) {
-          await Future.delayed(const Duration(milliseconds: 300));
-          socketService.sendMessage(
-            messageType: "text",
-            receiverId: memberData.userId.toString(),
-            groupId: memberData.groupId!,
-            content: text,
-          );
-        }
-
         imagePaths.clear();
         ;
         textController.clear();
       } else if (videoPath.isNotEmpty) {
-        await uploadVideo(videoPath.value);
-        if (text.isNotEmpty) {
-          await Future.delayed(const Duration(milliseconds: 300));
-          socketService.sendMessage(
-            messageType: "text",
-            receiverId: memberData.userId.toString(),
-            groupId: memberData.groupId!,
-            content: text,
-          );
-        }
+        await uploadVideo(videoPath.value, text);
         videoPath.value = "";
         textController.clear();
       } else if (documentPath.isNotEmpty) {
-        await uploadDocument(documentPath.value);
-        if (text.isNotEmpty) {
-          await Future.delayed(const Duration(milliseconds: 300));
-          socketService.sendMessage(
-            messageType: "text",
-            receiverId: memberData.userId.toString(),
-            groupId: memberData.groupId!,
-            content: text,
-          );
-        }
+        await uploadDocument(documentPath.value, text);
         documentPath.value = "";
         textController.clear();
-      } else if (text.isNotEmpty) {
+      }
+      else if (text.isNotEmpty) {
         socketService.sendMessage(
           messageType: "text",
           receiverId: memberData.userId.toString(),
           groupId: memberData.groupId!,
           content: text,
         );
+
         textController.clear();
       }
-
       scrollToBottom();
     } catch (e) {
       log("Error sending message: $e");
@@ -229,7 +202,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
   }
 
   Future<void> uploadVideo(
-    String path,
+    String path, String caption,
   ) async {
     isUploadingVideo.value = true;
     final thumbnailPath = await generateThumbnailFile(path);
@@ -252,12 +225,13 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         receiverId: memberData.userId.toString(),
         groupId: memberData.groupId!,
         content: "${result.videoUrl}||${result.thumbnail}||${result.duration}",
+        caption: caption,
       );
       isUploadingVideo.value = false;
     }
   }
 
-  Future<void> uploadDocument(String path) async {
+  Future<void> uploadDocument(String path,  String caption) async {
     var result = await MessageRepo.uploadChatDocument(path);
 
     if (result.status == true) {
@@ -266,6 +240,8 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         receiverId: memberData.userId.toString(),
         groupId: memberData.groupId!,
         content: "${result.filename}||${result.originalName!}",
+        caption: caption,
+
       );
     }
   }

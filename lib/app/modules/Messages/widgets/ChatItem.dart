@@ -130,8 +130,8 @@ class ChatBubble extends StatelessWidget {
   ) {
     if (message.messageType == "image" || message.messageType == "image_text") {
       final parts = message.content?.split("||") ?? [];
-      final imagePart = parts.isNotEmpty ? parts[0] : "";
-      final textPart = parts.length > 1 ? parts[1] : "";
+      final imagePart = message.content ?? "";
+      final caption = message.caption ?? "";
 
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -147,10 +147,10 @@ class ChatBubble extends StatelessWidget {
               borderRadius: 10,
             ),
           ),
-          if (textPart.isNotEmpty) SizedBox(height: 8.h),
-          if (textPart.isNotEmpty)
+          if (caption.isNotEmpty) SizedBox(height: 8.h),
+          if (caption.isNotEmpty)
             reausabletext(
-              textPart,
+              caption,
               color: textColor,
               fontsize: 11.sp,
             ),
@@ -170,18 +170,34 @@ class ChatBubble extends StatelessWidget {
 
       final duration = parts.length > 2 ? parts[2] : "--:--";
 
-      return VideoThumbnailWidget(
-        videoUrl: "${ConstRes.aImageBaseUrl}$videoPath",
-        thumbnail: thumbnailPath,
-        duration: duration,
-        onTap: () {
-          Get.toNamed(
-            Routes.videoPlayerScreen,
-            arguments: {
-              "videoUrl": "${ConstRes.aImageBaseUrl}$videoPath",
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          VideoThumbnailWidget(
+            videoUrl: "${ConstRes.aImageBaseUrl}$videoPath",
+            thumbnail: thumbnailPath,
+            duration: duration,
+            onTap: () {
+              Get.toNamed(
+                Routes.videoPlayerScreen,
+                arguments: {
+                  "videoUrl": "${ConstRes.aImageBaseUrl}$videoPath",
+                },
+              );
             },
-          );
-        },
+          ),
+
+          if ((message.caption ?? "").isNotEmpty)
+            Padding(
+              padding: EdgeInsets.only(top: 8.h),
+              child: reausabletext(
+                message.caption.toString(),
+                color: textColor,
+                fontsize: 11.sp,
+                fontfamily: FontFamily.interMedium,
+              ),
+            ),
+        ],
       );
     } else if (message.messageType == "document") {
       final parts = message.content?.split("||") ?? [];
@@ -229,68 +245,84 @@ class ChatBubble extends StatelessWidget {
           iconColor = Colors.grey;
       }
 
-      return InkWell(
-        onTap: () async {
-          await DocumentService().openDocument(
-            "${ConstRes.aImageBaseUrl}$documentUrl",
-          );
-        },
-        child: Container(
-          width: 240.w,
-          padding: EdgeInsets.all(12.w),
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(.08),
-            borderRadius: BorderRadius.circular(12.r),
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          InkWell(
+            onTap: () async {
+              await DocumentService().openDocument(
+                "${ConstRes.aImageBaseUrl}$documentUrl",
+              );
+            },
+            child: Container(
+              width: 240.w,
+              padding: EdgeInsets.all(12.w),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(.08),
+                borderRadius: BorderRadius.circular(12.r),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 50.w,
+                    height: 50.w,
+                    decoration: BoxDecoration(
+                      color: iconColor,
+                      borderRadius: BorderRadius.circular(10.r),
+                    ),
+                    child: Icon(
+                      icon,
+                      color: Colors.white,
+                      size: 26.sp,
+                    ),
+                  ),
+                  SizedBox(width: 10.w),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          documentName,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: textColor,
+                            fontSize: 12.sp,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        SizedBox(height: 4.h),
+                        Text(
+                          extension.toUpperCase(),
+                          style: TextStyle(
+                            color: Colors.grey,
+                            fontSize: 10.sp,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Icon(
+                    Icons.download_rounded,
+                    color: textColor,
+                    size: 20.sp,
+                  ),
+                ],
+              ),
+            ),
           ),
-          child: Row(
-            children: [
-              Container(
-                width: 50.w,
-                height: 50.w,
-                decoration: BoxDecoration(
-                  color: iconColor,
-                  borderRadius: BorderRadius.circular(10.r),
-                ),
-                child: Icon(
-                  icon,
-                  color: Colors.white,
-                  size: 26.sp,
-                ),
-              ),
-              SizedBox(width: 10.w),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      documentName,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: textColor,
-                        fontSize: 12.sp,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    SizedBox(height: 4.h),
-                    Text(
-                      extension.toUpperCase(),
-                      style: TextStyle(
-                        color: Colors.grey,
-                        fontSize: 10.sp,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Icon(
-                Icons.download_rounded,
+
+          if ((message.caption ?? "").isNotEmpty)
+            Padding(
+              padding: EdgeInsets.only(top: 8.h),
+              child: reausabletext(
+                message.caption.toString(),
                 color: textColor,
-                size: 20.sp,
+                fontsize: 11.sp,
+                fontfamily: FontFamily.interMedium,
               ),
-            ],
-          ),
-        ),
+            ),
+        ],
       );
     } else {
       return reausabletext(
@@ -558,8 +590,8 @@ class GroupChatBubble extends StatelessWidget {
   ) {
     if (message.messageType == "image" || message.messageType == "image_text") {
       final parts = message.content?.split("||") ?? [];
-      final imagePart = parts.isNotEmpty ? parts[0] : "";
-      final textPart = parts.length > 1 ? parts[1] : "";
+      final imagePart = message.content ?? "";
+      final caption = message.caption ?? "";
 
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -575,10 +607,10 @@ class GroupChatBubble extends StatelessWidget {
               borderRadius: 10,
             ),
           ),
-          if (textPart.isNotEmpty) SizedBox(height: 8.h),
-          if (textPart.isNotEmpty)
+          if (caption.isNotEmpty) SizedBox(height: 8.h),
+          if (caption.isNotEmpty)
             reausabletext(
-              textPart,
+              caption,
               color: textColor,
               fontsize: 11.sp,
             ),
@@ -598,18 +630,34 @@ class GroupChatBubble extends StatelessWidget {
 
       final duration = parts.length > 2 ? parts[2] : "--:--";
 
-      return VideoThumbnailWidget(
-        videoUrl: "${ConstRes.aImageBaseUrl}$videoPath",
-        thumbnail: thumbnailPath,
-        duration: duration,
-        onTap: () {
-          Get.toNamed(
-            Routes.videoPlayerScreen,
-            arguments: {
-              "videoUrl": "${ConstRes.aImageBaseUrl}$videoPath",
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+
+          VideoThumbnailWidget(
+            videoUrl: "${ConstRes.aImageBaseUrl}$videoPath",
+            thumbnail: thumbnailPath,
+            duration: duration,
+            onTap: () {
+              Get.toNamed(
+                Routes.videoPlayerScreen,
+                arguments: {
+                  "videoUrl": "${ConstRes.aImageBaseUrl}$videoPath",
+                },
+              );
             },
-          );
-        },
+          ),
+
+          if ((message.caption ?? "").isNotEmpty)
+            Padding(
+              padding: EdgeInsets.only(top: 8.h),
+              child: reausabletext(
+                message.caption!,
+                color: textColor,
+                fontsize: 11.sp,
+              ),
+            ),
+        ],
       );
     } else if (message.messageType == "document") {
       final parts = message.content?.split("||") ?? [];
@@ -657,68 +705,84 @@ class GroupChatBubble extends StatelessWidget {
           iconColor = Colors.grey;
       }
 
-      return InkWell(
-        onTap: () async {
-          await DocumentService().openDocument(
-            "${ConstRes.aImageBaseUrl}$documentUrl",
-          );
-        },
-        child: Container(
-          width: 240.w,
-          padding: EdgeInsets.all(12.w),
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(.08),
-            borderRadius: BorderRadius.circular(12.r),
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          InkWell(
+            onTap: () async {
+              await DocumentService().openDocument(
+                "${ConstRes.aImageBaseUrl}$documentUrl",
+              );
+            },
+            child: Container(
+              width: 240.w,
+              padding: EdgeInsets.all(12.w),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(.08),
+                borderRadius: BorderRadius.circular(12.r),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 50.w,
+                    height: 50.w,
+                    decoration: BoxDecoration(
+                      color: iconColor,
+                      borderRadius: BorderRadius.circular(10.r),
+                    ),
+                    child: Icon(
+                      icon,
+                      color: Colors.white,
+                      size: 26.sp,
+                    ),
+                  ),
+                  SizedBox(width: 10.w),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          documentName,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: textColor,
+                            fontSize: 12.sp,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        SizedBox(height: 4.h),
+                        Text(
+                          extension.toUpperCase(),
+                          style: TextStyle(
+                            color: Colors.grey,
+                            fontSize: 10.sp,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Icon(
+                    Icons.download_rounded,
+                    color: textColor,
+                    size: 20.sp,
+                  ),
+                ],
+              ),
+            ),
           ),
-          child: Row(
-            children: [
-              Container(
-                width: 50.w,
-                height: 50.w,
-                decoration: BoxDecoration(
-                  color: iconColor,
-                  borderRadius: BorderRadius.circular(10.r),
-                ),
-                child: Icon(
-                  icon,
-                  color: Colors.white,
-                  size: 26.sp,
-                ),
-              ),
-              SizedBox(width: 10.w),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      documentName,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: textColor,
-                        fontSize: 12.sp,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    SizedBox(height: 4.h),
-                    Text(
-                      extension.toUpperCase(),
-                      style: TextStyle(
-                        color: Colors.grey,
-                        fontSize: 10.sp,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Icon(
-                Icons.download_rounded,
+
+          if ((message.caption ?? "").isNotEmpty)
+            Padding(
+              padding: EdgeInsets.only(top: 8.h),
+              child: reausabletext(
+                message.caption.toString(),
                 color: textColor,
-                size: 20.sp,
+                fontsize: 11.sp,
+                fontfamily: FontFamily.interMedium,
               ),
-            ],
-          ),
-        ),
+            ),
+        ],
       );
     } else {
       return GestureDetector(

@@ -56,6 +56,8 @@ class SocketMessageService extends GetxService {
     required int groupId,
     required String content,
     String messageType = "text",
+    String? caption,
+
   }) {
     final msg = {
       'senderId': Global.storageServices.get(PrefConst.userId),
@@ -63,6 +65,8 @@ class SocketMessageService extends GetxService {
       'groupId': groupId,
       'content': content,
       'messageType': messageType,
+      'caption': caption,
+
     };
     _socket?.emit("send_message", msg);
   }
@@ -129,6 +133,7 @@ class SocketMessageService extends GetxService {
     required int groupId,
     required String content,
     required String messageType,
+    String? caption,
   }) {
     socket.emit(
       "send_group_message",
@@ -137,6 +142,8 @@ class SocketMessageService extends GetxService {
         "groupId": groupId,
         "content": content,
         "messageType": messageType,
+        "caption": caption,
+
       },
     );
   }
