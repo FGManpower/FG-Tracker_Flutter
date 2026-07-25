@@ -5,6 +5,7 @@ import 'package:fgtracker/app/Core/values/Dialog/Common_dialog.dart';
 import 'package:fgtracker/app/Core/values/Dialog/DialogBox.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Core/values/utility.dart';
+import 'package:fgtracker/app/Data/Services/Tracking.dart';
 
 import 'package:fgtracker/app/config/themes_data.dart';
 import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
@@ -31,6 +32,22 @@ class ChatScreen extends GetView<MessageController> {
   @override
   Widget build(BuildContext context) {
     final userData = controller.memberData;
+    String lastSeenText = "Offline";
+    bool isOnline = false;
+
+    if (userData.lastSeen != null && userData.lastSeen!.trim().isNotEmpty) {
+      final rawLastSeen = userData.lastSeen!.trim();
+
+      try {
+        lastSeenText =
+            Tracking().getTimeAgo(DateTime.parse(rawLastSeen));
+      } catch (_) {
+        // Already formatted string ("2 hours ago", "Just now", etc.)
+        lastSeenText = rawLastSeen;
+      }
+
+      isOnline = lastSeenText.toLowerCase() == "just now";
+    }
 
     return WillPopScope(
       onWillPop: () async {
@@ -41,12 +58,16 @@ class ChatScreen extends GetView<MessageController> {
       child: Scaffold(
         backgroundColor: ToggleThemeData.chatBackground,
         resizeToAvoidBottomInset: true,
+
         appBar: CommonChatAppBar(
           profileImageUrl:
               "${ConstRes.aImageBaseUrl}${userData.profileImage ?? ""}",
           userName: userData.name ?? "",
           controller: controller,
           groupName: controller.arguments?['groupName'],
+          isOnline: isOnline,
+          lastSeen: lastSeenText,
+
           onBackTap: () {
             controller.handleBackPressed(context,
                 groupID: int.parse(userData.groupId.toString()));
@@ -149,6 +170,57 @@ class ChatScreen extends GetView<MessageController> {
                   scrollController: controller.scrollController,
                 ),
               ),
+              Obx(() {
+                final reply = controller.replyMessage.value;
+
+                if (reply == null) return const SizedBox.shrink();
+
+                return Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    border: Border(
+                      top: BorderSide(color: Colors.grey.shade300),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 4,
+                        height: 42,
+                        color: Colors.green,
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              reply.senderName?.toString() ?? "",
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.green,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              reply.content?.toString() ?? "",
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: controller.clearReply,
+                        icon: const Icon(Icons.close),
+                      )
+                    ],
+                  ),
+                );
+              }),
               ChatInputArea(
                 messageText: controller.messageText,
                 imagePath: controller.imagePaths,

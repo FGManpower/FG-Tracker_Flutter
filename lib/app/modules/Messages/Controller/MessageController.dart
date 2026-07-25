@@ -38,6 +38,10 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
   final Rx<Uint8List?> videoThumbnail = Rx<Uint8List?>(null);
   final RxString videoDuration = ''.obs;
+  Rx<MessageData?> replyMessage = Rx<MessageData?>(null);
+  RxInt highlightedMessageId = (-1).obs;
+
+  Map<int, GlobalKey> messageKeys = {};
 
   @override
   void onInit() {
@@ -74,7 +78,34 @@ class MessageController extends GetxController with WidgetsBindingObserver {
       }
     }
   }
+  Future<void> scrollToMessage(int messageId) async {
+    debugPrint("========== Scroll ==========");
+    debugPrint("ReplyId: $messageId");
 
+    highlightedMessageId.value = messageId;
+
+    await Future.delayed(const Duration(milliseconds: 100));
+
+    final key = messageKeys[messageId];
+
+    debugPrint("Key exists: ${key != null}");
+    debugPrint("Context: ${key?.currentContext}");
+
+    if (key?.currentContext != null) {
+      debugPrint("Scrollable.ensureVisible called");
+
+      await Scrollable.ensureVisible(
+        key!.currentContext!,
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeInOut,
+      );
+    } else {
+      debugPrint("Context is NULL");
+    }
+
+    await Future.delayed(const Duration(seconds: 2));
+    highlightedMessageId.value = -1;
+  }
   void _initializeChat() {
     final userId = memberData.userId.toString();
     final groupId = memberData.groupId!;
@@ -97,6 +128,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
       recieverId: userId,
       groupId: groupId,
       callback: (message) {
+        print(message);
         messageData.add(MessageData.fromJson(message));
         scrollToBottom();
 
@@ -153,6 +185,12 @@ class MessageController extends GetxController with WidgetsBindingObserver {
               groupId: memberData.groupId!,
               content: result.filename!,
               caption: text,
+              replyId: replyMessage.value?.id,
+              replyMessage: replyMessage.value?.content,
+              replyType: replyMessage.value?.messageType,
+              replySender: replyMessage.value?.senderName,
+
+
             );
           } else {
             CommonDialog.errorMessage("Failed to upload ${image.path}");
@@ -161,14 +199,17 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         imagePaths.clear();
         ;
         textController.clear();
+        clearReply();
       } else if (videoPath.isNotEmpty) {
         await uploadVideo(videoPath.value, text);
         videoPath.value = "";
         textController.clear();
+        clearReply();
       } else if (documentPath.isNotEmpty) {
         await uploadDocument(documentPath.value, text);
         documentPath.value = "";
         textController.clear();
+        clearReply();
       }
       else if (text.isNotEmpty) {
         socketService.sendMessage(
@@ -176,9 +217,15 @@ class MessageController extends GetxController with WidgetsBindingObserver {
           receiverId: memberData.userId.toString(),
           groupId: memberData.groupId!,
           content: text,
+
+          replyId: replyMessage.value?.id,
+          replyMessage: replyMessage.value?.content,
+          replyType: replyMessage.value?.messageType,
+          replySender: replyMessage.value?.senderName,
         );
 
         textController.clear();
+        clearReply();
       }
       scrollToBottom();
     } catch (e) {
@@ -197,7 +244,14 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         receiverId: memberData.userId.toString(),
         groupId: memberData.groupId!,
         content: result.filename!,
+
+        replyId: replyMessage.value?.id,
+        replyMessage: replyMessage.value?.content,
+        replyType: replyMessage.value?.messageType,
+        replySender: replyMessage.value?.senderName,
+
       );
+      clearReply();
     }
   }
 
@@ -208,6 +262,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     final thumbnailPath = await generateThumbnailFile(path);
 
     if (thumbnailPath == null) {
+      isUploadingVideo.value = false;
       return;
     }
     var result = await MessageRepo.uploadChatVideo(
@@ -226,9 +281,14 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         groupId: memberData.groupId!,
         content: "${result.videoUrl}||${result.thumbnail}||${result.duration}",
         caption: caption,
+        replyId: replyMessage.value?.id,
+        replyMessage: replyMessage.value?.content,
+        replyType: replyMessage.value?.messageType,
+        replySender: replyMessage.value?.senderName,
       );
       isUploadingVideo.value = false;
     }
+    clearReply();
   }
 
   Future<void> uploadDocument(String path,  String caption) async {
@@ -241,8 +301,13 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         groupId: memberData.groupId!,
         content: "${result.filename}||${result.originalName!}",
         caption: caption,
-
+        replyId: replyMessage.value?.id,
+        replyMessage: replyMessage.value?.content,
+        replyType: replyMessage.value?.messageType,
+        replySender: replyMessage.value?.senderName,
       );
+      clearReply();
+
     }
   }
 
@@ -264,6 +329,14 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     } catch (e) {
       log("History Error: $e");
     }
+  }
+
+  void setReply(MessageData message) {
+    replyMessage.value = message;
+  }
+
+  void clearReply() {
+    replyMessage.value = null;
   }
 
   void scrollToBottom() {
@@ -288,6 +361,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     messageText.value = "";
     imagePaths.clear();
     isSending.value = false;
+    clearReply();
 
     ChatStateTracker.isChatCallScreenOpen = false;
 

@@ -5,6 +5,7 @@ import 'package:fgtracker/app/modules/Messages/widgets/ChatInputArea.dart';
 import 'package:fgtracker/app/modules/Messages/widgets/ChatList.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import '../../../Core/constant/const_res.dart';
 
 import 'package:get/get.dart';
@@ -104,11 +105,89 @@ class GroupChatScreen extends GetView<GroupMessageController> {
         child: Column(
           children: [
             Expanded(
-              child: GroupChatList(
-                controller: controller,
-                scrollController: controller.scrollController,
+              child: Obx(
+                    () => Skeletonizer(
+                  enabled: controller.isLoading.value,
+                  child: GroupChatList(
+                    controller: controller,
+                    scrollController: controller.scrollController,
+                  ),
+                ),
               ),
             ),
+            Obx(() {
+              final reply = controller.replyMessage.value;
+
+              if (reply == null) return const SizedBox.shrink();
+
+              String previewText;
+
+              switch (reply.messageType) {
+                case "image":
+                  previewText = "📷 Photo";
+                  break;
+                case "video":
+                  previewText = "🎥 Video";
+                  break;
+                case "audio":
+                  previewText = "🎤 Voice message";
+                  break;
+                case "document":
+                  previewText = "📄 Document";
+                  break;
+                default:
+                  previewText = reply.content?.toString() ?? "";
+              }
+
+              return Container(
+                margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border(
+                    left: BorderSide(
+                      color: ToggleThemeData.darkPurple,
+                      width: 4,
+                    ),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black12,
+                      blurRadius: 4,
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            reply.senderName ?? "Unknown",
+                            style: TextStyle(
+                              color: ToggleThemeData.darkPurple,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            previewText,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: controller.clearReply,
+                      icon: const Icon(Icons.close),
+                    ),
+                  ],
+                ),
+              );
+            }),
             ChatInputArea(
               messageText: controller.messageText,
               imagePath: controller.imagePaths,

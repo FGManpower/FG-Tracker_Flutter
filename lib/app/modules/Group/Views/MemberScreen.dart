@@ -374,17 +374,15 @@ class MemberscreenScreen extends GetView<MemberController> {
                     }
                     final data = controller.filteredMembers[index];
 
-                    bool isOnline = data.isOnline == true;
+                    bool isOnline = false;
 
-                    if (!isOnline &&
-                        data.lastSeen != null &&
-                        data.lastSeen!.isNotEmpty) {
+                    if (data.lastSeen != null && data.lastSeen!.isNotEmpty) {
                       try {
                         isOnline = Tracking()
-                                .getTimeAgo(
-                                  DateTime.parse(data.lastSeen!),
-                                )
-                                .toLowerCase() ==
+                            .getTimeAgo(
+                          DateTime.parse(data.lastSeen!),
+                        )
+                            .toLowerCase() ==
                             "just now";
                       } catch (_) {
                         isOnline = false;
@@ -601,12 +599,18 @@ class MemberscreenScreen extends GetView<MemberController> {
               itemCount: groupData?.length ?? 10,
               itemBuilder: (context, index) {
                 final data = groupData?[index];
-                bool isOnline = (data?.isOnline == true) ||
-                    (data?.lastSeen != null &&
-                        Tracking()
-                                .getTimeAgo(DateTime.parse(data!.lastSeen!))
-                                .toLowerCase() ==
-                            "just now");
+                bool isOnline = false;
+
+                if (data?.lastSeen != null && data!.lastSeen!.isNotEmpty) {
+                  try {
+                    isOnline = Tracking()
+                        .getTimeAgo(DateTime.parse(data.lastSeen!))
+                        .toLowerCase() ==
+                        "just now";
+                  } catch (_) {
+                    isOnline = false;
+                  }
+                }
 
                 return TweenAnimationBuilder(
                   duration: Duration(

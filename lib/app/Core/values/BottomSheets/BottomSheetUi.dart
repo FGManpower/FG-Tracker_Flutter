@@ -65,8 +65,18 @@ class BottomSheetUi {
                     itemBuilder: (_, index) {
                       final member = members[index];
 
-                      final isOnline =
-                          member.isOnline == true || member.isOnline == 1;
+                      bool isOnline = false;
+
+                      if (member.lastSeen != null && member.lastSeen!.isNotEmpty) {
+                        try {
+                          isOnline = Tracking()
+                              .getTimeAgo(DateTime.parse(member.lastSeen!))
+                              .toLowerCase() ==
+                              "just now";
+                        } catch (_) {
+                          isOnline = false;
+                        }
+                      }
 
                       final profileUrl =
                       (member.profileImage?.isNotEmpty ?? false)

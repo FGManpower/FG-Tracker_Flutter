@@ -1,6 +1,7 @@
 import 'package:fgtracker/app/Core/util/DateTime_Format.dart';
 import 'package:fgtracker/app/modules/Messages/Controller/GroupChatController.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get_state_manager/src/rx_flutter/rx_obx_widget.dart';
 
@@ -40,7 +41,38 @@ class ChatList extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             if (showHeader) _buildDateHeader(messageDate),
-            ChatBubble(message: msg, context: context),
+            Dismissible(
+              key: ValueKey(msg.id),
+              direction: DismissDirection.startToEnd,
+              dismissThresholds: const {
+                DismissDirection.startToEnd: 0.25,
+              },
+              confirmDismiss: (_) async {
+                HapticFeedback.lightImpact();
+                controller.setReply(msg);
+                return false;
+              },
+              background: Container(
+                alignment: Alignment.centerLeft,
+                padding: EdgeInsets.only(left: 20.w),
+                color: Colors.transparent,
+                child: const Icon(
+                  Icons.reply,
+                  color: Colors.green,
+                ),
+              ),
+              child: KeyedSubtree(
+                key: controller.messageKeys.putIfAbsent(
+                  msg.id!,
+                      () => GlobalKey(),
+                ),
+                child: ChatBubble(
+                  controller: controller,
+                  message: msg,
+                  context: context,
+                ),
+              ),
+            ),
           ],
         );
       },
@@ -102,12 +134,37 @@ class GroupChatList extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             if (showHeader) _buildDateHeader(messageDate),
-            GroupChatBubble(
-              message: msg,
-              context: context,
-              isGroup: true,
-              groupId: int.parse(controller.groupId.toString()),
-              groupName: controller.groupName,
+            Dismissible(
+              key: ValueKey(msg.id),
+              direction: DismissDirection.startToEnd,
+              confirmDismiss: (_) async {
+                controller.setReply(msg);
+                return false;
+              },
+              background: Container(
+                alignment: Alignment.centerLeft,
+                padding: EdgeInsets.only(left: 20.w),
+                color: Colors.transparent,
+                child: Icon(
+                  Icons.reply,
+                  color: Colors.deepPurple,
+                  size: 24.sp,
+                ),
+              ),
+              child: KeyedSubtree(
+                key: controller.messageKeys.putIfAbsent(
+                  msg.id ?? -(index + 1),
+                  () => GlobalKey(),
+                ),
+                child: GroupChatBubble(
+                  controller: controller,
+                  message: msg,
+                  context: context,
+                  isGroup: true,
+                  groupId: int.parse(controller.groupId.toString()),
+                  groupName: controller.groupName,
+                ),
+              ),
             ),
           ],
         );

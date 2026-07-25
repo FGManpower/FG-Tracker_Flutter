@@ -40,8 +40,43 @@ class GroupMessageController extends GetxController {
   RxString videoPath = "".obs;
   RxString documentPath = "".obs;
   RxBool isSending = false.obs;
-
+  RxBool isLoading = true.obs;
   RxString messageText = "".obs;
+
+  Rx<MessageData?> replyMessage = Rx<MessageData?>(null);
+  RxInt highlightedMessageId = (-1).obs;
+
+  Map<int, GlobalKey> messageKeys = {};
+
+  Future<void> scrollToMessage(int messageId) async {
+    highlightedMessageId.value = messageId;
+
+    await Future.delayed(const Duration(milliseconds: 100));
+
+    final key = messageKeys[messageId];
+
+    if (key?.currentContext != null) {
+      await Scrollable.ensureVisible(
+        key!.currentContext!,
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeInOut,
+      );
+    }
+
+    await Future.delayed(const Duration(seconds: 2));
+
+    if (highlightedMessageId.value == messageId) {
+      highlightedMessageId.value = -1;
+    }
+  }
+
+  void setReply(MessageData message) {
+    replyMessage.value = message;
+  }
+
+  void clearReply() {
+    replyMessage.value = null;
+  }
 
   Map<String, dynamic>? arguments = Get.arguments;
 
@@ -116,8 +151,13 @@ print("TEXT=======$text");
               content: result.filename!,
               messageType: "image",
               caption: text,
-
+              replyId: replyMessage.value?.id,
+              replyMessage: replyMessage.value?.content,
+              replyType: replyMessage.value?.messageType,
+              replySender: replyMessage.value?.senderName,
             );
+
+            clearReply();
           } else {
             CommonDialog.errorMessage("Failed to upload ${image.path}");
           }
@@ -138,13 +178,18 @@ print("TEXT=======$text");
         textController.clear();
       } else if (text.isNotEmpty) {
 
-        print("hhhhh$text");
+
         socketService.sendGroupMessage(
           groupId: groupId,
           content: text,
           messageType: "text",
+          replyId: replyMessage.value?.id,
+          replyMessage: replyMessage.value?.content,
+          replyType: replyMessage.value?.messageType,
+          replySender: replyMessage.value?.senderName,
         );
 
+        clearReply();
         textController.clear();
       }
 
@@ -167,7 +212,13 @@ print("TEXT=======$text");
           groupId: groupId,
           content: result.filename!,
           messageType: "audio",
+          replyId: replyMessage.value?.id,
+          replyMessage: replyMessage.value?.content,
+          replyType: replyMessage.value?.messageType,
+          replySender: replyMessage.value?.senderName,
         );
+
+        clearReply();
       }
     } catch (e) {
       log(
@@ -200,15 +251,21 @@ print("TEXT=======$text");
         socketService.sendGroupMessage(
           groupId: groupId,
           messageType: "video",
-          content:
-          "${result.videoUrl}||${result.thumbnail}||${result.duration}",
+          content: "${result.videoUrl}||${result.thumbnail}||${result.duration}",
           caption: caption,
+          replyId: replyMessage.value?.id,
+          replyMessage: replyMessage.value?.content,
+          replyType: replyMessage.value?.messageType,
+          replySender: replyMessage.value?.senderName,
         );
+
       }
     } catch (e) {
       log("GROUP AUDIO ERROR => $e");
     } finally {
       isUploadingVideo.value = false;
+      clearReply();
+
     }
   }
 
@@ -223,8 +280,13 @@ print("TEXT=======$text");
           content: "${result.filename}||${result.originalName!}",
           messageType: "document",
           caption: caption,
-
+          replyId: replyMessage.value?.id,
+          replyMessage: replyMessage.value?.content,
+          replyType: replyMessage.value?.messageType,
+          replySender: replyMessage.value?.senderName,
         );
+
+        clearReply();
       }
     } catch (e) {
       log(
@@ -234,6 +296,21 @@ print("TEXT=======$text");
   }
 
   Future<void> getGroupMessages() async {
+    isLoading.value = true;
+
+    messageData.value = List.generate(
+      8,
+          (index) => MessageData(
+        senderId: index.isEven ? 1 : 2,
+        senderName: "Loading",
+        messageType: "text",
+        content: "Loading message",
+        timestamp: DateTime.now().toIso8601String(),
+        seenCount: 0,
+        senderImage: "",
+      ),
+    );
+
     try {
       var result = await MessageRepo.groupMessageHistory(
         groupId: groupId,
@@ -241,17 +318,16 @@ print("TEXT=======$text");
 
       if (result.status == true) {
         messageData.value = result.messageData ?? [];
-
         scrollToBottom();
       } else {
-        CommonDialog.errorMessage(
-          result.message,
-        );
+        CommonDialog.errorMessage(result.message);
+        messageData.clear();
       }
     } catch (e) {
-      log(
-        "GROUP HISTORY ERROR => $e",
-      );
+      log("GROUP HISTORY ERROR => $e");
+      messageData.clear();
+    } finally {
+      isLoading.value = false;
     }
   }
 
@@ -346,8 +422,7 @@ print("TEXT=======$text");
 
   final FocusNode focusNode = FocusNode();
 
-  // Make these observable for UI reactivity
-  final RxList<LocationData> filteredMembers = <LocationData>[].obs; // Change 'dynamic' to your Member Model
+  final RxList<LocationData> filteredMembers = <LocationData>[].obs;
   final RxBool showMentionList = false.obs;
   RxInt? mentionStartIndex = RxInt(-1);
 

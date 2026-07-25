@@ -50,8 +50,12 @@ class SearchMembers extends GetView<SearchMemberController> {
                 decoration: InputDecoration(
                     border: InputBorder.none,
                     hintText: "Search Members...",
-                    hintStyle: TextStyle(color: ToggleThemeData.darkPurple,fontSize: 13,fontFamily: FontFamily.interMedium),
-                    contentPadding: EdgeInsets.symmetric(horizontal: 15.w,vertical: 15.h),
+                    hintStyle: TextStyle(
+                        color: ToggleThemeData.darkPurple,
+                        fontSize: 13,
+                        fontFamily: FontFamily.interMedium),
+                    contentPadding:
+                        EdgeInsets.symmetric(horizontal: 15.w, vertical: 15.h),
                     suffixIcon: controller.searchValues.text.isNotEmpty
                         ? InkWell(
                             onTap: controller.clearSearch,
@@ -87,12 +91,18 @@ class SearchMembers extends GetView<SearchMemberController> {
       itemCount: controller.filteredMembers.length,
       itemBuilder: (context, index) {
         final data = controller.filteredMembers[index];
-        bool isOnline = (data.isOnline == true) ||
-            (data.lastSeen != null &&
-                Tracking()
+        bool isOnline = false;
+
+        if (data.lastSeen != null && data.lastSeen!.isNotEmpty) {
+          try {
+            isOnline = Tracking()
                     .getTimeAgo(DateTime.parse(data.lastSeen!))
                     .toLowerCase() ==
-                    "just now");
+                "just now";
+          } catch (_) {
+            isOnline = false;
+          }
+        }
         return GestureDetector(
           onTap: () {
             Navigator.pop(context, data.userId.toString());
@@ -117,7 +127,7 @@ class SearchMembers extends GetView<SearchMemberController> {
                         height: 12.w,
                         width: 12.w,
                         decoration: BoxDecoration(
-                          color: isOnline?Colors.green:Colors.red,
+                          color: isOnline ? Colors.green : Colors.red,
                           shape: BoxShape.circle,
                           border: Border.all(color: Colors.white, width: 1.5.w),
                         ),
@@ -130,8 +140,6 @@ class SearchMembers extends GetView<SearchMemberController> {
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-
-
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -141,47 +149,41 @@ class SearchMembers extends GetView<SearchMemberController> {
                               fontsize: 15,
                               fontfamily: FontFamily.interSemiBold,
                             ),
-
                             SizedBox(height: 4.h),
-
                             reausabletext(
-                              "Online",
+                              isOnline
+                                  ? "Online"
+                                  : data.lastSeen != null &&
+                                          data.lastSeen!.isNotEmpty
+                                      ? Tracking().getTimeAgo(
+                                          DateTime.parse(data.lastSeen!),
+                                        )
+                                      : "Offline",
                               fontsize: 10,
                               fontfamily: FontFamily.interMedium,
-                              color: ToggleThemeData.darkPurple,
+                              color: isOnline
+                                  ? Colors.green
+                                  : Colors.grey.shade600,
                             ),
                           ],
                         ),
                       ),
-
                       SizedBox(width: 10.w),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
-
-                          reausabletext(
-                            "12:08 PM",
-                            fontsize: 10,
-                            fontfamily: FontFamily.interMedium,
-                            color: Colors.grey.shade500,
-                          ),
-
                           SizedBox(height: 8.h),
-
                           InkWell(
                             borderRadius: BorderRadius.circular(20.r),
                             onTap: () {
-
-
                               final MemberData memberData = MemberData(
                                 userId: data.userId,
                                 groupId: data.groupId ?? 0,
                                 name: data.name,
                                 profileImage: data.profileImage,
                                 lastSeen: data.lastSeen,
-                                isOnline: data.isOnline,
+                                isOnline: isOnline,
                               );
-
 
                               Get.toNamed(
                                 Routes.chatScreen,

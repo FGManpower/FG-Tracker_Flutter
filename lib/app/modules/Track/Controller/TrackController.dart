@@ -18,15 +18,15 @@ import '../../../Core/values/colors.dart';
 import '../../../Core/values/global.dart';
 import '../../../Core/values/loading.dart';
 import '../../../Data/Services/Tracking.dart';
-import 'SocketServices.dart';
-import 'LocationService.dart';
 import '../Widget/Track_widget.dart';
+import 'LocationService.dart';
+import 'SocketServices.dart';
 
 class TrackingController extends GetxController {
-  static TrackingController get instance => Get.put(TrackingController());
-
-
   static const String _clusterManagerId = 'users_cluster';
+
+
+  static TrackingController get instance => Get.put(TrackingController());
 
   final markers = <Marker>{}.obs;
 
@@ -56,11 +56,146 @@ class TrackingController extends GetxController {
 
   String? _alreadyListeningGroupId;
 
-  @override
-  void onInit() {
-    super.onInit();
+  Future<void> changeMapTheme(
+      MapType type, {
+        bool darkTheme = false,
+      }) async {
+    currentMapType.value = type;
+
+    isDarkMode = darkTheme;
+
+    if (mapController == null) return;
+
+    if (darkTheme) {
+      await mapController!.setMapStyle(darkMapStyle);
+    } else {
+      await mapController!.setMapStyle(null);
+    }
+
+    update();
   }
 
+
+  void clearMapMarkers() {
+    markers.clear();
+    update();
+  }
+
+  Future<void> clearSearchZoomOut() async {
+    if (mapController != null) {
+      await mapController!.animateCamera(CameraUpdate.zoomTo(11.0));
+    }
+  }
+
+
+  void deleteGroup({
+    required String groupId,
+    Function(bool)? onCompletion,
+  }) {
+    socketService.deleteGroup(groupId: groupId);
+    joinedGroupIds.remove(groupId);
+    onCompletion?.call(true);
+  }
+
+  void deleteGroupMarker(String groupId) {
+    groupWiseUserData.remove(groupId);
+
+    markers.removeWhere(
+          (marker) {
+        return groupWiseUserData[groupId]?.any(
+              (user) => user.userId.toString() == marker.markerId.value,
+        ) ??
+            false;
+      },
+    );
+
+    joinedGroupIds.remove(groupId);
+    markers.refresh();
+  }
+
+  void exitGroup({
+    required String groupId,
+    Function(bool)? onCompletion,
+  }) {
+    if (userId != null) {
+      socketService.leaveGroup(groupId: groupId, userId: userId!);
+      joinedGroupIds.remove(groupId);
+      onCompletion?.call(true);
+    }
+  }
+
+  Future<void> getGroupLocationData(
+      BuildContext context,
+      int groupId,
+      ) async {
+    try {
+      Loading().showloading(context: context);
+
+      var result = await TrackRepo.getUserLocationData(groupId);
+
+      if (result.status == true) {
+        Loading().dismissloading(context: context);
+
+        for (var data in result.locations!) {
+          updateGroupMarker(data);
+        }
+      } else {
+        Loading().dismissloading(context: context);
+        CommonDialog.errorMessage(result.message);
+      }
+    } catch (e) {
+      Loading().dismissloading(context: context);
+      CommonDialog.errorMessage(e.toString());
+    }
+  }
+
+  void inItAllGroups({
+    List<GroupsResData>? groups,
+  }) {
+    initSocketConnection();
+
+    for (var group in groups!) {
+      if (group.isActive == true) {
+        joinedGroupIds.add(group.id.toString());
+
+        socketService.joinGroup(
+          groupId: group.id.toString(),
+          userId: userId!,
+        );
+      }
+    }
+
+    socketService.onUserLeft((userId) => removeUserMarker(userId));
+    socketService.onGroupDeleted((groupId) => deleteGroupMarker(groupId));
+    socketService.onUserOffline((userId) => updateOfflineMarker(userId));
+
+    initializeLocation();
+  }
+
+  void initGroupTracking(String groupId) {
+    if (!groupWiseUserData.containsKey(groupId)) {
+      groupWiseUserData[groupId] = [];
+    }
+
+    _initSocketTracking(groupId);
+    _loadInitialMarkers(groupId);
+  }
+
+  void initializeLocation() {
+    locationService.initLocationTracking();
+  }
+
+  Future<void> initSocketConnection() async {
+    userId = Global.storageServices.get(PrefConst.userId).toString();
+
+    await socketService.init(ConstRes.socketUrl);
+  }
+
+  Future<void> loadMapStyle() async {
+    darkMapStyle = await rootBundle.loadString(
+      'assets/map_theme/dark_map.json',
+    );
+  }
 
   Future<void> onClusterTap(Cluster cluster) async {
 
@@ -81,147 +216,45 @@ class TrackingController extends GetxController {
     _showClusterMembersSheet(clusterUsers);
   }
 
-  void _showClusterMembersSheet(List<LocationData> users) {
-    Get.bottomSheet(
-      Container(
-        padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 42,
-              height: 5,
-              decoration: BoxDecoration(
-                color: Colors.grey.shade300,
-                borderRadius: BorderRadius.circular(100),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              '${users.length} Members',
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                color: Colors.black,
-              ),
-            ),
-            const SizedBox(height: 12),
-            ConstrainedBox(
-              constraints: BoxConstraints(maxHeight: Get.height * 0.45),
-              child: ListView.separated(
-                shrinkWrap: true,
-                itemCount: users.length,
-                separatorBuilder: (_, __) => const Divider(height: 1),
-                itemBuilder: (context, index) {
-                  final user = users[index];
-                  final imageUrl = user.profileImage?.toString() ?? '';
-                  final bool isOnline = user.isOnline == true;
-
-                  return ListTile(
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    leading: Stack(
-                      children: [
-                        CircleAvatar(
-                          radius: 24,
-                          backgroundColor: Colors.grey.shade200,
-                          backgroundImage: imageUrl.isNotEmpty
-                              ? NetworkImage(ConstRes.aImageBaseUrl + imageUrl)
-                              : null,
-                          child: imageUrl.isEmpty
-                              ? const Icon(Icons.person, color: Colors.grey)
-                              : null,
-                        ),
-                        Positioned(
-                          bottom: 0,
-                          right: 0,
-                          child: Container(
-                            width: 12,
-                            height: 12,
-                            decoration: BoxDecoration(
-                              color: isOnline ? Colors.green : Colors.red,
-                              shape: BoxShape.circle,
-                              border: Border.all(color: Colors.white, width: 2),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    title: Text(
-                      user.name?.toString() ?? 'Unknown',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 15,
-                      ),
-                    ),
-                    subtitle: Text(
-                      isOnline
-                          ? 'Online'
-                          : user.lastSeen != null
-                          ? Tracking().getTimeAgo(
-                        DateTime.parse(user.lastSeen!),
-                      )
-                          : 'Offline',
-                      style: TextStyle(
-                        color: isOnline ? Colors.green : Colors.grey,
-                        fontSize: 12,
-                      ),
-                    ),
-                    onTap: () async {
-                      Get.back();
-
-                      await Future.delayed(const Duration(milliseconds: 350));
-                      if (user.latitude != null && user.longitude != null) {
-                        await mapController?.animateCamera(
-                          CameraUpdate.newLatLngZoom(
-                            LatLng(user.latitude!, user.longitude!),
-                            20.0,
-                          ),
-                        );
-                      }
-                    },
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-    );
+  @override
+  void onInit() {
+    super.onInit();
   }
 
-
-  Future<void> loadMapStyle() async {
-    darkMapStyle = await rootBundle.loadString(
-      'assets/map_theme/dark_map.json',
-    );
+  void removeUserMarker(String userId) {
+    markers.removeWhere((m) => m.markerId.value == userId);
+    _markerPositions.remove(userId);
+    _activeAnimations[userId] = false;
+    markers.refresh();
   }
 
-  Future<void> changeMapTheme(
-      MapType type, {
-        bool darkTheme = false,
-      }) async {
-    currentMapType.value = type;
+  Future<void> searchUserAndZoom(
+      String groupId,
+      String userId,
+      ) async {
+    int retries = 0;
 
-    isDarkMode = darkTheme;
-
-    if (mapController == null) return;
-
-    if (darkTheme) {
-      await mapController!.setMapStyle(darkMapStyle);
-    } else {
-      await mapController!.setMapStyle(null);
+    while (markers.isEmpty && retries < 30) {
+      await Future.delayed(const Duration(milliseconds: 100));
+      retries++;
     }
 
-    update();
+    final matchedMarker = markers.toList().firstWhereOrNull(
+          (m) => m.markerId.value == userId,
+    );
+
+    if (matchedMarker != null && mapController != null) {
+      await mapController!.animateCamera(
+        CameraUpdate.newLatLngZoom(matchedMarker.position, 30.5),
+      );
+    } else {
+      Get.snackbar(
+        "User Not Found",
+        "No user with id '$userId' found.",
+        backgroundColor: Colors.redAccent,
+        colorText: Colors.white,
+      );
+    }
   }
 
   void showMapThemeBottomSheet(BuildContext context) {
@@ -372,155 +405,6 @@ class TrackingController extends GetxController {
     );
   }
 
-  Future<void> initSocketConnection() async {
-    userId = Global.storageServices.get(PrefConst.userId).toString();
-
-    await socketService.init(ConstRes.socketUrl);
-  }
-
-  void initializeLocation() {
-    locationService.initLocationTracking();
-  }
-
-  void inItAllGroups({
-    List<GroupsResData>? groups,
-  }) {
-    initSocketConnection();
-
-    for (var group in groups!) {
-      if (group.isActive == true) {
-        joinedGroupIds.add(group.id.toString());
-
-        socketService.joinGroup(
-          groupId: group.id.toString(),
-          userId: userId!,
-        );
-      }
-    }
-
-    socketService.onUserLeft((userId) => removeUserMarker(userId));
-    socketService.onGroupDeleted((groupId) => deleteGroupMarker(groupId));
-    socketService.onUserOffline((userId) => updateOfflineMarker(userId));
-
-    initializeLocation();
-  }
-
-  void initGroupTracking(String groupId) {
-    if (!groupWiseUserData.containsKey(groupId)) {
-      groupWiseUserData[groupId] = [];
-    }
-
-    _initSocketTracking(groupId);
-    _loadInitialMarkers(groupId);
-  }
-
-  Future<void> getGroupLocationData(
-      BuildContext context,
-      int groupId,
-      ) async {
-    try {
-      Loading().showloading(context: context);
-
-      var result = await TrackRepo.getUserLocationData(groupId);
-
-      if (result.status == true) {
-        Loading().dismissloading(context: context);
-
-        for (var data in result.locations!) {
-          updateGroupMarker(data);
-        }
-      } else {
-        Loading().dismissloading(context: context);
-        CommonDialog.errorMessage(result.message);
-      }
-    } catch (e) {
-      Loading().dismissloading(context: context);
-      CommonDialog.errorMessage(e.toString());
-    }
-  }
-
-  void deleteGroupMarker(String groupId) {
-    groupWiseUserData.remove(groupId);
-
-    markers.removeWhere(
-          (marker) {
-        return groupWiseUserData[groupId]?.any(
-              (user) => user.userId.toString() == marker.markerId.value,
-        ) ??
-            false;
-      },
-    );
-
-    joinedGroupIds.remove(groupId);
-    markers.refresh();
-  }
-
-  void updateOfflineMarker(String userId) {
-    log("📴 User went offline: $userId");
-  }
-
-  void exitGroup({
-    required String groupId,
-    Function(bool)? onCompletion,
-  }) {
-    if (userId != null) {
-      socketService.leaveGroup(groupId: groupId, userId: userId!);
-      joinedGroupIds.remove(groupId);
-      onCompletion?.call(true);
-    }
-  }
-
-  void deleteGroup({
-    required String groupId,
-    Function(bool)? onCompletion,
-  }) {
-    socketService.deleteGroup(groupId: groupId);
-    joinedGroupIds.remove(groupId);
-    onCompletion?.call(true);
-  }
-
-  Future<void> clearSearchZoomOut() async {
-    if (mapController != null) {
-      await mapController!.animateCamera(CameraUpdate.zoomTo(11.0));
-    }
-  }
-
-  Future<void> searchUserAndZoom(
-      String groupId,
-      String userId,
-      ) async {
-    int retries = 0;
-
-    while (markers.isEmpty && retries < 30) {
-      await Future.delayed(const Duration(milliseconds: 100));
-      retries++;
-    }
-
-    final matchedMarker = markers.toList().firstWhereOrNull(
-          (m) => m.markerId.value == userId,
-    );
-
-    if (matchedMarker != null && mapController != null) {
-      await mapController!.animateCamera(
-        CameraUpdate.newLatLngZoom(matchedMarker.position, 30.5),
-      );
-    } else {
-      Get.snackbar(
-        "User Not Found",
-        "No user with id '$userId' found.",
-        backgroundColor: Colors.redAccent,
-        colorText: Colors.white,
-      );
-    }
-  }
-
-  void removeUserMarker(String userId) {
-    markers.removeWhere((m) => m.markerId.value == userId);
-    _markerPositions.remove(userId);
-    _activeAnimations[userId] = false;
-    markers.refresh();
-  }
-
   void showMarkersForGroup(String groupId) {
     markers.clear();
     final users = groupWiseUserData[groupId] ?? [];
@@ -529,81 +413,14 @@ class TrackingController extends GetxController {
     }
   }
 
-  void _initSocketTracking(String groupId) {
-    if (_alreadyListeningGroupId == groupId) return;
-
-    _alreadyListeningGroupId = groupId;
-
-    socketService.onGroupLocationUpdateOff();
-
-    socketService.onGroupLocationUpdate(
-          (data) {
-        if (data["groupId"].toString() == groupId) {
-          final location = LocationData.fromJson(data);
-          updateGroupMarker(location);
-        }
-      },
-    );
-  }
-
-  void _loadInitialMarkers(String groupId) {
-    markers.clear();
-    final users = groupWiseUserData[groupId] ?? [];
-    for (var user in users) {
-      updateGroupMarker(user);
-    }
-  }
-
-  Future<void> _animateMarkerTo({
-    required String markerId,
-    required LatLng from,
-    required LatLng to,
-    required Marker Function(LatLng position) markerBuilder,
-    int steps = 40,
-    Duration duration = const Duration(milliseconds: 900),
-  }) async {
-    _activeAnimations[markerId] = false;
-
-    await Future.delayed(const Duration(milliseconds: 16));
-
-    _activeAnimations[markerId] = true;
-
-    final stepDuration = Duration(
-      microseconds: duration.inMicroseconds ~/ steps,
-    );
-
-    for (int i = 1; i <= steps; i++) {
-      if (_activeAnimations[markerId] != true) return;
-
-      final t = i / steps;
-      final easedT = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
-
-      final interpolated = LatLng(
-        from.latitude + (to.latitude - from.latitude) * easedT,
-        from.longitude + (to.longitude - from.longitude) * easedT,
-      );
-
-      markers.removeWhere((m) => m.markerId.value == markerId);
-      markers.add(markerBuilder(interpolated));
-      markers.refresh();
-
-      await Future.delayed(stepDuration);
-    }
-
-    _markerPositions[markerId] = to;
-    _activeAnimations[markerId] = false;
-  }
-
   Future<void> updateGroupMarker(LocationData data) async {
     final groupId = data.groupId.toString();
     final profileImageUrl = data.profileImage?.toString() ?? '';
 
-    bool isOnline = (data.isOnline == true) ||
-        (data.lastSeen != null &&
-            Tracking()
-                .getTimeAgo(DateTime.parse(data.lastSeen!))
-                .toLowerCase() ==
-                "just now");
+    final bool isOnline = data.lastSeen != null &&
+        Tracking()
+            .getTimeAgo(DateTime.parse(data.lastSeen!))
+            .toLowerCase() == "just now";
 
     final groupList = groupWiseUserData[groupId] ?? [];
 
@@ -666,7 +483,7 @@ class TrackingController extends GetxController {
           userId: int.tryParse(data.userId.toString()),
           groupId: int.tryParse(data.groupId.toString()),
           id: int.tryParse(data.id.toString()),
-          status: data.isOnline,
+          status: isOnline,
         );
       },
     );
@@ -690,6 +507,50 @@ class TrackingController extends GetxController {
     }
   }
 
+  void updateOfflineMarker(String userId) {
+    log("📴 User went offline: $userId");
+  }
+
+  Future<void> _animateMarkerTo({
+    required String markerId,
+    required LatLng from,
+    required LatLng to,
+    required Marker Function(LatLng position) markerBuilder,
+    int steps = 40,
+    Duration duration = const Duration(milliseconds: 900),
+  }) async {
+    _activeAnimations[markerId] = false;
+
+    await Future.delayed(const Duration(milliseconds: 16));
+
+    _activeAnimations[markerId] = true;
+
+    final stepDuration = Duration(
+      microseconds: duration.inMicroseconds ~/ steps,
+    );
+
+    for (int i = 1; i <= steps; i++) {
+      if (_activeAnimations[markerId] != true) return;
+
+      final t = i / steps;
+      final easedT = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+
+      final interpolated = LatLng(
+        from.latitude + (to.latitude - from.latitude) * easedT,
+        from.longitude + (to.longitude - from.longitude) * easedT,
+      );
+
+      markers.removeWhere((m) => m.markerId.value == markerId);
+      markers.add(markerBuilder(interpolated));
+      markers.refresh();
+
+      await Future.delayed(stepDuration);
+    }
+
+    _markerPositions[markerId] = to;
+    _activeAnimations[markerId] = false;
+  }
+
   double _calculateDistance(
       double lat1,
       double lon1,
@@ -707,8 +568,156 @@ class TrackingController extends GetxController {
     return R * 2 * atan2(sqrt(a), sqrt(1 - a));
   }
 
-  void clearMapMarkers() {
+  void _initSocketTracking(String groupId) {
+    if (_alreadyListeningGroupId == groupId) return;
+
+    _alreadyListeningGroupId = groupId;
+
+    socketService.onGroupLocationUpdateOff();
+
+    socketService.onGroupLocationUpdate(
+          (data) {
+        if (data["groupId"].toString() == groupId) {
+          final location = LocationData.fromJson(data);
+          updateGroupMarker(location);
+        }
+      },
+    );
+  }
+
+  void _loadInitialMarkers(String groupId) {
     markers.clear();
-    update();
+    final users = groupWiseUserData[groupId] ?? [];
+    for (var user in users) {
+      updateGroupMarker(user);
+    }
+  }
+
+  void _showClusterMembersSheet(List<LocationData> users) {
+    Get.bottomSheet(
+      Container(
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 42,
+              height: 5,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(100),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              '${users.length} Members',
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: Colors.black,
+              ),
+            ),
+            const SizedBox(height: 12),
+            ConstrainedBox(
+              constraints: BoxConstraints(maxHeight: Get.height * 0.45),
+              child: ListView.separated(
+                shrinkWrap: true,
+                itemCount: users.length,
+                separatorBuilder: (_, __) => const Divider(height: 1),
+                itemBuilder: (context, index) {
+                  final user = users[index];
+                  final imageUrl = user.profileImage?.toString() ?? '';
+                  bool isOnline = false;
+
+                  if (user.lastSeen != null && user.lastSeen!.isNotEmpty) {
+                    try {
+                      isOnline = Tracking()
+                          .getTimeAgo(DateTime.parse(user.lastSeen!))
+                          .toLowerCase() ==
+                          "just now";
+                    } catch (_) {
+                      isOnline = false;
+                    }
+                  }
+
+                  return ListTile(
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    leading: Stack(
+                      children: [
+                        CircleAvatar(
+                          radius: 24,
+                          backgroundColor: Colors.grey.shade200,
+                          backgroundImage: imageUrl.isNotEmpty
+                              ? NetworkImage(ConstRes.aImageBaseUrl + imageUrl)
+                              : null,
+                          child: imageUrl.isEmpty
+                              ? const Icon(Icons.person, color: Colors.grey)
+                              : null,
+                        ),
+                        Positioned(
+                          bottom: 0,
+                          right: 0,
+                          child: Container(
+                            width: 12,
+                            height: 12,
+                            decoration: BoxDecoration(
+                              color: isOnline ? Colors.green : Colors.red,
+                              shape: BoxShape.circle,
+                              border: Border.all(color: Colors.white, width: 2),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    title: Text(
+                      user.name?.toString() ?? 'Unknown',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 15,
+                      ),
+                    ),
+                    subtitle: Text(
+                      isOnline
+                          ? 'Online'
+                          : user.lastSeen != null
+                          ? Tracking().getTimeAgo(
+                        DateTime.parse(user.lastSeen!),
+                      )
+                          : 'Offline',
+                      style: TextStyle(
+                        color: isOnline ? Colors.green : Colors.grey,
+                        fontSize: 12,
+                      ),
+                    ),
+                    onTap: () async {
+                      Get.back();
+
+                      await Future.delayed(const Duration(milliseconds: 350));
+                      if (user.latitude != null && user.longitude != null) {
+                        await mapController?.animateCamera(
+                          CameraUpdate.newLatLngZoom(
+                            LatLng(user.latitude!, user.longitude!),
+                            20.0,
+                          ),
+                        );
+                      }
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+    );
   }
 }

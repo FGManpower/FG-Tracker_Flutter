@@ -4,6 +4,8 @@ import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Data/Services/DocumentService.dart';
 import 'package:fgtracker/app/Model/GetMessage.dart';
+import 'package:fgtracker/app/modules/Messages/Controller/GroupChatController.dart';
+import 'package:fgtracker/app/modules/Messages/Controller/MessageController.dart';
 import 'package:fgtracker/app/modules/Messages/widgets/videoThumbnailWidget.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:flutter/material.dart';
@@ -23,10 +25,13 @@ import 'message_Widgets.dart';
 class ChatBubble extends StatelessWidget {
   final MessageData message;
   final BuildContext context;
+  final MessageController controller;
 
   const ChatBubble({
     Key? key,
     required this.message,
+    required this.controller,
+
     required this.context,
   }) : super(key: key);
 
@@ -62,30 +67,54 @@ class ChatBubble extends StatelessWidget {
             bottomLeft: Radius.circular(16),
             bottomRight: Radius.circular(16),
           );
-
-    return Container(
+    return Obx(
+            () => Container(
       margin: EdgeInsets.symmetric(vertical: 6.h),
       child: Column(
         crossAxisAlignment:
             isSentByMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
         children: [
-          Container(
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
             constraints: BoxConstraints(
               maxWidth: MediaQuery.of(context).size.width * 0.75,
             ),
-            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+            padding: EdgeInsets.symmetric(
+              horizontal: 12.w,
+              vertical: 10.h,
+            ),
             decoration: BoxDecoration(
-              gradient: bgColor,
+              gradient: controller.highlightedMessageId.value == message.id
+                  ? LinearGradient(
+                colors: [
+                  Colors.yellow.withOpacity(.35),
+                  Colors.yellow.withOpacity(.20),
+                ],
+              )
+                  : bgColor,
               borderRadius: borderRadius,
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.05),
                   blurRadius: 4,
                   offset: const Offset(2, 2),
-                )
+                ),
               ],
             ),
-            child: _buildMessageContent(message, textColor),
+            // child: _buildMessageContent(message, textColor),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildReplyPreview(
+                  message,
+                  isSentByMe,
+                ),
+                _buildMessageContent(
+                  message,
+                  textColor,
+                ),
+              ],
+            ),
           ),
           SizedBox(height: 4.h),
           Padding(
@@ -121,6 +150,7 @@ class ChatBubble extends StatelessWidget {
           ),
         ],
       ),
+            ),
     );
   }
 
@@ -333,6 +363,84 @@ class ChatBubble extends StatelessWidget {
       );
     }
   }
+  Widget _buildReplyPreview(
+      MessageData message,
+      bool isSentByMe,
+      ) {
+    if (message.replyId == null) {
+      return const SizedBox.shrink();
+    }
+
+    String preview = message.replyMessage?.toString() ?? "";
+
+    switch (message.replyType) {
+      case "image":
+        preview = "📷 Photo";
+        break;
+
+      case "video":
+        preview = "🎥 Video";
+        break;
+
+      case "audio":
+        preview = "🎤 Voice message";
+        break;
+
+      case "document":
+        preview = "📄 Document";
+        break;
+    }
+
+    return GestureDetector(
+        onTap: () {
+          if (message.replyId != null) {
+            controller.scrollToMessage(message.replyId!);
+          }
+        },
+        child: Container(
+      width: double.infinity,
+      margin: EdgeInsets.only(bottom: 8.h),
+      padding: EdgeInsets.all(8.w),
+      decoration: BoxDecoration(
+        color: isSentByMe
+            ? Colors.white.withOpacity(.15)
+            : Colors.grey.shade200,
+        borderRadius: BorderRadius.circular(8.r),
+        border: Border(
+          left: BorderSide(
+            color: Colors.green,
+            width: 4,
+          ),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            message.replySenderName?.toString() ?? "",
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 11.sp,
+              color: isSentByMe ? Colors.white : Colors.green,
+            ),
+          ),
+          SizedBox(height: 2.h),
+          Text(
+            preview,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: 11.sp,
+              color: isSentByMe
+                  ? Colors.white70
+                  : Colors.black54,
+            ),
+          ),
+        ],
+      ),
+        ),
+    );
+  }
 }
 
 class GroupChatBubble extends StatelessWidget {
@@ -341,10 +449,13 @@ class GroupChatBubble extends StatelessWidget {
   final bool isGroup;
   final int? groupId;
   final String? groupName;
+  final GroupMessageController controller;
 
   const GroupChatBubble({
     Key? key,
     required this.message,
+    required this.controller,
+
     required this.context,
     this.isGroup = false,
     this.groupId,
@@ -387,9 +498,10 @@ class GroupChatBubble extends StatelessWidget {
             bottomRight: Radius.circular(16),
           );
 
-    return Container(
-      margin: EdgeInsets.symmetric(vertical: 6.h),
-      child: Row(
+    return Obx(
+            () => Container(
+          margin: EdgeInsets.symmetric(vertical: 6.h),
+          child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment:
             isSentByMe ? MainAxisAlignment.end : MainAxisAlignment.start,
@@ -494,7 +606,8 @@ class GroupChatBubble extends StatelessWidget {
                       ],
                     ),
                   ),
-                Container(
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
                   constraints: BoxConstraints(
                     maxWidth: MediaQuery.of(context).size.width * 0.72,
                   ),
@@ -503,19 +616,32 @@ class GroupChatBubble extends StatelessWidget {
                     vertical: 10.h,
                   ),
                   decoration: BoxDecoration(
-                    gradient: bgColor,
+                    gradient: controller.highlightedMessageId.value == message.id
+                        ? LinearGradient(
+                      colors: [
+                        Colors.yellow.withOpacity(.35),
+                        Colors.yellow.withOpacity(.20),
+                      ],
+                    )
+                        : bgColor,
                     borderRadius: borderRadius,
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withOpacity(0.05),
                         blurRadius: 4,
                         offset: const Offset(2, 2),
-                      )
+                      ),
                     ],
                   ),
-                  child: _buildMessageContent(
-                    message,
-                    textColor,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildReplyPreview(message, isSentByMe),
+                      _buildMessageContent(
+                        message,
+                        textColor,
+                      ),
+                    ],
                   ),
                 ),
                 SizedBox(height: 4.h),
@@ -581,9 +707,81 @@ class GroupChatBubble extends StatelessWidget {
             ),
         ],
       ),
+            ),
     );
   }
+  Widget _buildReplyPreview(MessageData message, bool isSentByMe) {
+    if (message.replyId == null) {
+      return const SizedBox.shrink();
+    }
 
+    String preview = message.replyMessage ?? "";
+
+    switch (message.replyType) {
+      case "image":
+        preview = "📷 Photo";
+        break;
+      case "video":
+        preview = "🎥 Video";
+        break;
+      case "audio":
+        preview = "🎤 Voice message";
+        break;
+      case "document":
+        preview = "📄 Document";
+        break;
+    }
+
+    return GestureDetector(
+        onTap: () {
+          if (message.replyId != null) {
+            controller.scrollToMessage(message.replyId!);
+          }
+        },
+        child: Container(
+      width: double.infinity,
+      margin: EdgeInsets.only(bottom: 8.h),
+      padding: EdgeInsets.all(8.w),
+      decoration: BoxDecoration(
+        color: isSentByMe
+            ? Colors.white.withOpacity(.15)
+            : Colors.grey.shade200,
+        borderRadius: BorderRadius.circular(10.r),
+        border: Border(
+          left: BorderSide(
+            color: ToggleThemeData.darkPurple,
+            width: 3,
+          ),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            message.replySenderName ?? "",
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 11.sp,
+              color: isSentByMe ? Colors.white : Colors.black,
+            ),
+          ),
+          SizedBox(height: 2.h),
+          Text(
+            preview,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: 11.sp,
+              color: isSentByMe
+                  ? Colors.white70
+                  : Colors.grey.shade700,
+            ),
+          ),
+        ],
+      ),
+        ),
+    );
+  }
   Widget _buildMessageContent(
     MessageData message,
     Color textColor,

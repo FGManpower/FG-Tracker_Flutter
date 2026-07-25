@@ -411,7 +411,8 @@ class DialogBox {
     String? groupName,
     required bool isGroupChat,
   }) {
-    bool isOnline = status == true || (lastSeen?.toLowerCase() == "just now");
+    bool isOnline =
+        lastSeen != null && lastSeen.toLowerCase() == "just now";
 
     showModalBottomSheet(
       context: Get.context!,
@@ -517,8 +518,7 @@ class DialogBox {
                           name: name,
                           profileImage: imageUrl,
                           lastSeen: lastSeen,
-                          isOnline: status,
-                        );
+                          isOnline: isOnline,                        );
 
                         Navigator.pop(ctx);
 

@@ -18,6 +18,8 @@ class CommonChatAppBar extends StatelessWidget implements PreferredSizeWidget {
   final VoidCallback? onVideoTap;
   final VoidCallback? onGroupExit;
   final VoidCallback? onDeleteGroup;
+  final bool isOnline;
+  final String? lastSeen;
 
   CommonChatAppBar(
       {Key? key,
@@ -31,6 +33,8 @@ class CommonChatAppBar extends StatelessWidget implements PreferredSizeWidget {
       this.onDeleteMember,
       required this.groupName,
       this.onGroupExit,
+        required this.isOnline,
+        this.lastSeen,
       this.onDeleteGroup})
       : super(key: key);
 
@@ -79,9 +83,12 @@ class CommonChatAppBar extends StatelessWidget implements PreferredSizeWidget {
                         height: 12.w,
                         width: 12.w,
                         decoration: BoxDecoration(
-                          color: Colors.green,
+                          color: isOnline ? Colors.green : Colors.red,
                           shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white, width: 1.5.w),
+                          border: Border.all(
+                            color: Colors.white,
+                            width: 1.5.w,
+                          ),
                         ),
                       ),
                     ),

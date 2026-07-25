@@ -58,6 +58,11 @@ class SocketMessageService extends GetxService {
     String messageType = "text",
     String? caption,
 
+    dynamic replyId,
+    String? replyMessage,
+    String? replyType,
+    String? replySender,
+
   }) {
     final msg = {
       'senderId': Global.storageServices.get(PrefConst.userId),
@@ -66,8 +71,13 @@ class SocketMessageService extends GetxService {
       'content': content,
       'messageType': messageType,
       'caption': caption,
+      'replyId': replyId,
+      'replyMessage': replyMessage,
+      'replyType': replyType,
+      'replySender': replySender,
 
     };
+    print("SEND PAYLOAD =====> $msg");
     _socket?.emit("send_message", msg);
   }
 
@@ -134,6 +144,11 @@ class SocketMessageService extends GetxService {
     required String content,
     required String messageType,
     String? caption,
+
+    dynamic replyId,
+    String? replyMessage,
+    String? replyType,
+    String? replySender,
   }) {
     socket.emit(
       "send_group_message",
@@ -143,7 +158,10 @@ class SocketMessageService extends GetxService {
         "content": content,
         "messageType": messageType,
         "caption": caption,
-
+        "replyId": replyId,
+        "replyMessage": replyMessage,
+        "replyType": replyType,
+        "replySender": replySender,
       },
     );
   }
