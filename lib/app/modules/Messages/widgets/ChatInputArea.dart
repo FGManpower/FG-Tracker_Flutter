@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:fgtracker/app/Core/constant/BottomSheet/ChatBottomSheet.dart';
-import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/util/file_helper.dart';
 import 'package:fgtracker/app/Data/Services/file_services.dart';
 import 'package:fgtracker/app/Model/LocationDataRes.dart';
@@ -25,7 +24,6 @@ class ChatInputArea extends StatelessWidget {
   final RxString documentPath;
   final RxBool isSending;
   final TextEditingController textController;
-  final ScrollController scrollController;
   final VoidCallback onSend;
   void Function(String)? onVoiceSend;
 
@@ -47,7 +45,6 @@ class ChatInputArea extends StatelessWidget {
       required this.videoPath,
       required this.isSending,
       required this.textController,
-      required this.scrollController,
       required this.onSend,
       required this.onImageSelected,
       required this.onvideoSelected,
@@ -67,8 +64,7 @@ class ChatInputArea extends StatelessWidget {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Obx(() {
-        WidgetsBinding.instance.addPostFrameCallback((_) =>
-            scrollController.jumpTo(scrollController.position.maxScrollExtent));
+
 
         final isMessageNotEmpty = messageText.value.trim().isNotEmpty;
         final isImageSelected = imagePath.value.isNotEmpty;

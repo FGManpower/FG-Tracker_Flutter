@@ -1,7 +1,8 @@
+import 'dart:async';
 import 'dart:developer';
 import 'dart:io';
 import 'dart:typed_data';
-
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:fgtracker/app/Core/util/DateTime_Format.dart';
 import 'package:fgtracker/app/Model/LocationDataRes.dart';
 import 'package:fgtracker/app/modules/Messages/widgets/videoThumbnailWidget.dart';
@@ -26,9 +27,28 @@ import 'Socket_Message_Services.dart';
 class GroupMessageController extends GetxController {
   final socketService = SocketMessageService.instance;
 
-  final ScrollController scrollController = ScrollController();
+  final ItemScrollController itemScrollController =
+  ItemScrollController();
 
-  RxList<MessageData> messageData = <MessageData>[].obs;
+  final ItemPositionsListener itemPositionsListener =
+  ItemPositionsListener.create();
+  final List<MessageData> _messages = [];
+
+  final StreamController<List<MessageData>> _messageStreamController =
+  StreamController<List<MessageData>>.broadcast();
+
+  Stream<List<MessageData>> get messageStream =>
+      _messageStreamController.stream;
+
+  List<MessageData> get messageData => _messages;
+
+  void updateMessageStream() {
+    if (_messageStreamController.isClosed) return;
+
+    _messageStreamController.add(
+      List.unmodifiable(_messages),
+    );
+  }
   final Rx<Uint8List?> videoThumbnail = Rx<Uint8List?>(null);
   final RxString videoDuration = ''.obs;
   RxList<LocationData> groupMembers = <LocationData>[].obs;
@@ -46,18 +66,27 @@ class GroupMessageController extends GetxController {
   Rx<MessageData?> replyMessage = Rx<MessageData?>(null);
   RxInt highlightedMessageId = (-1).obs;
 
-  Map<int, GlobalKey> messageKeys = {};
 
   Future<void> scrollToMessage(int messageId) async {
+    final index =
+    _messages.indexWhere((e) => e.id == messageId);
+
+    debugPrint("========== Reply Scroll ==========");
+    debugPrint("ReplyId: $messageId");
+    debugPrint("Found Index: $index");
+    debugPrint("Total Messages: ${_messages.length}");
+
+    if (index != -1) {
+      debugPrint("Message at Index: ${_messages[index].id}");
+    }
+
+    if (index == -1) return;
+
     highlightedMessageId.value = messageId;
 
-    await Future.delayed(const Duration(milliseconds: 100));
-
-    final key = messageKeys[messageId];
-
-    if (key?.currentContext != null) {
-      await Scrollable.ensureVisible(
-        key!.currentContext!,
+    if (itemScrollController.isAttached) {
+      await itemScrollController.scrollTo(
+        index: index,
         duration: const Duration(milliseconds: 400),
         curve: Curves.easeInOut,
       );
@@ -65,9 +94,7 @@ class GroupMessageController extends GetxController {
 
     await Future.delayed(const Duration(seconds: 2));
 
-    if (highlightedMessageId.value == messageId) {
-      highlightedMessageId.value = -1;
-    }
+    highlightedMessageId.value = -1;
   }
 
   void setReply(MessageData message) {
@@ -116,10 +143,11 @@ class GroupMessageController extends GetxController {
 
     socketService.receiveGroupMessage(
       callback: (message) {
-        messageData.add(
+        _messages.add(
           MessageData.fromJson(message),
         );
 
+        updateMessageStream();
         scrollToBottom();
       },
     );
@@ -298,18 +326,24 @@ print("TEXT=======$text");
   Future<void> getGroupMessages() async {
     isLoading.value = true;
 
-    messageData.value = List.generate(
-      8,
-          (index) => MessageData(
-        senderId: index.isEven ? 1 : 2,
-        senderName: "Loading",
-        messageType: "text",
-        content: "Loading message",
-        timestamp: DateTime.now().toIso8601String(),
-        seenCount: 0,
-        senderImage: "",
-      ),
-    );
+    _messages
+      ..clear()
+      ..addAll(
+        List.generate(
+          8,
+              (index) => MessageData(
+            senderId: index.isEven ? 1 : 2,
+            senderName: "Loading",
+            messageType: "text",
+            content: "Loading message",
+            timestamp: DateTime.now().toIso8601String(),
+            seenCount: 0,
+            senderImage: "",
+          ),
+        ),
+      );
+
+    updateMessageStream();
 
     try {
       var result = await MessageRepo.groupMessageHistory(
@@ -317,15 +351,20 @@ print("TEXT=======$text");
       );
 
       if (result.status == true) {
-        messageData.value = result.messageData ?? [];
+        _messages
+          ..clear()
+          ..addAll(result.messageData ?? []);
+
+        updateMessageStream();
         scrollToBottom();
       } else {
         CommonDialog.errorMessage(result.message);
-        messageData.clear();
+        _messages.clear();
+        updateMessageStream();
       }
     } catch (e) {
       log("GROUP HISTORY ERROR => $e");
-      messageData.clear();
+      _messages.clear();
     } finally {
       isLoading.value = false;
     }
@@ -359,22 +398,31 @@ print("TEXT=======$text");
   }
 
   void scrollToBottom() {
-    Future.delayed(
-      const Duration(
-        milliseconds: 100,
-      ),
-      () {
-        if (scrollController.hasClients) {
-          scrollController.animateTo(
-            scrollController.position.maxScrollExtent,
-            duration: const Duration(
-              milliseconds: 300,
-            ),
-            curve: Curves.easeOut,
-          );
-        }
-      },
-    );
+    Future.delayed(const Duration(milliseconds: 100), () {
+      if (_messages.isEmpty) return;
+
+      if (itemScrollController.isAttached) {
+        itemScrollController.scrollTo(
+          index: _messages.length - 1,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    });
+  }
+
+  bool isUserAtBottom() {
+    if (_messages.isEmpty) return true;
+
+    final positions = itemPositionsListener.itemPositions.value;
+
+    if (positions.isEmpty) return false;
+
+    final maxVisible = positions
+        .map((e) => e.index)
+        .reduce((a, b) => a > b ? a : b);
+
+    return maxVisible >= _messages.length - 2;
   }
 
   Future<void> generateVideoPreview(
@@ -407,7 +455,7 @@ print("TEXT=======$text");
   void handleBackPressed(BuildContext context) {
     socketService.disconnectSocket();
 
-    messageData.clear();
+    _messages.clear();
 
     messageText.value = "";
 
@@ -497,7 +545,6 @@ print("TEXT=======$text");
 
     textController.text = newText;
 
-    // Fixed offset calculation with explicit int casting
     final newCursorOffset = start + replacement.length;
 
     textController.selection = TextSelection.collapsed(
@@ -517,6 +564,7 @@ print("TEXT=======$text");
   @override
   void onClose() {
     focusNode.dispose();
+    _messageStreamController.close();
     super.onClose();
   }
 }

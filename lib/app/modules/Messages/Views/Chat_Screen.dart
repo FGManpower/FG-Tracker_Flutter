@@ -167,7 +167,6 @@ class ChatScreen extends GetView<MessageController> {
               Expanded(
                 child: ChatList(
                   controller: controller,
-                  scrollController: controller.scrollController,
                 ),
               ),
               Obx(() {
@@ -228,7 +227,6 @@ class ChatScreen extends GetView<MessageController> {
                 documentPath: controller.documentPath,
                 isSending: controller.isSending,
                 textController: _controller,
-                scrollController: controller.scrollController,
                 videoDuration: controller.videoDuration,
                 videoThumbnail: controller.videoThumbnail,
                 onSend: _sendMessage,
@@ -243,9 +241,7 @@ class ChatScreen extends GetView<MessageController> {
                 onvideoSelected: (path) async {
                   if (Utility.isNotNullEmptyOrFalse(path)) {
                     controller.videoPath.value = path;
-                    await controller.generateVideoPreview(
-                      path,
-                    );
+                    await controller.generateVideoPreview(path);
                     controller.update();
                   }
                 },

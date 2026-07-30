@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:developer';
 import 'dart:io';
 import 'dart:typed_data';
@@ -19,12 +20,30 @@ import 'package:video_player/video_player.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
 import '../../../routes/app_pages.dart';
 import 'Socket_Message_Services.dart';
-
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 class MessageController extends GetxController with WidgetsBindingObserver {
   final socketService = SocketMessageService.instance;
-  final ScrollController scrollController = ScrollController();
+  final ItemScrollController itemScrollController =
+  ItemScrollController();
 
-  RxList<MessageData> messageData = <MessageData>[].obs;
+  final ItemPositionsListener itemPositionsListener =
+  ItemPositionsListener.create();
+  final List<MessageData> _messages = [];
+
+  final StreamController<List<MessageData>> _messageStreamController =
+  StreamController<List<MessageData>>.broadcast();
+
+  Stream<List<MessageData>> get messageStream =>
+      _messageStreamController.stream;
+
+  void updateMessageStream() {
+    if (_messageStreamController.isClosed) return;
+
+    _messageStreamController.add(
+      List.unmodifiable(_messages),
+    );
+  }
+  List<MessageData> get messageData => _messages;
   RxList<File> imagePaths = <File>[].obs;
   RxString videoPath = "".obs;
   RxString documentPath = "".obs;
@@ -41,7 +60,6 @@ class MessageController extends GetxController with WidgetsBindingObserver {
   Rx<MessageData?> replyMessage = Rx<MessageData?>(null);
   RxInt highlightedMessageId = (-1).obs;
 
-  Map<int, GlobalKey> messageKeys = {};
 
   @override
   void onInit() {
@@ -54,6 +72,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
   @override
   void onClose() {
     WidgetsBinding.instance.removeObserver(this);
+    _messageStreamController.close();
     super.onClose();
   }
 
@@ -79,31 +98,21 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     }
   }
   Future<void> scrollToMessage(int messageId) async {
-    debugPrint("========== Scroll ==========");
-    debugPrint("ReplyId: $messageId");
+
+    final index = _messages.indexWhere((e) => e.id == messageId);
+
+    if (index == -1) return;
 
     highlightedMessageId.value = messageId;
 
-    await Future.delayed(const Duration(milliseconds: 100));
-
-    final key = messageKeys[messageId];
-
-    debugPrint("Key exists: ${key != null}");
-    debugPrint("Context: ${key?.currentContext}");
-
-    if (key?.currentContext != null) {
-      debugPrint("Scrollable.ensureVisible called");
-
-      await Scrollable.ensureVisible(
-        key!.currentContext!,
-        duration: const Duration(milliseconds: 400),
-        curve: Curves.easeInOut,
-      );
-    } else {
-      debugPrint("Context is NULL");
-    }
+    await itemScrollController.scrollTo(
+      index: index,
+      duration: const Duration(milliseconds: 400),
+      curve: Curves.easeInOut,
+    );
 
     await Future.delayed(const Duration(seconds: 2));
+
     highlightedMessageId.value = -1;
   }
   void _initializeChat() {
@@ -129,7 +138,8 @@ class MessageController extends GetxController with WidgetsBindingObserver {
       groupId: groupId,
       callback: (message) {
         print(message);
-        messageData.add(MessageData.fromJson(message));
+        _messages.add(MessageData.fromJson(message));
+        updateMessageStream();
         scrollToBottom();
 
         // if (isUserAtBottom()) {
@@ -146,24 +156,30 @@ class MessageController extends GetxController with WidgetsBindingObserver {
       callback: (data) {
         final List updatedIds = data["messageIds"] ?? [];
 
-        for (var msg in messageData) {
+        for (var msg in _messages) {
           if (updatedIds.contains(msg.id)) {
             msg.seenCount = (msg.seenCount ?? 0) + 1;
           }
         }
 
-        messageData.refresh();
+        updateMessageStream();
       },
     );
 
     getMessageHistory(userId, groupId);
   }
-
   bool isUserAtBottom() {
-    if (!scrollController.hasClients) return false;
+    if (_messages.isEmpty) return true;
 
-    return scrollController.position.pixels >=
-        scrollController.position.maxScrollExtent - 50;
+    final positions = itemPositionsListener.itemPositions.value;
+
+    if (positions.isEmpty) return false;
+
+    final maxVisible = positions
+        .map((e) => e.index)
+        .reduce((a, b) => a > b ? a : b);
+
+    return maxVisible >= _messages.length - 2;
   }
 
   Future<void> sendMessage(
@@ -320,7 +336,11 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
       if (result.status == true) {
         // socketService.markSeen(memberData.userId.toString(), groupId);
-        messageData.value = result.messageData!;
+        _messages
+          ..clear()
+          ..addAll(result.messageData!);
+
+        updateMessageStream();
         isCreator.value = result.isCreator!;
         scrollToBottom();
       } else {
@@ -341,9 +361,10 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
   void scrollToBottom() {
     Future.delayed(const Duration(milliseconds: 100), () {
-      if (scrollController.hasClients) {
-        scrollController.animateTo(
-          scrollController.position.maxScrollExtent,
+      if (_messages.isEmpty) return;
+      if (itemScrollController.isAttached) {
+        itemScrollController.scrollTo(
+          index: _messages.length - 1,
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeOut,
         );
@@ -357,7 +378,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     socketService.leaveUserFromGroup(userId, groupID);
     socketService.disconnectSocket();
 
-    messageData.clear();
+    _messages.clear();
     messageText.value = "";
     imagePaths.clear();
     isSending.value = false;

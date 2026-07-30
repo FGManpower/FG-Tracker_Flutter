@@ -110,7 +110,6 @@ class GroupChatScreen extends GetView<GroupMessageController> {
                   enabled: controller.isLoading.value,
                   child: GroupChatList(
                     controller: controller,
-                    scrollController: controller.scrollController,
                   ),
                 ),
               ),
@@ -195,7 +194,6 @@ class GroupChatScreen extends GetView<GroupMessageController> {
               documentPath: controller.documentPath,
               isSending: controller.isSending,
               textController: textController,
-              scrollController: controller.scrollController,
               videoDuration: controller.videoDuration,
               videoThumbnail: controller.videoThumbnail,
               groupMembers: controller.groupMembers,
