@@ -1,448 +1,3 @@
-// import 'dart:async';
-// import 'dart:developer';
-//
-// import 'package:fgtracker/app/Core/constant/pref_res.dart';
-// import 'package:fgtracker/app/Core/values/global.dart';
-// import 'package:fgtracker/app/Core/values/utility.dart';
-// import 'package:fgtracker/app/modules/Track/Controller/TrackController.dart';
-// import 'package:fgtracker/app/routes/app_pages.dart';
-//
-// import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
-// import 'package:get/get.dart' hide navigator;
-// import 'package:flutter_webrtc/flutter_webrtc.dart';
-// import 'package:wakelock_plus/wakelock_plus.dart';
-// import '../../../../gen/assets.gen.dart';
-// import '../../../Core/global/launchedFromCall.dart';
-// import '../../../Data/Services/SignallingService.dart';
-//
-// class CallController extends GetxController {
-//   final socket = SignallingService.instance.socket;
-//
-//   final localRenderer = RTCVideoRenderer();
-//   final remoteRenderer = RTCVideoRenderer();
-//
-//   RTCPeerConnection? peer;
-//   MediaStream? localStream;
-//
-//   List<RTCIceCandidate> iceCandidates = [];
-//   RxString callStatus = "Calling".obs;
-//   bool isAudioOn = true;
-//   bool isVideoOn = true;
-//   bool isFrontCamera = true;
-//   var callId;
-//   late String callerId;
-//   late String remoteUserId;
-//   late bool is_video;
-//   dynamic offer;
-//   bool isSpeakerOn = false;
-//
-//   final args = Get.arguments;
-//   Timer? callTimer;
-//   int callDurationSeconds = 0;
-//
-//   Timer? missedCallTimer;
-//   var missCallDurationSeconds = 40.obs;
-//   @override
-//   void onInit() {
-//     callerId = args["callerId"];
-//     remoteUserId = args["remoteUserId"];
-//     offer = args["offer"];
-//     is_video = args["is_video"];
-//
-//     if (args["callId"] != null) {
-//       callId = args["callId"];
-//     }
-//     localRenderer.initialize();
-//     remoteRenderer.initialize();
-//
-//     _setupPeer();
-//     _listenForCallEvents();
-//
-//     if (args["callType"] == "outGoing") {
-//       playSound();
-//     }
-//     WakelockPlus.enable();
-//     try {
-//       TrackingController.instance.initializeLocation();
-//     } catch (e) {
-//       log("==============CallLocationException======${e.toString()}");
-//     }
-//     super.onInit();
-//   }
-//
-//   void _listenForCallEvents() {
-//     socket?.off("callRejected");
-//
-//     socket!.on("newCall", (data) {
-//       socket?.emit("CallingStatus", {
-//         "callId": data['callId'].toString(),
-//         "remoteUserId": int.parse(data['callerId']),
-//         "callingStatus": "Ringing",
-//       });
-//     });
-//
-//     socket!.on("callRejected", (data) async {
-//       callTimer?.cancel();
-//       callTimer = null;
-//       missedCallTimer?.cancel();
-//       missedCallTimer = null;
-//
-//       if (CallSessionState.sessionId != null) {
-//         callEnded(CallSessionState.sessionId.toString());
-//       }
-//
-//       resetPeer();
-//       Get.back();
-//     });
-//
-//     socket!.on("callEnded", (data) async {
-//       log("======================CallEnded==========$data");
-//       callTimer?.cancel();
-//       callTimer = null;
-//
-//       resetPeer();
-//       if (CallSessionState.sessionId != null) {
-//         callEnded(CallSessionState.sessionId.toString());
-//       }
-//
-//       if (args["callType"] == "outGoing") {
-//         stopSound();
-//       }
-//       missedCallTimer?.cancel();
-//       missedCallTimer = null;
-//       // await WakelockPlus.disable();
-//       if (Get.currentRoute != Routes.Home_Screen) {
-//         missCallDurationSeconds.value=0;
-//         Get.offAllNamed(Routes.Home_Screen);
-//       }
-//     });
-//
-//     socket!.on("missedCall", (data) async {
-//       print("==========MissedCallCalled=======");
-//       callTimer?.cancel();
-//       callTimer = null;
-//       if (CallSessionState.sessionId != null) {
-//         callEnded(CallSessionState.sessionId.toString());
-//       }
-//
-//       resetPeer();
-//       Get.back();
-//     });
-//
-//     socket?.on("callStatus", (data) {
-//       log("CALL STATUS: $data");
-//
-//       if (data['status'] != null) {
-//         callStatus.value = data['status'];
-//       }
-//     });
-//
-//     socket?.on("callCreated", (data) {
-//       print("===========CallCreatedResponseData======${data}");
-//       callId = data['callId'];
-//       startMissedCallTimer();
-//     });
-//   }
-//
-//   void resetPeer() {
-//     try {
-//       peer?.close();
-//       localStream?.dispose();
-//     } catch (_) {}
-//     peer = null;
-//     localStream = null;
-//     // iceCandidates.clear();
-//   }
-//
-//   void safeAddCandidate(dynamic data) {
-//     if (peer == null) return;
-//     final c = RTCIceCandidate(
-//       data["iceCandidate"]["candidate"],
-//       data["iceCandidate"]["id"],
-//       data["iceCandidate"]["label"],
-//     );
-//     peer!.addCandidate(c);
-//   }
-//
-//   Future<void> _setupPeer() async {
-//     resetPeer();
-//
-//     socket!.off("IceCandidate");
-//     socket!.off("callAnswered");
-//
-//     peer = await createPeerConnection({
-//       'iceServers': [
-//         {
-//           'urls': ['stun:stun.l.google.com:19302'],
-//         },
-//         {
-//           'urls': [
-//             'turn:89.116.23.2:3478?transport=udp',
-//             'turn:89.116.23.2:3478?transport=tcp',
-//             'turns:89.116.23.2:443?transport=tcp',
-//           ],
-//           'username': 'fgtracker',
-//           'credential': 'FGM_Tracker@2025',
-//         }
-//       ],
-//       'iceTransportPolicy': 'all',
-//     });
-//
-//     peer!.onTrack = (event) {
-//       remoteRenderer.srcObject = event.streams[0];
-//       update();
-//       missedCallTimer?.cancel();
-//       missedCallTimer = null;
-//       startCallTimer();
-//     };
-//
-//     localStream = await navigator.mediaDevices.getUserMedia({
-//       'audio': true,
-//       'video': is_video == true
-//           ? {'facingMode': isFrontCamera ? 'user' : 'environment'}
-//           : false,
-//     });
-//     await enableSpeaker();
-//     for (var t in localStream!.getTracks()) {
-//       peer!.addTrack(t, localStream!);
-//     }
-//
-//     localRenderer.srcObject = localStream;
-//     update();
-//
-//     socket!.on("IceCandidate", (data) {
-//       if (peer == null) {
-//         Future.delayed(const Duration(milliseconds: 300), () {
-//           if (peer != null) safeAddCandidate(data);
-//         });
-//         return;
-//       }
-//       safeAddCandidate(data);
-//     });
-//
-//     if (offer != null) {
-//       await peer!.setRemoteDescription(
-//         RTCSessionDescription(offer["sdp"], offer["type"]),
-//       );
-//       final answer = await peer!.createAnswer();
-//       await peer!.setLocalDescription(answer);
-//
-//       peer!.onIceCandidate = (c) {
-//         if (c.candidate == null) return;
-//         socket!.emit("IceCandidate", {
-//           "remoteUserId": callerId,
-//           "iceCandidate": {
-//             "id": c.sdpMid,
-//             "label": c.sdpMLineIndex,
-//             "candidate": c.candidate,
-//           },
-//         });
-//       };
-//
-//       socket!.emit("answerCall", {
-//         "callId": callId,
-//         "callerId": callerId,
-//         "sdpAnswer": answer.toMap(),
-//       });
-//     } else {
-//       peer!.onIceCandidate = (c) => iceCandidates.add(c);
-//
-//       socket!.on("callAnswered", (data) async {
-//         await peer!.setRemoteDescription(
-//           RTCSessionDescription(
-//             data["sdpAnswer"]["sdp"],
-//             data["sdpAnswer"]["type"],
-//           ),
-//         );
-//
-//         for (var c in iceCandidates) {
-//           if (c.candidate == null) continue;
-//           socket!.emit("IceCandidate", {
-//             "remoteUserId": remoteUserId,
-//             "iceCandidate": {
-//               "id": c.sdpMid,
-//               "label": c.sdpMLineIndex,
-//               "candidate": c.candidate,
-//             },
-//           });
-//         }
-//         iceCandidates.clear();
-//
-//         peer!.onIceCandidate = (c) {
-//           if (c.candidate == null) return;
-//           socket!.emit("IceCandidate", {
-//             "remoteUserId": remoteUserId,
-//             "iceCandidate": {
-//               "id": c.sdpMid,
-//               "label": c.sdpMLineIndex,
-//               "candidate": c.candidate,
-//             },
-//           });
-//         };
-//       });
-//       final sdpOffer = await peer!.createOffer();
-//       await peer!.setLocalDescription(sdpOffer);
-//
-//       socket!.emit("makeCall", {
-//         "remoteUserId": remoteUserId,
-//         "sdpOffer": sdpOffer.toMap(),
-//         "is_video": is_video,
-//         "callerId": Global.storageServices.get(PrefConst.userId),
-//
-//         // "caller_name":  args["caller_name"],
-//         // "caller_profile_image":args["caller_profile_image"] ?? MyAppTheme.notFoundImg,
-//       });
-//     }
-//   }
-//
-//   Future<void> endCall({String? type}) async {
-//     callTimer?.cancel();
-//     missedCallTimer?.cancel();
-//     callTimer = null;
-//
-//     final myUserId = Global.storageServices.get(PrefConst.userId).toString();
-//     final targetUser =
-//         (myUserId == callerId.toString()) ? remoteUserId : callerId;
-//     var param = {
-//       "callId": callId,
-//       "remoteUserId": targetUser.toString(),
-//     };
-//
-//     if (type == "missedCall") {
-//     } else {
-//       socket?.emit("endCall", param);
-//     }
-//
-//     resetPeer();
-//
-//     if (CallSessionState.sessionId != null) {
-//       callEnded(CallSessionState.sessionId.toString());
-//     }
-//
-//     if (args["callType"] == "outGoing") {
-//       stopSound();
-//     }
-//     await WakelockPlus.disable();
-//     if (Get.currentRoute != Routes.Home_Screen) {
-//       missCallDurationSeconds.value=0;
-//       Get.offAllNamed(Routes.Home_Screen);
-//     }
-//   }
-//
-//   void toggleMic() {
-//     isAudioOn = !isAudioOn;
-//     localStream?.getAudioTracks().forEach((t) => t.enabled = isAudioOn);
-//     update();
-//   }
-//
-//   void toggleCamera() {
-//     if (is_video == false) return;
-//     isVideoOn = !isVideoOn;
-//     localStream?.getVideoTracks().forEach((t) => t.enabled = isVideoOn);
-//     update();
-//   }
-//
-//   void switchCamera() {
-//     if (is_video == false) return;
-//     isFrontCamera = !isFrontCamera;
-//     localStream?.getVideoTracks().forEach((t) => t.switchCamera());
-//     update();
-//   }
-//
-//   Future<void> enableSpeaker() async {
-//     await Helper.setSpeakerphoneOn(true);
-//     isSpeakerOn = true;
-//     update();
-//   }
-//
-//   Future<void> toggleSpeaker() async {
-//     isSpeakerOn = !isSpeakerOn;
-//     await Helper.setSpeakerphoneOn(isSpeakerOn);
-//
-//     update();
-//   }
-//
-//   String get formattedDuration {
-//     final minutes = (callDurationSeconds ~/ 60).toString().padLeft(2, '0');
-//     final seconds = (callDurationSeconds % 60).toString().padLeft(2, '0');
-//     if (Utility.isNotNullEmptyOrFalse("$minutes:$seconds")) {
-//       if (args["callType"] == "outGoing") {
-//         stopSound();
-//       }
-//     }
-//     return "$minutes:$seconds";
-//   }
-//
-//   void startCallTimer() {
-//     if (callTimer != null) return;
-//
-//     callTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-//       callDurationSeconds++;
-//       update();
-//     });
-//   }
-//
-//   void startMissedCallTimer() {
-//     missedCallTimer?.cancel();
-//
-//     missedCallTimer = Timer.periodic(
-//       const Duration(seconds: 1),
-//       (timer) {
-//         missCallDurationSeconds.value--;
-//
-//         // update();
-//
-//         print("=============missCallDurationSeconds${missCallDurationSeconds.value}");
-//         if (missCallDurationSeconds.value == 0) {
-//           timer.cancel();
-//
-//           var param = {
-//             "callId": callId,
-//             "remoteUserId": remoteUserId,
-//             "sessionId": remoteUserId,
-//           };
-//           socket?.emit("missCall", param);
-//           log("=======MissedCallParam===$param");
-//
-//           endCall(type: "missedCall");
-//         }
-//       },
-//     );
-//   }
-//
-//   playSound() {
-//     FlutterRingtonePlayer().play(
-//       asAlarm: false,
-//       fromAsset: Assets.music.ringing,
-//       looping: true,
-//       volume: 1.0,
-//     );
-//   }
-//
-//   stopSound() {
-//     FlutterRingtonePlayer().stop();
-//   }
-//
-//   @override
-//   void onClose() {
-//     resetPeer();
-//     localRenderer.dispose();
-//     remoteRenderer.dispose();
-//     if (args["callType"] == "outGoing") {
-//       stopSound();
-//     }
-//     super.onClose();
-//   }
-//
-//   @override
-//   Future<void> dispose() async {
-//     super.dispose();
-//
-//     if (args["callType"] == "outGoing") {
-//       stopSound();
-//     }
-//   }
-// }
 import 'dart:async';
 import 'dart:developer';
 
@@ -475,12 +30,13 @@ class CallController extends GetxController {
   bool isAudioOn = true;
   bool isVideoOn = true;
   bool isFrontCamera = true;
-  var callId;
+  dynamic callId;
   late String callerId;
   late String remoteUserId;
   late bool is_video;
   dynamic offer;
   bool isSpeakerOn = false;
+  bool fromCallKit = false;
 
   final args = Get.arguments;
   Timer? callTimer;
@@ -491,14 +47,21 @@ class CallController extends GetxController {
 
   @override
   void onInit() {
-    callerId = args["callerId"];
-    remoteUserId = args["remoteUserId"];
+    callerId = args["callerId"]?.toString() ?? "";
+    remoteUserId = args["remoteUserId"]?.toString() ?? "";
     offer = args["offer"];
-    is_video = args["is_video"];
+    is_video = args["is_video"] == true;
+    fromCallKit = args["fromCallKit"] == true;
 
     if (args["callId"] != null) {
       callId = args["callId"];
     }
+
+    // If launched from CallKit and callId is missing, try sessionId
+    if (callId == null && args["sessionId"] != null) {
+      callId = args["sessionId"];
+    }
+
     localRenderer.initialize();
     remoteRenderer.initialize();
 
@@ -508,22 +71,77 @@ class CallController extends GetxController {
     if (args["callType"] == "outGoing") {
       playSound();
     }
+
     WakelockPlus.enable();
+
     try {
       TrackingController.instance.initializeLocation();
     } catch (e) {
       log("==============CallLocationException======${e.toString()}");
     }
+
     super.onInit();
   }
 
   void _listenForCallEvents() {
     socket?.off("callRejected");
+    socket?.off("callEnded");
+    socket?.off("missedCall");
+    socket?.off("callStatus");
+    socket?.off("callCreated");
+    socket?.off("newCall");
+    socket?.off("sdpOfferFromCaller"); // new event for CallKit
+
+    // When we accept from CallKit, we request the SDP offer
+    // The caller should reply with this event
+    socket?.on("sdpOfferFromCaller", (data) async {
+      log("====== Received SDP Offer from Caller (CallKit flow) ======");
+      log("Data: $data");
+
+      if (peer == null) return;
+
+      try {
+        final sdp = data["sdpOffer"] ?? data["offer"];
+        if (sdp == null) return;
+
+        offer = sdp;
+        callId = data["callId"] ?? callId;
+
+        await peer!.setRemoteDescription(
+          RTCSessionDescription(sdp["sdp"], sdp["type"]),
+        );
+
+        final answer = await peer!.createAnswer();
+        await peer!.setLocalDescription(answer);
+
+        peer!.onIceCandidate = (c) {
+          if (c.candidate == null) return;
+          socket!.emit("IceCandidate", {
+            "remoteUserId": callerId,
+            "iceCandidate": {
+              "id": c.sdpMid,
+              "label": c.sdpMLineIndex,
+              "candidate": c.candidate,
+            },
+          });
+        };
+
+        socket!.emit("answerCall", {
+          "callId": callId,
+          "callerId": callerId,
+          "sdpAnswer": answer.toMap(),
+        });
+
+        callStatus.value = "Connecting";
+      } catch (e) {
+        log("Error handling sdpOfferFromCaller: $e");
+      }
+    });
 
     socket!.on("newCall", (data) {
       socket?.emit("CallingStatus", {
         "callId": data['callId'].toString(),
-        "remoteUserId": int.parse(data['callerId']),
+        "remoteUserId": int.tryParse(data['callerId'].toString()) ?? 0,
         "callingStatus": "Ringing",
       });
     });
@@ -634,6 +252,7 @@ class CallController extends GetxController {
       missedCallTimer = null;
 
       startCallTimer();
+      callStatus.value = "Connected";
     };
 
     localStream = await navigator.mediaDevices.getUserMedia({
@@ -642,7 +261,9 @@ class CallController extends GetxController {
           ? {'facingMode': isFrontCamera ? 'user' : 'environment'}
           : false,
     });
+
     await enableSpeaker();
+
     for (var t in localStream!.getTracks()) {
       peer!.addTrack(t, localStream!);
     }
@@ -660,7 +281,10 @@ class CallController extends GetxController {
       safeAddCandidate(data);
     });
 
+    // ========== INCOMING CALL (has SDP offer) ==========
     if (offer != null) {
+      log("====== Normal Incoming Call (has offer) ======");
+
       await peer!.setRemoteDescription(
         RTCSessionDescription(offer["sdp"], offer["type"]),
       );
@@ -684,7 +308,27 @@ class CallController extends GetxController {
         "callerId": callerId,
         "sdpAnswer": answer.toMap(),
       });
-    } else {
+    }
+    // ========== CALLKIT ACCEPT (no offer yet) ==========
+    else if (fromCallKit || (args["callType"] == "Incoming" && offer == null)) {
+      log("====== CallKit Accept Flow (waiting for SDP offer) ======");
+
+      callStatus.value = "Connecting...";
+
+      // Tell the caller that we accepted from CallKit and request the SDP
+      socket!.emit("acceptCallFromCallKit", {
+        "callerId": callerId,
+        "sessionId": CallSessionState.sessionId ?? args["sessionId"],
+        "callId": callId,
+        "receiverId": Global.storageServices.get(PrefConst.userId),
+      });
+
+      // We will receive the offer via "sdpOfferFromCaller" listener
+    }
+    // ========== OUTGOING CALL ==========
+    else {
+      log("====== Outgoing Call ======");
+
       peer!.onIceCandidate = (c) => iceCandidates.add(c);
 
       socket!.on("callAnswered", (data) async {
@@ -720,6 +364,7 @@ class CallController extends GetxController {
           });
         };
       });
+
       final sdpOffer = await peer!.createOffer();
       await peer!.setLocalDescription(sdpOffer);
 
@@ -737,7 +382,8 @@ class CallController extends GetxController {
 
     final myUserId = Global.storageServices.get(PrefConst.userId).toString();
     final targetUser =
-        (myUserId == callerId.toString()) ? remoteUserId : callerId;
+    (myUserId == callerId.toString()) ? remoteUserId : callerId;
+
     var param = {
       "callId": callId,
       "remoteUserId": targetUser.toString(),
@@ -756,7 +402,9 @@ class CallController extends GetxController {
     if (args["callType"] == "outGoing") {
       stopSound();
     }
+
     await WakelockPlus.disable();
+
     if (Get.currentRoute != Routes.Home_Screen) {
       Get.offAllNamed(Routes.Home_Screen);
     }
@@ -790,7 +438,6 @@ class CallController extends GetxController {
 
   Future<void> toggleSpeaker() async {
     isSpeakerOn = !isSpeakerOn;
-
     await Helper.setSpeakerphoneOn(isSpeakerOn);
 
     if (isSpeakerOn) {
@@ -828,7 +475,7 @@ class CallController extends GetxController {
 
     missedCallTimer = Timer.periodic(
       const Duration(seconds: 1),
-      (timer) {
+          (timer) {
         if (isClosed) {
           timer.cancel();
           return;
@@ -863,7 +510,7 @@ class CallController extends GetxController {
     missCallDurationSeconds.value = 0;
   }
 
-  playSound() {
+  void playSound() {
     FlutterRingtonePlayer().play(
       asAlarm: false,
       fromAsset: Assets.music.ringing,
@@ -872,7 +519,7 @@ class CallController extends GetxController {
     );
   }
 
-  stopSound() {
+  void stopSound() {
     FlutterRingtonePlayer().stop();
   }
 

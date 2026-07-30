@@ -4,7 +4,6 @@ import 'dart:io';
 import 'dart:ui';
 import 'package:connectycube_flutter_call_kit/connectycube_flutter_call_kit.dart';
 import 'package:fgtracker/app/Core/global/launchedFromCall.dart';
-import 'package:flutter_callkit_incoming/flutter_callkit_incoming.dart';
 import 'package:get/get.dart';
 import 'package:socket_io_client/socket_io_client.dart';
 
@@ -89,12 +88,12 @@ class SignallingService {
         CallStateTracker.isIncomingCallScreenOpen = true;
         final appState = AppLifecycleTracker.state;
 
-        if (appState == AppLifecycleState.resumed) {
-          Get.toNamed(
-            Routes.IncomingCallScreen,
-            arguments: {"callDetail": call},
-          );
-        }
+        // if (appState == AppLifecycleState.resumed) {
+        //   Get.toNamed(
+        //     Routes.IncomingCallScreen,
+        //     arguments: {"callDetail": call},
+        //   );
+        // }
       } else {
         if (CallStateTracker.isIncomingCallScreenOpen) {
           return;
@@ -119,7 +118,7 @@ class SignallingService {
 }
 
 callEnded(String sessionId) async {
-  if (Platform.isAndroid) {
+
     await ConnectycubeFlutterCallKit.reportCallEnded(
       sessionId: sessionId,
     );
@@ -127,11 +126,7 @@ callEnded(String sessionId) async {
     await ConnectycubeFlutterCallKit.clearCallData(
       sessionId: sessionId,
     );
-  } else {
-    FlutterCallkitIncoming.endCall(
-      sessionId,
-    );
-  }
+
 
   CallSessionState.reset();
 }

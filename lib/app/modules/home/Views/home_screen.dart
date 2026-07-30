@@ -1,9 +1,7 @@
-// ignore_for_file: unused_import
-
 import 'dart:io';
 
+import 'package:connectycube_flutter_call_kit/connectycube_flutter_call_kit.dart';
 import 'package:fgtracker/app/Core/deep_Link/uniservices.dart';
-import 'package:fgtracker/app/Core/global/global_notification_handler.dart';
 import 'package:fgtracker/app/Core/theme/AppText.dart';
 import 'package:fgtracker/app/Data/Services/NotificationServices.dart';
 import 'package:fgtracker/app/Data/Services/PermissionGuard.dart';
@@ -14,7 +12,6 @@ import 'package:fgtracker/app/modules/home/Home_Widget/CreatedGroupUi.dart';
 import 'package:fgtracker/app/modules/home/Home_Widget/Home_widget.dart';
 import 'package:fgtracker/app/modules/home/Home_Widget/bannerUi.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:fgtracker/app/Core/values/Dialog/DialogBox.dart';
 import 'package:fgtracker/app/widgets/Appbar.dart';
@@ -23,9 +20,7 @@ import 'package:fgtracker/app/global_widget/common_widget.dart';
 
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:upgrader/upgrader.dart';
-
 
 import '../../../../gen/assets.gen.dart';
 import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
@@ -58,42 +53,25 @@ class _HomeScreenState extends State<HomeScreen> {
     checkAndRequestPermissions(context);
     notificationServices.setupInteractMessage(context);
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      // handleTerminatedCallIfAny();
       if (Platform.isIOS) {
         await CallKitService.instance.checkCallOnLaunch();
       }
     });
-
-
-
-    checkDeeplink();
   }
 
   Future<void> checkAndRequestPermissions(BuildContext context) async {
-    await PermissionGuard
-        .checkAndRequestAllPermissions(
+    await PermissionGuard.checkAndRequestAllPermissions(
       context,
       autoFetchLocation: true,
     );
-    final settings = await FirebaseMessaging.instance.requestPermission();
-
 
     await controller.getProfileData();
     await groupController.getGroupData();
   }
 
-
-
   @override
   void dispose() {
     super.dispose();
-  }
-
-  Future<void> checkDeeplink() async {
-    // await Permission.systemAlertWindow.request();
-    await UniServices.init(
-      onCompletion: (success) {},
-    );
   }
 
   @override

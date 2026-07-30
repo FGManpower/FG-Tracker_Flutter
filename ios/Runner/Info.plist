@@ -6,6 +6,11 @@
 	<array>
 		<string>applinks:fgtracker.in</string>
 	</array>
+	<key>BGTaskSchedulerPermittedIdentifiers</key>
+	<array>
+		<string>com.apple.voip.refresh</string>
+		<string>com.apple.callkit.call</string>
+	</array>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>
@@ -48,6 +53,8 @@
 	</dict>
 	<key>NSCameraUsageDescription</key>
 	<string>Need camera access for video calls and scan QR codes</string>
+	<key>NSContactsUsageDescription</key>
+	<string>FG Tracker uses your contacts to help you find, connect with, and invite people to join your tracking groups.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>Your location is continuously shared with your group for accurate real-time tracking, even when the app is in the background.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
@@ -56,25 +63,20 @@
 	<string>Your location is used to share your real-time position with group members on the map during active tracking sessions.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Need microphone access for audio calls</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>We need access to save QR codes to your gallery.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>We need access to your photo library to allow you to set a profile image and upload photos and get QR code from photo library of your site location.</string>
-
-
-	<key>NSPhotoLibraryAddUsageDescription</key>
-    <string>We need access to save QR codes to your gallery.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
-
-	<key>NSContactsUsageDescription</key>
-    <string>FG Tracker uses your contacts to help you find, connect with, and invite people to join your tracking groups.</string>
-
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>location</string>
 		<string>remote-notification</string>
 		<string>audio</string>
-	    <string>voip</string>
-        <string>processing</string>
+		<string>voip</string>
+		<string>processing</string>
+		<string>fetch</string>
 	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
@@ -93,13 +95,5 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
-
-	<key>BGTaskSchedulerPermittedIdentifiers</key>
-    <array>
-        <string>com.apple.voip.refresh</string>
-        <string>com.apple.callkit.call</string>
-    </array>
-
-
 </dict>
 </plist>

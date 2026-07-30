@@ -7,7 +7,7 @@ import 'package:connectycube_flutter_call_kit/connectycube_flutter_call_kit.dart
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/constant/notification_holder.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
-import 'package:fgtracker/app/Core/util/CallUtils.dart';
+
 import 'package:fgtracker/app/Core/util/configureAudioSession.dart';
 import 'package:fgtracker/app/Data/Services/Walkie-Talkie-Service.dart';
 import 'package:flutter/material.dart';
@@ -39,80 +39,50 @@ final socket = SignallingService.instance.socket;
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
 
+String callIdToUuid(String callId) {
+  final padded = callId.padLeft(12, '0');
+  return "00000000-0000-4000-8000-$padded";
+}
+
+// ✅ Background/Terminated Handler
 @pragma('vm:entry-point')
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
-  log("[Background FCM] Raw Data: ${message.data}");
+  log("[BGHandler] data: ${message.data}");
 
   if (message.data['screen_name'] == "incomingCall") {
-    final callMap = jsonDecode(message.data['callData']);
-
     final callData = jsonDecode(message.data['callData']);
-    final Map<String, String> userInfo = callData.map<String, String>(
-        (key, value) => MapEntry(key.toString(), value.toString()));
+    final originalCallId = callData['callId'].toString();
 
-    var pref = await SharedPreferences.getInstance();
-
-    final userId = pref.get(PrefConst.userId);
-
-    if (userId != null) {
-      SignallingService.instance.init(
-        websocketUrl: ConstRes.socketUrl,
-        selfCallerID: userId.toString(),
-      );
-
-      socket?.emit("CallingStatus", {
-        "callId": callData['callId'].toString(),
-        "remoteUserId": int.parse(callData['callerId']),
-        "callingStatus": "Ringing",
-      });
-    }
+    // ✅ Build userInfo - flat string map
+    final Map<String, String> userInfo = {
+      "callId":             originalCallId,
+      "callerId":           callData['callerId'].toString(),
+      "receiverId":         callData['receiverId'].toString(),
+      "isVideo":            callData['isVideo'].toString(),
+      "callerName":         callData['callerName'].toString(),
+      "callerProfileImage": callData['callerProfileImage'].toString(),
+      "sdpOfferCompressed": callData['sdpOfferCompressed'].toString(),
+      "notificationId":     callData['notificationId']?.toString() ?? "",
+    };
 
     try {
-      final isActive =
-          await CallRepo().isCallActive(callData['callId'].toString());
-
-      if (!isActive) {
-        return;
-      }
-
-      if (Platform.isIOS) {
-        CallUtils.instance.showIncomingCall(data: callMap);
-      } else {
-        await ConnectycubeFlutterCallKit.showCallNotification(
-          CallEvent(
-            sessionId: callData['callId'].toString(),
-            callerName: callData['callerName'],
-            callType: callData['isVideo'] == true ? 1 : 0,
-            opponentsIds: {int.parse(callData['callerId'])},
-            callerId: int.parse(callData['callerId']),
-            userInfo: userInfo,
-          ),
-        );
-      }
-    } catch (e) {
-      log("callError=======${e.toString()}");
-    }
-  } else if (message.data['screen_name'] == 'walkie') {
-    final sharedpref = await SharedPreferences.getInstance();
-    await sharedpref.setString('fromUserId', message.data['fromUserId']);
-
-    var url = "${ConstRes.DeepLink_Url}/?page=Walkie";
-    log("====>AppLaunch Url is ======$url");
-    if (Platform.isAndroid) {
-      AndroidIntent intent = AndroidIntent(
-          action: 'action_view', data: url, package: "com.example.fgtracker");
-      await intent.launch().then((value) {
-        log("AppLaunch Success");
-      }).onError(
-        (error, stackTrace) {
-          log("AppLaunchIssue:$error,StackTrace is:$stackTrace");
-        },
+      // ✅ Show CallKit notification (Android only - iOS gets VoIP push)
+      await ConnectycubeFlutterCallKit.showCallNotification(
+        CallEvent(
+          sessionId:    callIdToUuid(originalCallId), // ✅ UUID
+          callerName:   callData['callerName'],
+          callType:     callData['isVideo'] == true ? 1 : 0,
+          opponentsIds: {int.parse(callData['callerId'])},
+          callerId:     int.parse(callData['callerId']),
+          userInfo:     userInfo,
+        ),
       );
+    } catch (e) {
+      log("showCallNotification error: $e");
     }
   }
 }
-
 @pragma('vm:entry-point')
 void onNotificationResponse(NotificationResponse response) async {
   log("OnNotificationPress");
@@ -120,78 +90,7 @@ void onNotificationResponse(NotificationResponse response) async {
 }
 
 
-// @pragma('vm:entry-point')
-// Future<void> callbackDispatcher() async {
-//   WidgetsFlutterBinding.ensureInitialized();
-//   await Firebase.initializeApp();
-//
-//   Workmanager().executeTask((task, inputData) async {
-//     switch (task) {
-//       case "fg_partner_fetch_location_taskSamad":
-//         try {
-//           final pref = await SharedPreferences.getInstance();
-//           var token = pref.getString("token");
-//
-//           if (token != null && token.isNotEmpty) {
-//             Position position = await Geolocator.getCurrentPosition(
-//                 desiredAccuracy: LocationAccuracy.high);
-//
-//             LocationPermission permission = await Geolocator.checkPermission();
-//             if (permission != LocationPermission.denied &&
-//                 permission != LocationPermission.deniedForever) {
-//               SharedpUserDataModel userData = SharedpUserDataModel.fromJson(
-//                   jsonDecode(pref.getString('userdata')!));
-//
-//               DatabaseReference? postref;
-//               if (Constant.Baseurl == "$ProductionUrl/api") {
-//                 postref = FirebaseDatabase.instance
-//                     .ref()
-//                     .child("ProductionLabourcoordinates");
-//               } else if (Constant.Baseurl == "$TestingUrl/api") {
-//                 postref = FirebaseDatabase.instance
-//                     .ref()
-//                     .child("DevelopmentLabourcoordinates");
-//               }
-//               try {
-//                 postref
-//                     ?.child(userData.labourId.toString())
-//                     .set({
-//                   'latitude': position.latitude,
-//                   'longitude': position.longitude,
-//                   'address': "Mumbai",
-//                   "deviceType": Platform.isAndroid ? "android" : "ios",
-//                   'Labour_id': userData.labourId.toString(),
-//                   'Labour_name': userData.labourName ?? "",
-//                   'last_location_time': DateTime.now().toString(),
-//                   // "Internet": internetStatus ?? "",
-//                   "Permission": permission.toString().split('.').last,
-//                   "AppStatus": "Terminated",
-//                 })
-//                     .then(
-//                       (value) async {},
-//                 )
-//                     .catchError((error) async {
-//
-//                 });
-//               } catch (e) {
-//
-//               }
-//             }
-//           } else {
-//             log("Authentication failed..");
-//           }
-//         } catch (e) {
-//           log("$e");
-//           // await _showNotification(
-//           //   title: "FG Partner",
-//           //   body: "$e",
-//           // );
-//         }
-//         break;
-//     }
-//     return Future.value(true);
-//   });
-// }
+
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -210,39 +109,7 @@ Future<void> main() async {
 
   Get.put<LocationService>(LocationService());
   Get.put<SocketService>(SocketService());
-  //
-  // const AndroidInitializationSettings androidInit =
-  //     AndroidInitializationSettings('@mipmap/ic_launcher');
-  //
-  // final DarwinInitializationSettings iosInit = DarwinInitializationSettings(
-  //   notificationCategories: [
-  //     DarwinNotificationCategory(
-  //       'INCOMING_CALL',
-  //       actions: [
-  //         DarwinNotificationAction.plain(
-  //           'CALL_ACCEPT',
-  //           'Accept',
-  //           options: {DarwinNotificationActionOption.foreground},
-  //         ),
-  //         DarwinNotificationAction.plain(
-  //           'CALL_DECLINE',
-  //           'Decline',
-  //           options: {DarwinNotificationActionOption.destructive},
-  //         ),
-  //       ],
-  //     ),
-  //   ],
-  // );
-  //
-  // await flutterLocalNotificationsPlugin.initialize(
-  //   InitializationSettings(
-  //     android: androidInit,
-  //     iOS: iosInit,
-  //   ),
-  //   onDidReceiveNotificationResponse: onNotificationResponse,
-  // );
-  //
-  // GlobalNotificationHandler.instance.init();
+
   final userId = Global.storageServices.get(PrefConst.userId)?.toString();
 
   if (userId != null) {
@@ -256,47 +123,13 @@ Future<void> main() async {
     );
   }
   // WalkieConfiguration.configureSpeakerAudioSession();
-  setupVoipListener();
-  if (Platform.isIOS) {
-    CallUtils.instance.listenCallKitEvents();
-  }
+
+
 
   // WalkieUtils().listenWalkieEvents();
   runApp(const MyApp());
 }
 
-const platform = MethodChannel("voip_channel");
-
-void setupVoipListener() {
-  platform.setMethodCallHandler((call) async {
-    if (call.method == "voipToken") {
-      final token = call.arguments;
-    }
-
-    if (call.method == "incomingCall") {
-      final data = Map<String, dynamic>.from(call.arguments);
-
-      showIncomingCall(data);
-    }
-  });
-}
-
-void showIncomingCall(Map<String, dynamic> callData) async {
-  final userInfo = callData.map(
-    (k, v) => MapEntry(k.toString(), v.toString()),
-  );
-
-  await ConnectycubeFlutterCallKit.showCallNotification(
-    CallEvent(
-      sessionId: callData['callId'].toString(),
-      callerName: callData['callerName'],
-      callType: callData['isVideo'] == true ? 1 : 0,
-      opponentsIds: {int.parse(callData['callerId'].toString())},
-      callerId: int.parse(callData['callerId'].toString()),
-      userInfo: userInfo,
-    ),
-  );
-}
 
 class MyApp extends StatefulWidget {
   const MyApp({super.key});

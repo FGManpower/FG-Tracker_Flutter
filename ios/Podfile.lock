@@ -1208,7 +1208,6 @@ PODS:
     - Flutter
   - connectycube_flutter_call_kit (2.8.2):
     - Flutter
-  - CryptoSwift (1.10.0)
   - DKImagePickerController/Core (4.3.9):
     - DKImagePickerController/ImageDataManager
     - DKImagePickerController/Resource
@@ -1303,9 +1302,6 @@ PODS:
     - nanopb (~> 3.30910.0)
   - FirebaseSharedSwift (12.15.0)
   - Flutter (1.0.0)
-  - flutter_callkit_incoming (0.0.1):
-    - CryptoSwift
-    - Flutter
   - flutter_compass (0.0.1):
     - Flutter
   - flutter_contacts (0.0.1):
@@ -1547,6 +1543,8 @@ PODS:
   - permission_handler_apple (9.4.8):
     - Flutter
   - PromisesObjC (2.4.1)
+  - proximity_screen_lock_ios (0.0.1):
+    - Flutter
   - qr_code_scanner_plus (0.2.6):
     - Flutter
   - record_ios (1.2.1):
@@ -1594,7 +1592,6 @@ DEPENDENCIES:
   - firebase_core (from `.symlinks/plugins/firebase_core/ios`)
   - firebase_messaging (from `.symlinks/plugins/firebase_messaging/ios`)
   - Flutter (from `Flutter`)
-  - flutter_callkit_incoming (from `.symlinks/plugins/flutter_callkit_incoming/ios`)
   - flutter_compass (from `.symlinks/plugins/flutter_compass/ios`)
   - flutter_contacts (from `.symlinks/plugins/flutter_contacts/ios`)
   - flutter_image_compress_common (from `.symlinks/plugins/flutter_image_compress_common/ios`)
@@ -1620,6 +1617,7 @@ DEPENDENCIES:
   - package_info_plus (from `.symlinks/plugins/package_info_plus/ios`)
   - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
   - permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)
+  - proximity_screen_lock_ios (from `.symlinks/plugins/proximity_screen_lock_ios/ios`)
   - qr_code_scanner_plus (from `.symlinks/plugins/qr_code_scanner_plus/ios`)
   - record_ios (from `.symlinks/plugins/record_ios/ios`)
   - share_plus (from `.symlinks/plugins/share_plus/ios`)
@@ -1636,7 +1634,6 @@ SPEC REPOS:
   trunk:
     - abseil
     - BoringSSL-GRPC
-    - CryptoSwift
     - DKImagePickerController
     - DKPhotoGallery
     - Firebase
@@ -1695,8 +1692,6 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/firebase_messaging/ios"
   Flutter:
     :path: Flutter
-  flutter_callkit_incoming:
-    :path: ".symlinks/plugins/flutter_callkit_incoming/ios"
   flutter_compass:
     :path: ".symlinks/plugins/flutter_compass/ios"
   flutter_contacts:
@@ -1747,6 +1742,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/path_provider_foundation/darwin"
   permission_handler_apple:
     :path: ".symlinks/plugins/permission_handler_apple/ios"
+  proximity_screen_lock_ios:
+    :path: ".symlinks/plugins/proximity_screen_lock_ios/ios"
   qr_code_scanner_plus:
     :path: ".symlinks/plugins/qr_code_scanner_plus/ios"
   record_ios:
@@ -1779,7 +1776,6 @@ SPEC CHECKSUMS:
   camera_avfoundation: 5675ca25298b6f81fa0a325188e7df62cc217741
   cloud_firestore: 6413b4f717c368edb9c94214547da4c65c5a2fd9
   connectycube_flutter_call_kit: 00f448d35f2e8f82c853fb582e83bb4f6dd353a5
-  CryptoSwift: e2e7776512f250e66205955da748e7a4e4abffe0
   DKImagePickerController: 946cec48c7873164274ecc4624d19e3da4c1ef3c
   DKPhotoGallery: b3834fecb755ee09a593d7c9e389d8b5d6deed60
   file_picker: a0560bc09d61de87f12d246fc47d2119e6ef37be
@@ -1796,7 +1792,6 @@ SPEC CHECKSUMS:
   FirebaseMessaging: 40017d7bc8457ee295b0f41d480a80fdabc9994e
   FirebaseSharedSwift: 3f5c2758484d32099d693f269f110d3249c3f7e3
   Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
-  flutter_callkit_incoming: a143995975818a3717524decd3566d5ca7a8c608
   flutter_compass: b236ab69b61545cce89fd58527f401a7587d5cc1
   flutter_contacts: 2ec1d6b62ca2869c3bbb3871bd74d4e3ef157135
   flutter_image_compress_common: 1697a328fd72bfb335507c6bca1a65fa5ad87df1
@@ -1841,6 +1836,7 @@ SPEC CHECKSUMS:
   path_provider_foundation: bb55f6dbba17d0dccd6737fe6f7f34fbd0376880
   permission_handler_apple: 92d754bbaa7361d436db2d6c3c1c2a0fdcec462e
   PromisesObjC: 752c3227f599e3467650e47ea36f433eeb10c273
+  proximity_screen_lock_ios: 62ed259009d1f9c131fb338bef55b73d9118bde0
   qr_code_scanner_plus: 1fb59fd4576edb53ec7560c3746f454dee54300c
   record_ios: 980fd386a97a35987d0fce3dfda4b26a38c90f4c
   SDWebImage: e9fc87c1aab89a8ab1bbd74eba378c6f53be8abf

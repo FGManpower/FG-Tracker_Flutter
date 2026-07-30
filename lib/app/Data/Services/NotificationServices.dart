@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:math';
+
 import 'package:connectycube_flutter_call_kit/connectycube_flutter_call_kit.dart';
 import 'package:fgtracker/app/Core/global/launchedFromCall.dart';
 import 'package:fgtracker/app/Core/values/Context_Utility.dart';
@@ -13,7 +14,9 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
+
 import 'dart:io';
+
 import '../../Core/constant/pref_res.dart';
 import 'CallStateTracker.dart';
 
@@ -88,6 +91,7 @@ class firebaseNotificationServices {
         await FirebaseMessaging.instance.getInitialMessage();
 
     if (initialMessage != null) {
+      // handleMessage(context, initialMessage);
       handleMessage(context, initialMessage, type: "recienvedmessage");
     }
 
@@ -219,6 +223,7 @@ class firebaseNotificationServices {
           arguments: {"callDetail": call},
         );
       } else if (message.data['screen_name'] == "missedCall") {
+
         final callData = jsonDecode(message.data['callData']);
         final bool isVideo = callData["isVideo"] == true;
 
@@ -235,11 +240,14 @@ class firebaseNotificationServices {
         );
       }
     } else {
-      if (message.data['screen_name'] == "incomingCall") {
+    if(Platform.isAndroid){
+
+      if (message.data['screen_name'] == "incomingCall" && Platform.isAndroid) {
         final callData = jsonDecode(message.data['callData']);
 
         final Map<String, String> userInfo = callData.map<String, String>(
-            (key, value) => MapEntry(key.toString(), value.toString()));
+                (key, value) => MapEntry(key.toString(), value.toString()));
+        print("===========showIncommingCallInfo=======${userInfo}");
 
         print("SenderSessionId============${callData['callId'].toString()}");
         await ConnectycubeFlutterCallKit.showCallNotification(
@@ -254,6 +262,7 @@ class firebaseNotificationServices {
         );
         CallSessionState.sessionId = callData['callId'].toString();
       }
+    }
     }
   }
 }

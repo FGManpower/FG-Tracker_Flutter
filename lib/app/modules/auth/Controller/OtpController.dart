@@ -37,21 +37,17 @@ class OtpController extends GetxController {
 
   Map<String, dynamic>? arguments = Get.arguments;
 
+
+
+
+
   @override
   void onInit() {
     super.onInit();
 
-    // if (Platform.isAndroid) {
-    firebaseNotificationServices().getDiviceToken().then(
-      (value) {
-        deviceId.value = value;
-      },
-    );
-    // } else {
-    //   ConnectycubeFlutterCallKit.getToken().then((token) {
-    //     deviceId.value = token.toString();
-    //   });
-    // }
+
+    registerPushTokens();
+
 
     otpController = OTPTextEditController(
       codeLength: 4,
@@ -82,6 +78,24 @@ class OtpController extends GetxController {
     return true;
   }
 
+  registerPushTokens() async {
+    if (Platform.isAndroid) {
+      firebaseNotificationServices().getDiviceToken().then(
+            (value) {
+          deviceId.value = value;
+        },
+      );
+    } else {
+      final String? token = await ConnectycubeFlutterCallKit.getToken();
+
+      if (token == null) {
+        log("Token is null");
+        return;
+      }
+      deviceId.value = token;
+      log("Device token: $token");
+    }
+  }
   void startResendTimer() {
     _timer?.cancel();
     resendSeconds.value = 59;
@@ -135,6 +149,7 @@ class OtpController extends GetxController {
         "MobileNo": arguments?['mobNo'],
         "otp": otpController.text,
         'Device_Id': deviceId.value ?? "",
+        'Platform': Platform.isAndroid?"android":"ios",
       };
       print("==================VeriefyParam==========${param}");
       var result = await AuthRepo.VeriefyOtp(param);
