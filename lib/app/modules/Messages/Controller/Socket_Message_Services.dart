@@ -20,6 +20,9 @@ class SocketMessageService extends GetxService {
 
   Future<void> init(String socketUrl,
       {required String userId, required int groupId}) async {
+    if (_socket != null) {
+      disconnectSocket();
+    }
     _socket = IO.io("$socketUrl/chat", {
       "transports": ["websocket"],
       "autoConnect": true,
