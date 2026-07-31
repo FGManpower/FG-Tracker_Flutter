@@ -12,6 +12,7 @@ import 'package:fgtracker/app/config/themes_data.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/modules/Group/controller/MemberController.dart';
 import 'package:fgtracker/app/modules/Group/controller/search_controller.dart';
+import 'package:fgtracker/app/modules/Walkie-talkie/Controller/walkieController.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:fgtracker/app/widgets/MobileNumberView.dart';
 import 'package:fgtracker/gen/assets.gen.dart';
@@ -379,10 +380,10 @@ class MemberscreenScreen extends GetView<MemberController> {
                     if (data.lastSeen != null && data.lastSeen!.isNotEmpty) {
                       try {
                         isOnline = Tracking()
-                            .getTimeAgo(
-                          DateTime.parse(data.lastSeen!),
-                        )
-                            .toLowerCase() ==
+                                .getTimeAgo(
+                                  DateTime.parse(data.lastSeen!),
+                                )
+                                .toLowerCase() ==
                             "just now";
                       } catch (_) {
                         isOnline = false;
@@ -493,41 +494,71 @@ class MemberscreenScreen extends GetView<MemberController> {
                                             color: Colors.grey.shade500,
                                           ),
                                           SizedBox(height: 8.h),
-                                          InkWell(
-                                            borderRadius:
-                                                BorderRadius.circular(20.r),
-                                            onTap: () {
-                                              Get.toNamed(
-                                                Routes.LocationTracking,
-                                                arguments: {
-                                                  "groupId": int.parse(
-                                                    controller
-                                                        .arguments!['groupId']
-                                                        .toString(),
-                                                  ),
-                                                  "groupName": controller
-                                                      .arguments!['groupName'],
-                                                  "targetUserId":
-                                                      data.userId.toString(),
+                                          Row(
+
+                                            children: [
+                                              InkWell(
+                                                borderRadius:
+                                                    BorderRadius.circular(20.r),
+                                                onTap: () {
+                                                  Get.toNamed(
+                                                    Routes.LocationTracking,
+                                                    arguments: {
+                                                      "groupId": int.parse(
+                                                        controller.arguments![
+                                                                'groupId']
+                                                            .toString(),
+                                                      ),
+                                                      "groupName":
+                                                          controller.arguments![
+                                                              'groupName'],
+                                                      "targetUserId": data
+                                                          .userId
+                                                          .toString(),
+                                                    },
+                                                  );
                                                 },
-                                              );
-                                            },
-                                            child: Container(
-                                              padding: EdgeInsets.all(8),
-                                              decoration: BoxDecoration(
-                                                color: ToggleThemeData
-                                                    .darkPurple
-                                                    .withOpacity(0.08),
-                                                shape: BoxShape.circle,
+                                                child: Container(
+                                                  padding: EdgeInsets.all(8),
+                                                  decoration: BoxDecoration(
+                                                    color: ToggleThemeData
+                                                        .darkPurple
+                                                        .withOpacity(0.08),
+                                                    shape: BoxShape.circle,
+                                                  ),
+                                                  child: Icon(
+                                                    Icons.near_me,
+                                                    color: ToggleThemeData
+                                                        .darkPurple,
+                                                    size: 18.sp,
+                                                  ),
+                                                ),
                                               ),
-                                              child: Icon(
-                                                Icons.near_me,
-                                                color:
-                                                    ToggleThemeData.darkPurple,
-                                                size: 18.sp,
-                                              ),
-                                            ),
-                                          ),
+                                              InkWell(
+                                                onTap: () {
+                                                  WalkieController()
+                                                      .startServices(
+                                                          callerName: data!.name
+                                                              .toString(),
+                                                          profileImage:
+                                                              data.profileImage,
+                                                          remoteUserId: data!
+                                                              .userId
+                                                              .toString());
+                                                },
+                                                child: Padding(
+                                                  padding: EdgeInsets.only(
+                                                      left: 10.w),
+                                                  child: Image.asset(
+                                                    Assets.icons.walkieTalkie
+                                                        .path,
+                                                    height: 28.h,
+                                                    width: 28.w,
+                                                  ),
+                                                ),
+                                              )
+                                            ],
+                                          )
                                         ],
                                       ),
                                     ],
@@ -604,8 +635,8 @@ class MemberscreenScreen extends GetView<MemberController> {
                 if (data?.lastSeen != null && data!.lastSeen!.isNotEmpty) {
                   try {
                     isOnline = Tracking()
-                        .getTimeAgo(DateTime.parse(data.lastSeen!))
-                        .toLowerCase() ==
+                            .getTimeAgo(DateTime.parse(data.lastSeen!))
+                            .toLowerCase() ==
                         "just now";
                   } catch (_) {
                     isOnline = false;
@@ -716,9 +747,7 @@ class MemberscreenScreen extends GetView<MemberController> {
                                         ],
                                       ),
                                     ),
-
                                     SizedBox(width: 10.w),
-
                                     Column(
                                       mainAxisSize: MainAxisSize.min,
                                       crossAxisAlignment:
@@ -765,26 +794,28 @@ class MemberscreenScreen extends GetView<MemberController> {
                                             ),
                                           ),
                                         ),
+                                        InkWell(
+                                          onTap: () {
+                                            WalkieController().startServices(
+                                                callerName:
+                                                    data!.name.toString(),
+                                                profileImage: data.profileImage,
+                                                remoteUserId:
+                                                    data!.userId.toString());
+                                          },
+                                          child: Padding(
+                                            padding:
+                                                EdgeInsets.only(left: 50.w),
+                                            child: Image.asset(
+                                              Assets.icons.walkieTalkie.path,
+                                              color: Colors.grey,
+                                              height: 28.h,
+                                              width: 28.w,
+                                            ),
+                                          ),
+                                        )
                                       ],
                                     ),
-
-                                    // InkWell(
-                                    //   onTap: () {
-                                    //     WalkieController().startServices(
-                                    //         callerName: data!.name.toString(),
-                                    //         profileImage: data.profileImage,
-                                    //         remoteUserId:
-                                    //             data!.userId.toString());
-                                    //   },
-                                    //   child: Padding(
-                                    //     padding: EdgeInsets.only(left: 50.w),
-                                    //     child: Image.asset(
-                                    //       Assets.icons.walkieTalkie.path,
-                                    //       height: 28.h,
-                                    //       width: 28.w,
-                                    //     ),
-                                    //   ),
-                                    // )
                                   ],
                                 ),
                               ),

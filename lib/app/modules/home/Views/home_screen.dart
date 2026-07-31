@@ -52,6 +52,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
     checkAndRequestPermissions(context);
     notificationServices.setupInteractMessage(context);
+    notificationServices.askPermission();
+    firebaseNotificationServices().getDiviceToken().then(
+          (value) {
+       debugPrint("token=>${value}");
+      },
+    );
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (Platform.isIOS) {
         await CallKitService.instance.checkCallOnLaunch();
