@@ -6,6 +6,7 @@ import 'package:fgtracker/app/Core/values/Dialog/DialogBox.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Core/values/utility.dart';
 import 'package:fgtracker/app/Data/Services/Tracking.dart';
+import 'package:fgtracker/app/Model/LocationMessage.dart';
 
 import 'package:fgtracker/app/config/themes_data.dart';
 import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
@@ -16,6 +17,7 @@ import 'package:get/get.dart';
 import '../../Walkie-talkie/Controller/walkieController.dart';
 import '../widgets/ChatInputArea.dart';
 import '../widgets/ChatList.dart';
+import 'LocationPickerPage.dart';
 
 class ChatScreen extends GetView<MessageController> {
   ChatScreen({super.key});
@@ -227,6 +229,7 @@ class ChatScreen extends GetView<MessageController> {
                 documentPath: controller.documentPath,
                 isSending: controller.isSending,
                 textController: _controller,
+                messageController: controller,
                 videoDuration: controller.videoDuration,
                 videoThumbnail: controller.videoThumbnail,
                 onSend: _sendMessage,
@@ -251,8 +254,19 @@ class ChatScreen extends GetView<MessageController> {
                   Navigator.pop(context);
                   if (Utility.isNotNullEmptyOrFalse(path)) {
                     controller.documentPath.value = path;
+
                   }
-                },
+                }, onLocationSelected: () async {
+                final location = await Get.to<LocationMessage>(
+                      () => const LocationPickerPage(),
+                );
+
+                if (location != null) {
+                  await controller.sendLocation(
+                    location: location,
+                  );
+                }
+              },
               ),
             ],
           ),

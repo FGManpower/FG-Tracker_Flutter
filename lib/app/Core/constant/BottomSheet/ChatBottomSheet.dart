@@ -79,12 +79,13 @@ class ChatBottomSheet {
   }
 
   static Future<void> showFileOptions(
-    BuildContext context, {
-    required VoidCallback onGallery,
-    required VoidCallback onCamera,
-    required VoidCallback onVideo,
-    required VoidCallback onDocument,
-  }) async {
+      BuildContext context, {
+        required VoidCallback onGallery,
+        required VoidCallback onCamera,
+        required VoidCallback onVideo,
+        required VoidCallback onDocument,
+        required VoidCallback onLocation,
+      }) async {
     return showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -120,46 +121,45 @@ class ChatBottomSheet {
                 ),
               ),
               SizedBox(height: 24.h),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              Wrap(
+                alignment: WrapAlignment.center,
+                spacing: 16.w,
+                runSpacing: 20.h,
                 children: [
                   _attachmentItem(
                     icon: Icons.photo,
                     color: const Color(0xff4F8EF7),
                     title: "Gallery",
                     subtitle: "Photos",
-                    onTap: () {
-                      onGallery();
-                    },
+                    onTap: onGallery,
                   ),
                   _attachmentItem(
                     icon: Icons.videocam_rounded,
                     color: const Color(0xffF05A5A),
                     title: "Video",
                     subtitle: "MP4",
-                    onTap: () {
-                      onVideo();
-                    },
+                    onTap: onVideo,
                   ),
                   _attachmentItem(
                     icon: Icons.description_rounded,
                     color: const Color(0xff7B61FF),
                     title: "Document",
                     subtitle: "File",
-                    onTap: () {
-                      onDocument();
-                    },
+                    onTap: onDocument,
                   ),
-
                   _attachmentItem(
                     icon: Icons.camera_alt_outlined,
                     color: const Color(0xff4F8EF7),
                     title: "Camera",
-                    subtitle: "camera",
-                    onTap: () {
-
-                      onCamera();
-                    },
+                    subtitle: "Camera",
+                    onTap: onCamera,
+                  ),
+                  _attachmentItem(
+                    icon: Icons.location_on,
+                    color: const Color(0xff2E7D32),
+                    title: "Location",
+                    subtitle: "Map",
+                    onTap: onLocation,
                   ),
                 ],
               ),

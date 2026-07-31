@@ -1,5 +1,6 @@
 import 'package:fgtracker/app/Core/values/BottomSheets/BottomSheetUi.dart';
 import 'package:fgtracker/app/Core/values/utility.dart';
+import 'package:fgtracker/app/Model/LocationMessage.dart';
 import 'package:fgtracker/app/config/themes_data.dart';
 import 'package:fgtracker/app/modules/Messages/widgets/ChatInputArea.dart';
 import 'package:fgtracker/app/modules/Messages/widgets/ChatList.dart';
@@ -11,6 +12,7 @@ import '../../../Core/constant/const_res.dart';
 import 'package:get/get.dart';
 
 import '../Controller/GroupChatController.dart';
+import 'LocationPickerPage.dart';
 
 class GroupChatScreen extends GetView<GroupMessageController> {
   GroupChatScreen({super.key});
@@ -224,7 +226,17 @@ class GroupChatScreen extends GetView<GroupMessageController> {
                 if (Utility.isNotNullEmptyOrFalse(path)) {
                   controller.documentPath.value = path;
                 }
-              },
+              }, onLocationSelected: () async {
+              final location = await Get.to<LocationMessage>(
+                    () => const LocationPickerPage(),
+              );
+
+              if (location != null) {
+                await controller.sendLocation(
+                  location: location,
+                );
+              }
+            },
             ),
           ],
         ),

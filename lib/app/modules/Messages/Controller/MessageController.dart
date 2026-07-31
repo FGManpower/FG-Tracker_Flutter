@@ -10,6 +10,7 @@ import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Data/Repositories/GetMessageRepo.dart';
 import 'package:fgtracker/app/Data/Services/CallStateTracker.dart';
 import 'package:fgtracker/app/Model/GetMessage.dart';
+import 'package:fgtracker/app/Model/LocationMessage.dart';
 import 'package:fgtracker/app/Model/MemberDataRes.dart';
 import 'package:fgtracker/app/modules/Messages/widgets/videoThumbnailWidget.dart';
 import 'package:fgtracker/app/modules/Track/Controller/TrackController.dart';
@@ -59,6 +60,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
   final RxString videoDuration = ''.obs;
   Rx<MessageData?> replyMessage = Rx<MessageData?>(null);
   RxInt highlightedMessageId = (-1).obs;
+  final RxBool showEmoji = false.obs;
 
 
   @override
@@ -66,6 +68,11 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     super.onInit();
     WidgetsBinding.instance.addObserver(this);
     memberData = arguments?['userData'];
+    debugPrint("========== CHAT OPEN ==========");
+    debugPrint("USER ID      : ${memberData.userId}");
+    debugPrint("USER NAME    : ${memberData.name}");
+    debugPrint("USER IMAGE   : ${memberData.profileImage}");
+    debugPrint("GROUP ID     : ${memberData.groupId}");
     _initializeChat();
   }
 
@@ -96,6 +103,14 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         debugPrint("retrieveLostData error: $e");
       }
     }
+  }
+
+  void toggleEmoji() {
+    showEmoji.toggle();
+  }
+
+  void hideEmoji() {
+    showEmoji.value = false;
   }
   Future<void> scrollToMessage(int messageId) async {
 
@@ -327,6 +342,27 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     }
   }
 
+  Future<void> sendLocation({
+    required LocationMessage location,
+  }) async {
+    try {
+      socketService.sendMessage(
+        receiverId: memberData.userId.toString(),
+        groupId: memberData.groupId!,
+        content: location.toContent(),
+        messageType: "location",
+        replyId: replyMessage.value?.id,
+        replyMessage: replyMessage.value?.content,
+        replyType: replyMessage.value?.messageType,
+        replySender: replyMessage.value?.senderName,
+      );
+
+      clearReply();
+      scrollToBottom();
+    } catch (e) {
+      log("LOCATION SEND ERROR => $e");
+    }
+  }
   Future<void> getMessageHistory(String recieverId, int groupId) async {
     try {
       var result = await MessageRepo.MessageHistory(

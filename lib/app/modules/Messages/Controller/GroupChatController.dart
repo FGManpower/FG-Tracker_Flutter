@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:developer';
 import 'dart:io';
 import 'dart:typed_data';
+import 'package:fgtracker/app/Model/LocationMessage.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:fgtracker/app/Core/util/DateTime_Format.dart';
 import 'package:fgtracker/app/Model/LocationDataRes.dart';
@@ -62,6 +63,7 @@ class GroupMessageController extends GetxController {
   RxBool isSending = false.obs;
   RxBool isLoading = true.obs;
   RxString messageText = "".obs;
+  final RxBool showEmoji = false.obs;
 
   Rx<MessageData?> replyMessage = Rx<MessageData?>(null);
   RxInt highlightedMessageId = (-1).obs;
@@ -125,7 +127,13 @@ class GroupMessageController extends GetxController {
 
     initializeGroupChat();
   }
+  void toggleEmoji() {
+    showEmoji.toggle();
+  }
 
+  void hideEmoji() {
+    showEmoji.value = false;
+  }
   void initializeGroupChat() {
     final currentUserId =
         Global.storageServices.get(PrefConst.userId).toString();
@@ -320,6 +328,28 @@ print("TEXT=======$text");
       log(
         "GROUP Video ERROR => $e",
       );
+    }
+  }
+
+  Future<void> sendLocation({
+    required LocationMessage location,
+  }) async {
+    try {
+      socketService.sendGroupMessage(
+        groupId: groupId,
+        content: location.toContent(),
+        messageType: "location",
+        replyId: replyMessage.value?.id,
+        replyMessage: replyMessage.value?.content,
+        replyType: replyMessage.value?.messageType,
+        replySender: replyMessage.value?.senderName,
+      );
+
+      clearReply();
+
+      scrollToBottom();
+    } catch (e) {
+      log("LOCATION SEND ERROR => $e");
     }
   }
 

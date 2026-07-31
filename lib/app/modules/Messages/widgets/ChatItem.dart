@@ -20,6 +20,7 @@ import '../../../Core/util/file_helper.dart';
 import '../../../config/themes_data.dart';
 import '../../../global_widget/common_widget.dart';
 import 'AudioPlayerWidget.dart';
+import 'LocationBubbleWidget.dart';
 import 'message_Widgets.dart';
 
 class ChatBubble extends StatelessWidget {
@@ -112,6 +113,8 @@ class ChatBubble extends StatelessWidget {
                 _buildMessageContent(
                   message,
                   textColor,
+                  isSentByMe,
+
                 ),
               ],
             ),
@@ -156,7 +159,7 @@ class ChatBubble extends StatelessWidget {
 
   Widget _buildMessageContent(
     MessageData message,
-    Color textColor,
+    Color textColor, bool isSentByMe,
   ) {
     if (message.messageType == "image" || message.messageType == "image_text") {
       final parts = message.content?.split("||") ?? [];
@@ -354,7 +357,14 @@ class ChatBubble extends StatelessWidget {
             ),
         ],
       );
-    } else {
+    } else if (message.messageType == "location") {
+      return LocationBubbleWidget(
+        content: message.content,
+        isSentByMe: isSentByMe,
+        textColor: textColor,
+      );
+    }
+    else {
       return reausabletext(
         message.content.toString(),
         color: textColor,
@@ -388,6 +398,10 @@ class ChatBubble extends StatelessWidget {
 
       case "document":
         preview = "📄 Document";
+        break;
+
+      case "location":
+        preview = "📍 Location";
         break;
     }
 
@@ -640,6 +654,7 @@ class GroupChatBubble extends StatelessWidget {
                       _buildMessageContent(
                         message,
                         textColor,
+                        isSentByMe
                       ),
                     ],
                   ),
@@ -730,6 +745,9 @@ class GroupChatBubble extends StatelessWidget {
       case "document":
         preview = "📄 Document";
         break;
+      case "location":
+        preview = "📍 Location";
+        break;
     }
 
     return GestureDetector(
@@ -785,7 +803,9 @@ class GroupChatBubble extends StatelessWidget {
   Widget _buildMessageContent(
     MessageData message,
     Color textColor,
-  ) {
+      bool isSentByMe,
+
+      ) {
     if (message.messageType == "image" || message.messageType == "image_text") {
       final parts = message.content?.split("||") ?? [];
       final imagePart = message.content ?? "";
@@ -982,7 +1002,14 @@ class GroupChatBubble extends StatelessWidget {
             ),
         ],
       );
-    } else {
+    } else if (message.messageType == "location") {
+      return LocationBubbleWidget(
+        content: message.content,
+        isSentByMe: isSentByMe,
+        textColor: textColor,
+      );
+    }
+    else {
       return GestureDetector(
         onLongPress: () async {
           await Clipboard.setData(

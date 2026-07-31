@@ -670,6 +670,10 @@ class MemberscreenScreen extends GetView<MemberController> {
                               .get(PrefConst.userId)
                               .toString() !=
                           data?.userId.toString()) {
+                        debugPrint("========== CLICK ==========");
+                        debugPrint("USER ID      : ${data?.userId}");
+                        debugPrint("USER NAME    : ${data?.name}");
+                        debugPrint("USER IMAGE   : ${data?.profileImage}");
                         Get.toNamed(
                           Routes.chatScreen,
                           arguments: {

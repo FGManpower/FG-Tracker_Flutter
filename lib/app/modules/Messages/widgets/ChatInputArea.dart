@@ -1,5 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
+import 'dart:ui' as ui;
+import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:fgtracker/app/Core/constant/BottomSheet/ChatBottomSheet.dart';
 import 'package:fgtracker/app/Core/util/file_helper.dart';
 import 'package:fgtracker/app/Data/Services/file_services.dart';
@@ -15,9 +17,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:waveform_flutter/waveform_flutter.dart';
+import '../Controller/MessageController.dart';
 import 'message_Widgets.dart';
 
-class ChatInputArea extends StatelessWidget {
+class ChatInputArea extends StatefulWidget {
   final RxString messageText;
   final RxList<File> imagePath;
   final RxString videoPath;
@@ -34,42 +37,91 @@ class ChatInputArea extends StatelessWidget {
   final RxString videoDuration;
   final RxBool isUploadingVideo;
   final RxDouble uploadProgress;
+  final VoidCallback onLocationSelected;
+  final MessageController? messageController;
+  final GroupMessageController? groupMessageController;
   RxList<LocationData>? groupMembers;
 
-  GroupMessageController? groupMessageController;
+  ChatInputArea({
+    super.key,
+    required this.messageText,
+    required this.imagePath,
+    required this.videoPath,
+    required this.isSending,
+    required this.textController,
+    required this.onSend,
+    required this.onImageSelected,
+    required this.onvideoSelected,
+    required this.onVoiceSend,
+    required this.videoDuration,
+    required this.videoThumbnail,
+    required this.onDocumentSelected,
+    required this.documentPath,
+    required this.isUploadingVideo,
+    required this.uploadProgress,
+    this.groupMembers,
+    required this.onLocationSelected,
+    this.groupMessageController,
+    this.messageController,
+  });
 
-  ChatInputArea(
-      {super.key,
-      required this.messageText,
-      required this.imagePath,
-      required this.videoPath,
-      required this.isSending,
-      required this.textController,
-      required this.onSend,
-      required this.onImageSelected,
-      required this.onvideoSelected,
-      required this.onVoiceSend,
-      required this.videoDuration,
-      required this.videoThumbnail,
-      required this.onDocumentSelected,
-      required this.documentPath,
-      required this.isUploadingVideo,
-      required this.uploadProgress,
-      this.groupMembers,
-      this.groupMessageController});
+  @override
+  State<ChatInputArea> createState() => _ChatInputAreaState();
+}
 
+class _ChatInputAreaState extends State<ChatInputArea> {
   final voiceController = Get.put(VoiceRecordController());
+
+  late final FocusNode focusNode;
+
+  @override
+  void initState() {
+    super.initState();
+    focusNode = FocusNode();
+
+    focusNode.addListener(() {
+      if (focusNode.hasFocus) {
+        widget.messageController?.showEmoji.value = false;
+        widget.groupMessageController?.showEmoji.value = false;
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    focusNode.dispose();
+    super.dispose();
+  }
+
+
+  void _toggleEmoji() {
+    final isShowingEmoji = widget.messageController?.showEmoji.value ??
+        widget.groupMessageController?.showEmoji.value ??
+        false;
+
+    if (isShowingEmoji) {
+      widget.messageController?.showEmoji.value = false;
+      widget.groupMessageController?.showEmoji.value = false;
+      focusNode.requestFocus();
+    } else {
+      focusNode.unfocus();
+
+      Future.delayed(const Duration(milliseconds: 100), () {
+        if (!mounted) return;
+        widget.messageController?.showEmoji.value = true;
+        widget.groupMessageController?.showEmoji.value = true;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Obx(() {
-
-
-        final isMessageNotEmpty = messageText.value.trim().isNotEmpty;
-        final isImageSelected = imagePath.value.isNotEmpty;
-        final isVideoSelected = videoPath.value.isNotEmpty;
-        final isDocumentSelected = documentPath.value.isNotEmpty;
+        final isMessageNotEmpty = widget.messageText.value.trim().isNotEmpty;
+        final isImageSelected = widget.imagePath.value.isNotEmpty;
+        final isVideoSelected = widget.videoPath.value.isNotEmpty;
+        final isDocumentSelected = widget.documentPath.value.isNotEmpty;
         final shouldShowSend = isMessageNotEmpty ||
             isImageSelected ||
             isVideoSelected ||
@@ -99,15 +151,13 @@ class ChatInputArea extends StatelessWidget {
                   if (isImageSelected) _buildLargeImagePreview(),
                   if (isVideoSelected) _buildLargeVideoPreview(),
                   if (isDocumentSelected) _buildLargeDocumentPreview(),
-                  Obx(() {
-                    if (!voiceController.isRecording.value) {
-                      return const SizedBox();
-                    }
-
-                    return Container(
+                  if (voiceController.isRecording.value)
+                    Container(
                       margin: EdgeInsets.only(bottom: 8.h),
                       padding: EdgeInsets.symmetric(
-                          horizontal: 12.w, vertical: 14.h),
+                        horizontal: 12.w,
+                        vertical: 14.h,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.grey.shade200,
                         borderRadius: BorderRadius.circular(20.r),
@@ -121,8 +171,11 @@ class ChatInputArea extends StatelessWidget {
                             child: CircleAvatar(
                               radius: 20.r,
                               backgroundColor: Colors.red,
-                              child: Icon(Icons.delete,
-                                  color: Colors.white, size: 20.sp),
+                              child: Icon(
+                                Icons.delete,
+                                color: Colors.white,
+                                size: 20.sp,
+                              ),
                             ),
                           ),
                           SizedBox(width: 12.w),
@@ -144,10 +197,10 @@ class ChatInputArea extends StatelessWidget {
                                     stream: voiceController.amplitudeStream,
                                     barBuilder: (animation, amplitude) =>
                                         WaveFormBar(
-                                      animation: animation,
-                                      amplitude: amplitude,
-                                      color: ToggleThemeData.darkPurple,
-                                    ),
+                                          animation: animation,
+                                          amplitude: amplitude,
+                                          color: ToggleThemeData.darkPurple,
+                                        ),
                                   ),
                                 ),
                               ],
@@ -178,41 +231,43 @@ class ChatInputArea extends StatelessWidget {
                           GestureDetector(
                             onTap: () async {
                               final path =
-                                  await voiceController.stopRecording();
+                              await voiceController.stopRecording();
                               if (path != null) {
-                                onVoiceSend!(path);
+                                widget.onVoiceSend!(path);
                               }
                             },
                             child: CircleAvatar(
                               radius: 20.r,
                               backgroundColor: ToggleThemeData.darkPurple,
-                              child: Icon(Icons.send,
-                                  color: Colors.white, size: 20.sp),
+                              child: Icon(
+                                Icons.send,
+                                color: Colors.white,
+                                size: 20.sp,
+                              ),
                             ),
                           ),
                         ],
                       ),
-                    );
-                  }),
+                    ),
                   Row(
                     children: [
                       SizedBox(width: 5.w),
-                      if (!voiceController.isRecording.value)
-                        Expanded(
-                            child: Column(
+                      Expanded(
+                        child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            if (groupMessageController != null &&
-                                groupMessageController!.showMentionList.value &&
-                                groupMessageController!
+                            if (widget.groupMessageController != null &&
+                                widget.groupMessageController!
+                                    .showMentionList.value &&
+                                widget.groupMessageController!
                                     .filteredMembers.isNotEmpty)
                               MentionlistItem(
-                                filteredMembers:
-                                    groupMessageController!.filteredMembers,
+                                filteredMembers: widget
+                                    .groupMessageController!.filteredMembers,
                                 onTap: (member) {
-                                  groupMessageController!.insertMention(
+                                  widget.groupMessageController!.insertMention(
                                     member: member,
-                                    textController: textController,
+                                    textController: widget.textController,
                                   );
                                 },
                               ),
@@ -220,28 +275,44 @@ class ChatInputArea extends StatelessWidget {
                               children: [
                                 Flexible(
                                   child: TextField(
-                                    controller: textController,
+                                    controller: widget.textController,
+                                    // CHANGED: FocusNode attached to TextField
+                                    focusNode: focusNode,
                                     onChanged: (val) {
-                                      messageText.value = val;
-                                      if (groupMembers?.isNotEmpty == true) {
-                                        groupMessageController?.onTextChanged(
-                                          textController: textController,
+                                      widget.messageText.value = val;
+                                      if (widget.groupMembers?.isNotEmpty ==
+                                          true) {
+                                        widget.groupMessageController
+                                            ?.onTextChanged(
+                                          textController:
+                                          widget.textController,
                                         );
                                       }
                                     },
                                     style: TextStyle(
-                                        color: ToggleThemeData.white,
-                                        fontFamily: FontFamily.interMedium,
-                                        fontSize: 16.sp),
+                                      color: ToggleThemeData.white,
+                                      fontFamily: FontFamily.interMedium,
+                                      fontSize: 16.sp,
+                                    ),
                                     maxLines: 4,
                                     minLines: 1,
                                     expands: false,
                                     decoration: InputDecoration(
                                       hintText: "Type a message",
-                                      hintStyle: TextStyle(color: Colors.white),
+                                      prefixIcon: GestureDetector(
+
+                                        onTap: _toggleEmoji,
+                                        child: Icon(
+                                          Icons.emoji_emotions_outlined,
+                                          color: Colors.white,
+                                          size: 26.sp,
+                                        ),
+                                      ),
+                                      hintStyle:
+                                      TextStyle(color: Colors.white),
                                       border: OutlineInputBorder(
                                         borderRadius:
-                                            BorderRadius.circular(30.r),
+                                        BorderRadius.circular(30.r),
                                         borderSide: BorderSide.none,
                                       ),
                                       suffixIcon: Padding(
@@ -252,11 +323,12 @@ class ChatInputArea extends StatelessWidget {
                                               context,
                                               onGallery: () async {
                                                 final List<File> images =
-                                                    await FileServices()
-                                                        .pickMultipleImagesFromGallery();
+                                                await FileServices()
+                                                    .pickMultipleImagesFromGallery();
 
                                                 if (images.isNotEmpty) {
-                                                  onImageSelected(images);
+                                                  widget.onImageSelected(
+                                                      images);
                                                   Navigator.pop(context);
                                                 }
                                               },
@@ -264,16 +336,16 @@ class ChatInputArea extends StatelessWidget {
                                                 Navigator.pop(context);
                                                 var path = await FileServices()
                                                     .pickVideoFromGallery();
-                                                onvideoSelected(
+                                                widget.onvideoSelected(
                                                     path?.path ?? "");
                                               },
                                               onDocument: () async {
                                                 Navigator.pop(context);
                                                 final file =
-                                                    await FileServices()
-                                                        .pickDocument();
+                                                await FileServices()
+                                                    .pickDocument();
                                                 if (file != null) {
-                                                  onDocumentSelected(
+                                                  widget.onDocumentSelected(
                                                       file.path ?? "");
                                                 }
                                               },
@@ -283,46 +355,53 @@ class ChatInputArea extends StatelessWidget {
                                                 WidgetsBinding.instance
                                                     .addPostFrameCallback(
                                                         (_) async {
-                                                  final result =
+                                                      final result =
                                                       await Get.toNamed(
                                                           Routes.cameraScreen);
 
-                                                  if (result != null &&
-                                                      result is String &&
-                                                      result.isNotEmpty) {
-                                                    final ext = result
-                                                        .split('.')
-                                                        .last
-                                                        .toLowerCase();
-                                                    const videoExtensions = [
-                                                      'mp4',
-                                                      'mov',
-                                                      'avi',
-                                                      'mkv',
-                                                      '3gp',
-                                                      'webm'
-                                                    ];
+                                                      if (result != null &&
+                                                          result is String &&
+                                                          result.isNotEmpty) {
+                                                        final ext = result
+                                                            .split('.')
+                                                            .last
+                                                            .toLowerCase();
+                                                        const videoExtensions = [
+                                                          'mp4',
+                                                          'mov',
+                                                          'avi',
+                                                          'mkv',
+                                                          '3gp',
+                                                          'webm'
+                                                        ];
 
-                                                    if (videoExtensions
-                                                        .contains(ext)) {
-                                                      onvideoSelected(result);
-                                                    } else {
-                                                      if (result.isNotEmpty) {
-                                                        onImageSelected(
-                                                            [File(result)]);
+                                                        if (videoExtensions
+                                                            .contains(ext)) {
+                                                          widget.onvideoSelected(
+                                                              result);
+                                                        } else {
+                                                          if (result.isNotEmpty) {
+                                                            widget.onImageSelected(
+                                                                [File(result)]);
+                                                          }
+                                                        }
                                                       }
-                                                    }
-                                                  }
-                                                });
+                                                    });
+                                              },
+                                              onLocation: () async {
+                                                Navigator.pop(context);
+
+                                                widget.onLocationSelected();
                                               },
                                             );
                                           },
                                           child: CircleAvatar(
                                             backgroundColor:
-                                                ToggleThemeData.white,
+                                            ToggleThemeData.white,
                                             radius: 16,
                                             child: reausableIcon(
-                                              icon: Icons.file_present_outlined,
+                                              icon:
+                                              Icons.file_present_outlined,
                                               color: ToggleThemeData.Appcolor,
                                               size: 25,
                                             ),
@@ -332,7 +411,9 @@ class ChatInputArea extends StatelessWidget {
                                       fillColor: ToggleThemeData.Appcolor,
                                       filled: true,
                                       contentPadding: EdgeInsets.symmetric(
-                                          horizontal: 15.w, vertical: 14.h),
+                                        horizontal: 15.w,
+                                        vertical: 14.h,
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -340,13 +421,17 @@ class ChatInputArea extends StatelessWidget {
                                 if (shouldShowSend &&
                                     !voiceController.isRecording.value)
                                   GestureDetector(
-                                    onTap: isSending.value ? null : onSend,
+                                    onTap: widget.isSending.value
+                                        ? null
+                                        : widget.onSend,
                                     child: CircleAvatar(
                                       radius: 24.r,
                                       backgroundColor:
-                                          ToggleThemeData.darkPurple,
-                                      child:
-                                          Icon(Icons.send, color: Colors.white),
+                                      ToggleThemeData.darkPurple,
+                                      child: Icon(
+                                        Icons.send,
+                                        color: Colors.white,
+                                      ),
                                     ),
                                   )
                                 else if (!voiceController.isRecording.value)
@@ -357,19 +442,49 @@ class ChatInputArea extends StatelessWidget {
                                     child: CircleAvatar(
                                       radius: 24.r,
                                       backgroundColor:
-                                          ToggleThemeData.darkPurple,
-                                      child:
-                                          Icon(Icons.mic, color: Colors.white),
+                                      ToggleThemeData.darkPurple,
+                                      child: Icon(
+                                        Icons.mic,
+                                        color: Colors.white,
+                                      ),
                                     ),
                                   )
                                 else
                                   const SizedBox(),
                               ],
-                            )
+                            ),
                           ],
-                        )),
+                        ),
+                      ),
                     ],
                   ),
+                  if (!voiceController.isRecording.value &&
+                      (widget.messageController?.showEmoji.value ??
+                          widget.groupMessageController?.showEmoji.value ??
+                          false))
+                    SizedBox(
+                      height: 300.h,
+                      child: EmojiPicker(
+                        textEditingController: widget.textController,
+                        onEmojiSelected: (category, emoji) {
+                          widget.messageText.value = widget.textController.text;
+                        },
+                        config: Config(
+                          height: 300.h,
+                          checkPlatformCompatibility: true,
+                          emojiViewConfig: EmojiViewConfig(
+                            columns: 8,
+                            emojiSizeMax: 30 *
+                                (ui.PlatformDispatcher
+                                    .instance.views.first.devicePixelRatio),
+                          ),
+                          categoryViewConfig: const CategoryViewConfig(),
+                          bottomActionBarConfig:
+                          const BottomActionBarConfig(),
+                          searchViewConfig: const SearchViewConfig(),
+                        ),
+                      ),
+                    ),
                 ],
               ),
             ),
@@ -384,7 +499,7 @@ class ChatInputArea extends StatelessWidget {
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       padding: EdgeInsets.all(8.w),
-      itemCount: imagePath.length,
+      itemCount: widget.imagePath.length,
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 3,
         crossAxisSpacing: 8.w,
@@ -396,7 +511,7 @@ class ChatInputArea extends StatelessWidget {
             ClipRRect(
               borderRadius: BorderRadius.circular(12.r),
               child: ImageViewerWidget(
-                imageProvider: FileImage(imagePath[index]),
+                imageProvider: FileImage(widget.imagePath[index]),
                 width: double.infinity,
                 height: double.infinity,
                 borderRadius: 12,
@@ -406,7 +521,7 @@ class ChatInputArea extends StatelessWidget {
               top: 4.h,
               right: 4.w,
               child: InkWell(
-                onTap: () => imagePath.removeAt(index),
+                onTap: () => widget.imagePath.removeAt(index),
                 child: CircleAvatar(
                   radius: 12.r,
                   backgroundColor: Colors.black54,
@@ -441,14 +556,14 @@ class ChatInputArea extends StatelessWidget {
                 fit: StackFit.expand,
                 children: [
                   Obx(
-                    () => videoThumbnail.value != null
+                        () => widget.videoThumbnail.value != null
                         ? Image.memory(
-                            videoThumbnail.value!,
-                            fit: BoxFit.cover,
-                          )
+                      widget.videoThumbnail.value!,
+                      fit: BoxFit.cover,
+                    )
                         : Container(
-                            color: Colors.black87,
-                          ),
+                      color: Colors.black87,
+                    ),
                   ),
                   Container(
                     decoration: BoxDecoration(
@@ -463,7 +578,7 @@ class ChatInputArea extends StatelessWidget {
                     ),
                   ),
                   Obx(() {
-                    if (!isUploadingVideo.value) {
+                    if (!widget.isUploadingVideo.value) {
                       return Center(
                         child: Container(
                           width: 60.w,
@@ -494,17 +609,17 @@ class ChatInputArea extends StatelessWidget {
                                 width: 70.w,
                                 height: 70.w,
                                 child: CircularProgressIndicator(
-                                  value: uploadProgress.value,
+                                  value: widget.uploadProgress.value,
                                   strokeWidth: 4,
                                   backgroundColor: Colors.white24,
                                   valueColor:
-                                      const AlwaysStoppedAnimation<Color>(
+                                  const AlwaysStoppedAnimation<Color>(
                                     Colors.white,
                                   ),
                                 ),
                               ),
                               Text(
-                                "${(uploadProgress.value * 100).toInt()}%",
+                                "${(widget.uploadProgress.value * 100).toInt()}%",
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 13.sp,
@@ -525,7 +640,7 @@ class ChatInputArea extends StatelessWidget {
                       children: [
                         Expanded(
                           child: Text(
-                            videoPath.value.split('/').last,
+                            widget.videoPath.value.split('/').last,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
@@ -537,8 +652,8 @@ class ChatInputArea extends StatelessWidget {
                         ),
                         SizedBox(width: 8.w),
                         Obx(
-                          () => Text(
-                            videoDuration.value,
+                              () => Text(
+                            widget.videoDuration.value,
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 11.sp,
@@ -558,13 +673,11 @@ class ChatInputArea extends StatelessWidget {
             top: 8.h,
             child: GestureDetector(
               onTap: () {
-                // if (isUploadingVideo.value) return;
-
-                videoPath.value = '';
-                videoThumbnail.value = null;
-                videoDuration.value = '';
-                isUploadingVideo.value = false;
-                uploadProgress.value = 0.0;
+                widget.videoPath.value = '';
+                widget.videoThumbnail.value = null;
+                widget.videoDuration.value = '';
+                widget.isUploadingVideo.value = false;
+                widget.uploadProgress.value = 0.0;
               },
               child: CircleAvatar(
                 radius: 14.r,
@@ -603,11 +716,11 @@ class ChatInputArea extends StatelessWidget {
                   width: 55.w,
                   height: 55.w,
                   decoration: BoxDecoration(
-                    color: getFileColor(documentPath.value),
+                    color: getFileColor(widget.documentPath.value),
                     borderRadius: BorderRadius.circular(12.r),
                   ),
                   child: Icon(
-                    getFileIcon(documentPath.value),
+                    getFileIcon(widget.documentPath.value),
                     color: Colors.white,
                     size: 28.sp,
                   ),
@@ -619,7 +732,7 @@ class ChatInputArea extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        documentPath.value.split('/').last,
+                        widget.documentPath.value.split('/').last,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
@@ -630,7 +743,8 @@ class ChatInputArea extends StatelessWidget {
                       ),
                       SizedBox(height: 5.h),
                       Text(
-                        getFileExtension(documentPath.value).toUpperCase(),
+                        getFileExtension(widget.documentPath.value)
+                            .toUpperCase(),
                         style: TextStyle(
                           color: Colors.white70,
                           fontSize: 11.sp,
@@ -646,7 +760,7 @@ class ChatInputArea extends StatelessWidget {
             right: 8.w,
             top: 8.h,
             child: GestureDetector(
-              onTap: () => documentPath.value = '',
+              onTap: () => widget.documentPath.value = '',
               child: CircleAvatar(
                 radius: 14.r,
                 backgroundColor: Colors.black54,
