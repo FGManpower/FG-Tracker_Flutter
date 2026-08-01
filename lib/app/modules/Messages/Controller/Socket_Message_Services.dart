@@ -101,8 +101,12 @@ class SocketMessageService extends GetxService {
 
     _socket?.on('receive_message', (data) {
 
-      log("========== RECEIVE MESSAGE ==========");
-      log(data.toString());
+      print("=================================");
+      print("RECEIVE MESSAGE");
+      print("Message Type : ${data['messageType']}");
+      print("Content      : ${data['content']}");
+      print("Full Data    : $data");
+      print("=================================");
 
       final dataGroupId = int.tryParse(data['groupId'].toString());
 

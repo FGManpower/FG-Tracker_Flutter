@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geocoding/geocoding.dart' hide Location;
 import 'package:location/location.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../../../Model/LocationMessage.dart';
 import '../../../config/themes_data.dart';
@@ -275,35 +276,80 @@ class _LocationPickerPageState extends State<LocationPickerPage> {
 
             SizedBox(height: 18.h),
 
-            SizedBox(
-              width: double.infinity,
-              height: 50.h,
-              child: ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: ToggleThemeData.Appcolor,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14.r),
+            Row(
+              children: [
+                Expanded(
+                  child: SizedBox(
+                    height: 50.h,
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: ToggleThemeData.Appcolor,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14.r),
+                        ),
+                      ),
+                      onPressed: _sendLocation,
+                      icon: const Icon(
+                        Icons.send,
+                        color: Colors.white,
+                      ),
+                      label: const Text(
+                        "Send Location",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
                   ),
                 ),
-                onPressed: _sendLocation,
-                icon: const Icon(
-                  Icons.send,
-                  color: Colors.white,
-                ),
-                label: const Text(
-                  "Send Location",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
+                SizedBox(width: 10.w),
+                Expanded(
+                  child: SizedBox(
+                    height: 50.h,
+                    child: OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: ToggleThemeData.Appcolor,
+                        side: BorderSide(
+                          color: ToggleThemeData.Appcolor,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14.r),
+                        ),
+                      ),
+                      onPressed: _shareLocation,
+                      icon: Icon(
+                        Icons.share,
+                        color: ToggleThemeData.Appcolor,
+                      ),
+                      label: Text(
+                        "Share Location",
+                        style: TextStyle(
+                          color: ToggleThemeData.Appcolor,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
                   ),
                 ),
-              ),
+              ],
             ),
           ],
         ),
       ),
     );
+  }
+
+  void _shareLocation() {
+    if (_selectedLatLng == null) return;
+
+    final mapsUrl =
+        "https://maps.google.com/?q=${_selectedLatLng!.latitude},${_selectedLatLng!.longitude}";
+
+    final shareText = "$_selectedAddress\n$mapsUrl";
+
+    Share.share(shareText);
   }
 
   void _sendLocation() {

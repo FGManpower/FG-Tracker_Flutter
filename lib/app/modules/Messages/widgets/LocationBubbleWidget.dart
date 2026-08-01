@@ -30,15 +30,17 @@ class LocationBubbleWidget extends StatelessWidget {
 
     try {
       location = LocationMessage.fromContent(content!);
-    } catch (e) {
+    } catch (_) {
       try {
-        location = LocationMessage.fromJson(
-          jsonDecode(content!),
-        );
+        location = LocationMessage.fromJson(jsonDecode(content!));
       } catch (_) {
         return _errorWidget();
       }
     }
+
+    final bubbleColor = isSentByMe
+        ? Colors.white.withOpacity(.10)
+        : const Color(0xffF7F7F9);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -46,54 +48,143 @@ class LocationBubbleWidget extends StatelessWidget {
         Row(
           children: [
             const Icon(
-              Icons.location_on,
-              color: Colors.red,
-              size: 20,
+              Icons.location_on_rounded,
+              color: Colors.redAccent,
+              size: 18,
             ),
-            SizedBox(width: 6.w),
-            Expanded(
-              child: Text(
-                "📍 Shared Location",
-                style: TextStyle(
-                  color: textColor,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 13.sp,
-                  fontFamily: FontFamily.interMedium,
-                ),
+            SizedBox(width: 5.w),
+            Text(
+              "Shared Location",
+              style: TextStyle(
+                fontSize: 13.sp,
+                fontFamily: FontFamily.interMedium,
+                fontWeight: FontWeight.w700,
+                color: textColor,
               ),
             ),
           ],
         ),
-        SizedBox(height: 10.h),
-        Container(
-          width: double.infinity,
-          padding: EdgeInsets.all(12.w),
-          decoration: BoxDecoration(
-            color: isSentByMe
-                ? Colors.white.withOpacity(.12)
-                : Colors.grey.shade100,
-            borderRadius: BorderRadius.circular(12.r),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                location.locationName,
-                style: TextStyle(
-                  color: textColor,
-                  fontSize: 12.sp,
-                ),
+
+        SizedBox(height: 6.h),
+
+        InkWell(
+          borderRadius: BorderRadius.circular(14.r),
+          onTap: () => _openMap(location!),
+          child: Container(
+            decoration: BoxDecoration(
+              color: bubbleColor,
+              borderRadius: BorderRadius.circular(14.r),
+              border: isSentByMe
+                  ? null
+                  : Border.all(
+                color: Colors.grey.shade300,
               ),
-              SizedBox(height: 12.h),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: () => _openMap(location!),
-                  icon: const Icon(Icons.map),
-                  label: const Text("Open in Maps"),
+            ),
+            child: Column(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.vertical(
+                    top: Radius.circular(14.r),
+                  ),
+                  child: SizedBox(
+                    height: 85.h,
+                    width: double.infinity,
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        Container(
+                          color: const Color(0xffECEFF3),
+                        ),
+
+                        IgnorePointer(
+                          child: Opacity(
+                            opacity: .35,
+                            child: Image.asset(
+                              "assets/images/map_placeholder.png",
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) {
+                                return const SizedBox();
+                              },
+                            ),
+                          ),
+                        ),
+
+                        const Center(
+                          child: Icon(
+                            Icons.location_on,
+                            color: Colors.red,
+                            size: 42,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
-            ],
+
+                Padding(
+                  padding: EdgeInsets.all(12.w),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        location.locationName,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: textColor,
+                          fontSize: 13.sp,
+                          height: 1.35,
+                          fontFamily: FontFamily.interRegular,
+                        ),
+                      ),
+
+                      SizedBox(height: 10.h),
+
+                      Container(
+                        height: 36.h,
+                        decoration: BoxDecoration(
+                          color: isSentByMe
+                              ? Colors.white
+                              : const Color(0xff6C4EF6),
+                          borderRadius: BorderRadius.circular(30.r),
+                        ),
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(30.r),
+                            onTap: () => _openMap(location!),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.map_outlined,
+                                  size: 20,
+                                  color: isSentByMe
+                                      ? const Color(0xff6C4EF6)
+                                      : Colors.white,
+                                ),
+                                SizedBox(width: 6.w),
+                                Text(
+                                  "Open in Google Maps",
+                                  style: TextStyle(
+                                    color: isSentByMe
+                                        ? const Color(0xff6C4EF6)
+                                        : Colors.white,
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 13.sp,
+                                    fontFamily: FontFamily.interMedium,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ],
