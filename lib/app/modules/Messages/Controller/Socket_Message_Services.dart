@@ -100,11 +100,15 @@ class SocketMessageService extends GetxService {
     _socket?.off('receive_message');
 
     _socket?.on('receive_message', (data) {
+
+      log("========== RECEIVE MESSAGE ==========");
+      log(data.toString());
+
       final dataGroupId = int.tryParse(data['groupId'].toString());
 
       if (dataGroupId == groupId) {
         if ((data['senderId'] == senderId &&
-                data['receiverId'] == recieverId) ||
+            data['receiverId'] == recieverId) ||
             (data['senderId'] == recieverId &&
                 data['receiverId'] == senderId)) {
           callback?.call(data);

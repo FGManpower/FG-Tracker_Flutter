@@ -3,30 +3,27 @@ import 'dart:convert';
 class LocationMessage {
   final double latitude;
   final double longitude;
-  final String address;
-  final String title;
+  final String locationName;
 
   const LocationMessage({
     required this.latitude,
     required this.longitude,
-    required this.address,
-    required this.title,
+    required this.locationName,
+
   });
 
   factory LocationMessage.fromJson(Map<String, dynamic> json) {
     return LocationMessage(
       latitude: (json["latitude"] as num?)?.toDouble() ?? 0.0,
       longitude: (json["longitude"] as num?)?.toDouble() ?? 0.0,
-      address: json["address"] ?? "",
-      title: json["title"] ?? "Shared Location",    );
+      locationName: json["locationName"] ?? "",    );
   }
 
   Map<String, dynamic> toJson() {
     return {
       "latitude": latitude,
       "longitude": longitude,
-      "address": address,
-      "title": title,
+      "locationName": locationName,
     };
   }
 

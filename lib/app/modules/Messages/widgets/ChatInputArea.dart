@@ -276,7 +276,6 @@ class _ChatInputAreaState extends State<ChatInputArea> {
                                 Flexible(
                                   child: TextField(
                                     controller: widget.textController,
-                                    // CHANGED: FocusNode attached to TextField
                                     focusNode: focusNode,
                                     onChanged: (val) {
                                       widget.messageText.value = val;
@@ -474,13 +473,16 @@ class _ChatInputAreaState extends State<ChatInputArea> {
                           checkPlatformCompatibility: true,
                           emojiViewConfig: EmojiViewConfig(
                             columns: 8,
-                            emojiSizeMax: 30 *
+                            emojiSizeMax: 10 *
                                 (ui.PlatformDispatcher
                                     .instance.views.first.devicePixelRatio),
                           ),
                           categoryViewConfig: const CategoryViewConfig(),
                           bottomActionBarConfig:
-                          const BottomActionBarConfig(),
+                          const BottomActionBarConfig(
+                            showSearchViewButton: false,
+                              enabled: false
+                          ),
                           searchViewConfig: const SearchViewConfig(),
                         ),
                       ),

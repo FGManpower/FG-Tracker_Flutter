@@ -53,9 +53,7 @@ class LocationBubbleWidget extends StatelessWidget {
             SizedBox(width: 6.w),
             Expanded(
               child: Text(
-                location.title.isNotEmpty
-                    ? location.title
-                    : "Shared Location",
+                "📍 Shared Location",
                 style: TextStyle(
                   color: textColor,
                   fontWeight: FontWeight.w700,
@@ -66,9 +64,7 @@ class LocationBubbleWidget extends StatelessWidget {
             ),
           ],
         ),
-
         SizedBox(height: 10.h),
-
         Container(
           width: double.infinity,
           padding: EdgeInsets.all(12.w),
@@ -82,15 +78,13 @@ class LocationBubbleWidget extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                location.address,
+                location.locationName,
                 style: TextStyle(
                   color: textColor,
                   fontSize: 12.sp,
                 ),
               ),
-
               SizedBox(height: 12.h),
-
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(

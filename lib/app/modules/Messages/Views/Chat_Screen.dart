@@ -260,7 +260,7 @@ class ChatScreen extends GetView<MessageController> {
                 final location = await Get.to<LocationMessage>(
                       () => const LocationPickerPage(),
                 );
-
+    print("++++  ${location!.latitude} ");
                 if (location != null) {
                   await controller.sendLocation(
                     location: location,

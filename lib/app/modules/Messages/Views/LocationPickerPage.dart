@@ -312,8 +312,11 @@ class _LocationPickerPageState extends State<LocationPickerPage> {
     final location = LocationMessage(
       latitude: _selectedLatLng!.latitude,
       longitude: _selectedLatLng!.longitude,
-      address: _selectedAddress,
-      title: "Shared Location",
+      locationName: _selectedAddress,
+    );
+
+    debugPrint(
+      "SendLocation -> lat: ${location.latitude}, lng: ${location.longitude}, name: ${location.locationName}",
     );
 
     Get.back(result: location);
