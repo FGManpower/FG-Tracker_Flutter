@@ -159,6 +159,21 @@ class GroupMessageController extends GetxController {
         scrollToBottom();
       },
     );
+    socketService.listenMessageDeleted(
+      callback: (data) {
+        final int? messageId = data["messageId"];
+
+        if (messageId == null) return;
+
+        _messages.removeWhere(
+              (e) => e.id == messageId,
+        );
+
+        updateMessageStream();
+
+        log("GROUP MESSAGE DELETED => $messageId");
+      },
+    );
 
     getGroupMessages();
 
@@ -352,6 +367,20 @@ print("TEXT=======$text");
       log("LOCATION SEND ERROR => $e");
     }
   }
+
+  Future<void> deleteMessage({
+    required int messageId,
+    required String deleteType,
+  }) async {
+    socketService.deleteMessage(
+      messageId: messageId,
+      userId: Global.storageServices
+          .get(PrefConst.userId)
+          .toString(),
+      deleteType: deleteType,
+    );
+  }
+
 
   Future<void> getGroupMessages() async {
     isLoading.value = true;

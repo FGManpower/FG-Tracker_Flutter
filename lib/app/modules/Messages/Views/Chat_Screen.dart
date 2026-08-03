@@ -1,4 +1,3 @@
-
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/Dialog/Common_dialog.dart';
@@ -41,8 +40,7 @@ class ChatScreen extends GetView<MessageController> {
       final rawLastSeen = userData.lastSeen!.trim();
 
       try {
-        lastSeenText =
-            Tracking().getTimeAgo(DateTime.parse(rawLastSeen));
+        lastSeenText = Tracking().getTimeAgo(DateTime.parse(rawLastSeen));
       } catch (_) {
         // Already formatted string ("2 hours ago", "Just now", etc.)
         lastSeenText = rawLastSeen;
@@ -60,7 +58,6 @@ class ChatScreen extends GetView<MessageController> {
       child: Scaffold(
         backgroundColor: ToggleThemeData.chatBackground,
         resizeToAvoidBottomInset: true,
-
         appBar: CommonChatAppBar(
           profileImageUrl:
               "${ConstRes.aImageBaseUrl}${userData.profileImage ?? ""}",
@@ -165,7 +162,6 @@ class ChatScreen extends GetView<MessageController> {
         body: SafeArea(
           child: Column(
             children: [
-
               Expanded(
                 child: ChatList(
                   controller: controller,
@@ -178,7 +174,8 @@ class ChatScreen extends GetView<MessageController> {
 
                 return Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     border: Border(
@@ -254,19 +251,18 @@ class ChatScreen extends GetView<MessageController> {
                   Navigator.pop(context);
                   if (Utility.isNotNullEmptyOrFalse(path)) {
                     controller.documentPath.value = path;
-
                   }
-                }, onLocationSelected: () async {
-                final location = await Get.to<LocationMessage>(
-                      () => const LocationPickerPage(),
-                );
-    print("++++  ${location!.latitude} ");
-                if (location != null) {
-                  await controller.sendLocation(
-                    location: location,
+                },
+                onLocationSelected: () async {
+                  final location = await Get.to<LocationMessage>(
+                    () => const LocationPickerPage(),
                   );
-                }
-              },
+                  if (location != null) {
+                    await controller.sendLocation(
+                      location: location,
+                    );
+                  }
+                },
               ),
             ],
           ),

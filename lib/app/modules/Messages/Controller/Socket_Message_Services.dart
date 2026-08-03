@@ -187,6 +187,45 @@ class SocketMessageService extends GetxService {
       },
     );
   }
+  void deleteMessage({
+    required int messageId,
+    required String userId,
+    required String deleteType,
+  }) {
+    print("=================================");
+    print("DELETE PAYLOAD =====>");
+    print({
+      "messageId": messageId,
+      "userId": userId,
+      "deleteType": deleteType,
+    });
+    print("=================================");
+
+    socket.emit(
+      "delete_message",
+      {
+        "messageId": messageId,
+        "userId": userId,
+        "deleteType": deleteType,
+      },
+    );
+  }
+  void listenMessageDeleted({
+    required Function(dynamic data) callback,
+  }) {
+    socket.off("message_deleted");
+
+    socket.on(
+      "message_deleted",
+          (data) {
+        print("============= MESSAGE DELETED =============");
+        print(data);
+        print("===========================================");
+
+        callback(data);
+      },
+    );
+  }
 
   void disconnectSocket() {
     _socket?.disconnect();

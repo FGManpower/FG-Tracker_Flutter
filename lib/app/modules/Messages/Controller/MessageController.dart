@@ -181,6 +181,22 @@ class MessageController extends GetxController with WidgetsBindingObserver {
       },
     );
 
+    socketService.listenMessageDeleted(
+      callback: (data) {
+        final int? messageId = data["messageId"];
+
+        if (messageId == null) return;
+
+        _messages.removeWhere(
+              (e) => e.id == messageId,
+        );
+
+        updateMessageStream();
+
+        log("Message Deleted => $messageId");
+      },
+    );
+
     getMessageHistory(userId, groupId);
   }
   bool isUserAtBottom() {
@@ -363,6 +379,23 @@ class MessageController extends GetxController with WidgetsBindingObserver {
       log("LOCATION SEND ERROR => $e");
     }
   }
+
+  Future<void> deleteMessage({
+    required int messageId,
+    required String deleteType,
+  }) async {
+    socketService.deleteMessage(
+      messageId: messageId,
+      userId: Global.storageServices
+          .get(PrefConst.userId)
+          .toString(),
+      deleteType: deleteType,
+    );
+  }
+
+
+
+
   Future<void> getMessageHistory(String recieverId, int groupId) async {
     try {
       var result = await MessageRepo.MessageHistory(
