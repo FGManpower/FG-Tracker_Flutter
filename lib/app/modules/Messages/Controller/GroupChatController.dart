@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:developer';
 import 'dart:io';
 import 'dart:typed_data';
+import 'package:fgtracker/app/Model/ContactMessage.dart';
 import 'package:fgtracker/app/Model/LocationMessage.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:fgtracker/app/Core/util/DateTime_Format.dart';
@@ -365,6 +366,28 @@ print("TEXT=======$text");
       scrollToBottom();
     } catch (e) {
       log("LOCATION SEND ERROR => $e");
+    }
+  }
+
+  Future<void> sendContact({
+    required ContactMessage contact,
+  }) async {
+    try {
+      socketService.sendGroupMessage(
+        groupId: groupId,
+        content: contact.toContent(),
+        messageType: "contact",
+        replyId: replyMessage.value?.id,
+        replyMessage: replyMessage.value?.content,
+        replyType: replyMessage.value?.messageType,
+        replySender: replyMessage.value?.senderName,
+      );
+
+      clearReply();
+
+      scrollToBottom();
+    } catch (e) {
+      log("CONTACT SEND ERROR => $e");
     }
   }
 

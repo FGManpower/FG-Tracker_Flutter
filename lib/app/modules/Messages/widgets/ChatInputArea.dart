@@ -29,7 +29,7 @@ class ChatInputArea extends StatefulWidget {
   final TextEditingController textController;
   final VoidCallback onSend;
   void Function(String)? onVoiceSend;
-
+  final VoidCallback onContactSelected;
   final Function(List<File> path) onImageSelected;
   final Function(String path) onvideoSelected;
   final Function(String path) onDocumentSelected;
@@ -60,6 +60,7 @@ class ChatInputArea extends StatefulWidget {
     required this.isUploadingVideo,
     required this.uploadProgress,
     this.groupMembers,
+    required this.onContactSelected,
     required this.onLocationSelected,
     this.groupMessageController,
     this.messageController,
@@ -391,6 +392,11 @@ class _ChatInputAreaState extends State<ChatInputArea> {
                                                 Navigator.pop(context);
 
                                                 widget.onLocationSelected();
+                                              },
+                                              onContact: () async {
+                                                Navigator.pop(context);
+
+                                                widget.onContactSelected();
                                               },
                                             );
                                           },

@@ -34,7 +34,7 @@ dependencies:
   cached_network_image: ^3.2.1
   flutter_custom_clippers: ^2.1.0
   skeletonizer: ^2.0.1
-  url_launcher: ^6.1.10
+  url_launcher: ^6.3.2
   google_mlkit_barcode_scanning: ^0.14.2
   qr_code_scanner_plus: ^2.0.10+1
   permission_handler: ^12.0.0+1
@@ -81,7 +81,7 @@ dependencies:
   gal: ^2.3.0
   fluster: ^1.2.0
   upgrader: ^13.5.0
-  flutter_contacts: ^2.1.0
+  flutter_contacts: ^1.1.9+2
   video_player: ^2.10.1
   chewie: ^1.13.1
   video_thumbnail: ^0.5.6
@@ -91,6 +91,7 @@ dependencies:
   proximity_screen_lock: ^2.3.0
   scrollable_positioned_list: ^0.3.8
   emoji_picker_flutter: ^3.1.0
+  flutter_linkify: ^6.0.0
 
 
 

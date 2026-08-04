@@ -42,7 +42,7 @@ Widget buildInput({
 Widget buildTextField(
   IconData? icon,
   String hint, {
-  TextEditingController? passwordController, // ✅ Add this
+  TextEditingController? passwordController,
 
   required TextEditingController controller,
   bool isPassword = false,

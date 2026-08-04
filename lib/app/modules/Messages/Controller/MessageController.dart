@@ -9,6 +9,7 @@ import 'package:fgtracker/app/Core/values/Dialog/Common_dialog.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Data/Repositories/GetMessageRepo.dart';
 import 'package:fgtracker/app/Data/Services/CallStateTracker.dart';
+import 'package:fgtracker/app/Model/ContactMessage.dart';
 import 'package:fgtracker/app/Model/GetMessage.dart';
 import 'package:fgtracker/app/Model/LocationMessage.dart';
 import 'package:fgtracker/app/Model/MemberDataRes.dart';
@@ -377,6 +378,28 @@ class MessageController extends GetxController with WidgetsBindingObserver {
       scrollToBottom();
     } catch (e) {
       log("LOCATION SEND ERROR => $e");
+    }
+  }
+
+  Future<void> sendContact({
+    required ContactMessage contact,
+  }) async {
+    try {
+      socketService.sendMessage(
+        receiverId: memberData.userId.toString(),
+        groupId: memberData.groupId!,
+        content: contact.toContent(),
+        messageType: "contact",
+        replyId: replyMessage.value?.id,
+        replyMessage: replyMessage.value?.content,
+        replyType: replyMessage.value?.messageType,
+        replySender: replyMessage.value?.senderName,
+      );
+
+      clearReply();
+      scrollToBottom();
+    } catch (e) {
+      log("CONTACT SEND ERROR => $e");
     }
   }
 

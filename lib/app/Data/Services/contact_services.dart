@@ -4,23 +4,17 @@ import 'package:flutter_contacts/flutter_contacts.dart';
 class ContactService {
   Future<List<Contact>> getContacts() async {
     try {
-      final permission =
-      await FlutterContacts.permissions.request(
-        PermissionType.read
-      );
+      final bool granted =
+      await FlutterContacts.requestPermission(readonly: true);
 
-      if (permission != PermissionStatus.granted &&
-          permission != PermissionStatus.limited) {
+      if (!granted) {
         log("Contact permission denied");
         return [];
       }
 
-      final contacts = await FlutterContacts.getAll(
-        properties: {
-          ContactProperty.name,
-          ContactProperty.phone,
-          ContactProperty.photoThumbnail,
-        },
+      final List<Contact> contacts = await FlutterContacts.getContacts(
+        withProperties: true,
+        withThumbnail: true,
       );
 
       return contacts.where((contact) {
@@ -34,12 +28,12 @@ class ContactService {
 
   Future<List<String>> getMobileNumbers() async {
     try {
-      final contacts = await getContacts();
+      final List<Contact> contacts = await getContacts();
 
       final Set<String> numbers = {};
 
-      for (final contact in contacts) {
-        for (final phone in contact.phones) {
+      for (final Contact contact in contacts) {
+        for (final Phone phone in contact.phones) {
           String mobileNo = phone.number;
 
           mobileNo = mobileNo.replaceAll(
@@ -47,15 +41,12 @@ class ContactService {
             '',
           );
 
-          if (mobileNo.startsWith('91') &&
-              mobileNo.length > 10) {
+          if (mobileNo.startsWith('91') && mobileNo.length > 10) {
             mobileNo = mobileNo.substring(2);
           }
 
           if (mobileNo.length > 10) {
-            mobileNo = mobileNo.substring(
-              mobileNo.length - 10,
-            );
+            mobileNo = mobileNo.substring(mobileNo.length - 10);
           }
 
           if (mobileNo.length == 10) {

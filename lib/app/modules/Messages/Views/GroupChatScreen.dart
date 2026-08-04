@@ -1,5 +1,6 @@
 import 'package:fgtracker/app/Core/values/BottomSheets/BottomSheetUi.dart';
 import 'package:fgtracker/app/Core/values/utility.dart';
+import 'package:fgtracker/app/Model/ContactMessage.dart';
 import 'package:fgtracker/app/Model/LocationMessage.dart';
 import 'package:fgtracker/app/config/themes_data.dart';
 import 'package:fgtracker/app/modules/Messages/widgets/ChatInputArea.dart';
@@ -12,6 +13,7 @@ import '../../../Core/constant/const_res.dart';
 import 'package:get/get.dart';
 
 import '../Controller/GroupChatController.dart';
+import 'ContactPickerPage.dart';
 import 'LocationPickerPage.dart';
 
 class GroupChatScreen extends GetView<GroupMessageController> {
@@ -237,6 +239,18 @@ class GroupChatScreen extends GetView<GroupMessageController> {
                 );
               }
             },
+
+              onContactSelected: () async {
+                final contact = await Get.to<ContactMessage>(
+                      () => const ContactPickerPage(),
+                );
+
+                if (contact != null) {
+                  await controller.sendContact(
+                    contact: contact,
+                  );
+                }
+              },
             ),
           ],
         ),

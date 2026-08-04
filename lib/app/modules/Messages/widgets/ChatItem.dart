@@ -10,9 +10,11 @@ import 'package:fgtracker/app/modules/Messages/widgets/videoThumbnailWidget.dart
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_linkify/flutter_linkify.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../../gen/fonts.gen.dart';
 import '../../../Core/constant/const_res.dart';
 import '../../../Core/constant/pref_res.dart';
@@ -20,6 +22,7 @@ import '../../../Core/util/file_helper.dart';
 import '../../../config/themes_data.dart';
 import '../../../global_widget/common_widget.dart';
 import 'AudioPlayerWidget.dart';
+import 'ContactBubbleWidget.dart';
 import 'LocationBubbleWidget.dart';
 import 'message_Widgets.dart';
 
@@ -367,12 +370,38 @@ class ChatBubble extends StatelessWidget {
         isSentByMe: isSentByMe,
         textColor: textColor,
       );
+    } else if (message.messageType == "contact") {
+      return ContactBubbleWidget(
+        content: message.content,
+        isSentByMe: isSentByMe,
+        textColor: textColor,
+      );
     } else {
-      return reausabletext(
-        message.content.toString(),
-        color: textColor,
-        fontsize: 12.sp,
-        fontfamily: FontFamily.interMedium,
+      return Linkify(
+        text: message.content.toString(),
+        style: TextStyle(
+          color: textColor,
+          fontSize: 12.sp,
+          fontFamily: FontFamily.interMedium,
+        ),
+        linkStyle: const TextStyle(
+          color: Colors.blue,
+          decoration: TextDecoration.underline,
+        ),
+        onOpen: (link) async {
+          Uri uri = Uri.parse(link.url);
+
+          if (!uri.hasScheme) {
+            uri = Uri.parse("https://${link.url}");
+          }
+
+          print("URL => $uri");
+
+          await launchUrl(
+            uri,
+            mode: LaunchMode.externalApplication,
+          );
+        },
       );
     }
   }
@@ -407,6 +436,9 @@ class ChatBubble extends StatelessWidget {
       case "location":
         preview = "📍 Location";
         break;
+
+
+
     }
 
     return GestureDetector(
@@ -1059,28 +1091,61 @@ class GroupChatBubble extends StatelessWidget {
         isSentByMe: isSentByMe,
         textColor: textColor,
       );
+    } else if (message.messageType == "contact") {
+      return ContactBubbleWidget(
+        content: message.content,
+        isSentByMe: isSentByMe,
+        textColor: textColor,
+      );
     } else {
-      return GestureDetector(
-        onLongPress: () {
-          _showDeleteBottomSheet(
-            context,
-            isSentByMe,
-          );
-        },
-        onDoubleTap: () async {
-          await Clipboard.setData(
-            ClipboardData(
-              text: message.content.toString(),
-            ),
-          );
+      return Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12.r),
 
-          Utils().fluttertoast("Message copied...");
-        },
-        child: reausabletext(
-          message.content.toString(),
-          color: textColor,
-          fontsize: 12.sp,
-          fontfamily: FontFamily.interMedium,
+          onLongPress: () {
+            _showDeleteBottomSheet(
+              context,
+              isSentByMe,
+            );
+          },
+
+          onDoubleTap: () async {
+            await Clipboard.setData(
+              ClipboardData(
+                text: message.content.toString(),
+              ),
+            );
+
+            Utils().fluttertoast("Message copied...");
+          },
+
+          child: Linkify(
+            text: message.content.toString(),
+            style: TextStyle(
+              color: textColor,
+              fontSize: 12.sp,
+              fontFamily: FontFamily.interMedium,
+            ),
+            linkStyle: const TextStyle(
+              color: Colors.blue,
+              decoration: TextDecoration.underline,
+            ),
+            onOpen: (link) async {
+              Uri uri = Uri.parse(link.url);
+
+              if (!uri.hasScheme) {
+                uri = Uri.parse("https://${link.url}");
+              }
+
+              debugPrint("OPEN URL => $uri");
+
+              await launchUrl(
+                uri,
+                mode: LaunchMode.externalApplication,
+              );
+            },
+          ),
         ),
       );
     }

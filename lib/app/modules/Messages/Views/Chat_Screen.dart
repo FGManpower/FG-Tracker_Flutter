@@ -5,6 +5,7 @@ import 'package:fgtracker/app/Core/values/Dialog/DialogBox.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Core/values/utility.dart';
 import 'package:fgtracker/app/Data/Services/Tracking.dart';
+import 'package:fgtracker/app/Model/ContactMessage.dart';
 import 'package:fgtracker/app/Model/LocationMessage.dart';
 
 import 'package:fgtracker/app/config/themes_data.dart';
@@ -16,6 +17,7 @@ import 'package:get/get.dart';
 import '../../Walkie-talkie/Controller/walkieController.dart';
 import '../widgets/ChatInputArea.dart';
 import '../widgets/ChatList.dart';
+import 'ContactPickerPage.dart';
 import 'LocationPickerPage.dart';
 
 class ChatScreen extends GetView<MessageController> {
@@ -260,6 +262,18 @@ class ChatScreen extends GetView<MessageController> {
                   if (location != null) {
                     await controller.sendLocation(
                       location: location,
+                    );
+                  }
+                },
+
+                onContactSelected: () async {
+                  final contact = await Get.to<ContactMessage>(
+                        () => const ContactPickerPage(),
+                  );
+
+                  if (contact != null) {
+                    await controller.sendContact(
+                      contact: contact,
                     );
                   }
                 },

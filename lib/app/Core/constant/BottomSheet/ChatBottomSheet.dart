@@ -85,6 +85,7 @@ class ChatBottomSheet {
         required VoidCallback onVideo,
         required VoidCallback onDocument,
         required VoidCallback onLocation,
+        required VoidCallback onContact,
       }) async {
     return showModalBottomSheet(
       context: context,
@@ -160,6 +161,13 @@ class ChatBottomSheet {
                     title: "Location",
                     subtitle: "Map",
                     onTap: onLocation,
+                  ),
+                  _attachmentItem(
+                    icon: Icons.person,
+                    color: const Color(0xff00A884),
+                    title: "Contact",
+                    subtitle: "Phone",
+                    onTap: onContact,
                   ),
                 ],
               ),
