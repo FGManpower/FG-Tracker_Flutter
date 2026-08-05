@@ -136,7 +136,6 @@ class SocketMessageService extends GetxService {
     });
   }
 
-  //======================= Group Message ============= //
   void joinGroupChat({
     required int groupId,
     required String userId,
@@ -182,7 +181,14 @@ class SocketMessageService extends GetxService {
   }) {
     socket.on(
       "receive_group_message",
-      (data) {
+          (data) {
+        print("=================================");
+        print("RECEIVE GROUP MESSAGE");
+        print("Message Type : ${data['messageType']}");
+        print("Content      : ${data['content']}");
+        print("Full Data    : $data");
+        print("=================================");
+
         callback(data);
       },
     );

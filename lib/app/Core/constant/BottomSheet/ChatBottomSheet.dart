@@ -95,7 +95,7 @@ class ChatBottomSheet {
         return Container(
           margin: EdgeInsets.all(0.w),
           padding: EdgeInsets.symmetric(
-            horizontal: 15.w,
+            horizontal: 0.w,
             vertical: 18.h,
           ),
           decoration: BoxDecoration(
@@ -123,8 +123,8 @@ class ChatBottomSheet {
               ),
               SizedBox(height: 24.h),
               Wrap(
-                alignment: WrapAlignment.center,
-                spacing: 16.w,
+                alignment: WrapAlignment.start,
+                spacing: 10.w,
                 runSpacing: 20.h,
                 children: [
                   _attachmentItem(
