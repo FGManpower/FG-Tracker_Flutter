@@ -45,8 +45,7 @@ class HttpUtil {
         ProgressCallback? onSendProgress,
       String? type}) async {
     try {
-      api.sendRequest.options.headers["authorization"] =
-          "Bearer ${Global.storageServices.getaccesstoken()!}";
+      api.sendRequest.options.headers["authorization"] = "Bearer ${Global.storageServices.getaccesstoken()!}";
       api.sendRequest.options.headers['accept'] = 'application/json';
       var response = await api.sendRequest.post(path,
           data: type == "formdata" ? formdata : data,
@@ -124,8 +123,7 @@ class HttpUtil {
     Map<String, dynamic>? data,
   }) async {
     try {
-      api.sendRequest.options.headers["authorization"] =
-          "Bearer ${Global.storageServices.getaccesstoken()!}";
+      api.sendRequest.options.headers["authorization"] = "Bearer ${Global.storageServices.getaccesstoken()!}";
       api.sendRequest.options.headers['accept'] = 'application/json';
       api.sendRequest.options.headers['content-type'] = 'application/json';
       var response = await api.sendRequest.get(path, queryParameters: data);
