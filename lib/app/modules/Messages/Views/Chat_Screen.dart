@@ -60,106 +60,123 @@ class ChatScreen extends GetView<MessageController> {
       child: Scaffold(
         backgroundColor: ToggleThemeData.chatBackground,
         resizeToAvoidBottomInset: true,
-        appBar: CommonChatAppBar(
-          profileImageUrl:
+        appBar: PreferredSize(
+          preferredSize: const Size.fromHeight(kToolbarHeight),
+          child: Obx(() {
+            if (controller.isSearching.value) {
+              return AppBar(
+                backgroundColor: Colors.white,
+                surfaceTintColor: Colors.white,
+                leading: IconButton(
+                  icon: const Icon(Icons.arrow_back, color: Colors.black),
+                  onPressed: () => controller.stopSearch(),
+                ),
+                title: TextField(
+                  autofocus: true,
+                  decoration: const InputDecoration(
+                    hintText: "Search messages...",
+                    border: InputBorder.none,
+                    hintStyle: TextStyle(color: Colors.grey),
+                  ),
+                  style: const TextStyle(color: Colors.black, fontSize: 16),
+                  onChanged: controller.onSearchChanged,
+                ),
+                actions: [
+                  Obx(() {
+                    final total = controller.searchResultIds.length;
+                    final current = controller.currentSearchIndex.value;
+                    final display = total == 0
+                        ? "0/0"
+                        : "${total - current}/$total";
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      child: Center(
+                        child: Text(
+                          display,
+                          style: const TextStyle(
+                            color: Colors.grey,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ),
+                    );
+                  }),
+                  Obx(() => IconButton(
+                    icon: const Icon(Icons.keyboard_arrow_up,
+                        color: Colors.black),
+                    onPressed: controller.searchResultIds.isEmpty
+                        ? null
+                        : controller.previousSearchResult,
+                  )),
+                  Obx(() => IconButton(
+                    icon: const Icon(Icons.keyboard_arrow_down,
+                        color: Colors.black),
+                    onPressed: controller.searchResultIds.isEmpty
+                        ? null
+                        : controller.nextSearchResult,
+                  )),
+                ],
+              );
+            }
+
+            return CommonChatAppBar(
+              profileImageUrl:
               "${ConstRes.aImageBaseUrl}${userData.profileImage ?? ""}",
-          userName: userData.name ?? "",
-          controller: controller,
-          groupName: controller.arguments?['groupName'],
-          isOnline: isOnline,
-          lastSeen: lastSeenText,
-
-          onBackTap: () {
-            controller.handleBackPressed(context,
-                groupID: int.parse(userData.groupId.toString()));
-          },
-          onCallTap: () {
-            controller.startCall(
-              context,
-              callerId: Global.storageServices.get(PrefConst.userId).toString(),
-              remoteUserId: controller.memberData.userId.toString(),
-              is_video: false,
-              callerName: controller.memberData.name,
-            );
-            // ChatBottomSheet.showCallOptions(context, onAudioCall: () {
-            //   controller.startCall(
-            //     context,
-            //     callerId:
-            //         Global.storageServices.get(PrefConst.userId).toString(),
-            //     remoteUserId: controller.memberData.userId.toString(),
-            //     is_video: false,
-            //     callerName: controller.memberData.name,
-            //   );
-            // },
-            //     onWalkieTalkieCall: () async {
-            //   WalkieController().startServices(
-            //       callerName: controller.memberData.name.toString(),
-            //       profileImage: controller.memberData.profileImage,
-            //       remoteUserId: controller.memberData.userId.toString());
-            // }
-            // );
-          },
-          onVideoTap: () {
-            controller.startCall(
-              context,
-              callerId: Global.storageServices.get(PrefConst.userId).toString(),
-              remoteUserId: controller.memberData.userId.toString(),
-              is_video: true,
-              callerName: controller.memberData.name,
-            );
-          },
-          // onGroupExit: () {
-          //   CommonDialog.ConfirmationDialog(
-          //     title: AppText.areYouSure,
-          //     content: AppText.doYouWantToExitGroup,
-          //     onConfirm: () {
-          //       if (controller.arguments!['isCreator'].toString() == "true") {
-          //         MemberController().exitGroup(context,
-          //             groupId: userData.groupId.toString(),
-          //             userId: userData.userId.toString());
-          //       } else {
-          //         MemberController().exitGroup(context,
-          //             groupId: userData.groupId.toString(),
-          //             userId: Global.storageServices
-          //                 .get(PrefConst.userId)
-          //                 .toString());
-          //       }
-          //     },
-          //   );
-          // },
-          // onDeleteGroup: () {
-          //   CommonDialog.ConfirmationDialog(
-          //     title: AppText.areYouSure,
-          //     content: AppText.doYouWantToDeleteGroup,
-          //     onConfirm: () {
-          //       MemberController().deleteGroup(context,
-          //           groupId: userData.groupId
-          //               .toString());
-          //     },
-          //   );
-          // },
-          onUpdateGroupName: () {
-            groupController.groupName.text =
-                controller.arguments?['groupName'] ?? "";
-            DialogBox().showUpdateGroupBottomSheet(
-                context: context,
-                controller: groupController,
-                groupId: userData.groupId.toString());
-          },
-
-          onDeleteMember: () {
-            CommonDialog.ConfirmationDialog(
-              title: "Remove Member",
-              content:
-                  "Are you sure you want to remove this member from the group? This action cannot be undone.",
-              confirm: "Remove",
-              onConfirm: () {
-                groupController.deleteGroupMember(context,
-                    groupId: userData.groupId.toString(),
-                    groupMemberId: controller.memberData.userId.toString());
+              userName: userData.name ?? "",
+              controller: controller,
+              groupName: controller.arguments?['groupName'],
+              isOnline: isOnline,
+              lastSeen: lastSeenText,
+               isGroupChat: false,
+              onBackTap: () {
+                controller.handleBackPressed(context,
+                    groupID: int.parse(userData.groupId.toString()));
               },
+              onCallTap: () {
+                controller.startCall(
+                  context,
+                  callerId:
+                  Global.storageServices.get(PrefConst.userId).toString(),
+                  remoteUserId: controller.memberData.userId.toString(),
+                  is_video: false,
+                  callerName: controller.memberData.name,
+                );
+              },
+              onVideoTap: () {
+                controller.startCall(
+                  context,
+                  callerId:
+                  Global.storageServices.get(PrefConst.userId).toString(),
+                  remoteUserId: controller.memberData.userId.toString(),
+                  is_video: true,
+                  callerName: controller.memberData.name,
+                );
+              },
+              onUpdateGroupName: () {
+                groupController.groupName.text =
+                    controller.arguments?['groupName'] ?? "";
+                DialogBox().showUpdateGroupBottomSheet(
+                    context: context,
+                    controller: groupController,
+                    groupId: userData.groupId.toString());
+              },
+              onDeleteMember: () {
+                CommonDialog.ConfirmationDialog(
+                  title: "Remove Member",
+                  content:
+                  "Are you sure you want to remove this member from the group?",
+                  confirm: "Remove",
+                  onConfirm: () {
+                    groupController.deleteGroupMember(context,
+                        groupId: userData.groupId.toString(),
+                        groupMemberId:
+                        controller.memberData.userId.toString());
+                  },
+                );
+              },
+              onSearchTap: () => controller.startSearch(),
             );
-          },
+          }),
         ),
         body: SafeArea(
           child: Column(

@@ -10,18 +10,21 @@ import 'package:get/get_core/src/get_main.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../Model/MemberDataRes.dart';
+import '../../../modules/Group/controller/Group_Controller.dart';
 import '../../../routes/app_pages.dart';
 import '../../constant/pref_res.dart';
+import '../Dialog/Common_dialog.dart';
 import '../global.dart';
 
 class BottomSheetUi {
   void showMemberBottomSheet(
-    BuildContext context,
-    List<LocationData> members, {
-    bool isGroupChat = false,
-    int? groupId,
-    String? groupName,
-  }) {
+      BuildContext context,
+      List<LocationData> members, {
+        bool isGroupChat = false,
+        bool isDeleteMode = false,
+        int? groupId,
+        String? groupName,
+      }) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -85,8 +88,34 @@ class BottomSheetUi {
                               false)
                           ? "${ConstRes.aImageBaseUrl}${member.profileImage}"
                           : null;
+                      return GestureDetector(
+                        onTap: () {
+                          if (!isDeleteMode) return;
 
-                      return Container(
+                          if (isMe) {
+                            CommonDialog.errorMessage(
+                              "You can't remove yourself from the group.",
+                            );
+                            return;
+                          }
+
+                          Navigator.pop(context);
+
+                          CommonDialog.ConfirmationDialog(
+                            title: "Remove Member",
+                            content:
+                            "Are you sure you want to remove ${member.name} from the group?",
+                            confirm: "Remove",
+                            onConfirm: () {
+                              Get.find<GroupController>().deleteGroupMember(
+                                context,
+                                groupId: groupId.toString(),
+                                groupMemberId: member.userId.toString(),
+                              );
+                            },
+                          );
+                        },
+                          child: Container(
                         margin: EdgeInsets.symmetric(vertical: 8.h),
                         padding: EdgeInsets.all(10.w),
                         decoration: BoxDecoration(
@@ -352,6 +381,7 @@ class BottomSheetUi {
                             ),
                           ],
                         ),
+                          ),
                       );
                     },
                   ),

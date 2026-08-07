@@ -62,6 +62,10 @@ class MessageController extends GetxController with WidgetsBindingObserver {
   Rx<MessageData?> replyMessage = Rx<MessageData?>(null);
   RxInt highlightedMessageId = (-1).obs;
   final RxBool showEmoji = false.obs;
+  final RxBool isSearching = false.obs;
+  final RxString searchQuery = "".obs;
+  final RxList<int> searchResultIds = <int>[].obs;
+  final RxInt currentSearchIndex = (-1).obs;
 
 
   @override
@@ -526,6 +530,79 @@ class MessageController extends GetxController with WidgetsBindingObserver {
       await controller.dispose();
     } catch (e) {
       debugPrint(e.toString());
+    }
+
+
+  }
+
+  void startSearch() {
+    isSearching.value = true;
+    searchQuery.value = "";
+    searchResultIds.clear();
+    currentSearchIndex.value = -1;
+  }
+
+  void stopSearch() {
+    isSearching.value = false;
+    searchQuery.value = "";
+    searchResultIds.clear();
+    currentSearchIndex.value = -1;
+    highlightedMessageId.value = -1;
+  }
+
+  void onSearchChanged(String query) {
+    searchQuery.value = query.trim();
+    searchResultIds.clear();
+    currentSearchIndex.value = -1;
+    highlightedMessageId.value = -1;
+
+    if (searchQuery.value.isEmpty) return;
+
+    final results = _messages
+        .where((msg) =>
+    msg.messageType == "text" &&
+        (msg.content?.toLowerCase().contains(
+          searchQuery.value.toLowerCase(),
+        ) ??
+            false))
+        .map((msg) => msg.id!)
+        .toList();
+
+    searchResultIds.value = results;
+
+    if (results.isNotEmpty) {
+      currentSearchIndex.value = results.length - 1;
+      _scrollToSearchResult();
+    }
+  }
+
+  void nextSearchResult() {
+    if (searchResultIds.isEmpty) return;
+    if (currentSearchIndex.value > 0) {
+      currentSearchIndex.value--;
+      _scrollToSearchResult();
+    }
+  }
+
+  void previousSearchResult() {
+    if (searchResultIds.isEmpty) return;
+    if (currentSearchIndex.value < searchResultIds.length - 1) {
+      currentSearchIndex.value++;
+      _scrollToSearchResult();
+    }
+  }
+
+  void _scrollToSearchResult() {
+    final id = searchResultIds[currentSearchIndex.value];
+    final index = _messages.indexWhere((e) => e.id == id);
+    highlightedMessageId.value = id;
+    if (index == -1) return;
+    if (itemScrollController.isAttached) {
+      itemScrollController.scrollTo(
+        index: index,
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeInOut,
+      );
     }
   }
 }

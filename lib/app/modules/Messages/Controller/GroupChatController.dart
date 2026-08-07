@@ -29,15 +29,14 @@ import 'Socket_Message_Services.dart';
 class GroupMessageController extends GetxController {
   final socketService = SocketMessageService.instance;
 
-  final ItemScrollController itemScrollController =
-  ItemScrollController();
+  final ItemScrollController itemScrollController = ItemScrollController();
 
   final ItemPositionsListener itemPositionsListener =
-  ItemPositionsListener.create();
+      ItemPositionsListener.create();
   final List<MessageData> _messages = [];
 
   final StreamController<List<MessageData>> _messageStreamController =
-  StreamController<List<MessageData>>.broadcast();
+      StreamController<List<MessageData>>.broadcast();
 
   Stream<List<MessageData>> get messageStream =>
       _messageStreamController.stream;
@@ -51,6 +50,7 @@ class GroupMessageController extends GetxController {
       List.unmodifiable(_messages),
     );
   }
+
   final Rx<Uint8List?> videoThumbnail = Rx<Uint8List?>(null);
   final RxString videoDuration = ''.obs;
   RxList<LocationData> groupMembers = <LocationData>[].obs;
@@ -65,19 +65,17 @@ class GroupMessageController extends GetxController {
   RxBool isLoading = true.obs;
   RxString messageText = "".obs;
   final RxBool showEmoji = false.obs;
+  final RxBool isSearching = false.obs;
+  final RxString searchQuery = "".obs;
+  final RxList<int> searchResultIds = <int>[].obs;
+  final RxInt currentSearchIndex = (-1).obs;
+  RxBool isCreator = false.obs;
 
   Rx<MessageData?> replyMessage = Rx<MessageData?>(null);
   RxInt highlightedMessageId = (-1).obs;
 
-
   Future<void> scrollToMessage(int messageId) async {
-    final index =
-    _messages.indexWhere((e) => e.id == messageId);
-
-    debugPrint("========== Reply Scroll ==========");
-    debugPrint("ReplyId: $messageId");
-    debugPrint("Found Index: $index");
-    debugPrint("Total Messages: ${_messages.length}");
+    final index = _messages.indexWhere((e) => e.id == messageId);
 
     if (index != -1) {
       debugPrint("Message at Index: ${_messages[index].id}");
@@ -125,9 +123,12 @@ class GroupMessageController extends GetxController {
     groupName = arguments?["groupName"] ?? "";
 
     groupImage = arguments?["groupImage"] ?? "";
+    print("isCreator = ${isCreator.value}");
+
 
     initializeGroupChat();
   }
+
   void toggleEmoji() {
     showEmoji.toggle();
   }
@@ -135,6 +136,7 @@ class GroupMessageController extends GetxController {
   void hideEmoji() {
     showEmoji.value = false;
   }
+
   void initializeGroupChat() {
     final currentUserId =
         Global.storageServices.get(PrefConst.userId).toString();
@@ -167,7 +169,7 @@ class GroupMessageController extends GetxController {
         if (messageId == null) return;
 
         _messages.removeWhere(
-              (e) => e.id == messageId,
+          (e) => e.id == messageId,
         );
 
         updateMessageStream();
@@ -192,7 +194,7 @@ class GroupMessageController extends GetxController {
 
     try {
       final text = textController.text.trim();
-print("TEXT=======$text");
+      print("TEXT=======$text");
       if (imagePaths.isNotEmpty) {
         for (final image in imagePaths) {
           final result = await MessageRepo.uploadChatImage(image);
@@ -215,8 +217,6 @@ print("TEXT=======$text");
           }
         }
 
-
-
         imagePaths.clear();
         textController.clear();
       } else if (videoPath.isNotEmpty) {
@@ -229,8 +229,6 @@ print("TEXT=======$text");
         documentPath.value = "";
         textController.clear();
       } else if (text.isNotEmpty) {
-
-
         socketService.sendGroupMessage(
           groupId: groupId,
           content: text,
@@ -303,26 +301,27 @@ print("TEXT=======$text");
         socketService.sendGroupMessage(
           groupId: groupId,
           messageType: "video",
-          content: "${result.videoUrl}||${result.thumbnail}||${result.duration}",
+          content:
+              "${result.videoUrl}||${result.thumbnail}||${result.duration}",
           caption: caption,
           replyId: replyMessage.value?.id,
           replyMessage: replyMessage.value?.content,
           replyType: replyMessage.value?.messageType,
           replySender: replyMessage.value?.senderName,
         );
-
       }
     } catch (e) {
       log("GROUP AUDIO ERROR => $e");
     } finally {
       isUploadingVideo.value = false;
       clearReply();
-
     }
   }
 
-  Future<void> uploadDocument(String path,   String caption,
-      ) async {
+  Future<void> uploadDocument(
+    String path,
+    String caption,
+  ) async {
     try {
       var result = await MessageRepo.uploadChatDocument(path);
 
@@ -397,13 +396,10 @@ print("TEXT=======$text");
   }) async {
     socketService.deleteMessage(
       messageId: messageId,
-      userId: Global.storageServices
-          .get(PrefConst.userId)
-          .toString(),
+      userId: Global.storageServices.get(PrefConst.userId).toString(),
       deleteType: deleteType,
     );
   }
-
 
   Future<void> getGroupMessages() async {
     isLoading.value = true;
@@ -413,7 +409,7 @@ print("TEXT=======$text");
       ..addAll(
         List.generate(
           8,
-              (index) => MessageData(
+          (index) => MessageData(
             senderId: index.isEven ? 1 : 2,
             senderName: "Loading",
             messageType: "text",
@@ -436,7 +432,6 @@ print("TEXT=======$text");
         _messages
           ..clear()
           ..addAll(result.messageData ?? []);
-
         updateMessageStream();
         scrollToBottom();
       } else {
@@ -451,11 +446,11 @@ print("TEXT=======$text");
       isLoading.value = false;
     }
   }
-
-  Future<void> getGroupMembers() async {
+  Future getGroupMembers() async {
     print(
       "MY USER ID => ${Global.storageServices.get(PrefConst.userId)}",
     );
+
     try {
       isLoadingMembers.value = true;
 
@@ -469,6 +464,23 @@ print("TEXT=======$text");
 
       if (result.status == true) {
         groupMembers.value = result.locations ?? [];
+
+        final currentUserId =
+        Global.storageServices.get(PrefConst.userId).toString();
+
+        // Default
+        isCreator.value = false;
+
+        // Check current logged-in user
+        for (final member in groupMembers) {
+          if (member.userId.toString() == currentUserId) {
+            isCreator.value = member.isCreator == true;
+            break;
+          }
+        }
+
+        print("Current User ID => $currentUserId");
+        print("Is Creator => ${isCreator.value}");
       }
     } catch (e) {
       log(
@@ -500,9 +512,8 @@ print("TEXT=======$text");
 
     if (positions.isEmpty) return false;
 
-    final maxVisible = positions
-        .map((e) => e.index)
-        .reduce((a, b) => a > b ? a : b);
+    final maxVisible =
+        positions.map((e) => e.index).reduce((a, b) => a > b ? a : b);
 
     return maxVisible >= _messages.length - 2;
   }
@@ -548,16 +559,11 @@ print("TEXT=======$text");
     Navigator.of(context).pop();
   }
 
-
-
   final FocusNode focusNode = FocusNode();
 
   final RxList<LocationData> filteredMembers = <LocationData>[].obs;
   final RxBool showMentionList = false.obs;
   RxInt? mentionStartIndex = RxInt(-1);
-
-
-
 
   void onTextChanged({
     required TextEditingController textController,
@@ -598,15 +604,16 @@ print("TEXT=======$text");
     // Filter members
     filteredMembers.value = groupMembers
         .where((member) =>
-    (member.name?.toLowerCase().contains(query) ?? false) ||
-        (member.name?.toLowerCase().contains(query) ?? false))
+            (member.name?.toLowerCase().contains(query) ?? false) ||
+            (member.name?.toLowerCase().contains(query) ?? false))
         .toList();
 
     showMentionList.value = filteredMembers.isNotEmpty;
   }
 
   void insertMention({
-    required dynamic member, // Change 'dynamic' to your actual model (e.g. GroupMember)
+    required dynamic
+        member,
     required TextEditingController textController,
   }) {
     if (mentionStartIndex!.value < 0) return;
@@ -616,7 +623,7 @@ print("TEXT=======$text");
 
     final displayName = (member.name ?? member.username ?? "User").toString();
 
-    final start = mentionStartIndex!.value;           // int
+    final start = mentionStartIndex!.value; // int
     final replacement = "@$displayName ";
 
     final newText = text.replaceRange(
@@ -642,6 +649,79 @@ print("TEXT=======$text");
     filteredMembers.clear();
     mentionStartIndex!.value = -1;
   }
+
+  void startSearch() {
+    isSearching.value = true;
+    searchQuery.value = "";
+    searchResultIds.clear();
+    currentSearchIndex.value = -1;
+  }
+
+  void stopSearch() {
+    isSearching.value = false;
+    searchQuery.value = "";
+    searchResultIds.clear();
+    currentSearchIndex.value = -1;
+    highlightedMessageId.value = -1;
+  }
+
+  void onSearchChanged(String query) {
+    searchQuery.value = query.trim();
+    searchResultIds.clear();
+    currentSearchIndex.value = -1;
+    highlightedMessageId.value = -1;
+
+    if (searchQuery.value.isEmpty) return;
+
+    final results = _messages
+        .where((msg) =>
+    msg.messageType == "text" &&
+        (msg.content?.toLowerCase().contains(
+          searchQuery.value.toLowerCase(),
+        ) ??
+            false))
+        .map((msg) => msg.id!)
+        .toList();
+
+    searchResultIds.value = results;
+
+    if (results.isNotEmpty) {
+      currentSearchIndex.value = results.length - 1;
+      _scrollToSearchResult();
+    }
+  }
+
+  void nextSearchResult() {
+    if (searchResultIds.isEmpty) return;
+    if (currentSearchIndex.value > 0) {
+      currentSearchIndex.value--;
+      _scrollToSearchResult();
+    }
+  }
+
+  void previousSearchResult() {
+    if (searchResultIds.isEmpty) return;
+    if (currentSearchIndex.value < searchResultIds.length - 1) {
+      currentSearchIndex.value++;
+      _scrollToSearchResult();
+    }
+  }
+
+  void _scrollToSearchResult() {
+    final id = searchResultIds[currentSearchIndex.value];
+    final index = _messages.indexWhere((e) => e.id == id);
+    highlightedMessageId.value = id;
+    if (index == -1) return;
+    if (itemScrollController.isAttached) {
+      itemScrollController.scrollTo(
+        index: index,
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
+
 
   @override
   void onClose() {

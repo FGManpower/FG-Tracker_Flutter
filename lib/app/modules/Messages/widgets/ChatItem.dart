@@ -377,8 +377,33 @@ class ChatBubble extends StatelessWidget {
         textColor: textColor,
       );
     } else {
+      // Search highlight check
+      final query = controller.searchQuery.value;
+      final content = message.content?.toString() ?? "";
+
+      if (query.isNotEmpty &&
+          content.toLowerCase().contains(query.toLowerCase())) {
+        // Highlighted text with RichText
+        return _buildHighlightedText(
+          content,
+          query,
+          normalStyle: TextStyle(
+            color: textColor,
+            fontSize: 12.sp,
+            fontFamily: FontFamily.interMedium,
+          ),
+          highlightStyle: TextStyle(
+            backgroundColor: const Color(0xFFFFD700),
+            color: Colors.black,
+            fontWeight: FontWeight.bold,
+            fontSize: 12.sp,
+            fontFamily: FontFamily.interMedium,
+          ),
+        );
+      }
+
       return Linkify(
-        text: message.content.toString(),
+        text: content,
         style: TextStyle(
           color: textColor,
           fontSize: 12.sp,
@@ -390,13 +415,10 @@ class ChatBubble extends StatelessWidget {
         ),
         onOpen: (link) async {
           Uri uri = Uri.parse(link.url);
-
           if (!uri.hasScheme) {
             uri = Uri.parse("https://${link.url}");
           }
-
           print("URL => $uri");
-
           await launchUrl(
             uri,
             mode: LaunchMode.externalApplication,
@@ -531,6 +553,48 @@ class ChatBubble extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+  Widget _buildHighlightedText(
+      String text,
+      String query, {
+        required TextStyle normalStyle,
+        required TextStyle highlightStyle,
+      }) {
+    final lowerText = text.toLowerCase();
+    final lowerQuery = query.toLowerCase();
+    final List<InlineSpan> spans = [];
+    int start = 0;
+
+    while (true) {
+      final index = lowerText.indexOf(lowerQuery, start);
+      if (index == -1) {
+        if (start < text.length) {
+          spans.add(TextSpan(
+            text: text.substring(start),
+            style: normalStyle,
+          ));
+        }
+        break;
+      }
+
+      if (index > start) {
+        spans.add(TextSpan(
+          text: text.substring(start, index),
+          style: normalStyle,
+        ));
+      }
+
+      spans.add(TextSpan(
+        text: text.substring(index, index + query.length),
+        style: highlightStyle,
+      ));
+
+      start = index + query.length;
+    }
+
+    return RichText(
+      text: TextSpan(children: spans),
     );
   }
 }
@@ -813,7 +877,96 @@ class GroupChatBubble extends StatelessWidget {
       ),
     );
   }
+  Widget _buildTextContent(
+      MessageData message,
+      Color textColor,
+      bool isSentByMe,
+      ) {
+    final query = controller.searchQuery.value;
+    final content = message.content?.toString() ?? "";
 
+    if (query.isNotEmpty &&
+        content.toLowerCase().contains(query.toLowerCase())) {
+      return _buildHighlightedText(
+        content,
+        query,
+        normalStyle: TextStyle(
+          color: textColor,
+          fontSize: 12.sp,
+          fontFamily: FontFamily.interMedium,
+        ),
+        highlightStyle: TextStyle(
+          backgroundColor: const Color(0xFFFFD700),
+          color: Colors.black,
+          fontWeight: FontWeight.bold,
+          fontSize: 12.sp,
+          fontFamily: FontFamily.interMedium,
+        ),
+      );
+    }
+
+    return Linkify(
+      text: content,
+      style: TextStyle(
+        color: textColor,
+        fontSize: 12.sp,
+        fontFamily: FontFamily.interMedium,
+      ),
+      linkStyle: const TextStyle(
+        color: Colors.blue,
+        decoration: TextDecoration.underline,
+      ),
+      onOpen: (link) async {
+        Uri uri = Uri.parse(link.url);
+        if (!uri.hasScheme) {
+          uri = Uri.parse("https://${link.url}");
+        }
+        debugPrint("OPEN URL => $uri");
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      },
+    );
+  }
+
+  Widget _buildHighlightedText(
+      String text,
+      String query, {
+        required TextStyle normalStyle,
+        required TextStyle highlightStyle,
+      }) {
+    final lowerText = text.toLowerCase();
+    final lowerQuery = query.toLowerCase();
+    final List<InlineSpan> spans = [];
+    int start = 0;
+
+    while (true) {
+      final index = lowerText.indexOf(lowerQuery, start);
+      if (index == -1) {
+        if (start < text.length) {
+          spans.add(TextSpan(
+            text: text.substring(start),
+            style: normalStyle,
+          ));
+        }
+        break;
+      }
+
+      if (index > start) {
+        spans.add(TextSpan(
+          text: text.substring(start, index),
+          style: normalStyle,
+        ));
+      }
+
+      spans.add(TextSpan(
+        text: text.substring(index, index + query.length),
+        style: highlightStyle,
+      ));
+
+      start = index + query.length;
+    }
+
+    return RichText(text: TextSpan(children: spans));
+  }
   Widget _buildReplyPreview(MessageData message, bool isSentByMe) {
     if (message.replyId == null) {
       return const SizedBox.shrink();
@@ -1102,50 +1255,16 @@ class GroupChatBubble extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(12.r),
-
           onLongPress: () {
-            _showDeleteBottomSheet(
-              context,
-              isSentByMe,
-            );
+            _showDeleteBottomSheet(context, isSentByMe);
           },
-
           onDoubleTap: () async {
             await Clipboard.setData(
-              ClipboardData(
-                text: message.content.toString(),
-              ),
+              ClipboardData(text: message.content.toString()),
             );
-
             Utils().fluttertoast("Message copied...");
           },
-
-          child: Linkify(
-            text: message.content.toString(),
-            style: TextStyle(
-              color: textColor,
-              fontSize: 12.sp,
-              fontFamily: FontFamily.interMedium,
-            ),
-            linkStyle: const TextStyle(
-              color: Colors.blue,
-              decoration: TextDecoration.underline,
-            ),
-            onOpen: (link) async {
-              Uri uri = Uri.parse(link.url);
-
-              if (!uri.hasScheme) {
-                uri = Uri.parse("https://${link.url}");
-              }
-
-              debugPrint("OPEN URL => $uri");
-
-              await launchUrl(
-                uri,
-                mode: LaunchMode.externalApplication,
-              );
-            },
-          ),
+          child: _buildTextContent(message, textColor, isSentByMe),
         ),
       );
     }

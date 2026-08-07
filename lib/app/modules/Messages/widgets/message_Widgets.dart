@@ -19,23 +19,28 @@ class CommonChatAppBar extends StatelessWidget implements PreferredSizeWidget {
   final VoidCallback? onGroupExit;
   final VoidCallback? onDeleteGroup;
   final bool isOnline;
+  final VoidCallback? onSearchTap;
+  final bool isGroupChat;
+
   final String? lastSeen;
 
   CommonChatAppBar(
       {Key? key,
-      required this.profileImageUrl,
-      required this.userName,
-      required this.controller,
-      this.onBackTap,
-      this.onCallTap,
-      this.onVideoTap,
-      this.onUpdateGroupName,
-      this.onDeleteMember,
-      required this.groupName,
-      this.onGroupExit,
+        required this.profileImageUrl,
+        required this.userName,
+        required this.controller,
+        this.onBackTap,
+        this.onCallTap,
+        this.onVideoTap,
+        this.onUpdateGroupName,
+        this.onDeleteMember,
+        required this.groupName,
+        this.onGroupExit,
         required this.isOnline,
         this.lastSeen,
-      this.onDeleteGroup})
+        this.onDeleteGroup,
+        this.onSearchTap,
+        this.isGroupChat = false})
       : super(key: key);
 
   @override
@@ -120,7 +125,7 @@ class CommonChatAppBar extends StatelessWidget implements PreferredSizeWidget {
         Padding(
           padding: EdgeInsets.only(right: 10.w),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            mainAxisSize: MainAxisSize.min,
             children: [
               SizedBox(
                 width: 10.w,
@@ -193,102 +198,209 @@ class CommonChatAppBar extends StatelessWidget implements PreferredSizeWidget {
               //   ),
               //   if (isCreator)
 
-              Obx(() {
-                return controller.isCreator==true?GestureDetector(
-                  onTap: () {
-                    showModalBottomSheet(
-                      context: context,
-                      backgroundColor: Colors.transparent,
-                      isScrollControlled: true,
-                      builder: (_) {
-                        return Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 20.w,
-                            vertical: 16.h,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.vertical(
-                              top: Radius.circular(30.r),
-                            ),
-                          ),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Container(
-                                width: 50.w,
-                                height: 5.h,
-                                decoration: BoxDecoration(
-                                  color: Colors.grey.shade300,
-                                  borderRadius: BorderRadius.circular(20.r),
+
+
+              Builder(
+                builder: (context) {
+                  if (isGroupChat && controller.isCreator == true) {
+                    return GestureDetector(
+                      onTap: () {
+                        showModalBottomSheet(
+                          context: context,
+                          backgroundColor: Colors.transparent,
+                          isScrollControlled: true,
+                          builder: (_) {
+                            return Container(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 20.w,
+                                vertical: 16.h,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.vertical(
+                                  top: Radius.circular(30.r),
                                 ),
                               ),
-                              SizedBox(height: 20.h),
-                              Text(
-                                "Group Actions",
-                                style: TextStyle(
-                                  fontSize: 22.sp,
-                                  fontWeight: FontWeight.w800,
-                                  color: Colors.black87,
-                                ),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Container(
+                                    width: 50.w,
+                                    height: 5.h,
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey.shade300,
+                                      borderRadius:
+                                      BorderRadius.circular(20.r),
+                                    ),
+                                  ),
+                                  SizedBox(height: 20.h),
+                                  Text(
+                                    "Group Actions",
+                                    style: TextStyle(
+                                      fontSize: 22.sp,
+                                      fontWeight: FontWeight.w800,
+                                      color: Colors.black87,
+                                    ),
+                                  ),
+                                  Text(
+                                    "Manage your group settings",
+                                    style: TextStyle(
+                                      fontSize: 13.sp,
+                                      color: Colors.grey.shade600,
+                                    ),
+                                  ),
+                                  SizedBox(height: 24.h),
+                                  actionTile(
+                                    icon: Icons.search,
+                                    iconColor: Colors.blueAccent,
+                                    title: "Search Messages",
+                                    subtitle: "Find messages by keyword",
+                                    onTap: () {
+                                      Navigator.pop(context);
+                                      onSearchTap?.call();
+                                    },
+                                  ),
+                                  SizedBox(height: 12.h),
+                                  actionTile(
+                                    icon: Icons.edit_rounded,
+                                    iconColor: ToggleThemeData.darkPurple,
+                                    title: "Update Group ",
+                                    subtitle:
+                                    "Change the current group detail",
+                                    onTap: () {
+                                      Navigator.pop(context);
+                                      onUpdateGroupName?.call();
+                                    },
+                                  ),
+                                  SizedBox(height: 12.h),
+                                  actionTile(
+                                    icon: Icons.person_remove_rounded,
+                                    iconColor: Colors.red,
+                                    title: "Delete Member",
+                                    subtitle:
+                                    "Remove a member from this group",
+                                    onTap: () {
+                                      Navigator.pop(context);
+                                      onDeleteMember?.call();
+                                    },
+                                  ),
+                                  SizedBox(height: 20.h),
+                                  SizedBox(
+                                    width: double.infinity,
+                                    child: reausablebutton(
+                                      title: "Cancel",
+                                      ontap: () => Navigator.pop(context),
+                                      height: 52,
+                                      borderradiues: 50,
+                                      backgroundColor:
+                                      ToggleThemeData.darkPurple,
+                                      textcolor: Colors.white,
+                                      fontSize: 15,
+                                    ),
+                                  ),
+                                  SizedBox(height: 10.h),
+                                ],
                               ),
-                              // SizedBox(height: 2.h),
-                              Text(
-                                "Manage your group settings",
-                                style: TextStyle(
-                                  fontSize: 13.sp,
-                                  color: Colors.grey.shade600,
-                                ),
-                              ),
-                              SizedBox(height: 24.h),
-                              actionTile(
-                                icon: Icons.edit_rounded,
-                                iconColor: ToggleThemeData.darkPurple,
-                                title: "Update Group ",
-                                subtitle: "Change the current group detail",
-                                onTap: () {
-                                  Navigator.pop(context);
-                                  onUpdateGroupName?.call();
-                                },
-                              ),
-                              SizedBox(height: 12.h),
-                              actionTile(
-                                icon: Icons.person_remove_rounded,
-                                iconColor: Colors.red,
-                                title: "Delete Member",
-                                subtitle: "Remove a member from this group",
-                                onTap: () {
-                                  Navigator.pop(context);
-                                  onDeleteMember?.call();
-                                },
-                              ),
-                              SizedBox(height: 20.h),
-                              SizedBox(
-                                width: double.infinity,
-                                child: reausablebutton(
-                                  title: "Cancel",
-                                  ontap: () => Navigator.pop(context),
-                                  height: 52,
-                                  borderradiues: 50,
-                                  backgroundColor: ToggleThemeData.darkPurple,
-                                  textcolor: Colors.white,
-                                  fontSize: 15,
-                                ),
-                              ),
-                              SizedBox(height: 10.h),
-                            ],
-                          ),
+                            );
+                          },
                         );
                       },
+                      child: Icon(
+                        Icons.more_vert,
+                        color: ToggleThemeData.darkPurple,
+                        size: 26.sp,
+                      ),
                     );
-                  },
-                  child: Icon(
-                    Icons.more_vert,
-                    color: ToggleThemeData.darkPurple,
-                    size: 26.sp,
-                  ),
-                ):SizedBox();
-              },),
+                  }
+
+                  // ✅ Normal Chat OR (Group + non-creator) = Sirf Search
+                  return GestureDetector(
+                    onTap: () {
+                      showModalBottomSheet(
+                        context: context,
+                        backgroundColor: Colors.transparent,
+                        isScrollControlled: true,
+                        builder: (_) {
+                          return Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 20.w,
+                              vertical: 16.h,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.vertical(
+                                top: Radius.circular(30.r),
+                              ),
+                            ),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  width: 50.w,
+                                  height: 5.h,
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey.shade300,
+                                    borderRadius:
+                                    BorderRadius.circular(20.r),
+                                  ),
+                                ),
+                                SizedBox(height: 20.h),
+                                Text(
+                                  "Chat Actions",
+                                  style: TextStyle(
+                                    fontSize: 22.sp,
+                                    fontWeight: FontWeight.w800,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                                Text(
+                                  "Manage your chat",
+                                  style: TextStyle(
+                                    fontSize: 13.sp,
+                                    color: Colors.grey.shade600,
+                                  ),
+                                ),
+                                SizedBox(height: 24.h),
+                                actionTile(
+                                  icon: Icons.search,
+                                  iconColor: Colors.blueAccent,
+                                  title: "Search Messages",
+                                  subtitle: "Find messages by keyword",
+                                  onTap: () {
+                                    Navigator.pop(context);
+                                    onSearchTap?.call();
+                                  },
+                                ),
+                                SizedBox(height: 20.h),
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: reausablebutton(
+                                    title: "Cancel",
+                                    ontap: () => Navigator.pop(context),
+                                    height: 52,
+                                    borderradiues: 50,
+                                    backgroundColor:
+                                    ToggleThemeData.darkPurple,
+                                    textcolor: Colors.white,
+                                    fontSize: 15,
+                                  ),
+                                ),
+                                SizedBox(height: 10.h),
+                              ],
+                            ),
+                          );
+                        },
+                      );
+                    },
+                    child: Icon(
+                      Icons.more_vert,
+                      color: ToggleThemeData.darkPurple,
+                      size: 26.sp,
+                    ),
+                  );
+                },
+              ),
+
               SizedBox(
                 width: 15.w,
               ),
@@ -375,16 +487,12 @@ Widget actionTile({
   required VoidCallback onTap,
 }) {
   return Container(
-    decoration:  BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(10.r),
-      border: BoxBorder.all(color: Colors.grey.shade200)
-    ),
-
+    decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10.r),
+        border: BoxBorder.all(color: Colors.grey.shade200)),
     child: InkWell(
-
       borderRadius: BorderRadius.circular(10.r),
-
       onTap: onTap,
       child: Padding(
         padding: EdgeInsets.symmetric(
@@ -401,9 +509,7 @@ Widget actionTile({
                 size: 22.sp,
               ),
             ),
-
             SizedBox(width: 14.w),
-
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -416,9 +522,7 @@ Widget actionTile({
                       color: Colors.black87,
                     ),
                   ),
-
                   SizedBox(height: 2.h),
-
                   Text(
                     subtitle,
                     style: TextStyle(
@@ -430,7 +534,6 @@ Widget actionTile({
                 ],
               ),
             ),
-
             Icon(
               Icons.arrow_forward_ios_rounded,
               size: 14.sp,

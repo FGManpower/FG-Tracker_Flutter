@@ -44,6 +44,7 @@ class LocationData {
   dynamic isOnline;
   dynamic name;
   dynamic profileImage;
+  dynamic isCreator;
 
   LocationData(
       {this.id,
@@ -54,6 +55,7 @@ class LocationData {
       this.lastSeen,
       this.isOnline,
       this.name,
+      this.isCreator,
       this.profileImage});
 
   LocationData.fromJson(Map<String, dynamic> json) {
@@ -64,6 +66,7 @@ class LocationData {
     longitude = (json['longitude'] as num?)?.toDouble();
     lastSeen = json['lastSeen'];
     isOnline = json['isOnline'];
+    isCreator = json['isCreator'];
     name = json['name'] ?? json['Name'];
 
     profileImage = json['ProfileImage'] ?? json['profileImage'];
@@ -79,6 +82,7 @@ class LocationData {
     data['lastSeen'] = this.lastSeen;
     data['isOnline'] = this.isOnline;
     data['name'] = this.name;
+    data['isCreator'] = isCreator;
     data['ProfileImage'] = this.profileImage;
     return data;
   }
