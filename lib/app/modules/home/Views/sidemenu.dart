@@ -119,6 +119,7 @@ class Sidemenu extends StatelessWidget {
             width: 25,
             func: () {
               Navigator.pop(context);
+
               Get.toNamed(Routes.Register, arguments: {
                 "type": "Update",
                 'userData': controller.userData.value

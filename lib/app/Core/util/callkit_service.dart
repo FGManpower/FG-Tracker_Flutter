@@ -1,8 +1,10 @@
 import 'dart:convert';
 import 'dart:developer';
 import 'package:connectycube_flutter_call_kit/connectycube_flutter_call_kit.dart';
+import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/modules/Notification/Controller/Notification_Controller.dart';
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../Data/Services/CallStateTracker.dart';
 import '../../Data/Services/SignallingService.dart';
 import '../../Model/call_model.dart';
@@ -11,6 +13,7 @@ import '../constant/pref_res.dart';
 import '../global/launchedFromCall.dart';
 import '../values/global.dart';
 import 'decomPress.dart';
+import 'package:http/http.dart' as http;
 
 class CallKitService {
   static final CallKitService instance = CallKitService._();
@@ -22,13 +25,9 @@ class CallKitService {
     if (_isInitialized) return;
     _isInitialized = true;
 
-    log("=== CallKitService Init ===");
-
     ConnectycubeFlutterCallKit.instance.init(
       icon: 'ic_launcher',
       color: '#0955fa',
-
-      // ✅ User tapped Accept
       onCallAccepted: (CallEvent event) async {
         log("onCallAccepted sessionId: ${event.sessionId}");
         log("onCallAccepted userInfo: ${event.userInfo}");
@@ -40,8 +39,6 @@ class CallKitService {
         Map<String, dynamic> data = {};
 
         if (rawUserInfo != null && rawUserInfo.isNotEmpty) {
-          // ✅ Check if userInfo is stored as JSON string in a single key
-          // (happens on iOS when backend sends user_info as JSON string)
           if (rawUserInfo.length == 1 &&
               rawUserInfo.values.first.trim().startsWith("{")) {
             try {
@@ -51,7 +48,6 @@ class CallKitService {
               data = Map<String, dynamic>.from(rawUserInfo);
             }
           } else {
-            // ✅ Regular Map<String, String>
             data = Map<String, dynamic>.from(rawUserInfo);
           }
         }
@@ -61,13 +57,10 @@ class CallKitService {
         if (data.isNotEmpty) {
           await navigateToCallScreen(data);
         } else {
-          // ✅ Fallback if userInfo is empty
           log("userInfo empty → using fallback");
           await _fallbackGetCallData(event.sessionId, accept: true);
         }
       },
-
-      // ✅ User tapped Reject
       onCallRejected: (CallEvent event) async {
         log("onCallRejected sessionId: ${event.sessionId}");
         log("onCallRejected userInfo: ${event.userInfo}");
@@ -93,16 +86,16 @@ class CallKitService {
           await declineCall(data);
         } else {
           await _fallbackGetCallData(event.sessionId, accept: false);
+          log("========fallback-called");
         }
       },
     );
   }
 
-  // ✅ Fallback when userInfo is empty
   Future<void> _fallbackGetCallData(
-      String sessionId, {
-        required bool accept,
-      }) async {
+    String sessionId, {
+    required bool accept,
+  }) async {
     try {
       log("_fallbackGetCallData sessionId: $sessionId");
 
@@ -141,7 +134,6 @@ class CallKitService {
     }
   }
 
-  // ✅ Navigate to call screen
   Future<void> navigateToCallScreen(Map<String, dynamic> data) async {
     try {
       if (CallSessionState.isCallActive) return;
@@ -152,32 +144,33 @@ class CallKitService {
       CallSessionState.launchedFromCall = true;
 
       final parsedData = {
-        "callId":             int.tryParse(data["callId"].toString()),
-        "callerId":           int.tryParse(data["callerId"].toString()),
-        "receiverId":         int.tryParse(data["receiverId"].toString()),
-        "isVideo":            data["isVideo"] == "true" || data["isVideo"] == true,
-        "callerName":         data["callerName"],
+        "callId": int.tryParse(data["callId"].toString()),
+        "callerId": int.tryParse(data["callerId"].toString()),
+        "receiverId": int.tryParse(data["receiverId"].toString()),
+        "isVideo": data["isVideo"] == "true" || data["isVideo"] == true,
+        "callerName": data["callerName"],
         "callerProfileImage": data["callerProfileImage"],
         "sdpOfferCompressed": data["sdpOfferCompressed"],
       };
 
       final call = IncomingCallModel.fromMap(parsedData);
 
-      final offer = await decomPress().decompressSDPOffer(
+      final offer = decomPress().decompressSDPOffer(
         call.sdpOfferCompressed,
       );
 
       Get.offNamed(
         Routes.callScreen,
         arguments: {
-          "callerId":     call.callerId,
-          "remoteUserId": Global.storageServices.get(PrefConst.userId).toString(),
-          "offer":        offer,
-          "is_video":     call.isVideo,
-          "callerName":   call.callerName,
-          "callId":       call.callId,
-          "callerProfile":call.callerProfileImage,
-          "callType":     "Incoming",
+          "callerId": call.callerId,
+          "remoteUserId":
+              Global.storageServices.get(PrefConst.userId).toString(),
+          "offer": offer,
+          "is_video": call.isVideo,
+          "callerName": call.callerName,
+          "callId": call.callId,
+          "callerProfile": call.callerProfileImage,
+          "callType": "Incoming",
         },
       );
 
@@ -192,15 +185,14 @@ class CallKitService {
     }
   }
 
-  // ✅ Decline call
   Future<void> declineCall(Map<String, dynamic> data) async {
     try {
       final parsedData = {
-        "callId":             int.tryParse(data["callId"].toString()),
-        "callerId":           int.tryParse(data["callerId"].toString()),
-        "receiverId":         int.tryParse(data["receiverId"].toString()),
-        "isVideo":            data["isVideo"] == "true" || data["isVideo"] == true,
-        "callerName":         data["callerName"],
+        "callId": int.tryParse(data["callId"].toString()),
+        "callerId": int.tryParse(data["callerId"].toString()),
+        "receiverId": int.tryParse(data["receiverId"].toString()),
+        "isVideo": data["isVideo"] == "true" || data["isVideo"] == true,
+        "callerName": data["callerName"],
         "callerProfileImage": data["callerProfileImage"],
         "sdpOfferCompressed": data["sdpOfferCompressed"],
       };
@@ -214,16 +206,53 @@ class CallKitService {
         );
       }
 
-      SignallingService.instance.socket?.emit("rejectCall", {
-        "callId":       call.callId,
-        "remoteUserId": call.callerId,
-      });
+      final socket = SignallingService.instance.socket;
+
+      if (socket != null && socket.connected) {
+        log("declineCall → via SOCKET");
+        socket.emit("rejectCall", {
+          "callId": call.callId,
+          "remoteUserId": call.callerId,
+        });
+        log("========call-rejected via socket");
+      } else {
+        log("declineCall → via REST API (socket not available)");
+        await _rejectCallViaApi(call.callId);
+      }
     } catch (e) {
       log("declineCall error: $e");
     }
   }
 
-  // ✅ Check call when app launched from killed state
+  Future<void> _rejectCallViaApi(int? callId) async {
+    if (callId == null) {
+      log("_rejectCallViaApi: callId is null");
+      return;
+    }
+
+    try {
+      final pref = await SharedPreferences.getInstance();
+      final token = pref.getString(PrefConst.STORAGE_USER_TOKEN_KEY) ?? "";
+
+      if (token.isEmpty) {
+        log("_rejectCallViaApi: token is empty");
+        return;
+      }
+
+      final url = Uri.parse("${ConstRes.aBaseUrl}callRejected?callId=$callId");
+
+      await http.get(
+        url,
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token",
+        },
+      ).timeout(const Duration(seconds: 10));
+    } catch (e) {
+      log("_rejectCallViaApi error: $e");
+    }
+  }
+
   Future<void> checkCallOnLaunch() async {
     try {
       final sessionId = await ConnectycubeFlutterCallKit.getLastCallId();
@@ -261,7 +290,6 @@ class CallKitService {
           await navigateToCallScreen(data);
         }
       } else {
-        // ✅ Call was missed/rejected - end it
         CallSessionState.sessionId = sessionId;
         final callData = await ConnectycubeFlutterCallKit.getCallData(
           sessionId: sessionId,
@@ -282,15 +310,14 @@ class CallKitService {
           }
 
           if (data.isNotEmpty) {
-            final myUserId = Global.storageServices
-                .get(PrefConst.userId)
-                .toString();
+            final myUserId =
+                Global.storageServices.get(PrefConst.userId).toString();
             final targetUser = (myUserId == data['callerId'].toString())
                 ? myUserId
                 : data['callerId'].toString();
 
             SignallingService.instance.socket?.emit("endCall", {
-              "callId":       data['callId'].toString(),
+              "callId": data['callId'].toString(),
               "remoteUserId": targetUser,
             });
           }

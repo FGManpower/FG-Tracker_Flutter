@@ -59,9 +59,6 @@ class SignallingService {
       callEnded(data['sessionId'].toString());
     });
 
-    // socket?.onAny((event, data) {
-    //   log("CallAllEventCalled: $event => $data");
-    // });
     socket?.onAny((event, dynamic data) {
       print("Event: $event, Data: $data");
     });

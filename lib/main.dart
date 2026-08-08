@@ -1,31 +1,25 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
-import 'dart:io';
-import 'package:android_intent_plus/android_intent.dart';
 import 'package:connectycube_flutter_call_kit/connectycube_flutter_call_kit.dart';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/constant/notification_holder.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 
-import 'package:fgtracker/app/Core/util/configureAudioSession.dart';
 import 'package:fgtracker/app/Data/Services/Walkie-Talkie-Service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:workmanager/workmanager.dart';
-import 'app/Core/global/global_notification_handler.dart';
 import 'app/Core/util/callkit_service.dart';
 import 'app/Core/values/Context_Utility.dart';
 import 'app/Core/values/global.dart';
-import 'app/Data/Repositories/call_repo.dart';
 import 'app/Data/Services/NotificationServices.dart';
 import 'app/Data/Services/SignallingService.dart';
 import 'app/modules/Notification/Controller/cubit/notification_count_cubit.dart';
@@ -34,6 +28,7 @@ import 'app/modules/Track/Controller/SocketServices.dart';
 import 'app/modules/Track/Controller/TrackController.dart';
 import 'app/modules/Track/Controller/LocationService.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+
 
 final socket = SignallingService.instance.socket;
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
@@ -44,38 +39,34 @@ String callIdToUuid(String callId) {
   return "00000000-0000-4000-8000-$padded";
 }
 
-// ✅ Background/Terminated Handler
 @pragma('vm:entry-point')
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
-  log("[BGHandler] data: ${message.data}");
 
   if (message.data['screen_name'] == "incomingCall") {
     final callData = jsonDecode(message.data['callData']);
     final originalCallId = callData['callId'].toString();
 
-    // ✅ Build userInfo - flat string map
     final Map<String, String> userInfo = {
-      "callId":             originalCallId,
-      "callerId":           callData['callerId'].toString(),
-      "receiverId":         callData['receiverId'].toString(),
-      "isVideo":            callData['isVideo'].toString(),
-      "callerName":         callData['callerName'].toString(),
+      "callId": originalCallId,
+      "callerId": callData['callerId'].toString(),
+      "receiverId": callData['receiverId'].toString(),
+      "isVideo": callData['isVideo'].toString(),
+      "callerName": callData['callerName'].toString(),
       "callerProfileImage": callData['callerProfileImage'].toString(),
       "sdpOfferCompressed": callData['sdpOfferCompressed'].toString(),
-      "notificationId":     callData['notificationId']?.toString() ?? "",
+      "notificationId": callData['notificationId']?.toString() ?? "",
     };
 
     try {
-      // ✅ Show CallKit notification (Android only - iOS gets VoIP push)
       await ConnectycubeFlutterCallKit.showCallNotification(
         CallEvent(
-          sessionId:    callIdToUuid(originalCallId), // ✅ UUID
-          callerName:   callData['callerName'],
-          callType:     callData['isVideo'] == true ? 1 : 0,
+          sessionId: callIdToUuid(originalCallId),
+          callerName: callData['callerName'],
+          callType: callData['isVideo'] == true ? 1 : 0,
           opponentsIds: {int.parse(callData['callerId'])},
-          callerId:     int.parse(callData['callerId']),
-          userInfo:     userInfo,
+          callerId: int.parse(callData['callerId']),
+          userInfo: userInfo,
         ),
       );
     } catch (e) {
@@ -83,14 +74,68 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     }
   }
 }
+
 @pragma('vm:entry-point')
-void onNotificationResponse(NotificationResponse response) async {
-  log("OnNotificationPress");
-  NotificationHolder.pendingResponse = response;
+Future<void> onCallRejectedWhenTerminated(CallEvent event) async {
+
+  await Firebase.initializeApp();
+
+  Map<String, dynamic> data = {};
+  final rawUserInfo = event.userInfo;
+
+  if (rawUserInfo != null && rawUserInfo.isNotEmpty) {
+    if (rawUserInfo.length == 1 &&
+        rawUserInfo.values.first.trim().startsWith("{")) {
+      try {
+        data = jsonDecode(rawUserInfo.values.first);
+      } catch (e) {
+        data = Map<String, dynamic>.from(rawUserInfo);
+      }
+    } else {
+      data = Map<String, dynamic>.from(rawUserInfo);
+    }
+  }
+
+  if (data.isEmpty) return;
+
+  final callId = int.tryParse(data['callId'].toString());
+  if (callId == null) return;
+  try {
+    final socket = SignallingService.instance.socket;
+
+    if (socket != null && socket.connected) {
+      socket.emit("rejectCall", {
+        "callId": callId,
+        "remoteUserId": data["callerId"].toString(),
+      });
+      log("========call-rejected via socket");
+    } else {
+      final pref = await SharedPreferences.getInstance();
+      final token = pref.getString(PrefConst.STORAGE_USER_TOKEN_KEY) ?? "";
+
+      if (token.isEmpty) return;
+
+      await http.get(
+        Uri.parse("${ConstRes.aBaseUrl}callRejected?callId=$callId"),
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token",
+        },
+      ).timeout(const Duration(seconds: 15));
+    }
+  } catch (e) {
+    log("[TERMINATED-ANDROID] ERROR: $e");
+  }
+
+  await ConnectycubeFlutterCallKit.clearCallData(sessionId: event.sessionId);
 }
 
 
 
+@pragma('vm:entry-point')
+void onCallEventBackground() {
+  CallKitService.instance.init();
+}
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -98,7 +143,8 @@ Future<void> main() async {
 
   await Global.init();
   FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
-
+  ConnectycubeFlutterCallKit.onCallRejectedWhenTerminated =
+      onCallRejectedWhenTerminated;
   await firebaseNotificationServices().initialized();
   CallKitService.instance.init();
   SystemChrome.setSystemUIOverlayStyle(
@@ -122,14 +168,9 @@ Future<void> main() async {
       selfUserId: userId,
     );
   }
-  // WalkieConfiguration.configureSpeakerAudioSession();
-  //
-  //
-  //
-  // WalkieUtils().listenWalkieEvents();
+
   runApp(const MyApp());
 }
-
 
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
@@ -143,7 +184,6 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
     CallKitService.instance.init();
-    // CallUtils.instance.listenCallKitEvents();
   }
 
   @override
