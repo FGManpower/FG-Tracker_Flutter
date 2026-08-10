@@ -78,9 +78,15 @@ class _LocationTrackingPageState extends State<LocationTrackingPage> {
         context,
         groupName: groupName,
         onPressMembers: () {
+          final members = controller.groupWiseUserData[groupId.toString()] ?? [];
+
+          final visibleMembers = members
+              .where((e) => e.locationSharing != false)
+              .toList();
+
           BottomSheetUi().showMemberBottomSheet(
             context,
-            controller.groupWiseUserData[groupId.toString()] ?? [],
+            visibleMembers,
           );
         },
         onPressRefresh: () {

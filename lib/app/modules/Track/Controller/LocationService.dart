@@ -11,6 +11,7 @@ import 'package:get/get.dart';
 import 'package:location/location.dart';
 
 import '../../../Core/values/Context_Utility.dart';
+import 'TrackController.dart';
 
 class LocationService extends GetxService {
   static LocationService get instance => Get.put(LocationService());
@@ -93,9 +94,19 @@ class LocationService extends GetxService {
     _positionStream?.cancel();
     _positionStream = _location.onLocationChanged.listen((location) {
       currentPosition = location;
-      socketService.emitLocation( userId, currentPosition!.latitude,
-          currentPosition!.longitude);
+
+      if (!TrackingController.instance.isLocationSharing.value) {
+        log("👻 Ghost Mode Enabled - Location not shared");
+        return;
+      }
+
+      socketService.emitLocation(
+        userId,
+        currentPosition!.latitude,
+        currentPosition!.longitude,
+      );
     });
+
   }
 
   @override

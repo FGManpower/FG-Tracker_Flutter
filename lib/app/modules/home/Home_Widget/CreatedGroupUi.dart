@@ -247,25 +247,20 @@ class CreatedGroupUi extends StatelessWidget {
                         ],
                       ),
                       SizedBox(height: 12.h),
-                      GestureDetector(
+                      isActive
+                          ? GestureDetector(
                         onTap: () {
                           if (data == null) return;
-
-                          if (isActive) {
-                            Get.toNamed(
-                              Routes.QrCodeScreen,
-                              arguments: {
-                                "groupCode": data.groupCode ?? "",
-                              },
-                            );
-                          } else {
-                            Utils().fluttertoast(
-                              "Activate the group to view QR",
-                            );
-                          }
+                          Get.toNamed(
+                            Routes.QrCodeScreen,
+                            arguments: {
+                              "groupCode": data.groupCode ?? "",
+                            },
+                          );
                         },
                         child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          mainAxisAlignment:
+                          MainAxisAlignment.spaceBetween,
                           children: [
                             reausabletext(
                               "Show QR Code",
@@ -296,7 +291,87 @@ class CreatedGroupUi extends StatelessWidget {
                             ),
                           ],
                         ),
-                      ),
+                      )
+                          : (!isCreator
+                          ? GestureDetector(
+                        onTap: () {
+                          if (data == null) return;
+                          groupController.confirmAndExitGroup(
+                            context,
+                            groupId: data.id?.toString() ?? "",
+                            groupName: data.groupName ?? "",
+                          );
+                        },
+                        child: Row(
+                          mainAxisAlignment:
+                          MainAxisAlignment.spaceBetween,
+                          children: [
+                            reausabletext(
+                              "Exit Group",
+                              fontfamily: FontFamily.interMedium,
+                              fontsize: 11,
+                              color: Colors.redAccent,
+                            ),
+                            Container(
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: Colors.redAccent,
+                                  width: 1.4.w,
+                                ),
+                              ),
+                              child: Padding(
+                                padding: EdgeInsets.all(6.r),
+                                child: Icon(
+                                  Icons.exit_to_app_rounded,
+                                  size: 15,
+                                  color: Colors.redAccent,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                          : GestureDetector(
+                        onTap: () {
+                          Utils().fluttertoast(
+                            "Activate the group to view QR",
+                          );
+                        },
+                        child: Row(
+                          mainAxisAlignment:
+                          MainAxisAlignment.spaceBetween,
+                          children: [
+                            reausabletext(
+                              "Show QR Code",
+                              fontfamily: FontFamily.interMedium,
+                              fontsize: 11,
+                              color: ToggleThemeData.darkPurple,
+                            ),
+                            Container(
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: const Color(
+                                    0xff5045B9,
+                                  ),
+                                  width: 1.4.w,
+                                ),
+                              ),
+                              child: Padding(
+                                padding: EdgeInsets.all(6.r),
+                                child: FaIcon(
+                                  FontAwesomeIcons.qrcode,
+                                  size: 15,
+                                  color: const Color(
+                                    0xff5045B9,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      )),
                     ],
                   ),
                 ),

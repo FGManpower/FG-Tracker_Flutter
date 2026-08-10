@@ -49,4 +49,8 @@ class StorageServices {
   String? get(String key) {
     return _prefs.getString(key);
   }
+
+  bool? getBoolSync(String key) {
+    return _prefs.getBool(key);
+  }
 }

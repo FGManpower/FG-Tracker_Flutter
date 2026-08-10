@@ -8,6 +8,7 @@ import 'package:fgtracker/app/config/themes_data.dart';
 import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
 import 'package:fgtracker/app/modules/Messages/widgets/ChatInputArea.dart';
 import 'package:fgtracker/app/modules/Messages/widgets/ChatList.dart';
+import 'package:fgtracker/app/widgets/PinnedMessageBanner.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:skeletonizer/skeletonizer.dart';
@@ -304,6 +305,18 @@ class GroupChatScreen extends GetView<GroupMessageController> {
       body: SafeArea(
         child: Column(
           children: [
+            Obx(() {
+              final pinned = controller.pinnedMessage.value;
+              if (pinned == null || !controller.showPinnedBanner.value) {
+                return const SizedBox.shrink();
+              }
+              return PinnedMessageBanner(
+                pinnedMessage: pinned,
+                onTap: () => controller.scrollToPinnedMessage(),
+                onClose: () => controller.showPinnedBanner.value = false,
+                onUnpin: () => controller.unpinMessage(),
+              );
+            }),
             Expanded(
               child: Obx(
                 () => Skeletonizer(

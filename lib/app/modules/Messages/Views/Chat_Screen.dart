@@ -12,6 +12,7 @@ import 'package:fgtracker/app/config/themes_data.dart';
 import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
 import 'package:fgtracker/app/modules/Messages/Controller/MessageController.dart';
 import 'package:fgtracker/app/modules/Messages/widgets/message_Widgets.dart';
+import 'package:fgtracker/app/widgets/PinnedMessageBanner.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../Walkie-talkie/Controller/walkieController.dart';
@@ -181,6 +182,18 @@ class ChatScreen extends GetView<MessageController> {
         body: SafeArea(
           child: Column(
             children: [
+              Obx(() {
+                final pinned = controller.pinnedMessage.value;
+                if (pinned == null || !controller.showPinnedBanner.value) {
+                  return const SizedBox.shrink();
+                }
+                return PinnedMessageBanner(
+                  pinnedMessage: pinned,
+                  onTap: () => controller.scrollToPinnedMessage(),
+                  onClose: () => controller.showPinnedBanner.value = false,
+                  onUnpin: () => controller.unpinMessage(),
+                );
+              }),
               Expanded(
                 child: ChatList(
                   controller: controller,

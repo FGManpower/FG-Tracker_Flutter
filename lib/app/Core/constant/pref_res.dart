@@ -14,4 +14,5 @@ class PrefConst {
   static const String AcceptPolicy = "AcceptPolicy";
   static const String incomingCall = "incomingCall";
   static const String introStatus = "IntroStatus";
+  static const String locationSharing = "locationSharing";
 }

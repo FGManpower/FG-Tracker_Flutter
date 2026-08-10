@@ -1,3 +1,4 @@
+import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/Dialog/Common_dialog.dart';
 import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/Core/values/loading.dart';
@@ -7,10 +8,10 @@ import 'package:fgtracker/app/modules/Track/Controller/TrackController.dart';
 import 'package:fgtracker/app/Model/GroupRes.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_mlkit_barcode_scanning/google_mlkit_barcode_scanning.dart';
 import 'package:image_picker/image_picker.dart';
-
 
 class GroupController extends GetxController {
   GlobalKey<FormState> createGroupKey = GlobalKey<FormState>();
@@ -20,8 +21,6 @@ class GroupController extends GetxController {
   var newlyCreatedGroups = <GroupsResData>[].obs;
   var createdGroups = <GroupsResData>[].obs;
   var responseError = "".obs;
-
-
 
   Future<void> decodeQRCodeFromGallery() async {
     final picker = ImagePicker();
@@ -55,7 +54,6 @@ class GroupController extends GetxController {
       };
       var result = await GroupRepo.createGroup(param);
       if (result.status == true) {
-
         Loading().dismissloading();
         Utils().fluttertoast(result.message.toString());
 
@@ -75,7 +73,6 @@ class GroupController extends GetxController {
   }
 
   Future<void> updateGroupDetail({required String groupId}) async {
-
     try {
       Loading().showloading();
       dynamic param = {
@@ -84,11 +81,8 @@ class GroupController extends GetxController {
       };
       var result = await GroupRepo.updateGroup(param);
       if (result.status == true) {
-
         Loading().dismissloading();
         Get.offAllNamed(Routes.Home_Screen);
-
-
       } else {
         Loading().dismissloading();
         CommonDialog.errorMessage(result.message);
@@ -108,18 +102,15 @@ class GroupController extends GetxController {
         createdGroups.value = result.data!.createdGroups!;
         responseError.value = "";
         groupDataLoading.value = false;
-        try{
-          List<GroupsResData> groupData =[];
+        try {
+          List<GroupsResData> groupData = [];
           groupData.addAll(newlyCreatedGroups);
           groupData.addAll(createdGroups);
 
-
           TrackingController.instance.inItAllGroups(groups: groupData);
-
-        }catch(e){
+        } catch (e) {
           debugPrint("error in inItAllGroups:${e}");
         }
-
       } else {
         groupDataLoading.value = false;
         responseError.value = result.message.toString();
@@ -154,10 +145,10 @@ class GroupController extends GetxController {
   }
 
   Future<void> deleteGroupMember(
-      BuildContext context, {
-        required String groupId,
-        required String groupMemberId,
-      }) async {
+    BuildContext context, {
+    required String groupId,
+    required String groupMemberId,
+  }) async {
     try {
       Loading().showloading();
       dynamic param = {
@@ -179,5 +170,59 @@ class GroupController extends GetxController {
   }
 
 
+  Future<void> confirmAndExitGroup(
+      BuildContext context, {
+        required String groupId,
+        required String groupName,
+      }) async {
+    Get.defaultDialog(
+      title: "Exit Group",
+      middleText:
+      "Are you sure you want to exit \"$groupName\"? You'll need a group code to rejoin.",
+      textCancel: "Cancel",
+      textConfirm: "Exit",
+      confirmTextColor: Colors.white,
+      buttonColor: Colors.redAccent,
+      onConfirm: () async {
+        Get.back();
+        await exitGroup(groupId: groupId);
+      },
+    );
+  }
 
+  Future<void> exitGroup({required String groupId}) async {
+    try {
+      Loading().showloading();
+      dynamic param = {
+        "groupId": groupId,
+        "userId": PrefConst.userId,
+      };
+      var result = await GroupRepo.exitGroups(param);
+      if (result.status == true) {
+        Loading().dismissloading();
+        // leaveGroup(context, groupId: groupId);
+      } else {
+        Loading().dismissloading();
+        CommonDialog.errorMessage(result.message);
+      }
+    } catch (e) {
+      Loading().dismissloading();
+      CommonDialog.errorMessage(e.toString());
+    }
+    // try {
+    //   Loading().showloading();
+    //   final param = {"groupId": groupId , "userId": PrefConst.userId};
+    //   var result = await GroupRepo.exitGroups(param);
+    //   Loading().dismissloading();
+    //   if (result.status == true) {
+    //     Utils().fluttertoast(result.message.toString());
+    //     getGroupData();
+    //   } else {
+    //     CommonDialog.errorMessage(result.message);
+    //   }
+    // } catch (e) {
+    //   Loading().dismissloading();
+    //   CommonDialog.errorMessage(e.toString());
+    // }
+  }
 }

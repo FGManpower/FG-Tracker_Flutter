@@ -45,6 +45,7 @@ class LocationData {
   dynamic name;
   dynamic profileImage;
   dynamic isCreator;
+  bool? locationSharing;
 
   LocationData(
       {this.id,
@@ -68,7 +69,7 @@ class LocationData {
     isOnline = json['isOnline'];
     isCreator = json['isCreator'];
     name = json['name'] ?? json['Name'];
-
+    locationSharing = json['locationSharing'];
     profileImage = json['ProfileImage'] ?? json['profileImage'];
   }
 
@@ -84,6 +85,7 @@ class LocationData {
     data['name'] = this.name;
     data['isCreator'] = isCreator;
     data['ProfileImage'] = this.profileImage;
+    data['locationSharing'] = locationSharing;
     return data;
   }
 }

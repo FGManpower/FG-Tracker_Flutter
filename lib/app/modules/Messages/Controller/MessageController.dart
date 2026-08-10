@@ -56,7 +56,8 @@ class MessageController extends GetxController with WidgetsBindingObserver {
   late MemberData memberData;
   Map<String, dynamic>? arguments = Get.arguments;
   RxBool isCreator = false.obs;
-
+  final Rxn<MessageData> pinnedMessage = Rxn<MessageData>();
+  final RxBool showPinnedBanner = true.obs;
   final Rx<Uint8List?> videoThumbnail = Rx<Uint8List?>(null);
   final RxString videoDuration = ''.obs;
   Rx<MessageData?> replyMessage = Rx<MessageData?>(null);
@@ -189,15 +190,15 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     socketService.listenMessageDeleted(
       callback: (data) {
         final int? messageId = data["messageId"];
-
         if (messageId == null) return;
 
-        _messages.removeWhere(
-              (e) => e.id == messageId,
-        );
+        if (pinnedMessage.value?.id == messageId) {
+          pinnedMessage.value = null;
+          showPinnedBanner.value = false;
+        }
 
+        _messages.removeWhere((e) => e.id == messageId);
         updateMessageStream();
-
         log("Message Deleted => $messageId");
       },
     );
@@ -479,7 +480,8 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     imagePaths.clear();
     isSending.value = false;
     clearReply();
-
+    pinnedMessage.value = null;
+    showPinnedBanner.value = false;
     ChatStateTracker.isChatCallScreenOpen = false;
 
     Navigator.of(context).pop();
@@ -604,5 +606,39 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         curve: Curves.easeInOut,
       );
     }
+  }
+
+
+  void pinMessage(MessageData message) {
+    pinnedMessage.value = message;
+    showPinnedBanner.value = true;
+  }
+
+  void unpinMessage() {
+    pinnedMessage.value = null;
+    showPinnedBanner.value = false;
+  }
+
+  void scrollToPinnedMessage() {
+    if (pinnedMessage.value == null) return;
+    final msgId = pinnedMessage.value!.id;
+    if (msgId == null) return;
+
+    final index = _messages.indexWhere((e) => e.id == msgId);
+    if (index == -1) return;
+
+    highlightedMessageId.value = msgId;
+
+    if (itemScrollController.isAttached) {
+      itemScrollController.scrollTo(
+        index: index,
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeInOut,
+      );
+    }
+
+    Future.delayed(const Duration(seconds: 2), () {
+      highlightedMessageId.value = -1;
+    });
   }
 }

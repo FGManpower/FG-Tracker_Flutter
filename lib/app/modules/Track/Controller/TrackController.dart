@@ -12,7 +12,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-
 import '../../../Core/values/Dialog/DialogBox.dart';
 import '../../../Core/values/colors.dart';
 import '../../../Core/values/global.dart';
@@ -24,8 +23,6 @@ import 'SocketServices.dart';
 
 class TrackingController extends GetxController {
   static const String _clusterManagerId = 'users_cluster';
-
-
   static TrackingController get instance => Get.put(TrackingController());
 
   final markers = <Marker>{}.obs;
@@ -35,7 +32,7 @@ class TrackingController extends GetxController {
   Map<String, dynamic>? arguments = Get.arguments;
 
   final joinedGroupIds = <String>[].obs;
-
+  final RxBool isLocationSharing = true.obs;
   final LocationService locationService = LocationService.instance;
 
   final SocketService socketService = SocketService.instance;
@@ -57,9 +54,9 @@ class TrackingController extends GetxController {
   String? _alreadyListeningGroupId;
 
   Future<void> changeMapTheme(
-      MapType type, {
-        bool darkTheme = false,
-      }) async {
+    MapType type, {
+    bool darkTheme = false,
+  }) async {
     currentMapType.value = type;
 
     isDarkMode = darkTheme;
@@ -75,7 +72,6 @@ class TrackingController extends GetxController {
     update();
   }
 
-
   void clearMapMarkers() {
     markers.clear();
     update();
@@ -86,7 +82,6 @@ class TrackingController extends GetxController {
       await mapController!.animateCamera(CameraUpdate.zoomTo(11.0));
     }
   }
-
 
   void deleteGroup({
     required String groupId,
@@ -101,10 +96,10 @@ class TrackingController extends GetxController {
     groupWiseUserData.remove(groupId);
 
     markers.removeWhere(
-          (marker) {
+      (marker) {
         return groupWiseUserData[groupId]?.any(
               (user) => user.userId.toString() == marker.markerId.value,
-        ) ??
+            ) ??
             false;
       },
     );
@@ -125,9 +120,9 @@ class TrackingController extends GetxController {
   }
 
   Future<void> getGroupLocationData(
-      BuildContext context,
-      int groupId,
-      ) async {
+    BuildContext context,
+    int groupId,
+  ) async {
     try {
       Loading().showloading(context: context);
 
@@ -137,6 +132,9 @@ class TrackingController extends GetxController {
         Loading().dismissloading(context: context);
 
         for (var data in result.locations!) {
+          print(
+            "${data.name} -> locationSharing: ${data.locationSharing}",
+          );
           updateGroupMarker(data);
         }
       } else {
@@ -198,7 +196,6 @@ class TrackingController extends GetxController {
   }
 
   Future<void> onClusterTap(Cluster cluster) async {
-
     final clusterUserIds = cluster.markerIds.map((id) => id.value).toSet();
 
     final List<LocationData> clusterUsers = [];
@@ -206,7 +203,7 @@ class TrackingController extends GetxController {
       for (final user in group) {
         if (clusterUserIds.contains(user.userId.toString())) {
           final alreadyAdded = clusterUsers.any(
-                (u) => u.userId.toString() == user.userId.toString(),
+            (u) => u.userId.toString() == user.userId.toString(),
           );
           if (!alreadyAdded) clusterUsers.add(user);
         }
@@ -219,6 +216,8 @@ class TrackingController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    isLocationSharing.value =
+        Global.storageServices.getBoolSync(PrefConst.locationSharing) ?? true;
   }
 
   void removeUserMarker(String userId) {
@@ -229,9 +228,9 @@ class TrackingController extends GetxController {
   }
 
   Future<void> searchUserAndZoom(
-      String groupId,
-      String userId,
-      ) async {
+    String groupId,
+    String userId,
+  ) async {
     int retries = 0;
 
     while (markers.isEmpty && retries < 30) {
@@ -241,7 +240,7 @@ class TrackingController extends GetxController {
 
     final matchedMarker = markers.toList().firstWhereOrNull(
           (m) => m.markerId.value == userId,
-    );
+        );
 
     if (matchedMarker != null && mapController != null) {
       await mapController!.animateCamera(
@@ -418,14 +417,13 @@ class TrackingController extends GetxController {
     final profileImageUrl = data.profileImage?.toString() ?? '';
 
     final bool isOnline = data.lastSeen != null &&
-        Tracking()
-            .getTimeAgo(DateTime.parse(data.lastSeen!))
-            .toLowerCase() == "just now";
+        Tracking().getTimeAgo(DateTime.parse(data.lastSeen!)).toLowerCase() ==
+            "just now";
 
     final groupList = groupWiseUserData[groupId] ?? [];
 
     groupList.removeWhere(
-          (u) => u.userId.toString() == data.userId.toString(),
+      (u) => u.userId.toString() == data.userId.toString(),
     );
 
     groupList.add(data);
@@ -448,54 +446,52 @@ class TrackingController extends GetxController {
     final oldPosition = _markerPositions[data.userId.toString()] ?? newPosition;
 
     Marker markerBuilder(LatLng position) => Marker(
-      markerId: MarkerId(data.userId.toString()),
-      position: position,
-      icon: icon,
+          markerId: MarkerId(data.userId.toString()),
+          position: position,
+          icon: icon,
+          clusterManagerId: const ClusterManagerId(_clusterManagerId),
+          onTap: () async {
+            final dest = LatLng(data.latitude!, data.longitude!);
+            double distanceKm = 0.0;
 
-      clusterManagerId: const ClusterManagerId(_clusterManagerId),
-      onTap: () async {
-        final dest = LatLng(data.latitude!, data.longitude!);
-        double distanceKm = 0.0;
+            if (locationService.currentPosition != null) {
+              final origin = LatLng(
+                locationService.currentPosition!.latitude!,
+                locationService.currentPosition!.longitude!,
+              );
 
-        if (locationService.currentPosition != null) {
-          final origin = LatLng(
-            locationService.currentPosition!.latitude!,
-            locationService.currentPosition!.longitude!,
-          );
+              distanceKm = _calculateDistance(
+                origin.latitude,
+                origin.longitude,
+                dest.latitude,
+                dest.longitude,
+              );
+            }
 
-          distanceKm = _calculateDistance(
-            origin.latitude,
-            origin.longitude,
-            dest.latitude,
-            dest.longitude,
-          );
-        }
-
-        DialogBox().showRouteDetailsBottomSheet(
-          destination: dest,
-          distance: distanceKm,
-          name: data.name,
-          isGroupChat: false,
-          imageUrl: profileImageUrl,
-          lastSeen: Tracking().getTimeAgo(
-            DateTime.parse(data.lastSeen!),
-          ),
-          userId: int.tryParse(data.userId.toString()),
-          groupId: int.tryParse(data.groupId.toString()),
-          id: int.tryParse(data.id.toString()),
-          status: isOnline,
+            DialogBox().showRouteDetailsBottomSheet(
+              destination: dest,
+              distance: distanceKm,
+              name: data.name,
+              isGroupChat: false,
+              imageUrl: profileImageUrl,
+              lastSeen: Tracking().getTimeAgo(
+                DateTime.parse(data.lastSeen!),
+              ),
+              userId: int.tryParse(data.userId.toString()),
+              groupId: int.tryParse(data.groupId.toString()),
+              id: int.tryParse(data.id.toString()),
+              status: isOnline,
+            );
+          },
         );
-      },
-    );
 
     markers.removeWhere((m) => m.markerId.value == data.userId.toString());
     markers.add(markerBuilder(newPosition));
     markers.refresh();
     _markerPositions[data.userId.toString()] = newPosition;
 
-    final bool positionChanged =
-        oldPosition.latitude != newPosition.latitude ||
-            oldPosition.longitude != newPosition.longitude;
+    final bool positionChanged = oldPosition.latitude != newPosition.latitude ||
+        oldPosition.longitude != newPosition.longitude;
 
     if (positionChanged) {
       _animateMarkerTo(
@@ -552,11 +548,11 @@ class TrackingController extends GetxController {
   }
 
   double _calculateDistance(
-      double lat1,
-      double lon1,
-      double lat2,
-      double lon2,
-      ) {
+    double lat1,
+    double lon1,
+    double lat2,
+    double lon2,
+  ) {
     const R = 6371;
     final dLat = (lat2 - lat1) * (pi / 180);
     final dLon = (lon2 - lon1) * (pi / 180);
@@ -576,7 +572,7 @@ class TrackingController extends GetxController {
     socketService.onGroupLocationUpdateOff();
 
     socketService.onGroupLocationUpdate(
-          (data) {
+      (data) {
         if (data["groupId"].toString() == groupId) {
           final location = LocationData.fromJson(data);
           updateGroupMarker(location);
@@ -590,6 +586,36 @@ class TrackingController extends GetxController {
     final users = groupWiseUserData[groupId] ?? [];
     for (var user in users) {
       updateGroupMarker(user);
+    }
+  }
+  Future<void> toggleLocationSharing(bool value) async {
+    final oldValue = isLocationSharing.value;
+
+    isLocationSharing.value = value;
+
+    try {
+      final success = await TrackRepo.updateLocationSharing(value);
+
+      if (success) {
+        await Global.storageServices.setBool(
+          PrefConst.locationSharing,
+          value,
+        );
+      } else {
+        isLocationSharing.value = oldValue;
+
+        Get.snackbar(
+          "Error",
+          "Unable to update Ghost Mode",
+        );
+      }
+    } catch (e) {
+      isLocationSharing.value = oldValue;
+
+      Get.snackbar(
+        "Error",
+        "Something went wrong",
+      );
     }
   }
 
@@ -636,8 +662,8 @@ class TrackingController extends GetxController {
                   if (user.lastSeen != null && user.lastSeen!.isNotEmpty) {
                     try {
                       isOnline = Tracking()
-                          .getTimeAgo(DateTime.parse(user.lastSeen!))
-                          .toLowerCase() ==
+                              .getTimeAgo(DateTime.parse(user.lastSeen!))
+                              .toLowerCase() ==
                           "just now";
                     } catch (_) {
                       isOnline = false;
@@ -687,10 +713,10 @@ class TrackingController extends GetxController {
                       isOnline
                           ? 'Online'
                           : user.lastSeen != null
-                          ? Tracking().getTimeAgo(
-                        DateTime.parse(user.lastSeen!),
-                      )
-                          : 'Offline',
+                              ? Tracking().getTimeAgo(
+                                  DateTime.parse(user.lastSeen!),
+                                )
+                              : 'Offline',
                       style: TextStyle(
                         color: isOnline ? Colors.green : Colors.grey,
                         fontSize: 12,
