@@ -459,7 +459,7 @@ class DialogBox {
               SizedBox(height: 4.h),
               reausabletext(
                 isLocationSharing == false
-                    ? "👻 Ghost Mode Enabled"
+                    ? "Private"
                     : isOnline
                     ? "Online"
                     : "Offline",
