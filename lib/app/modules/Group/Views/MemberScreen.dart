@@ -497,7 +497,7 @@ class MemberscreenScreen extends GetView<MemberController> {
                                           Row(
 
                                             children: [
-                                              InkWell(
+                                            data.locationSharing==true?  InkWell(
                                                 borderRadius:
                                                     BorderRadius.circular(20.r),
                                                 onTap: () {
@@ -533,7 +533,7 @@ class MemberscreenScreen extends GetView<MemberController> {
                                                     size: 18.sp,
                                                   ),
                                                 ),
-                                              ),
+                                              ):SizedBox(),
                                               InkWell(
                                                 onTap: () {
                                                   WalkieController()

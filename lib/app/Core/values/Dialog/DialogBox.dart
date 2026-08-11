@@ -410,6 +410,7 @@ class DialogBox {
     String? lastSeen,
     String? groupName,
     required bool isGroupChat,
+    required bool isLocationSharing,
   }) {
     bool isOnline =
         lastSeen != null && lastSeen.toLowerCase() == "just now";
@@ -457,7 +458,7 @@ class DialogBox {
               ),
               SizedBox(height: 4.h),
               reausabletext(
-                isOnline ? "Online" : "Offline",
+                isLocationSharing==false?"Private": isOnline ? "Online" : "Offline",
                 fontsize: 12.sp,
                 color: isOnline ? Colors.green : Colors.red,
                 fontfamily: FontFamily.interMedium,
@@ -744,7 +745,7 @@ class DialogBox {
                 ],
               ),
               SizedBox(height: 15.h),
-              reausablebutton(
+              isLocationSharing==false?SizedBox(): reausablebutton(
                 title: isGroupChat ? "Track" : AppText.getDirections,
                 icon: isGroupChat ? Icons.track_changes : Icons.directions,
                 fontSize: 19,

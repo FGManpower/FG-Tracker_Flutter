@@ -17,7 +17,7 @@ class StorageServices {
   }
 
   Future<bool> getBool(String key) async {
-    return await _prefs.getBool(key) ?? false;
+    return  _prefs.getBool(key) ?? false;
   }
 
   Future<bool> setDefaultTheme(String key, bool value) async {

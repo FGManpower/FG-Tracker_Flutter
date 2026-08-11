@@ -88,7 +88,7 @@ class BottomSheetUi {
                               false)
                           ? "${ConstRes.aImageBaseUrl}${member.profileImage}"
                           : null;
-                      return GestureDetector(
+                      return Global.storageServices.get(PrefConst.userId).toString()==member.userId.toString()?SizedBox():GestureDetector(
                         onTap: () {
                           if (!isDeleteMode) return;
 
@@ -204,7 +204,7 @@ class BottomSheetUi {
                                                 SizedBox(width: 6.w),
                                                 Expanded(
                                                   child: reausabletext(
-                                                    isOnline
+                                                      member.locationSharing==false?"Private":    isOnline
                                                         ? "Online"
                                                         : "Last seen: ${Tracking().getTimeAgo(DateTime.parse(member.lastSeen ?? DateTime.now().toString()))}",
                                                     fontsize: 13,
@@ -331,7 +331,7 @@ class BottomSheetUi {
                                   ),
                                   if (!isMe) ...[
                                     SizedBox(height: 10.h),
-                                    Align(
+                                    member.locationSharing==false?SizedBox():  Align(
                                       alignment: Alignment.centerRight,
                                       child: ElevatedButton.icon(
                                         onPressed: () {

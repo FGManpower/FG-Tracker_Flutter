@@ -70,6 +70,7 @@ class SocketService extends GetxService {
 
     for (String groupId in connectedGroupIds) {
       // log("📡 Emitting location to group: $groupId");
+      log("location sharing..., lat=$lat, lng=$lng");
       _socket?.emit("send-location", {
         "userId": userId,
         "groupId": groupId,

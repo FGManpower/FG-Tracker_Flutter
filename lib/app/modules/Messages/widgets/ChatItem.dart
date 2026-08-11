@@ -806,6 +806,7 @@ class GroupChatBubble extends StatelessWidget {
                       status: true,
                       lastSeen: "",
                       isGroupChat: true,
+                        isLocationSharing: message.locationSharing ?? false
                     );
                   },
                   child: CircleAvatar(
@@ -975,6 +976,7 @@ class GroupChatBubble extends StatelessWidget {
                       status: true,
                       lastSeen: "",
                       isGroupChat: true,
+                        isLocationSharing: message.locationSharing ?? false
                     );
                   },
                   child: CircleAvatar(

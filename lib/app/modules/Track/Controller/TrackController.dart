@@ -481,6 +481,7 @@ class TrackingController extends GetxController {
               groupId: int.tryParse(data.groupId.toString()),
               id: int.tryParse(data.id.toString()),
               status: isOnline,
+              isLocationSharing: data.locationSharing!
             );
           },
         );
@@ -587,6 +588,14 @@ class TrackingController extends GetxController {
     for (var user in users) {
       updateGroupMarker(user);
     }
+  }
+
+  Future<void> loadLocationSharing() async {
+    final value = await Global.storageServices.getBool(
+      PrefConst.locationSharing,
+    );
+
+    isLocationSharing.value = value;
   }
   Future<void> toggleLocationSharing(bool value) async {
     final oldValue = isLocationSharing.value;

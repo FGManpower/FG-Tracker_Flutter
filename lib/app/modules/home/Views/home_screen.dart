@@ -7,6 +7,7 @@ import 'package:fgtracker/app/Data/Services/NotificationServices.dart';
 import 'package:fgtracker/app/Data/Services/PermissionGuard.dart';
 import 'package:fgtracker/app/modules/DashboardController.dart';
 import 'package:fgtracker/app/modules/Group/controller/JoinGroup_Controller.dart';
+import 'package:fgtracker/app/modules/Track/Controller/TrackController.dart';
 import 'package:fgtracker/app/modules/home/Controller/home_controller.dart';
 import 'package:fgtracker/app/modules/home/Home_Widget/CreatedGroupUi.dart';
 import 'package:fgtracker/app/modules/home/Home_Widget/Home_widget.dart';
@@ -40,7 +41,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final controller = Get.put(HomeController());
   final dashController = Get.put(DashboardCtr());
   final joinGroupController = Get.put(JoinGroupController());
-
+  final trackingController = Get.put(TrackingController());
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   final firebaseNotificationServices notificationServices =
@@ -73,7 +74,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
     await controller.getProfileData();
     await groupController.getGroupData();
+    await trackingController.loadLocationSharing();
   }
+
+
 
   @override
   void dispose() {
@@ -90,6 +94,7 @@ class _HomeScreenState extends State<HomeScreen> {
         appBar: HomeAppBar(
           scaffoldKey: _scaffoldKey,
           controller: controller,
+          trackingController: trackingController,
         ),
         body: Padding(
           padding: EdgeInsets.symmetric(horizontal: 12.w),

@@ -37,6 +37,7 @@ class MemberData {
   bool? isCreator;
   bool? isOnline;
   String? lastSeen;
+  bool? locationSharing;
 
   MemberData(
       {this.id,
@@ -47,7 +48,7 @@ class MemberData {
       this.profileImage,
       this.isCreator,
       this.isOnline,
-      this.lastSeen});
+      this.lastSeen,this.locationSharing});
 
   MemberData.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -59,6 +60,7 @@ class MemberData {
     isCreator = json['isCreator'];
     isOnline = json['isOnline'];
     lastSeen = json['lastSeen'];
+    locationSharing = json['locationSharing'];
   }
 
   Map<String, dynamic> toJson() {
@@ -72,6 +74,7 @@ class MemberData {
     data['isCreator'] = isCreator;
     data['isOnline'] = isOnline;
     data['lastSeen'] = lastSeen;
+    data['locationSharing'] = locationSharing;
     return data;
   }
 }

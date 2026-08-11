@@ -4,9 +4,7 @@ import 'package:fgtracker/app/Core/theme/appTheme.dart';
 import 'package:fgtracker/app/Core/values/Context_Utility.dart';
 import 'package:fgtracker/app/Core/values/Dialog/Common_dialog.dart';
 import 'package:fgtracker/app/Core/values/utility.dart';
-import 'package:fgtracker/app/config/themes_data.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
-import 'package:fgtracker/app/modules/Track/Controller/TrackController.dart';
 import 'package:fgtracker/app/modules/auth/Controller/logout_controller.dart';
 import 'package:fgtracker/app/modules/home/Controller/home_controller.dart';
 import 'package:fgtracker/app/modules/home/Home_Widget/Home_widget.dart';
@@ -20,7 +18,7 @@ import 'package:get/get.dart';
 class Sidemenu extends StatelessWidget {
   final controller = Get.put(HomeController());
   final GlobalKey<ScaffoldState> scaffoldKey;
-  final trackingController = Get.put(TrackingController());
+
   Sidemenu({super.key, required this.scaffoldKey});
 
   @override
@@ -136,56 +134,8 @@ class Sidemenu extends StatelessWidget {
               Navigator.pop(context);
               Get.toNamed(Routes.AboutUs);
             }),
-        Obx(
-              () => Padding(
-            padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 8.h),
-            child: Row(
-              children: [
-                CircleAvatar(
-                  radius: 22,
-                  backgroundColor: const Color(0xff5045B9),
-                  child: Icon(
-                    Icons.visibility_off,
-                    color: ToggleThemeData.white,
-                    size: 22,
-                  ),
-                ),
-                SizedBox(width: 16.w),
-                const Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "Ghost Mode",
-                        style: TextStyle(
-                          fontWeight: FontWeight.w500,
-                          fontSize: 15,
-                        ),
-                      ),
-                      Text(
-                        "Hide my live location",
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: Colors.black54,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Switch(
-                  value: !trackingController.isLocationSharing.value,
-                  activeColor: ToggleThemeData.darkPurple,
-                  onChanged: (value) {
-                    trackingController.toggleLocationSharing(!value);
-                  },
-                ),
-              ],
-            ),
-          ),
-        ),
-        Divider(
-          color: Colors.grey,
-        ),
+
+
         ReusablelistItem(
           name: AppText.logOut.tr,
           imagename: Assets.svg.logout,

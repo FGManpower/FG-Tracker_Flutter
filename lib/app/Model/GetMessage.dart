@@ -46,6 +46,7 @@ class MessageData {
   dynamic replyMessage;
   dynamic replyType;
   dynamic replySenderName;
+  dynamic locationSharing;
 
   MessageData(
       {this.id,
@@ -62,7 +63,7 @@ class MessageData {
         this.replyMessage,
         this.replyType,
         this.replySenderName,
-      this.thumbnail});
+      this.thumbnail,this.locationSharing});
 
   MessageData.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -79,6 +80,7 @@ class MessageData {
     replyId = json["replyId"] ?? json["reply_id"];
     replyMessage = json["replyMessage"] ?? json["reply_message"];
     replyType = json["replyType"] ?? json["reply_type"];
+    locationSharing = json["locationSharing"] ?? json["locationSharing"];
     replySenderName =
         json["replySender"] ??
             json["replySenderName"] ??
@@ -102,6 +104,7 @@ class MessageData {
     data['reply_message'] = replyMessage;
     data['reply_type'] = replyType;
     data['reply_sender_name'] = replySenderName;
+    data['locationSharing'] = locationSharing;
 
     return data;
   }
