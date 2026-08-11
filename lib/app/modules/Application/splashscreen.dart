@@ -1,6 +1,7 @@
 import 'package:fgtracker/app/Core/values/responsive.dart';
 import 'package:fgtracker/app/modules/Application/Controller/InitiateController.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:fgtracker/gen/assets.gen.dart';
 
@@ -46,10 +47,13 @@ class Splashscreen extends StatelessWidget  {
                 opacity: controller.fadeAnimation,
                 child: ScaleTransition(
                   scale: controller.scaleAnimation,
-                  child: Image.asset(
-                    Assets.icons.appIcon.path,
-                    height: MediaQueryHelper.height(180),
-                    width: MediaQueryHelper.width(180),
+                  child: ClipRRect(
+                    borderRadius:BorderRadiusGeometry.circular(100.r) ,
+                    child: Image.asset(
+                      Assets.icons.appIcon.path,
+                      height: MediaQueryHelper.height(180),
+                      width: MediaQueryHelper.width(180),
+                    ),
                   ),
                 ),
               ),

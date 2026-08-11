@@ -30,10 +30,13 @@ class Loading {
                     strokeWidth: 8,
                   ),
                 ),
-                Image.asset(
-                  Assets.icons.appIcon.path,
-                  width: 85.w,
-                  height: 85.h,
+                ClipRRect(
+                  borderRadius: BorderRadiusGeometry.circular(50.r),
+                  child: Image.asset(
+                    Assets.icons.appIcon.path,
+                    width: 85.w,
+                    height: 85.h,
+                  ),
                 ),
               ],
             ),
