@@ -23,17 +23,17 @@ import 'package:video_thumbnail/video_thumbnail.dart';
 import '../../../routes/app_pages.dart';
 import 'Socket_Message_Services.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
+
 class MessageController extends GetxController with WidgetsBindingObserver {
   final socketService = SocketMessageService.instance;
-  final ItemScrollController itemScrollController =
-  ItemScrollController();
+  final ItemScrollController itemScrollController = ItemScrollController();
 
   final ItemPositionsListener itemPositionsListener =
-  ItemPositionsListener.create();
+      ItemPositionsListener.create();
   final List<MessageData> _messages = [];
 
   final StreamController<List<MessageData>> _messageStreamController =
-  StreamController<List<MessageData>>.broadcast();
+      StreamController<List<MessageData>>.broadcast();
 
   Stream<List<MessageData>> get messageStream =>
       _messageStreamController.stream;
@@ -45,6 +45,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
       List.unmodifiable(_messages),
     );
   }
+
   List<MessageData> get messageData => _messages;
   RxList<File> imagePaths = <File>[].obs;
   RxString videoPath = "".obs;
@@ -67,7 +68,6 @@ class MessageController extends GetxController with WidgetsBindingObserver {
   final RxString searchQuery = "".obs;
   final RxList<int> searchResultIds = <int>[].obs;
   final RxInt currentSearchIndex = (-1).obs;
-
 
   @override
   void onInit() {
@@ -118,8 +118,8 @@ class MessageController extends GetxController with WidgetsBindingObserver {
   void hideEmoji() {
     showEmoji.value = false;
   }
-  Future<void> scrollToMessage(int messageId) async {
 
+  Future<void> scrollToMessage(int messageId) async {
     final index = _messages.indexWhere((e) => e.id == messageId);
 
     if (index == -1) return;
@@ -136,6 +136,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
     highlightedMessageId.value = -1;
   }
+
   void _initializeChat() {
     final userId = memberData.userId.toString();
     final groupId = memberData.groupId!;
@@ -203,8 +204,29 @@ class MessageController extends GetxController with WidgetsBindingObserver {
       },
     );
 
+    socketService.listenPinMessage(
+      callback: (data) {
+        final int? messageId = data["messageId"];
+        if (messageId == null) return;
+
+        final msg = _messages.firstWhereOrNull((e) => e.id == messageId);
+        if (msg != null) {
+          pinnedMessage.value = msg;
+          showPinnedBanner.value = true;
+        }
+      },
+    );
+
+    socketService.listenUnpinMessage(
+      callback: (data) {
+        pinnedMessage.value = null;
+        showPinnedBanner.value = false;
+      },
+    );
+
     getMessageHistory(userId, groupId);
   }
+
   bool isUserAtBottom() {
     if (_messages.isEmpty) return true;
 
@@ -212,9 +234,8 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
     if (positions.isEmpty) return false;
 
-    final maxVisible = positions
-        .map((e) => e.index)
-        .reduce((a, b) => a > b ? a : b);
+    final maxVisible =
+        positions.map((e) => e.index).reduce((a, b) => a > b ? a : b);
 
     return maxVisible >= _messages.length - 2;
   }
@@ -242,8 +263,6 @@ class MessageController extends GetxController with WidgetsBindingObserver {
               replyMessage: replyMessage.value?.content,
               replyType: replyMessage.value?.messageType,
               replySender: replyMessage.value?.senderName,
-
-
             );
           } else {
             CommonDialog.errorMessage("Failed to upload ${image.path}");
@@ -263,14 +282,12 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         documentPath.value = "";
         textController.clear();
         clearReply();
-      }
-      else if (text.isNotEmpty) {
+      } else if (text.isNotEmpty) {
         socketService.sendMessage(
           messageType: "text",
           receiverId: memberData.userId.toString(),
           groupId: memberData.groupId!,
           content: text,
-
           replyId: replyMessage.value?.id,
           replyMessage: replyMessage.value?.content,
           replyType: replyMessage.value?.messageType,
@@ -297,19 +314,18 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         receiverId: memberData.userId.toString(),
         groupId: memberData.groupId!,
         content: result.filename!,
-
         replyId: replyMessage.value?.id,
         replyMessage: replyMessage.value?.content,
         replyType: replyMessage.value?.messageType,
         replySender: replyMessage.value?.senderName,
-
       );
       clearReply();
     }
   }
 
   Future<void> uploadVideo(
-    String path, String caption,
+    String path,
+    String caption,
   ) async {
     isUploadingVideo.value = true;
     final thumbnailPath = await generateThumbnailFile(path);
@@ -344,7 +360,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     clearReply();
   }
 
-  Future<void> uploadDocument(String path,  String caption) async {
+  Future<void> uploadDocument(String path, String caption) async {
     var result = await MessageRepo.uploadChatDocument(path);
 
     if (result.status == true) {
@@ -360,7 +376,6 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         replySender: replyMessage.value?.senderName,
       );
       clearReply();
-
     }
   }
 
@@ -414,15 +429,10 @@ class MessageController extends GetxController with WidgetsBindingObserver {
   }) async {
     socketService.deleteMessage(
       messageId: messageId,
-      userId: Global.storageServices
-          .get(PrefConst.userId)
-          .toString(),
+      userId: Global.storageServices.get(PrefConst.userId).toString(),
       deleteType: deleteType,
     );
   }
-
-
-
 
   Future<void> getMessageHistory(String recieverId, int groupId) async {
     try {
@@ -533,8 +543,6 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     } catch (e) {
       debugPrint(e.toString());
     }
-
-
   }
 
   void startSearch() {
@@ -562,11 +570,11 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
     final results = _messages
         .where((msg) =>
-    msg.messageType == "text" &&
-        (msg.content?.toLowerCase().contains(
-          searchQuery.value.toLowerCase(),
-        ) ??
-            false))
+            msg.messageType == "text" &&
+            (msg.content?.toLowerCase().contains(
+                      searchQuery.value.toLowerCase(),
+                    ) ??
+                false))
         .map((msg) => msg.id!)
         .toList();
 
@@ -608,15 +616,24 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     }
   }
 
-
   void pinMessage(MessageData message) {
     pinnedMessage.value = message;
     showPinnedBanner.value = true;
+
+    socketService.pinMessage(
+      groupId: memberData.groupId!,
+      messageId: message.id!,
+      pinnedByName: Global.storageServices.get(PrefConst.userName) ?? "User",
+    );
   }
 
   void unpinMessage() {
     pinnedMessage.value = null;
     showPinnedBanner.value = false;
+
+    socketService.unpinMessageEvent(
+      groupId: memberData.groupId!,
+    );
   }
 
   void scrollToPinnedMessage() {

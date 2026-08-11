@@ -179,6 +179,27 @@ class GroupMessageController extends GetxController {
       },
     );
 
+    socketService.listenPinMessage(
+      callback: (data) {
+        final int? messageId = data["messageId"];
+        if (messageId == null) return;
+
+        final msg = _messages.firstWhereOrNull((e) => e.id == messageId);
+        if (msg != null) {
+          pinnedMessage.value = msg;
+          showPinnedBanner.value = true;
+        }
+      },
+    );
+
+    socketService.listenUnpinMessage(
+      callback: (data) {
+        pinnedMessage.value = null;
+        showPinnedBanner.value = false;
+      },
+    );
+
+
     getGroupMessages();
 
     getGroupMembers();
@@ -726,13 +747,22 @@ class GroupMessageController extends GetxController {
   void pinMessage(MessageData message) {
     pinnedMessage.value = message;
     showPinnedBanner.value = true;
+
+    socketService.pinMessage(
+      groupId: groupId,
+      messageId: message.id!,
+      pinnedByName: Global.storageServices.get(PrefConst.userName) ?? "User",
+    );
   }
 
   void unpinMessage() {
     pinnedMessage.value = null;
     showPinnedBanner.value = false;
-  }
 
+    socketService.unpinMessageEvent(
+      groupId: groupId,
+    );
+  }
   void scrollToPinnedMessage() {
     if (pinnedMessage.value == null) return;
     final msgId = pinnedMessage.value!.id;

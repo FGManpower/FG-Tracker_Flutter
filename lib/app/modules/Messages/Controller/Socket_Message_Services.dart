@@ -60,12 +60,10 @@ class SocketMessageService extends GetxService {
     required String content,
     String messageType = "text",
     String? caption,
-
     dynamic replyId,
     String? replyMessage,
     String? replyType,
     String? replySender,
-
   }) {
     final msg = {
       'senderId': Global.storageServices.get(PrefConst.userId),
@@ -78,7 +76,6 @@ class SocketMessageService extends GetxService {
       'replyMessage': replyMessage,
       'replyType': replyType,
       'replySender': replySender,
-
     };
     print("SEND PAYLOAD =====> $msg");
     _socket?.emit("send_message", msg);
@@ -100,7 +97,6 @@ class SocketMessageService extends GetxService {
     _socket?.off('receive_message');
 
     _socket?.on('receive_message', (data) {
-
       print("=================================");
       print("RECEIVE MESSAGE");
       print("Message Type : ${data['messageType']}");
@@ -112,7 +108,7 @@ class SocketMessageService extends GetxService {
 
       if (dataGroupId == groupId) {
         if ((data['senderId'] == senderId &&
-            data['receiverId'] == recieverId) ||
+                data['receiverId'] == recieverId) ||
             (data['senderId'] == recieverId &&
                 data['receiverId'] == senderId)) {
           callback?.call(data);
@@ -154,7 +150,6 @@ class SocketMessageService extends GetxService {
     required String content,
     required String messageType,
     String? caption,
-
     dynamic replyId,
     String? replyMessage,
     String? replyType,
@@ -181,7 +176,7 @@ class SocketMessageService extends GetxService {
   }) {
     socket.on(
       "receive_group_message",
-          (data) {
+      (data) {
         print("=================================");
         print("RECEIVE GROUP MESSAGE");
         print("Message Type : ${data['messageType']}");
@@ -193,6 +188,7 @@ class SocketMessageService extends GetxService {
       },
     );
   }
+
   void deleteMessage({
     required int messageId,
     required String userId,
@@ -216,6 +212,7 @@ class SocketMessageService extends GetxService {
       },
     );
   }
+
   void listenMessageDeleted({
     required Function(dynamic data) callback,
   }) {
@@ -223,7 +220,7 @@ class SocketMessageService extends GetxService {
 
     socket.on(
       "message_deleted",
-          (data) {
+      (data) {
         print("============= MESSAGE DELETED =============");
         print(data);
         print("===========================================");
@@ -231,6 +228,44 @@ class SocketMessageService extends GetxService {
         callback(data);
       },
     );
+  }
+
+  void pinMessage({
+    required int groupId,
+    required int messageId,
+    required String pinnedByName,
+  }) {
+    socket?.emit("pin_message", {
+      "groupId": groupId,
+      "messageId": messageId,
+      "pinnedByName": pinnedByName,
+    });
+  }
+
+  void unpinMessageEvent({
+    required int groupId,
+  }) {
+    socket?.emit("unpin_message", {
+      "groupId": groupId,
+    });
+  }
+
+  void listenPinMessage({
+    required Function(Map<String, dynamic>) callback,
+  }) {
+    socket?.off("message_pinned");
+    socket?.on("message_pinned", (data) {
+      callback(Map<String, dynamic>.from(data));
+    });
+  }
+
+  void listenUnpinMessage({
+    required Function(Map<String, dynamic>) callback,
+  }) {
+    socket?.off("message_unpinned");
+    socket?.on("message_unpinned", (data) {
+      callback(Map<String, dynamic>.from(data));
+    });
   }
 
   void disconnectSocket() {
