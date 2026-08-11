@@ -119,7 +119,7 @@ class TrackingController extends GetxController {
     }
   }
 
-  Future<void> getGroupLocationData(
+  Future getGroupLocationData(
     BuildContext context,
     int groupId,
   ) async {
@@ -131,18 +131,32 @@ class TrackingController extends GetxController {
       if (result.status == true) {
         Loading().dismissloading(context: context);
 
+        print("========== GROUP MEMBERS ==========");
+        print(
+            "Current User Id : ${Global.storageServices.get(PrefConst.userId)}");
+        print("Total Members : ${result.locations?.length}");
+
         for (var data in result.locations!) {
-          print(
-            "${data.name} -> locationSharing: ${data.locationSharing}",
-          );
+          print("--------------------------------");
+          print("UserId           : ${data.userId}");
+          print("Name             : ${data.name}");
+          print("Location Sharing : ${data.locationSharing}");
+          print("Latitude         : ${data.latitude}");
+          print("Longitude        : ${data.longitude}");
+          print("Last Seen        : ${data.lastSeen}");
+          print("--------------------------------");
+
           updateGroupMarker(data);
         }
+
+        print("==================================");
       } else {
         Loading().dismissloading(context: context);
         CommonDialog.errorMessage(result.message);
       }
     } catch (e) {
       Loading().dismissloading(context: context);
+      print(e);
       CommonDialog.errorMessage(e.toString());
     }
   }
@@ -469,24 +483,29 @@ class TrackingController extends GetxController {
             }
 
             DialogBox().showRouteDetailsBottomSheet(
-              destination: dest,
-              distance: distanceKm,
-              name: data.name,
-              isGroupChat: false,
-              imageUrl: profileImageUrl,
-              lastSeen: Tracking().getTimeAgo(
-                DateTime.parse(data.lastSeen!),
-              ),
-              userId: int.tryParse(data.userId.toString()),
-              groupId: int.tryParse(data.groupId.toString()),
-              id: int.tryParse(data.id.toString()),
-              status: isOnline,
-              isLocationSharing: data.locationSharing!
-            );
+                destination: dest,
+                distance: distanceKm,
+                name: data.name,
+                isGroupChat: false,
+                imageUrl: profileImageUrl,
+                lastSeen: Tracking().getTimeAgo(
+                  DateTime.parse(data.lastSeen!),
+                ),
+                userId: int.tryParse(data.userId.toString()),
+                groupId: int.tryParse(data.groupId.toString()),
+                id: int.tryParse(data.id.toString()),
+                status: isOnline,
+                isLocationSharing: data.locationSharing!);
           },
         );
 
     markers.removeWhere((m) => m.markerId.value == data.userId.toString());
+
+    if (data.locationSharing == false) {
+      markers.refresh();
+      return;
+    }
+
     markers.add(markerBuilder(newPosition));
     markers.refresh();
     _markerPositions[data.userId.toString()] = newPosition;
@@ -597,6 +616,7 @@ class TrackingController extends GetxController {
 
     isLocationSharing.value = value;
   }
+
   Future<void> toggleLocationSharing(bool value) async {
     final oldValue = isLocationSharing.value;
 
@@ -629,6 +649,14 @@ class TrackingController extends GetxController {
   }
 
   void _showClusterMembersSheet(List<LocationData> users) {
+    print("========== CLUSTER USERS ==========");
+    print("Current User: ${Global.storageServices.get(PrefConst.userId)}");
+
+    for (final u in users) {
+      print("${u.userId} - ${u.name}");
+    }
+
+    print("==================================");
     Get.bottomSheet(
       Container(
         padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
@@ -666,6 +694,7 @@ class TrackingController extends GetxController {
                 itemBuilder: (context, index) {
                   final user = users[index];
                   final imageUrl = user.profileImage?.toString() ?? '';
+                  final bool isGhostMode = user.locationSharing == false;
                   bool isOnline = false;
 
                   if (user.lastSeen != null && user.lastSeen!.isNotEmpty) {
@@ -686,15 +715,24 @@ class TrackingController extends GetxController {
                     ),
                     leading: Stack(
                       children: [
-                        CircleAvatar(
-                          radius: 24,
-                          backgroundColor: Colors.grey.shade200,
-                          backgroundImage: imageUrl.isNotEmpty
-                              ? NetworkImage(ConstRes.aImageBaseUrl + imageUrl)
-                              : null,
-                          child: imageUrl.isEmpty
-                              ? const Icon(Icons.person, color: Colors.grey)
-                              : null,
+                        ColorFiltered(
+                          colorFilter: ColorFilter.mode(
+                            isGhostMode ? Colors.grey : Colors.transparent,
+                            isGhostMode ? BlendMode.saturation : BlendMode.dst,
+                          ),
+                          child: CircleAvatar(
+                            radius: 24,
+                            backgroundColor: isGhostMode
+                                ? Colors.grey.shade300
+                                : Colors.grey.shade200,
+                            backgroundImage: imageUrl.isNotEmpty
+                                ? NetworkImage(
+                                    ConstRes.aImageBaseUrl + imageUrl)
+                                : null,
+                            child: imageUrl.isEmpty
+                                ? const Icon(Icons.person, color: Colors.grey)
+                                : null,
+                          ),
                         ),
                         Positioned(
                           bottom: 0,
@@ -703,7 +741,9 @@ class TrackingController extends GetxController {
                             width: 12,
                             height: 12,
                             decoration: BoxDecoration(
-                              color: isOnline ? Colors.green : Colors.red,
+                              color: isGhostMode
+                                  ? Colors.grey
+                                  : (isOnline ? Colors.green : Colors.red),
                               shape: BoxShape.circle,
                               border: Border.all(color: Colors.white, width: 2),
                             ),
@@ -711,30 +751,70 @@ class TrackingController extends GetxController {
                         ),
                       ],
                     ),
-                    title: Text(
-                      user.name?.toString() ?? 'Unknown',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 15,
-                      ),
+                    title: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            user.name?.toString() ?? 'Unknown',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 15,
+                              color: isGhostMode ? Colors.grey : Colors.black,
+                            ),
+                          ),
+                        ),
+                        if (isGhostMode)
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 3,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade400,
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: const Text(
+                              "👻 Ghost",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
                     subtitle: Text(
-                      isOnline
-                          ? 'Online'
-                          : user.lastSeen != null
-                              ? Tracking().getTimeAgo(
-                                  DateTime.parse(user.lastSeen!),
-                                )
-                              : 'Offline',
+                      isGhostMode
+                          ? "Ghost Mode Enabled"
+                          : isOnline
+                              ? "Online"
+                              : user.lastSeen != null
+                                  ? Tracking().getTimeAgo(
+                                      DateTime.parse(user.lastSeen!),
+                                    )
+                                  : "Offline",
                       style: TextStyle(
-                        color: isOnline ? Colors.green : Colors.grey,
+                        color: isGhostMode
+                            ? Colors.grey
+                            : (isOnline ? Colors.green : Colors.grey),
                         fontSize: 12,
                       ),
                     ),
                     onTap: () async {
+                      if (isGhostMode) {
+                        Get.snackbar(
+                          "Ghost Mode",
+                          "${user.name} is currently in Ghost Mode.",
+                          snackPosition: SnackPosition.BOTTOM,
+                        );
+                        return;
+                      }
+
                       Get.back();
 
                       await Future.delayed(const Duration(milliseconds: 350));
+
                       if (user.latitude != null && user.longitude != null) {
                         await mapController?.animateCamera(
                           CameraUpdate.newLatLngZoom(

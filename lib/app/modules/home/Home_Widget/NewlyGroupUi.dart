@@ -191,51 +191,48 @@ class NewlyGroupUi extends StatelessWidget {
                                       ),
                                     ],
                                   ),
-                                  SizedBox(height: 5.h),
-                                  GestureDetector(
-                                    onTap: () {
-                                      if (isActive) {
+                                  if (isActive) ...[
+                                    SizedBox(height: 5.h),
+                                    GestureDetector(
+                                      onTap: () {
                                         Get.toNamed(Routes.QrCodeScreen,
                                             arguments: {
                                               "groupCode": data?.groupCode
                                             });
-                                      } else {
-                                        Utils().fluttertoast(
-                                            "Activate the group to view QR");
-                                      }
-                                    },
-                                    child: Row(
-                                      crossAxisAlignment:
-                                      CrossAxisAlignment.center,
-                                      mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        reausabletext(
-                                          "Show QR Code",
-                                          fontfamily: FontFamily.interMedium,
-                                          fontsize: 11,
-                                          color: ToggleThemeData.darkPurple,
-                                        ),
-                                        Container(
-                                          decoration: BoxDecoration(
-                                            shape: BoxShape.circle,
-                                            border: Border.all(
-                                              color: const Color(0xff5045B9),
-                                              width: 1.5.w,
+                                      },
+                                      child: Row(
+                                        crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                        mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          reausabletext(
+                                            "Show QR Code",
+                                            fontfamily: FontFamily.interMedium,
+                                            fontsize: 11,
+                                            color: ToggleThemeData.darkPurple,
+                                          ),
+                                          Container(
+                                            decoration: BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              border: Border.all(
+                                                color: const Color(0xff5045B9),
+                                                width: 1.5.w,
+                                              ),
+                                            ),
+                                            child: Padding(
+                                              padding: EdgeInsets.all(5.r),
+                                              child: FaIcon(
+                                                FontAwesomeIcons.qrcode,
+                                                size: 16,
+                                                color: const Color(0xff5045B9),
+                                              ),
                                             ),
                                           ),
-                                          child: Padding(
-                                            padding: EdgeInsets.all(5.r),
-                                            child: FaIcon(
-                                              FontAwesomeIcons.qrcode,
-                                              size: 16,
-                                              color: const Color(0xff5045B9),
-                                            ),
-                                          ),
-                                        ),
-                                      ],
+                                        ],
+                                      ),
                                     ),
-                                  ),
+                                  ],
                                   if (!isActive && !isCreator) ...[
                                     SizedBox(height: 6.h),
                                     GestureDetector(
@@ -247,34 +244,35 @@ class NewlyGroupUi extends StatelessWidget {
                                           groupName: data.groupName ?? "",
                                         );
                                       },
-                                      child: Row(
-                                        mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          reausabletext(
-                                            "Exit Group",
-                                            fontfamily: FontFamily.interMedium,
-                                            fontsize: 11,
-                                            color: Colors.redAccent,
-                                          ),
-                                          Container(
-                                            decoration: BoxDecoration(
-                                              shape: BoxShape.circle,
-                                              border: Border.all(
-                                                color: Colors.redAccent,
-                                                width: 1.5.w,
-                                              ),
+                                      child: Container(
+                                        width: double.maxFinite,
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: 10.w,
+                                          vertical: 7.h,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xffB3261E),
+                                          borderRadius:
+                                          BorderRadius.circular(8.r),
+                                        ),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            reausabletext(
+                                              "Exit Group",
+                                              fontfamily:
+                                              FontFamily.interSemiBold,
+                                              fontsize: 11,
+                                              color: Colors.white,
                                             ),
-                                            child: Padding(
-                                              padding: EdgeInsets.all(5.r),
-                                              child: Icon(
-                                                Icons.exit_to_app_rounded,
-                                                size: 16,
-                                                color: Colors.redAccent,
-                                              ),
+                                            Icon(
+                                              Icons.exit_to_app_rounded,
+                                              size: 16,
+                                              color: Colors.white,
                                             ),
-                                          ),
-                                        ],
+                                          ],
+                                        ),
                                       ),
                                     ),
                                   ],

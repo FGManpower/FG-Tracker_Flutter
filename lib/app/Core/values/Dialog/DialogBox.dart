@@ -458,13 +458,19 @@ class DialogBox {
               ),
               SizedBox(height: 4.h),
               reausabletext(
-                isLocationSharing==false?"Private": isOnline ? "Online" : "Offline",
+                isLocationSharing == false
+                    ? "👻 Ghost Mode Enabled"
+                    : isOnline
+                    ? "Online"
+                    : "Offline",
                 fontsize: 12.sp,
-                color: isOnline ? Colors.green : Colors.red,
-                fontfamily: FontFamily.interMedium,
+                color: isLocationSharing == false
+                    ? Colors.grey
+                    : (isOnline ? Colors.green : Colors.red),
               ),
-              if (!isOnline && Utility.isNotNullEmptyOrFalse(lastSeen))
-                Padding(
+              if (!isOnline &&
+                  isLocationSharing &&
+                  Utility.isNotNullEmptyOrFalse(lastSeen))                Padding(
                   padding: EdgeInsets.only(top: 2.h),
                   child: reausabletext(
                     "${AppText.lastSeen}$lastSeen",
@@ -473,8 +479,7 @@ class DialogBox {
                   ),
                 ),
               SizedBox(height: 24.h),
-              if (!isGroupChat) ...[
-                Container(
+              if (!isGroupChat && isLocationSharing) ...[                Container(
                   width: double.infinity,
                   padding: EdgeInsets.symmetric(vertical: 16.h),
                   decoration: BoxDecoration(
