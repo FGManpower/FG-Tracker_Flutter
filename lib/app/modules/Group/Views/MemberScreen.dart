@@ -163,6 +163,12 @@ class MemberscreenScreen extends GetView<MemberController> {
                               userId: Global.storageServices
                                   .get(PrefConst.userId)
                                   .toString(),
+                              onSuccess: (success) {
+                                if(success){
+                                  Get.offAllNamed(Routes.Home_Screen);
+                                }
+                              },
+
                             );
                           },
                         );

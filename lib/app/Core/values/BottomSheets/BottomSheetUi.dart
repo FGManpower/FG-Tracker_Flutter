@@ -112,6 +112,11 @@ class BottomSheetUi {
                                       context,
                                       groupId: groupId.toString(),
                                       groupMemberId: member.userId.toString(),
+                                      onSuccess: (success) {
+                                        if(success){
+                                          Get.offAllNamed(Routes.Home_Screen);
+                                        }
+                                      },
                                     );
                                   },
                                 );

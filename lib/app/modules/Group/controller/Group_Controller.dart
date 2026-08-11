@@ -148,6 +148,7 @@ class GroupController extends GetxController {
     BuildContext context, {
     required String groupId,
     required String groupMemberId,
+        required void Function(bool) onSuccess,
   }) async {
     try {
       Loading().showloading();
@@ -158,7 +159,7 @@ class GroupController extends GetxController {
       var result = await GroupRepo.deleteGroupsMember(param);
       if (result.status == true) {
         Loading().dismissloading();
-        MemberController().leaveGroup(context, groupId: groupId);
+        MemberController().leaveGroup(context, groupId: groupId,onSuccess: onSuccess);
       } else {
         Loading().dismissloading();
         CommonDialog.errorMessage(result.message);

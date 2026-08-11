@@ -76,6 +76,7 @@ class MemberController extends GetxController {
     BuildContext context, {
     required String groupId,
     required String userId,
+        required void Function(bool) onSuccess,
   }) async {
     try {
       Loading().showloading();
@@ -86,7 +87,7 @@ class MemberController extends GetxController {
       var result = await GroupRepo.exitGroups(param);
       if (result.status == true) {
         Loading().dismissloading();
-        leaveGroup(context, groupId: groupId);
+        leaveGroup(context, groupId: groupId,onSuccess: onSuccess);
       } else {
         Loading().dismissloading();
         CommonDialog.errorMessage(result.message);
@@ -123,13 +124,15 @@ class MemberController extends GetxController {
   void leaveGroup(
     BuildContext context, {
     required String groupId,
+        required void Function(bool) onSuccess,
   }) async {
     TrackingController.instance.exitGroup(
       groupId: groupId,
       onCompletion: (success) {
         if (success) {
           Utils().fluttertoast("Group Exit successfully");
-          Get.offAllNamed(Routes.Home_Screen);
+          onSuccess(true);
+
         }
       },
     );

@@ -1,5 +1,9 @@
+import 'package:fgtracker/app/Core/constant/pref_res.dart';
+import 'package:fgtracker/app/Core/values/Dialog/Common_dialog.dart';
+import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Model/GroupRes.dart';
 import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
+import 'package:fgtracker/app/modules/Group/controller/MemberController.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -124,7 +128,7 @@ class NewlyGroupUi extends StatelessWidget {
                                 children: [
                                   Row(
                                     mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
+                                        MainAxisAlignment.spaceBetween,
                                     children: [
                                       reausabletext(
                                         "Team Code",
@@ -134,38 +138,38 @@ class NewlyGroupUi extends StatelessWidget {
                                       ),
                                       isCreator
                                           ? Transform.scale(
-                                        scale: 0.8,
-                                        child: CupertinoSwitch(
-                                          value: isActive,
-                                          onChanged: (value) {
-                                            groupController.updateGroup(
-                                              groupController,
-                                              groupId:
-                                              data!.id.toString(),
-                                              groupStatus:
-                                              value.toString(),
-                                            );
-                                          },
-                                          activeColor:
-                                          const Color(0xff5045B9),
-                                          trackColor: Colors.black26,
-                                        ),
-                                      )
+                                              scale: 0.8,
+                                              child: CupertinoSwitch(
+                                                value: isActive,
+                                                onChanged: (value) {
+                                                  groupController.updateGroup(
+                                                    groupController,
+                                                    groupId:
+                                                        data!.id.toString(),
+                                                    groupStatus:
+                                                        value.toString(),
+                                                  );
+                                                },
+                                                activeColor:
+                                                    const Color(0xff5045B9),
+                                                trackColor: Colors.black26,
+                                              ),
+                                            )
                                           : Icon(
-                                        isActive
-                                            ? Icons.check_circle_outline
-                                            : Icons.cancel_sharp,
-                                        color: isActive
-                                            ? Colors.green
-                                            : Colors.redAccent,
-                                        size: 18.sp,
-                                      ),
+                                              isActive
+                                                  ? Icons.check_circle_outline
+                                                  : Icons.cancel_sharp,
+                                              color: isActive
+                                                  ? Colors.green
+                                                  : Colors.redAccent,
+                                              size: 18.sp,
+                                            ),
                                     ],
                                   ),
                                   SizedBox(height: 3.h),
                                   Row(
                                     crossAxisAlignment:
-                                    CrossAxisAlignment.center,
+                                        CrossAxisAlignment.center,
                                     children: [
                                       Flexible(
                                         child: reausabletext(
@@ -202,9 +206,9 @@ class NewlyGroupUi extends StatelessWidget {
                                       },
                                       child: Row(
                                         crossAxisAlignment:
-                                        CrossAxisAlignment.center,
+                                            CrossAxisAlignment.center,
                                         mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
+                                            MainAxisAlignment.spaceBetween,
                                         children: [
                                           reausabletext(
                                             "Show QR Code",
@@ -238,11 +242,25 @@ class NewlyGroupUi extends StatelessWidget {
                                     GestureDetector(
                                       onTap: () {
                                         if (data == null) return;
-                                        groupController.confirmAndExitGroup(
-                                          context,
-                                          groupId: data.id?.toString() ?? "",
-                                          groupName: data.groupName ?? "",
+                                        CommonDialog.ConfirmationDialog(
+                                          title: AppText.areYouSure,
+                                          content: AppText.doYouWantToExitGroup,
+                                          onConfirm: () {
+                                            MemberController().exitGroup(
+                                              context,
+                                              groupId: data.id.toString(),
+                                              userId: Global.storageServices
+                                                  .get(PrefConst.userId)
+                                                  .toString(),
+                                              onSuccess: (success) {
+                                                if(success){
+                                                  groupController.getGroupData();
+                                                }
+                                              },
+                                            );
+                                          },
                                         );
+
                                       },
                                       child: Container(
                                         width: double.maxFinite,
@@ -253,16 +271,16 @@ class NewlyGroupUi extends StatelessWidget {
                                         decoration: BoxDecoration(
                                           color: const Color(0xffB3261E),
                                           borderRadius:
-                                          BorderRadius.circular(8.r),
+                                              BorderRadius.circular(8.r),
                                         ),
                                         child: Row(
                                           mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
+                                              MainAxisAlignment.spaceBetween,
                                           children: [
                                             reausabletext(
                                               "Exit Group",
                                               fontfamily:
-                                              FontFamily.interSemiBold,
+                                                  FontFamily.interSemiBold,
                                               fontsize: 11,
                                               color: Colors.white,
                                             ),

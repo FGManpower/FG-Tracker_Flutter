@@ -12,6 +12,7 @@ import 'package:fgtracker/app/config/themes_data.dart';
 import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
 import 'package:fgtracker/app/modules/Messages/Controller/MessageController.dart';
 import 'package:fgtracker/app/modules/Messages/widgets/message_Widgets.dart';
+import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:fgtracker/app/widgets/PinnedMessageBanner.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -171,7 +172,13 @@ class ChatScreen extends GetView<MessageController> {
                     groupController.deleteGroupMember(context,
                         groupId: userData.groupId.toString(),
                         groupMemberId:
-                        controller.memberData.userId.toString());
+                        controller.memberData.userId.toString(),
+                      onSuccess: (success) {
+                        if(success){
+                          Get.offAllNamed(Routes.Home_Screen);
+                        }
+                      },
+                    );
                   },
                 );
               },
