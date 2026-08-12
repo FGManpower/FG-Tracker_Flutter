@@ -235,7 +235,7 @@ class SocketMessageService extends GetxService {
     required int messageId,
     required String pinnedByName,
   }) {
-    socket?.emit("pin_message", {
+    socket.emit("pin_message", {
       "groupId": groupId,
       "messageId": messageId,
       "pinnedByName": pinnedByName,
@@ -245,7 +245,7 @@ class SocketMessageService extends GetxService {
   void unpinMessageEvent({
     required int groupId,
   }) {
-    socket?.emit("unpin_message", {
+    socket.emit("unpin_message", {
       "groupId": groupId,
     });
   }
@@ -253,8 +253,8 @@ class SocketMessageService extends GetxService {
   void listenPinMessage({
     required Function(Map<String, dynamic>) callback,
   }) {
-    socket?.off("message_pinned");
-    socket?.on("message_pinned", (data) {
+    socket.off("message_pinned");
+    socket.on("message_pinned", (data) {
       callback(Map<String, dynamic>.from(data));
     });
   }
@@ -262,8 +262,8 @@ class SocketMessageService extends GetxService {
   void listenUnpinMessage({
     required Function(Map<String, dynamic>) callback,
   }) {
-    socket?.off("message_unpinned");
-    socket?.on("message_unpinned", (data) {
+    socket.off("message_unpinned");
+    socket.on("message_unpinned", (data) {
       callback(Map<String, dynamic>.from(data));
     });
   }

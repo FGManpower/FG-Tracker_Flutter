@@ -1,5 +1,4 @@
 import 'package:camera/camera.dart';
-import 'package:fgtracker/app/Data/Services/file_services.dart';
 import 'package:fgtracker/app/modules/Messages/Controller/CameraControllerX.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
