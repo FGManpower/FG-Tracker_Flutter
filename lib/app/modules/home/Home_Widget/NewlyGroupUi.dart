@@ -246,6 +246,7 @@ class NewlyGroupUi extends StatelessWidget {
                                           title: AppText.areYouSure,
                                           content: AppText.doYouWantToExitGroup,
                                           onConfirm: () {
+                                            Get.back();
                                             MemberController().exitGroup(
                                               context,
                                               groupId: data.id.toString(),

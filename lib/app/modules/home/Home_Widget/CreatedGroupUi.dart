@@ -1,4 +1,8 @@
+import 'package:fgtracker/app/Core/constant/pref_res.dart';
+import 'package:fgtracker/app/Core/values/Dialog/Common_dialog.dart';
+import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Model/GroupRes.dart';
+import 'package:fgtracker/app/modules/Group/controller/MemberController.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -247,131 +251,99 @@ class CreatedGroupUi extends StatelessWidget {
                         ],
                       ),
                       SizedBox(height: 12.h),
-                      isActive
-                          ? GestureDetector(
-                        onTap: () {
-                          if (data == null) return;
-                          Get.toNamed(
-                            Routes.QrCodeScreen,
-                            arguments: {
-                              "groupCode": data.groupCode ?? "",
-                            },
-                          );
-                        },
-                        child: Row(
-                          mainAxisAlignment:
-                          MainAxisAlignment.spaceBetween,
-                          children: [
-                            reausabletext(
-                              "Show QR Code",
-                              fontfamily: FontFamily.interMedium,
-                              fontsize: 11,
-                              color: ToggleThemeData.darkPurple,
-                            ),
-                            Container(
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: const Color(
-                                    0xff5045B9,
-                                  ),
-                                  width: 1.4.w,
-                                ),
+                      if (isActive)
+                        GestureDetector(
+                          onTap: () {
+                            if (data == null) return;
+                            Get.toNamed(
+                              Routes.QrCodeScreen,
+                              arguments: {
+                                "groupCode": data.groupCode ?? "",
+                              },
+                            );
+                          },
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              reausabletext(
+                                "Show QR Code",
+                                fontfamily: FontFamily.interMedium,
+                                fontsize: 11,
+                                color: ToggleThemeData.darkPurple,
                               ),
-                              child: Padding(
-                                padding: EdgeInsets.all(6.r),
-                                child: FaIcon(
-                                  FontAwesomeIcons.qrcode,
-                                  size: 15,
-                                  color: const Color(
-                                    0xff5045B9,
+                              Container(
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: const Color(0xff5045B9),
+                                    width: 1.4.w,
+                                  ),
+                                ),
+                                child: Padding(
+                                  padding: EdgeInsets.all(6.r),
+                                  child: FaIcon(
+                                    FontAwesomeIcons.qrcode,
+                                    size: 15,
+                                    color: const Color(0xff5045B9),
                                   ),
                                 ),
                               ),
+                            ],
+                          ),
+                        )
+                      else if (!isCreator)
+                        GestureDetector(
+                          onTap: () {
+                            if (data == null) return;
+                            CommonDialog.ConfirmationDialog(
+                              title: AppText.areYouSure,
+                              content: AppText.doYouWantToExitGroup,
+                              onConfirm: () {
+                                Get.back();
+                                MemberController().exitGroup(
+                                  context,
+                                  groupId: data.id.toString(),
+                                  userId: Global.storageServices
+                                      .get(PrefConst.userId)
+                                      .toString(),
+                                  onSuccess: (success) {
+                                    if (success) {
+                                      groupController.getGroupData();
+                                    }
+                                  },
+                                );
+                              },
+                            );
+                          },
+                          child: Container(
+                            width: double.maxFinite,
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 10.w,
+                              vertical: 7.h,
                             ),
-                          ],
-                        ),
-                      )
-                          : (!isCreator
-                          ? GestureDetector(
-                        onTap: () {
-                          if (data == null) return;
-                          groupController.confirmAndExitGroup(
-                            context,
-                            groupId: data.id?.toString() ?? "",
-                            groupName: data.groupName ?? "",
-                          );
-                        },
-                        child: Row(
-                          mainAxisAlignment:
-                          MainAxisAlignment.spaceBetween,
-                          children: [
-                            reausabletext(
-                              "Exit Group",
-                              fontfamily: FontFamily.interMedium,
-                              fontsize: 11,
-                              color: Colors.redAccent,
+                            decoration: BoxDecoration(
+                              color: const Color(0xffB3261E),
+                              borderRadius: BorderRadius.circular(8.r),
                             ),
-                            Container(
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: Colors.redAccent,
-                                  width: 1.4.w,
+                            child: Row(
+                              mainAxisAlignment:
+                              MainAxisAlignment.spaceBetween,
+                              children: [
+                                reausabletext(
+                                  "Exit Group",
+                                  fontfamily: FontFamily.interSemiBold,
+                                  fontsize: 11,
+                                  color: Colors.white,
                                 ),
-                              ),
-                              child: Padding(
-                                padding: EdgeInsets.all(6.r),
-                                child: Icon(
+                                Icon(
                                   Icons.exit_to_app_rounded,
-                                  size: 15,
-                                  color: Colors.redAccent,
+                                  size: 16,
+                                  color: Colors.white,
                                 ),
-                              ),
+                              ],
                             ),
-                          ],
+                          ),
                         ),
-                      )
-                          : GestureDetector(
-                        onTap: () {
-                          Utils().fluttertoast(
-                            "Activate the group to view QR",
-                          );
-                        },
-                        child: Row(
-                          mainAxisAlignment:
-                          MainAxisAlignment.spaceBetween,
-                          children: [
-                            reausabletext(
-                              "Show QR Code",
-                              fontfamily: FontFamily.interMedium,
-                              fontsize: 11,
-                              color: ToggleThemeData.darkPurple,
-                            ),
-                            Container(
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: const Color(
-                                    0xff5045B9,
-                                  ),
-                                  width: 1.4.w,
-                                ),
-                              ),
-                              child: Padding(
-                                padding: EdgeInsets.all(6.r),
-                                child: FaIcon(
-                                  FontAwesomeIcons.qrcode,
-                                  size: 15,
-                                  color: const Color(
-                                    0xff5045B9,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      )),
                     ],
                   ),
                 ),
