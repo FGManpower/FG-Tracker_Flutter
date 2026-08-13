@@ -427,6 +427,12 @@ class TrackingController extends GetxController {
   }
 
   Future<void> updateGroupMarker(LocationData data) async {
+    print("========== UPDATE GROUP MARKER ==========");
+    print("User : ${data.name}");
+    print("UserId : ${data.userId}");
+    print("LocationSharing : ${data.locationSharing}");
+    print("LastSeen : ${data.lastSeen}");
+    print("========================================");
     final groupId = data.groupId.toString();
     final profileImageUrl = data.profileImage?.toString() ?? '';
 
@@ -481,7 +487,11 @@ class TrackingController extends GetxController {
                 dest.longitude,
               );
             }
-
+            print("====== OPEN MEMBER INFO ======");
+            print("Name : ${data.name}");
+            print("LocationSharing : ${data.locationSharing}");
+            print("LastSeen : ${data.lastSeen}");
+            print("==============================");
             DialogBox().showRouteDetailsBottomSheet(
                 destination: dest,
                 distance: distanceKm,
@@ -593,6 +603,10 @@ class TrackingController extends GetxController {
 
     socketService.onGroupLocationUpdate(
       (data) {
+
+        print("========== SOCKET ==========");
+        print(data);
+        print("===========================");
         if (data["groupId"].toString() == groupId) {
           final location = LocationData.fromJson(data);
           updateGroupMarker(location);

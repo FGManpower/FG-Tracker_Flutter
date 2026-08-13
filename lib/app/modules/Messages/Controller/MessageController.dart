@@ -48,7 +48,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
   List<MessageData> get messageData => _messages;
   RxList<File> imagePaths = <File>[].obs;
-  RxString videoPath = "".obs;
+  RxList<String> videoPaths = <String>[].obs;
   RxString documentPath = "".obs;
   RxBool isSending = false.obs;
   RxString messageText = "".obs;
@@ -59,8 +59,8 @@ class MessageController extends GetxController with WidgetsBindingObserver {
   RxBool isCreator = false.obs;
   final Rxn<MessageData> pinnedMessage = Rxn<MessageData>();
   final RxBool showPinnedBanner = true.obs;
-  final Rx<Uint8List?> videoThumbnail = Rx<Uint8List?>(null);
-  final RxString videoDuration = ''.obs;
+  RxList<Uint8List?> videoThumbnails = <Uint8List?>[].obs;
+  RxList<String> videoDurations = <String>[].obs;
   Rx<MessageData?> replyMessage = Rx<MessageData?>(null);
   RxInt highlightedMessageId = (-1).obs;
   final RxBool showEmoji = false.obs;
@@ -68,6 +68,8 @@ class MessageController extends GetxController with WidgetsBindingObserver {
   final RxString searchQuery = "".obs;
   final RxList<int> searchResultIds = <int>[].obs;
   final RxInt currentSearchIndex = (-1).obs;
+  final RxSet<int> uploadingVideoIndexes = <int>{}.obs;
+  final RxMap<int, double> videoUploadProgress = <int, double>{}.obs;
 
   @override
   void onInit() {
@@ -90,6 +92,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
   }
 
   @override
+  @override
   void didChangeAppLifecycleState(AppLifecycleState state) async {
     if (state == AppLifecycleState.resumed) {
       final picker = ImagePicker();
@@ -99,8 +102,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
           final file = File(response.file!.path);
           if (await file.exists()) {
             debugPrint("Recovered lost video: ${file.path}");
-            videoPath.value = file.path;
-            await generateVideoPreview(file.path);
+            await addVideo(file.path);
           }
         } else if (response.exception != null) {
           debugPrint("Lost data exception: ${response.exception}");
@@ -109,6 +111,56 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         debugPrint("retrieveLostData error: $e");
       }
     }
+  }
+
+  Future<void> addVideos(List<String> paths) async {
+    for (final path in paths) {
+      await addVideo(path);
+    }
+  }
+
+  Future<void> addVideo(String path) async {
+    videoPaths.add(path);
+    videoThumbnails.add(null);
+    videoDurations.add('');
+
+    final index = videoPaths.length - 1;
+
+    try {
+      final thumb = await VideoThumbnail.thumbnailData(
+        video: path,
+        imageFormat: ImageFormat.JPEG,
+        maxWidth: 400,
+        quality: 80,
+      );
+
+      final controller = VideoPlayerController.file(File(path));
+      await controller.initialize();
+      final duration = controller.value.duration;
+      final durationStr = formatDuration(duration);
+      await controller.dispose();
+
+      if (index < videoThumbnails.length) {
+        videoThumbnails[index] = thumb;
+        videoDurations[index] = durationStr;
+        videoThumbnails.refresh();
+        videoDurations.refresh();
+      }
+    } catch (e) {
+      debugPrint("Video preview error: $e");
+    }
+  }
+
+  void removeVideo(int index) {
+    if (index < videoPaths.length) videoPaths.removeAt(index);
+    if (index < videoThumbnails.length) videoThumbnails.removeAt(index);
+    if (index < videoDurations.length) videoDurations.removeAt(index);
+  }
+
+  void clearVideos() {
+    videoPaths.clear();
+    videoThumbnails.clear();
+    videoDurations.clear();
   }
 
   void toggleEmoji() {
@@ -240,8 +292,9 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     return maxVisible >= _messages.length - 2;
   }
 
-  Future<void> sendMessage(
-      {required TextEditingController textController}) async {
+  Future<void> sendMessage({
+    required TextEditingController textController,
+  }) async {
     if (isSending.value) return;
     isSending.value = true;
 
@@ -249,9 +302,10 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
     try {
       if (imagePaths.isNotEmpty) {
-        for (final image in imagePaths) {
+        // Handle images (same as before)
+        final imagesCopy = List<File>.from(imagePaths);
+        for (final image in imagesCopy) {
           final result = await MessageRepo.uploadChatImage(image);
-
           if (result.status == true && result.filename != null) {
             socketService.sendMessage(
               messageType: "image",
@@ -264,17 +318,39 @@ class MessageController extends GetxController with WidgetsBindingObserver {
               replyType: replyMessage.value?.messageType,
               replySender: replyMessage.value?.senderName,
             );
+            // ✅ Remove uploaded image
+            imagePaths.remove(image);
           } else {
             CommonDialog.errorMessage("Failed to upload ${image.path}");
           }
         }
-        imagePaths.clear();
-        ;
         textController.clear();
         clearReply();
-      } else if (videoPath.isNotEmpty) {
-        await uploadVideo(videoPath.value, text);
-        videoPath.value = "";
+      } else if (videoPaths.isNotEmpty) {
+        // ✅ Loop videos and remove one-by-one
+        final videosCopy = List<String>.from(videoPaths);
+
+        for (int i = 0; i < videosCopy.length; i++) {
+          final vPath = videosCopy[i];
+          final currentIndex = videoPaths.indexOf(vPath);
+
+          if (currentIndex == -1) continue;
+
+          uploadingVideoIndexes.add(currentIndex);
+
+          final success = await uploadVideoAtIndex(vPath, text, currentIndex);
+
+          if (success) {
+            final idx = videoPaths.indexOf(vPath);
+            if (idx != -1) {
+              removeVideo(idx);
+            }
+          }
+
+          uploadingVideoIndexes.remove(currentIndex);
+          videoUploadProgress.remove(currentIndex);
+        }
+
         textController.clear();
         clearReply();
       } else if (documentPath.isNotEmpty) {
@@ -293,7 +369,6 @@ class MessageController extends GetxController with WidgetsBindingObserver {
           replyType: replyMessage.value?.messageType,
           replySender: replyMessage.value?.senderName,
         );
-
         textController.clear();
         clearReply();
       }
@@ -323,41 +398,97 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     }
   }
 
-  Future<void> uploadVideo(
-    String path,
-    String caption,
-  ) async {
-    isUploadingVideo.value = true;
-    final thumbnailPath = await generateThumbnailFile(path);
+  Future<bool> uploadVideoAtIndex(
+      String path,
+      String caption,
+      int index,
+      ) async {
+    try {
+      final thumbnailPath = await generateThumbnailFile(path);
 
-    if (thumbnailPath == null) {
-      isUploadingVideo.value = false;
-      return;
-    }
-    var result = await MessageRepo.uploadChatVideo(
-      videoPath: path,
-      thumbnailPath: thumbnailPath,
-      onSendProgress: (sent, total) {
-        if (total > 0) {
-          uploadProgress.value = sent / total;
-        }
-      },
-    );
-    if (result.status == true) {
-      socketService.sendMessage(
-        messageType: "video",
-        receiverId: memberData.userId.toString(),
-        groupId: memberData.groupId!,
-        content: "${result.videoUrl}||${result.thumbnail}||${result.duration}",
-        caption: caption,
-        replyId: replyMessage.value?.id,
-        replyMessage: replyMessage.value?.content,
-        replyType: replyMessage.value?.messageType,
-        replySender: replyMessage.value?.senderName,
+      if (thumbnailPath == null) {
+        return false;
+      }
+
+      var result = await MessageRepo.uploadChatVideo(
+        videoPath: path,
+        thumbnailPath: thumbnailPath,
+        onSendProgress: (sent, total) {
+          if (total > 0) {
+            videoUploadProgress[index] = sent / total;
+            videoUploadProgress.refresh();
+          }
+        },
       );
-      isUploadingVideo.value = false;
+
+      if (result.status == true) {
+        socketService.sendMessage(
+          messageType: "video",
+          receiverId: memberData.userId.toString(),
+          groupId: memberData.groupId!,
+          content:
+          "${result.videoUrl}||${result.thumbnail}||${result.duration}",
+          caption: caption,
+          replyId: replyMessage.value?.id,
+          replyMessage: replyMessage.value?.content,
+          replyType: replyMessage.value?.messageType,
+          replySender: replyMessage.value?.senderName,
+        );
+        return true;
+      }
+      return false;
+    } catch (e) {
+      log("Upload error: $e");
+      return false;
     }
-    clearReply();
+  }
+
+
+
+
+
+  Future<void> uploadVideo(String path, String caption) async {
+    try {
+      isUploadingVideo.value = true;
+
+      final thumbnailPath = await generateThumbnailFile(path);
+      log("Thumbnail: $thumbnailPath");
+
+      if (thumbnailPath == null) {
+        isUploadingVideo.value = false;
+        return;
+      }
+
+      var result = await MessageRepo.uploadChatVideo(
+        videoPath: path,
+        thumbnailPath: thumbnailPath,
+        onSendProgress: (sent, total) {
+          if (total > 0) {
+            uploadProgress.value = sent / total;
+            log("Progress: ${(sent / total * 100).toInt()}%");
+          }
+        },
+      );
+
+      if (result.status == true) {
+        socketService.sendMessage(
+          messageType: "video",
+          receiverId: memberData.userId.toString(),
+          groupId: memberData.groupId!,
+          content:
+              "${result.videoUrl}||${result.thumbnail}||${result.duration}",
+          caption: caption,
+          replyId: replyMessage.value?.id,
+          replyMessage: replyMessage.value?.content,
+          replyType: replyMessage.value?.messageType,
+          replySender: replyMessage.value?.senderName,
+        );
+      }
+    } catch (e, stack) {
+    } finally {
+      isUploadingVideo.value = false;
+      clearReply();
+    }
   }
 
   Future<void> uploadDocument(String path, String caption) async {
@@ -488,6 +619,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     _messages.clear();
     messageText.value = "";
     imagePaths.clear();
+    clearVideos();
     isSending.value = false;
     clearReply();
     pinnedMessage.value = null;
@@ -516,33 +648,6 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         "callType": "outGoing",
       },
     );
-  }
-
-  Future<void> generateVideoPreview(
-    String path,
-  ) async {
-    try {
-      videoThumbnail.value = await VideoThumbnail.thumbnailData(
-        video: path,
-        imageFormat: ImageFormat.JPEG,
-        maxWidth: 400,
-        quality: 80,
-      );
-
-      final controller = VideoPlayerController.file(
-        File(path),
-      );
-
-      await controller.initialize();
-
-      final duration = controller.value.duration;
-
-      videoDuration.value = formatDuration(duration);
-
-      await controller.dispose();
-    } catch (e) {
-      debugPrint(e.toString());
-    }
   }
 
   void startSearch() {

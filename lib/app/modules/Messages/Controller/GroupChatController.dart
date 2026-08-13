@@ -51,15 +51,15 @@ class GroupMessageController extends GetxController {
     );
   }
 
-  final Rx<Uint8List?> videoThumbnail = Rx<Uint8List?>(null);
-  final RxString videoDuration = ''.obs;
+  RxList<String> videoPaths = <String>[].obs;
+  RxList<Uint8List?> videoThumbnails = <Uint8List?>[].obs;
   RxList<LocationData> groupMembers = <LocationData>[].obs;
 
   RxBool isLoadingMembers = false.obs;
   final RxBool isUploadingVideo = false.obs;
   final RxDouble uploadProgress = 0.0.obs;
   RxList<File> imagePaths = <File>[].obs;
-  RxString videoPath = "".obs;
+  RxList<String> videoDurations = <String>[].obs;
   RxString documentPath = "".obs;
   RxBool isSending = false.obs;
   RxBool isLoading = true.obs;
@@ -74,6 +74,8 @@ class GroupMessageController extends GetxController {
   final RxBool showPinnedBanner = true.obs;
   Rx<MessageData?> replyMessage = Rx<MessageData?>(null);
   RxInt highlightedMessageId = (-1).obs;
+  final RxSet<int> uploadingVideoIndexes = <int>{}.obs;
+  final RxMap<int, double> videoUploadProgress = <int, double>{}.obs;
 
   Future<void> scrollToMessage(int messageId) async {
     final index = _messages.indexWhere((e) => e.id == messageId);
@@ -205,22 +207,118 @@ class GroupMessageController extends GetxController {
     getGroupMembers();
   }
 
+  Future<void> addVideos(List<String> paths) async {
+    for (final path in paths) {
+      await addVideo(path);
+    }
+  }
+
+  Future<void> addVideo(String path) async {
+    videoPaths.add(path);
+    videoThumbnails.add(null);
+    videoDurations.add('');
+
+    final index = videoPaths.length - 1;
+
+    try {
+      final thumb = await VideoThumbnail.thumbnailData(
+        video: path,
+        imageFormat: ImageFormat.JPEG,
+        maxWidth: 400,
+        quality: 80,
+      );
+
+      final controller = VideoPlayerController.file(File(path));
+      await controller.initialize();
+      final duration = controller.value.duration;
+      final durationStr = formatDuration(duration);
+      await controller.dispose();
+
+      if (index < videoThumbnails.length) {
+        videoThumbnails[index] = thumb;
+        videoDurations[index] = durationStr;
+        videoThumbnails.refresh();
+        videoDurations.refresh();
+      }
+    } catch (e) {
+      debugPrint("Video preview error: $e");
+    }
+  }
+
+  void removeVideo(int index) {
+    if (index < videoPaths.length) videoPaths.removeAt(index);
+    if (index < videoThumbnails.length) videoThumbnails.removeAt(index);
+    if (index < videoDurations.length) videoDurations.removeAt(index);
+  }
+
+  void clearVideos() {
+    videoPaths.clear();
+    videoThumbnails.clear();
+    videoDurations.clear();
+  }
+
+
+
+
+  Future<bool> uploadVideoAtIndex(
+      String path,
+      String caption,
+      int index,
+      ) async {
+    try {
+      final thumbnailPath = await generateThumbnailFile(path);
+
+      if (thumbnailPath == null) {
+        return false;
+      }
+
+      var result = await MessageRepo.uploadChatVideo(
+        videoPath: path,
+        thumbnailPath: thumbnailPath,
+        onSendProgress: (sent, total) {
+          if (total > 0) {
+            videoUploadProgress[index] = sent / total;
+            videoUploadProgress.refresh();
+          }
+        },
+      );
+
+      if (result.status == true) {
+        socketService.sendGroupMessage(
+          groupId: groupId,
+          messageType: "video",
+          content:
+          "${result.videoUrl}||${result.thumbnail}||${result.duration}",
+          caption: caption,
+          replyId: replyMessage.value?.id,
+          replyMessage: replyMessage.value?.content,
+          replyType: replyMessage.value?.messageType,
+          replySender: replyMessage.value?.senderName,
+        );
+        return true;
+      }
+      return false;
+    } catch (e) {
+      log("Group upload error: $e");
+      return false;
+    }
+  }
+
+
   Future<void> sendMessage({
     required TextEditingController textController,
   }) async {
-    if (isSending.value) {
-      return;
-    }
+    if (isSending.value) return;
 
     isSending.value = true;
 
     try {
       final text = textController.text.trim();
-      print("TEXT=======$text");
+
       if (imagePaths.isNotEmpty) {
-        for (final image in imagePaths) {
+        final imagesCopy = List<File>.from(imagePaths);
+        for (final image in imagesCopy) {
           final result = await MessageRepo.uploadChatImage(image);
-          print("ttryu=======$result");
           if (result.status == true && result.filename != null) {
             socketService.sendGroupMessage(
               groupId: groupId,
@@ -232,24 +330,45 @@ class GroupMessageController extends GetxController {
               replyType: replyMessage.value?.messageType,
               replySender: replyMessage.value?.senderName,
             );
-
-            clearReply();
+            imagePaths.remove(image);
           } else {
             CommonDialog.errorMessage("Failed to upload ${image.path}");
           }
         }
+        textController.clear();
+        clearReply();
+      } else if (videoPaths.isNotEmpty) {
+        final videosCopy = List<String>.from(videoPaths);
 
-        imagePaths.clear();
+        for (final vPath in videosCopy) {
+          final currentIndex = videoPaths.indexOf(vPath);
+          if (currentIndex == -1) continue;
+
+          // Mark as uploading
+          uploadingVideoIndexes.add(currentIndex);
+          uploadingVideoIndexes.refresh();
+
+          final success = await uploadVideoAtIndex(vPath, text, currentIndex);
+
+          // Remove after upload
+          if (success) {
+            final idx = videoPaths.indexOf(vPath);
+            if (idx != -1) {
+              removeVideo(idx);
+            }
+          }
+
+          uploadingVideoIndexes.remove(currentIndex);
+          videoUploadProgress.remove(currentIndex);
+        }
+
         textController.clear();
-      } else if (videoPath.isNotEmpty) {
-        await uploadVideo(videoPath.value, text);
-        videoPath.value = "";
-        textController.clear();
+        clearReply();
       } else if (documentPath.isNotEmpty) {
         await uploadDocument(documentPath.value, text);
-
         documentPath.value = "";
         textController.clear();
+        clearReply();
       } else if (text.isNotEmpty) {
         socketService.sendGroupMessage(
           groupId: groupId,
@@ -260,16 +379,13 @@ class GroupMessageController extends GetxController {
           replyType: replyMessage.value?.messageType,
           replySender: replyMessage.value?.senderName,
         );
-
         clearReply();
         textController.clear();
       }
 
       scrollToBottom();
     } catch (e) {
-      log(
-        "GROUP SEND ERROR => $e",
-      );
+      log("GROUP SEND ERROR => $e");
     } finally {
       isSending.value = false;
     }
@@ -540,32 +656,7 @@ class GroupMessageController extends GetxController {
     return maxVisible >= _messages.length - 2;
   }
 
-  Future<void> generateVideoPreview(
-    String path,
-  ) async {
-    try {
-      videoThumbnail.value = await VideoThumbnail.thumbnailData(
-        video: path,
-        imageFormat: ImageFormat.JPEG,
-        maxWidth: 400,
-        quality: 80,
-      );
 
-      final controller = VideoPlayerController.file(
-        File(path),
-      );
-
-      await controller.initialize();
-
-      final duration = controller.value.duration;
-
-      videoDuration.value = formatDuration(duration);
-
-      await controller.dispose();
-    } catch (e) {
-      debugPrint(e.toString());
-    }
-  }
 
   void handleBackPressed(BuildContext context) {
     socketService.disconnectSocket();
@@ -575,7 +666,7 @@ class GroupMessageController extends GetxController {
     messageText.value = "";
 
     imagePaths.clear();
-
+    clearVideos();
     isSending.value = false;
     pinnedMessage.value = null;
     showPinnedBanner.value = false;

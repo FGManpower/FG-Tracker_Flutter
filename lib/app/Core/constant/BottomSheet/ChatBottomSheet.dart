@@ -82,7 +82,6 @@ class ChatBottomSheet {
       BuildContext context, {
         required VoidCallback onGallery,
         required VoidCallback onCamera,
-        required VoidCallback onVideo,
         required VoidCallback onDocument,
         required VoidCallback onLocation,
         required VoidCallback onContact,
@@ -131,15 +130,8 @@ class ChatBottomSheet {
                     icon: Icons.photo,
                     color: const Color(0xff4F8EF7),
                     title: "Gallery",
-                    subtitle: "Photos",
+                    subtitle: "Photos & Videos",
                     onTap: onGallery,
-                  ),
-                  _attachmentItem(
-                    icon: Icons.videocam_rounded,
-                    color: const Color(0xffF05A5A),
-                    title: "Video",
-                    subtitle: "MP4",
-                    onTap: onVideo,
                   ),
                   _attachmentItem(
                     icon: Icons.description_rounded,
@@ -171,7 +163,6 @@ class ChatBottomSheet {
                   ),
                 ],
               ),
-
               SizedBox(height: 20.h),
             ],
           ),

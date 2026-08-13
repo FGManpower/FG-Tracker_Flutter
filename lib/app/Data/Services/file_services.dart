@@ -4,7 +4,11 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:image_picker_android/image_picker_android.dart';
 import 'package:path_provider/path_provider.dart' as path_provider;
+import 'package:image_picker_platform_interface/image_picker_platform_interface.dart';
+
+import 'MethodChannel.dart';
 
 class FileServices {
   final ImagePicker _picker = ImagePicker();
@@ -79,9 +83,30 @@ class FileServices {
     }
   }
 
+  Future<List<XFile>> pickMultipleMediaFromGallery() async {
+    try {
+      final ImagePickerPlatform impl = ImagePickerPlatform.instance;
+      if (impl is ImagePickerAndroid) {
+        impl.useAndroidPhotoPicker = true;
+      }
+
+      final picker = ImagePicker();
+      final media = await picker.pickMultipleMedia(imageQuality: 80);
+
+      for (var f in media) {
+        final ext = f.path.split('.').last;
+        log("File: ${f.path} | Ext: $ext");
+      }
+
+      return media;
+    } catch (e, stack) {
+      return [];
+    }
+  }
+
   Future<File?> pickDocument() async {
     try {
-      FilePickerResult? result = await FilePicker.pickFiles(
+      FilePickerResult? result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
         allowedExtensions: [
           'pdf',

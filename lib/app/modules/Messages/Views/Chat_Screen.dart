@@ -261,40 +261,39 @@ class ChatScreen extends GetView<MessageController> {
               ChatInputArea(
                 messageText: controller.messageText,
                 imagePath: controller.imagePaths,
-                videoPath: controller.videoPath,
+                videoPaths: controller.videoPaths,
+                videoThumbnails: controller.videoThumbnails,
+                videoDurations: controller.videoDurations,
                 documentPath: controller.documentPath,
                 isSending: controller.isSending,
                 textController: _controller,
                 messageController: controller,
-                videoDuration: controller.videoDuration,
-                videoThumbnail: controller.videoThumbnail,
                 onSend: _sendMessage,
-                onImageSelected: (path) {
-                  controller.imagePaths.value = path;
+                uploadingVideoIndexes: controller.uploadingVideoIndexes,
+                videoUploadProgress: controller.videoUploadProgress,
+                onImageSelected: (paths) {
+                  controller.imagePaths.addAll(paths);
                 },
                 onVoiceSend: (voicePath) {
                   if (Utility.isNotNullEmptyOrFalse(voicePath)) {
                     controller.uploadAudio(voicePath);
                   }
                 },
-                onvideoSelected: (path) async {
-                  if (Utility.isNotNullEmptyOrFalse(path)) {
-                    controller.videoPath.value = path;
-                    await controller.generateVideoPreview(path);
-                    controller.update();
+                onVideosSelected: (paths) async {
+                  if (paths.isNotEmpty) {
+                    await controller.addVideos(paths);
                   }
                 },
                 isUploadingVideo: controller.isUploadingVideo,
                 uploadProgress: controller.uploadProgress,
                 onDocumentSelected: (path) async {
-                  Navigator.pop(context);
                   if (Utility.isNotNullEmptyOrFalse(path)) {
                     controller.documentPath.value = path;
                   }
                 },
                 onLocationSelected: () async {
                   final location = await Get.to<LocationMessage>(
-                    () => const LocationPickerPage(),
+                        () => const LocationPickerPage(),
                   );
                   if (location != null) {
                     await controller.sendLocation(
@@ -302,7 +301,6 @@ class ChatScreen extends GetView<MessageController> {
                     );
                   }
                 },
-
                 onContactSelected: () async {
                   final contact = await Get.to<ContactMessage>(
                         () => const ContactPickerPage(),

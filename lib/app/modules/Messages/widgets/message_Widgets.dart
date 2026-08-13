@@ -313,7 +313,6 @@ class CommonChatAppBar extends StatelessWidget implements PreferredSizeWidget {
                     );
                   }
 
-                  // ✅ Normal Chat OR (Group + non-creator) = Sirf Search
                   return GestureDetector(
                     onTap: () {
                       showModalBottomSheet(
