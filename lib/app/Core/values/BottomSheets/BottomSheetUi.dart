@@ -25,6 +25,11 @@ class BottomSheetUi {
     int? groupId,
     String? groupName,
   }) {
+    final sortedMembers = [...members]..sort((a, b) {
+        final aGhost = a.locationSharing == false ? 0 : 1;
+        final bGhost = b.locationSharing == false ? 0 : 1;
+        return aGhost.compareTo(bGhost);
+      });
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -64,7 +69,7 @@ class BottomSheetUi {
                   child: ListView.builder(
                     itemCount: members.length,
                     itemBuilder: (_, index) {
-                      final member = members[index];
+                      final member = sortedMembers[index];
                       final currentUserId = Global.storageServices
                           .get(PrefConst.userId)
                           .toString();
@@ -89,356 +94,330 @@ class BottomSheetUi {
                           ? "${ConstRes.aImageBaseUrl}${member.profileImage}"
                           : null;
                       return GestureDetector(
-                              onTap: () {
-                                if (!isDeleteMode) return;
+                        onTap: () {
+                          if (!isDeleteMode) return;
 
-                                if (isMe) {
-                                  CommonDialog.errorMessage(
-                                    "You can't remove yourself from the group.",
-                                  );
-                                  return;
-                                }
+                          if (isMe) {
+                            CommonDialog.errorMessage(
+                              "You can't remove yourself from the group.",
+                            );
+                            return;
+                          }
 
-                                Navigator.pop(context);
+                          Navigator.pop(context);
 
-                                CommonDialog.ConfirmationDialog(
-                                  title: "Remove Member",
-                                  content:
-                                      "Are you sure you want to remove ${member.name} from the group?",
-                                  confirm: "Remove",
-                                  onConfirm: () {
-                                    Get.find<GroupController>()
-                                        .deleteGroupMember(
-                                      context,
-                                      groupId: groupId.toString(),
-                                      groupMemberId: member.userId.toString(),
-                                      onSuccess: (success) {
-                                        if(success){
-                                          Get.offAllNamed(Routes.Home_Screen);
-                                        }
-                                      },
-                                    );
-                                  },
-                                );
-                              },
-                              child: Container(
-                                margin: EdgeInsets.symmetric(vertical: 8.h),
-                                padding: EdgeInsets.all(10.w),
-                                decoration: BoxDecoration(
-                                  border:
-                                      Border.all(color: Colors.grey.shade300),
-                                  borderRadius: BorderRadius.circular(12.r),
-                                  color: isGhostMode
-                                      ? Colors.grey.shade200
-                                      : Colors.grey.shade50,
-                                ),
-                                child: Row(
+                          CommonDialog.ConfirmationDialog(
+                            title: "Remove Member",
+                            content:
+                                "Are you sure you want to remove ${member.name} from the group?",
+                            confirm: "Remove",
+                            onConfirm: () {
+                              Get.find<GroupController>().deleteGroupMember(
+                                context,
+                                groupId: groupId.toString(),
+                                groupMemberId: member.userId.toString(),
+                                onSuccess: (success) {
+                                  if (success) {
+                                    Get.offAllNamed(Routes.Home_Screen);
+                                  }
+                                },
+                              );
+                            },
+                          );
+                        },
+                        child: Container(
+                          margin: EdgeInsets.symmetric(vertical: 8.h),
+                          padding: EdgeInsets.all(10.w),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey.shade300),
+                            borderRadius: BorderRadius.circular(12.r),
+                            color: isGhostMode
+                                ? Colors.grey.shade200
+                                : Colors.grey.shade50,
+                          ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              CircleAvatar(
+                                radius: 24.r,
+                                backgroundImage: profileUrl != null
+                                    ? NetworkImage(profileUrl)
+                                    : const AssetImage(
+                                            'assets/default_avatar.png')
+                                        as ImageProvider,
+                              ),
+                              SizedBox(width: 12.w),
+                              Expanded(
+                                child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    CircleAvatar(
-                                      radius: 24.r,
-                                      backgroundImage: profileUrl != null
-                                          ? NetworkImage(profileUrl)
-                                          : const AssetImage(
-                                                  'assets/default_avatar.png')
-                                              as ImageProvider,
-                                    ),
-                                    SizedBox(width: 12.w),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Row(
+                                    Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Expanded(
+                                          child: Column(
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.start,
                                             children: [
-                                              Expanded(
-                                                child: Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                    Row(
-                                                      children: [
-                                                        Expanded(
-                                                          child: Text(
-                                                            member.name ??
-                                                                'Unknown',
-                                                            maxLines: 1,
-                                                            overflow:
-                                                                TextOverflow
-                                                                    .ellipsis,
-                                                            style: TextStyle(
-                                                              fontSize: 16.sp,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w600,
-                                                            ),
-                                                          ),
-                                                        ),
-                                                        if (isMe)
-                                                          Container(
-                                                            padding: EdgeInsets
-                                                                .symmetric(
-                                                              horizontal: 8.w,
-                                                              vertical: 2.h,
-                                                            ),
-                                                            decoration:
-                                                                BoxDecoration(
-                                                              color: ToggleThemeData
-                                                                      .Appcolor
-                                                                  .withOpacity(
-                                                                      .1),
-                                                              borderRadius:
-                                                                  BorderRadius
-                                                                      .circular(
-                                                                          20.r),
-                                                            ),
-                                                            child: Text(
-                                                              "You",
-                                                              style: TextStyle(
-                                                                color:
-                                                                    ToggleThemeData
-                                                                        .Appcolor,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .w600,
-                                                                fontSize: 11.sp,
-                                                              ),
-                                                            ),
-                                                          ),
-                                                      ],
+                                              Row(
+                                                children: [
+                                                  Expanded(
+                                                    child: Text(
+                                                      member.name ?? 'Unknown',
+                                                      maxLines: 1,
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                      style: TextStyle(
+                                                        fontSize: 16.sp,
+                                                        fontWeight:
+                                                            FontWeight.w600,
+                                                      ),
                                                     ),
-                                                    SizedBox(height: 4.h),
-                                                    Row(
-                                                      children: [
-                                                        Icon(
-                                                          Icons.circle,
-                                                          size: 10.r,
-                                                          color: isOnline
-                                                              ? Colors.green
-                                                              : Colors.grey,
+                                                  ),
+                                                  if (isMe)
+                                                    Container(
+                                                      padding:
+                                                          EdgeInsets.symmetric(
+                                                        horizontal: 8.w,
+                                                        vertical: 2.h,
+                                                      ),
+                                                      decoration: BoxDecoration(
+                                                        color: ToggleThemeData
+                                                                .Appcolor
+                                                            .withOpacity(.1),
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(20.r),
+                                                      ),
+                                                      child: Text(
+                                                        "You",
+                                                        style: TextStyle(
+                                                          color: ToggleThemeData
+                                                              .Appcolor,
+                                                          fontWeight:
+                                                              FontWeight.w600,
+                                                          fontSize: 11.sp,
                                                         ),
-                                                        SizedBox(width: 6.w),
-                                                        Expanded(
-                                                          child: reausabletext(
-                                                            isGhostMode
-                                                                ? "Ghost Mode Enabled"
-                                                                : isOnline
-                                                                ? "Online"
-                                                                : "Last seen: ${Tracking().getTimeAgo(DateTime.parse(member.lastSeen ?? DateTime.now().toString()))}",
-                                                            fontsize: 13,
-                                                            color: isGhostMode
-                                                                ? const Color(0xFF7E57C2)
-                                                                : (isOnline ? Colors.green : Colors.grey[600]),
-                                                            fontweight: isGhostMode ? FontWeight.w600 : FontWeight.w400,
-                                                          ),
-                                                        ),
-                                                      ],
+                                                      ),
                                                     ),
-                                                  ],
-                                                ),
+                                                ],
                                               ),
-                                              if (!isMe) ...[
-                                                GestureDetector(
-                                                  onTap: () {
-                                                    Navigator.pop(context);
-
-                                                    final MemberData
-                                                        memberData = MemberData(
-                                                      id: member.id,
-                                                      userId: member.userId,
-                                                      groupId:
-                                                          member.groupId ?? 0,
-                                                      name: member.name,
-                                                      profileImage:
-                                                          member.profileImage,
-                                                      lastSeen: member.lastSeen,
-                                                      isOnline: member.isOnline,
-                                                    );
-
-                                                    Get.toNamed(
-                                                      Routes.chatScreen,
-                                                      arguments: {
-                                                        "userData": memberData,
-                                                        "groupName":
-                                                            "Members Chat",
-                                                        "isCreator": false,
-                                                        "type": "",
-                                                      },
-                                                    );
-                                                  },
-                                                  child: Container(
-                                                    padding:
-                                                        EdgeInsets.all(9.w),
-                                                    decoration: BoxDecoration(
-                                                      color: ToggleThemeData
-                                                              .Appcolor
-                                                          .withOpacity(0.1),
-                                                      shape: BoxShape.circle,
-                                                    ),
-                                                    child: Icon(
-                                                      Icons.chat_bubble_outline,
-                                                      color: ToggleThemeData
-                                                          .Appcolor,
-                                                      size: 18.sp,
+                                              SizedBox(height: 4.h),
+                                              Row(
+                                                children: [
+                                                  Icon(
+                                                    Icons.circle,
+                                                    size: 10.r,
+                                                    color: isOnline
+                                                        ? Colors.green
+                                                        : Colors.grey,
+                                                  ),
+                                                  SizedBox(width: 6.w),
+                                                  Expanded(
+                                                    child: reausabletext(
+                                                      isGhostMode
+                                                          ? "Ghost Mode Enabled"
+                                                          : isOnline
+                                                              ? "Online"
+                                                              : "Last seen: ${Tracking().getTimeAgo(DateTime.parse(member.lastSeen ?? DateTime.now().toString()))}",
+                                                      fontsize: 13,
+                                                      color: isGhostMode
+                                                          ? const Color(
+                                                              0xFF7E57C2)
+                                                          : (isOnline
+                                                              ? Colors.green
+                                                              : Colors
+                                                                  .grey[600]),
+                                                      fontweight: isGhostMode
+                                                          ? FontWeight.w600
+                                                          : FontWeight.w400,
                                                     ),
                                                   ),
-                                                ),
-                                                SizedBox(width: 8.w),
-                                                GestureDetector(
-                                                  onTap: () {
-                                                    Navigator.pop(context);
-
-                                                    Get.toNamed(
-                                                      Routes.callScreen,
-                                                      arguments: {
-                                                        "callerId": Global
-                                                            .storageServices
-                                                            .get(PrefConst
-                                                                .userId)
-                                                            .toString(),
-                                                        "remoteUserId": member
-                                                            .userId
-                                                            .toString(),
-                                                        "callerName":
-                                                            member.name ?? "",
-                                                        "offer": null,
-                                                        "is_video": false,
-                                                        "callType": "outGoing",
-                                                      },
-                                                    );
-                                                  },
-                                                  child: Container(
-                                                    padding:
-                                                        EdgeInsets.all(9.w),
-                                                    decoration: BoxDecoration(
-                                                      color: Colors.green
-                                                          .withOpacity(0.1),
-                                                      shape: BoxShape.circle,
-                                                    ),
-                                                    child: Icon(
-                                                      Icons.call,
-                                                      color: Colors.green,
-                                                      size: 18.sp,
-                                                    ),
-                                                  ),
-                                                ),
-                                                SizedBox(width: 8.w),
-                                                GestureDetector(
-                                                  onTap: () {
-                                                    Navigator.pop(context);
-
-                                                    Get.toNamed(
-                                                      Routes.callScreen,
-                                                      arguments: {
-                                                        "callerId": Global
-                                                            .storageServices
-                                                            .get(PrefConst
-                                                                .userId)
-                                                            .toString(),
-                                                        "remoteUserId": member
-                                                            .userId
-                                                            .toString(),
-                                                        "callerName":
-                                                            member.name ?? "",
-                                                        "offer": null,
-                                                        "is_video": true,
-                                                        "callType": "outGoing",
-                                                      },
-                                                    );
-                                                  },
-                                                  child: Container(
-                                                    padding:
-                                                        EdgeInsets.all(9.w),
-                                                    decoration: BoxDecoration(
-                                                      color: Colors.red
-                                                          .withOpacity(0.1),
-                                                      shape: BoxShape.circle,
-                                                    ),
-                                                    child: Icon(
-                                                      Icons.videocam,
-                                                      color: Colors.red,
-                                                      size: 18.sp,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ],
+                                                ],
+                                              ),
                                             ],
                                           ),
-                                          if (!isMe && !isGhostMode) ...[
-                                            SizedBox(height: 10.h),
-                                            member.locationSharing == false
-                                                ? SizedBox()
-                                                : Align(
-                                                    alignment:
-                                                        Alignment.centerRight,
-                                                    child: ElevatedButton.icon(
-                                                      onPressed: () {
-                                                        Navigator.pop(context);
+                                        ),
+                                        if (!isMe) ...[
+                                          GestureDetector(
+                                            onTap: () {
+                                              Navigator.pop(context);
 
-                                                        if (isGroupChat) {
-                                                          Get.toNamed(
-                                                            Routes
-                                                                .LocationTracking,
-                                                            arguments: {
-                                                              "groupId":
-                                                                  groupId,
-                                                              "groupName":
-                                                                  groupName,
-                                                              "targetUserId":
-                                                                  member.userId
-                                                                      .toString(),
-                                                            },
-                                                          );
-                                                        } else {
-                                                          final Uri mapsUri =
-                                                              Uri.parse(
-                                                            "https://www.google.com/maps/dir/?api=1&destination=${member.latitude},${member.longitude}&travelmode=walking",
-                                                          );
+                                              final MemberData memberData =
+                                                  MemberData(
+                                                id: member.id,
+                                                userId: member.userId,
+                                                groupId: member.groupId ?? 0,
+                                                name: member.name,
+                                                profileImage:
+                                                    member.profileImage,
+                                                lastSeen: member.lastSeen,
+                                                isOnline: member.isOnline,
+                                              );
 
-                                                          launchUrl(mapsUri);
-                                                        }
-                                                      },
-                                                      icon: const Icon(
-                                                          Icons.navigation),
-                                                      label: Text(
-                                                        isGroupChat
-                                                            ? "Track"
-                                                            : "Navigate",
-                                                      ),
-                                                      style: ElevatedButton
-                                                          .styleFrom(
-                                                        backgroundColor:
-                                                            ToggleThemeData
-                                                                .Appcolor,
-                                                        foregroundColor:
-                                                            Colors.white,
-                                                        shape:
-                                                            RoundedRectangleBorder(
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(
-                                                                      10.r),
-                                                        ),
-                                                        padding: EdgeInsets
-                                                            .symmetric(
-                                                          horizontal: 12.w,
-                                                          vertical: 8.h,
-                                                        ),
-                                                        textStyle: TextStyle(
-                                                            fontSize: 13.sp),
-                                                      ),
-                                                    ),
-                                                  ),
-                                          ],
+                                              Get.toNamed(
+                                                Routes.chatScreen,
+                                                arguments: {
+                                                  "userData": memberData,
+                                                  "groupName": "Members Chat",
+                                                  "isCreator": false,
+                                                  "type": "",
+                                                },
+                                              );
+                                            },
+                                            child: Container(
+                                              padding: EdgeInsets.all(9.w),
+                                              decoration: BoxDecoration(
+                                                color: ToggleThemeData.Appcolor
+                                                    .withOpacity(0.1),
+                                                shape: BoxShape.circle,
+                                              ),
+                                              child: Icon(
+                                                Icons.chat_bubble_outline,
+                                                color: ToggleThemeData.Appcolor,
+                                                size: 18.sp,
+                                              ),
+                                            ),
+                                          ),
+                                          SizedBox(width: 8.w),
+                                          GestureDetector(
+                                            onTap: () {
+                                              Navigator.pop(context);
+
+                                              Get.toNamed(
+                                                Routes.callScreen,
+                                                arguments: {
+                                                  "callerId": Global
+                                                      .storageServices
+                                                      .get(PrefConst.userId)
+                                                      .toString(),
+                                                  "remoteUserId":
+                                                      member.userId.toString(),
+                                                  "callerName":
+                                                      member.name ?? "",
+                                                  "offer": null,
+                                                  "is_video": false,
+                                                  "callType": "outGoing",
+                                                },
+                                              );
+                                            },
+                                            child: Container(
+                                              padding: EdgeInsets.all(9.w),
+                                              decoration: BoxDecoration(
+                                                color: Colors.green
+                                                    .withOpacity(0.1),
+                                                shape: BoxShape.circle,
+                                              ),
+                                              child: Icon(
+                                                Icons.call,
+                                                color: Colors.green,
+                                                size: 18.sp,
+                                              ),
+                                            ),
+                                          ),
+                                          SizedBox(width: 8.w),
+                                          GestureDetector(
+                                            onTap: () {
+                                              Navigator.pop(context);
+
+                                              Get.toNamed(
+                                                Routes.callScreen,
+                                                arguments: {
+                                                  "callerId": Global
+                                                      .storageServices
+                                                      .get(PrefConst.userId)
+                                                      .toString(),
+                                                  "remoteUserId":
+                                                      member.userId.toString(),
+                                                  "callerName":
+                                                      member.name ?? "",
+                                                  "offer": null,
+                                                  "is_video": true,
+                                                  "callType": "outGoing",
+                                                },
+                                              );
+                                            },
+                                            child: Container(
+                                              padding: EdgeInsets.all(9.w),
+                                              decoration: BoxDecoration(
+                                                color:
+                                                    Colors.red.withOpacity(0.1),
+                                                shape: BoxShape.circle,
+                                              ),
+                                              child: Icon(
+                                                Icons.videocam,
+                                                color: Colors.red,
+                                                size: 18.sp,
+                                              ),
+                                            ),
+                                          ),
                                         ],
-                                      ),
+                                      ],
                                     ),
+                                    if (!isMe && !isGhostMode) ...[
+                                      SizedBox(height: 10.h),
+                                      member.locationSharing == false
+                                          ? SizedBox()
+                                          : Align(
+                                              alignment: Alignment.centerRight,
+                                              child: ElevatedButton.icon(
+                                                onPressed: () {
+                                                  Navigator.pop(context);
+
+                                                  if (isGroupChat) {
+                                                    Get.toNamed(
+                                                      Routes.LocationTracking,
+                                                      arguments: {
+                                                        "groupId": groupId,
+                                                        "groupName": groupName,
+                                                        "targetUserId": member
+                                                            .userId
+                                                            .toString(),
+                                                      },
+                                                    );
+                                                  } else {
+                                                    final Uri mapsUri =
+                                                        Uri.parse(
+                                                      "https://www.google.com/maps/dir/?api=1&destination=${member.latitude},${member.longitude}&travelmode=walking",
+                                                    );
+
+                                                    launchUrl(mapsUri);
+                                                  }
+                                                },
+                                                icon: const Icon(
+                                                    Icons.navigation),
+                                                label: Text(
+                                                  isGroupChat
+                                                      ? "Track"
+                                                      : "Navigate",
+                                                ),
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor:
+                                                      ToggleThemeData.Appcolor,
+                                                  foregroundColor: Colors.white,
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            10.r),
+                                                  ),
+                                                  padding: EdgeInsets.symmetric(
+                                                    horizontal: 12.w,
+                                                    vertical: 8.h,
+                                                  ),
+                                                  textStyle: TextStyle(
+                                                      fontSize: 13.sp),
+                                                ),
+                                              ),
+                                            ),
+                                    ],
                                   ],
                                 ),
                               ),
-                            );
+                            ],
+                          ),
+                        ),
+                      );
                     },
                   ),
                 ),

@@ -86,7 +86,7 @@ class CallController extends GetxController {
   void _listenForCallEvents() {
     socket?.off("callRejected");
     socket?.off("callEnded");
-    socket?.off("missedCall");
+    socket?.off("XmissedCall");
     socket?.off("callStatus");
     socket?.off("callCreated");
     socket?.off("newCall");
@@ -176,7 +176,7 @@ class CallController extends GetxController {
     });
 
     socket!.on("missedCall", (data) async {
-      log("==========MissedCallCalled=======");
+      log("==========MissedCallCalled=======$data");
       _clearTimers();
       if (CallSessionState.sessionId != null) {
         callEnded(CallSessionState.sessionId.toString());
@@ -382,7 +382,7 @@ class CallController extends GetxController {
 
     final myUserId = Global.storageServices.get(PrefConst.userId).toString();
     final targetUser =
-    (myUserId == callerId.toString()) ? remoteUserId : callerId;
+        (myUserId == callerId.toString()) ? remoteUserId : callerId;
 
     var param = {
       "callId": callId,
@@ -475,7 +475,7 @@ class CallController extends GetxController {
 
     missedCallTimer = Timer.periodic(
       const Duration(seconds: 1),
-          (timer) {
+      (timer) {
         if (isClosed) {
           timer.cancel();
           return;
@@ -493,6 +493,7 @@ class CallController extends GetxController {
             "remoteUserId": remoteUserId,
             "sessionId": remoteUserId,
           };
+          print("MISS CALL EMIT => $param");
           socket?.emit("missCall", param);
           log("=======MissedCallParam===$param");
 

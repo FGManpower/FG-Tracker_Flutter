@@ -137,6 +137,11 @@ class firebaseNotificationServices {
     FirebaseMessaging.instance.getInitialMessage().then((message) {});
 
     FirebaseMessaging.onMessage.listen((message) async {
+      print("=========== FCM RECEIVED ===========");
+      print("Title : ${message.notification?.title}");
+      print("Body  : ${message.notification?.body}");
+      print("Data  : ${message.data}");
+
       final context =
           ContextUtility.navigatorkey.currentState?.overlay?.context;
 
@@ -164,14 +169,11 @@ class firebaseNotificationServices {
   static Future<String> getDeviceTokenToSendNotification() async {
     fcmToken = (await FirebaseMessaging.instance.getToken()).toString();
 
-    print("=============DeviceToken============${fcmToken}");
     return fcmToken;
   }
 
   Future<void> handleMessage(BuildContext context, RemoteMessage message,
       {String? type}) async {
-    print("=============NotificationMessage${message.data}");
-
     if (type == "recienvedmessage") {
       if (message.data['screen_name'] == "MemberPage") {
         Get.toNamed(Routes.Memberscreen, arguments: {
@@ -223,7 +225,6 @@ class firebaseNotificationServices {
           arguments: {"callDetail": call},
         );
       } else if (message.data['screen_name'] == "missedCall") {
-
         final callData = jsonDecode(message.data['callData']);
         final bool isVideo = callData["isVideo"] == true;
 
@@ -240,29 +241,29 @@ class firebaseNotificationServices {
         );
       }
     } else {
-    if(Platform.isAndroid){
+      if (Platform.isAndroid) {
+        if (message.data['screen_name'] == "incomingCall" &&
+            Platform.isAndroid) {
+          final callData = jsonDecode(message.data['callData']);
 
-      if (message.data['screen_name'] == "incomingCall" && Platform.isAndroid) {
-        final callData = jsonDecode(message.data['callData']);
+          final Map<String, String> userInfo = callData.map<String, String>(
+              (key, value) => MapEntry(key.toString(), value.toString()));
+          print("===========showIncommingCallInfo=======${userInfo}");
 
-        final Map<String, String> userInfo = callData.map<String, String>(
-                (key, value) => MapEntry(key.toString(), value.toString()));
-        print("===========showIncommingCallInfo=======${userInfo}");
-
-        print("SenderSessionId============${callData['callId'].toString()}");
-        await ConnectycubeFlutterCallKit.showCallNotification(
-          CallEvent(
-            sessionId: callData['callId'].toString(),
-            callerName: callData['callerName'],
-            callType: callData['isVideo'] == true ? 1 : 0,
-            opponentsIds: {int.parse(callData['callerId'])},
-            callerId: int.parse(callData['callerId']),
-            userInfo: userInfo,
-          ),
-        );
-        CallSessionState.sessionId = callData['callId'].toString();
+          print("SenderSessionId============${callData['callId'].toString()}");
+          await ConnectycubeFlutterCallKit.showCallNotification(
+            CallEvent(
+              sessionId: callData['callId'].toString(),
+              callerName: callData['callerName'],
+              callType: callData['isVideo'] == true ? 1 : 0,
+              opponentsIds: {int.parse(callData['callerId'])},
+              callerId: int.parse(callData['callerId']),
+              userInfo: userInfo,
+            ),
+          );
+          CallSessionState.sessionId = callData['callId'].toString();
+        }
       }
-    }
     }
   }
 }

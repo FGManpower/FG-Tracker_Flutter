@@ -412,8 +412,7 @@ class DialogBox {
     required bool isGroupChat,
     required bool isLocationSharing,
   }) {
-    bool isOnline =
-        lastSeen != null && lastSeen.toLowerCase() == "just now";
+    bool isOnline = lastSeen != null && lastSeen.toLowerCase() == "just now";
 
     showModalBottomSheet(
       context: Get.context!,
@@ -461,8 +460,8 @@ class DialogBox {
                 isLocationSharing == false
                     ? "Private"
                     : isOnline
-                    ? "Online"
-                    : "Offline",
+                        ? "Online"
+                        : "Offline",
                 fontsize: 12.sp,
                 color: isLocationSharing == false
                     ? Colors.grey
@@ -470,7 +469,8 @@ class DialogBox {
               ),
               if (!isOnline &&
                   isLocationSharing &&
-                  Utility.isNotNullEmptyOrFalse(lastSeen))                Padding(
+                  Utility.isNotNullEmptyOrFalse(lastSeen))
+                Padding(
                   padding: EdgeInsets.only(top: 2.h),
                   child: reausabletext(
                     "${AppText.lastSeen}$lastSeen",
@@ -479,7 +479,8 @@ class DialogBox {
                   ),
                 ),
               SizedBox(height: 24.h),
-              if (!isGroupChat && isLocationSharing) ...[                Container(
+              if (!isGroupChat && isLocationSharing) ...[
+                Container(
                   width: double.infinity,
                   padding: EdgeInsets.symmetric(vertical: 16.h),
                   decoration: BoxDecoration(
@@ -524,7 +525,8 @@ class DialogBox {
                           name: name,
                           profileImage: imageUrl,
                           lastSeen: lastSeen,
-                          isOnline: isOnline,                        );
+                          isOnline: isOnline,
+                        );
 
                         Navigator.pop(ctx);
 
@@ -750,41 +752,44 @@ class DialogBox {
                 ],
               ),
               SizedBox(height: 15.h),
-              isLocationSharing==false?SizedBox(): reausablebutton(
-                title: isGroupChat ? "Track" : AppText.getDirections,
-                icon: isGroupChat ? Icons.track_changes : Icons.directions,
-                fontSize: 19,
-                borderradiues: 50.r,
-                iconSize: 23.sp,
-                iconColor: Colors.white,
-                textcolor: Colors.white,
-                height: 58,
-                ontap: () {
-                  if (isGroupChat) {
-                    Navigator.pop(ctx);
+              isLocationSharing == false
+                  ? SizedBox()
+                  : reausablebutton(
+                      title: isGroupChat ? "Track" : AppText.getDirections,
+                      icon:
+                          isGroupChat ? Icons.track_changes : Icons.directions,
+                      fontSize: 19,
+                      borderradiues: 50.r,
+                      iconSize: 23.sp,
+                      iconColor: Colors.white,
+                      textcolor: Colors.white,
+                      height: 58,
+                      ontap: () {
+                        if (isGroupChat) {
+                          Navigator.pop(ctx);
 
-                    Get.toNamed(
-                      Routes.LocationTracking,
-                      arguments: {
-                        "groupId": groupId,
-                        "groupName": groupName,
-                        "targetUserId": userId.toString(),
+                          Get.toNamed(
+                            Routes.LocationTracking,
+                            arguments: {
+                              "groupId": groupId,
+                              "groupName": groupName,
+                              "targetUserId": userId.toString(),
+                            },
+                          );
+                        } else {
+                          final Uri mapsUri = Uri.parse(
+                            "https://www.google.com/maps/dir/?api=1"
+                            "&destination=${destination.latitude},${destination.longitude}"
+                            "&travelmode=walking",
+                          );
+
+                          launchUrl(
+                            mapsUri,
+                            mode: LaunchMode.externalApplication,
+                          );
+                        }
                       },
-                    );
-                  } else {
-                    final Uri mapsUri = Uri.parse(
-                      "https://www.google.com/maps/dir/?api=1"
-                      "&destination=${destination.latitude},${destination.longitude}"
-                      "&travelmode=walking",
-                    );
-
-                    launchUrl(
-                      mapsUri,
-                      mode: LaunchMode.externalApplication,
-                    );
-                  }
-                },
-              ),
+                    ),
             ],
           ),
         ),

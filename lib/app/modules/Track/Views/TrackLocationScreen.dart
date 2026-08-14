@@ -22,7 +22,6 @@ class _LocationTrackingPageState extends State<LocationTrackingPage> {
   late int groupId;
   late String groupName;
 
-
   late final Set<ClusterManager> _clusterManagers;
 
   @override
@@ -33,7 +32,6 @@ class _LocationTrackingPageState extends State<LocationTrackingPage> {
     groupId = args['groupId'];
     groupName = args['groupName'] ?? "Group";
     final String? targetUserId = args['targetUserId'];
-
 
     _clusterManagers = {
       ClusterManager(
@@ -58,7 +56,7 @@ class _LocationTrackingPageState extends State<LocationTrackingPage> {
 
           final hasMarker = controller.markers.toList().any(
                 (m) => m.markerId.value == targetUserId,
-          );
+              );
 
           if (hasMarker && controller.mapController != null) break;
 
@@ -78,7 +76,8 @@ class _LocationTrackingPageState extends State<LocationTrackingPage> {
         context,
         groupName: groupName,
         onPressMembers: () {
-          final members = controller.groupWiseUserData[groupId.toString()] ?? [];
+          final members =
+              controller.groupWiseUserData[groupId.toString()] ?? [];
 
           BottomSheetUi().showMemberBottomSheet(
             context,
@@ -107,13 +106,13 @@ class _LocationTrackingPageState extends State<LocationTrackingPage> {
       ),
       body: SafeArea(
         child: Obx(
-              () => GoogleMap(
+          () => GoogleMap(
             initialCameraPosition: CameraPosition(
               target: controller.locationService.currentPosition != null
                   ? LatLng(
-                controller.locationService.currentPosition!.latitude!,
-                controller.locationService.currentPosition!.longitude!,
-              )
+                      controller.locationService.currentPosition!.latitude!,
+                      controller.locationService.currentPosition!.longitude!,
+                    )
                   : const LatLng(19.093394, 72.9137016),
               zoom: 15,
             ),
