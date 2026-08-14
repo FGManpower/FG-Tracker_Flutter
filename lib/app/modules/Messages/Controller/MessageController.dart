@@ -302,7 +302,6 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
     try {
       if (imagePaths.isNotEmpty) {
-        // Handle images (same as before)
         final imagesCopy = List<File>.from(imagePaths);
         for (final image in imagesCopy) {
           final result = await MessageRepo.uploadChatImage(image);
@@ -318,25 +317,22 @@ class MessageController extends GetxController with WidgetsBindingObserver {
               replyType: replyMessage.value?.messageType,
               replySender: replyMessage.value?.senderName,
             );
-            // ✅ Remove uploaded image
             imagePaths.remove(image);
           } else {
             CommonDialog.errorMessage("Failed to upload ${image.path}");
           }
         }
-        textController.clear();
-        clearReply();
-      } else if (videoPaths.isNotEmpty) {
-        // ✅ Loop videos and remove one-by-one
+      }
+
+      if (videoPaths.isNotEmpty) {
         final videosCopy = List<String>.from(videoPaths);
 
-        for (int i = 0; i < videosCopy.length; i++) {
-          final vPath = videosCopy[i];
+        for (final vPath in videosCopy) {
           final currentIndex = videoPaths.indexOf(vPath);
-
           if (currentIndex == -1) continue;
 
           uploadingVideoIndexes.add(currentIndex);
+          uploadingVideoIndexes.refresh();
 
           final success = await uploadVideoAtIndex(vPath, text, currentIndex);
 
@@ -350,15 +346,17 @@ class MessageController extends GetxController with WidgetsBindingObserver {
           uploadingVideoIndexes.remove(currentIndex);
           videoUploadProgress.remove(currentIndex);
         }
+      }
 
-        textController.clear();
-        clearReply();
-      } else if (documentPath.isNotEmpty) {
+      if (documentPath.isNotEmpty) {
         await uploadDocument(documentPath.value, text);
         documentPath.value = "";
-        textController.clear();
-        clearReply();
-      } else if (text.isNotEmpty) {
+      }
+
+      if (imagePaths.isEmpty &&
+          videoPaths.isEmpty &&
+          documentPath.isEmpty &&
+          text.isNotEmpty) {
         socketService.sendMessage(
           messageType: "text",
           receiverId: memberData.userId.toString(),
@@ -369,9 +367,10 @@ class MessageController extends GetxController with WidgetsBindingObserver {
           replyType: replyMessage.value?.messageType,
           replySender: replyMessage.value?.senderName,
         );
-        textController.clear();
-        clearReply();
       }
+
+      textController.clear();
+      clearReply();
       scrollToBottom();
     } catch (e) {
       log("Error sending message: $e");

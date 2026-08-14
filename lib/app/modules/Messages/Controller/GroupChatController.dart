@@ -309,7 +309,6 @@ class GroupMessageController extends GetxController {
     required TextEditingController textController,
   }) async {
     if (isSending.value) return;
-
     isSending.value = true;
 
     try {
@@ -335,22 +334,20 @@ class GroupMessageController extends GetxController {
             CommonDialog.errorMessage("Failed to upload ${image.path}");
           }
         }
-        textController.clear();
-        clearReply();
-      } else if (videoPaths.isNotEmpty) {
+      }
+
+      if (videoPaths.isNotEmpty) {
         final videosCopy = List<String>.from(videoPaths);
 
         for (final vPath in videosCopy) {
           final currentIndex = videoPaths.indexOf(vPath);
           if (currentIndex == -1) continue;
 
-          // Mark as uploading
           uploadingVideoIndexes.add(currentIndex);
           uploadingVideoIndexes.refresh();
 
           final success = await uploadVideoAtIndex(vPath, text, currentIndex);
 
-          // Remove after upload
           if (success) {
             final idx = videoPaths.indexOf(vPath);
             if (idx != -1) {
@@ -361,15 +358,17 @@ class GroupMessageController extends GetxController {
           uploadingVideoIndexes.remove(currentIndex);
           videoUploadProgress.remove(currentIndex);
         }
+      }
 
-        textController.clear();
-        clearReply();
-      } else if (documentPath.isNotEmpty) {
+      if (documentPath.isNotEmpty) {
         await uploadDocument(documentPath.value, text);
         documentPath.value = "";
-        textController.clear();
-        clearReply();
-      } else if (text.isNotEmpty) {
+      }
+
+      if (imagePaths.isEmpty &&
+          videoPaths.isEmpty &&
+          documentPath.isEmpty &&
+          text.isNotEmpty) {
         socketService.sendGroupMessage(
           groupId: groupId,
           content: text,
@@ -379,10 +378,10 @@ class GroupMessageController extends GetxController {
           replyType: replyMessage.value?.messageType,
           replySender: replyMessage.value?.senderName,
         );
-        clearReply();
-        textController.clear();
       }
 
+      textController.clear();
+      clearReply();
       scrollToBottom();
     } catch (e) {
       log("GROUP SEND ERROR => $e");
