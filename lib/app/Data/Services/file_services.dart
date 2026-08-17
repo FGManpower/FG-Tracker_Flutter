@@ -8,7 +8,6 @@ import 'package:image_picker_android/image_picker_android.dart';
 import 'package:path_provider/path_provider.dart' as path_provider;
 import 'package:image_picker_platform_interface/image_picker_platform_interface.dart';
 
-import 'MethodChannel.dart';
 
 class FileServices {
   final ImagePicker _picker = ImagePicker();
@@ -60,7 +59,6 @@ class FileServices {
 
       return file;
     } catch (e, s) {
-      print(s);
       return null;
     }
   }
@@ -99,14 +97,14 @@ class FileServices {
       }
 
       return media;
-    } catch (e, stack) {
+    } catch (e) {
       return [];
     }
   }
 
   Future<File?> pickDocument() async {
     try {
-      FilePickerResult? result = await FilePicker.platform.pickFiles(
+      FilePickerResult? result = await FilePicker.pickFiles(
         type: FileType.custom,
         allowedExtensions: [
           'pdf',
