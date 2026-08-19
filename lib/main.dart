@@ -70,11 +70,13 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   } else if (message.data['screen_name'] == "missedCall") {
     final callData = jsonDecode(message.data['callData']);
     final sessionId = callData['session_id'].toString();
-    callEnded(sessionId );
+    callEnded(sessionId);
+  } else if (message.data['screen_name'] == "callEnded") {
+    final sessionId = message.data['sessionId'];
+    print("========CallEndedFromBackend===${sessionId}");
+    callEnded(sessionId);
   }
 }
-
-
 
 @pragma('vm:entry-point')
 Future<void> onCallRejectedWhenTerminated(CallEvent event) async {
@@ -85,7 +87,7 @@ Future<void> onCallRejectedWhenTerminated(CallEvent event) async {
 
   if (rawUserInfo != null && rawUserInfo.isNotEmpty) {
     if (rawUserInfo.length == 1 &&
-        rawUserInfo.values.first.trim().startsWith("{")) {
+        rawUserInfo.values.first.trim().startsWith("")) {
       try {
         data = jsonDecode(rawUserInfo.values.first);
       } catch (e) {

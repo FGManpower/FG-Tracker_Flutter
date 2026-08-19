@@ -222,20 +222,21 @@ class firebaseNotificationServices {
           arguments: {"callDetail": call},
         );
       } else if (message.data['screen_name'] == "missedCall") {
-        final callData = jsonDecode(message.data['callData']);
-        final bool isVideo = callData["isVideo"] == true;
-
-        Get.toNamed(
-          Routes.callScreen,
-          arguments: {
-            "callerId": Global.storageServices.get(PrefConst.userId).toString(),
-            "remoteUserId": callData["callerId"].toString(),
-            "callerName": callData["callerName"] ?? "",
-            "offer": null,
-            "is_video": isVideo,
-            "callType": "outGoing",
-          },
-        );
+        Get.toNamed(Routes.notificationScreen);
+        // final callData = jsonDecode(message.data['callData']);
+        // final bool isVideo = callData["isVideo"] == true;
+        //
+        // Get.toNamed(
+        //   Routes.callScreen,
+        //   arguments: {
+        //     "callerId": Global.storageServices.get(PrefConst.userId).toString(),
+        //     "remoteUserId": callData["callerId"].toString(),
+        //     "callerName": callData["callerName"] ?? "",
+        //     "offer": null,
+        //     "is_video": isVideo,
+        //     "callType": "outGoing",
+        //   },
+        // );
       }
     } else {
       if (Platform.isAndroid) {

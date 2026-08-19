@@ -44,7 +44,7 @@ class CallController extends GetxController {
   int callDurationSeconds = 0;
 
   Timer? missedCallTimer;
-  var missCallDurationSeconds = 15.obs;
+  var missCallDurationSeconds = 40.obs;
 
   @override
   void onInit() {
@@ -57,7 +57,6 @@ class CallController extends GetxController {
     if (args["callId"] != null) {
       callId = args["callId"];
     }
-
 
     if (callId == null && args["sessionId"] != null) {
       callId = args["sessionId"];
@@ -91,10 +90,9 @@ class CallController extends GetxController {
     socket?.off("callStatus");
     socket?.off("callCreated");
     socket?.off("newCall");
-    socket?.off("sdpOfferFromCaller"); // new event for CallKit
+    socket?.off("sdpOfferFromCaller");
 
-    // When we accept from CallKit, we request the SDP offer
-    // The caller should reply with this event
+
     socket?.on("sdpOfferFromCaller", (data) async {
       log("====== Received SDP Offer from Caller (CallKit flow) ======");
       log("Data: $data");
@@ -151,7 +149,8 @@ class CallController extends GetxController {
       _clearTimers();
 
       if (CallSessionState.sessionId != null) {
-        callEnded(CallSessionState.sessionId.toString(),type: "CallRejectedFromController");
+        callEnded(CallSessionState.sessionId.toString(),
+            type: "CallRejectedFromController");
       }
 
       resetPeer();
@@ -159,19 +158,16 @@ class CallController extends GetxController {
     });
 
     socket!.on("callEnded", (data) async {
-      log("======================CallEnded==========$data");
       _clearTimers();
 
       resetPeer();
       if (CallSessionState.sessionId != null) {
-        callEnded(CallSessionState.sessionId.toString(),type: "callEndedFromController");
-        Utils().fluttertoast("Call not Answered!");
+        callEnded(data['sessionId'].toString(),
+            type: "callEndedFromController");
       }
-
       if (args["callType"] == "outGoing") {
         stopSound();
       }
-
       if (Get.currentRoute != Routes.Home_Screen) {
         Get.offAllNamed(Routes.Home_Screen);
       }
@@ -181,7 +177,8 @@ class CallController extends GetxController {
       log("==========MissedCallCalled=======$data");
       _clearTimers();
       if (CallSessionState.sessionId != null) {
-        callEnded(CallSessionState.sessionId.toString(),type: "missedCallFromController");
+        callEnded(CallSessionState.sessionId.toString(),
+            type: "missedCallFromController");
       }
 
       resetPeer();
@@ -197,7 +194,6 @@ class CallController extends GetxController {
     });
 
     socket?.on("callCreated", (data) {
-      log("===========CallCreatedResponseData======${data}");
       callId = data['callId'];
       startMissedCallTimer();
     });
@@ -311,9 +307,9 @@ class CallController extends GetxController {
         "sdpAnswer": answer.toMap(),
       });
     }
-    // ========== CALLKIT ACCEPT (no offer yet) ==========
+
     else if (fromCallKit || (args["callType"] == "Incoming" && offer == null)) {
-      log("====== CallKit Accept Flow (waiting for SDP offer) ======");
+
 
       callStatus.value = "Connecting...";
 
@@ -327,7 +323,7 @@ class CallController extends GetxController {
 
       // We will receive the offer via "sdpOfferFromCaller" listener
     }
-    // ========== OUTGOING CALL ==========
+
     else {
       log("====== Outgoing Call ======");
 
@@ -384,7 +380,7 @@ class CallController extends GetxController {
 
     final myUserId = Global.storageServices.get(PrefConst.userId).toString();
     final targetUser =
-    (myUserId == callerId.toString()) ? remoteUserId : callerId;
+        (myUserId == callerId.toString()) ? remoteUserId : callerId;
 
     var param = {
       "callId": callId,
@@ -392,6 +388,10 @@ class CallController extends GetxController {
     };
 
 
+
+    if(callStatus.value != "Connected"){
+
+    }
     if (type != "missedCall") {
       log("========CallEndParameterDetail:$param");
       socket?.emit("endCall", param);
@@ -399,10 +399,10 @@ class CallController extends GetxController {
 
     resetPeer();
 
-
     if (CallSessionState.sessionId != null) {
       log("========CallerSideSessionId:${CallSessionState.sessionId}");
-      callEnded(CallSessionState.sessionId.toString(),type: "endCallMethodHittedFromController-Type:${type}");
+      callEnded(CallSessionState.sessionId.toString(),
+          type: "endCallMethodHittedFromController-Type:${type}");
     }
 
     if (args["callType"] == "outGoing") {
@@ -478,11 +478,11 @@ class CallController extends GetxController {
 
   void startMissedCallTimer() {
     missedCallTimer?.cancel();
-    missCallDurationSeconds.value = 15;
+    missCallDurationSeconds.value = 40;
 
     missedCallTimer = Timer.periodic(
       const Duration(seconds: 1),
-          (timer) {
+      (timer) {
         if (isClosed) {
           timer.cancel();
           return;
@@ -494,21 +494,24 @@ class CallController extends GetxController {
 
         if (missCallDurationSeconds.value == 0) {
           timer.cancel();
+          missedCall();
 
-          var param = {
-            "callId": callId,
-            "remoteUserId": remoteUserId,
-          };
-          print("MISS CALL EMIT => $param");
-          socket?.emit("missCall", param);
-          log("=======MissedCallParam===$param");
-
-          endCall(type: "missedCall");
         }
       },
     );
   }
 
+  void missedCall(){
+    var param = {
+      "callId": callId,
+      "remoteUserId": remoteUserId,
+    };
+    print("MISS CALL EMIT => $param");
+    socket?.emit("missCall", param);
+    log("=======MissedCallParam===$param");
+
+    endCall(type: "missedCall");
+  }
   void _clearTimers() {
     callTimer?.cancel();
     missedCallTimer?.cancel();

@@ -145,7 +145,11 @@ class CallScreen extends StatelessWidget {
                           ),
                           InkWell(
                             onTap: () {
-                              c.endCall();
+                              if (controller.callStatus.value != "Connected") {
+                                c.missedCall();
+                              } else {
+                                c.endCall();
+                              }
                             },
                             child: CircleAvatar(
                               radius: 30.r,
