@@ -135,384 +135,404 @@ class _ChatInputAreaState extends State<ChatInputArea> {
         return Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(20.r),
-                  topRight: Radius.circular(20.r),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.shade300,
-                    offset: Offset(0, -1),
-                    blurRadius: 4,
+            SingleChildScrollView(
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(20.r),
+                    topRight: Radius.circular(20.r),
                   ),
-                ],
-              ),
-              child: Column(
-                children: [
-                  if (isImageSelected) _buildLargeImagePreview(),
-                  if (isVideoSelected) _buildLargeVideoPreview(),
-                  if (isDocumentSelected) _buildLargeDocumentPreview(),
-                  if (voiceController.isRecording.value)
-                    Container(
-                      margin: EdgeInsets.only(bottom: 8.h),
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 12.w,
-                        vertical: 14.h,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade200,
-                        borderRadius: BorderRadius.circular(20.r),
-                      ),
-                      child: Row(
-                        children: [
-                          GestureDetector(
-                            onTap: () {
-                              voiceController.deleteRecording();
-                            },
-                            child: CircleAvatar(
-                              radius: 20.r,
-                              backgroundColor: Colors.red,
-                              child: Icon(
-                                Icons.delete,
-                                color: Colors.white,
-                                size: 20.sp,
-                              ),
-                            ),
-                          ),
-                          SizedBox(width: 12.w),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  "${voiceController.duration.value}s",
-                                  style: TextStyle(
-                                    fontSize: 14.sp,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                                SizedBox(height: 8.h),
-                                SizedBox(
-                                  height: 35.h,
-                                  child: AnimatedWaveList(
-                                    stream: voiceController.amplitudeStream,
-                                    barBuilder: (animation, amplitude) =>
-                                        WaveFormBar(
-                                      animation: animation,
-                                      amplitude: amplitude,
-                                      color: ToggleThemeData.darkPurple,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          SizedBox(width: 12.w),
-                          GestureDetector(
-                            onTap: () {
-                              if (voiceController.isPaused.value) {
-                                voiceController.resumeRecording();
-                              } else {
-                                voiceController.pauseRecording();
-                              }
-                            },
-                            child: CircleAvatar(
-                              radius: 20.r,
-                              backgroundColor: Colors.orange,
-                              child: Icon(
-                                voiceController.isPaused.value
-                                    ? Icons.play_arrow
-                                    : Icons.pause,
-                                color: Colors.white,
-                                size: 20.sp,
-                              ),
-                            ),
-                          ),
-                          SizedBox(width: 12.w),
-                          GestureDetector(
-                            onTap: () async {
-                              final path =
-                                  await voiceController.stopRecording();
-                              if (path != null) {
-                                widget.onVoiceSend!(path);
-                              }
-                            },
-                            child: CircleAvatar(
-                              radius: 20.r,
-                              backgroundColor: ToggleThemeData.darkPurple,
-                              child: Icon(
-                                Icons.send,
-                                color: Colors.white,
-                                size: 20.sp,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.shade300,
+                      offset: const Offset(0, -1),
+                      blurRadius: 4,
                     ),
-                  Row(
-                    children: [
-                      SizedBox(width: 5.w),
-                      Expanded(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
+                  ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (isImageSelected)
+                      SizedBox(
+                        height: 110.h,
+                        child: _buildLargeImagePreview(),
+                      ),
+                    if (isVideoSelected)
+                      SizedBox(
+                        height: 110.h,
+                        child: _buildLargeVideoPreview(),
+                      ),
+                    if (isDocumentSelected) _buildLargeDocumentPreview(),
+                    if (voiceController.isRecording.value)
+                      Container(
+                        margin: EdgeInsets.only(bottom: 8.h),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 12.w,
+                          vertical: 14.h,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade200,
+                          borderRadius: BorderRadius.circular(20.r),
+                        ),
+                        child: Row(
                           children: [
-                            if (widget.groupMessageController != null &&
-                                widget.groupMessageController!.showMentionList
-                                    .value &&
-                                widget.groupMessageController!.filteredMembers
-                                    .isNotEmpty)
-                              MentionlistItem(
-                                filteredMembers: widget
-                                    .groupMessageController!.filteredMembers,
-                                onTap: (member) {
-                                  widget.groupMessageController!.insertMention(
-                                    member: member,
-                                    textController: widget.textController,
-                                  );
-                                },
+                            GestureDetector(
+                              onTap: () {
+                                voiceController.deleteRecording();
+                              },
+                              child: CircleAvatar(
+                                radius: 20.r,
+                                backgroundColor: Colors.red,
+                                child: Icon(
+                                  Icons.delete,
+                                  color: Colors.white,
+                                  size: 20.sp,
+                                ),
                               ),
-                            Row(
-                              children: [
-                                Flexible(
-                                  child: TextField(
-                                    controller: widget.textController,
-                                    focusNode: focusNode,
-                                    onChanged: (val) {
-                                      widget.messageText.value = val;
-                                      if (widget.groupMembers?.isNotEmpty ==
-                                          true) {
-                                        widget.groupMessageController
-                                            ?.onTextChanged(
-                                          textController: widget.textController,
-                                        );
-                                      }
-                                    },
+                            ),
+                            SizedBox(width: 12.w),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    "${voiceController.duration.value}s",
                                     style: TextStyle(
-                                      color: ToggleThemeData.white,
-                                      fontFamily: FontFamily.interMedium,
-                                      fontSize: 16.sp,
+                                      fontSize: 14.sp,
+                                      fontWeight: FontWeight.w600,
                                     ),
-                                    maxLines: 4,
-                                    minLines: 1,
-                                    expands: false,
-                                    decoration: InputDecoration(
-                                      hintText: "Type a message",
-                                      prefixIcon: GestureDetector(
-                                        onTap: _toggleEmoji,
-                                        child: Icon(
-                                          Icons.emoji_emotions_outlined,
-                                          color: Colors.white,
-                                          size: 26.sp,
-                                        ),
-                                      ),
-                                      hintStyle: TextStyle(color: Colors.white),
-                                      border: OutlineInputBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(30.r),
-                                        borderSide: BorderSide.none,
-                                      ),
-                                      suffixIcon: Padding(
-                                        padding: EdgeInsets.all(3.r),
-                                        child: GestureDetector(
-                                          onTap: () {
-                                            ChatBottomSheet.showFileOptions(
-                                              context,
-                                              onGallery: () async {
-                                                Navigator.pop(context);
-
-                                                final List<XFile> mediaFiles =
-                                                    await FileServices()
-                                                        .pickMultipleMediaFromGallery();
-
-                                                if (mediaFiles.isEmpty) return;
-
-                                                final List<File> images = [];
-                                                final List<String> videos = [];
-
-                                                const videoExtensions = [
-                                                  'mp4',
-                                                  'mov',
-                                                  'avi',
-                                                  'mkv',
-                                                  '3gp',
-                                                  'webm',
-                                                  'm4v'
-                                                ];
-
-                                                for (final file in mediaFiles) {
-                                                  final ext = file.path
-                                                      .split('.')
-                                                      .last
-                                                      .toLowerCase();
-                                                  if (videoExtensions
-                                                      .contains(ext)) {
-                                                    videos.add(file.path);
-                                                  } else {
-                                                    images.add(File(file.path));
-                                                  }
-                                                }
-
-                                                if (images.isNotEmpty) {
-                                                  widget
-                                                      .onImageSelected(images);
-                                                }
-
-                                                if (videos.isNotEmpty) {
-                                                  widget
-                                                      .onVideosSelected(videos);
-                                                }
-                                              },
-                                              onDocument: () async {
-                                                Navigator.pop(context);
-                                                final file =
-                                                    await FileServices()
-                                                        .pickDocument();
-                                                if (file != null) {
-                                                  widget.onDocumentSelected(
-                                                      file.path ?? "");
-                                                }
-                                              },
-                                              onCamera: () {
-                                                Navigator.pop(context);
-                                                WidgetsBinding.instance
-                                                    .addPostFrameCallback(
-                                                        (_) async {
-                                                  final result =
-                                                      await Get.toNamed(
-                                                          Routes.cameraScreen);
-
-                                                  if (result != null &&
-                                                      result is String &&
-                                                      result.isNotEmpty) {
-                                                    final ext = result
-                                                        .split('.')
-                                                        .last
-                                                        .toLowerCase();
-                                                    const videoExtensions = [
-                                                      'mp4',
-                                                      'mov',
-                                                      'avi',
-                                                      'mkv',
-                                                      '3gp',
-                                                      'webm'
-                                                    ];
-
-                                                    if (videoExtensions
-                                                        .contains(ext)) {
-                                                      widget.onVideosSelected(
-                                                          [result]);
-                                                    } else {
-                                                      widget.onImageSelected(
-                                                          [File(result)]);
-                                                    }
-                                                  }
-                                                });
-                                              },
-                                              onLocation: () async {
-                                                Navigator.pop(context);
-                                                widget.onLocationSelected();
-                                              },
-                                              onContact: () async {
-                                                Navigator.pop(context);
-                                                widget.onContactSelected();
-                                              },
-                                            );
-                                          },
-                                          child: CircleAvatar(
-                                            backgroundColor:
-                                                ToggleThemeData.white,
-                                            radius: 16,
-                                            child: reausableIcon(
-                                              icon: Icons.file_present_outlined,
-                                              color: ToggleThemeData.Appcolor,
-                                              size: 25,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                      fillColor: ToggleThemeData.Appcolor,
-                                      filled: true,
-                                      contentPadding: EdgeInsets.symmetric(
-                                        horizontal: 15.w,
-                                        vertical: 14.h,
+                                  ),
+                                  SizedBox(height: 8.h),
+                                  SizedBox(
+                                    height: 35.h,
+                                    child: AnimatedWaveList(
+                                      stream: voiceController.amplitudeStream,
+                                      barBuilder: (animation, amplitude) =>
+                                          WaveFormBar(
+                                        animation: animation,
+                                        amplitude: amplitude,
+                                        color: ToggleThemeData.darkPurple,
                                       ),
                                     ),
                                   ),
+                                ],
+                              ),
+                            ),
+                            SizedBox(width: 12.w),
+                            GestureDetector(
+                              onTap: () {
+                                if (voiceController.isPaused.value) {
+                                  voiceController.resumeRecording();
+                                } else {
+                                  voiceController.pauseRecording();
+                                }
+                              },
+                              child: CircleAvatar(
+                                radius: 20.r,
+                                backgroundColor: Colors.orange,
+                                child: Icon(
+                                  voiceController.isPaused.value
+                                      ? Icons.play_arrow
+                                      : Icons.pause,
+                                  color: Colors.white,
+                                  size: 20.sp,
                                 ),
-                                SizedBox(width: 8.w),
-                                if (shouldShowSend &&
-                                    !voiceController.isRecording.value)
-                                  GestureDetector(
-                                    onTap: widget.isSending.value
-                                        ? null
-                                        : widget.onSend,
-                                    child: CircleAvatar(
-                                      radius: 24.r,
-                                      backgroundColor:
-                                          ToggleThemeData.darkPurple,
-                                      child: Icon(
-                                        Icons.send,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  )
-                                else if (!voiceController.isRecording.value)
-                                  GestureDetector(
-                                    onTap: () async {
-                                      await voiceController.startRecording();
-                                    },
-                                    child: CircleAvatar(
-                                      radius: 24.r,
-                                      backgroundColor:
-                                          ToggleThemeData.darkPurple,
-                                      child: Icon(
-                                        Icons.mic,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  )
-                                else
-                                  const SizedBox(),
-                              ],
+                              ),
+                            ),
+                            SizedBox(width: 12.w),
+                            GestureDetector(
+                              onTap: () async {
+                                final path =
+                                    await voiceController.stopRecording();
+                                if (path != null) {
+                                  widget.onVoiceSend!(path);
+                                }
+                              },
+                              child: CircleAvatar(
+                                radius: 20.r,
+                                backgroundColor: ToggleThemeData.darkPurple,
+                                child: Icon(
+                                  Icons.send,
+                                  color: Colors.white,
+                                  size: 20.sp,
+                                ),
+                              ),
                             ),
                           ],
                         ),
                       ),
-                    ],
-                  ),
-                  if (!voiceController.isRecording.value &&
-                      (widget.messageController?.showEmoji.value ??
-                          widget.groupMessageController?.showEmoji.value ??
-                          false))
-                    SizedBox(
-                      height: 300.h,
-                      child: EmojiPicker(
-                        textEditingController: widget.textController,
-                        onEmojiSelected: (category, emoji) {
-                          widget.messageText.value = widget.textController.text;
-                        },
-                        config: Config(
-                          height: 300.h,
-                          checkPlatformCompatibility: true,
-                          emojiViewConfig: EmojiViewConfig(
-                            columns: 8,
-                            emojiSizeMax: 10 *
-                                (ui.PlatformDispatcher.instance.views.first
-                                    .devicePixelRatio),
+                    Row(
+                      children: [
+                        SizedBox(width: 5.w),
+                        Expanded(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (widget.groupMessageController != null &&
+                                  widget.groupMessageController!.showMentionList
+                                      .value &&
+                                  widget.groupMessageController!.filteredMembers
+                                      .isNotEmpty)
+                                MentionlistItem(
+                                  filteredMembers: widget
+                                      .groupMessageController!.filteredMembers,
+                                  onTap: (member) {
+                                    widget.groupMessageController!
+                                        .insertMention(
+                                      member: member,
+                                      textController: widget.textController,
+                                    );
+                                  },
+                                ),
+                              Row(
+                                children: [
+                                  Flexible(
+                                    child: TextField(
+                                      controller: widget.textController,
+                                      focusNode: focusNode,
+                                      onChanged: (val) {
+                                        widget.messageText.value = val;
+                                        if (widget.groupMembers?.isNotEmpty ==
+                                            true) {
+                                          widget.groupMessageController
+                                              ?.onTextChanged(
+                                            textController:
+                                                widget.textController,
+                                          );
+                                        }
+                                      },
+                                      style: TextStyle(
+                                        color: ToggleThemeData.white,
+                                        fontFamily: FontFamily.interMedium,
+                                        fontSize: 16.sp,
+                                      ),
+                                      maxLines: 3,
+                                      minLines: 1,
+                                      expands: false,
+                                      decoration: InputDecoration(
+                                        hintText: "Type a message",
+                                        prefixIcon: GestureDetector(
+                                          onTap: _toggleEmoji,
+                                          child: Icon(
+                                            Icons.emoji_emotions_outlined,
+                                            color: Colors.white,
+                                            size: 26.sp,
+                                          ),
+                                        ),
+                                        hintStyle:
+                                            TextStyle(color: Colors.white),
+                                        border: OutlineInputBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(30.r),
+                                          borderSide: BorderSide.none,
+                                        ),
+                                        suffixIcon: Padding(
+                                          padding: EdgeInsets.all(3.r),
+                                          child: GestureDetector(
+                                            onTap: () {
+                                              ChatBottomSheet.showFileOptions(
+                                                context,
+                                                onGallery: () async {
+                                                  Navigator.pop(context);
+
+                                                  final List<XFile> mediaFiles =
+                                                      await FileServices()
+                                                          .pickMultipleMediaFromGallery();
+
+                                                  if (mediaFiles.isEmpty)
+                                                    return;
+
+                                                  final List<File> images = [];
+                                                  final List<String> videos =
+                                                      [];
+
+                                                  const videoExtensions = [
+                                                    'mp4',
+                                                    'mov',
+                                                    'avi',
+                                                    'mkv',
+                                                    '3gp',
+                                                    'webm',
+                                                    'm4v'
+                                                  ];
+
+                                                  for (final file
+                                                      in mediaFiles) {
+                                                    final ext = file.path
+                                                        .split('.')
+                                                        .last
+                                                        .toLowerCase();
+                                                    if (videoExtensions
+                                                        .contains(ext)) {
+                                                      videos.add(file.path);
+                                                    } else {
+                                                      images
+                                                          .add(File(file.path));
+                                                    }
+                                                  }
+
+                                                  if (images.isNotEmpty) {
+                                                    widget.onImageSelected(
+                                                        images);
+                                                  }
+
+                                                  if (videos.isNotEmpty) {
+                                                    widget.onVideosSelected(
+                                                        videos);
+                                                  }
+                                                },
+                                                onDocument: () async {
+                                                  Navigator.pop(context);
+                                                  final file =
+                                                      await FileServices()
+                                                          .pickDocument();
+                                                  if (file != null) {
+                                                    widget.onDocumentSelected(
+                                                        file.path ?? "");
+                                                  }
+                                                },
+                                                onCamera: () {
+                                                  Navigator.pop(context);
+                                                  WidgetsBinding.instance
+                                                      .addPostFrameCallback(
+                                                          (_) async {
+                                                    final result =
+                                                        await Get.toNamed(Routes
+                                                            .cameraScreen);
+
+                                                    if (result != null &&
+                                                        result is String &&
+                                                        result.isNotEmpty) {
+                                                      final ext = result
+                                                          .split('.')
+                                                          .last
+                                                          .toLowerCase();
+                                                      const videoExtensions = [
+                                                        'mp4',
+                                                        'mov',
+                                                        'avi',
+                                                        'mkv',
+                                                        '3gp',
+                                                        'webm'
+                                                      ];
+
+                                                      if (videoExtensions
+                                                          .contains(ext)) {
+                                                        widget.onVideosSelected(
+                                                            [result]);
+                                                      } else {
+                                                        widget.onImageSelected(
+                                                            [File(result)]);
+                                                      }
+                                                    }
+                                                  });
+                                                },
+                                                onLocation: () async {
+                                                  Navigator.pop(context);
+                                                  widget.onLocationSelected();
+                                                },
+                                                onContact: () async {
+                                                  Navigator.pop(context);
+                                                  widget.onContactSelected();
+                                                },
+                                              );
+                                            },
+                                            child: CircleAvatar(
+                                              backgroundColor:
+                                                  ToggleThemeData.white,
+                                              radius: 16,
+                                              child: reausableIcon(
+                                                icon:
+                                                    Icons.file_present_outlined,
+                                                color: ToggleThemeData.Appcolor,
+                                                size: 25,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        fillColor: ToggleThemeData.Appcolor,
+                                        filled: true,
+                                        contentPadding: EdgeInsets.symmetric(
+                                          horizontal: 15.w,
+                                          vertical: 14.h,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(width: 8.w),
+                                  if (shouldShowSend &&
+                                      !voiceController.isRecording.value)
+                                    GestureDetector(
+                                      onTap: widget.isSending.value
+                                          ? null
+                                          : widget.onSend,
+                                      child: CircleAvatar(
+                                        radius: 24.r,
+                                        backgroundColor:
+                                            ToggleThemeData.darkPurple,
+                                        child: Icon(
+                                          Icons.send,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    )
+                                  else if (!voiceController.isRecording.value)
+                                    GestureDetector(
+                                      onTap: () async {
+                                        await voiceController.startRecording();
+                                      },
+                                      child: CircleAvatar(
+                                        radius: 24.r,
+                                        backgroundColor:
+                                            ToggleThemeData.darkPurple,
+                                        child: Icon(
+                                          Icons.mic,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    )
+                                  else
+                                    const SizedBox(),
+                                ],
+                              ),
+                            ],
                           ),
-                          categoryViewConfig: const CategoryViewConfig(),
-                          bottomActionBarConfig: const BottomActionBarConfig(
-                              showSearchViewButton: false, enabled: false),
-                          searchViewConfig: const SearchViewConfig(),
+                        ),
+                      ],
+                    ),
+                    if (!voiceController.isRecording.value &&
+                        (widget.messageController?.showEmoji.value ??
+                            widget.groupMessageController?.showEmoji.value ??
+                            false))
+                      SizedBox(
+                        height: 300.h,
+                        child: EmojiPicker(
+                          textEditingController: widget.textController,
+                          onEmojiSelected: (category, emoji) {
+                            widget.messageText.value =
+                                widget.textController.text;
+                          },
+                          config: Config(
+                            height: 300.h,
+                            checkPlatformCompatibility: true,
+                            emojiViewConfig: EmojiViewConfig(
+                              columns: 8,
+                              emojiSizeMax: 10 *
+                                  (ui.PlatformDispatcher.instance.views.first
+                                      .devicePixelRatio),
+                            ),
+                            categoryViewConfig: const CategoryViewConfig(),
+                            bottomActionBarConfig: const BottomActionBarConfig(
+                                showSearchViewButton: false, enabled: false),
+                            searchViewConfig: const SearchViewConfig(),
+                          ),
                         ),
                       ),
-                    ),
-                ],
+                  ],
+                ),
               ),
             ),
           ],
@@ -536,8 +556,8 @@ class _ChatInputAreaState extends State<ChatInputArea> {
             final isLast = index == 2 && remainingCount > 0;
             return Expanded(
               child: Padding(
-                padding: EdgeInsets.only(
-                    right: index < displayCount - 1 ? 8.w : 0),
+                padding:
+                    EdgeInsets.only(right: index < displayCount - 1 ? 8.w : 0),
                 child: AspectRatio(
                   aspectRatio: 1,
                   child: Stack(
@@ -551,7 +571,6 @@ class _ChatInputAreaState extends State<ChatInputArea> {
                           borderRadius: 12,
                         ),
                       ),
-
                       if (widget.isSending.value)
                         Positioned.fill(
                           child: ClipRRect(
@@ -572,7 +591,6 @@ class _ChatInputAreaState extends State<ChatInputArea> {
                             ),
                           ),
                         ),
-
                       if (isLast)
                         Positioned.fill(
                           child: ClipRRect(
@@ -591,7 +609,6 @@ class _ChatInputAreaState extends State<ChatInputArea> {
                             ),
                           ),
                         ),
-
                       if (!widget.isSending.value)
                         Positioned(
                           top: 4.h,
@@ -599,8 +616,8 @@ class _ChatInputAreaState extends State<ChatInputArea> {
                           child: InkWell(
                             onTap: () {
                               if (isLast && remainingCount > 0) {
-                                widget.imagePath.removeRange(
-                                    2, widget.imagePath.length);
+                                widget.imagePath
+                                    .removeRange(2, widget.imagePath.length);
                               } else {
                                 widget.imagePath.removeAt(index);
                               }
@@ -643,8 +660,8 @@ class _ChatInputAreaState extends State<ChatInputArea> {
 
             return Expanded(
               child: Padding(
-                padding: EdgeInsets.only(
-                    right: index < displayCount - 1 ? 8.w : 0),
+                padding:
+                    EdgeInsets.only(right: index < displayCount - 1 ? 8.w : 0),
                 child: AspectRatio(
                   aspectRatio: 1,
                   child: Stack(
@@ -718,7 +735,7 @@ class _ChatInputAreaState extends State<ChatInputArea> {
 
                       Obx(() {
                         final isUploading =
-                        widget.uploadingVideoIndexes.contains(index);
+                            widget.uploadingVideoIndexes.contains(index);
                         if (!isUploading) return const SizedBox();
 
                         final progress =
@@ -741,7 +758,7 @@ class _ChatInputAreaState extends State<ChatInputArea> {
                                         strokeWidth: 3,
                                         backgroundColor: Colors.white24,
                                         valueColor:
-                                        const AlwaysStoppedAnimation<Color>(
+                                            const AlwaysStoppedAnimation<Color>(
                                           Colors.white,
                                         ),
                                       ),
@@ -784,7 +801,7 @@ class _ChatInputAreaState extends State<ChatInputArea> {
 
                       Obx(() {
                         final isUploading =
-                        widget.uploadingVideoIndexes.contains(index);
+                            widget.uploadingVideoIndexes.contains(index);
                         if (isUploading) return const SizedBox();
 
                         return Positioned(
@@ -793,8 +810,8 @@ class _ChatInputAreaState extends State<ChatInputArea> {
                           child: InkWell(
                             onTap: () {
                               if (isLast && remainingCount > 0) {
-                                widget.videoPaths.removeRange(
-                                    2, widget.videoPaths.length);
+                                widget.videoPaths
+                                    .removeRange(2, widget.videoPaths.length);
                                 if (widget.videoThumbnails.length > 2) {
                                   widget.videoThumbnails.removeRange(
                                       2, widget.videoThumbnails.length);
@@ -909,7 +926,6 @@ class _ChatInputAreaState extends State<ChatInputArea> {
               ],
             ),
           ),
-
           if (widget.isSending.value)
             Positioned.fill(
               child: Container(
@@ -919,7 +935,6 @@ class _ChatInputAreaState extends State<ChatInputArea> {
                 ),
               ),
             ),
-
           if (!widget.isSending.value)
             Positioned(
               right: 8.w,

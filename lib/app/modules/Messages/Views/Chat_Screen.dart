@@ -87,9 +87,8 @@ class ChatScreen extends GetView<MessageController> {
                   Obx(() {
                     final total = controller.searchResultIds.length;
                     final current = controller.currentSearchIndex.value;
-                    final display = total == 0
-                        ? "0/0"
-                        : "${total - current}/$total";
+                    final display =
+                        total == 0 ? "0/0" : "${total - current}/$total";
                     return Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 8),
                       child: Center(
@@ -104,32 +103,32 @@ class ChatScreen extends GetView<MessageController> {
                     );
                   }),
                   Obx(() => IconButton(
-                    icon: const Icon(Icons.keyboard_arrow_up,
-                        color: Colors.black),
-                    onPressed: controller.searchResultIds.isEmpty
-                        ? null
-                        : controller.previousSearchResult,
-                  )),
+                        icon: const Icon(Icons.keyboard_arrow_up,
+                            color: Colors.black),
+                        onPressed: controller.searchResultIds.isEmpty
+                            ? null
+                            : controller.previousSearchResult,
+                      )),
                   Obx(() => IconButton(
-                    icon: const Icon(Icons.keyboard_arrow_down,
-                        color: Colors.black),
-                    onPressed: controller.searchResultIds.isEmpty
-                        ? null
-                        : controller.nextSearchResult,
-                  )),
+                        icon: const Icon(Icons.keyboard_arrow_down,
+                            color: Colors.black),
+                        onPressed: controller.searchResultIds.isEmpty
+                            ? null
+                            : controller.nextSearchResult,
+                      )),
                 ],
               );
             }
 
             return CommonChatAppBar(
               profileImageUrl:
-              "${ConstRes.aImageBaseUrl}${userData.profileImage ?? ""}",
+                  "${ConstRes.aImageBaseUrl}${userData.profileImage ?? ""}",
               userName: userData.name ?? "",
               controller: controller,
               groupName: controller.arguments?['groupName'],
               isOnline: isOnline,
               lastSeen: lastSeenText,
-               isGroupChat: false,
+              isGroupChat: false,
               onBackTap: () {
                 controller.handleBackPressed(context,
                     groupID: int.parse(userData.groupId.toString()));
@@ -138,7 +137,7 @@ class ChatScreen extends GetView<MessageController> {
                 controller.startCall(
                   context,
                   callerId:
-                  Global.storageServices.get(PrefConst.userId).toString(),
+                      Global.storageServices.get(PrefConst.userId).toString(),
                   remoteUserId: controller.memberData.userId.toString(),
                   is_video: false,
                   callerName: controller.memberData.name,
@@ -148,7 +147,7 @@ class ChatScreen extends GetView<MessageController> {
                 controller.startCall(
                   context,
                   callerId:
-                  Global.storageServices.get(PrefConst.userId).toString(),
+                      Global.storageServices.get(PrefConst.userId).toString(),
                   remoteUserId: controller.memberData.userId.toString(),
                   is_video: true,
                   callerName: controller.memberData.name,
@@ -166,15 +165,15 @@ class ChatScreen extends GetView<MessageController> {
                 CommonDialog.ConfirmationDialog(
                   title: "Remove Member",
                   content:
-                  "Are you sure you want to remove this member from the group?",
+                      "Are you sure you want to remove this member from the group?",
                   confirm: "Remove",
                   onConfirm: () {
-                    groupController.deleteGroupMember(context,
-                        groupId: userData.groupId.toString(),
-                        groupMemberId:
-                        controller.memberData.userId.toString(),
+                    groupController.deleteGroupMember(
+                      context,
+                      groupId: userData.groupId.toString(),
+                      groupMemberId: controller.memberData.userId.toString(),
                       onSuccess: (success) {
-                        if(success){
+                        if (success) {
                           Get.offAllNamed(Routes.Home_Screen);
                         }
                       },
@@ -202,8 +201,66 @@ class ChatScreen extends GetView<MessageController> {
                 );
               }),
               Expanded(
-                child: ChatList(
-                  controller: controller,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    ChatList(
+                      controller: controller,
+                    ),
+                    Obx(() {
+                      final isVisible = controller.showFloatingDate.value;
+                      final date = controller.floatingDate.value;
+
+                      if (date.isEmpty) {
+                        return const SizedBox.shrink();
+                      }
+
+                      return IgnorePointer(
+                        child: Align(
+                          alignment: Alignment.topCenter,
+                          child: AnimatedSlide(
+                            offset:
+                                isVisible ? Offset.zero : const Offset(0, -0.8),
+                            duration: const Duration(milliseconds: 220),
+                            curve: Curves.easeOutCubic,
+                            child: AnimatedOpacity(
+                              opacity: isVisible ? 1.0 : 0.0,
+                              duration: const Duration(milliseconds: 220),
+                              curve: Curves.easeOutCubic,
+                              child: Padding(
+                                padding: const EdgeInsets.only(top: 8),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 14,
+                                    vertical: 7,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey.shade300,
+                                    borderRadius: BorderRadius.circular(18),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.10),
+                                        blurRadius: 8,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Text(
+                                    date,
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.black87,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    }),
+                  ],
                 ),
               ),
               Obx(() {
@@ -293,7 +350,7 @@ class ChatScreen extends GetView<MessageController> {
                 },
                 onLocationSelected: () async {
                   final location = await Get.to<LocationMessage>(
-                        () => const LocationPickerPage(),
+                    () => const LocationPickerPage(),
                   );
                   if (location != null) {
                     await controller.sendLocation(
@@ -303,7 +360,7 @@ class ChatScreen extends GetView<MessageController> {
                 },
                 onContactSelected: () async {
                   final contact = await Get.to<ContactMessage>(
-                        () => const ContactPickerPage(),
+                    () => const ContactPickerPage(),
                   );
 
                   if (contact != null) {

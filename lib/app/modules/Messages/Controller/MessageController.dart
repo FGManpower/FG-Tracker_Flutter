@@ -70,6 +70,10 @@ class MessageController extends GetxController with WidgetsBindingObserver {
   final RxInt currentSearchIndex = (-1).obs;
   final RxSet<int> uploadingVideoIndexes = <int>{}.obs;
   final RxMap<int, double> videoUploadProgress = <int, double>{}.obs;
+  final RxString floatingDate = "".obs;
+  final RxBool showFloatingDate = false.obs;
+
+  Timer? _floatingDateTimer;
 
   @override
   void onInit() {
@@ -82,12 +86,15 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     debugPrint("USER IMAGE   : ${memberData.profileImage}");
     debugPrint("GROUP ID     : ${memberData.groupId}");
     _initializeChat();
+    itemPositionsListener.itemPositions.addListener(_onScrollDateChanged);
+
   }
 
   @override
   void onClose() {
     WidgetsBinding.instance.removeObserver(this);
     _messageStreamController.close();
+    _floatingDateTimer?.cancel();
     super.onClose();
   }
 
@@ -300,11 +307,18 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
     final text = textController.text.trim();
 
+    final bool hasImages = imagePaths.isNotEmpty;
+    final bool hasVideos = videoPaths.isNotEmpty;
+    final bool hasDocument = documentPath.value.isNotEmpty;
+    final bool hasMedia = hasImages || hasVideos || hasDocument;
+
     try {
-      if (imagePaths.isNotEmpty) {
+      if (hasImages) {
         final imagesCopy = List<File>.from(imagePaths);
+
         for (final image in imagesCopy) {
           final result = await MessageRepo.uploadChatImage(image);
+
           if (result.status == true && result.filename != null) {
             socketService.sendMessage(
               messageType: "image",
@@ -317,14 +331,17 @@ class MessageController extends GetxController with WidgetsBindingObserver {
               replyType: replyMessage.value?.messageType,
               replySender: replyMessage.value?.senderName,
             );
-            imagePaths.remove(image);
           } else {
-            CommonDialog.errorMessage("Failed to upload ${image.path}");
+            CommonDialog.errorMessage(
+              "Failed to upload ${image.path}",
+            );
           }
         }
+
+        imagePaths.clear();
       }
 
-      if (videoPaths.isNotEmpty) {
+      if (hasVideos) {
         final videosCopy = List<String>.from(videoPaths);
 
         for (final vPath in videosCopy) {
@@ -334,29 +351,25 @@ class MessageController extends GetxController with WidgetsBindingObserver {
           uploadingVideoIndexes.add(currentIndex);
           uploadingVideoIndexes.refresh();
 
-          final success = await uploadVideoAtIndex(vPath, text, currentIndex);
-
-          if (success) {
-            final idx = videoPaths.indexOf(vPath);
-            if (idx != -1) {
-              removeVideo(idx);
-            }
-          }
+          await uploadVideoAtIndex(
+            vPath,
+            text,
+            currentIndex,
+          );
 
           uploadingVideoIndexes.remove(currentIndex);
           videoUploadProgress.remove(currentIndex);
         }
+
+        clearVideos();
       }
 
-      if (documentPath.isNotEmpty) {
+      if (hasDocument) {
         await uploadDocument(documentPath.value, text);
         documentPath.value = "";
       }
 
-      if (imagePaths.isEmpty &&
-          videoPaths.isEmpty &&
-          documentPath.isEmpty &&
-          text.isNotEmpty) {
+      if (!hasMedia && text.isNotEmpty) {
         socketService.sendMessage(
           messageType: "text",
           receiverId: memberData.userId.toString(),
@@ -370,6 +383,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
       }
 
       textController.clear();
+      messageText.value = "";
       clearReply();
       scrollToBottom();
     } catch (e) {
@@ -761,5 +775,46 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     Future.delayed(const Duration(seconds: 2), () {
       highlightedMessageId.value = -1;
     });
+  }
+
+  void _onScrollDateChanged() {
+    if (messageData.isEmpty) return;
+
+    final positions = itemPositionsListener.itemPositions.value;
+
+    if (positions.isEmpty) return;
+
+    final visible = positions
+        .where((e) => e.itemTrailingEdge > 0)
+        .toList();
+
+    if (visible.isEmpty) return;
+
+    visible.sort((a, b) => a.index.compareTo(b.index));
+
+    final firstVisibleIndex = visible.first.index;
+
+    if (firstVisibleIndex >= messageData.length) return;
+
+    final newDate = formatDateHeader(
+      messageData[firstVisibleIndex].timestamp ?? "",
+    );
+
+    if (floatingDate.value != newDate) {
+      floatingDate.value = newDate;
+    }
+
+    if (!showFloatingDate.value) {
+      showFloatingDate.value = true;
+    }
+
+    _floatingDateTimer?.cancel();
+
+    _floatingDateTimer = Timer(
+      const Duration(milliseconds: 800),
+          () {
+        showFloatingDate.value = false;
+      },
+    );
   }
 }
