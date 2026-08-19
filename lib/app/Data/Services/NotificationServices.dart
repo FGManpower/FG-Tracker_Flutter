@@ -3,8 +3,10 @@ import 'dart:math';
 
 import 'package:connectycube_flutter_call_kit/connectycube_flutter_call_kit.dart';
 import 'package:fgtracker/app/Core/global/launchedFromCall.dart';
+import 'package:fgtracker/app/Core/util/callkit_service.dart';
 import 'package:fgtracker/app/Core/values/Context_Utility.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
+import 'package:fgtracker/app/Data/Services/SignallingService.dart';
 import 'package:fgtracker/app/Model/MemberDataRes.dart';
 import 'package:fgtracker/app/Model/call_model.dart';
 import 'package:fgtracker/app/modules/Notification/Controller/Notification_Controller.dart';
@@ -137,11 +139,6 @@ class firebaseNotificationServices {
     FirebaseMessaging.instance.getInitialMessage().then((message) {});
 
     FirebaseMessaging.onMessage.listen((message) async {
-      print("=========== FCM RECEIVED ===========");
-      print("Title : ${message.notification?.title}");
-      print("Body  : ${message.notification?.body}");
-      print("Data  : ${message.data}");
-
       final context =
           ContextUtility.navigatorkey.currentState?.overlay?.context;
 
@@ -248,12 +245,9 @@ class firebaseNotificationServices {
 
           final Map<String, String> userInfo = callData.map<String, String>(
               (key, value) => MapEntry(key.toString(), value.toString()));
-          print("===========showIncommingCallInfo=======${userInfo}");
-
-          print("SenderSessionId============${callData['callId'].toString()}");
           await ConnectycubeFlutterCallKit.showCallNotification(
             CallEvent(
-              sessionId: callData['callId'].toString(),
+              sessionId: callIdToUuid(callData['callId'].toString()),
               callerName: callData['callerName'],
               callType: callData['isVideo'] == true ? 1 : 0,
               opponentsIds: {int.parse(callData['callerId'])},
@@ -263,6 +257,12 @@ class firebaseNotificationServices {
           );
           CallSessionState.sessionId = callData['callId'].toString();
         }
+      }
+
+      if (message.data['screen_name'] == "missedCall") {
+        final callData = jsonDecode(message.data['callData']);
+        final sessionId = callData['session_id'].toString();
+        callEnded(sessionId, type: "Notification-services");
       }
     }
   }

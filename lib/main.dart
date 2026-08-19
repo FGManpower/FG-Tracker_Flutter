@@ -3,8 +3,9 @@ import 'dart:convert';
 import 'dart:developer';
 import 'package:connectycube_flutter_call_kit/connectycube_flutter_call_kit.dart';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
-import 'package:fgtracker/app/Core/constant/notification_holder.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
+import 'package:fgtracker/app/Core/global/launchedFromCall.dart';
+
 import 'package:fgtracker/app/Data/Services/Walkie-Talkie-Service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -28,46 +29,34 @@ import 'app/modules/Track/Controller/TrackController.dart';
 import 'app/modules/Track/Controller/LocationService.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
+final socket = SignallingService.instance.socket;
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-FlutterLocalNotificationsPlugin();
+    FlutterLocalNotificationsPlugin();
 
-String callIdToUuid(String callId) {
-  final padded = callId.padLeft(12, '0');
-  return "00000000-0000-4000-8000-$padded";
-}
-
-// ============================================================
-//  BACKGROUND HANDLER
-// ============================================================
 @pragma('vm:entry-point')
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
+  log("====Background-Bg===${message.data}");
 
-  log("🔥 BG Message: ${message.data}");
+  if (message.data['screen_name'] == "incomingCall") {
+    final callData = jsonDecode(message.data['callData']);
+    final originalCallId = callData['callId'].toString();
 
-  final screenName = message.data['screen_name'];
+    final Map<String, String> userInfo = {
+      "callId": originalCallId,
+      "callerId": callData['callerId'].toString(),
+      "receiverId": callData['receiverId'].toString(),
+      "isVideo": callData['isVideo'].toString(),
+      "callerName": callData['callerName'].toString(),
+      "callerProfileImage": callData['callerProfileImage'].toString(),
+      "sdpOfferCompressed": callData['sdpOfferCompressed'].toString(),
+      "notificationId": callData['notificationId']?.toString() ?? "",
+    };
 
-  // ======= INCOMING CALL =======
-  if (screenName == "incomingCall") {
     try {
-      final callData = jsonDecode(message.data['callData']);
-      final originalCallId = callData['callId'].toString();
-      final sessionId = callIdToUuid(originalCallId);
-
-      final Map<String, String> userInfo = {
-        "callId": originalCallId,
-        "callerId": callData['callerId'].toString(),
-        "receiverId": callData['receiverId'].toString(),
-        "isVideo": callData['isVideo'].toString(),
-        "callerName": callData['callerName'].toString(),
-        "callerProfileImage": callData['callerProfileImage'].toString(),
-        "sdpOfferCompressed": callData['sdpOfferCompressed'].toString(),
-        "notificationId": callData['notificationId']?.toString() ?? "",
-      };
-
       await ConnectycubeFlutterCallKit.showCallNotification(
         CallEvent(
-          sessionId: sessionId,
+          sessionId: callIdToUuid(originalCallId),
           callerName: callData['callerName'],
           callType: callData['isVideo'] == true ? 1 : 0,
           opponentsIds: {int.parse(callData['callerId'])},
@@ -75,179 +64,98 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
           userInfo: userInfo,
         ),
       );
-
-      log("✅ CallKit shown for callId: $originalCallId, sessionId: $sessionId");
     } catch (e) {
-      log("❌ showCallNotification error: $e");
+      log("showCallNotification error: $e");
     }
-  }
-
-  // ======= CALL CANCELLED (Caller cancelled before answer) =======
-  else if (screenName == "callCancelled") {
-    try {
-      final callData = jsonDecode(message.data['callData']);
-      final originalCallId = callData['callId'].toString();
-      final sessionId = callIdToUuid(originalCallId);
-
-      log("🚫 BG callCancelled: callId=$originalCallId, sessionId=$sessionId");
-
-      // Dismiss CallKit notification
-      await ConnectycubeFlutterCallKit.reportCallEnded(
-        sessionId: sessionId,
-      );
-      await ConnectycubeFlutterCallKit.clearCallData(
-        sessionId: sessionId,
-      );
-
-      log("✅ CallKit dismissed after callCancelled in background");
-    } catch (e) {
-      log("❌ callCancelled BG handler error: $e");
-    }
-  }
-
-  // ======= MISSED CALL =======
-  else if (screenName == "missedCall") {
-    try {
-      final callData = jsonDecode(message.data['callData']);
-      final originalCallId = callData['callId'].toString();
-      final sessionId = callIdToUuid(originalCallId);
-
-      // Dismiss any lingering CallKit notification
-      await ConnectycubeFlutterCallKit.reportCallEnded(
-        sessionId: sessionId,
-      );
-      await ConnectycubeFlutterCallKit.clearCallData(
-        sessionId: sessionId,
-      );
-
-      log("✅ Missed call CallKit dismissed");
-    } catch (e) {
-      log("❌ missedCall BG handler error: $e");
-    }
+  } else if (message.data['screen_name'] == "missedCall") {
+    final callData = jsonDecode(message.data['callData']);
+    final sessionId = callData['session_id'].toString();
+    callEnded(sessionId );
   }
 }
 
-// ============================================================
-//  CALL REJECTED WHEN APP TERMINATED
-// ============================================================
+
+
 @pragma('vm:entry-point')
 Future<void> onCallRejectedWhenTerminated(CallEvent event) async {
   await Firebase.initializeApp();
 
-  log("❌ onCallRejectedWhenTerminated: ${event.sessionId}");
+  Map<String, dynamic> data = {};
+  final rawUserInfo = event.userInfo;
 
-  Map<String, dynamic> data = _parseUserInfo(event.userInfo);
-
-  if (data.isEmpty) {
-    log("❌ Empty userInfo in onCallRejectedWhenTerminated");
-    return;
+  if (rawUserInfo != null && rawUserInfo.isNotEmpty) {
+    if (rawUserInfo.length == 1 &&
+        rawUserInfo.values.first.trim().startsWith("{")) {
+      try {
+        data = jsonDecode(rawUserInfo.values.first);
+      } catch (e) {
+        data = Map<String, dynamic>.from(rawUserInfo);
+      }
+    } else {
+      data = Map<String, dynamic>.from(rawUserInfo);
+    }
   }
+
+  if (data.isEmpty) return;
 
   final callId = int.tryParse(data['callId'].toString());
   if (callId == null) return;
-
   try {
-    // Always use REST API when terminated (socket not available)
-    final pref = await SharedPreferences.getInstance();
-    final token = pref.getString(PrefConst.STORAGE_USER_TOKEN_KEY) ?? "";
+    final socket = SignallingService.instance.socket;
 
-    if (token.isEmpty) {
-      log("❌ Token empty in onCallRejectedWhenTerminated");
-      return;
+    if (socket != null && socket.connected) {
+      socket.emit("rejectCall", {
+        "callId": callId,
+        "remoteUserId": data["callerId"].toString(),
+      });
+      log("========call-rejected via socket");
+    } else {
+      final pref = await SharedPreferences.getInstance();
+      final token = pref.getString(PrefConst.STORAGE_USER_TOKEN_KEY) ?? "";
+
+      if (token.isEmpty) return;
+
+      await http.get(
+        Uri.parse("${ConstRes.aBaseUrl}callRejected?callId=$callId"),
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token",
+        },
+      ).timeout(const Duration(seconds: 15));
     }
-
-    final response = await http.get(
-      Uri.parse("${ConstRes.aBaseUrl}callRejected?callId=$callId"),
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer $token",
-      },
-    ).timeout(const Duration(seconds: 15));
-
-    log("✅ callRejected API response: ${response.statusCode}");
   } catch (e) {
-    log("❌ onCallRejectedWhenTerminated ERROR: $e");
+    log("[TERMINATED-ANDROID] ERROR: $e");
   }
 
-  // Clean up CallKit data
-  try {
-    await ConnectycubeFlutterCallKit.clearCallData(
-      sessionId: event.sessionId,
-    );
-  } catch (e) {
-    log("clearCallData error: $e");
-  }
+  await ConnectycubeFlutterCallKit.clearCallData(sessionId: event.sessionId);
 }
 
-// ============================================================
-//  CALL ACCEPTED WHEN APP TERMINATED
-// ============================================================
-@pragma('vm:entry-point')
-Future<void> onCallAcceptedWhenTerminated(CallEvent event) async {
-  log("✅ onCallAcceptedWhenTerminated: ${event.sessionId}");
-  // CallKitService will handle navigation when app opens
-}
-
-// ============================================================
-//  BACKGROUND CALL EVENT
-// ============================================================
 @pragma('vm:entry-point')
 void onCallEventBackground() {
   CallKitService.instance.init();
 }
 
-// ============================================================
-//  HELPER: Parse userInfo
-// ============================================================
-Map<String, dynamic> _parseUserInfo(Map<String, String>? rawUserInfo) {
-  if (rawUserInfo == null || rawUserInfo.isEmpty) return {};
-  try {
-    if (rawUserInfo.length == 1 &&
-        rawUserInfo.values.first.trim().startsWith("{")) {
-      return jsonDecode(rawUserInfo.values.first);
-    }
-    return Map<String, dynamic>.from(rawUserInfo);
-  } catch (e) {
-    log("_parseUserInfo error: $e");
-    return {};
-  }
-}
-
-// ============================================================
-//  MAIN
-// ============================================================
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+
   await Global.init();
-
-  // ======= FCM Background Handler =======
   FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
-
-  // ======= CallKit Terminated Handlers =======
   ConnectycubeFlutterCallKit.onCallRejectedWhenTerminated =
       onCallRejectedWhenTerminated;
-  ConnectycubeFlutterCallKit.onCallAcceptedWhenTerminated =
-      onCallAcceptedWhenTerminated;
-
-  // ======= Notification Services =======
   await firebaseNotificationServices().initialized();
-
-  // ======= CallKit Init =======
   CallKitService.instance.init();
-
-  // ======= System UI =======
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(statusBarColor: Colors.transparent),
   );
 
-  // ======= GetX Controllers =======
   Get.put<TrackingController>(TrackingController());
+
   Get.put<LocationService>(LocationService());
   Get.put<SocketService>(SocketService());
 
-  // ======= Socket Init =======
   final userId = Global.storageServices.get(PrefConst.userId)?.toString();
+
   if (userId != null) {
     SignallingService.instance.init(
       websocketUrl: ConstRes.socketUrl,
@@ -259,123 +167,9 @@ Future<void> main() async {
     );
   }
 
-  // ======= FCM Foreground Handler =======
-  FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
-    log("📱 FG Message: ${message.data}");
-    await _handleForegroundMessage(message);
-  });
-
-  // ======= FCM App Opened From Notification =======
-  FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) async {
-    log("📱 App opened from notification: ${message.data}");
-    await _handleNotificationTap(message);
-  });
-
-  // ======= Check Terminated State Call =======
-  await _checkTerminatedStateCall();
-
   runApp(const MyApp());
 }
 
-// ============================================================
-//  FOREGROUND MESSAGE HANDLER
-// ============================================================
-Future<void> _handleForegroundMessage(RemoteMessage message) async {
-  final screenName = message.data['screen_name'];
-
-  // ======= INCOMING CALL in Foreground =======
-  // (Socket handles this, but FCM is backup)
-  if (screenName == "incomingCall") {
-    log("📞 FG incomingCall - Socket should handle this");
-    // Socket handles foreground incoming calls
-    // Only show CallKit if socket missed it
-  }
-
-  // ======= CALL CANCELLED in Foreground =======
-  else if (screenName == "callCancelled") {
-    log("🚫 FG callCancelled received");
-    try {
-      final callData = jsonDecode(message.data['callData']);
-      final originalCallId = callData['callId'].toString();
-      final sessionId = callIdToUuid(originalCallId);
-
-      await ConnectycubeFlutterCallKit.reportCallEnded(sessionId: sessionId);
-      await ConnectycubeFlutterCallKit.clearCallData(sessionId: sessionId);
-
-      log("✅ FG CallKit dismissed after callCancelled");
-    } catch (e) {
-      log("❌ FG callCancelled error: $e");
-    }
-  }
-
-  // ======= MISSED CALL =======
-  else if (screenName == "missedCall") {
-    log("📵 FG missedCall received");
-    try {
-      final callData = jsonDecode(message.data['callData']);
-      final originalCallId = callData['callId'].toString();
-      final sessionId = callIdToUuid(originalCallId);
-
-      await ConnectycubeFlutterCallKit.reportCallEnded(sessionId: sessionId);
-      await ConnectycubeFlutterCallKit.clearCallData(sessionId: sessionId);
-    } catch (e) {
-      log("❌ FG missedCall error: $e");
-    }
-  }
-}
-
-// ============================================================
-//  NOTIFICATION TAP HANDLER
-// ============================================================
-Future<void> _handleNotificationTap(RemoteMessage message) async {
-  final screenName = message.data['screen_name'];
-
-  if (screenName == "missedCall") {
-    // Navigate to call history
-    Get.toNamed(Routes.notificationScreen);
-    // Get.toNamed(Routes.CallHistory);
-  }
-}
-
-// ============================================================
-//  CHECK TERMINATED STATE CALL
-// ============================================================
-Future<void> _checkTerminatedStateCall() async {
-  try {
-    final sessionId = await ConnectycubeFlutterCallKit.getLastCallId();
-    if (sessionId == null) return;
-
-    log("🔍 checkTerminatedStateCall sessionId: $sessionId");
-
-    final state = await ConnectycubeFlutterCallKit.getCallState(
-      sessionId: sessionId,
-    );
-    log("🔍 checkTerminatedStateCall state: $state");
-
-    if (state == "accepted") {
-      // App was killed while call was accepted
-      // CallKitService.checkCallOnLaunch() will handle navigation
-      await CallKitService.instance.checkCallOnLaunch();
-    } else if (state == "rejected" ||
-        state == "missed" ||
-        state == "cancelled") {
-      // Clean up stale call data
-      await ConnectycubeFlutterCallKit.reportCallEnded(
-        sessionId: sessionId,
-      );
-      await ConnectycubeFlutterCallKit.clearCallData(
-        sessionId: sessionId,
-      );
-      log("✅ Cleaned up stale $state call");
-    }
-  } catch (e) {
-    log("❌ checkTerminatedStateCall error: $e");
-  }
-}
-
-// ============================================================
-//  APP WIDGET
-// ============================================================
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
@@ -383,28 +177,11 @@ class MyApp extends StatefulWidget {
   State<MyApp> createState() => _MyAppState();
 }
 
-class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
+class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(this);
-    // Remove duplicate CallKitService.instance.init() - already called in main()
-  }
-
-  @override
-  void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    super.dispose();
-  }
-
-  // Handle app lifecycle changes
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    log("📱 App lifecycle: $state");
-    if (state == AppLifecycleState.resumed) {
-      // App came to foreground - check for pending calls
-      _checkTerminatedStateCall();
-    }
+    CallKitService.instance.init();
   }
 
   @override

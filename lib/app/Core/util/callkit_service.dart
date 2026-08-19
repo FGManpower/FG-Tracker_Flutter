@@ -28,6 +28,7 @@ class CallKitService {
     ConnectycubeFlutterCallKit.instance.init(
       icon: 'ic_launcher',
       color: '#0955fa',
+      ringtone: "assets/music/Incoming_Call.mp3",
       onCallAccepted: (CallEvent event) async {
         log("onCallAccepted sessionId: ${event.sessionId}");
         log("onCallAccepted userInfo: ${event.userInfo}");
@@ -89,7 +90,109 @@ class CallKitService {
           log("========fallback-called");
         }
       },
+      onCallIncoming: (CallEvent event) async {
+        log("📞 onCallIncoming sessionId: ${event.sessionId}");
+        log("📞 onCallIncoming userInfo: ${event.userInfo}");
+
+        CallSessionState.sessionId = event.sessionId;
+
+        final data = _parseUserInfo(event.userInfo);
+        log("📞 onCallIncoming parsed data: $data");
+
+        if (data.isNotEmpty) {
+          // Navigate to IncomingCallScreen
+          // so user can see Accept/Reject UI inside the app
+          await _navigateToIncomingCallScreen(data, event.sessionId);
+        } else {
+          await _fallbackGetCallData(event.sessionId, accept: false);
+        }
+      },
     );
+  }
+
+  // Parse userInfo from CallKit event
+  Map<String, dynamic> _parseUserInfo(
+    Map<String, String>? rawUserInfo, {
+    String? rawString,
+  }) {
+    try {
+      // Try rawString first
+      if (rawString != null && rawString.trim().startsWith("{")) {
+        return jsonDecode(rawString);
+      }
+
+      if (rawUserInfo == null || rawUserInfo.isEmpty) return {};
+
+      // Single key with JSON value
+      if (rawUserInfo.length == 1 &&
+          rawUserInfo.values.first.trim().startsWith("{")) {
+        return jsonDecode(rawUserInfo.values.first);
+      }
+
+      // Direct map
+      return Map<String, dynamic>.from(rawUserInfo);
+    } catch (e) {
+      log("❌ _parseUserInfo error: $e");
+      return {};
+    }
+  }
+
+  // Parse raw callData from ConnectycubeFlutterCallKit.getCallData()
+  Map<String, dynamic> _parseRawCallData(Map<String, dynamic>? callData) {
+    if (callData == null) return {};
+    try {
+      final userInfoRaw = callData["user_info"];
+      if (userInfoRaw is String) return jsonDecode(userInfoRaw);
+      if (userInfoRaw is Map) return Map<String, dynamic>.from(userInfoRaw);
+    } catch (e) {
+      log("❌ _parseRawCallData error: $e");
+    }
+    return {};
+  }
+
+  // Build normalized parsedData for IncomingCallModel
+  Map<String, dynamic> _buildParsedData(Map<String, dynamic> data) {
+    return {
+      "callId": int.tryParse(data["callId"].toString()),
+      "callerId": int.tryParse(data["callerId"].toString()),
+      "receiverId": int.tryParse(data["receiverId"].toString()),
+      "isVideo": data["isVideo"] == "true" || data["isVideo"] == true,
+      "callerName": data["callerName"],
+      "callerProfileImage": data["callerProfileImage"],
+      "sdpOfferCompressed": data["sdpOfferCompressed"],
+    };
+  }
+
+  Future<void> _navigateToIncomingCallScreen(
+    Map<String, dynamic> data,
+    String sessionId,
+  ) async {
+    try {
+      if (CallStateTracker.isIncomingCallScreenOpen) {
+        log("⚠️ IncomingCallScreen already open - skipping");
+        return;
+      }
+
+      log("📞 _navigateToIncomingCallScreen data: $data");
+
+      final parsedData = _buildParsedData(data);
+      final call = IncomingCallModel.fromMap(parsedData);
+
+      CallStateTracker.isIncomingCallScreenOpen = true;
+      CallSessionState.sessionId = sessionId;
+
+      // Wait for app to be ready before navigating
+      await Future.delayed(const Duration(milliseconds: 300));
+
+      Get.toNamed(
+        Routes.IncomingCallScreen,
+        arguments: {"callDetail": call},
+      );
+
+      log("✅ Navigated to IncomingCallScreen");
+    } catch (e) {
+      log("❌ _navigateToIncomingCallScreen error: $e");
+    }
   }
 
   Future<void> _fallbackGetCallData(
@@ -256,45 +359,87 @@ class CallKitService {
   Future<void> checkCallOnLaunch() async {
     try {
       final sessionId = await ConnectycubeFlutterCallKit.getLastCallId();
-      log("checkCallOnLaunch sessionId: $sessionId");
-      if (sessionId == null) return;
+      log("🔍 checkCallOnLaunch sessionId: $sessionId");
+
+      if (sessionId == null) {
+        log("🔍 No pending call found");
+        return;
+      }
 
       final state = await ConnectycubeFlutterCallKit.getCallState(
         sessionId: sessionId,
       );
-      log("checkCallOnLaunch state: $state");
+      log("🔍 checkCallOnLaunch state: $state");
 
-      // ======= Handle all states properly =======
+      final callData = await ConnectycubeFlutterCallKit.getCallData(
+        sessionId: sessionId,
+      );
+      log("🔍 checkCallOnLaunch callData: $callData");
+
+      final data = _parseRawCallData(callData);
+      log("🔍 checkCallOnLaunch parsed data: $data");
+
+      CallSessionState.sessionId = sessionId;
+
       switch (state) {
         case "accepted":
-          final callData = await ConnectycubeFlutterCallKit.getCallData(
-            sessionId: sessionId,
-          );
-          final data = _parseUserInfo(callData?["user_info"]);
-          CallSessionState.sessionId = sessionId;
-          if (data.isNotEmpty) await navigateToCallScreen(data);
+          log("State: accepted → navigating to CallScreen");
+          if (data.isNotEmpty) {
+            await navigateToCallScreen(data);
+          } else {
+            log("accepted but data empty → fallback");
+            await _fallbackGetCallData(sessionId, accept: true);
+          }
           break;
 
+
+
         case "rejected":
+          log("State: rejected → cleaning up");
+          if (data.isNotEmpty) {
+            final socket = SignallingService.instance.socket;
+            if (socket != null && socket.connected) {
+              socket.emit("rejectCall", {
+                "callId": data['callId']?.toString(),
+                "remoteUserId": data['callerId']?.toString(),
+              });
+              log("rejectCall emitted via socket");
+            } else {
+              await _rejectCallViaApi(
+                int.tryParse(data['callId']?.toString() ?? ""),
+              );
+            }
+          }
+          await _cleanupCall(sessionId);
+          break;
+
         case "missed":
-        case "cancelled": // ← ADD THIS
-        // Clean up stale call data
-          await ConnectycubeFlutterCallKit.reportCallEnded(
-            sessionId: sessionId,
-          );
-          await ConnectycubeFlutterCallKit.clearCallData(
-            sessionId: sessionId,
-          );
-          CallSessionState.reset();
-          log("✅ Cleaned up stale $state call: $sessionId");
+          await _cleanupCall(sessionId);
+          break;
+
+        case "cancelled":
+          log("State: cancelled → cleaning up");
+          await _cleanupCall(sessionId);
           break;
 
         default:
-        // Unknown state - clean up
-          await ConnectycubeFlutterCallKit.clearCallData(
-            sessionId: sessionId,
-          );
-          CallSessionState.reset();
+          if (data.isNotEmpty) {
+            final socket = SignallingService.instance.socket;
+            if (socket != null && socket.connected) {
+              final myUserId =
+                  Global.storageServices.get(PrefConst.userId).toString();
+              final targetUser = (myUserId == data['callerId']?.toString())
+                  ? myUserId
+                  : data['callerId']?.toString();
+
+              socket.emit("endCall", {
+                "callId": data['callId']?.toString(),
+                "remoteUserId": targetUser,
+              });
+              log("endCall emitted for unknown state");
+            }
+          }
+          await _cleanupCall(sessionId);
           break;
       }
     } catch (e) {
@@ -302,15 +447,60 @@ class CallKitService {
     }
   }
 
-// Helper to parse userInfo
-  Map<String, dynamic> _parseUserInfo(dynamic userInfoRaw) {
-    if (userInfoRaw == null) return {};
+// // ============================================================
+// //  Navigate to IncomingCallScreen
+// // ============================================================
+//   Future<void> _navigateToIncomingCallScreen(
+//       Map<String, dynamic> data,
+//       String sessionId,
+//       ) async {
+//     try {
+//       if (CallStateTracker.isIncomingCallScreenOpen) {
+//         log("⚠️ IncomingCallScreen already open - skipping");
+//         return;
+//       }
+//
+//       log("📞 _navigateToIncomingCallScreen data: $data");
+//
+//       final parsedData = _buildParsedData(data);
+//       final call = IncomingCallModel.fromMap(parsedData);
+//
+//       CallStateTracker.isIncomingCallScreenOpen = true;
+//       CallSessionState.sessionId = sessionId;
+//
+//       // Wait for app to be ready before navigating
+//       await Future.delayed(const Duration(milliseconds: 300));
+//
+//       Get.toNamed(
+//         Routes.IncomingCallScreen,
+//         arguments: {"callDetail": call},
+//       );
+//
+//       log("✅ Navigated to IncomingCallScreen");
+//     } catch (e) {
+//       log("❌ _navigateToIncomingCallScreen error: $e");
+//     }
+//   }
+
+  Future<void> _cleanupCall(String sessionId) async {
     try {
-      if (userInfoRaw is String) return jsonDecode(userInfoRaw);
-      if (userInfoRaw is Map) return Map<String, dynamic>.from(userInfoRaw);
+      await ConnectycubeFlutterCallKit.reportCallEnded(
+        sessionId: sessionId,
+      );
+      await ConnectycubeFlutterCallKit.clearCallData(
+        sessionId: sessionId,
+      );
+      CallSessionState.reset();
+      CallStateTracker.isIncomingCallScreenOpen = false;
+      log("✅ Call cleaned up: $sessionId");
     } catch (e) {
-      log("_parseUserInfo error: $e");
+      log("❌ _cleanupCall error: $e");
     }
-    return {};
   }
+}
+
+
+String callIdToUuid(String callId) {
+  final padded = callId.padLeft(12, '0');
+  return "00000000-0000-4000-8000-$padded";
 }
