@@ -76,6 +76,10 @@ class GroupMessageController extends GetxController {
   RxInt highlightedMessageId = (-1).obs;
   final RxSet<int> uploadingVideoIndexes = <int>{}.obs;
   final RxMap<int, double> videoUploadProgress = <int, double>{}.obs;
+  final RxString floatingDate = "".obs;
+  final RxBool showFloatingDate = false.obs;
+
+  Timer? _floatingDateTimer;
 
   Future<void> scrollToMessage(int messageId) async {
     final index = _messages.indexWhere((e) => e.id == messageId);
@@ -130,6 +134,8 @@ class GroupMessageController extends GetxController {
 
 
     initializeGroupChat();
+    itemPositionsListener.itemPositions.addListener(_onScrollDateChanged);
+
   }
 
   void toggleEmoji() {
@@ -304,7 +310,6 @@ class GroupMessageController extends GetxController {
     }
   }
 
-
   Future<void> sendMessage({
     required TextEditingController textController,
   }) async {
@@ -314,10 +319,16 @@ class GroupMessageController extends GetxController {
     try {
       final text = textController.text.trim();
 
+      final bool hasMedia = imagePaths.isNotEmpty ||
+          videoPaths.isNotEmpty ||
+          documentPath.value.isNotEmpty;
+
       if (imagePaths.isNotEmpty) {
         final imagesCopy = List<File>.from(imagePaths);
+
         for (final image in imagesCopy) {
           final result = await MessageRepo.uploadChatImage(image);
+
           if (result.status == true && result.filename != null) {
             socketService.sendGroupMessage(
               groupId: groupId,
@@ -329,11 +340,14 @@ class GroupMessageController extends GetxController {
               replyType: replyMessage.value?.messageType,
               replySender: replyMessage.value?.senderName,
             );
-            imagePaths.remove(image);
           } else {
-            CommonDialog.errorMessage("Failed to upload ${image.path}");
+            CommonDialog.errorMessage(
+              "Failed to upload ${image.path}",
+            );
           }
         }
+
+        imagePaths.clear();
       }
 
       if (videoPaths.isNotEmpty) {
@@ -346,7 +360,8 @@ class GroupMessageController extends GetxController {
           uploadingVideoIndexes.add(currentIndex);
           uploadingVideoIndexes.refresh();
 
-          final success = await uploadVideoAtIndex(vPath, text, currentIndex);
+          final success =
+          await uploadVideoAtIndex(vPath, text, currentIndex);
 
           if (success) {
             final idx = videoPaths.indexOf(vPath);
@@ -360,15 +375,12 @@ class GroupMessageController extends GetxController {
         }
       }
 
-      if (documentPath.isNotEmpty) {
+      if (documentPath.value.isNotEmpty) {
         await uploadDocument(documentPath.value, text);
         documentPath.value = "";
       }
 
-      if (imagePaths.isEmpty &&
-          videoPaths.isEmpty &&
-          documentPath.isEmpty &&
-          text.isNotEmpty) {
+      if (!hasMedia && text.isNotEmpty) {
         socketService.sendGroupMessage(
           groupId: groupId,
           content: text,
@@ -389,7 +401,6 @@ class GroupMessageController extends GetxController {
       isSending.value = false;
     }
   }
-
   Future<void> uploadAudio(String path) async {
     try {
       var result = await MessageRepo.uploadChatAudio(path);
@@ -546,11 +557,11 @@ class GroupMessageController extends GetxController {
       ..addAll(
         List.generate(
           8,
-          (index) => MessageData(
+              (index) => MessageData(
             senderId: index.isEven ? 1 : 2,
-            senderName: "Loading",
+            senderName: "",
             messageType: "text",
-            content: "Loading message",
+            content: "                     ",
             timestamp: DateTime.now().toIso8601String(),
             seenCount: 0,
             senderImage: "",
@@ -561,7 +572,7 @@ class GroupMessageController extends GetxController {
     updateMessageStream();
 
     try {
-      var result = await MessageRepo.groupMessageHistory(
+      final result = await MessageRepo.groupMessageHistory(
         groupId: groupId,
       );
 
@@ -569,16 +580,20 @@ class GroupMessageController extends GetxController {
         _messages
           ..clear()
           ..addAll(result.messageData ?? []);
+
         updateMessageStream();
         scrollToBottom();
       } else {
         CommonDialog.errorMessage(result.message);
+
         _messages.clear();
         updateMessageStream();
       }
     } catch (e) {
       log("GROUP HISTORY ERROR => $e");
+
       _messages.clear();
+      updateMessageStream();
     } finally {
       isLoading.value = false;
     }
@@ -876,11 +891,52 @@ class GroupMessageController extends GetxController {
     });
   }
 
+  void _onScrollDateChanged() {
+    if (messageData.isEmpty) return;
+
+    final positions = itemPositionsListener.itemPositions.value;
+
+    if (positions.isEmpty) return;
+
+    final visible = positions
+        .where((e) => e.itemTrailingEdge > 0)
+        .toList();
+
+    if (visible.isEmpty) return;
+
+    visible.sort((a, b) => a.index.compareTo(b.index));
+
+    final firstVisibleIndex = visible.first.index;
+
+    if (firstVisibleIndex >= messageData.length) return;
+
+    final newDate = formatDateHeader(
+      messageData[firstVisibleIndex].timestamp ?? "",
+    );
+
+    if (floatingDate.value != newDate) {
+      floatingDate.value = newDate;
+    }
+
+    if (!showFloatingDate.value) {
+      showFloatingDate.value = true;
+    }
+
+    _floatingDateTimer?.cancel();
+
+    _floatingDateTimer = Timer(
+      const Duration(milliseconds: 800),
+          () {
+        showFloatingDate.value = false;
+      },
+    );
+  }
 
   @override
   void onClose() {
     focusNode.dispose();
     _messageStreamController.close();
+    _floatingDateTimer?.cancel();
     super.onClose();
   }
 }

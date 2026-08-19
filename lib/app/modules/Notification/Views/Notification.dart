@@ -42,11 +42,6 @@ class NotificationScreen extends StatelessWidget {
       "value": "call",
       "icon": Icons.call,
     },
-    {
-      "title": "Clear History",
-      "value": "clear_history",
-      "icon": Icons.delete_outline,
-    },
   ];
 
   @override
@@ -59,41 +54,53 @@ class NotificationScreen extends StatelessWidget {
         automaticallyImplyLeading: true,
         leading: InkWell(
           onTap: () => Navigator.pop(context),
-          child:
-              reausableIcon(icon: Icons.arrow_back_ios, color: AppColors.white),
+          child: reausableIcon(
+            icon: Icons.arrow_back_ios,
+            color: AppColors.white,
+          ),
         ),
         backgroundColor: ToggleThemeData.Appcolor,
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              "Notifications",
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 18.sp,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ],
+        title: Text(
+          "Notifications",
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 18.sp,
+            fontWeight: FontWeight.w700,
+          ),
         ),
         actions: [
-          IconButton(
-            onPressed: () {
-              _showFilterBottomSheet(context);
-            },
-            icon: const Icon(
-              Icons.filter_list,
-              color: Colors.white,
+          Padding(
+            padding: EdgeInsets.only(right: 14.w),
+            child: Center(
+              child: GestureDetector(
+                onTap: () {
+                  controller.selectedFilter.value = "clear_history";
+                  controller.applyFilter();
+                  controller.selectedFilter.value = "all";
+                },
+                child: Text(
+                  "Clear",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
             ),
           ),
         ],
       ),
-      body: Obx(() {
-        return Skeletonizer(
-          enabled: controller.isLoading.value,
-          child: controller.filteredNotifications.isEmpty
-              ? _emptyWidget()
-              : ListView.builder(
+      body: Column(
+        children: [
+          _buildFilterTabs(),
+          Expanded(
+            child: Obx(() {
+              return Skeletonizer(
+                enabled: controller.isLoading.value,
+                child: controller.filteredNotifications.isEmpty
+                    ? _emptyWidget()
+                    : ListView.builder(
                   padding: EdgeInsets.symmetric(
                     horizontal: 14.w,
                     vertical: 14.h,
@@ -107,356 +114,435 @@ class NotificationScreen extends StatelessWidget {
                         : controller.filteredNotifications[index];
 
                     final profileImage =
-                        item?.data?["memberData"]?["ProfileImage"];
+                    item?.data?["memberData"]?["ProfileImage"];
 
                     return GestureDetector(
-                        onTap: item == null
-                            ? null
-                            : () async {
-                                try {
-                                  if (item.id != null) {
-                                    await controller.markAsRead(
-                                      item.id!,
-                                    );
-                                  }
+                      onTap: item == null
+                          ? null
+                          : () async {
+                        try {
+                          if (item.id != null) {
+                            await controller.markAsRead(item.id!);
+                          }
 
-                                  final data = item.data;
+                          final data = item.data;
 
-                                  if (data == null) {
-                                    return;
-                                  }
+                          if (data == null) {
+                            return;
+                          }
 
-                                  if (data["screen_name"] == "chatScreen") {
-                                    if (data["memberData"] == null) {
-                                      return;
-                                    }
+                          if (data["screen_name"] == "chatScreen") {
+                            if (data["memberData"] == null) {
+                              return;
+                            }
 
-                                    final memberData = MemberData.fromJson(
-                                      Map<String, dynamic>.from(
-                                        data["memberData"],
-                                      ),
-                                    );
-
-                                    Get.toNamed(
-                                      Routes.chatScreen,
-                                      arguments: {
-                                        "userData": memberData,
-                                        "groupName": "Test",
-                                        "type": "chatScreen",
-                                      },
-                                    );
-                                  } else if (data["screen_name"] ==
-                                      "groupChatScreen") {
-                                    Get.toNamed(
-                                      Routes.groupChatScreen,
-                                      arguments: {
-                                        "groupId":
-                                            int.parse(item.groupId.toString())
-                                                .toString(),
-                                        "groupName":
-                                            item.data?['groupName'].toString(),
-                                        "groupImage": "",
-                                      },
-                                    );
-                                  } else if (data["screen_name"] ==
-                                          "incomingCall" ||
-                                      item.type == "missed_call") {
-                                    final bool isVideo =
-                                        data['callData']["isVideo"] == true;
-
-                                    Get.toNamed(
-                                      Routes.callScreen,
-                                      arguments: {
-                                        "callerId": Global.storageServices
-                                            .get(PrefConst.userId)
-                                            .toString(),
-                                        "remoteUserId": data['callData']
-                                                ["callerId"]
-                                            .toString(),
-                                        "callerName": data['callData']
-                                                ["callerName"] ??
-                                            "",
-                                        "offer": null,
-                                        "is_video": isVideo,
-                                        "callType": "outGoing",
-                                      },
-                                    );
-                                  }
-                                } catch (e) {
-                                  debugPrint(
-                                    "Notification Error => $e",
-                                  );
-                                }
-                              },
-                        child: AnimatedContainer(
-                          duration: const Duration(
-                            milliseconds: 250,
-                          ),
-                          margin: EdgeInsets.only(
-                            bottom: 12.h,
-                          ),
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 14.w,
-                            vertical: 12.h,
-                          ),
-                          constraints: BoxConstraints(
-                            minHeight: 86.h,
-                          ),
-                          decoration: BoxDecoration(
-                            gradient: item?.isRead == false
-                                ? LinearGradient(
-                                    colors: [
-                                      const Color(0xffF8F5FF),
-                                      Colors.white,
-                                    ],
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                  )
-                                : null,
-                            color: item?.isRead == true ? Colors.white : null,
-                            borderRadius: BorderRadius.circular(18.r),
-                            border: Border.all(
-                              color: item?.isRead == false
-                                  ? Colors.deepPurple.shade100
-                                  : Colors.grey.shade200,
-                              width: 1,
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.04),
-                                blurRadius: 16,
-                                offset: const Offset(0, 6),
+                            final memberData = MemberData.fromJson(
+                              Map<String, dynamic>.from(
+                                data["memberData"],
                               ),
+                            );
+
+                            Get.toNamed(
+                              Routes.chatScreen,
+                              arguments: {
+                                "userData": memberData,
+                                "groupName": "Test",
+                                "type": "chatScreen",
+                              },
+                            );
+                          } else if (data["screen_name"] ==
+                              "groupChatScreen") {
+                            Get.toNamed(
+                              Routes.groupChatScreen,
+                              arguments: {
+                                "groupId": int
+                                    .parse(item.groupId.toString())
+                                    .toString(),
+                                "groupName": item
+                                    .data?['groupName']
+                                    .toString(),
+                                "groupImage": "",
+                              },
+                            );
+                          } else if (data["screen_name"] ==
+                              "incomingCall" ||
+                              item.type == "missed_call") {
+                            final bool isVideo =
+                                data['callData']["isVideo"] == true;
+
+                            Get.toNamed(
+                              Routes.callScreen,
+                              arguments: {
+                                "callerId": Global.storageServices
+                                    .get(PrefConst.userId)
+                                    .toString(),
+                                "remoteUserId":
+                                data['callData']["callerId"]
+                                    .toString(),
+                                "callerName":
+                                data['callData']["callerName"] ??
+                                    "",
+                                "offer": null,
+                                "is_video": isVideo,
+                                "callType": "outGoing",
+                              },
+                            );
+                          }
+                        } catch (e) {
+                          debugPrint("Notification Error => $e");
+                        }
+                      },
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 250),
+                        margin: EdgeInsets.only(bottom: 12.h),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 14.w,
+                          vertical: 12.h,
+                        ),
+                        constraints: BoxConstraints(minHeight: 86.h),
+                        decoration: BoxDecoration(
+                          gradient: item?.isRead == false
+                              ? const LinearGradient(
+                            colors: [
+                              Color(0xffF8F5FF),
+                              Colors.white,
                             ],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          )
+                              : null,
+                          color:
+                          item?.isRead == true ? Colors.white : null,
+                          borderRadius: BorderRadius.circular(18.r),
+                          border: Border.all(
+                            color: item?.isRead == false
+                                ? Colors.deepPurple.shade100
+                                : Colors.grey.shade200,
+                            width: 1,
                           ),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Stack(
-                                clipBehavior: Clip.none,
-                                children: [
-                                  Container(
-                                    width: 60.w,
-                                    height: 60.w,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.04),
+                              blurRadius: 16,
+                              offset: const Offset(0, 6),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Stack(
+                              clipBehavior: Clip.none,
+                              children: [
+                                Container(
+                                  width: 60.w,
+                                  height: 60.w,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        Colors.deepPurple.shade200,
+                                        Colors.deepPurple.shade400,
+                                      ],
+                                    ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.deepPurple
+                                            .withOpacity(0.18),
+                                        blurRadius: 12,
+                                        offset: const Offset(0, 4),
+                                      ),
+                                    ],
+                                  ),
+                                  padding: EdgeInsets.all(2.w),
+                                  child: ClipRRect(
+                                    borderRadius:
+                                    BorderRadius.circular(100.r),
+                                    child: profileImage != null
+                                        ? Image.network(
+                                      "${ConstRes.aImageBaseUrl}$profileImage",
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (
+                                          context,
+                                          error,
+                                          stackTrace,
+                                          ) {
+                                        return Container(
+                                          color: Colors.white,
+                                          child: Icon(
+                                            Icons.person,
+                                            size: 26.sp,
+                                            color:
+                                            Colors.deepPurple,
+                                          ),
+                                        );
+                                      },
+                                    )
+                                        : Container(
+                                      color: Colors.white,
+                                      child: Icon(
+                                        Icons.person,
+                                        size: 26.sp,
+                                        color: Colors.deepPurple,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                Positioned(
+                                  bottom: -1,
+                                  right: -1,
+                                  child: Container(
+                                    width: 22.w,
+                                    height: 22.w,
                                     decoration: BoxDecoration(
+                                      color: item?.type == "chat"
+                                          ? const Color(0xff22C55E)
+                                          : const Color(0xffEF4444),
                                       shape: BoxShape.circle,
-                                      gradient: LinearGradient(
-                                        colors: [
-                                          Colors.deepPurple.shade200,
-                                          Colors.deepPurple.shade400,
-                                        ],
+                                      border: Border.all(
+                                        color: Colors.white,
+                                        width: 2,
                                       ),
                                       boxShadow: [
                                         BoxShadow(
-                                          color: Colors.deepPurple
-                                              .withOpacity(0.18),
-                                          blurRadius: 12,
-                                          offset: const Offset(0, 4),
+                                          color: Colors.black
+                                              .withOpacity(0.08),
+                                          blurRadius: 6,
                                         ),
                                       ],
                                     ),
-                                    padding: EdgeInsets.all(2.w),
-                                    child: ClipRRect(
-                                      borderRadius:
-                                          BorderRadius.circular(100.r),
-                                      child: profileImage != null
-                                          ? Image.network(
-                                              "${ConstRes.aImageBaseUrl}$profileImage",
-                                              fit: BoxFit.cover,
-                                              errorBuilder: (
-                                                context,
-                                                error,
-                                                stackTrace,
-                                              ) {
-                                                return Container(
-                                                  color: Colors.white,
-                                                  child: Icon(
-                                                    Icons.person,
-                                                    size: 26.sp,
-                                                    color: Colors.deepPurple,
-                                                  ),
-                                                );
-                                              },
-                                            )
-                                          : Container(
-                                              color: Colors.white,
-                                              child: Icon(
-                                                Icons.person,
-                                                size: 26.sp,
-                                                color: Colors.deepPurple,
-                                              ),
-                                            ),
+                                    child: Icon(
+                                      item?.type == "chat"
+                                          ? Icons.chat_bubble_rounded
+                                          : Icons.call_rounded,
+                                      color: Colors.white,
+                                      size: 11.sp,
                                     ),
                                   ),
-                                  Positioned(
-                                    bottom: -1,
-                                    right: -1,
-                                    child: Container(
-                                      width: 22.w,
-                                      height: 22.w,
-                                      decoration: BoxDecoration(
-                                        color: item?.type == "chat"
-                                            ? const Color(0xff22C55E)
-                                            : const Color(0xffEF4444),
-                                        shape: BoxShape.circle,
-                                        border: Border.all(
-                                          color: Colors.white,
-                                          width: 2,
-                                        ),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color:
-                                                Colors.black.withOpacity(0.08),
-                                            blurRadius: 6,
-                                          ),
-                                        ],
-                                      ),
-                                      child: Icon(
-                                        item?.type == "chat"
-                                            ? Icons.chat_bubble_rounded
-                                            : Icons.call_rounded,
-                                        color: Colors.white,
-                                        size: 11.sp,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              SizedBox(width: 14.w),
-                              Expanded(
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                item?.title ?? "Loading...",
-                                                maxLines: 1,
-                                                overflow: TextOverflow.ellipsis,
-                                                style: TextStyle(
-                                                  fontSize: 15.5.sp,
-                                                  fontWeight: FontWeight.w700,
-                                                  letterSpacing: 0.2,
-                                                  color:
-                                                      const Color(0xff111827),
-                                                ),
-                                              ),
-                                              SizedBox(height: 4.h),
-                                              Text(
-                                                item?.body ??
-                                                    "Loading notification",
-                                                maxLines: 2,
-                                                overflow: TextOverflow.ellipsis,
-                                                style: TextStyle(
-                                                  fontSize: 12.8.sp,
-                                                  height: 1.45,
-                                                  color:
-                                                      const Color(0xff6B7280),
-                                                  fontWeight: FontWeight.w500,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        SizedBox(width: 8.w),
-                                        Column(
+                                ),
+                              ],
+                            ),
+                            SizedBox(width: 14.w),
+                            Expanded(
+                              child: Column(
+                                mainAxisAlignment:
+                                MainAxisAlignment.center,
+                                crossAxisAlignment:
+                                CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    crossAxisAlignment:
+                                    CrossAxisAlignment.start,
+                                    children: [
+                                      Expanded(
+                                        child: Column(
                                           crossAxisAlignment:
-                                              CrossAxisAlignment.end,
+                                          CrossAxisAlignment.start,
                                           children: [
-                                            Container(
-                                              padding: EdgeInsets.symmetric(
-                                                horizontal: 7.w,
-                                                vertical: 3.h,
-                                              ),
-                                              decoration: BoxDecoration(
-                                                color: const Color(0xffF3F4F6),
-                                                borderRadius:
-                                                    BorderRadius.circular(20.r),
-                                              ),
-                                              child: Row(
-                                                mainAxisSize: MainAxisSize.min,
-                                                children: [
-                                                  Icon(
-                                                    Icons.access_time_rounded,
-                                                    size: 9.sp,
-                                                    color: Colors.grey.shade600,
-                                                  ),
-                                                  SizedBox(width: 3.w),
-                                                  Text(
-                                                    controller.formatTime(
-                                                      item?.createdAt ?? "",
-                                                    ),
-                                                    style: TextStyle(
-                                                      fontSize: 9.5.sp,
-                                                      height: 1,
-                                                      fontWeight:
-                                                          FontWeight.w600,
-                                                      color:
-                                                          Colors.grey.shade700,
-                                                    ),
-                                                  ),
-                                                ],
+                                            Text(
+                                              item?.title ?? "Loading...",
+                                              maxLines: 1,
+                                              overflow:
+                                              TextOverflow.ellipsis,
+                                              style: TextStyle(
+                                                fontSize: 15.5.sp,
+                                                fontWeight:
+                                                FontWeight.w700,
+                                                letterSpacing: 0.2,
+                                                color: const Color(
+                                                    0xff111827),
                                               ),
                                             ),
-                                            SizedBox(height: 10.h),
-                                            Row(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                if (item?.isRead == false)
-                                                  Container(
-                                                    width: 9.w,
-                                                    height: 9.w,
-                                                    decoration: BoxDecoration(
-                                                      gradient:
-                                                          const LinearGradient(
-                                                        colors: [
-                                                          Color(0xff4F46E5),
-                                                          Color(0xff7C3AED),
-                                                        ],
-                                                      ),
-                                                      shape: BoxShape.circle,
-                                                      boxShadow: [
-                                                        BoxShadow(
-                                                          color: Colors
-                                                              .deepPurple
-                                                              .withOpacity(
-                                                                  0.25),
-                                                          blurRadius: 6,
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                SizedBox(width: 10.w),
-                                                Icon(
-                                                  Icons
-                                                      .arrow_forward_ios_rounded,
-                                                  size: 13.sp,
-                                                  color: Colors.grey.shade400,
-                                                ),
-                                              ],
+                                            SizedBox(height: 4.h),
+                                            Text(
+                                              item?.body ??
+                                                  "Loading notification",
+                                              maxLines: 2,
+                                              overflow:
+                                              TextOverflow.ellipsis,
+                                              style: TextStyle(
+                                                fontSize: 12.8.sp,
+                                                height: 1.45,
+                                                color: const Color(
+                                                    0xff6B7280),
+                                                fontWeight:
+                                                FontWeight.w500,
+                                              ),
                                             ),
                                           ],
                                         ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
+                                      ),
+                                      SizedBox(width: 8.w),
+                                      Column(
+                                        crossAxisAlignment:
+                                        CrossAxisAlignment.end,
+                                        children: [
+                                          Container(
+                                            padding: EdgeInsets.symmetric(
+                                              horizontal: 7.w,
+                                              vertical: 3.h,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: const Color(
+                                                  0xffF3F4F6),
+                                              borderRadius:
+                                              BorderRadius.circular(
+                                                  20.r),
+                                            ),
+                                            child: Row(
+                                              mainAxisSize:
+                                              MainAxisSize.min,
+                                              children: [
+                                                Icon(
+                                                  Icons
+                                                      .access_time_rounded,
+                                                  size: 9.sp,
+                                                  color:
+                                                  Colors.grey.shade600,
+                                                ),
+                                                SizedBox(width: 3.w),
+                                                Text(
+                                                  controller.formatTime(
+                                                    item?.createdAt ?? "",
+                                                  ),
+                                                  style: TextStyle(
+                                                    fontSize: 9.5.sp,
+                                                    height: 1,
+                                                    fontWeight:
+                                                    FontWeight.w600,
+                                                    color: Colors
+                                                        .grey.shade700,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          SizedBox(height: 10.h),
+                                          Row(
+                                            mainAxisSize:
+                                            MainAxisSize.min,
+                                            children: [
+                                              if (item?.isRead == false)
+                                                Container(
+                                                  width: 9.w,
+                                                  height: 9.w,
+                                                  decoration:
+                                                  BoxDecoration(
+                                                    gradient:
+                                                    const LinearGradient(
+                                                      colors: [
+                                                        Color(0xff4F46E5),
+                                                        Color(0xff7C3AED),
+                                                      ],
+                                                    ),
+                                                    shape:
+                                                    BoxShape.circle,
+                                                    boxShadow: [
+                                                      BoxShadow(
+                                                        color: Colors
+                                                            .deepPurple
+                                                            .withOpacity(
+                                                            0.25),
+                                                        blurRadius: 6,
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              SizedBox(width: 10.w),
+                                              Icon(
+                                                Icons
+                                                    .arrow_forward_ios_rounded,
+                                                size: 13.sp,
+                                                color:
+                                                Colors.grey.shade400,
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ],
                               ),
-                            ],
-                          ),
-                        ));
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
                   },
                 ),
-        );
-      }),
+              );
+            }),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFilterTabs() {
+    return Container(
+      height: 52.h,
+      color: Colors.white,
+      child: ListView.separated(
+        padding: EdgeInsets.symmetric(horizontal: 14.w),
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+        itemCount: filters.length,
+        separatorBuilder: (_, __) => SizedBox(width: 8.w),
+        itemBuilder: (context, index) {
+          final filter = filters[index];
+
+          return Obx(() {
+            final isSelected =
+                controller.selectedFilter.value == filter["value"];
+
+            return GestureDetector(
+              onTap: () {
+                controller.selectedFilter.value = filter["value"];
+                controller.applyFilter();
+              },
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                margin: EdgeInsets.symmetric(vertical: 8.h),
+                padding: EdgeInsets.symmetric(horizontal: 16.w),
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? ToggleThemeData.Appcolor
+                      : Colors.grey.shade100,
+                  borderRadius: BorderRadius.circular(20.r),
+                  border: Border.all(
+                    color: isSelected
+                        ? ToggleThemeData.Appcolor
+                        : Colors.grey.shade300,
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      filter["icon"],
+                      size: 15.sp,
+                      color:
+                      isSelected ? Colors.white : Colors.grey.shade700,
+                    ),
+                    SizedBox(width: 6.w),
+                    Text(
+                      filter["title"],
+                      style: TextStyle(
+                        fontSize: 12.5.sp,
+                        fontWeight: FontWeight.w600,
+                        color: isSelected
+                            ? Colors.white
+                            : Colors.grey.shade800,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          });
+        },
+      ),
     );
   }
 
@@ -486,15 +572,13 @@ class NotificationScreen extends StatelessWidget {
               fontSize: 13.sp,
               color: Colors.grey,
             ),
-          )
+          ),
         ],
       ),
     );
   }
 
-  void _showFilterBottomSheet(
-    BuildContext context,
-  ) {
+  void _showFilterBottomSheet(BuildContext context) {
     Get.bottomSheet(
       SafeArea(
         child: Container(
@@ -553,24 +637,18 @@ class NotificationScreen extends StatelessWidget {
                           controller.selectedFilter.value == e["value"];
 
                       return Padding(
-                        padding: EdgeInsets.only(
-                          bottom: 10.h,
-                        ),
+                        padding: EdgeInsets.only(bottom: 10.h),
                         child: Material(
                           color: Colors.transparent,
                           child: InkWell(
                             borderRadius: BorderRadius.circular(18.r),
                             onTap: () {
                               controller.selectedFilter.value = e["value"];
-
                               controller.applyFilter();
-
                               Get.back();
                             },
                             child: AnimatedContainer(
-                              duration: const Duration(
-                                milliseconds: 220,
-                              ),
+                              duration: const Duration(milliseconds: 220),
                               padding: EdgeInsets.symmetric(
                                 horizontal: 16.w,
                                 vertical: 14.h,
@@ -588,13 +666,13 @@ class NotificationScreen extends StatelessWidget {
                                 ),
                                 boxShadow: selected
                                     ? [
-                                        BoxShadow(
-                                          color: Colors.deepPurple
-                                              .withOpacity(0.08),
-                                          blurRadius: 10,
-                                          offset: const Offset(0, 3),
-                                        ),
-                                      ]
+                                  BoxShadow(
+                                    color: Colors.deepPurple
+                                        .withOpacity(0.08),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 3),
+                                  ),
+                                ]
                                     : [],
                               ),
                               child: Row(
@@ -630,20 +708,19 @@ class NotificationScreen extends StatelessWidget {
                                     ),
                                   ),
                                   AnimatedSwitcher(
-                                    duration: const Duration(
-                                      milliseconds: 250,
-                                    ),
+                                    duration:
+                                    const Duration(milliseconds: 250),
                                     child: selected
                                         ? Icon(
-                                            Icons.check_circle,
-                                            key: ValueKey(true),
-                                            color: Colors.deepPurple,
-                                            size: 22.sp,
-                                          )
+                                      Icons.check_circle,
+                                      key: const ValueKey(true),
+                                      color: Colors.deepPurple,
+                                      size: 22.sp,
+                                    )
                                         : SizedBox(
-                                            key: ValueKey(false),
-                                            width: 22.w,
-                                          ),
+                                      key: const ValueKey(false),
+                                      width: 22.w,
+                                    ),
                                   ),
                                 ],
                               ),
