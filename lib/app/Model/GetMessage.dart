@@ -38,6 +38,8 @@ class MessageData {
   dynamic content;
   dynamic timestamp;
   dynamic seenCount;
+  dynamic seenBy;
+
   dynamic senderName;
   dynamic senderImage;
   dynamic thumbnail;
@@ -57,13 +59,16 @@ class MessageData {
       this.timestamp,
       this.seenCount,
       this.senderImage,
-      this.senderName,
-        this.caption,
-        this.replyId,
-        this.replyMessage,
-        this.replyType,
-        this.replySenderName,
-      this.thumbnail,this.locationSharing});
+        this.seenBy,
+
+        this.senderName,
+      this.caption,
+      this.replyId,
+      this.replyMessage,
+      this.replyType,
+      this.replySenderName,
+      this.thumbnail,
+      this.locationSharing});
 
   MessageData.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -73,6 +78,8 @@ class MessageData {
     content = json['content'];
     timestamp = json['timestamp'];
     seenCount = json['seenCount'];
+    seenBy = json['seenBy'];
+
     senderName = json['senderName'];
     senderImage = json['senderImage'];
     thumbnail = json['thumbnail'];
@@ -81,10 +88,9 @@ class MessageData {
     replyMessage = json["replyMessage"] ?? json["reply_message"];
     replyType = json["replyType"] ?? json["reply_type"];
     locationSharing = json["locationSharing"] ?? json["locationSharing"];
-    replySenderName =
-        json["replySender"] ??
-            json["replySenderName"] ??
-            json["reply_sender_name"];
+    replySenderName = json["replySender"] ??
+        json["replySenderName"] ??
+        json["reply_sender_name"];
   }
 
   Map<String, dynamic> toJson() {
@@ -96,6 +102,8 @@ class MessageData {
     data['content'] = content;
     data['timestamp'] = timestamp;
     data['seenCount'] = seenCount;
+    data['seenBy'] = seenBy;
+
     data['senderName'] = senderName;
     data['senderImage'] = senderImage;
     data['thumbnail'] = thumbnail;

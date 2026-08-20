@@ -21,6 +21,7 @@ import '../../../Core/constant/pref_res.dart';
 import '../../../Core/util/file_helper.dart';
 import '../../../config/themes_data.dart';
 import '../../../global_widget/common_widget.dart';
+import '../../../widgets/MessageInfoSheet.dart';
 import 'AudioPlayerWidget.dart';
 import 'ContactBubbleWidget.dart';
 import 'LocationBubbleWidget.dart';
@@ -622,7 +623,6 @@ class ChatBubble extends StatelessWidget {
                     },
                   );
                 }),
-
                 if (isSentByMe)
                   ListTile(
                     leading: Container(
@@ -1510,6 +1510,49 @@ class GroupChatBubble extends StatelessWidget {
                     },
                   );
                 }),
+
+                ListTile(
+                  leading: Container(
+                    padding: EdgeInsets.all(8.w),
+                    decoration: BoxDecoration(
+                      color: Colors.blueGrey.shade50,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.info_outline,
+                      color: Colors.blueGrey,
+                      size: 20.sp,
+                    ),
+                  ),
+                  title: const Text(
+                    "Info",
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  subtitle: Text(
+                    "See message details",
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      color: Colors.grey,
+                    ),
+                  ),
+                  onTap: () {
+                    Navigator.pop(context);
+
+                    showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      backgroundColor: Colors.transparent,
+                      builder: (_) {
+                        return MessageInfoSheet(
+                          message: message,
+                          groupController: controller,
+                        );
+                      },
+                    );
+                  },
+                ),
 
                 if (isSentByMe)
                   ListTile(
