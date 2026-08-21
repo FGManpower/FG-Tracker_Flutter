@@ -18,6 +18,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:waveform_flutter/waveform_flutter.dart';
+import '../../../Model/GetMessage.dart';
 import '../Controller/MessageController.dart';
 import 'message_Widgets.dart';
 
@@ -77,7 +78,7 @@ class ChatInputArea extends StatefulWidget {
 
 class _ChatInputAreaState extends State<ChatInputArea> {
   final voiceController = Get.put(VoiceRecordController());
-
+  MessageData? _lastEditingMessage;
   late final FocusNode focusNode;
 
   @override
@@ -124,6 +125,34 @@ class _ChatInputAreaState extends State<ChatInputArea> {
     return SafeArea(
       child: Obx(() {
         final isMessageNotEmpty = widget.messageText.value.trim().isNotEmpty;
+        final editingMessage =
+            widget.messageController?.editingMessage.value ??
+                widget.groupMessageController?.editingMessage.value;
+
+        final isEditing = editingMessage != null;
+        if (editingMessage != null &&
+            _lastEditingMessage?.id != editingMessage.id) {
+          _lastEditingMessage = editingMessage;
+
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!mounted) return;
+
+            final text = editingMessage.content?.toString() ?? "";
+
+            widget.textController.text = text;
+
+            widget.textController.selection =
+                TextSelection.fromPosition(
+                  TextPosition(
+                    offset: text.length,
+                  ),
+                );
+
+            widget.messageText.value = text;
+
+            focusNode.requestFocus();
+          });
+        }
         final isImageSelected = widget.imagePath.value.isNotEmpty;
         final isVideoSelected = widget.videoPaths.value.isNotEmpty;
         final isDocumentSelected = widget.documentPath.value.isNotEmpty;
@@ -264,6 +293,7 @@ class _ChatInputAreaState extends State<ChatInputArea> {
                           ],
                         ),
                       ),
+
                     Row(
                       children: [
                         SizedBox(width: 5.w),
@@ -290,7 +320,10 @@ class _ChatInputAreaState extends State<ChatInputArea> {
                               Row(
                                 children: [
                                   Flexible(
-                                    child: TextField(
+
+                                    child:
+
+                                    TextField(
                                       controller: widget.textController,
                                       focusNode: focusNode,
                                       onChanged: (val) {
@@ -468,13 +501,40 @@ class _ChatInputAreaState extends State<ChatInputArea> {
                                     GestureDetector(
                                       onTap: widget.isSending.value
                                           ? null
-                                          : widget.onSend,
+                                          : () {
+                                        if (isEditing) {
+                                          final newText =
+                                          widget.textController.text.trim();
+
+                                          if (newText.isEmpty) return;
+
+                                          if (widget.messageController != null) {
+                                            widget.messageController!
+                                                .updateEditedMessage(
+                                              newText: newText,
+                                            );
+                                          } else if (widget.groupMessageController !=
+                                              null) {
+                                            widget.groupMessageController!
+                                                .updateEditedMessage(
+                                              newText: newText,
+                                            );
+                                          }
+
+                                          widget.textController.clear();
+                                          widget.messageText.value = "";
+                                        } else {
+                                          widget.onSend();
+                                        }
+                                      },
                                       child: CircleAvatar(
                                         radius: 24.r,
                                         backgroundColor:
-                                            ToggleThemeData.darkPurple,
+                                        ToggleThemeData.darkPurple,
                                         child: Icon(
-                                          Icons.send,
+                                          isEditing
+                                              ? Icons.check
+                                              : Icons.send,
                                           color: Colors.white,
                                         ),
                                       ),

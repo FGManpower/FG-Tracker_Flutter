@@ -54,6 +54,7 @@ class GroupMessageController extends GetxController {
   RxList<String> videoPaths = <String>[].obs;
   RxList<Uint8List?> videoThumbnails = <Uint8List?>[].obs;
   RxList<LocationData> groupMembers = <LocationData>[].obs;
+  final Rxn<MessageData> editingMessage = Rxn<MessageData>();
 
   RxBool isLoadingMembers = false.obs;
   final RxBool isUploadingVideo = false.obs;
@@ -132,10 +133,8 @@ class GroupMessageController extends GetxController {
     groupImage = arguments?["groupImage"] ?? "";
     print("isCreator = ${isCreator.value}");
 
-
     initializeGroupChat();
     itemPositionsListener.itemPositions.addListener(_onScrollDateChanged);
-
   }
 
   void toggleEmoji() {
@@ -207,7 +206,6 @@ class GroupMessageController extends GetxController {
       },
     );
 
-
     getGroupMessages();
 
     getGroupMembers();
@@ -263,14 +261,11 @@ class GroupMessageController extends GetxController {
     videoDurations.clear();
   }
 
-
-
-
   Future<bool> uploadVideoAtIndex(
-      String path,
-      String caption,
-      int index,
-      ) async {
+    String path,
+    String caption,
+    int index,
+  ) async {
     try {
       final thumbnailPath = await generateThumbnailFile(path);
 
@@ -294,7 +289,7 @@ class GroupMessageController extends GetxController {
           groupId: groupId,
           messageType: "video",
           content:
-          "${result.videoUrl}||${result.thumbnail}||${result.duration}",
+              "${result.videoUrl}||${result.thumbnail}||${result.duration}",
           caption: caption,
           replyId: replyMessage.value?.id,
           replyMessage: replyMessage.value?.content,
@@ -360,8 +355,7 @@ class GroupMessageController extends GetxController {
           uploadingVideoIndexes.add(currentIndex);
           uploadingVideoIndexes.refresh();
 
-          final success =
-          await uploadVideoAtIndex(vPath, text, currentIndex);
+          final success = await uploadVideoAtIndex(vPath, text, currentIndex);
 
           if (success) {
             final idx = videoPaths.indexOf(vPath);
@@ -401,6 +395,7 @@ class GroupMessageController extends GetxController {
       isSending.value = false;
     }
   }
+
   Future<void> uploadAudio(String path) async {
     try {
       var result = await MessageRepo.uploadChatAudio(path);
@@ -557,7 +552,7 @@ class GroupMessageController extends GetxController {
       ..addAll(
         List.generate(
           8,
-              (index) => MessageData(
+          (index) => MessageData(
             senderId: index.isEven ? 1 : 2,
             senderName: "",
             messageType: "text",
@@ -598,6 +593,7 @@ class GroupMessageController extends GetxController {
       isLoading.value = false;
     }
   }
+
   Future getGroupMembers() async {
     print(
       "MY USER ID => ${Global.storageServices.get(PrefConst.userId)}",
@@ -618,7 +614,7 @@ class GroupMessageController extends GetxController {
         groupMembers.value = result.locations ?? [];
 
         final currentUserId =
-        Global.storageServices.get(PrefConst.userId).toString();
+            Global.storageServices.get(PrefConst.userId).toString();
 
         // Default
         isCreator.value = false;
@@ -669,8 +665,6 @@ class GroupMessageController extends GetxController {
 
     return maxVisible >= _messages.length - 2;
   }
-
-
 
   void handleBackPressed(BuildContext context) {
     socketService.disconnectSocket();
@@ -741,8 +735,7 @@ class GroupMessageController extends GetxController {
   }
 
   void insertMention({
-    required dynamic
-        member,
+    required dynamic member,
     required TextEditingController textController,
   }) {
     if (mentionStartIndex!.value < 0) return;
@@ -804,11 +797,11 @@ class GroupMessageController extends GetxController {
 
     final results = _messages
         .where((msg) =>
-    msg.messageType == "text" &&
-        (msg.content?.toLowerCase().contains(
-          searchQuery.value.toLowerCase(),
-        ) ??
-            false))
+            msg.messageType == "text" &&
+            (msg.content?.toLowerCase().contains(
+                      searchQuery.value.toLowerCase(),
+                    ) ??
+                false))
         .map((msg) => msg.id!)
         .toList();
 
@@ -849,6 +842,7 @@ class GroupMessageController extends GetxController {
       );
     }
   }
+
   void pinMessage(MessageData message) {
     pinnedMessage.value = message;
     showPinnedBanner.value = true;
@@ -868,6 +862,7 @@ class GroupMessageController extends GetxController {
       groupId: groupId,
     );
   }
+
   void scrollToPinnedMessage() {
     if (pinnedMessage.value == null) return;
     final msgId = pinnedMessage.value!.id;
@@ -898,9 +893,7 @@ class GroupMessageController extends GetxController {
 
     if (positions.isEmpty) return;
 
-    final visible = positions
-        .where((e) => e.itemTrailingEdge > 0)
-        .toList();
+    final visible = positions.where((e) => e.itemTrailingEdge > 0).toList();
 
     if (visible.isEmpty) return;
 
@@ -926,10 +919,54 @@ class GroupMessageController extends GetxController {
 
     _floatingDateTimer = Timer(
       const Duration(milliseconds: 800),
-          () {
+      () {
         showFloatingDate.value = false;
       },
     );
+  }
+
+  void startEditingMessage(MessageData message) {
+    if (message.messageType?.toString() != "text") {
+      return;
+    }
+
+    final currentUserId =
+        Global.storageServices.get(PrefConst.userId).toString();
+
+    if (message.senderId.toString() != currentUserId) {
+      return;
+    }
+
+    editingMessage.value = message;
+  }
+
+  void cancelEditingMessage() {
+    editingMessage.value = null;
+  }
+
+  void updateEditedMessage({
+    required String newText,
+  }) {
+    final message = editingMessage.value;
+
+    if (message == null) return;
+
+    final text = newText.trim();
+
+    if (text.isEmpty) return;
+
+    final index = _messages.indexWhere(
+      (item) => item.id == message.id,
+    );
+
+    if (index == -1) return;
+
+    _messages[index].content = text;
+    _messages[index].edited = true;
+
+    updateMessageStream();
+
+    editingMessage.value = null;
   }
 
   @override

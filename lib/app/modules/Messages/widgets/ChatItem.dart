@@ -97,11 +97,11 @@ class ChatBubble extends StatelessWidget {
                 decoration: BoxDecoration(
                   gradient: controller.highlightedMessageId.value == message.id
                       ? LinearGradient(
-                    colors: [
-                      Colors.yellow.withOpacity(.35),
-                      Colors.yellow.withOpacity(.20),
-                    ],
-                  )
+                          colors: [
+                            Colors.yellow.withOpacity(.35),
+                            Colors.yellow.withOpacity(.20),
+                          ],
+                        )
                       : bgColor,
                   borderRadius: borderRadius,
                   boxShadow: [
@@ -140,6 +140,18 @@ class ChatBubble extends StatelessWidget {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
+                    if (message.edited == true)
+                      Padding(
+                        padding: EdgeInsets.only(right: 4.w),
+                        child: Text(
+                          "edited",
+                          style: TextStyle(
+                            fontSize: 9.sp,
+                            color: Colors.grey[500],
+                            fontStyle: FontStyle.italic,
+                          ),
+                        ),
+                      ),
                     reausabletext(
                       formatTime(message.timestamp ?? ""),
                       fontsize: 10.sp,
@@ -459,9 +471,6 @@ class ChatBubble extends StatelessWidget {
       case "location":
         preview = "📍 Location";
         break;
-
-
-
     }
 
     return GestureDetector(
@@ -513,9 +522,9 @@ class ChatBubble extends StatelessWidget {
   }
 
   void _showDeleteBottomSheet(
-      BuildContext context,
-      bool isSentByMe,
-      ) {
+    BuildContext context,
+    bool isSentByMe,
+  ) {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -539,7 +548,6 @@ class ChatBubble extends StatelessWidget {
                   ),
                 ),
                 SizedBox(height: 12.h),
-
                 ListTile(
                   leading: Container(
                     padding: EdgeInsets.all(8.w),
@@ -558,7 +566,6 @@ class ChatBubble extends StatelessWidget {
                     controller.setReply(message);
                   },
                 ),
-
                 if (message.messageType == "text")
                   ListTile(
                     leading: Container(
@@ -567,7 +574,8 @@ class ChatBubble extends StatelessWidget {
                         color: Colors.purple.shade50,
                         shape: BoxShape.circle,
                       ),
-                      child: Icon(Icons.copy, color: Colors.purple, size: 20.sp),
+                      child:
+                          Icon(Icons.copy, color: Colors.purple, size: 20.sp),
                     ),
                     title: const Text("Copy",
                         style: TextStyle(fontWeight: FontWeight.w600)),
@@ -580,7 +588,39 @@ class ChatBubble extends StatelessWidget {
                       Utils().fluttertoast("Message copied");
                     },
                   ),
+                if (isSentByMe && message.messageType == "text")
+                  ListTile(
+                    leading: Container(
+                      padding: EdgeInsets.all(8.w),
+                      decoration: BoxDecoration(
+                        color: Colors.orange.shade50,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.edit_outlined,
+                        color: Colors.orange,
+                        size: 20.sp,
+                      ),
+                    ),
+                    title: const Text(
+                      "Edit",
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    subtitle: const Text(
+                      "Edit this message",
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey,
+                      ),
+                    ),
+                    onTap: () {
+                      Navigator.pop(context);
 
+                      controller.startEditingMessage(message);
+                    },
+                  ),
                 Obx(() {
                   final isPinned =
                       controller.pinnedMessage.value?.id == message.id;
@@ -596,9 +636,7 @@ class ChatBubble extends StatelessWidget {
                       child: Transform.rotate(
                         angle: isPinned ? 0 : 0.7,
                         child: Icon(
-                          isPinned
-                              ? Icons.push_pin_outlined
-                              : Icons.push_pin,
+                          isPinned ? Icons.push_pin_outlined : Icons.push_pin,
                           color: isPinned ? Colors.red : Colors.green,
                           size: 20.sp,
                         ),
@@ -609,11 +647,8 @@ class ChatBubble extends StatelessWidget {
                       style: const TextStyle(fontWeight: FontWeight.w600),
                     ),
                     subtitle: Text(
-                      isPinned
-                          ? "Remove from pinned"
-                          : "Pin to top of chat",
-                      style:
-                      TextStyle(fontSize: 12.sp, color: Colors.grey),
+                      isPinned ? "Remove from pinned" : "Pin to top of chat",
+                      style: TextStyle(fontSize: 12.sp, color: Colors.grey),
                     ),
                     onTap: () {
                       Navigator.pop(context);
@@ -646,7 +681,6 @@ class ChatBubble extends StatelessWidget {
                       );
                     },
                   ),
-
                 ListTile(
                   leading: Container(
                     padding: EdgeInsets.all(8.w),
@@ -654,8 +688,7 @@ class ChatBubble extends StatelessWidget {
                       color: Colors.red.shade50,
                       shape: BoxShape.circle,
                     ),
-                    child:
-                    Icon(Icons.delete, color: Colors.red, size: 20.sp),
+                    child: Icon(Icons.delete, color: Colors.red, size: 20.sp),
                   ),
                   title: const Text("Delete for Me",
                       style: TextStyle(fontWeight: FontWeight.w600)),
@@ -669,7 +702,6 @@ class ChatBubble extends StatelessWidget {
                     );
                   },
                 ),
-
                 SizedBox(height: 10.h),
               ],
             ),
@@ -678,12 +710,13 @@ class ChatBubble extends StatelessWidget {
       },
     );
   }
+
   Widget _buildHighlightedText(
-      String text,
-      String query, {
-        required TextStyle normalStyle,
-        required TextStyle highlightStyle,
-      }) {
+    String text,
+    String query, {
+    required TextStyle normalStyle,
+    required TextStyle highlightStyle,
+  }) {
     final lowerText = text.toLowerCase();
     final lowerQuery = query.toLowerCase();
     final List<InlineSpan> spans = [];
@@ -793,21 +826,20 @@ class GroupChatBubble extends StatelessWidget {
                 child: GestureDetector(
                   onTap: () {
                     DialogBox().showRouteDetailsBottomSheet(
-                      destination: const LatLng(0, 0),
-                      distance: 0,
-                      userId: int.tryParse(
-                            message.senderId.toString(),
-                          ) ??
-                          0,
-                      groupId: groupId,
-                      groupName: groupName,
-                      name: message.senderName,
-                      imageUrl: message.senderImage,
-                      status: true,
-                      lastSeen: "",
-                      isGroupChat: true,
-                        isLocationSharing: message.locationSharing ?? false
-                    );
+                        destination: const LatLng(0, 0),
+                        distance: 0,
+                        userId: int.tryParse(
+                              message.senderId.toString(),
+                            ) ??
+                            0,
+                        groupId: groupId,
+                        groupName: groupName,
+                        name: message.senderName,
+                        imageUrl: message.senderImage,
+                        status: true,
+                        lastSeen: "",
+                        isGroupChat: true,
+                        isLocationSharing: message.locationSharing ?? false);
                   },
                   child: CircleAvatar(
                     radius: 20.r,
@@ -902,14 +934,15 @@ class GroupChatBubble extends StatelessWidget {
                         vertical: 10.h,
                       ),
                       decoration: BoxDecoration(
-                        gradient: controller.highlightedMessageId.value == message.id
-                            ? LinearGradient(
-                          colors: [
-                            Colors.yellow.withOpacity(.35),
-                            Colors.yellow.withOpacity(.20),
-                          ],
-                        )
-                            : bgColor,
+                        gradient:
+                            controller.highlightedMessageId.value == message.id
+                                ? LinearGradient(
+                                    colors: [
+                                      Colors.yellow.withOpacity(.35),
+                                      Colors.yellow.withOpacity(.20),
+                                    ],
+                                  )
+                                : bgColor,
                         borderRadius: borderRadius,
                         boxShadow: [
                           BoxShadow(
@@ -941,14 +974,32 @@ class GroupChatBubble extends StatelessWidget {
                       padding: EdgeInsets.only(
                         right: 4.w,
                       ),
-                      child: Icon(
-                        (message.seenCount ?? 0) > 0
-                            ? Icons.done_all
-                            : Icons.done,
-                        size: 14.sp,
-                        color: (message.seenCount ?? 0) > 0
-                            ? Colors.blueAccent
-                            : Colors.grey,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (message.edited == true)
+                            Padding(
+                              padding: EdgeInsets.only(right: 4.w),
+                              child: Text(
+                                "edited",
+                                style: TextStyle(
+                                  fontSize: 9.sp,
+                                  color: Colors.grey[700],
+                                  fontStyle: FontStyle.italic,
+                                ),
+                              ),
+                            ),
+
+                          Icon(
+                            (message.seenCount ?? 0) > 0
+                                ? Icons.done_all
+                                : Icons.done,
+                            size: 14.sp,
+                            color: (message.seenCount ?? 0) > 0
+                                ? Colors.blueAccent
+                                : Colors.grey,
+                          ),
+                        ],
                       ),
                     ),
                 ],
@@ -963,21 +1014,20 @@ class GroupChatBubble extends StatelessWidget {
                 child: GestureDetector(
                   onTap: () {
                     DialogBox().showRouteDetailsBottomSheet(
-                      destination: const LatLng(0, 0),
-                      distance: 0,
-                      userId: int.tryParse(
-                            message.senderId.toString(),
-                          ) ??
-                          0,
-                      groupId: groupId,
-                      groupName: groupName,
-                      name: message.senderName,
-                      imageUrl: message.senderImage,
-                      status: true,
-                      lastSeen: "",
-                      isGroupChat: true,
-                        isLocationSharing: message.locationSharing ?? false
-                    );
+                        destination: const LatLng(0, 0),
+                        distance: 0,
+                        userId: int.tryParse(
+                              message.senderId.toString(),
+                            ) ??
+                            0,
+                        groupId: groupId,
+                        groupName: groupName,
+                        name: message.senderName,
+                        imageUrl: message.senderImage,
+                        status: true,
+                        lastSeen: "",
+                        isGroupChat: true,
+                        isLocationSharing: message.locationSharing ?? false);
                   },
                   child: CircleAvatar(
                     radius: 20.r,
@@ -1002,11 +1052,12 @@ class GroupChatBubble extends StatelessWidget {
       ),
     );
   }
+
   Widget _buildTextContent(
-      MessageData message,
-      Color textColor,
-      bool isSentByMe,
-      ) {
+    MessageData message,
+    Color textColor,
+    bool isSentByMe,
+  ) {
     final query = controller.searchQuery.value;
     final content = message.content?.toString() ?? "";
 
@@ -1053,11 +1104,11 @@ class GroupChatBubble extends StatelessWidget {
   }
 
   Widget _buildHighlightedText(
-      String text,
-      String query, {
-        required TextStyle normalStyle,
-        required TextStyle highlightStyle,
-      }) {
+    String text,
+    String query, {
+    required TextStyle normalStyle,
+    required TextStyle highlightStyle,
+  }) {
     final lowerText = text.toLowerCase();
     final lowerQuery = query.toLowerCase();
     final List<InlineSpan> spans = [];
@@ -1092,6 +1143,7 @@ class GroupChatBubble extends StatelessWidget {
 
     return RichText(text: TextSpan(children: spans));
   }
+
   Widget _buildReplyPreview(MessageData message, bool isSentByMe) {
     if (message.replyId == null) {
       return const SizedBox.shrink();
@@ -1395,11 +1447,10 @@ class GroupChatBubble extends StatelessWidget {
     }
   }
 
-
   void _showDeleteBottomSheet(
-      BuildContext context,
-      bool isSentByMe,
-      ) {
+    BuildContext context,
+    bool isSentByMe,
+  ) {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -1423,7 +1474,6 @@ class GroupChatBubble extends StatelessWidget {
                   ),
                 ),
                 SizedBox(height: 12.h),
-
                 ListTile(
                   leading: Container(
                     padding: EdgeInsets.all(8.w),
@@ -1442,7 +1492,6 @@ class GroupChatBubble extends StatelessWidget {
                     controller.setReply(message);
                   },
                 ),
-
                 if (message.messageType == "text")
                   ListTile(
                     leading: Container(
@@ -1451,7 +1500,8 @@ class GroupChatBubble extends StatelessWidget {
                         color: Colors.purple.shade50,
                         shape: BoxShape.circle,
                       ),
-                      child: Icon(Icons.copy, color: Colors.purple, size: 20.sp),
+                      child:
+                          Icon(Icons.copy, color: Colors.purple, size: 20.sp),
                     ),
                     title: const Text(
                       "Copy",
@@ -1465,7 +1515,39 @@ class GroupChatBubble extends StatelessWidget {
                       Utils().fluttertoast("Message copied");
                     },
                   ),
+                if (isSentByMe && message.messageType == "text")
+                  ListTile(
+                    leading: Container(
+                      padding: EdgeInsets.all(8.w),
+                      decoration: BoxDecoration(
+                        color: Colors.orange.shade50,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.edit_outlined,
+                        color: Colors.orange,
+                        size: 20.sp,
+                      ),
+                    ),
+                    title: const Text(
+                      "Edit",
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    subtitle: const Text(
+                      "Edit this message",
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey,
+                      ),
+                    ),
+                    onTap: () {
+                      Navigator.pop(context);
 
+                      controller.startEditingMessage(message);
+                    },
+                  ),
                 Obx(() {
                   final isPinned =
                       controller.pinnedMessage.value?.id == message.id;
@@ -1482,9 +1564,7 @@ class GroupChatBubble extends StatelessWidget {
                       child: Transform.rotate(
                         angle: 0.7,
                         child: Icon(
-                          isPinned
-                              ? Icons.push_pin_outlined
-                              : Icons.push_pin,
+                          isPinned ? Icons.push_pin_outlined : Icons.push_pin,
                           color: isPinned ? Colors.red : Colors.green,
                           size: 20.sp,
                         ),
@@ -1495,9 +1575,7 @@ class GroupChatBubble extends StatelessWidget {
                       style: const TextStyle(fontWeight: FontWeight.w600),
                     ),
                     subtitle: Text(
-                      isPinned
-                          ? "Remove from pinned"
-                          : "Pin to top of chat",
+                      isPinned ? "Remove from pinned" : "Pin to top of chat",
                       style: TextStyle(fontSize: 12.sp, color: Colors.grey),
                     ),
                     onTap: () {
@@ -1510,7 +1588,6 @@ class GroupChatBubble extends StatelessWidget {
                     },
                   );
                 }),
-
                 ListTile(
                   leading: Container(
                     padding: EdgeInsets.all(8.w),
@@ -1553,7 +1630,6 @@ class GroupChatBubble extends StatelessWidget {
                     );
                   },
                 ),
-
                 if (isSentByMe)
                   ListTile(
                     leading: Container(
@@ -1580,7 +1656,6 @@ class GroupChatBubble extends StatelessWidget {
                       );
                     },
                   ),
-
                 ListTile(
                   leading: Container(
                     padding: EdgeInsets.all(8.w),
@@ -1602,7 +1677,6 @@ class GroupChatBubble extends StatelessWidget {
                     );
                   },
                 ),
-
                 SizedBox(height: 10.h),
               ],
             ),

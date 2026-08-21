@@ -72,6 +72,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
   final RxMap<int, double> videoUploadProgress = <int, double>{}.obs;
   final RxString floatingDate = "".obs;
   final RxBool showFloatingDate = false.obs;
+  final Rxn<MessageData> editingMessage = Rxn<MessageData>();
 
   Timer? _floatingDateTimer;
 
@@ -817,4 +818,50 @@ class MessageController extends GetxController with WidgetsBindingObserver {
       },
     );
   }
+
+
+  void startEditingMessage(MessageData message) {
+    if (message.messageType?.toString() != "text") {
+      return;
+    }
+
+    final currentUserId =
+    Global.storageServices.get(PrefConst.userId).toString();
+
+    if (message.senderId.toString() != currentUserId) {
+      return;
+    }
+
+    editingMessage.value = message;
+  }
+
+  void cancelEditingMessage() {
+    editingMessage.value = null;
+  }
+
+  void updateEditedMessage({
+    required String newText,
+  }) {
+    final message = editingMessage.value;
+
+    if (message == null) return;
+
+    final text = newText.trim();
+
+    if (text.isEmpty) return;
+
+    final index = _messages.indexWhere(
+          (item) => item.id == message.id,
+    );
+
+    if (index == -1) return;
+
+    _messages[index].content = text;
+    _messages[index].edited = true;
+
+    updateMessageStream();
+
+    editingMessage.value = null;
+  }
+
 }
