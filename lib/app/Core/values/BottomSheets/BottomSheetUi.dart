@@ -6,7 +6,6 @@ import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../Model/MemberDataRes.dart';
@@ -18,18 +17,19 @@ import '../global.dart';
 
 class BottomSheetUi {
   void showMemberBottomSheet(
-    BuildContext context,
-    List<LocationData> members, {
-    bool isGroupChat = false,
-    bool isDeleteMode = false,
-    int? groupId,
-    String? groupName,
-  }) {
+      BuildContext context,
+      List<LocationData> members, {
+        bool isGroupChat = false,
+        bool isDeleteMode = false,
+        int? groupId,
+        String? groupName,
+      }) {
     final sortedMembers = [...members]..sort((a, b) {
-        final aGhost = a.locationSharing == false ? 0 : 1;
-        final bGhost = b.locationSharing == false ? 0 : 1;
-        return aGhost.compareTo(bGhost);
-      });
+      final aGhost = a.locationSharing == false ? 0 : 1;
+      final bGhost = b.locationSharing == false ? 0 : 1;
+      return aGhost.compareTo(bGhost);
+    });
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -77,22 +77,38 @@ class BottomSheetUi {
                       final isMe = member.userId.toString() == currentUserId;
                       bool isOnline = false;
                       final isGhostMode = member.locationSharing == false;
-                      if (member.lastSeen != null &&
-                          member.lastSeen!.isNotEmpty) {
-                        try {
-                          isOnline = Tracking()
-                                  .getTimeAgo(DateTime.parse(member.lastSeen!))
-                                  .toLowerCase() ==
-                              "just now";
-                        } catch (_) {
-                          isOnline = false;
+
+                      if (member.lastSeen != null && member.lastSeen!.isNotEmpty) {
+                        final parsedDate = DateTime.tryParse(member.lastSeen!);
+                        if (parsedDate != null) {
+                          try {
+                            isOnline = Tracking()
+                                .getTimeAgo(parsedDate)
+                                .toLowerCase() ==
+                                "just now";
+                          } catch (_) {
+                            isOnline = false;
+                          }
                         }
                       }
 
-                      final profileUrl = (member.profileImage?.isNotEmpty ??
-                              false)
+                      final profileUrl = (member.profileImage?.isNotEmpty ?? false)
                           ? "${ConstRes.aImageBaseUrl}${member.profileImage}"
                           : null;
+
+                      String getLastSeenText() {
+                        if (isGhostMode) return "Ghost Mode Enabled";
+                        if (isOnline) return "Online";
+                        if (member.lastSeen == null || member.lastSeen!.isEmpty) {
+                          return "Last seen: Unknown";
+                        }
+
+                        final parsedDate = DateTime.tryParse(member.lastSeen!);
+                        if (parsedDate == null) return "Last seen: Unknown";
+
+                        return "Last seen: ${Tracking().getTimeAgo(parsedDate)}";
+                      }
+
                       return GestureDetector(
                         onTap: () {
                           if (!isDeleteMode) return;
@@ -109,7 +125,7 @@ class BottomSheetUi {
                           CommonDialog.ConfirmationDialog(
                             title: "Remove Member",
                             content:
-                                "Are you sure you want to remove ${member.name} from the group?",
+                            "Are you sure you want to remove ${member.name} from the group?",
                             confirm: "Remove",
                             onConfirm: () {
                               Get.find<GroupController>().deleteGroupMember(
@@ -143,8 +159,8 @@ class BottomSheetUi {
                                 backgroundImage: profileUrl != null
                                     ? NetworkImage(profileUrl)
                                     : const AssetImage(
-                                            'assets/default_avatar.png')
-                                        as ImageProvider,
+                                    'assets/default_avatar.png')
+                                as ImageProvider,
                               ),
                               SizedBox(width: 12.w),
                               Expanded(
@@ -153,12 +169,12 @@ class BottomSheetUi {
                                   children: [
                                     Row(
                                       crossAxisAlignment:
-                                          CrossAxisAlignment.start,
+                                      CrossAxisAlignment.start,
                                       children: [
                                         Expanded(
                                           child: Column(
                                             crossAxisAlignment:
-                                                CrossAxisAlignment.start,
+                                            CrossAxisAlignment.start,
                                             children: [
                                               Row(
                                                 children: [
@@ -167,28 +183,28 @@ class BottomSheetUi {
                                                       member.name ?? 'Unknown',
                                                       maxLines: 1,
                                                       overflow:
-                                                          TextOverflow.ellipsis,
+                                                      TextOverflow.ellipsis,
                                                       style: TextStyle(
                                                         fontSize: 16.sp,
                                                         fontWeight:
-                                                            FontWeight.w600,
+                                                        FontWeight.w600,
                                                       ),
                                                     ),
                                                   ),
                                                   if (isMe)
                                                     Container(
                                                       padding:
-                                                          EdgeInsets.symmetric(
+                                                      EdgeInsets.symmetric(
                                                         horizontal: 8.w,
                                                         vertical: 2.h,
                                                       ),
                                                       decoration: BoxDecoration(
                                                         color: ToggleThemeData
-                                                                .Appcolor
+                                                            .Appcolor
                                                             .withOpacity(.1),
                                                         borderRadius:
-                                                            BorderRadius
-                                                                .circular(20.r),
+                                                        BorderRadius
+                                                            .circular(20.r),
                                                       ),
                                                       child: Text(
                                                         "You",
@@ -196,7 +212,7 @@ class BottomSheetUi {
                                                           color: ToggleThemeData
                                                               .Appcolor,
                                                           fontWeight:
-                                                              FontWeight.w600,
+                                                          FontWeight.w600,
                                                           fontSize: 11.sp,
                                                         ),
                                                       ),
@@ -216,19 +232,15 @@ class BottomSheetUi {
                                                   SizedBox(width: 6.w),
                                                   Expanded(
                                                     child: reausabletext(
-                                                      isGhostMode
-                                                          ? "Ghost Mode Enabled"
-                                                          : isOnline
-                                                              ? "Online"
-                                                              : "Last seen: ${Tracking().getTimeAgo(DateTime.parse(member.lastSeen ?? DateTime.now().toString()))}",
+                                                      getLastSeenText(),
                                                       fontsize: 13,
                                                       color: isGhostMode
                                                           ? const Color(
-                                                              0xFF7E57C2)
+                                                          0xFF7E57C2)
                                                           : (isOnline
-                                                              ? Colors.green
-                                                              : Colors
-                                                                  .grey[600]),
+                                                          ? Colors.green
+                                                          : Colors
+                                                          .grey[600]),
                                                       fontweight: isGhostMode
                                                           ? FontWeight.w600
                                                           : FontWeight.w400,
@@ -245,13 +257,13 @@ class BottomSheetUi {
                                               Navigator.pop(context);
 
                                               final MemberData memberData =
-                                                  MemberData(
+                                              MemberData(
                                                 id: member.id,
                                                 userId: member.userId,
                                                 groupId: member.groupId ?? 0,
                                                 name: member.name,
                                                 profileImage:
-                                                    member.profileImage,
+                                                member.profileImage,
                                                 lastSeen: member.lastSeen,
                                                 isOnline: member.isOnline,
                                               );
@@ -293,9 +305,9 @@ class BottomSheetUi {
                                                       .get(PrefConst.userId)
                                                       .toString(),
                                                   "remoteUserId":
-                                                      member.userId.toString(),
+                                                  member.userId.toString(),
                                                   "callerName":
-                                                      member.name ?? "",
+                                                  member.name ?? "",
                                                   "offer": null,
                                                   "is_video": false,
                                                   "callType": "outGoing",
@@ -329,9 +341,9 @@ class BottomSheetUi {
                                                       .get(PrefConst.userId)
                                                       .toString(),
                                                   "remoteUserId":
-                                                      member.userId.toString(),
+                                                  member.userId.toString(),
                                                   "callerName":
-                                                      member.name ?? "",
+                                                  member.name ?? "",
                                                   "offer": null,
                                                   "is_video": true,
                                                   "callType": "outGoing",
@@ -342,7 +354,7 @@ class BottomSheetUi {
                                               padding: EdgeInsets.all(9.w),
                                               decoration: BoxDecoration(
                                                 color:
-                                                    Colors.red.withOpacity(0.1),
+                                                Colors.red.withOpacity(0.1),
                                                 shape: BoxShape.circle,
                                               ),
                                               child: Icon(
@@ -358,58 +370,58 @@ class BottomSheetUi {
                                     if (!isMe && !isGhostMode) ...[
                                       SizedBox(height: 10.h),
                                       member.locationSharing == false
-                                          ? SizedBox()
+                                          ? const SizedBox()
                                           : Align(
-                                              alignment: Alignment.centerRight,
-                                              child: ElevatedButton.icon(
-                                                onPressed: () {
-                                                  Navigator.pop(context);
+                                        alignment: Alignment.centerRight,
+                                        child: ElevatedButton.icon(
+                                          onPressed: () {
+                                            Navigator.pop(context);
 
-                                                  if (isGroupChat) {
-                                                    Get.toNamed(
-                                                      Routes.LocationTracking,
-                                                      arguments: {
-                                                        "groupId": groupId,
-                                                        "groupName": groupName,
-                                                        "targetUserId": member
-                                                            .userId
-                                                            .toString(),
-                                                      },
-                                                    );
-                                                  } else {
-                                                    final Uri mapsUri =
-                                                        Uri.parse(
-                                                      "https://www.google.com/maps/dir/?api=1&destination=${member.latitude},${member.longitude}&travelmode=walking",
-                                                    );
-
-                                                    launchUrl(mapsUri);
-                                                  }
+                                            if (isGroupChat) {
+                                              Get.toNamed(
+                                                Routes.LocationTracking,
+                                                arguments: {
+                                                  "groupId": groupId,
+                                                  "groupName": groupName,
+                                                  "targetUserId": member
+                                                      .userId
+                                                      .toString(),
                                                 },
-                                                icon: const Icon(
-                                                    Icons.navigation),
-                                                label: Text(
-                                                  isGroupChat
-                                                      ? "Track"
-                                                      : "Navigate",
-                                                ),
-                                                style: ElevatedButton.styleFrom(
-                                                  backgroundColor:
-                                                      ToggleThemeData.Appcolor,
-                                                  foregroundColor: Colors.white,
-                                                  shape: RoundedRectangleBorder(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            10.r),
-                                                  ),
-                                                  padding: EdgeInsets.symmetric(
-                                                    horizontal: 12.w,
-                                                    vertical: 8.h,
-                                                  ),
-                                                  textStyle: TextStyle(
-                                                      fontSize: 13.sp),
-                                                ),
-                                              ),
+                                              );
+                                            } else {
+                                              final Uri mapsUri =
+                                              Uri.parse(
+                                                "https://www.google.com/maps/dir/?api=1&destination=${member.latitude},${member.longitude}&travelmode=walking",
+                                              );
+
+                                              launchUrl(mapsUri);
+                                            }
+                                          },
+                                          icon: const Icon(
+                                              Icons.navigation),
+                                          label: Text(
+                                            isGroupChat
+                                                ? "Track"
+                                                : "Navigate",
+                                          ),
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor:
+                                            ToggleThemeData.Appcolor,
+                                            foregroundColor: Colors.white,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                              BorderRadius.circular(
+                                                  10.r),
                                             ),
+                                            padding: EdgeInsets.symmetric(
+                                              horizontal: 12.w,
+                                              vertical: 8.h,
+                                            ),
+                                            textStyle: TextStyle(
+                                                fontSize: 13.sp),
+                                          ),
+                                        ),
+                                      ),
                                     ],
                                   ],
                                 ),
