@@ -3,7 +3,7 @@ description: "A new Flutter project."
 
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
-version: 1.7.5
+version: 1.7.6
 
 environment:
   sdk: ^3.6.1
@@ -112,7 +112,9 @@ flutter_icons:
   android: true
   ios: true
   image_path: "assets/icons/app_icon.png"
-
+  # Add these two lines to force-override adaptive icons on modern Androids:
+  adaptive_icon_background: "#FFFFFF" # Change to your app's background color
+  adaptive_icon_foreground: "assets/icons/app_icon.png"
 
 
 flutter:
