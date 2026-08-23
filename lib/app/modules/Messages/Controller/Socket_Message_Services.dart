@@ -189,6 +189,39 @@ class SocketMessageService extends GetxService {
     );
   }
 
+  void editMessage({
+    required int messageId,
+    required String content,
+    required String userId,
+  }) {
+    final payload = {
+      "messageId": messageId,
+      "content": content,
+      "userId": userId,
+    };
+
+    print("EDIT MESSAGE PAYLOAD =====> $payload");
+
+    socket.emit("editMessage", payload);
+  }
+
+
+  void listenMessageEdited({
+    required Function(dynamic data) callback,
+  }) {
+    socket.off("messageEdited");
+
+    socket.on("messageEdited", (data) {
+      print("============= MESSAGE EDITED =============");
+      print(data);
+      print("===========================================");
+
+      callback(data);
+    });
+  }
+
+
+
   void deleteMessage({
     required int messageId,
     required String userId,
@@ -267,6 +300,24 @@ class SocketMessageService extends GetxService {
       callback(Map<String, dynamic>.from(data));
     });
   }
+
+  void forwardMessage({
+    required int messageId,
+    String? receiverId,
+    int? groupId,
+  }) {
+    final payload = {
+      "messageId": messageId,
+      "receiverId": receiverId,
+      "groupId": groupId,
+    };
+
+    print("FORWARD MESSAGE PAYLOAD =====> $payload");
+
+    socket.emit("forward_message", payload);
+  }
+
+
 
   void disconnectSocket() {
     _socket?.disconnect();

@@ -27,6 +27,8 @@ import '../../../../gen/assets.gen.dart';
 import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
 
 import '../../../Core/util/callkit_service.dart';
+import '../../../Model/GetMessage.dart';
+import '../../../routes/app_pages.dart';
 import '../Home_Widget/NewlyGroupUi.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -95,6 +97,7 @@ class _HomeScreenState extends State<HomeScreen> {
           scaffoldKey: _scaffoldKey,
           controller: controller,
           trackingController: trackingController,
+
         ),
         body: Padding(
           padding: EdgeInsets.symmetric(horizontal: 12.w),
@@ -110,6 +113,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   fontsize: 18,
                 ),
               ),
+
               Obx(() {
                 if (groupController.responseError.value.isNotEmpty) {
                   return LostinternetConnection(
@@ -161,7 +165,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       );
               }),
             ],
+
           ),
+
         ),
         bottomNavigationBar: BottomAppBar(
           color: Colors.white,
@@ -202,6 +208,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
         ),
+
       ),
     );
   }
