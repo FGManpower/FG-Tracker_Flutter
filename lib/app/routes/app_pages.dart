@@ -23,7 +23,9 @@ import 'package:get/get.dart';
 import '../modules/Group/Views/QRScanScreen.dart';
 import '../modules/Group/Views/QrScreen.dart';
 
+import '../modules/Messages/Bindings/ForwardMessageBinding.dart';
 import '../modules/Messages/Views/Chat_Screen.dart';
+import '../modules/Messages/Views/ForwardMessageScreen.dart';
 import '../modules/Track/Views/Search_Members.dart';
 import '../modules/Track/Views/TrackLocationScreen.dart';
 import '../modules/Walkie-talkie/WalkieTalkieScreen.dart';
@@ -109,6 +111,15 @@ class AppPages {
       binding: ChatBinding(),
       transitionDuration: const Duration(milliseconds: 500),
     ),
+
+    GetPage(
+      name: _Paths.forwardMessageScreen,
+      page: () => const ForwardMessageScreen(),
+      binding: ForwardMessageBinding(),
+      transition: Transition.rightToLeft,
+      transitionDuration: const Duration(milliseconds: 500),
+    ),
+
     GetPage(
       name: _Paths.groupChatScreen,
       page: () => GroupChatScreen(),

@@ -39,7 +39,8 @@ class MessageData {
   dynamic timestamp;
   dynamic seenCount;
   dynamic seenBy;
-
+  dynamic isEdited;
+  dynamic editedAt;
   dynamic edited;
   dynamic senderName;
   dynamic senderImage;
@@ -62,6 +63,8 @@ class MessageData {
       this.senderImage,
         this.seenBy,
         this.edited,
+        this.isEdited,
+        this.editedAt,
         this.senderName,
       this.caption,
       this.replyId,
@@ -81,6 +84,8 @@ class MessageData {
     seenCount = json['seenCount'];
     seenBy = json['seenBy'];
     edited = json['edited'];
+    isEdited = json['isEdited'];
+    editedAt = json['editedAt'];
     senderName = json['senderName'];
     senderImage = json['senderImage'];
     thumbnail = json['thumbnail'];
@@ -110,6 +115,8 @@ class MessageData {
     data['thumbnail'] = thumbnail;
     data['caption'] = caption;
     data['reply_id'] = replyId;
+    data['isEdited'] = isEdited;
+    data['editedAt'] = editedAt;
     data['reply_message'] = replyMessage;
     data['reply_type'] = replyType;
     data['reply_sender_name'] = replySenderName;
