@@ -1,32 +1,36 @@
-// ignore_for_file: unused_import
+import 'dart:developer';
 
-import 'package:fgtracker/app/Core/util/WalkieUtils.dart';
 import 'package:get/get.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 
 enum WalkieRole { caller, receiver }
+
 enum WalkieAudioState { idle, listening, talking }
 
 class WalkieController extends GetxController {
   final role = WalkieRole.caller.obs;
   final audioState = WalkieAudioState.idle.obs;
+  final isSpeakerOn = true.obs;
+  final isChannelBusy = false.obs;
 
   bool get isTalking => audioState.value == WalkieAudioState.talking;
   bool get isListening => audioState.value == WalkieAudioState.listening;
-  final isSpeakerOn = true.obs;
-
 
   void onIncoming({
     required String remoteUserId,
     required String callerName,
     required String profileImage,
   }) {
-    if (Get.currentRoute == Routes.walkieTalkieScreen) return;
+    if (Get.currentRoute == Routes.walkieTalkieScreen) {
+      log("⚠️ Walkie screen already open");
+      return;
+    }
 
     role.value = WalkieRole.receiver;
     audioState.value = WalkieAudioState.listening;
 
-    print("===========WalkieScreen======>");
+    log("🔊 Incoming walkie from: $callerName");
+
     Get.toNamed(
       Routes.walkieTalkieScreen,
       arguments: {
@@ -34,15 +38,8 @@ class WalkieController extends GetxController {
         "callerName": callerName,
         "profileUrl": profileImage,
       },
-    )?.then((value) {
-
-
-    },);
-    // Future.delayed(Duration(seconds: 2),() {
-    //   WalkieUtils().endWalkieCall();
-    // },);
+    );
   }
-
 
   Future<void> startServices({
     required String callerName,
@@ -67,6 +64,7 @@ class WalkieController extends GetxController {
   }
 
   void startTalking() {
+    if (isChannelBusy.value) return;
     audioState.value = WalkieAudioState.talking;
   }
 
@@ -74,11 +72,26 @@ class WalkieController extends GetxController {
     audioState.value = WalkieAudioState.listening;
   }
 
+  void setBusy(bool busy) {
+    isChannelBusy.value = busy;
+    if (busy) {
+      audioState.value = WalkieAudioState.idle;
+    }
+  }
+
   void reset() {
     role.value = WalkieRole.caller;
     audioState.value = WalkieAudioState.idle;
+    isChannelBusy.value = false;
   }
+
   void toggleSpeaker() {
     isSpeakerOn.value = !isSpeakerOn.value;
+  }
+
+  @override
+  void onClose() {
+    reset();
+    super.onClose();
   }
 }

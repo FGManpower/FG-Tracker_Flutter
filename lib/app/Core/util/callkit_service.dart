@@ -90,23 +90,24 @@ class CallKitService {
           log("========fallback-called");
         }
       },
-      onCallIncoming: (CallEvent event) async {
-        log("📞 onCallIncoming sessionId: ${event.sessionId}");
-        log("📞 onCallIncoming userInfo: ${event.userInfo}");
+      // onCallIncoming: (CallEvent event) async {
+      //--------- Note: it's working only on ios -------//
+        // log("📞 onCallIncoming sessionId: ${event.sessionId}");
+        // log("📞 onCallIncoming userInfo: ${event.userInfo}");
+        //
+        // CallSessionState.sessionId = event.sessionId;
+        //
+        // final data = _parseUserInfo(event.userInfo);
+        // log("📞 onCallIncoming parsed data: $data");
 
-        CallSessionState.sessionId = event.sessionId;
-
-        final data = _parseUserInfo(event.userInfo);
-        log("📞 onCallIncoming parsed data: $data");
-
-        if (data.isNotEmpty) {
-          // Navigate to IncomingCallScreen
-          // so user can see Accept/Reject UI inside the app
-          await _navigateToIncomingCallScreen(data, event.sessionId);
-        } else {
-          await _fallbackGetCallData(event.sessionId, accept: false);
-        }
-      },
+        // if (data.isNotEmpty) {
+        //   // Navigate to IncomingCallScreen
+        //   // so user can see Accept/Reject UI inside the app
+        //   await _navigateToIncomingCallScreen(data, event.sessionId);
+        // } else {
+        //   await _fallbackGetCallData(event.sessionId, accept: false);
+        // }
+      // },
     );
   }
 
@@ -169,11 +170,11 @@ class CallKitService {
   ) async {
     try {
       if (CallStateTracker.isIncomingCallScreenOpen) {
-        log("⚠️ IncomingCallScreen already open - skipping");
+        log("IncomingCallScreen already open - skipping");
         return;
       }
 
-      log("📞 _navigateToIncomingCallScreen data: $data");
+      log("_navigateToIncomingCallScreen data: $data");
 
       final parsedData = _buildParsedData(data);
       final call = IncomingCallModel.fromMap(parsedData);
@@ -189,9 +190,9 @@ class CallKitService {
         arguments: {"callDetail": call},
       );
 
-      log("✅ Navigated to IncomingCallScreen");
+      log("Navigated to IncomingCallScreen");
     } catch (e) {
-      log("❌ _navigateToIncomingCallScreen error: $e");
+      log(" _navigateToIncomingCallScreen error: $e");
     }
   }
 

@@ -3,7 +3,6 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-
 import '../../Core/constant/const_res.dart';
 import '../../config/themes_data.dart';
 import '../../global_widget/common_widget.dart';
@@ -26,11 +25,11 @@ class _WalkieTalkieScreenState extends State<WalkieTalkieScreen>
   late final AnimationController _pulse;
   Timer? _meterTimer;
   double micLevel = 0.3;
+  bool _isPressed = false;
 
   @override
   void initState() {
     super.initState();
-
     WalkieLaunchTracker.fromWalkieCall = true;
 
     _pulse = AnimationController(
@@ -49,6 +48,7 @@ class _WalkieTalkieScreenState extends State<WalkieTalkieScreen>
     _meterTimer?.cancel();
     walkie.reset();
     WalkieLaunchTracker.fromWalkieCall = false;
+    WalkietalkieService.instance.dispose();
     super.dispose();
   }
 
@@ -60,16 +60,37 @@ class _WalkieTalkieScreenState extends State<WalkieTalkieScreen>
     });
   }
 
-  void _startTalking() async {
+  // ============================================================
+  // PTT HANDLERS - Fixed with proper async
+  // ============================================================
+  Future<void> _startTalking() async {
+    if (_isPressed) return; // Prevent double
+    _isPressed = true;
+
+    print("🎤 PTT pressed");
+
     walkie.startTalking();
+
+    // ✅ Initialize recorder FIRST
     await WalkietalkieService.instance.initRecorder();
-    WalkietalkieService.instance.startTalking(args!['remoteUserId']);
+
+    // ✅ Then start talking (emits walkie_start)
+    WalkietalkieService.instance.startTalking(args!['remoteUserId']?.toString() ?? "");
   }
 
-  void _stopTalking() async {
-    walkie.stopTalking();
+  Future<void> _stopTalking() async {
+    if (!_isPressed) return;
+    _isPressed = false;
+
+    print("🛑 PTT released");
+
+    // ✅ Stop talking FIRST (emits walkie_stop)
+    WalkietalkieService.instance.stopTalking(args!['remoteUserId']?.toString() ?? "");
+
+    // ✅ Then stop recorder
     await WalkietalkieService.instance.stopRecorder();
-    WalkietalkieService.instance.stopTalking(args!['remoteUserId']);
+
+    walkie.stopTalking();
   }
 
   @override
@@ -82,6 +103,7 @@ class _WalkieTalkieScreenState extends State<WalkieTalkieScreen>
 
           return Column(
             children: [
+              // Header
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
                 child: Row(
@@ -94,6 +116,7 @@ class _WalkieTalkieScreenState extends State<WalkieTalkieScreen>
                             ? Icons.volume_up
                             : Icons.hearing,
                         color: Colors.white,
+                        size: 24.sp,
                       )),
                       onPressed: () async {
                         walkie.toggleSpeaker();
@@ -101,12 +124,13 @@ class _WalkieTalkieScreenState extends State<WalkieTalkieScreen>
                             .toggleSpeaker(walkie.isSpeakerOn.value);
                       },
                     ),
-
-                    // Icon(Icons.hearing, color: Colors.white, size: 24.sp),
                   ],
                 ),
               ),
+
               const Spacer(),
+
+              // User Info
               Column(
                 children: [
                   CircleAvatar(
@@ -114,8 +138,8 @@ class _WalkieTalkieScreenState extends State<WalkieTalkieScreen>
                     backgroundColor: Colors.grey.shade800,
                     backgroundImage: args?['profileUrl'] != null
                         ? NetworkImage(
-                            ConstRes.aImageBaseUrl + args!['profileUrl'],
-                          )
+                      ConstRes.aImageBaseUrl + args!['profileUrl'],
+                    )
                         : null,
                     child: args?['profileUrl'] == null
                         ? Icon(Icons.person, size: 40.sp, color: Colors.white54)
@@ -133,7 +157,6 @@ class _WalkieTalkieScreenState extends State<WalkieTalkieScreen>
                     ),
                   ),
                   SizedBox(height: 6.h),
-
                   Text(
                     state == WalkieAudioState.talking
                         ? "You are talking"
@@ -142,12 +165,15 @@ class _WalkieTalkieScreenState extends State<WalkieTalkieScreen>
                       color: state == WalkieAudioState.talking
                           ? Colors.greenAccent
                           : Colors.white70,
-
+                      fontSize: 14.sp,
                     ),
                   ),
                 ],
               ),
+
               SizedBox(height: 36.h),
+
+              // Audio Level Bars
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: List.generate(5, (i) {
@@ -163,11 +189,15 @@ class _WalkieTalkieScreenState extends State<WalkieTalkieScreen>
                   );
                 }),
               ),
+
               SizedBox(height: 44.h),
+
+              // PTT Button - Fixed with proper press/release
               GestureDetector(
                 onTapDown: (_) => _startTalking(),
                 onTapUp: (_) => _stopTalking(),
                 onTapCancel: _stopTalking,
+                onLongPressEnd: (_) => _stopTalking(),
                 child: ScaleTransition(
                   scale: _pulse,
                   child: Container(
@@ -187,6 +217,7 @@ class _WalkieTalkieScreenState extends State<WalkieTalkieScreen>
                   ),
                 ),
               ),
+
               const Spacer(),
             ],
           );
