@@ -24,6 +24,37 @@ class ChatList extends StatelessWidget {
       builder: (context, snapshot) {
         final messages = snapshot.data ?? [];
 
+        if (messages.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  "💬",
+                  style: TextStyle(fontSize: 48.sp),
+                ),
+                SizedBox(height: 12.h),
+                Text(
+                  "No messages here yet",
+                  style: TextStyle(
+                    fontSize: 15.sp,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.grey.shade600,
+                  ),
+                ),
+                SizedBox(height: 4.h),
+                Text(
+                  "Say hi 👋 to start the conversation",
+                  style: TextStyle(
+                    fontSize: 13.sp,
+                    color: Colors.grey.shade400,
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+
         return ScrollablePositionedList.builder(
           itemScrollController: controller.itemScrollController,
           itemPositionsListener: controller.itemPositionsListener,
@@ -83,6 +114,38 @@ class GroupChatList extends StatelessWidget {
       initialData: controller.messageData,
       builder: (context, snapshot) {
         final messages = snapshot.data ?? [];
+
+        // 🟢 Check if messages list is empty
+        if (messages.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  "💬",
+                  style: TextStyle(fontSize: 48.sp),
+                ),
+                SizedBox(height: 12.h),
+                Text(
+                  "No messages here yet",
+                  style: TextStyle(
+                    fontSize: 15.sp,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.grey.shade600,
+                  ),
+                ),
+                SizedBox(height: 4.h),
+                Text(
+                  "Say hi 👋 to start the conversation",
+                  style: TextStyle(
+                    fontSize: 13.sp,
+                    color: Colors.grey.shade400,
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
 
         return ScrollablePositionedList.builder(
           itemScrollController: controller.itemScrollController,

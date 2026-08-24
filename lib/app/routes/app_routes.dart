@@ -24,6 +24,8 @@ abstract class Routes {
   static const videoPlayerScreen = _Paths.videoPlayerScreen;
   static const documentViewerScreen = _Paths.documentViewerScreen;
   static const cameraScreen = _Paths.cameraScreen;
+  static const forwardMessageScreen = _Paths.forwardMessageScreen;
+
 }
 
 abstract class _Paths {
@@ -50,4 +52,5 @@ abstract class _Paths {
   static const videoPlayerScreen = '/VideoPlayerScreen';
   static const documentViewerScreen = '/DocumentViewerScreen';
   static const cameraScreen = '/CameraScreen';
+  static const forwardMessageScreen = '/forwardMessageScreen';
 }

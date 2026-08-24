@@ -248,6 +248,38 @@ class MessageController extends GetxController with WidgetsBindingObserver {
       },
     );
 
+
+    socketService.listenMessageEdited(
+      callback: (data) {
+        final messageId = int.tryParse(
+          data["messageId"].toString(),
+        );
+
+        if (messageId == null) return;
+
+        final index = _messages.indexWhere(
+              (message) => message.id == messageId,
+        );
+
+        if (index == -1) return;
+
+        _messages[index].content = data["content"];
+
+        _messages[index].isEdited =
+            data["isEdited"] ?? true;
+
+        _messages[index].editedAt =
+        data["editedAt"];
+
+        updateMessageStream();
+
+        log("PRIVATE MESSAGE EDITED => $messageId");
+      },
+    );
+
+
+
+
     socketService.listenMessageDeleted(
       callback: (data) {
         final int? messageId = data["messageId"];
@@ -850,18 +882,14 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
     if (text.isEmpty) return;
 
-    final index = _messages.indexWhere(
-          (item) => item.id == message.id,
+    socketService.editMessage(
+      messageId: message.id!,
+      content: text,
+      userId: Global.storageServices
+          .get(PrefConst.userId)
+          .toString(),
     );
-
-    if (index == -1) return;
-
-    _messages[index].content = text;
-    _messages[index].edited = true;
-
-    updateMessageStream();
 
     editingMessage.value = null;
   }
-
 }
