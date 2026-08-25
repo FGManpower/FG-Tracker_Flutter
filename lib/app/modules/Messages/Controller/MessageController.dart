@@ -88,7 +88,6 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     debugPrint("GROUP ID     : ${memberData.groupId}");
     _initializeChat();
     itemPositionsListener.itemPositions.addListener(_onScrollDateChanged);
-
   }
 
   @override
@@ -248,7 +247,6 @@ class MessageController extends GetxController with WidgetsBindingObserver {
       },
     );
 
-
     socketService.listenMessageEdited(
       callback: (data) {
         final messageId = int.tryParse(
@@ -258,27 +256,22 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         if (messageId == null) return;
 
         final index = _messages.indexWhere(
-              (message) => message.id == messageId,
+          (message) => message.id == messageId,
         );
 
         if (index == -1) return;
 
         _messages[index].content = data["content"];
 
-        _messages[index].isEdited =
-            data["isEdited"] ?? true;
+        _messages[index].isEdited = data["isEdited"] ?? true;
 
-        _messages[index].editedAt =
-        data["editedAt"];
+        _messages[index].editedAt = data["editedAt"];
 
         updateMessageStream();
 
         log("PRIVATE MESSAGE EDITED => $messageId");
       },
     );
-
-
-
 
     socketService.listenMessageDeleted(
       callback: (data) {
@@ -445,10 +438,10 @@ class MessageController extends GetxController with WidgetsBindingObserver {
   }
 
   Future<bool> uploadVideoAtIndex(
-      String path,
-      String caption,
-      int index,
-      ) async {
+    String path,
+    String caption,
+    int index,
+  ) async {
     try {
       final thumbnailPath = await generateThumbnailFile(path);
 
@@ -473,7 +466,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
           receiverId: memberData.userId.toString(),
           groupId: memberData.groupId!,
           content:
-          "${result.videoUrl}||${result.thumbnail}||${result.duration}",
+              "${result.videoUrl}||${result.thumbnail}||${result.duration}",
           caption: caption,
           replyId: replyMessage.value?.id,
           replyMessage: replyMessage.value?.content,
@@ -488,10 +481,6 @@ class MessageController extends GetxController with WidgetsBindingObserver {
       return false;
     }
   }
-
-
-
-
 
   Future<void> uploadVideo(String path, String caption) async {
     try {
@@ -768,9 +757,6 @@ class MessageController extends GetxController with WidgetsBindingObserver {
   }
 
   void pinMessage(MessageData message) {
-    pinnedMessage.value = message;
-    showPinnedBanner.value = true;
-
     socketService.pinMessage(
       groupId: memberData.groupId!,
       messageId: message.id!,
@@ -779,9 +765,6 @@ class MessageController extends GetxController with WidgetsBindingObserver {
   }
 
   void unpinMessage() {
-    pinnedMessage.value = null;
-    showPinnedBanner.value = false;
-
     socketService.unpinMessageEvent(
       groupId: memberData.groupId!,
     );
@@ -817,9 +800,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
     if (positions.isEmpty) return;
 
-    final visible = positions
-        .where((e) => e.itemTrailingEdge > 0)
-        .toList();
+    final visible = positions.where((e) => e.itemTrailingEdge > 0).toList();
 
     if (visible.isEmpty) return;
 
@@ -845,12 +826,11 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
     _floatingDateTimer = Timer(
       const Duration(milliseconds: 800),
-          () {
+      () {
         showFloatingDate.value = false;
       },
     );
   }
-
 
   void startEditingMessage(MessageData message) {
     if (message.messageType?.toString() != "text") {
@@ -858,7 +838,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     }
 
     final currentUserId =
-    Global.storageServices.get(PrefConst.userId).toString();
+        Global.storageServices.get(PrefConst.userId).toString();
 
     if (message.senderId.toString() != currentUserId) {
       return;
@@ -885,9 +865,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     socketService.editMessage(
       messageId: message.id!,
       content: text,
-      userId: Global.storageServices
-          .get(PrefConst.userId)
-          .toString(),
+      userId: Global.storageServices.get(PrefConst.userId).toString(),
     );
 
     editingMessage.value = null;

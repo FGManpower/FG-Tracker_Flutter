@@ -585,7 +585,7 @@ class GroupMessageController extends GetxController {
       ..addAll(
         List.generate(
           8,
-          (index) => MessageData(
+              (index) => MessageData(
             senderId: index.isEven ? 1 : 2,
             senderName: "",
             messageType: "text",
@@ -609,18 +609,43 @@ class GroupMessageController extends GetxController {
           ..clear()
           ..addAll(result.messageData ?? []);
 
+        final pinnedId = result.pinnedMessageId;
+
+        if (pinnedId != null) {
+          final pinned = _messages.firstWhereOrNull(
+                (message) => message.id == pinnedId,
+          );
+
+          if (pinned != null) {
+            pinnedMessage.value = pinned;
+            showPinnedBanner.value = true;
+          } else {
+            pinnedMessage.value = null;
+            showPinnedBanner.value = false;
+          }
+        } else {
+          pinnedMessage.value = null;
+          showPinnedBanner.value = false;
+        }
+
         updateMessageStream();
         scrollToBottom();
       } else {
         CommonDialog.errorMessage(result.message);
 
         _messages.clear();
+        pinnedMessage.value = null;
+        showPinnedBanner.value = false;
+
         updateMessageStream();
       }
     } catch (e) {
       log("GROUP HISTORY ERROR => $e");
 
       _messages.clear();
+      pinnedMessage.value = null;
+      showPinnedBanner.value = false;
+
       updateMessageStream();
     } finally {
       isLoading.value = false;
@@ -877,20 +902,15 @@ class GroupMessageController extends GetxController {
   }
 
   void pinMessage(MessageData message) {
-    pinnedMessage.value = message;
-    showPinnedBanner.value = true;
-
     socketService.pinMessage(
       groupId: groupId,
       messageId: message.id!,
-      pinnedByName: Global.storageServices.get(PrefConst.userName) ?? "User",
+      pinnedByName:
+      Global.storageServices.get(PrefConst.userName) ?? "User",
     );
   }
 
   void unpinMessage() {
-    pinnedMessage.value = null;
-    showPinnedBanner.value = false;
-
     socketService.unpinMessageEvent(
       groupId: groupId,
     );

@@ -25,6 +25,11 @@ abstract class Routes {
   static const documentViewerScreen = _Paths.documentViewerScreen;
   static const cameraScreen = _Paths.cameraScreen;
   static const forwardMessageScreen = _Paths.forwardMessageScreen;
+  static const GroupsList = _Paths.GroupsList;
+  static const CreateGroup = _Paths.CreateGroup;
+
+
+
 
 }
 
@@ -53,4 +58,8 @@ abstract class _Paths {
   static const documentViewerScreen = '/DocumentViewerScreen';
   static const cameraScreen = '/CameraScreen';
   static const forwardMessageScreen = '/forwardMessageScreen';
+  static const GroupsList = '/groups-list';
+  static const CreateGroup = '/create-group';
+
+
 }

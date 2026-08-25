@@ -3,13 +3,16 @@ class GetMessage {
   String? message;
   List<MessageData>? messageData;
   bool? isCreator;
+  int? pinnedMessageId;
 
-  GetMessage({this.status, this.message, this.messageData, this.isCreator});
+  GetMessage({this.status, this.message, this.messageData, this.isCreator,  this.pinnedMessageId,
+  });
 
   GetMessage.fromJson(Map<String, dynamic> json) {
     status = json['status'];
     message = json['message'];
     isCreator = json['isCreator'];
+    pinnedMessageId = json['pinnedMessageId'];
     if (json['MessageData'] != null) {
       messageData = <MessageData>[];
       json['MessageData'].forEach((v) {
@@ -23,6 +26,7 @@ class GetMessage {
     data['status'] = status;
     data['message'] = message;
     data['isCreator'] = isCreator;
+    data['pinnedMessageId'] = pinnedMessageId;
     if (messageData != null) {
       data['MessageData'] = messageData!.map((v) => v.toJson()).toList();
     }

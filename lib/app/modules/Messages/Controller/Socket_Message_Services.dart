@@ -205,7 +205,6 @@ class SocketMessageService extends GetxService {
     socket.emit("editMessage", payload);
   }
 
-
   void listenMessageEdited({
     required Function(dynamic data) callback,
   }) {
@@ -219,8 +218,6 @@ class SocketMessageService extends GetxService {
       callback(data);
     });
   }
-
-
 
   void deleteMessage({
     required int messageId,
@@ -268,11 +265,15 @@ class SocketMessageService extends GetxService {
     required int messageId,
     required String pinnedByName,
   }) {
-    socket.emit("pin_message", {
+    final payload = {
       "groupId": groupId,
       "messageId": messageId,
       "pinnedByName": pinnedByName,
-    });
+    };
+
+    print("📌 PIN MESSAGE PAYLOAD =====> $payload");
+
+    socket.emit("pin_message", payload);
   }
 
   void unpinMessageEvent({
@@ -288,6 +289,8 @@ class SocketMessageService extends GetxService {
   }) {
     socket.off("message_pinned");
     socket.on("message_pinned", (data) {
+      print("📌 MESSAGE PINNED EVENT =====> $data");
+
       callback(Map<String, dynamic>.from(data));
     });
   }
@@ -316,8 +319,6 @@ class SocketMessageService extends GetxService {
 
     socket.emit("forward_message", payload);
   }
-
-
 
   void disconnectSocket() {
     _socket?.disconnect();

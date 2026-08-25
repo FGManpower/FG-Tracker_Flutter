@@ -14,22 +14,42 @@ import 'package:flutter/widgets.dart';
 class $AssetsIconsGen {
   const $AssetsIconsGen();
 
+  /// File path: assets/icons/Realtimetrack.png
+  AssetGenImage get realtimetrack =>
+      const AssetGenImage('assets/icons/Realtimetrack.png');
+
   /// File path: assets/icons/app_icon.png
   AssetGenImage get appIcon => const AssetGenImage('assets/icons/app_icon.png');
 
   /// File path: assets/icons/flag.png
   AssetGenImage get flag => const AssetGenImage('assets/icons/flag.png');
 
+  /// File path: assets/icons/secure.png
+  AssetGenImage get secure => const AssetGenImage('assets/icons/secure.png');
+
   /// File path: assets/icons/walkie-talkie.png
   AssetGenImage get walkieTalkie =>
       const AssetGenImage('assets/icons/walkie-talkie.png');
 
   /// List of all assets
-  List<AssetGenImage> get values => [appIcon, flag, walkieTalkie];
+  List<AssetGenImage> get values =>
+      [realtimetrack, appIcon, flag, secure, walkieTalkie];
 }
 
 class $AssetsImagesGen {
   const $AssetsImagesGen();
+
+  /// File path: assets/images/Introductionn1.png
+  AssetGenImage get introductionn1 =>
+      const AssetGenImage('assets/images/Introductionn1.png');
+
+  /// File path: assets/images/Introductionn2.png
+  AssetGenImage get introductionn2 =>
+      const AssetGenImage('assets/images/Introductionn2.png');
+
+  /// File path: assets/images/Introductionn3.png
+  AssetGenImage get introductionn3 =>
+      const AssetGenImage('assets/images/Introductionn3.png');
 
   /// File path: assets/images/QrCode_bg.png
   AssetGenImage get qrCodeBg =>
@@ -145,6 +165,9 @@ class $AssetsImagesGen {
 
   /// List of all assets
   List<AssetGenImage> get values => [
+        introductionn1,
+        introductionn2,
+        introductionn3,
         qrCodeBg,
         aboutUs,
         appUpdate,
@@ -177,6 +200,16 @@ class $AssetsImagesGen {
         userAvatar,
         userVideo
       ];
+}
+
+class $AssetsMapThemeGen {
+  const $AssetsMapThemeGen();
+
+  /// File path: assets/map_theme/dark_map.json
+  String get darkMap => 'assets/map_theme/dark_map.json';
+
+  /// List of all assets
+  List<String> get values => [darkMap];
 }
 
 class $AssetsMusicGen {
@@ -367,18 +400,16 @@ class $AssetsSvgGen {
       ];
 }
 
-class Assets {
-  const Assets._();
-
+abstract final class Assets {
   static const $AssetsIconsGen icons = $AssetsIconsGen();
   static const $AssetsImagesGen images = $AssetsImagesGen();
+  static const $AssetsMapThemeGen mapTheme = $AssetsMapThemeGen();
   static const $AssetsMusicGen music = $AssetsMusicGen();
-  static const String serviceAccount = 'assets/service_account.json';
   static const $AssetsSvgGen svg = $AssetsSvgGen();
   static const String shorebird = 'shorebird.yaml';
 
   /// List of all assets
-  static List<String> get values => [serviceAccount, shorebird];
+  static List<String> get values => [shorebird];
 }
 
 class AssetGenImage {
