@@ -1,3 +1,5 @@
+
+
 import 'package:country_code_picker/country_code_picker.dart';
 import 'package:fgtracker/app/Core/theme/AppText.dart';
 import 'package:fgtracker/app/Core/values/Curve/Login_Curve.dart';
@@ -10,6 +12,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
+
 
 class LoginPage extends GetView<Login_Controller> {
   @override
@@ -243,7 +246,8 @@ class LoginPage extends GetView<Login_Controller> {
 
                           reausablebutton(
                             title: AppText.login,
-                            ontap: () {
+                            ontap: () async {
+
                               controller.login();
                             },
                             borderradiues: 25.r,

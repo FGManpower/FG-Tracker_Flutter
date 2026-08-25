@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
+import 'dart:io';
 import 'package:connectycube_flutter_call_kit/connectycube_flutter_call_kit.dart';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
@@ -27,6 +28,7 @@ import 'app/modules/Track/Controller/SocketServices.dart';
 import 'app/modules/Track/Controller/TrackController.dart';
 import 'app/modules/Track/Controller/LocationService.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:fgtracker/app/logger.dart';
 
 final socket = SignallingService.instance.socket;
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
@@ -38,6 +40,11 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   log("====Background-Bg===${message.data}");
 
   if (message.data['screen_name'] == "incomingCall") {
+
+    if (Platform.isIOS) {
+      await RemoteLoggerTest.log("FCM_BG_HANDLER", "iOS detected in FCM background handler: ${message.data}");
+      return;
+    }
     final callData = jsonDecode(message.data['callData']);
     final originalCallId = callData['callId'].toString();
 
@@ -139,11 +146,10 @@ void onCallEventBackground() {
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-
+  await RemoteLoggerTest.log("MAIN_BOOT", "App process launched/woken up in background! Platform: ${Platform.operatingSystem}");
   await Global.init();
   FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
-  ConnectycubeFlutterCallKit.onCallRejectedWhenTerminated =
-      onCallRejectedWhenTerminated;
+  ConnectycubeFlutterCallKit.onCallRejectedWhenTerminated = onCallRejectedWhenTerminated;
   await firebaseNotificationServices().initialized();
   CallKitService.instance.init();
   SystemChrome.setSystemUIOverlayStyle(
@@ -168,8 +174,11 @@ Future<void> main() async {
     );
   }
 
+
   runApp(const MyApp());
 }
+
+
 
 class MyApp extends StatefulWidget {
   const MyApp({super.key});

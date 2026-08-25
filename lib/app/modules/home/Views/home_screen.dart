@@ -21,6 +21,7 @@ import 'package:fgtracker/app/global_widget/common_widget.dart';
 
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:upgrader/upgrader.dart';
 
 import '../../../../gen/assets.gen.dart';
@@ -61,11 +62,12 @@ class _HomeScreenState extends State<HomeScreen> {
        debugPrint("token=>${value}");
       },
     );
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      if (Platform.isIOS) {
-        await CallKitService.instance.checkCallOnLaunch();
-      }
-    });
+    // WidgetsBinding.instance.addPostFrameCallback((_) async {
+    //   if (Platform.isIOS) {
+    //     await CallKitService.instance.checkCallOnLaunch();
+    //   }
+    // });
+    requestCallPermissions();
   }
 
   Future<void> checkAndRequestPermissions(BuildContext context) async {
@@ -79,6 +81,16 @@ class _HomeScreenState extends State<HomeScreen> {
     await trackingController.loadLocationSharing();
   }
 
+
+  Future<void> requestCallPermissions() async {
+    await [
+      Permission.microphone,
+      Permission.camera,
+      Permission.audio,
+      Permission.microphone,
+      Permission.notification,
+    ].request();
+  }
 
 
   @override
