@@ -340,7 +340,7 @@ class CallKitService {
 
         default:
           if (data.isNotEmpty) {
-            await RemoteLoggerTest.log("checkCallOnLaunchdefault", "error:");
+
             final socket = SignallingService.instance.socket;
             if (socket != null && socket.connected) {
               final myUserId =
@@ -360,7 +360,7 @@ class CallKitService {
           break;
       }
     } catch (e) {
-      await RemoteLoggerTest.log("checkCallOnLaunch", "error: $e");
+      // await RemoteLoggerTest.log("checkCallOnLaunch", "error: $e");
       log("checkCallOnLaunch error: $e");
     }
   }
@@ -375,10 +375,9 @@ class CallKitService {
       );
       CallSessionState.reset();
       CallStateTracker.isIncomingCallScreenOpen = false;
-      await RemoteLoggerTest.log("_Callcleaned", "up: $sessionId");
+      // await RemoteLoggerTest.log("_Callcleaned", "up: $sessionId");
       log("✅ Call cleaned up: $sessionId");
     } catch (e) {
-      await RemoteLoggerTest.log("_cleanupCall", "error: $e");
 
       log("❌ _cleanupCall error: $e");
     }

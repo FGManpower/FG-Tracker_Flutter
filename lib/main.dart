@@ -42,7 +42,7 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   if (message.data['screen_name'] == "incomingCall") {
 
     if (Platform.isIOS) {
-      await RemoteLoggerTest.log("FCM_BG_HANDLER", "iOS detected in FCM background handler: ${message.data}");
+      // await RemoteLoggerTest.log("FCM_BG_HANDLER", "iOS detected in FCM background handler: ${message.data}");
       return;
     }
     final callData = jsonDecode(message.data['callData']);
@@ -146,7 +146,7 @@ void onCallEventBackground() {
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  await RemoteLoggerTest.log("MAIN_BOOT", "App process launched/woken up in background! Platform: ${Platform.operatingSystem}");
+  // await RemoteLoggerTest.log("MAIN_BOOT", "App process launched/woken up in background! Platform: ${Platform.operatingSystem}");
   await Global.init();
   FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
   ConnectycubeFlutterCallKit.onCallRejectedWhenTerminated = onCallRejectedWhenTerminated;
