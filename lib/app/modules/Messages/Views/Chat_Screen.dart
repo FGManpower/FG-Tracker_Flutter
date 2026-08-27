@@ -16,7 +16,6 @@ import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:fgtracker/app/widgets/PinnedMessageBanner.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../Walkie-talkie/Controller/walkieController.dart';
 import '../widgets/ChatInputArea.dart';
 import '../widgets/ChatList.dart';
 import 'ContactPickerPage.dart';
@@ -27,7 +26,7 @@ class ChatScreen extends GetView<MessageController> {
 
   final TextEditingController _controller = TextEditingController();
 
-  final wc = Get.put(WalkieController());
+
   final groupController = Get.put(GroupController());
   final RxString recordedVoicePath = "".obs;
 

@@ -156,8 +156,8 @@ class AppPages {
       transitionDuration: const Duration(milliseconds: 500),
     ),
     GetPage(
-      name: _Paths.walkieTalkieScreen,
-      page: () => WalkieTalkieScreen(),
+      name: _Paths.groupWalkieScreen,
+      page: () => GroupWalkieScreen(),
       transition: Transition.rightToLeft,
       transitionDuration: const Duration(milliseconds: 500),
     ),

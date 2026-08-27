@@ -13,6 +13,7 @@ import 'package:fgtracker/app/Data/Repositories/Auth_repo.dart';
 import 'package:fgtracker/app/Data/Services/MethodChannel.dart';
 import 'package:fgtracker/app/Data/Services/NotificationServices.dart';
 import 'package:fgtracker/app/Data/Services/Walkie-Talkie-Service.dart';
+import 'package:fgtracker/app/Data/Services/group_Service.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -86,12 +87,10 @@ class OtpController extends GetxController {
     }
 
     firebaseNotificationServices().getDiviceToken().then(
-          (value) {
+      (value) {
         deviceId.value = value;
       },
     );
-
-
   }
 
   void startResendTimer() {
@@ -160,10 +159,24 @@ class OtpController extends GetxController {
             websocketUrl: ConstRes.socketUrl,
             selfCallerID: result.data!.userId.toString(),
           );
-          WalkietalkieService.instance.init(
-            websocketUrl: ConstRes.socketUrl,
-            selfUserId: result.data!.userId.toString(),
-          );
+
+          if (result.data!.userId != null) {
+            GroupWalkieService.instance.init(
+              websocketUrl: ConstRes.socketUrl,
+              selfUserId: result.data!.userId.toString(),
+            );
+
+            Future.delayed(const Duration(seconds: 2), () async {
+              try {
+                final groupIds = await GroupService().getGroupData();
+
+                GroupWalkieService.instance.registerGroups(groupIds.toList());
+                log("📻 Registered ${groupIds.length} groups for walkie auto-notify");
+              } catch (e) {
+                log("❌ Failed to register groups: $e");
+              }
+            });
+          }
         } catch (e) {
           log("login_SocketException====${e}");
         }

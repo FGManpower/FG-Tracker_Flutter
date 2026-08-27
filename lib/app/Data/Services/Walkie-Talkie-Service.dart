@@ -2,34 +2,43 @@ import 'dart:async';
 import 'dart:developer';
 import 'dart:io';
 import 'dart:typed_data';
-
 import 'package:audio_session/audio_session.dart';
-import 'package:flutter_sound/flutter_sound.dart';
-import 'package:socket_io_client/socket_io_client.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Controller/walkieController.dart';
+import 'package:fgtracker/app/routes/app_pages.dart';
+import 'package:flutter_sound/flutter_sound.dart';
+import 'package:get/get.dart';
+import 'package:socket_io_client/socket_io_client.dart';
 
-class WalkietalkieService {
-  WalkietalkieService._();
-  static final instance = WalkietalkieService._();
+
+class GroupWalkieService {
+  GroupWalkieService._();
+  static final instance = GroupWalkieService._();
 
   Socket? socket;
-
   final FlutterSoundRecorder _recorder = FlutterSoundRecorder();
   final FlutterSoundPlayer _player = FlutterSoundPlayer();
 
-  StreamController<Uint8List>? _micStream;
+  // ✅ Pure Uint8List Stream Controller (No Food references)
+  StreamController<Uint8List>? _micStreamController;
+  StreamSubscription<Uint8List>? _micStreamSubscription;
 
   bool _recorderReady = false;
   bool _playerReady = false;
   bool _isTalking = false;
-  bool _isReceiving = false;
-  String? _currentTransmissionId;
-  int _sequenceNumber = 0;
+  bool _isMuted = false;
+  bool _listenersBound = false;
 
-  // Audio settings - optimized for VOICE
-  static const int sampleRate = 16000; // 16kHz for voice (not 44.1kHz)
-  static const int channels = 1; // Mono
-  static const int frameSize = 640; // 20ms at 16kHz (16000 * 0.02 * 2 bytes)
+  String? _currentGroupId;
+  String? _activeTransmissionId;
+  String _lastTransmissionId = "";
+  int _sequenceCounter = 0;
+  int _lastReceivedSeq = 0;
+  String? _selfUserId;
+  List<String> _cachedGroupIds = [];
+
+  static const int sampleRate = 16000;
+  static const int channels = 1;
+  static const int frameSize = 640; // 20ms @ 16kHz PCM16
 
   // ============================================================
   // INIT
@@ -38,138 +47,186 @@ class WalkietalkieService {
     required String websocketUrl,
     required String selfUserId,
   }) async {
-    log("🚀 Walkie init started");
-
+    _selfUserId = selfUserId;
     await _configureAudioSession();
-    await _initPlayer();
+    await _initializePlayer();
 
     socket = io(
-      "$websocketUrl/walkie",
-      {
-        "transports": ["websocket"],
-        "query": {"userId": selfUserId},
-        "forceNew": true,
-        "autoConnect": true,
-        "reconnection": true,
-        "reconnectionAttempts": 5,
-        "reconnectionDelay": 1000,
-      },
+      "$websocketUrl/groupWalkie",
+      OptionBuilder()
+          .setTransports(['websocket'])
+          .setQuery({'userId': selfUserId})
+          .enableForceNew()
+          .enableAutoConnect()
+          .setReconnectionDelay(1000)
+          .build(),
     );
 
-    socket!.onConnect((_) => log("🔌 Walkie socket connected"));
-    socket!.onDisconnect((_) => log("🔌 Walkie socket disconnected"));
-    socket!.onConnectError((err) => log("❌ Connect error: $err"));
-    socket!.onError((err) => log("❌ Socket error: $err"));
+    socket!.onConnect((_) {
+      log("🔌 Walkie Socket Connected (User: $selfUserId)");
+      _bindSocketListeners();
+      if (_cachedGroupIds.isNotEmpty) {
+        registerGroups(_cachedGroupIds);
+      }
+    });
 
-    _setupSocketListeners();
-    log("✅ Walkie init completed");
+    socket!.onDisconnect((_) {
+      log("🔌 Walkie Socket Disconnected");
+      _listenersBound = false;
+    });
+  }
+
+  void registerGroups(List<String> groupIds) {
+    _cachedGroupIds = groupIds;
+    if (socket != null && socket!.connected) {
+      socket?.emit("register_walkie_groups", {"groupIds": groupIds});
+      log("📻 Registered ${groupIds.length} groups with socket");
+    }
   }
 
   // ============================================================
-  // SOCKET LISTENERS - Registered ONCE only
+  // SOCKET LISTENERS
   // ============================================================
-  void _setupSocketListeners() {
-    // ✅ CRITICAL: Remove old listeners before adding new ones
-    socket?.off("walkie_incoming");
+  void _bindSocketListeners() {
+    if (_listenersBound) return;
+    _listenersBound = true;
+
+    socket?.off("walkie_auto_open");
     socket?.off("audio_chunk");
-    socket?.off("walkie_stop");
+    socket?.off("walkie_speaker_active");
+    socket?.off("walkie_speaker_stopped");
+    socket?.off("walkie_participants_update");
     socket?.off("walkie_status");
+    socket?.off("walkie_channel_locked");
 
-    // ======= INCOMING TRANSMISSION =======
-    socket?.on("walkie_incoming", (data) {
-      log("🔊 walkie_incoming: $data");
+    socket?.on("walkie_auto_open", (data) {
+      final groupId = data['groupId']?.toString() ?? "";
+      final speakerName = data['speakerName'] ?? "Someone";
+      final groupName = data['groupName'] ?? "Group";
 
-      _currentTransmissionId = data['transmissionId']?.toString();
-      _isReceiving = true;
+      if (Get.currentRoute == Routes.groupWalkieScreen) return;
 
-      WalkieController().onIncoming(
-        remoteUserId: data['fromUserId']?.toString() ?? "",
-        callerName: data['fromUserName'] ?? "Unknown",
-        profileImage: data['fromUserProfile'] ?? "",
+      Get.toNamed(
+        Routes.groupWalkieScreen,
+        arguments: {
+          "groupId": groupId,
+          "groupName": groupName,
+          "speakerName": speakerName,
+          "autoOpened": true,
+        },
       );
     });
 
-    // ======= RECEIVE AUDIO CHUNK =======
     socket?.on("audio_chunk", (data) {
-      if (!_playerReady || !_isReceiving) return;
+      if (!_playerReady || _isMuted || _isTalking) return;
 
       try {
-        // Extract transmissionId and sequence number
-        String? transId;
-        Uint8List? pcm;
+        final transId = data['transmissionId']?.toString() ?? "";
+        final seq = (data['seq'] as int?) ?? 0;
+        final speakerId = data['speakerId']?.toString() ?? "";
 
-        if (data is Map) {
-          transId = data['transmissionId']?.toString();
-          if (transId != _currentTransmissionId) {
-            log("⚠️ Ignoring old transmission chunk: $transId");
-            return;
-          }
-          pcm = Uint8List.fromList(List<int>.from(data['chunk']));
-        } else if (data is List) {
-          pcm = Uint8List.fromList(List<int>.from(data));
-        } else if (data is Uint8List) {
-          pcm = data;
+        if (speakerId == _selfUserId) return;
+
+        if (_activeTransmissionId != null && transId != _activeTransmissionId) {
+          return;
         }
 
+        if (transId != _lastTransmissionId) {
+          _lastTransmissionId = transId;
+          _lastReceivedSeq = 0;
+        }
+
+        if (seq > 0) {
+          if (seq <= _lastReceivedSeq) return;
+          _lastReceivedSeq = seq;
+        }
+
+        Uint8List? pcm = _extractPcmBytes(data['chunk']);
         if (pcm == null || pcm.isEmpty) return;
 
-        // Apply gain boost for better volume
-        pcm = _applyGain(pcm, gain: 3.0);
-
-        // Feed to player
+        pcm = _applyClampedGain(pcm, gain: 2.0);
         _player.uint8ListSink?.add(pcm);
       } catch (e) {
-        log("❌ _onAudioChunk error: $e");
+        log("❌ audio_chunk decode error: $e");
       }
     });
 
-    // ======= STOP TRANSMISSION =======
-    socket?.on("walkie_stop", (data) {
-      log("🛑 walkie_stop received: $data");
+    socket?.on("walkie_speaker_active", (data) {
+      _activeTransmissionId = data['transmissionId']?.toString();
+      _lastTransmissionId = _activeTransmissionId ?? "";
+      _lastReceivedSeq = 0;
 
-      _currentTransmissionId = null;
-      _isReceiving = false;
-
-      // Flush player buffer
-      _player.uint8ListSink?.add(Uint8List(0));
-
-      // Notify controller
-      final controller = WalkieController();
-      if (controller.audioState.value == WalkieAudioState.listening) {
-        controller.stopTalking();
+      if (Get.isRegistered<GroupWalkieController>()) {
+        Get.find<GroupWalkieController>().onSpeakerActive(
+          speakerId: data['speakerId']?.toString() ?? "",
+          speakerName: data['speakerName'] ?? "User",
+          speakerImage: data['speakerImage'] ?? "",
+        );
       }
     });
 
-    // ======= CHANNEL STATUS =======
+    socket?.on("walkie_speaker_stopped", (data) {
+      _activeTransmissionId = null;
+      _lastTransmissionId = "";
+      _lastReceivedSeq = 0;
+
+      if (Get.isRegistered<GroupWalkieController>()) {
+        Get.find<GroupWalkieController>().onSpeakerStopped();
+      }
+    });
+
+    socket?.on("walkie_participants_update", (data) {
+      if (Get.isRegistered<GroupWalkieController>()) {
+        final list = (data['participants'] as List? ?? [])
+            .map((p) => WalkieParticipant.fromMap(p))
+            .toList();
+        Get.find<GroupWalkieController>().updateParticipants(
+          list,
+          activeSpeaker: data['activeSpeaker']?.toString(),
+        );
+      }
+    });
+
     socket?.on("walkie_status", (data) {
-      log("📡 walkie_status: $data");
       final status = data['status']?.toString() ?? "";
+      if (Get.isRegistered<GroupWalkieController>()) {
+        final c = Get.find<GroupWalkieController>();
+        if (status == "BUSY") c.showBusyMessage(data['speakerName'] ?? "");
+        else if (status == "OPEN") _activeTransmissionId = data['transmissionId']?.toString();
+        else if (status == "LOCKED") c.showLockedMessage();
+        else if (status == "MUTED") c.showMutedMessage();
+      }
+    });
 
-      if (status == "BUSY") {
-        log("⚠️ Target is busy talking");
-        // Show busy indicator or trigger end
-      } else if (status == "OPEN") {
-        log("✅ Audio channel opened");
-        _currentTransmissionId = data['transmissionId']?.toString();
+    socket?.on("walkie_channel_locked", (data) {
+      if (Get.isRegistered<GroupWalkieController>()) {
+        Get.find<GroupWalkieController>().onChannelLocked(
+          isLocked: data['isLocked'] ?? false,
+        );
       }
     });
   }
 
-  // ============================================================
-  // AUDIO SESSION CONFIGURATION
-  // ============================================================
+  Uint8List? _extractPcmBytes(dynamic chunk) {
+    if (chunk == null) return null;
+    if (chunk is Uint8List) return chunk;
+    if (chunk is List<int>) return Uint8List.fromList(chunk);
+    if (chunk is List) return Uint8List.fromList(chunk.cast<int>());
+    if (chunk is Map && chunk['data'] is List) {
+      return Uint8List.fromList((chunk['data'] as List).cast<int>());
+    }
+    return null;
+  }
+
   Future<void> _configureAudioSession() async {
     final session = await AudioSession.instance;
-
     await session.configure(
       AudioSessionConfiguration(
         avAudioSessionCategory: AVAudioSessionCategory.playAndRecord,
         avAudioSessionMode: AVAudioSessionMode.voiceChat,
         avAudioSessionCategoryOptions:
         AVAudioSessionCategoryOptions.allowBluetooth |
-        AVAudioSessionCategoryOptions.defaultToSpeaker |
-        AVAudioSessionCategoryOptions.allowBluetoothA2dp,
-        // AVAudioSessionCategoryOptions.allowBluetoothA2DP,
+        AVAudioSessionCategoryOptions.defaultToSpeaker,
         androidAudioAttributes: const AndroidAudioAttributes(
           usage: AndroidAudioUsage.voiceCommunication,
           contentType: AndroidAudioContentType.speech,
@@ -177,78 +234,57 @@ class WalkietalkieService {
         androidAudioFocusGainType: AndroidAudioFocusGainType.gain,
       ),
     );
-
     await session.setActive(true);
-    log("🎧 AudioSession configured");
   }
 
-  // ============================================================
-  // PLAYER INIT
-  // ============================================================
-  Future<void> _initPlayer() async {
-    log("🔊 Opening player");
-
+  Future<void> _initializePlayer() async {
+    if (_playerReady) return;
     await _player.openPlayer();
-
-    await _startPlayerStream();
-
-    _playerReady = true;
-    log("✅ Player ready");
-  }
-
-  Future<void> _startPlayerStream() async {
-    // ✅ CRITICAL: Start from stream for continuous playback
     await _player.startPlayerFromStream(
       codec: Codec.pcm16,
       sampleRate: sampleRate,
       numChannels: channels,
-      bufferSize: 4096, // Larger buffer for smoother playback
-      interleaved: true, // Always interleaved for PCM16
+      bufferSize: 2048,
+      interleaved: true,
     );
+    _playerReady = true;
+    log("✅ Audio Player Initialized");
   }
 
-  // ============================================================
-  // AUDIO GAIN
-  // ============================================================
-  Uint8List _applyGain(Uint8List pcm, {double gain = 2.0}) {
-    final Int16List samples = pcm.buffer.asInt16List();
-    for (int i = 0; i < samples.length; i++) {
-      int boosted = (samples[i] * gain).toInt();
-      if (boosted > 32767) boosted = 32767;
-      if (boosted < -32768) boosted = -32768;
-      samples[i] = boosted;
-    }
-    return Uint8List.view(samples.buffer);
-  }
-
-  // ============================================================
-  // RECORDER
-  // ============================================================
   Future<void> initRecorder() async {
-    if (_recorderReady) {
-      log("⚠️ Recorder already ready");
-      return;
-    }
-
-    log("🎙️ Opening recorder");
-
+    if (_recorderReady) return;
     await _recorder.openRecorder();
+    _recorderReady = true;
+    log("🎙️ Microphone Hardware Ready");
+  }
 
-    _micStream = StreamController<Uint8List>();
+  // ============================================================
+  // PUSH-TO-TALK (START / STOP)
+  // ============================================================
+  Future<void> startTalking() async {
+    if (_currentGroupId == null || _isTalking) return;
+    _isTalking = true;
+    _sequenceCounter = 0;
 
-    _micStream!.stream.listen((Uint8List buffer) {
+    socket?.emit("walkie_start", {"groupId": _currentGroupId});
+
+    if (!_recorderReady) await initRecorder();
+
+    // ✅ Clean type: StreamController<Uint8List>
+    _micStreamController = StreamController<Uint8List>();
+
+    await _micStreamSubscription?.cancel();
+    _micStreamSubscription = _micStreamController!.stream.listen((Uint8List buffer) {
       if (socket?.connected != true || !_isTalking) return;
 
-      // ✅ Send frames with sequence numbers
       int offset = 0;
       while (offset + frameSize <= buffer.length) {
+        _sequenceCounter++;
         final frame = buffer.sublist(offset, offset + frameSize);
-        _sequenceNumber++;
 
         socket!.emit("audio_chunk", {
-          "transmissionId": _currentTransmissionId ?? "",
-          "seq": _sequenceNumber,
           "chunk": frame,
+          "seq": _sequenceCounter,
         });
 
         offset += frameSize;
@@ -259,117 +295,109 @@ class WalkietalkieService {
       codec: Codec.pcm16,
       sampleRate: sampleRate,
       numChannels: channels,
-      toStream: _micStream!.sink,
+      audioSource: AudioSource.voice_communication,
+      toStream: _micStreamController!.sink,
     );
 
-    _recorderReady = true;
-    log("✅ Recorder ready");
+    log("🎤 Microphone active and transmitting");
+  }
+
+  Future<void> stopTalking() async {
+    if (!_isTalking) return;
+    _isTalking = false;
+
+    socket?.emit("walkie_stop", {"groupId": _currentGroupId});
+
+    try {
+      await _recorder.stopRecorder();
+      await _micStreamSubscription?.cancel();
+      await _micStreamController?.close();
+    } catch (e) {
+      log("stopRecorder error: $e");
+    }
+
+    _micStreamSubscription = null;
+    _micStreamController = null;
+    _sequenceCounter = 0;
+    log("🛑 Transmission stopped");
+  }
+
+  void joinGroup(String groupId) {
+    _currentGroupId = groupId;
+    socket?.emit("join_group_walkie", {"groupId": groupId});
+  }
+
+  void leaveGroup() {
+    if (_currentGroupId == null) return;
+    socket?.emit("leave_group_walkie", {"groupId": _currentGroupId});
+    _currentGroupId = null;
+    _activeTransmissionId = null;
+    _lastTransmissionId = "";
+    _lastReceivedSeq = 0;
+  }
+
+  void toggleMute() {
+    _isMuted = !_isMuted;
+    socket?.emit("walkie_toggle_mute", {
+      "groupId": _currentGroupId,
+      "isMuted": _isMuted,
+    });
+  }
+
+  void toggleLockChannel(bool isLocked) {
+    socket?.emit("walkie_lock_channel", {
+      "groupId": _currentGroupId,
+      "isLocked": isLocked,
+    });
+  }
+
+  Uint8List _applyClampedGain(Uint8List pcm, {double gain = 2.0}) {
+    if (pcm.isEmpty) return pcm;
+    try {
+      final byteData = pcm.buffer.asByteData(pcm.offsetInBytes, pcm.lengthInBytes);
+      final samplesLength = pcm.lengthInBytes ~/ 2;
+      final outputBytes = Uint8List(pcm.lengthInBytes);
+      final outByteData = outputBytes.buffer.asByteData();
+
+      for (int i = 0; i < samplesLength; i++) {
+        int sample = byteData.getInt16(i * 2, Endian.little);
+        int boosted = (sample * gain).toInt();
+        if (boosted > 32767) boosted = 32767;
+        if (boosted < -32768) boosted = -32768;
+        outByteData.setInt16(i * 2, boosted, Endian.little);
+      }
+      return outputBytes;
+    } catch (e) {
+      return pcm;
+    }
   }
 
   Future<void> stopRecorder() async {
     if (!_recorderReady) return;
-
-    log("🛑 Stopping recorder");
-
     try {
       await _recorder.stopRecorder();
-      await _micStream?.close();
+      await _recorder.closeRecorder();
+      await _micStreamSubscription?.cancel();
+      await _micStreamController?.close();
     } catch (e) {
-      log("❌ stopRecorder error: $e");
+      log("stopRecorder error: $e");
     }
-
-    _micStream = null;
+    _micStreamSubscription = null;
+    _micStreamController = null;
     _recorderReady = false;
-    _isTalking = false;
-    _sequenceNumber = 0;
-
-    log("✅ Recorder stopped");
+    _sequenceCounter = 0;
   }
 
-  // ============================================================
-  // START / STOP TALKING
-  // ============================================================
-  void startTalking(String remoteUserId) {
-    log("📡 walkie_start → $remoteUserId");
-    _isTalking = true;
-    _sequenceNumber = 0;
-
-    socket?.emit("walkie_start", {
-      "remoteUserId": remoteUserId,
-    });
-  }
-
-  void stopTalking(String remoteUserId) {
-    log("📡 walkie_stop → $remoteUserId");
-    _isTalking = false;
-
-    socket?.emit("walkie_stop", {
-      "remoteUserId": remoteUserId,
-    });
-  }
-
-  // ============================================================
-  // SPEAKER TOGGLE
-  // ============================================================
-  Future<void> toggleSpeaker(bool speakerOn) async {
-    log("🔊 Toggle Speaker → $speakerOn");
-
-    final session = await AudioSession.instance;
-
-    await session.configure(
-      AudioSessionConfiguration(
-        avAudioSessionCategory: AVAudioSessionCategory.playAndRecord,
-        avAudioSessionMode: AVAudioSessionMode.voiceChat,
-        avAudioSessionCategoryOptions:
-        (speakerOn
-            ? AVAudioSessionCategoryOptions.defaultToSpeaker
-            : AVAudioSessionCategoryOptions.none) |
-        AVAudioSessionCategoryOptions.allowBluetooth,
-        androidAudioAttributes: const AndroidAudioAttributes(
-          usage: AndroidAudioUsage.voiceCommunication,
-          contentType: AndroidAudioContentType.speech,
-        ),
-        androidAudioFocusGainType: AndroidAudioFocusGainType.gain,
-      ),
-    );
-
-    await session.setActive(true);
-
-    log("✅ Speaker switched");
-  }
-
-  // ============================================================
-  // CLEANUP
-  // ============================================================
   Future<void> dispose() async {
-    log("🧹 Walkie dispose");
-
     _isTalking = false;
-    _isReceiving = false;
-    _currentTransmissionId = null;
-
-    if (_recorderReady) {
-      await stopRecorder();
-    }
-
+    if (_recorderReady) await stopRecorder();
     if (_playerReady) {
       await _player.stopPlayer();
       await _player.closePlayer();
       _playerReady = false;
     }
-
     socket?.disconnect();
     socket?.dispose();
     socket = null;
-
-    log("✅ Walkie disposed");
   }
-
-  // ============================================================
-  // CHECK STATE
-  // ============================================================
-  bool get isTalking => _isTalking;
-  bool get isReceiving => _isReceiving;
-  bool get isPlayerReady => _playerReady;
-  bool get isRecorderReady => _recorderReady;
 }
