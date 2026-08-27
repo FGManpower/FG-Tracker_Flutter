@@ -41,5 +41,34 @@ end
 post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
+
+    # Enable Permission Handler Flags for iOS
+    target.build_configurations.each do |config|
+      config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= [
+        '$(inherited)',
+
+        # Enable Microphone Permission for Walkie-Talkie
+        'PERMISSION_MICROPHONE=1',
+
+        # Enable Notifications Permission
+        'PERMISSION_NOTIFICATIONS=1',
+      ]
+    end
   end
+
+  ################ Awesome Notifications pod modification 1 ###################
+  awesome_pod_file = File.expand_path(File.join('plugins', 'awesome_notifications', 'ios', 'Scripts', 'AwesomePodFile'), '.symlinks')
+  if File.exist?(awesome_pod_file)
+    require awesome_pod_file
+    update_awesome_pod_build_settings(installer)
+  end
+  ################ Awesome Notifications pod modification 1 ###################
 end
+
+################ Awesome Notifications pod modification 2 ###################
+awesome_pod_file = File.expand_path(File.join('plugins', 'awesome_notifications', 'ios', 'Scripts', 'AwesomePodFile'), '.symlinks')
+if File.exist?(awesome_pod_file)
+  require awesome_pod_file
+  update_awesome_main_target_settings('Runner', File.dirname(File.realpath(__FILE__)), flutter_root)
+end
+################ Awesome Notifications pod modification 2 ###################
