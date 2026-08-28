@@ -81,11 +81,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     super.onInit();
     WidgetsBinding.instance.addObserver(this);
     memberData = arguments?['userData'];
-    debugPrint("========== CHAT OPEN ==========");
-    debugPrint("USER ID      : ${memberData.userId}");
-    debugPrint("USER NAME    : ${memberData.name}");
-    debugPrint("USER IMAGE   : ${memberData.profileImage}");
-    debugPrint("GROUP ID     : ${memberData.groupId}");
+
     _initializeChat();
     itemPositionsListener.itemPositions.addListener(_onScrollDateChanged);
   }

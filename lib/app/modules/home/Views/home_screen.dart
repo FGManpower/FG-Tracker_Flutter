@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'dart:ui'; 
+import 'dart:ui';
 
 import 'package:connectycube_flutter_call_kit/connectycube_flutter_call_kit.dart';
 import 'package:fgtracker/app/Core/deep_Link/uniservices.dart';
@@ -18,6 +18,7 @@ import 'package:fgtracker/app/Core/values/Dialog/DialogBox.dart';
 import 'package:fgtracker/app/widgets/Appbar.dart';
 import 'package:fgtracker/app/modules/home/Views/sidemenu.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -94,7 +95,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   final firebaseNotificationServices notificationServices =
-      firebaseNotificationServices();
+  firebaseNotificationServices();
 
   @override
   void initState() {
@@ -104,15 +105,26 @@ class _HomeScreenState extends State<HomeScreen> {
     notificationServices.setupInteractMessage(context);
     notificationServices.askPermission();
     firebaseNotificationServices().getDiviceToken().then(
-      (value) {
+          (value) {
         debugPrint("token=>${value}");
       },
     );
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      if (Platform.isIOS) {
-        await CallKitService.instance.checkCallOnLaunch();
-      }
-    });
+    // WidgetsBinding.instance.addPostFrameCallback((_) async {
+    //   if (Platform.isIOS) {
+    //     await CallKitService.instance.checkCallOnLaunch();
+    //   }
+    // });
+    requestCallPermissions();
+  }
+
+  Future<void> requestCallPermissions() async {
+    await [
+      Permission.microphone,
+      Permission.camera,
+      Permission.audio,
+      Permission.microphone,
+      Permission.notification,
+    ].request();
   }
 
   Future<void> checkAndRequestPermissions(BuildContext context) async {
@@ -170,7 +182,7 @@ class _HomeScreenState extends State<HomeScreen> {
       children: [
         Expanded(
           child: Obx(
-            () => _buildStatCard(
+                () => _buildStatCard(
               icon: Icons.groups,
               iconColor: const Color(0xFF6B4DFF),
               title: "Groups",
@@ -342,7 +354,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     child: Container(
                       padding:
-                          EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                      EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
                       decoration: BoxDecoration(
                         color: const Color(0xFF6B4DFF),
                         borderRadius: BorderRadius.circular(12.r),
@@ -372,7 +384,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   bottom: 12.h,
                   child: Container(
                     padding:
-                        EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+                    EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(12.r),
@@ -462,7 +474,7 @@ class _HomeScreenState extends State<HomeScreen> {
             radius: 14.r,
             backgroundColor: const Color(0xFFE8F0FE),
             child:
-                Icon(Icons.person, size: 16.sp, color: const Color(0xFF6B4DFF)),
+            Icon(Icons.person, size: 16.sp, color: const Color(0xFF6B4DFF)),
           ),
         ),
         Container(
@@ -578,11 +590,11 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildActionCard(
-    String title,
-    IconData icon, {
-    VoidCallback? onTap,
-    bool isComingSoon = false,
-  }) {
+      String title,
+      IconData icon, {
+        VoidCallback? onTap,
+        bool isComingSoon = false,
+      }) {
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -672,7 +684,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return SafeArea(
       child: Container(
         padding:
-            EdgeInsets.only(left: 16.w, right: 16.w, bottom: 15.h, top: 10.h),
+        EdgeInsets.only(left: 16.w, right: 16.w, bottom: 15.h, top: 10.h),
         color: Colors.white,
         child: Row(
           children: [
@@ -687,7 +699,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 },
                 child: Container(
                   padding:
-                      EdgeInsets.symmetric(vertical: 12.h, horizontal: 10.w),
+                  EdgeInsets.symmetric(vertical: 12.h, horizontal: 10.w),
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
                         colors: [Color(0xFF8B78FF), Color(0xFF5A3FFF)]),
@@ -734,12 +746,12 @@ class _HomeScreenState extends State<HomeScreen> {
                 },
                 child: Container(
                   padding:
-                      EdgeInsets.symmetric(vertical: 12.h, horizontal: 10.w),
+                  EdgeInsets.symmetric(vertical: 12.h, horizontal: 10.w),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(16.r),
                     border:
-                        Border.all(color: const Color(0xFF6B4DFF), width: 1.5),
+                    Border.all(color: const Color(0xFF6B4DFF), width: 1.5),
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,

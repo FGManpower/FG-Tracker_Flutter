@@ -3,8 +3,6 @@ import 'dart:developer';
 import 'dart:io';
 import 'package:connectycube_flutter_call_kit/connectycube_flutter_call_kit.dart';
 import 'package:fgtracker/app/Core/global/launchedFromCall.dart';
-import 'package:fgtracker/app/Core/util/callkit_service.dart';
-import 'package:fgtracker/main.dart';
 import 'package:socket_io_client/socket_io_client.dart';
 
 import '../../Core/util/AppLifeCycle.dart';

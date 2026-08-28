@@ -1,70 +1,173 @@
-import 'dart:developer';
-
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
+import 'package:fgtracker/app/Data/Services/Walkie-Talkie-Service.dart'; // ✅ Import Service
 
 enum WalkieRole { caller, receiver }
-
 enum WalkieAudioState { idle, listening, talking }
 
-class WalkieController extends GetxController {
+class WalkieParticipant {
+  final String userId;
+  final String name;
+  final String image;
+  bool isMuted;
+  bool isListening;
+  bool isSpeaking;
+
+  WalkieParticipant({
+    required this.userId,
+    required this.name,
+    required this.image,
+    this.isMuted = false,
+    this.isListening = true,
+    this.isSpeaking = false,
+  });
+
+  factory WalkieParticipant.fromMap(Map<String, dynamic> map) {
+    return WalkieParticipant(
+      userId: map['userId']?.toString() ?? "",
+      name: map['name']?.toString() ?? "User",
+      image: map['image']?.toString() ?? "",
+      isMuted: map['isMuted'] == true,
+      isListening: map['isListening'] != false,
+      isSpeaking: map['isSpeaking'] == true,
+    );
+  }
+}
+
+class GroupWalkieController extends GetxController {
   final role = WalkieRole.caller.obs;
   final audioState = WalkieAudioState.idle.obs;
+
   final isSpeakerOn = true.obs;
-  final isChannelBusy = false.obs;
+  final audioRoute = WalkieAudioRoute.speaker.obs; // ✅ Track Audio Route
+
+  final isMuted = false.obs;
+  final isChannelLocked = false.obs;
+  final isConnected = true.obs;
+
+  final participants = <WalkieParticipant>[].obs;
+  final totalParticipants = 0.obs;
+
+  final activeSpeakerId = "".obs;
+  final activeSpeakerName = "".obs;
+  final activeSpeakerImage = "".obs;
+
+  final statusMessage = "".obs;
+  final showStatus = false.obs;
+  final statusColor = Rx<Color>(Colors.orange);
+
+  String? currentGroupId;
 
   bool get isTalking => audioState.value == WalkieAudioState.talking;
   bool get isListening => audioState.value == WalkieAudioState.listening;
+  bool get hasActiveSpeaker => activeSpeakerId.value.isNotEmpty;
 
-  void onIncoming({
-    required String remoteUserId,
-    required String callerName,
-    required String profileImage,
-  }) {
-    if (Get.currentRoute == Routes.walkieTalkieScreen) {
-      log("⚠️ Walkie screen already open");
-      return;
-    }
-
-    role.value = WalkieRole.receiver;
-    audioState.value = WalkieAudioState.listening;
-
-    log("🔊 Incoming walkie from: $callerName");
-
-    Get.toNamed(
-      Routes.walkieTalkieScreen,
-      arguments: {
-        "remoteUserId": remoteUserId,
-        "callerName": callerName,
-        "profileUrl": profileImage,
-      },
-    );
+  // ============================================================
+  // ✅ FIX 1: SYNC INITIAL AUDIO STATE WHEN SCREEN OPENS
+  // ============================================================
+  @override
+  void onInit() {
+    super.onInit();
+    // Grab the current state from the service immediately when UI loads
+    audioRoute.value = GroupWalkieService.instance.audioRoute.value;
+    isSpeakerOn.value = GroupWalkieService.instance.isSpeakerOn;
   }
 
-  Future<void> startServices({
-    required String callerName,
-    String? profileImage,
-    required String remoteUserId,
-  }) async {
-    if (Get.currentRoute == Routes.walkieTalkieScreen) return;
+  void setCurrentGroup(String groupId) {
+    currentGroupId = groupId;
+  }
 
-    role.value = WalkieRole.caller;
-    audioState.value = WalkieAudioState.listening;
+  // ✅ Helper to update UI Audio Route
+  void setAudioRoute(WalkieAudioRoute route) {
+    audioRoute.value = route;
+    isSpeakerOn.value = route == WalkieAudioRoute.speaker;
+  }
 
-    await Future.delayed(const Duration(milliseconds: 300));
+  // ✅ Dynamic Icon based on route
+  IconData get audioRouteIcon {
+    switch (audioRoute.value) {
+      case WalkieAudioRoute.bluetooth:
+        return Icons.bluetooth_audio_rounded;
+      case WalkieAudioRoute.headset:
+        return Icons.headphones_rounded;
+      case WalkieAudioRoute.earpiece:
+        return Icons.phone_in_talk_rounded;
+      case WalkieAudioRoute.speaker:
+      default:
+        return Icons.volume_up_rounded;
+    }
+  }
 
-    Get.toNamed(
-      Routes.walkieTalkieScreen,
-      arguments: {
-        "remoteUserId": remoteUserId,
-        "callerName": callerName,
-        "profileUrl": profileImage,
-      },
-    );
+  // ✅ Dynamic Label based on route
+  String get audioRouteLabel {
+    switch (audioRoute.value) {
+      case WalkieAudioRoute.bluetooth:
+        return "Bluetooth";
+      case WalkieAudioRoute.headset:
+        return "Headset";
+      case WalkieAudioRoute.earpiece:
+        return "Earpiece";
+      case WalkieAudioRoute.speaker:
+      default:
+        return "Speaker";
+    }
+  }
+
+  void updateParticipants(List<WalkieParticipant> list, {String? activeSpeaker}) {
+    participants.assignAll(list);
+    totalParticipants.value = list.length;
+
+    if (activeSpeaker != null && activeSpeaker.isNotEmpty) {
+      activeSpeakerId.value = activeSpeaker;
+      final speaker = list.firstWhereOrNull((p) => p.userId == activeSpeaker);
+      if (speaker != null) {
+        activeSpeakerName.value = speaker.name;
+        activeSpeakerImage.value = speaker.image;
+      }
+    } else if (!hasActiveSpeaker) {
+      activeSpeakerId.value = "";
+      activeSpeakerName.value = "";
+      activeSpeakerImage.value = "";
+    }
+  }
+
+  void onSpeakerActive({
+    required String speakerId,
+    required String speakerName,
+    required String speakerImage,
+  }) {
+    activeSpeakerId.value = speakerId;
+    activeSpeakerName.value = speakerName;
+    activeSpeakerImage.value = speakerImage;
+
+    if (!isTalking) {
+      audioState.value = WalkieAudioState.listening;
+    }
+
+    for (final p in participants) {
+      p.isSpeaking = p.userId == speakerId;
+    }
+    participants.refresh();
+  }
+
+  void onSpeakerStopped() {
+    activeSpeakerId.value = "";
+    activeSpeakerName.value = "";
+    activeSpeakerImage.value = "";
+
+    for (final p in participants) {
+      p.isSpeaking = false;
+    }
+    participants.refresh();
+
+    if (!isTalking) {
+      audioState.value = WalkieAudioState.listening;
+    }
   }
 
   void startTalking() {
-    if (isChannelBusy.value) return;
+    if (isChannelLocked.value) return;
     audioState.value = WalkieAudioState.talking;
   }
 
@@ -72,21 +175,58 @@ class WalkieController extends GetxController {
     audioState.value = WalkieAudioState.listening;
   }
 
-  void setBusy(bool busy) {
-    isChannelBusy.value = busy;
-    if (busy) {
-      audioState.value = WalkieAudioState.idle;
-    }
+  void toggleMute() {
+    isMuted.value = !isMuted.value;
+  }
+
+  void showBusyMessage(String speakerName) {
+    _displayBanner(
+      speakerName.isEmpty ? "Channel is busy" : "$speakerName is talking...",
+      Colors.orange,
+    );
+  }
+
+  void showMutedMessage() {
+    _displayBanner("You are muted. Unmute to listen.", Colors.redAccent);
+  }
+
+  void showLockedMessage() {
+    _displayBanner("Channel is locked by admin", Colors.redAccent);
+  }
+
+  void onChannelLocked({required bool isLocked}) {
+    isChannelLocked.value = isLocked;
+    _displayBanner(
+      isLocked ? "Channel locked by admin" : "Channel unlocked",
+      isLocked ? Colors.redAccent : Colors.greenAccent,
+    );
+  }
+
+  void _displayBanner(String msg, Color color) {
+    statusMessage.value = msg;
+    statusColor.value = color;
+    showStatus.value = true;
+    Future.delayed(const Duration(seconds: 2), () {
+      if (statusMessage.value == msg) {
+        showStatus.value = false;
+      }
+    });
   }
 
   void reset() {
     role.value = WalkieRole.caller;
     audioState.value = WalkieAudioState.idle;
-    isChannelBusy.value = false;
-  }
-
-  void toggleSpeaker() {
-    isSpeakerOn.value = !isSpeakerOn.value;
+    isChannelLocked.value = false;
+    isMuted.value = false;
+    participants.clear();
+    totalParticipants.value = 0;
+    activeSpeakerId.value = "";
+    activeSpeakerName.value = "";
+    activeSpeakerImage.value = "";
+    showStatus.value = false;
+    statusMessage.value = "";
+    statusColor.value = Colors.orange;
+    currentGroupId = null;
   }
 
   @override

@@ -185,46 +185,78 @@ class MemberscreenScreen extends GetView<MemberController> {
               : Padding(
                   padding:
                       EdgeInsets.symmetric(horizontal: 15.h, vertical: 10.h),
-                  child: Row(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Expanded(
-                        child: reausablebutton(
-                            title: "Track",
-                            icon: Icons.track_changes,
-                            fontSize: 12,
-                            borderradiues: 50,
-                            ontap: () {
-                              Get.toNamed(Routes.LocationTracking, arguments: {
-                                "groupId": int.parse(controller
+                      reausablebutton(
+                          title: "Walkie-Talkie",
+                          icon: Icons.wifi_calling_3_outlined,
+                          fontSize: 12,
+                          borderradiues: 50,
+                          ontap: () {
+                            // Get.toNamed(Routes.LocationTracking, arguments: {
+                            //   "groupId": int.parse(controller
+                            //       .arguments!['groupId']
+                            //       .toString()),
+                            //   "groupName": controller.arguments!['groupName'],
+                            // });
+
+
+                            Get.toNamed(
+                              Routes.groupWalkieScreen,
+                              arguments: {
+                                "groupId":  int.parse(controller
                                     .arguments!['groupId']
                                     .toString()),
                                 "groupName": controller.arguments!['groupName'],
-                              });
-                            },
-                            height: 55),
-                      ),
-                      SizedBox(width: 40.w),
-                      Expanded(
-                          child: reausablebutton(
-                              title: "Group Message",
-                              icon: Icons.mark_chat_unread_rounded,
-                              fontSize: 12,
-                              borderradiues: 50,
-                              ontap: () {
-                                Get.toNamed(
-                                  Routes.groupChatScreen,
-                                  arguments: {
-                                    "groupId": int.parse(controller
-                                            .arguments!['groupId']
-                                            .toString())
-                                        .toString(),
-                                    "groupName":
-                                        controller.arguments!['groupName'],
-                                    "groupImage": "",
-                                  },
-                                );
+                                "isAdmin": controller.arguments!['isCreator'],
                               },
-                              height: 55)),
+                            );
+                          },
+                          height: 55),
+                      SizedBox(height: 10.h,),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: reausablebutton(
+                                title: "Track",
+                                icon: Icons.track_changes,
+                                fontSize: 12,
+                                borderradiues: 50,
+                                ontap: () {
+                                  Get.toNamed(Routes.LocationTracking, arguments: {
+                                    "groupId": int.parse(controller
+                                        .arguments!['groupId']
+                                        .toString()),
+                                    "groupName": controller.arguments!['groupName'],
+                                  });
+                                },
+                                height: 55),
+                          ),
+                          SizedBox(width: 40.w),
+                          Expanded(
+                              child: reausablebutton(
+                                  title: "Group Message",
+                                  icon: Icons.mark_chat_unread_rounded,
+                                  fontSize: 12,
+                                  borderradiues: 50,
+                                  ontap: () {
+                                    Get.toNamed(
+                                      Routes.groupChatScreen,
+                                      arguments: {
+                                        "groupId": int.parse(controller
+                                                .arguments!['groupId']
+                                                .toString())
+                                            .toString(),
+                                        "groupName":
+                                            controller.arguments!['groupName'],
+                                        "groupImage": "",
+                                      },
+                                    );
+                                  },
+                                  height: 55)),
+                        ],
+                      ),
                     ],
                   ),
                 ),
@@ -540,29 +572,29 @@ class MemberscreenScreen extends GetView<MemberController> {
                                                   ),
                                                 ),
                                               ):SizedBox(),
-                                              InkWell(
-                                                onTap: () {
-                                                  WalkieController()
-                                                      .startServices(
-                                                          callerName: data!.name
-                                                              .toString(),
-                                                          profileImage:
-                                                              data.profileImage,
-                                                          remoteUserId: data!
-                                                              .userId
-                                                              .toString());
-                                                },
-                                                child: Padding(
-                                                  padding: EdgeInsets.only(
-                                                      left: 10.w),
-                                                  child: Image.asset(
-                                                    Assets.icons.walkieTalkie
-                                                        .path,
-                                                    height: 28.h,
-                                                    width: 28.w,
-                                                  ),
-                                                ),
-                                              )
+                                              // InkWell(
+                                              //   onTap: () {
+                                              //     WalkieController()
+                                              //         .startServices(
+                                              //             callerName: data!.name
+                                              //                 .toString(),
+                                              //             profileImage:
+                                              //                 data.profileImage,
+                                              //             remoteUserId: data!
+                                              //                 .userId
+                                              //                 .toString());
+                                              //   },
+                                              //   child: Padding(
+                                              //     padding: EdgeInsets.only(
+                                              //         left: 10.w),
+                                              //     child: Image.asset(
+                                              //       Assets.icons.walkieTalkie
+                                              //           .path,
+                                              //       height: 28.h,
+                                              //       width: 28.w,
+                                              //     ),
+                                              //   ),
+                                              // )
                                             ],
                                           )
                                         ],
@@ -676,10 +708,7 @@ class MemberscreenScreen extends GetView<MemberController> {
                               .get(PrefConst.userId)
                               .toString() !=
                           data?.userId.toString()) {
-                        debugPrint("========== CLICK ==========");
-                        debugPrint("USER ID      : ${data?.userId}");
-                        debugPrint("USER NAME    : ${data?.name}");
-                        debugPrint("USER IMAGE   : ${data?.profileImage}");
+
                         Get.toNamed(
                           Routes.chatScreen,
                           arguments: {
@@ -806,12 +835,12 @@ class MemberscreenScreen extends GetView<MemberController> {
                                         ),
                                         InkWell(
                                           onTap: () {
-                                            WalkieController().startServices(
-                                                callerName:
-                                                    data!.name.toString(),
-                                                profileImage: data.profileImage,
-                                                remoteUserId:
-                                                    data!.userId.toString());
+                                            // WalkieController().startServices(
+                                            //     callerName:
+                                            //         data!.name.toString(),
+                                            //     profileImage: data.profileImage,
+                                            //     remoteUserId:
+                                            //         data!.userId.toString());
                                           },
                                           child: Padding(
                                             padding:

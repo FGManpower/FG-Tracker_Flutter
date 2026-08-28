@@ -1,11 +1,13 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
+import 'dart:io';
 import 'package:connectycube_flutter_call_kit/connectycube_flutter_call_kit.dart';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 
 import 'package:fgtracker/app/Data/Services/Walkie-Talkie-Service.dart';
+import 'package:fgtracker/app/Data/Services/group_Service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -38,6 +40,10 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   log("====Background-Bg===${message.data}");
 
   if (message.data['screen_name'] == "incomingCall") {
+    if (Platform.isIOS) {
+      // await RemoteLoggerTest.log("FCM_BG_HANDLER", "iOS detected in FCM background handler: ${message.data}");
+      return;
+    }
     final callData = jsonDecode(message.data['callData']);
     final originalCallId = callData['callId'].toString();
 
@@ -139,7 +145,7 @@ void onCallEventBackground() {
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-
+  // await RemoteLoggerTest.log("MAIN_BOOT", "App process launched/woken up in background! Platform: ${Platform.operatingSystem}");
   await Global.init();
   FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
   ConnectycubeFlutterCallKit.onCallRejectedWhenTerminated =
@@ -162,13 +168,37 @@ Future<void> main() async {
       websocketUrl: ConstRes.socketUrl,
       selfCallerID: userId,
     );
-    WalkietalkieService.instance.init(
-      websocketUrl: ConstRes.socketUrl,
-      selfUserId: userId,
-    );
+    groupWalkieInitialize(userId);
   }
 
   runApp(const MyApp());
+}
+
+groupWalkieInitialize(userId) async {
+  // After user login and socket init
+  if (userId != null) {
+    // 1. Initialize Walkie Service
+    await GroupWalkieService.instance.init(
+      websocketUrl: ConstRes.socketUrl,
+      selfUserId: userId,
+    );
+
+    // 2. Fetch and register groups
+    Future.microtask(() async {
+      try {
+        final List<String> groupIds = await GroupService().getGroupData();
+
+        if (groupIds.isNotEmpty) {
+          GroupWalkieService.instance.registerGroups(groupIds);
+          log("📻 Registered from main: ${groupIds.length} groups for walkie auto-notify");
+        } else {
+          log("⚠️ No groups found to register for user $userId");
+        }
+      } catch (e) {
+        log("❌ Failed to register groups from main: $e");
+      }
+    });
+  }
 }
 
 class MyApp extends StatefulWidget {
