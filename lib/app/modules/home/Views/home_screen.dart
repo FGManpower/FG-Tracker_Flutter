@@ -1,5 +1,4 @@
 import 'dart:ui';
-
 import 'package:fgtracker/app/Data/Services/NotificationServices.dart';
 import 'package:fgtracker/app/Data/Services/PermissionGuard.dart';
 import 'package:fgtracker/app/modules/DashboardController.dart';
@@ -15,13 +14,10 @@ import 'package:fgtracker/app/widgets/Appbar.dart';
 import 'package:fgtracker/app/modules/home/Views/sidemenu.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:permission_handler/permission_handler.dart';
-
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:upgrader/upgrader.dart';
-
 import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
-
 import '../../../routes/app_pages.dart';
 import '../../Messages/Views/create_group_screen.dart';
 import '../../Messages/Views/walkie_group_select_screen.dart';
