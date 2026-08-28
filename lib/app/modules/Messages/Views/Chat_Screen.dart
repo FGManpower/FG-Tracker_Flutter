@@ -191,17 +191,21 @@ class ChatScreen extends GetView<MessageController> {
           child: Column(
             children: [
               Obx(() {
-                final pinned = controller.pinnedMessage.value;
-                if (pinned == null || !controller.showPinnedBanner.value) {
-                  return const SizedBox.shrink();
-                }
-                return PinnedMessageBanner(
-                  pinnedMessage: pinned,
-                  onTap: () => controller.scrollToPinnedMessage(),
-                  onClose: () => controller.showPinnedBanner.value = false,
-                  onUnpin: () => controller.unpinMessage(),
-                );
-              }),
+        final pinned = controller.pinnedMessage.value;
+
+        if (pinned == null || !controller.showPinnedBanner.value) {
+        return const SizedBox.shrink();
+        }
+
+        return PinnedMessageBanner(
+        pinnedMessage: pinned,
+        onTap: () => controller.scrollToPinnedMessage(),
+
+        onClose: () => controller.unpinMessage(),
+
+        onUnpin: () => controller.unpinMessage(),
+        );
+        }),
 
               Expanded(
                 child: Stack(

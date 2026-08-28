@@ -291,24 +291,58 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
     socketService.listenPinMessage(
       callback: (data) {
-        final int? messageId = data["messageId"];
+        print("📌 PRIVATE MESSAGE PINNED =====> $data");
+
+        final messageId = int.tryParse(
+          data["messageId"].toString(),
+        );
+
         if (messageId == null) return;
 
-        final msg = _messages.firstWhereOrNull((e) => e.id == messageId);
+        if (data["chatType"] != "private") return;
+
+        final msg = _messages.firstWhereOrNull(
+              (e) => e.id == messageId,
+        );
+
         if (msg != null) {
           pinnedMessage.value = msg;
           showPinnedBanner.value = true;
+          updateMessageStream();
         }
       },
     );
 
     socketService.listenUnpinMessage(
       callback: (data) {
+        print("📌 PRIVATE MESSAGE UNPINNED =====> $data");
+
+        if (data["chatType"] != "private") return;
+
+        final currentUserId =
+        Global.storageServices.get(PrefConst.userId).toString();
+
+        final otherUserId = memberData.userId.toString();
+
+        final senderId = data["senderId"].toString();
+        final receiverId = data["receiverId"].toString();
+
+        final isSameChat =
+            (senderId == currentUserId &&
+                receiverId == otherUserId) ||
+                (senderId == otherUserId &&
+                    receiverId == currentUserId);
+
+        if (!isSameChat) return;
+
         pinnedMessage.value = null;
         showPinnedBanner.value = false;
+
+        updateMessageStream();
+
+        print("✅ PRIVATE PIN REMOVED FROM UI");
       },
     );
-
     getMessageHistory(userId, groupId);
   }
 
@@ -600,7 +634,10 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     );
   }
 
-  Future<void> getMessageHistory(String recieverId, int groupId) async {
+  Future<void> getMessageHistory(
+      String recieverId,
+      int groupId,
+      ) async {
     try {
       var result = await MessageRepo.MessageHistory(
         recieverId: recieverId,
@@ -608,13 +645,31 @@ class MessageController extends GetxController with WidgetsBindingObserver {
       );
 
       if (result.status == true) {
-        // socketService.markSeen(memberData.userId.toString(), groupId);
         _messages
           ..clear()
-          ..addAll(result.messageData!);
+          ..addAll(result.messageData ?? []);
+
+        final pinnedId = result.pinnedMessageId;
+
+        if (pinnedId != null) {
+          final pinned = _messages.firstWhereOrNull(
+                (message) => message.id == pinnedId,
+          );
+
+          if (pinned != null) {
+            pinnedMessage.value = pinned;
+            showPinnedBanner.value = true;
+          } else {
+            pinnedMessage.value = null;
+            showPinnedBanner.value = false;
+          }
+        } else {
+          pinnedMessage.value = null;
+          showPinnedBanner.value = false;
+        }
 
         updateMessageStream();
-        isCreator.value = result.isCreator!;
+        isCreator.value = result.isCreator ?? false;
         scrollToBottom();
       } else {
         CommonDialog.errorMessage(result.message);
@@ -623,7 +678,6 @@ class MessageController extends GetxController with WidgetsBindingObserver {
       log("History Error: $e");
     }
   }
-
   void setReply(MessageData message) {
     replyMessage.value = message;
   }
@@ -757,16 +811,31 @@ class MessageController extends GetxController with WidgetsBindingObserver {
   }
 
   void pinMessage(MessageData message) {
+    final currentUserId =
+    Global.storageServices.get(PrefConst.userId).toString();
+
+    final otherUserId = memberData.userId.toString();
+
     socketService.pinMessage(
-      groupId: memberData.groupId!,
+      chatType: "private",
+      senderId: currentUserId,
+      receiverId: otherUserId,
       messageId: message.id!,
-      pinnedByName: Global.storageServices.get(PrefConst.userName) ?? "User",
+      pinnedByName:
+      Global.storageServices.get(PrefConst.userName) ?? "User",
     );
   }
 
   void unpinMessage() {
+    final currentUserId =
+    Global.storageServices.get(PrefConst.userId).toString();
+
+    final otherUserId = memberData.userId.toString();
+
     socketService.unpinMessageEvent(
-      groupId: memberData.groupId!,
+      chatType: "private",
+      senderId: currentUserId,
+      receiverId: otherUserId,
     );
   }
 

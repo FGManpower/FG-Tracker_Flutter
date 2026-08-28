@@ -261,12 +261,18 @@ class SocketMessageService extends GetxService {
   }
 
   void pinMessage({
-    required int groupId,
+    required String chatType,
+    int? groupId,
+    String? senderId,
+    String? receiverId,
     required int messageId,
     required String pinnedByName,
   }) {
     final payload = {
-      "groupId": groupId,
+      "chatType": chatType,
+      if (chatType == "group") "groupId": groupId,
+      if (chatType == "private") "senderId": senderId,
+      if (chatType == "private") "receiverId": receiverId,
       "messageId": messageId,
       "pinnedByName": pinnedByName,
     };
@@ -277,11 +283,21 @@ class SocketMessageService extends GetxService {
   }
 
   void unpinMessageEvent({
-    required int groupId,
+    required String chatType,
+    int? groupId,
+    String? senderId,
+    String? receiverId,
   }) {
-    socket.emit("unpin_message", {
-      "groupId": groupId,
-    });
+    final payload = {
+      "chatType": chatType,
+      if (chatType == "group") "groupId": groupId,
+      if (chatType == "private") "senderId": senderId,
+      if (chatType == "private") "receiverId": receiverId,
+    };
+
+    print("📌 UNPIN MESSAGE PAYLOAD =====> $payload");
+
+    socket.emit("unpin_message", payload);
   }
 
   void listenPinMessage({
@@ -299,7 +315,10 @@ class SocketMessageService extends GetxService {
     required Function(Map<String, dynamic>) callback,
   }) {
     socket.off("message_unpinned");
+
     socket.on("message_unpinned", (data) {
+      print("📌 MESSAGE UNPINNED EVENT =====> $data");
+
       callback(Map<String, dynamic>.from(data));
     });
   }

@@ -221,21 +221,43 @@ class GroupMessageController extends GetxController {
 
     socketService.listenPinMessage(
       callback: (data) {
-        final int? messageId = data["messageId"];
+        print("📌 GROUP MESSAGE PINNED =====> $data");
+
+        final messageId = int.tryParse(
+          data["messageId"].toString(),
+        );
+
         if (messageId == null) return;
 
-        final msg = _messages.firstWhereOrNull((e) => e.id == messageId);
+        if (data["chatType"] != "group") return;
+
+        final msg = _messages.firstWhereOrNull(
+              (e) => e.id == messageId,
+        );
+
         if (msg != null) {
           pinnedMessage.value = msg;
           showPinnedBanner.value = true;
+          updateMessageStream();
         }
       },
     );
 
     socketService.listenUnpinMessage(
       callback: (data) {
+        print("📌 GROUP MESSAGE UNPINNED =====> $data");
+
+        if (data["chatType"] != "group") return;
+
+        final dataGroupId =
+        int.tryParse(data["groupId"].toString());
+
+        if (dataGroupId != groupId) return;
+
         pinnedMessage.value = null;
         showPinnedBanner.value = false;
+
+        updateMessageStream();
       },
     );
 
@@ -903,6 +925,7 @@ class GroupMessageController extends GetxController {
 
   void pinMessage(MessageData message) {
     socketService.pinMessage(
+      chatType: "group",
       groupId: groupId,
       messageId: message.id!,
       pinnedByName:
@@ -912,6 +935,7 @@ class GroupMessageController extends GetxController {
 
   void unpinMessage() {
     socketService.unpinMessageEvent(
+      chatType: "group",
       groupId: groupId,
     );
   }

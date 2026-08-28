@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'dart:ui'; // Needed for ImageFilter (Blur)
+import 'dart:ui'; 
 
 import 'package:connectycube_flutter_call_kit/connectycube_flutter_call_kit.dart';
 import 'package:fgtracker/app/Core/deep_Link/uniservices.dart';
@@ -31,6 +31,7 @@ import '../../../Model/GetMessage.dart';
 import '../../../routes/app_pages.dart';
 import '../../Messages/Views/create_group_screen.dart';
 import '../../Messages/Views/groups_list_screen.dart';
+import '../../Messages/Views/walkie_group_select_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -241,8 +242,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment:
-                CrossAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               CircleAvatar(
                 radius: 18.r,
@@ -551,10 +551,16 @@ class _HomeScreenState extends State<HomeScreen> {
           physics: const NeverScrollableScrollPhysics(),
           mainAxisSpacing: 12.h,
           crossAxisSpacing: 12.w,
-          childAspectRatio: 1.0, // thoda height extra label ke liye
+          childAspectRatio: 1.0,
           children: [
             _buildActionCard("Calling", Icons.phone, isComingSoon: true),
-            _buildActionCard("Walkie Talkie", Icons.settings_cell, isComingSoon: true),
+            _buildActionCard(
+              "Walkie Talkie",
+              Icons.settings_cell,
+              // onTap: () => Get.toNamed(Routes.WalkieGroupSelect),
+              // bina route ke:
+              onTap: () => Get.to(() => const WalkieGroupSelectScreen()),
+            ),
             _buildActionCard("Tracking", Icons.location_on, isComingSoon: true),
             _buildActionCard("Video Call", Icons.videocam, isComingSoon: true),
             _buildActionCard("Chatting", Icons.chat_bubble, isComingSoon: true),
@@ -570,12 +576,13 @@ class _HomeScreenState extends State<HomeScreen> {
       ],
     );
   }
+
   Widget _buildActionCard(
-      String title,
-      IconData icon, {
-        VoidCallback? onTap,
-        bool isComingSoon = false,
-      }) {
+    String title,
+    IconData icon, {
+    VoidCallback? onTap,
+    bool isComingSoon = false,
+  }) {
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -593,7 +600,6 @@ class _HomeScreenState extends State<HomeScreen> {
             borderRadius: BorderRadius.circular(16.r),
             child: Stack(
               children: [
-                // Normal content
                 Positioned.fill(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -626,14 +632,12 @@ class _HomeScreenState extends State<HomeScreen> {
                     ],
                   ),
                 ),
-
                 if (isComingSoon) ...[
                   Positioned.fill(
                     child: Container(
                       color: Colors.black.withOpacity(0.35),
                     ),
                   ),
-
                   Positioned(
                     left: 0,
                     right: 0,
@@ -663,11 +667,12 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
+
   Widget _buildBottomButtons(BuildContext context) {
     return SafeArea(
       child: Container(
         padding:
-        EdgeInsets.only(left: 16.w, right: 16.w, bottom: 15.h, top: 10.h),
+            EdgeInsets.only(left: 16.w, right: 16.w, bottom: 15.h, top: 10.h),
         color: Colors.white,
         child: Row(
           children: [
@@ -682,7 +687,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 },
                 child: Container(
                   padding:
-                  EdgeInsets.symmetric(vertical: 12.h, horizontal: 10.w),
+                      EdgeInsets.symmetric(vertical: 12.h, horizontal: 10.w),
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
                         colors: [Color(0xFF8B78FF), Color(0xFF5A3FFF)]),
@@ -729,12 +734,12 @@ class _HomeScreenState extends State<HomeScreen> {
                 },
                 child: Container(
                   padding:
-                  EdgeInsets.symmetric(vertical: 12.h, horizontal: 10.w),
+                      EdgeInsets.symmetric(vertical: 12.h, horizontal: 10.w),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(16.r),
                     border:
-                    Border.all(color: const Color(0xFF6B4DFF), width: 1.5),
+                        Border.all(color: const Color(0xFF6B4DFF), width: 1.5),
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,

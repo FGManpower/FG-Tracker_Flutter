@@ -27,6 +27,7 @@ abstract class Routes {
   static const forwardMessageScreen = _Paths.forwardMessageScreen;
   static const GroupsList = _Paths.GroupsList;
   static const CreateGroup = _Paths.CreateGroup;
+  static const WalkieGroupSelect = _Paths.WalkieGroupSelect;
 
 
 
@@ -60,6 +61,7 @@ abstract class _Paths {
   static const forwardMessageScreen = '/forwardMessageScreen';
   static const GroupsList = '/groups-list';
   static const CreateGroup = '/create-group';
+  static const WalkieGroupSelect = '/walkie-group-select';
 
 
 }
