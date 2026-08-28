@@ -12,7 +12,6 @@ import 'package:fgtracker/app/config/themes_data.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/modules/Group/controller/MemberController.dart';
 import 'package:fgtracker/app/modules/Group/controller/search_controller.dart';
-import 'package:fgtracker/app/modules/Walkie-talkie/Controller/walkieController.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:fgtracker/app/widgets/MobileNumberView.dart';
 import 'package:fgtracker/gen/assets.gen.dart';

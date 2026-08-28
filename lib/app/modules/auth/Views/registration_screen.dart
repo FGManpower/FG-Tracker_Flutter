@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/theme/AppText.dart';
-import 'package:fgtracker/app/Core/values/bottomSheet.dart';
 import 'package:fgtracker/app/Core/values/utility.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/gen/assets.gen.dart';
@@ -11,7 +10,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 import '../../../Core/util/validator.dart';
-import '../../../config/themes_data.dart';
 import '../Controller/RegisterController.dart';
 
 class RegistrationScreen extends GetView<RegistrationController> {

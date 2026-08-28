@@ -3,7 +3,6 @@ import 'dart:developer';
 import 'package:connectycube_flutter_call_kit/connectycube_flutter_call_kit.dart';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/modules/Notification/Controller/Notification_Controller.dart';
-import 'package:fgtracker/main.dart';
 import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -16,7 +15,6 @@ import '../global/launchedFromCall.dart';
 import '../values/global.dart';
 import 'decomPress.dart';
 import 'package:http/http.dart' as http;
-import 'package:fgtracker/app/logger.dart';
 
 class CallKitService {
   static final CallKitService instance = CallKitService._();
