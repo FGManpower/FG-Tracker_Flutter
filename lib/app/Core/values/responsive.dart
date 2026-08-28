@@ -10,7 +10,7 @@ class MediaQueryHelper {
 
   static double width(double value, [BuildContext? context]) {
     final ctx = context ?? _context;
-    if (ctx == null) return value; // Fallback for early startup
+    if (ctx == null) return value;
     return MediaQuery.of(ctx).size.width * (value / _baseWidth);
   }
 

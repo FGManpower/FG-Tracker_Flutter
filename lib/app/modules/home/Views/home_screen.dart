@@ -1,8 +1,10 @@
 import 'dart:ui';
+import 'package:fgtracker/app/Core/values/responsive.dart';
 import 'package:fgtracker/app/Data/Services/NotificationServices.dart';
 import 'package:fgtracker/app/Data/Services/PermissionGuard.dart';
 import 'package:fgtracker/app/modules/DashboardController.dart';
 import 'package:fgtracker/app/modules/Group/controller/JoinGroup_Controller.dart';
+import 'package:fgtracker/app/modules/Messages/Views/video_call_screen.dart';
 import 'package:fgtracker/app/modules/Track/Controller/TrackController.dart';
 import 'package:fgtracker/app/modules/home/Controller/home_controller.dart';
 import 'package:fgtracker/app/modules/home/Home_Widget/Home_widget.dart';
@@ -19,6 +21,7 @@ import 'package:get/get.dart';
 import 'package:upgrader/upgrader.dart';
 import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
 import '../../../routes/app_pages.dart';
+import '../../Messages/Views/call_screen.dart';
 import '../../Messages/Views/create_group_screen.dart';
 import '../../Messages/Views/walkie_group_select_screen.dart';
 
@@ -88,7 +91,6 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-
     checkAndRequestPermissions(context);
     notificationServices.setupInteractMessage(context);
     notificationServices.askPermission();
@@ -97,11 +99,6 @@ class _HomeScreenState extends State<HomeScreen> {
         debugPrint("token=>${value}");
       },
     );
-    // WidgetsBinding.instance.addPostFrameCallback((_) async {
-    //   if (Platform.isIOS) {
-    //     await CallKitService.instance.checkCallOnLaunch();
-    //   }
-    // });
     requestCallPermissions();
   }
 
@@ -120,7 +117,6 @@ class _HomeScreenState extends State<HomeScreen> {
       context,
       autoFetchLocation: true,
     );
-
     await controller.getProfileData();
     await groupController.getGroupData();
     await trackingController.loadLocationSharing();
@@ -144,19 +140,20 @@ class _HomeScreenState extends State<HomeScreen> {
           trackingController: trackingController,
         ),
         body: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16.w),
+          padding: MediaQueryHelper.paddingSymmetric(
+              horizontal: 16, context: context),
           child: ListView(
             padding: EdgeInsets.only(bottom: 20.h),
             children: [
               headerUi(controller),
               BannerUi(),
-              SizedBox(height: 15.h),
+              MediaQueryHelper.gapH(15, context),
               _buildStatsGrid(),
-              SizedBox(height: 25.h),
+              MediaQueryHelper.gapH(25, context),
               _buildMapSection(),
-              SizedBox(height: 25.h),
+              MediaQueryHelper.gapH(25, context),
               _buildQuickActions(),
-              SizedBox(height: 10.h),
+              MediaQueryHelper.gapH(10, context),
             ],
           ),
         ),
@@ -179,7 +176,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
         ),
-        SizedBox(width: 10.w),
+        MediaQueryHelper.gapW(10, context),
         Expanded(
           child: _buildStatCard(
             icon: Icons.person,
@@ -189,7 +186,7 @@ class _HomeScreenState extends State<HomeScreen> {
             subtitle: "Now",
           ),
         ),
-        SizedBox(width: 10.w),
+        MediaQueryHelper.gapW(10, context),
         Expanded(
           child: _buildStatCard(
             icon: Icons.people_alt,
@@ -199,7 +196,7 @@ class _HomeScreenState extends State<HomeScreen> {
             subtitle: "Total",
           ),
         ),
-        SizedBox(width: 10.w),
+        MediaQueryHelper.gapW(10, context),
         Expanded(
           child: _buildStatCard(
             icon: Icons.supervised_user_circle,
@@ -227,7 +224,8 @@ class _HomeScreenState extends State<HomeScreen> {
         onTap: onTap,
         borderRadius: BorderRadius.circular(16.r),
         child: Container(
-          padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 6.w),
+          padding: MediaQueryHelper.paddingSymmetric(
+              vertical: 12, horizontal: 6, context: context),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(16.r),
@@ -249,7 +247,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 backgroundColor: iconColor.withOpacity(0.15),
                 child: Icon(icon, color: iconColor, size: 20.sp),
               ),
-              SizedBox(height: 8.h),
+              MediaQueryHelper.gapH(8, context),
               reausabletext(
                 title,
                 fontsize: 11.sp,
@@ -257,7 +255,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 fontfamily: FontFamily.interSemiBold,
                 align: TextAlign.center,
               ),
-              SizedBox(height: 2.h),
+              MediaQueryHelper.gapH(2, context),
               reausabletext(
                 value,
                 fontsize: 18.sp,
@@ -265,12 +263,12 @@ class _HomeScreenState extends State<HomeScreen> {
                 fontfamily: FontFamily.interBold,
                 align: TextAlign.center,
               ),
-              SizedBox(height: 2.h),
+              MediaQueryHelper.gapH(2, context),
               reausabletext(
                 subtitle,
                 fontsize: 10.sp,
                 color: Colors.grey,
-                align: TextAlign.center, // Text Alignment Center
+                align: TextAlign.center,
               ),
             ],
           ),
@@ -289,13 +287,13 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 Container(
                   width: 8.w,
-                  height: 8.w,
+                  height: 8.h,
                   decoration: const BoxDecoration(
                     color: Color(0xFF6B4DFF),
                     shape: BoxShape.circle,
                   ),
                 ),
-                SizedBox(width: 8.w),
+                MediaQueryHelper.gapW(8, context),
                 reausabletext("Live Tracking",
                     fontsize: 16.sp, fontfamily: FontFamily.interBold),
               ],
@@ -303,15 +301,15 @@ class _HomeScreenState extends State<HomeScreen> {
             Row(
               children: [
                 _buildMapFilterBadge("All Groups", Icons.keyboard_arrow_down),
-                SizedBox(width: 8.w),
+                MediaQueryHelper.gapW(8, context),
                 _buildMapFilterBadge("Radius: 2 km", Icons.my_location),
               ],
             )
           ],
         ),
-        SizedBox(height: 15.h),
+        MediaQueryHelper.gapH(15, context),
         Container(
-          height: 220.h,
+          height: 200.h,
           width: double.infinity,
           decoration: BoxDecoration(
             color: const Color(0xFFF0F4F8),
@@ -323,9 +321,7 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Stack(
               children: [
                 Positioned.fill(
-                  child: CustomPaint(
-                    painter: _MapGridPainter(),
-                  ),
+                  child: CustomPaint(painter: _MapGridPainter()),
                 ),
                 Positioned(top: 25.h, left: 35.w, child: _buildMapAvatarPin()),
                 Positioned(top: 35.h, right: 85.w, child: _buildMapAvatarPin()),
@@ -335,14 +331,14 @@ class _HomeScreenState extends State<HomeScreen> {
                     bottom: 40.h, right: 95.w, child: _buildMapAvatarPin()),
                 Center(
                   child: Container(
-                    padding: EdgeInsets.all(12.r),
+                    padding: MediaQueryHelper.paddingAll(12, context),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: const Color(0xFF6B4DFF).withOpacity(0.15),
                     ),
                     child: Container(
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                      padding: MediaQueryHelper.paddingSymmetric(
+                          horizontal: 10, vertical: 4, context: context),
                       decoration: BoxDecoration(
                         color: const Color(0xFF6B4DFF),
                         borderRadius: BorderRadius.circular(12.r),
@@ -360,9 +356,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Column(
                     children: [
                       _buildMapControlBtn(Icons.add),
-                      SizedBox(height: 4.h),
+                      MediaQueryHelper.gapH(4, context),
                       _buildMapControlBtn(Icons.remove),
-                      SizedBox(height: 8.h),
+                      MediaQueryHelper.gapH(8, context),
                       _buildMapControlBtn(Icons.my_location),
                     ],
                   ),
@@ -371,8 +367,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   left: 12.w,
                   bottom: 12.h,
                   child: Container(
-                    padding:
-                        EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+                    padding: MediaQueryHelper.paddingSymmetric(
+                        horizontal: 10, vertical: 6, context: context),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(12.r),
@@ -386,7 +382,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       children: [
                         Icon(Icons.group,
                             size: 14.sp, color: const Color(0xFF6B4DFF)),
-                        SizedBox(width: 6.w),
+                        MediaQueryHelper.gapW(6, context),
                         reausabletext("8 Members Live",
                             fontsize: 11.sp,
                             fontfamily: FontFamily.interSemiBold),
@@ -401,8 +397,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       color: Colors.black.withOpacity(0.12),
                       alignment: Alignment.center,
                       child: Container(
-                        padding: EdgeInsets.symmetric(
-                            horizontal: 24.w, vertical: 12.h),
+                        padding: MediaQueryHelper.paddingSymmetric(
+                            horizontal: 24, vertical: 12, context: context),
                         decoration: BoxDecoration(
                           color: const Color(0xFF6B4DFF),
                           borderRadius: BorderRadius.circular(30.r),
@@ -426,7 +422,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           children: [
                             Icon(Icons.access_time_filled,
                                 color: Colors.white, size: 18.sp),
-                            SizedBox(width: 8.w),
+                            MediaQueryHelper.gapW(8, context),
                             reausabletext(
                               "Coming Soon",
                               color: Colors.white,
@@ -452,7 +448,7 @@ class _HomeScreenState extends State<HomeScreen> {
       alignment: Alignment.bottomRight,
       children: [
         Container(
-          padding: EdgeInsets.all(2.w),
+          padding: MediaQueryHelper.paddingAll(2, context),
           decoration: const BoxDecoration(
             color: Colors.white,
             shape: BoxShape.circle,
@@ -467,7 +463,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         Container(
           width: 8.w,
-          height: 8.w,
+          height: 8.h,
           decoration: BoxDecoration(
             color: Colors.green,
             shape: BoxShape.circle,
@@ -480,7 +476,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildMapControlBtn(IconData icon) {
     return Container(
-      padding: EdgeInsets.all(6.w),
+      padding: MediaQueryHelper.paddingAll(6, context),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8.r),
@@ -494,7 +490,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildMapFilterBadge(String text, IconData icon) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+      padding: MediaQueryHelper.paddingSymmetric(
+          horizontal: 8, vertical: 4, context: context),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8.r),
@@ -504,11 +501,11 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           if (icon != Icons.keyboard_arrow_down) ...[
             Icon(icon, size: 14.sp, color: const Color(0xFF6B4DFF)),
-            SizedBox(width: 4.w),
+            MediaQueryHelper.gapW(4, context),
           ],
           reausabletext(text, fontsize: 11.sp, color: Colors.black87),
           if (icon == Icons.keyboard_arrow_down) ...[
-            SizedBox(width: 4.w),
+            MediaQueryHelper.gapW(4, context),
             Icon(icon, size: 16.sp, color: Colors.black87),
           ]
         ],
@@ -527,24 +524,21 @@ class _HomeScreenState extends State<HomeScreen> {
               fontsize: 16.sp,
               fontfamily: FontFamily.interBold,
             ),
-            Row(
-              children: [
-                reausabletext(
-                  "View All",
-                  fontsize: 12.sp,
-                  color: const Color(0xFF6B4DFF),
-                  fontfamily: FontFamily.interSemiBold,
-                ),
-                Icon(
-                  Icons.arrow_forward,
-                  size: 14.sp,
-                  color: const Color(0xFF6B4DFF),
-                ),
-              ],
-            )
+            // Row(
+            //   children: [
+            //     reausabletext(
+            //       "View All",
+            //       fontsize: 12.sp,
+            //       color: const Color(0xFF6B4DFF),
+            //       fontfamily: FontFamily.interSemiBold,
+            //     ),
+            //     Icon(Icons.arrow_forward,
+            //         size: 14.sp, color: const Color(0xFF6B4DFF)),
+            //   ],
+            // )
           ],
         ),
-        SizedBox(height: 15.h),
+        MediaQueryHelper.gapH(15, context),
         GridView.count(
           crossAxisCount: 3,
           shrinkWrap: true,
@@ -553,23 +547,27 @@ class _HomeScreenState extends State<HomeScreen> {
           crossAxisSpacing: 12.w,
           childAspectRatio: 1.0,
           children: [
-            _buildActionCard("Calling", Icons.phone, isComingSoon: true),
+            _buildActionCard(
+              "Calling",
+              Icons.phone,
+              onTap: () => Get.to(() => const CallScreen()),
+            ),
             _buildActionCard(
               "Walkie Talkie",
               Icons.settings_cell,
-              // onTap: () => Get.toNamed(Routes.WalkieGroupSelect),
-              // bina route ke:
               onTap: () => Get.to(() => const WalkieGroupSelectScreen()),
             ),
             _buildActionCard("Tracking", Icons.location_on, isComingSoon: true),
-            _buildActionCard("Video Call", Icons.videocam, isComingSoon: true),
+            _buildActionCard(
+              "Video Call",
+              Icons.videocam,
+              onTap: () => Get.to(() => const VideoCallScreen()),
+            ),
             _buildActionCard("Chatting", Icons.chat_bubble, isComingSoon: true),
             _buildActionCard(
               "Group Chat",
               Icons.groups,
-              onTap: () {
-                Get.toNamed(Routes.GroupsList);
-              },
+              onTap: () => Get.toNamed(Routes.GroupsList),
             ),
           ],
         ),
@@ -604,12 +602,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(
-                        icon,
-                        color: const Color(0xFF6B4DFF),
-                        size: 32.sp,
-                      ),
-                      SizedBox(height: 8.h),
+                      Icon(icon, color: const Color(0xFF6B4DFF), size: 32.sp),
+                      MediaQueryHelper.gapH(8, context),
                       reausabletext(
                         title,
                         fontsize: 12.sp,
@@ -617,7 +611,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         color: Colors.black87,
                         align: TextAlign.center,
                       ),
-                      SizedBox(height: 4.h),
+                      MediaQueryHelper.gapH(4, context),
                       if (!isComingSoon)
                         Container(
                           width: 12.w,
@@ -628,7 +622,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         )
                       else
-                        SizedBox(height: 14.h),
+                        MediaQueryHelper.gapH(14, context),
                     ],
                   ),
                 ),
@@ -671,8 +665,12 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildBottomButtons(BuildContext context) {
     return SafeArea(
       child: Container(
-        padding:
-            EdgeInsets.only(left: 16.w, right: 16.w, bottom: 15.h, top: 10.h),
+        padding: EdgeInsets.only(
+          left: 16.w,
+          right: 16.w,
+          bottom: 15.h,
+          top: 10.h,
+        ),
         color: Colors.white,
         child: Row(
           children: [
@@ -686,8 +684,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   );
                 },
                 child: Container(
-                  padding:
-                      EdgeInsets.symmetric(vertical: 12.h, horizontal: 10.w),
+                  padding: MediaQueryHelper.paddingSymmetric(
+                      vertical: 12, horizontal: 10, context: context),
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
                         colors: [Color(0xFF8B78FF), Color(0xFF5A3FFF)]),
@@ -697,7 +695,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(Icons.group_add, color: Colors.white, size: 24.sp),
-                      SizedBox(width: 8.w),
+                      MediaQueryHelper.gapW(8, context),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisSize: MainAxisSize.min,
@@ -718,7 +716,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
-            SizedBox(width: 12.w),
+            MediaQueryHelper.gapW(12, context),
             Expanded(
               child: GestureDetector(
                 behavior: HitTestBehavior.opaque,
@@ -729,32 +727,31 @@ class _HomeScreenState extends State<HomeScreen> {
                   } catch (e) {
                     debugPrint("Clear error: $e");
                   }
-
                   Get.to(() => CreateGroupScreen());
                 },
                 child: Container(
-                  padding:
-                      EdgeInsets.symmetric(vertical: 12.h, horizontal: 10.w),
+                  padding: MediaQueryHelper.paddingSymmetric(
+                      vertical: 12, horizontal: 10, context: context),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(16.r),
-                    border:
-                        Border.all(color: const Color(0xFF6B4DFF), width: 1.5),
+                    border: Border.all(
+                        color: const Color(0xFF6B4DFF), width: 1.5.w),
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Container(
-                        padding: EdgeInsets.all(2.w),
+                        padding: MediaQueryHelper.paddingAll(2, context),
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           border: Border.all(
-                              color: const Color(0xFF6B4DFF), width: 1.5),
+                              color: const Color(0xFF6B4DFF), width: 1.5.w),
                         ),
                         child: Icon(Icons.add,
                             color: const Color(0xFF6B4DFF), size: 18.sp),
                       ),
-                      SizedBox(width: 8.w),
+                      MediaQueryHelper.gapW(8, context),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisSize: MainAxisSize.min,
