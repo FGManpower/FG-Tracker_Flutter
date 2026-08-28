@@ -275,9 +275,7 @@ class GroupWalkieService {
     return null;
   }
 
-  // ============================================================
-  // ✅ FIX 2: FORCE iOS LOUDSPEAKER ROUTING
-  // ============================================================
+
   Future<void> _configureAudioSession({required bool speakerOn}) async {
     final session = await AudioSession.instance;
 
@@ -318,9 +316,7 @@ class GroupWalkieService {
     log("🔊 Audio Session configured: Speaker = $speakerOn");
   }
 
-  // ============================================================
-  // PLAYER INITIALIZATION
-  // ============================================================
+
   Future<void> _initializePlayer() async {
     if (_playerReady) return;
     await _player.openPlayer();
@@ -337,8 +333,7 @@ class GroupWalkieService {
     );
     _playerReady = true;
 
-    // ✅ CRITICAL iOS FIX: flutter_sound resets the session when starting.
-    // We MUST apply our Loudspeaker configuration AFTER starting the player.
+
     await _configureAudioSession(speakerOn: _isSpeakerOn);
   }
 
@@ -364,7 +359,6 @@ class GroupWalkieService {
       );
     }
 
-    // ✅ CRITICAL iOS FIX: Re-apply audio routing AFTER restarting player
     await _configureAudioSession(speakerOn: speakerOn);
 
     audioRoute.value =

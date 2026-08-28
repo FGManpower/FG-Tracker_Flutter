@@ -24,12 +24,10 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
   late final AnimationController _waveController;
   bool _isPressed = false;
 
-  // ==========================================
-  // PREMIUM DARK THEME COLORS (Based on mockup)
-  // ==========================================
-  final Color _bgDark = const Color(0xFF0F1223); // Main background
-  final Color _cardDark = const Color(0xFF161A30); // Cards background
-  final Color _primaryPurple = const Color(0xFF6B4EFF); // Accent purple
+
+  final Color _bgDark = const Color(0xFF0F1223);
+  final Color _cardDark = const Color(0xFF161A30);
+  final Color _primaryPurple = const Color(0xFF6B4EFF);
   final Color _lightPurple = const Color(0xFF8C73FF);
   final Color _activeGreen = const Color(0xFF1DE9B6);
   final Color _mutedRed = const Color(0xFFFF5252);
@@ -89,9 +87,6 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
     super.dispose();
   }
 
-  // ============================================================
-  // PTT LOGIC
-  // ============================================================
   Future<void> _onPTTPressed() async {
     if (controller.isChannelLocked.value || _isPressed) return;
 
@@ -121,7 +116,6 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
     await GroupWalkieService.instance.stopTalking();
   }
 
-  // Helper for Initials
   String _getInitials(String name) {
     if (name.trim().isEmpty) return "?";
     List<String> parts = name.trim().split(" ");
@@ -129,9 +123,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
     return name.substring(0, name.length >= 2 ? 2 : 1).toUpperCase();
   }
 
-  // ============================================================
-  // UI BUILDER
-  // ============================================================
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -155,7 +147,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                     _buildWhosSpeakingSection(),
                     SizedBox(height: 24.h),
                     _buildChannelMembersSection(),
-                    SizedBox(height: 100.h), // Padding for bottom console
+                    SizedBox(height: 100.h),
                   ],
                 ),
               ),
@@ -167,9 +159,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
     );
   }
 
-  // ============================================================
-  // 1. APP BAR / HEADER
-  // ============================================================
+
   Widget _buildHeader() {
     return Padding(
       padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 8.h),
@@ -218,7 +208,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
               ],
             ),
           ),
-          // Header Icons (matching mockup)
+
           _buildIconBtn(Icons.people_alt_outlined),
           SizedBox(width: 12.w),
           _buildIconBtn(Icons.graphic_eq_rounded),
@@ -258,9 +248,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
     );
   }
 
-  // ============================================================
-  // 2. GRADIENT BANNER CARD
-  // ============================================================
+
   Widget _buildBannerCard() {
     return Container(
       width: double.infinity,
@@ -272,7 +260,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
           end: Alignment.bottomRight,
           colors: [
             _primaryPurple,
-            const Color(0xFF4A34BE), // Darker purple
+            const Color(0xFF4A34BE),
           ],
         ),
         boxShadow: [
@@ -323,9 +311,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
     );
   }
 
-  // ============================================================
-  // 3. STATS ROW (Members | Speaking | Listening | Muted)
-  // ============================================================
+
   Widget _buildStatsRow() {
     return Obx(() {
       final total = controller.totalParticipants.value;
@@ -394,9 +380,6 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
     );
   }
 
-  // ============================================================
-  // 4. WHO'S SPEAKING CARD
-  // ============================================================
   Widget _buildWhosSpeakingSection() {
     return Obx(() {
       final hasSpeaker =
@@ -446,7 +429,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
           ),
           SizedBox(height: 12.h),
 
-          // The Speaker Card
+
           AnimatedContainer(
             duration: const Duration(milliseconds: 300),
             padding: EdgeInsets.all(16.w),
@@ -476,7 +459,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
     final image = isMeTalking
         ? ""
         : controller
-            .activeSpeakerImage.value; // Add your own image logic if needed
+            .activeSpeakerImage.value;
 
     return Row(
       children: [
@@ -600,9 +583,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
     );
   }
 
-  // ============================================================
-  // 5. CHANNEL MEMBERS LIST
-  // ============================================================
+
   Widget _buildChannelMembersSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -733,13 +714,10 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
     );
   }
 
-  // ============================================================
-  // 6. BOTTOM PTT CONSOLE
-  // ============================================================
   Widget _buildBottomConsole() {
     return Container(
       decoration: BoxDecoration(
-        color: _bgDark, // Seamless with background
+        color: _bgDark,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.4),
@@ -757,8 +735,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
 
           // Speaker Toggle
           Obx(() => _buildBottomActionButton(
-            icon: controller.audioRouteIcon, // ✅ Uses dynamic Bluetooth/Headset/Speaker icon
-            label: controller.audioRouteLabel, // ✅ Uses dynamic label
+            icon: controller.audioRouteIcon,            label: controller.audioRouteLabel,
             isActive: controller.isSpeakerOn.value ||
                 controller.audioRoute.value == WalkieAudioRoute.bluetooth ||
                 controller.audioRoute.value == WalkieAudioRoute.headset,

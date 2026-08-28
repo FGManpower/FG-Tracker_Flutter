@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
-import 'package:fgtracker/app/Data/Services/Walkie-Talkie-Service.dart'; // ✅ Import Service
+import 'package:fgtracker/app/Data/Services/Walkie-Talkie-Service.dart';
 
 enum WalkieRole { caller, receiver }
 enum WalkieAudioState { idle, listening, talking }
@@ -40,7 +40,7 @@ class GroupWalkieController extends GetxController {
   final audioState = WalkieAudioState.idle.obs;
 
   final isSpeakerOn = true.obs;
-  final audioRoute = WalkieAudioRoute.speaker.obs; // ✅ Track Audio Route
+  final audioRoute = WalkieAudioRoute.speaker.obs;
 
   final isMuted = false.obs;
   final isChannelLocked = false.obs;
@@ -63,13 +63,11 @@ class GroupWalkieController extends GetxController {
   bool get isListening => audioState.value == WalkieAudioState.listening;
   bool get hasActiveSpeaker => activeSpeakerId.value.isNotEmpty;
 
-  // ============================================================
-  // ✅ FIX 1: SYNC INITIAL AUDIO STATE WHEN SCREEN OPENS
-  // ============================================================
+
   @override
   void onInit() {
     super.onInit();
-    // Grab the current state from the service immediately when UI loads
+
     audioRoute.value = GroupWalkieService.instance.audioRoute.value;
     isSpeakerOn.value = GroupWalkieService.instance.isSpeakerOn;
   }
@@ -78,13 +76,13 @@ class GroupWalkieController extends GetxController {
     currentGroupId = groupId;
   }
 
-  // ✅ Helper to update UI Audio Route
+
   void setAudioRoute(WalkieAudioRoute route) {
     audioRoute.value = route;
     isSpeakerOn.value = route == WalkieAudioRoute.speaker;
   }
 
-  // ✅ Dynamic Icon based on route
+
   IconData get audioRouteIcon {
     switch (audioRoute.value) {
       case WalkieAudioRoute.bluetooth:
@@ -99,7 +97,6 @@ class GroupWalkieController extends GetxController {
     }
   }
 
-  // ✅ Dynamic Label based on route
   String get audioRouteLabel {
     switch (audioRoute.value) {
       case WalkieAudioRoute.bluetooth:

@@ -78,7 +78,7 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     callEnded(sessionId);
   } else if (message.data['screen_name'] == "callEnded") {
     final sessionId = message.data['sessionId'];
-    print("========CallEndedFromBackend===${sessionId}");
+    log("========CallEndedFromBackend===${sessionId}");
     callEnded(sessionId);
   }
 }
@@ -175,27 +175,25 @@ Future<void> main() async {
 }
 
 groupWalkieInitialize(userId) async {
-  // After user login and socket init
   if (userId != null) {
-    // 1. Initialize Walkie Service
     await GroupWalkieService.instance.init(
       websocketUrl: ConstRes.socketUrl,
       selfUserId: userId,
     );
 
-    // 2. Fetch and register groups
+
     Future.microtask(() async {
       try {
         final List<String> groupIds = await GroupService().getGroupData();
 
         if (groupIds.isNotEmpty) {
           GroupWalkieService.instance.registerGroups(groupIds);
-          log("📻 Registered from main: ${groupIds.length} groups for walkie auto-notify");
+          log("Registered from main: ${groupIds.length} groups for walkie auto-notify");
         } else {
-          log("⚠️ No groups found to register for user $userId");
+          log("No groups found to register for user $userId");
         }
       } catch (e) {
-        log("❌ Failed to register groups from main: $e");
+        log("Failed to register groups from main: $e");
       }
     });
   }
