@@ -179,23 +179,8 @@ groupWalkieInitialize(userId) async {
     await GroupWalkieService.instance.init(
       websocketUrl: ConstRes.socketUrl,
       selfUserId: userId,
+
     );
-
-
-    Future.microtask(() async {
-      try {
-        final List<String> groupIds = await GroupService().getGroupData();
-
-        if (groupIds.isNotEmpty) {
-          GroupWalkieService.instance.registerGroups(groupIds);
-          log("Registered from main: ${groupIds.length} groups for walkie auto-notify");
-        } else {
-          log("No groups found to register for user $userId");
-        }
-      } catch (e) {
-        log("Failed to register groups from main: $e");
-      }
-    });
   }
 }
 

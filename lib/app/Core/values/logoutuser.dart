@@ -7,14 +7,16 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 
+import '../../Data/Services/Walkie-Talkie-Service.dart';
 import 'global.dart';
 
 class LogoutUser {
-  logout() {
+  logout() async {
     Global.storageServices.remove(PrefConst.STORAGE_USER_TOKEN_KEY);
     Global.storageServices.remove(PrefConst.DEVICE_ID);
     Global.storageServices.remove(PrefConst.isRegistered);
-
+    // Stop walkie
+    await GroupWalkieService.instance.dispose();
     // Global.storageServices.remove("UserData");
     Get.offNamedUntil(Routes.Login, (route) => false);
   }

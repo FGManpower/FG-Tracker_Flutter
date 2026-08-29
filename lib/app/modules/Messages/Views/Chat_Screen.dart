@@ -26,7 +26,6 @@ class ChatScreen extends GetView<MessageController> {
 
   final TextEditingController _controller = TextEditingController();
 
-
   final groupController = Get.put(GroupController());
   final RxString recordedVoicePath = "".obs;
 
@@ -87,7 +86,7 @@ class ChatScreen extends GetView<MessageController> {
                     final total = controller.searchResultIds.length;
                     final current = controller.currentSearchIndex.value;
                     final display =
-                    total == 0 ? "0/0" : "${total - current}/$total";
+                        total == 0 ? "0/0" : "${total - current}/$total";
                     return Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 8),
                       child: Center(
@@ -101,16 +100,14 @@ class ChatScreen extends GetView<MessageController> {
                       ),
                     );
                   }),
-                  Obx(() =>
-                      IconButton(
+                  Obx(() => IconButton(
                         icon: const Icon(Icons.keyboard_arrow_up,
                             color: Colors.black),
                         onPressed: controller.searchResultIds.isEmpty
                             ? null
                             : controller.previousSearchResult,
                       )),
-                  Obx(() =>
-                      IconButton(
+                  Obx(() => IconButton(
                         icon: const Icon(Icons.keyboard_arrow_down,
                             color: Colors.black),
                         onPressed: controller.searchResultIds.isEmpty
@@ -123,7 +120,7 @@ class ChatScreen extends GetView<MessageController> {
 
             return CommonChatAppBar(
               profileImageUrl:
-              "${ConstRes.aImageBaseUrl}${userData.profileImage ?? ""}",
+                  "${ConstRes.aImageBaseUrl}${userData.profileImage ?? ""}",
               userName: userData.name ?? "",
               controller: controller,
               groupName: controller.arguments?['groupName'],
@@ -138,7 +135,7 @@ class ChatScreen extends GetView<MessageController> {
                 controller.startCall(
                   context,
                   callerId:
-                  Global.storageServices.get(PrefConst.userId).toString(),
+                      Global.storageServices.get(PrefConst.userId).toString(),
                   remoteUserId: controller.memberData.userId.toString(),
                   is_video: false,
                   callerName: controller.memberData.name,
@@ -148,7 +145,7 @@ class ChatScreen extends GetView<MessageController> {
                 controller.startCall(
                   context,
                   callerId:
-                  Global.storageServices.get(PrefConst.userId).toString(),
+                      Global.storageServices.get(PrefConst.userId).toString(),
                   remoteUserId: controller.memberData.userId.toString(),
                   is_video: true,
                   callerName: controller.memberData.name,
@@ -166,7 +163,7 @@ class ChatScreen extends GetView<MessageController> {
                 CommonDialog.ConfirmationDialog(
                   title: "Remove Member",
                   content:
-                  "Are you sure you want to remove this member from the group?",
+                      "Are you sure you want to remove this member from the group?",
                   confirm: "Remove",
                   onConfirm: () {
                     groupController.deleteGroupMember(
@@ -190,22 +187,19 @@ class ChatScreen extends GetView<MessageController> {
           child: Column(
             children: [
               Obx(() {
-        final pinned = controller.pinnedMessage.value;
+                final pinned = controller.pinnedMessage.value;
 
-        if (pinned == null || !controller.showPinnedBanner.value) {
-        return const SizedBox.shrink();
-        }
+                if (pinned == null || !controller.showPinnedBanner.value) {
+                  return const SizedBox.shrink();
+                }
 
-        return PinnedMessageBanner(
-        pinnedMessage: pinned,
-        onTap: () => controller.scrollToPinnedMessage(),
-
-        onClose: () => controller.unpinMessage(),
-
-        onUnpin: () => controller.unpinMessage(),
-        );
-        }),
-
+                return PinnedMessageBanner(
+                  pinnedMessage: pinned,
+                  onTap: () => controller.scrollToPinnedMessage(),
+                  onClose: () => controller.unpinMessage(),
+                  onUnpin: () => controller.unpinMessage(),
+                );
+              }),
               Expanded(
                 child: Stack(
                   fit: StackFit.expand,
@@ -226,7 +220,7 @@ class ChatScreen extends GetView<MessageController> {
                           alignment: Alignment.topCenter,
                           child: AnimatedSlide(
                             offset:
-                            isVisible ? Offset.zero : const Offset(0, -0.8),
+                                isVisible ? Offset.zero : const Offset(0, -0.8),
                             duration: const Duration(milliseconds: 220),
                             curve: Curves.easeOutCubic,
                             child: AnimatedOpacity(
@@ -277,7 +271,7 @@ class ChatScreen extends GetView<MessageController> {
                 return Container(
                   width: double.infinity,
                   padding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     border: Border(
@@ -369,7 +363,7 @@ class ChatScreen extends GetView<MessageController> {
                 },
                 onLocationSelected: () async {
                   final location = await Get.to<LocationMessage>(
-                        () => const LocationPickerPage(),
+                    () => const LocationPickerPage(),
                   );
                   if (location != null) {
                     await controller.sendLocation(
@@ -379,7 +373,7 @@ class ChatScreen extends GetView<MessageController> {
                 },
                 onContactSelected: () async {
                   final contact = await Get.to<ContactMessage>(
-                        () => const ContactPickerPage(),
+                    () => const ContactPickerPage(),
                   );
 
                   if (contact != null) {
@@ -414,8 +408,7 @@ class WhatsAppVoicePlayerPreview extends StatefulWidget {
       _WhatsAppVoicePlayerPreviewState();
 }
 
-class _WhatsAppVoicePlayerPreviewState
-    extends State<WhatsAppVoicePlayerPreview>
+class _WhatsAppVoicePlayerPreviewState extends State<WhatsAppVoicePlayerPreview>
     with SingleTickerProviderStateMixin {
   late AnimationController _animController;
   bool isPlaying = false;
@@ -424,9 +417,36 @@ class _WhatsAppVoicePlayerPreviewState
   int speedIndex = 0;
 
   final List<double> barHeights = [
-    12, 18, 28, 14, 22, 36, 16, 24, 32, 10,
-    20, 30, 14, 26, 38, 18, 12, 28, 34, 16,
-    22, 12, 30, 20, 14, 26, 32, 18, 10, 24
+    12,
+    18,
+    28,
+    14,
+    22,
+    36,
+    16,
+    24,
+    32,
+    10,
+    20,
+    30,
+    14,
+    26,
+    38,
+    18,
+    12,
+    28,
+    34,
+    16,
+    22,
+    12,
+    30,
+    20,
+    14,
+    26,
+    32,
+    18,
+    10,
+    24
   ];
 
   @override
@@ -436,17 +456,17 @@ class _WhatsAppVoicePlayerPreviewState
       vsync: this,
       duration: const Duration(seconds: 10),
     )..addListener(() {
-      setState(() {
-        progress = _animController.value;
-      });
-      if (_animController.isCompleted) {
         setState(() {
-          isPlaying = false;
-          _animController.reset();
-          progress = 0.0;
+          progress = _animController.value;
         });
-      }
-    });
+        if (_animController.isCompleted) {
+          setState(() {
+            isPlaying = false;
+            _animController.reset();
+            progress = 0.0;
+          });
+        }
+      });
   }
 
   void _togglePlayPause() {
@@ -603,9 +623,36 @@ class _VoiceMessagePlayerBubbleState extends State<VoiceMessagePlayerBubble>
   int speedIndex = 0;
 
   final List<double> barHeights = [
-    10, 16, 24, 12, 18, 32, 14, 22, 28, 10,
-    18, 26, 12, 22, 34, 16, 10, 24, 30, 14,
-    20, 10, 26, 18, 12, 22, 28, 16, 10, 20
+    10,
+    16,
+    24,
+    12,
+    18,
+    32,
+    14,
+    22,
+    28,
+    10,
+    18,
+    26,
+    12,
+    22,
+    34,
+    16,
+    10,
+    24,
+    30,
+    14,
+    20,
+    10,
+    26,
+    18,
+    12,
+    22,
+    28,
+    16,
+    10,
+    20
   ];
 
   @override
@@ -615,17 +662,17 @@ class _VoiceMessagePlayerBubbleState extends State<VoiceMessagePlayerBubble>
       vsync: this,
       duration: const Duration(seconds: 12),
     )..addListener(() {
-      setState(() {
-        progress = _animController.value;
-      });
-      if (_animController.isCompleted) {
         setState(() {
-          isPlaying = false;
-          _animController.reset();
-          progress = 0.0;
+          progress = _animController.value;
         });
-      }
-    });
+        if (_animController.isCompleted) {
+          setState(() {
+            isPlaying = false;
+            _animController.reset();
+            progress = 0.0;
+          });
+        }
+      });
   }
 
   void _togglePlayPause() {
@@ -662,10 +709,9 @@ class _VoiceMessagePlayerBubbleState extends State<VoiceMessagePlayerBubble>
   Widget build(BuildContext context) {
     final currentSpeed = speeds[speedIndex];
     final activeColor =
-    widget.isSender ? Colors.white : const Color(0xFF075E54);
-    final inactiveColor = widget.isSender
-        ? Colors.white.withOpacity(0.4)
-        : Colors.grey.shade400;
+        widget.isSender ? Colors.white : const Color(0xFF075E54);
+    final inactiveColor =
+        widget.isSender ? Colors.white.withOpacity(0.4) : Colors.grey.shade400;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
@@ -744,4 +790,3 @@ class _VoiceMessagePlayerBubbleState extends State<VoiceMessagePlayerBubble>
     );
   }
 }
-
