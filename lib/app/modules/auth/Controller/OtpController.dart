@@ -166,16 +166,6 @@ class OtpController extends GetxController {
               selfUserId: result.data!.userId.toString(),
             );
 
-            Future.delayed(const Duration(seconds: 2), () async {
-              try {
-                final groupIds = await GroupService().getGroupData();
-
-                GroupWalkieService.instance.registerGroups(groupIds.toList());
-                log("📻 Registered ${groupIds.length} groups for walkie auto-notify");
-              } catch (e) {
-                log("❌ Failed to register groups: $e");
-              }
-            });
           }
         } catch (e) {
           log("login_SocketException====${e}");

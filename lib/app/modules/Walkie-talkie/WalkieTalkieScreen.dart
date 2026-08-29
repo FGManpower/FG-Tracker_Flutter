@@ -24,7 +24,6 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
   late final AnimationController _waveController;
   bool _isPressed = false;
 
-
   final Color _bgDark = const Color(0xFF0F1223);
   final Color _cardDark = const Color(0xFF161A30);
   final Color _primaryPurple = const Color(0xFF6B4EFF);
@@ -53,37 +52,16 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
     final groupId = args['groupId'].toString();
     controller.setCurrentGroup(groupId);
     GroupWalkieService.instance.joinGroup(groupId);
-
-    _initializeWarmHardware();
-
-    if (args['autoOpened'] == true) {
-      Future.delayed(const Duration(milliseconds: 300), () {
-        if (!mounted) return;
-        Get.snackbar(
-          "🎤 Channel Active",
-          "${args['speakerName'] ?? 'Someone'} is speaking...",
-          snackPosition: SnackPosition.TOP,
-          backgroundColor: _primaryPurple,
-          colorText: Colors.white,
-          margin: EdgeInsets.all(12.w),
-          borderRadius: 12.r,
-        );
-      });
-    }
   }
 
-  Future<void> _initializeWarmHardware() async {
-    await GroupWalkieService.instance.initRecorder();
-  }
+
 
   @override
   void dispose() {
     _pulseController.dispose();
     _waveController.dispose();
     GroupWalkieService.instance.leaveGroup();
-    GroupWalkieService.instance.stopRecorder();
     controller.reset();
-    WalkieLaunchTracker.fromWalkieCall = false;
     super.dispose();
   }
 
@@ -123,7 +101,6 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
     return name.substring(0, name.length >= 2 ? 2 : 1).toUpperCase();
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -158,7 +135,6 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
       ),
     );
   }
-
 
   Widget _buildHeader() {
     return Padding(
@@ -208,7 +184,6 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
               ],
             ),
           ),
-
           _buildIconBtn(Icons.people_alt_outlined),
           SizedBox(width: 12.w),
           _buildIconBtn(Icons.graphic_eq_rounded),
@@ -227,7 +202,96 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                       : Colors.white,
                 ))
           else
-            _buildIconBtn(Icons.more_vert_rounded),
+            PopupMenuButton<String>(
+              icon: Icon(
+                Icons.more_vert_rounded,
+                color: Colors.white,
+                size: 24.sp,
+              ),
+              color: const Color(0xFF1C1B2E),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12.r),
+              ),
+              onSelected: (value) async {
+                switch (value) {
+                  case 'members':
+                  // Navigate to members list
+                    break;
+                  case 'mute-group':
+                    controller.toggleMute();
+                    await GroupWalkieService.instance.toggleMute();
+                    break;
+                  case 'exit':
+                    _showExitGroupDialog();
+                    break;
+                }
+              },
+              itemBuilder: (context) => [
+                PopupMenuItem<String>(
+                  value: 'members',
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.people_alt_outlined,
+                        color: Colors.white,
+                        size: 20.sp,
+                      ),
+                      SizedBox(width: 12.w),
+                      Text(
+                        'Group Members',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                PopupMenuItem<String>(
+                  value: 'mute-group',
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.volume_mute,
+                        color: Colors.white,
+                        size: 20.sp,
+                      ),
+                      SizedBox(width: 12.w),
+                      Text(
+                        'Mute Group',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                PopupMenuItem<String>(
+                  value: 'exit',
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.exit_to_app_rounded,
+                        color: Colors.redAccent,
+                        size: 20.sp,
+                      ),
+                      SizedBox(width: 12.w),
+                      Text(
+                        'Exit Group',
+                        style: TextStyle(
+                          color: Colors.redAccent,
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
         ],
       ),
     );
@@ -247,7 +311,6 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
       ),
     );
   }
-
 
   Widget _buildBannerCard() {
     return Container(
@@ -310,7 +373,6 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
       ),
     );
   }
-
 
   Widget _buildStatsRow() {
     return Obx(() {
@@ -428,8 +490,6 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
             ],
           ),
           SizedBox(height: 12.h),
-
-
           AnimatedContainer(
             duration: const Duration(milliseconds: 300),
             padding: EdgeInsets.all(16.w),
@@ -456,10 +516,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
     final isMeTalking = controller.isTalking;
     final speakerName =
         isMeTalking ? "You" : controller.activeSpeakerName.value;
-    final image = isMeTalking
-        ? ""
-        : controller
-            .activeSpeakerImage.value;
+    final image = isMeTalking ? "" : controller.activeSpeakerImage.value;
 
     return Row(
       children: [
@@ -582,7 +639,6 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
       },
     );
   }
-
 
   Widget _buildChannelMembersSection() {
     return Column(
@@ -735,28 +791,30 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
 
           // Speaker Toggle
           Obx(() => _buildBottomActionButton(
-            icon: controller.audioRouteIcon,            label: controller.audioRouteLabel,
-            isActive: controller.isSpeakerOn.value ||
-                controller.audioRoute.value == WalkieAudioRoute.bluetooth ||
-                controller.audioRoute.value == WalkieAudioRoute.headset,
-            onTap: () async {
-              // Prevent switching to Speaker if Bluetooth is connected
-              if (controller.audioRoute.value == WalkieAudioRoute.bluetooth ||
-                  controller.audioRoute.value == WalkieAudioRoute.headset) {
-                Get.snackbar(
-                  "Audio Route",
-                  "Currently routing audio to ${controller.audioRouteLabel}",
-                  snackPosition: SnackPosition.BOTTOM,
-                  backgroundColor: Colors.white,
-                  colorText: Colors.black,
-                );
-                return;
-              }
+                icon: controller.audioRouteIcon,
+                label: controller.audioRouteLabel,
+                isActive: controller.isSpeakerOn.value ||
+                    controller.audioRoute.value == WalkieAudioRoute.bluetooth ||
+                    controller.audioRoute.value == WalkieAudioRoute.headset,
+                onTap: () async {
+                  // Prevent switching to Speaker if Bluetooth is connected
+                  if (controller.audioRoute.value ==
+                          WalkieAudioRoute.bluetooth ||
+                      controller.audioRoute.value == WalkieAudioRoute.headset) {
+                    Get.snackbar(
+                      "Audio Route",
+                      "Currently routing audio to ${controller.audioRouteLabel}",
+                      snackPosition: SnackPosition.BOTTOM,
+                      backgroundColor: Colors.white,
+                      colorText: Colors.black,
+                    );
+                    return;
+                  }
 
-              final next = !controller.isSpeakerOn.value;
-              await GroupWalkieService.instance.toggleSpeaker(next);
-            },
-          )),
+                  final next = !controller.isSpeakerOn.value;
+                  await GroupWalkieService.instance.toggleSpeaker(next);
+                },
+              )),
           GestureDetector(
             onTapDown: (_) => _onPTTPressed(),
             onTapUp: (_) => _onPTTReleased(),
@@ -845,6 +903,43 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
     );
   }
 
+  void _showExitGroupDialog() {
+    Get.dialog(
+      AlertDialog(
+        backgroundColor: _cardDark,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20.r),
+        ),
+        title: Text(
+          "Exit Group?",
+          style: TextStyle(color: Colors.white, fontSize: 18.sp),
+        ),
+        content: Text(
+          "You will be removed from ${args['groupName'] ?? 'this group'} and will no longer receive walkie invites.",
+          style: TextStyle(color: Colors.white70, fontSize: 14.sp),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: Text("Cancel", style: TextStyle(color: Colors.white70)),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Get.back();
+              await GroupWalkieService.instance
+                  .exitGroupMembership(args['groupId'].toString());
+              Get.back(); // exit walkie screen
+
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.redAccent,
+            ),
+            child: Text("Exit Group"),
+          ),
+        ],
+      ),
+    );
+  }
   Widget _buildBottomActionButton({
     required IconData icon,
     required String label,
