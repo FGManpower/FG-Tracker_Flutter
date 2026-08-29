@@ -1,9 +1,12 @@
 import 'package:fgtracker/app/Core/values/responsive.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
+import 'package:fgtracker/app/modules/Walkie-talkie/WalkieTalkieScreen.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:fgtracker/app/Model/GroupRes.dart';
+import '../../Group/controller/Group_Controller.dart';
 
 class WalkieGroupSelectScreen extends StatefulWidget {
   const WalkieGroupSelectScreen({super.key});
@@ -16,19 +19,22 @@ class WalkieGroupSelectScreen extends StatefulWidget {
 class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
   int _selectedTab = 0;
 
-  static final List<Map<String, dynamic>> _allGroups = [
-    {
-      'name': 'Construction Group',
-      'members': 12,
-      'online': true,
-      'color': const Color(0xFFE8DEFF),
-      'iconColor': const Color(0xFF6B4DFF),
-      'muted': false,
-    },
+  final GroupController _groupController = Get.put(GroupController());
+
+  final List<Map<String, Color>> _colorPool = [
+    {'bg': const Color(0xFFE8DEFF), 'icon': const Color(0xFF6B4DFF)},
+    {'bg': const Color(0xFFD1FAE5), 'icon': const Color(0xFF10B981)},
+    {'bg': const Color(0xFFE0E7FF), 'icon': const Color(0xFF6366F1)},
+    {'bg': const Color(0xFFFFEDD5), 'icon': const Color(0xFFF59E0B)},
+    {'bg': const Color(0xFFCFFAFE), 'icon': const Color(0xFF06B6D4)},
+    {'bg': const Color(0xFFFCE7F3), 'icon': const Color(0xFFEC4899)},
+    {'bg': const Color(0xFFEDE9FE), 'icon': const Color(0xFF8B5CF6)},
+  ];
+
+  static final List<Map<String, dynamic>> _recentGroups = [
     {
       'name': 'Logistics Group',
       'members': 8,
-      'online': true,
       'color': const Color(0xFFD1FAE5),
       'iconColor': const Color(0xFF10B981),
       'muted': true,
@@ -36,49 +42,26 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
     {
       'name': 'Security Group',
       'members': 10,
-      'online': true,
       'color': const Color(0xFFE0E7FF),
       'iconColor': const Color(0xFF6366F1),
       'muted': false,
     },
     {
-      'name': 'Maintenance Group',
-      'members': 7,
-      'online': false,
-      'color': const Color(0xFFFFEDD5),
-      'iconColor': const Color(0xFFF59E0B),
-      'muted': false,
-    },
-    {
-      'name': 'General Group',
-      'members': 15,
-      'online': true,
-      'color': const Color(0xFFCFFAFE),
-      'iconColor': const Color(0xFF06B6D4),
-      'muted': false,
-    },
-    {
-      'name': 'Event Group',
-      'members': 6,
-      'online': true,
-      'color': const Color(0xFFFCE7F3),
-      'iconColor': const Color(0xFFEC4899),
-      'muted': false,
-    },
-    {
-      'name': 'Housekeeping Group',
-      'members': 9,
-      'online': true,
-      'color': const Color(0xFFEDE9FE),
-      'iconColor': const Color(0xFF8B5CF6),
+      'name': 'Construction Group',
+      'members': 12,
+      'color': const Color(0xFFE8DEFF),
+      'iconColor': const Color(0xFF6B4DFF),
       'muted': false,
     },
   ];
 
-  List<Map<String, dynamic>> get _recentGroups => _allGroups.take(3).toList();
-
-  List<Map<String, dynamic>> get _displayedGroups =>
-      _selectedTab == 0 ? _allGroups : _recentGroups;
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _groupController.getGroupData();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -332,31 +315,155 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
   }
 
   Widget _buildGroupList() {
-    final groups = _displayedGroups;
+    return Obx(() {
+      if (_selectedTab == 0) {
+        if (_groupController.groupDataLoading.value) {
+          return const Center(
+            child: CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF6B4DFF)),
+            ),
+          );
+        }
 
-    if (groups.isEmpty) {
-      return Center(
-        child: reausabletext(
-          "No groups found",
-          fontsize: 14.sp,
-          color: Colors.grey,
-        ),
-      );
-    }
+        final List<GroupsResData> allApiGroups = [];
+        allApiGroups.addAll(_groupController.newlyCreatedGroups);
+        allApiGroups.addAll(_groupController.createdGroups);
 
-    return ListView.separated(
-      padding: MediaQueryHelper.paddingSymmetric(
-          horizontal: 16, vertical: 4, context: context),
-      itemCount: groups.length,
-      separatorBuilder: (_, __) => MediaQueryHelper.gapH(10, context),
-      itemBuilder: (context, index) {
-        return _groupCard(groups[index]);
+        if (allApiGroups.isEmpty) {
+          return Center(
+            child: reausabletext(
+              "No groups found",
+              fontsize: 14.sp,
+              color: Colors.grey,
+            ),
+          );
+        }
+
+        return ListView.separated(
+          padding: MediaQueryHelper.paddingSymmetric(
+              horizontal: 16, vertical: 4, context: context),
+          itemCount: allApiGroups.length,
+          separatorBuilder: (_, __) => MediaQueryHelper.gapH(10, context),
+          itemBuilder: (context, index) {
+            return _apiGroupCard(allApiGroups[index], index);
+          },
+        );
+      } else {
+        final groups = _recentGroups;
+        if (groups.isEmpty) {
+          return Center(
+            child: reausabletext(
+              "No recent groups found",
+              fontsize: 14.sp,
+              color: Colors.grey,
+            ),
+          );
+        }
+        return ListView.separated(
+          padding: MediaQueryHelper.paddingSymmetric(
+              horizontal: 16, vertical: 4, context: context),
+          itemCount: groups.length,
+          separatorBuilder: (_, __) => MediaQueryHelper.gapH(10, context),
+          itemBuilder: (context, index) {
+            return _dummyGroupCard(groups[index]);
+          },
+        );
+      }
+    });
+  }
+
+  Widget _apiGroupCard(GroupsResData group, int index) {
+    final colors = _colorPool[index % _colorPool.length];
+
+    return InkWell(
+      onTap: () {
+        Get.to(
+          () => const GroupWalkieScreen(),
+          arguments: {
+            'groupId': group.id?.toString() ?? "",
+            'groupName': group.groupName ?? "Unknown Group",
+            'groupDesc': group.groupDesc ?? "",
+            'groupCode': group.groupCode ?? "",
+          },
+        );
       },
+      borderRadius: BorderRadius.circular(16.r),
+      child: Container(
+        padding: MediaQueryHelper.paddingSymmetric(
+            horizontal: 12, vertical: 12, context: context),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16.r),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
+            ),
+          ],
+          border: Border.all(color: Colors.grey.withOpacity(0.08)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 44.w,
+              height: 44.w,
+              decoration: BoxDecoration(
+                color: colors['bg'],
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.groups,
+                color: colors['icon'],
+                size: 22.sp,
+              ),
+            ),
+            MediaQueryHelper.gapW(12, context),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  reausabletext(
+                    group.groupName ?? "No Name Group",
+                    fontsize: 14.sp,
+                    fontfamily: FontFamily.interSemiBold,
+                    color: Colors.black87,
+                  ),
+                  MediaQueryHelper.gapH(4, context),
+                  Row(
+                    children: [
+                      Icon(Icons.people_alt_outlined,
+                          size: 12.sp, color: Colors.grey),
+                      MediaQueryHelper.gapW(4, context),
+                      reausabletext(
+                        "${group.memberCount ?? 0} Members",
+                        fontsize: 11.sp,
+                        color: Colors.grey,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              padding: MediaQueryHelper.paddingAll(8, context),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF3F0FF),
+                borderRadius: BorderRadius.circular(10.r),
+              ),
+              child: Icon(
+                Icons.cell_tower,
+                size: 18.sp,
+                color: const Color(0xFF6B4DFF),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
-  Widget _groupCard(Map<String, dynamic> g) {
-    final bool online = g['online'] as bool;
+  Widget _dummyGroupCard(Map<String, dynamic> g) {
     final bool muted = g['muted'] as bool? ?? false;
 
     return Container(
@@ -410,22 +517,6 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                       "${g['members']} Members",
                       fontsize: 11.sp,
                       color: Colors.grey,
-                    ),
-                    MediaQueryHelper.gapW(6, context),
-                    Container(
-                      width: 3.w,
-                      height: 3.w,
-                      decoration: const BoxDecoration(
-                        color: Colors.grey,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    MediaQueryHelper.gapW(6, context),
-                    reausabletext(
-                      online ? "Online" : "Offline",
-                      fontsize: 11.sp,
-                      color: online ? const Color(0xFF10B981) : Colors.grey,
-                      fontfamily: FontFamily.interSemiBold,
                     ),
                   ],
                 ),
