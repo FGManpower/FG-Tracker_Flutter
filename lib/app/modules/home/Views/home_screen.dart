@@ -163,53 +163,58 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildStatsGrid() {
-    return Row(
-      children: [
-        Expanded(
-          child: Obx(
-            () => _buildStatCard(
+    return Obx(
+          () => Row(
+        children: [
+          Expanded(
+            child: _buildStatCard(
               icon: Icons.groups,
               iconColor: const Color(0xFF6B4DFF),
               title: "Groups",
-              value: groupController.createdGroups.length.toString(),
+              value: dashController.totalGroups.value.toString(),
               subtitle: "Total",
             ),
           ),
-        ),
-        MediaQueryHelper.gapW(10, context),
-        Expanded(
-          child: _buildStatCard(
-            icon: Icons.person,
-            iconColor: const Color(0xFF10B981),
-            title: "Online",
-            value: "4",
-            subtitle: "Now",
+
+          MediaQueryHelper.gapW(10, context),
+
+          Expanded(
+            child: _buildStatCard(
+              icon: Icons.person,
+              iconColor: const Color(0xFF10B981),
+              title: "Online",
+              value: dashController.activeMembers.value.toString(),
+              subtitle: "Now",
+            ),
           ),
-        ),
-        MediaQueryHelper.gapW(10, context),
-        Expanded(
-          child: _buildStatCard(
-            icon: Icons.people_alt,
-            iconColor: const Color(0xFF3B82F6),
-            title: "Members",
-            value: "10",
-            subtitle: "Total",
+
+          MediaQueryHelper.gapW(10, context),
+
+          Expanded(
+            child: _buildStatCard(
+              icon: Icons.people_alt,
+              iconColor: const Color(0xFF3B82F6),
+              title: "Members",
+              value: dashController.totalMembers.value.toString(),
+              subtitle: "Total",
+            ),
           ),
-        ),
-        MediaQueryHelper.gapW(10, context),
-        Expanded(
-          child: _buildStatCard(
-            icon: Icons.supervised_user_circle,
-            iconColor: const Color(0xFFF59E0B),
-            title: "Ghost mode",
-            value: "2",
-            subtitle: "Ongoing",
+
+          MediaQueryHelper.gapW(10, context),
+
+          Expanded(
+            child: _buildStatCard(
+              icon: Icons.supervised_user_circle,
+              iconColor: const Color(0xFFF59E0B),
+              title: "Ghost Mode",
+              value: dashController.locationDisabledMembers.value.toString(),
+              subtitle: "Active",
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
-
   Widget _buildStatCard({
     required IconData icon,
     required Color iconColor,

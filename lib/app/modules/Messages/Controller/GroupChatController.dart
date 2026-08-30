@@ -747,7 +747,7 @@ class GroupMessageController extends GetxController {
   }
 
   void handleBackPressed(BuildContext context) {
-    socketService.disconnectSocket();
+    // socketService.disconnectSocket();
 
     _messages.clear();
 

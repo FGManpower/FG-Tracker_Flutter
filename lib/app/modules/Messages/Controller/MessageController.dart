@@ -699,7 +699,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     final userId = Global.storageServices.get(PrefConst.userId).toString();
 
     socketService.leaveUserFromGroup(userId, groupID);
-    socketService.disconnectSocket();
+    // socketService.disconnectSocket();
 
     _messages.clear();
     messageText.value = "";
