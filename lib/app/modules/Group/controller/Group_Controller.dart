@@ -148,7 +148,7 @@ class GroupController extends GetxController {
     BuildContext context, {
     required String groupId,
     required String groupMemberId,
-        required void Function(bool) onSuccess,
+    required void Function(bool) onSuccess,
   }) async {
     try {
       Loading().showloading();
@@ -159,7 +159,8 @@ class GroupController extends GetxController {
       var result = await GroupRepo.deleteGroupsMember(param);
       if (result.status == true) {
         Loading().dismissloading();
-        MemberController().leaveGroup(context, groupId: groupId,onSuccess: onSuccess);
+        MemberController()
+            .leaveGroup(context, groupId: groupId, onSuccess: onSuccess);
       } else {
         Loading().dismissloading();
         CommonDialog.errorMessage(result.message);
@@ -170,16 +171,15 @@ class GroupController extends GetxController {
     }
   }
 
-
   Future<void> confirmAndExitGroup(
-      BuildContext context, {
-        required String groupId,
-        required String groupName,
-      }) async {
+    BuildContext context, {
+    required String groupId,
+    required String groupName,
+  }) async {
     Get.defaultDialog(
       title: "Exit Group",
       middleText:
-      "Are you sure you want to exit \"$groupName\"? You'll need a group code to rejoin.",
+          "Are you sure you want to exit \"$groupName\"? You'll need a group code to rejoin.",
       textCancel: "Cancel",
       textConfirm: "Exit",
       confirmTextColor: Colors.white,

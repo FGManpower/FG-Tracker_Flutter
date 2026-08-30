@@ -1,4 +1,5 @@
 import 'dart:developer';
+
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
@@ -9,6 +10,8 @@ class SocketMessageService extends GetxService {
 
   IO.Socket? _socket;
 
+  Function(dynamic)? _dashboardCountsCallback;
+
   bool get isSocketConnected => _socket?.connected == true;
 
   IO.Socket get socket {
@@ -18,40 +21,149 @@ class SocketMessageService extends GetxService {
     return _socket!;
   }
 
-  Future<void> init(String socketUrl,
-      {required String userId, required int groupId}) async {
-    if (_socket != null) {
-      disconnectSocket();
+  Future<void> init(
+    String socketUrl, {
+    required String userId,
+    int? groupId,
+  }) async {
+    if (_socket != null && _socket!.connected) {
+      print("CHAT SOCKET ALREADY CONNECTED");
+
+      _registerDashboardListener();
+
+      if (_dashboardCountsCallback != null) {
+        getGroupDashboardCounts(userId: userId);
+      }
+
+      if (groupId != null) {
+        joinUserInGroup(userId, groupId);
+        markSeen(userId, groupId);
+      }
+
+      return;
     }
-    _socket = IO.io("$socketUrl/chat", {
-      "transports": ["websocket"],
-      "autoConnect": true,
-    });
+
+    print("CREATING CHAT SOCKET...");
+
+    _socket = IO.io(
+      "$socketUrl/chat",
+      {
+        "transports": ["websocket"],
+        "autoConnect": true,
+      },
+    );
 
     _socket?.onConnect((_) {
-      joinUserInGroup(userId, groupId);
-      markSeen(userId, groupId);
+      print("=================================");
+      print("CHAT SOCKET CONNECTED");
+      print("=================================");
+
+      if (groupId != null) {
+        joinUserInGroup(userId, groupId);
+        markSeen(userId, groupId);
+      }
+
+      _registerDashboardListener();
+
+      if (_dashboardCountsCallback != null) {
+        getGroupDashboardCounts(userId: userId);
+      }
     });
+
     _socket?.onAny((event, data) {
       log("MessageAllEventCalled: $event => $data");
     });
 
-    _socket?.onDisconnect((_) {});
-    _socket?.onError((err) {});
-  }
+    _socket?.onDisconnect((_) {
+      print("CHAT SOCKET DISCONNECTED");
+    });
 
-  void joinUserInGroup(String userId, int groupId) {
-    _socket?.emit("join", {
-      "userId": userId,
-      "groupId": groupId,
+    _socket?.onError((error) {
+      print("CHAT SOCKET ERROR =====> $error");
     });
   }
 
-  void leaveUserFromGroup(String userId, int groupId) {
-    _socket?.emit("leave", {
-      "userId": userId,
-      "groupId": groupId,
+  void _registerDashboardListener() {
+    if (_socket == null) return;
+
+    _socket!.off("group_dashboard_counts");
+
+    _socket!.on("group_dashboard_counts", (data) {
+      print("🔥🔥🔥 GROUP DASHBOARD COUNTS RECEIVED 🔥🔥🔥");
+      print("TYPE => ${data.runtimeType}");
+      print("DATA => $data");
+
+      _dashboardCountsCallback?.call(data);
     });
+
+    print("✅ Dashboard listener registered");
+  }
+
+  void listenGroupDashboardCounts({
+    required Function(dynamic) callback,
+  }) {
+    _dashboardCountsCallback = callback;
+
+    print("Dashboard callback registered");
+
+    if (_socket != null && _socket!.connected) {
+      _registerDashboardListener();
+    }
+  }
+
+  void getGroupDashboardCounts({
+    required String userId,
+  }) {
+    if (_socket == null) {
+      print("Dashboard request skipped: socket not initialized");
+      return;
+    }
+
+    if (!_socket!.connected) {
+      print("Dashboard request skipped: socket not connected");
+      return;
+    }
+
+    final payload = {
+      "userId": userId,
+    };
+
+    print("GET GROUP DASHBOARD COUNTS =====> $payload");
+
+    _socket!.emit(
+      "get_group_dashboard_counts",
+      payload,
+    );
+  }
+
+  void joinUserInGroup(
+    String userId,
+    int groupId,
+  ) {
+    if (!isSocketConnected) return;
+
+    _socket!.emit(
+      "join",
+      {
+        "userId": userId,
+        "groupId": groupId,
+      },
+    );
+  }
+
+  void leaveUserFromGroup(
+    String userId,
+    int groupId,
+  ) {
+    if (!isSocketConnected) return;
+
+    _socket!.emit(
+      "leave",
+      {
+        "userId": userId,
+        "groupId": groupId,
+      },
+    );
   }
 
   void sendMessage({
@@ -77,15 +189,26 @@ class SocketMessageService extends GetxService {
       'replyType': replyType,
       'replySender': replySender,
     };
+
     print("SEND PAYLOAD =====> $msg");
-    _socket?.emit("send_message", msg);
+
+    _socket?.emit(
+      "send_message",
+      msg,
+    );
   }
 
-  void markSeen(String userId, int groupId) {
-    _socket?.emit("mark_seen", {
-      "userId": userId,
-      "groupId": groupId,
-    });
+  void markSeen(
+    String userId,
+    int groupId,
+  ) {
+    _socket?.emit(
+      "mark_seen",
+      {
+        "userId": userId,
+        "groupId": groupId,
+      },
+    );
   }
 
   void RecievedMessage({
@@ -96,25 +219,28 @@ class SocketMessageService extends GetxService {
   }) {
     _socket?.off('receive_message');
 
-    _socket?.on('receive_message', (data) {
-      print("=================================");
-      print("RECEIVE MESSAGE");
-      print("Message Type : ${data['messageType']}");
-      print("Content      : ${data['content']}");
-      print("Full Data    : $data");
-      print("=================================");
+    _socket?.on(
+      'receive_message',
+      (data) {
+        print("=================================");
+        print("RECEIVE MESSAGE");
+        print("Message Type : ${data['messageType']}");
+        print("Content      : ${data['content']}");
+        print("Full Data    : $data");
+        print("=================================");
 
-      final dataGroupId = int.tryParse(data['groupId'].toString());
+        final dataGroupId = int.tryParse(data['groupId'].toString());
 
-      if (dataGroupId == groupId) {
-        if ((data['senderId'] == senderId &&
-                data['receiverId'] == recieverId) ||
-            (data['senderId'] == recieverId &&
-                data['receiverId'] == senderId)) {
-          callback?.call(data);
+        if (dataGroupId == groupId) {
+          if ((data['senderId'] == senderId &&
+                  data['receiverId'] == recieverId) ||
+              (data['senderId'] == recieverId &&
+                  data['receiverId'] == senderId)) {
+            callback?.call(data);
+          }
         }
-      }
-    });
+      },
+    );
   }
 
   void listenSeenUpdate({
@@ -123,19 +249,24 @@ class SocketMessageService extends GetxService {
   }) {
     _socket?.off("messages_seen_update");
 
-    _socket?.on("messages_seen_update", (data) {
-      final dataGroupId = int.tryParse(data["groupId"].toString());
+    _socket?.on(
+      "messages_seen_update",
+      (data) {
+        final dataGroupId = int.tryParse(data["groupId"].toString());
 
-      if (dataGroupId == groupId) {
-        callback(data);
-      }
-    });
+        if (dataGroupId == groupId) {
+          callback(data);
+        }
+      },
+    );
   }
 
   void joinGroupChat({
     required int groupId,
     required String userId,
   }) {
+    if (!isSocketConnected) return;
+
     socket.emit(
       "join_group_chat",
       {
@@ -174,6 +305,8 @@ class SocketMessageService extends GetxService {
   void receiveGroupMessage({
     required Function(dynamic) callback,
   }) {
+    socket.off("receive_group_message");
+
     socket.on(
       "receive_group_message",
       (data) {
@@ -202,7 +335,10 @@ class SocketMessageService extends GetxService {
 
     print("EDIT MESSAGE PAYLOAD =====> $payload");
 
-    socket.emit("editMessage", payload);
+    socket.emit(
+      "editMessage",
+      payload,
+    );
   }
 
   void listenMessageEdited({
@@ -210,13 +346,16 @@ class SocketMessageService extends GetxService {
   }) {
     socket.off("messageEdited");
 
-    socket.on("messageEdited", (data) {
-      print("============= MESSAGE EDITED =============");
-      print(data);
-      print("===========================================");
+    socket.on(
+      "messageEdited",
+      (data) {
+        print("============= MESSAGE EDITED =============");
+        print(data);
+        print("===========================================");
 
-      callback(data);
-    });
+        callback(data);
+      },
+    );
   }
 
   void deleteMessage({
@@ -224,22 +363,17 @@ class SocketMessageService extends GetxService {
     required String userId,
     required String deleteType,
   }) {
-    print("=================================");
-    print("DELETE PAYLOAD =====>");
-    print({
+    final payload = {
       "messageId": messageId,
       "userId": userId,
       "deleteType": deleteType,
-    });
-    print("=================================");
+    };
+
+    print("DELETE MESSAGE PAYLOAD =====> $payload");
 
     socket.emit(
       "delete_message",
-      {
-        "messageId": messageId,
-        "userId": userId,
-        "deleteType": deleteType,
-      },
+      payload,
     );
   }
 
@@ -277,9 +411,12 @@ class SocketMessageService extends GetxService {
       "pinnedByName": pinnedByName,
     };
 
-    print("📌 PIN MESSAGE PAYLOAD =====> $payload");
+    print("PIN MESSAGE PAYLOAD =====> $payload");
 
-    socket.emit("pin_message", payload);
+    socket.emit(
+      "pin_message",
+      payload,
+    );
   }
 
   void unpinMessageEvent({
@@ -295,20 +432,29 @@ class SocketMessageService extends GetxService {
       if (chatType == "private") "receiverId": receiverId,
     };
 
-    print("📌 UNPIN MESSAGE PAYLOAD =====> $payload");
+    print("UNPIN MESSAGE PAYLOAD =====> $payload");
 
-    socket.emit("unpin_message", payload);
+    socket.emit(
+      "unpin_message",
+      payload,
+    );
   }
 
   void listenPinMessage({
     required Function(Map<String, dynamic>) callback,
   }) {
     socket.off("message_pinned");
-    socket.on("message_pinned", (data) {
-      print("📌 MESSAGE PINNED EVENT =====> $data");
 
-      callback(Map<String, dynamic>.from(data));
-    });
+    socket.on(
+      "message_pinned",
+      (data) {
+        print("MESSAGE PINNED EVENT =====> $data");
+
+        callback(
+          Map<String, dynamic>.from(data),
+        );
+      },
+    );
   }
 
   void listenUnpinMessage({
@@ -316,11 +462,16 @@ class SocketMessageService extends GetxService {
   }) {
     socket.off("message_unpinned");
 
-    socket.on("message_unpinned", (data) {
-      print("📌 MESSAGE UNPINNED EVENT =====> $data");
+    socket.on(
+      "message_unpinned",
+      (data) {
+        print("MESSAGE UNPINNED EVENT =====> $data");
 
-      callback(Map<String, dynamic>.from(data));
-    });
+        callback(
+          Map<String, dynamic>.from(data),
+        );
+      },
+    );
   }
 
   void forwardMessage({
@@ -336,12 +487,21 @@ class SocketMessageService extends GetxService {
 
     print("FORWARD MESSAGE PAYLOAD =====> $payload");
 
-    socket.emit("forward_message", payload);
+    socket.emit(
+      "forward_message",
+      payload,
+    );
   }
 
   void disconnectSocket() {
     _socket?.disconnect();
     _socket?.dispose();
     _socket = null;
+  }
+
+  @override
+  void onClose() {
+    disconnectSocket();
+    super.onClose();
   }
 }

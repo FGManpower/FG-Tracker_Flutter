@@ -373,7 +373,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                 }
               },
               itemBuilder: (context) => [
-                _menuItem('mute-group', Icons.volume_mute, 'Mute Group'),
+                // _menuItem('mute-group', Icons.volume_mute, 'Mute Group'),
                 _menuItem('exit', Icons.logout_rounded, 'Exit Walkie',
                     color: _mutedRed),
               ],
@@ -492,27 +492,6 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                               TextStyle(color: _textSecondary, fontSize: 12.sp),
                         )),
                   ],
-                ),
-              ),
-              OutlinedButton.icon(
-                onPressed: () {},
-                icon: Icon(Icons.info_outline_rounded,
-                    color: _primaryPurple, size: 16.sp),
-                label: Text(
-                  "Info",
-                  style: TextStyle(
-                    color: _primaryPurple,
-                    fontSize: 12.sp,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                style: OutlinedButton.styleFrom(
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 10.w, vertical: 8.h),
-                  side: BorderSide(color: _softPurple),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20.r),
-                  ),
                 ),
               ),
             ],
