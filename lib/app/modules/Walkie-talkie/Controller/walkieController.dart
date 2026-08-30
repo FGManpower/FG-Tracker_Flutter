@@ -53,7 +53,6 @@ class GroupWalkieController extends GetxController {
   final isPressed = false.obs;
   final dragOffset = 0.0.obs;
 
-  // Lock countdown (30 seconds max)
   final lockRemainingSeconds = 0.obs;
 
   final participants = <WalkieParticipant>[].obs;
@@ -237,7 +236,6 @@ class GroupWalkieController extends GetxController {
     dragOffset.value = value;
   }
 
-  // Called when user slides up to lock
   void activateSelfLock(VoidCallback onExpire) {
     isSelfLocked.value = true;
     _startLockCountdown(onExpire);

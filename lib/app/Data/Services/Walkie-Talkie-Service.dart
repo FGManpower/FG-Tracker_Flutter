@@ -322,8 +322,24 @@ class GroupWalkieService {
       await _handleIce(from, ice);
     });
 
+    // CRITICAL RACE-CONDITION FIX (Single Tap Glitch Resolved)
     socket?.on('ptt_granted', (_) async {
       if (_isDisposed) return;
+      _log('PTT_GRANTED received');
+
+      // Check if user has already released the button before server granted the request
+      if (Get.isRegistered<GroupWalkieController>()) {
+        final c = Get.find<GroupWalkieController>();
+        if (!c.isPressed.value && !c.isSelfLocked.value) {
+          _log('PTT_GRANTED auto-cancelled: user finger is already up');
+          _isTalking = false;
+          await _enableMic(false);
+          socket?.emit('ptt_release', {'groupId': _currentGroupId});
+          c.stopTalking();
+          return;
+        }
+      }
+
       await _enableMic(true);
       if (Get.isRegistered<GroupWalkieController>()) {
         Get.find<GroupWalkieController>().startTalking();
@@ -718,7 +734,6 @@ class GroupWalkieService {
   Future<bool> startTalking() async {
     if (_isDisposed) return false;
     if (_currentGroupId == null || _isTalking) return false;
-
     if (_isMuted) return false;
 
     final ok = await _ensureLocalStream();
@@ -734,11 +749,13 @@ class GroupWalkieService {
     return true;
   }
 
+  // FORCE_SYNC FIX: Emits release always to prevent stuck on peer side
   Future<void> stopTalking() async {
-    if (!_isTalking) return;
     _isTalking = false;
     await _enableMic(false);
-    socket?.emit('ptt_release', {'groupId': _currentGroupId});
+    if (_currentGroupId != null) {
+      socket?.emit('ptt_release', {'groupId': _currentGroupId});
+    }
     if (Get.isRegistered<GroupWalkieController>()) {
       Get.find<GroupWalkieController>().stopTalking();
     }
