@@ -43,8 +43,12 @@ class GroupWalkieController extends GetxController {
   final audioRoute = WalkieAudioRoute.speaker.obs;
 
   final isMuted = false.obs;
+  final isSelfLocked = false.obs;
   final isChannelLocked = false.obs;
   final isConnected = true.obs;
+
+  final isPressed = false.obs;
+  final dragOffset = 0.0.obs;
 
   final participants = <WalkieParticipant>[].obs;
   final totalParticipants = 0.obs;
@@ -63,25 +67,39 @@ class GroupWalkieController extends GetxController {
   bool get isListening => audioState.value == WalkieAudioState.listening;
   bool get hasActiveSpeaker => activeSpeakerId.value.isNotEmpty;
 
+  List<WalkieParticipant> get sortedParticipants {
+    final list = List<WalkieParticipant>.from(participants);
+    list.sort((a, b) {
+      if (a.isSpeaking && !b.isSpeaking) return -1;
+      if (!a.isSpeaking && b.isSpeaking) return 1;
+      if (a.isMuted && !b.isMuted) return 1;
+      if (!a.isMuted && b.isMuted) return -1;
+      return a.name.toLowerCase().compareTo(b.name.toLowerCase());
+    });
+    return list;
+  }
 
   @override
   void onInit() {
     super.onInit();
-
     audioRoute.value = GroupWalkieService.instance.audioRoute.value;
     isSpeakerOn.value = GroupWalkieService.instance.isSpeakerOn;
+  }
+
+  @override
+  void onClose() {
+    reset();
+    super.onClose();
   }
 
   void setCurrentGroup(String groupId) {
     currentGroupId = groupId;
   }
 
-
   void setAudioRoute(WalkieAudioRoute route) {
     audioRoute.value = route;
     isSpeakerOn.value = route == WalkieAudioRoute.speaker;
   }
-
 
   IconData get audioRouteIcon {
     switch (audioRoute.value) {
@@ -111,7 +129,10 @@ class GroupWalkieController extends GetxController {
     }
   }
 
-  void updateParticipants(List<WalkieParticipant> list, {String? activeSpeaker}) {
+  void updateParticipants(
+      List<WalkieParticipant> list, {
+        String? activeSpeaker,
+      }) {
     participants.assignAll(list);
     totalParticipants.value = list.length;
 
@@ -176,6 +197,22 @@ class GroupWalkieController extends GetxController {
     isMuted.value = !isMuted.value;
   }
 
+  void setPressed(bool value) {
+    isPressed.value = value;
+  }
+
+  void setDragOffset(double value) {
+    dragOffset.value = value;
+  }
+
+  void toggleSelfLock(bool locked) {
+    isSelfLocked.value = locked;
+  }
+
+  void resetSelfLock() {
+    isSelfLocked.value = false;
+  }
+
   void showBusyMessage(String speakerName) {
     _displayBanner(
       speakerName.isEmpty ? "Channel is busy" : "$speakerName is talking...",
@@ -215,20 +252,21 @@ class GroupWalkieController extends GetxController {
     audioState.value = WalkieAudioState.idle;
     isChannelLocked.value = false;
     isMuted.value = false;
+    isSelfLocked.value = false;
+    isPressed.value = false;
+    dragOffset.value = 0.0;
+
     participants.clear();
     totalParticipants.value = 0;
+
     activeSpeakerId.value = "";
     activeSpeakerName.value = "";
     activeSpeakerImage.value = "";
+
     showStatus.value = false;
     statusMessage.value = "";
     statusColor.value = Colors.orange;
-    currentGroupId = null;
-  }
 
-  @override
-  void onClose() {
-    reset();
-    super.onClose();
+    currentGroupId = null;
   }
 }

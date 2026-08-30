@@ -459,7 +459,7 @@ class GroupWalkieService {
 
       await Helper.setSpeakerphoneOn(_isSpeakerOn);
       await _configureAudioSession(speakerOn: _isSpeakerOn);
-      _log('✅ AUDIO ATTACHED/PLAYING from $remoteUserId speakerOn=$_isSpeakerOn');
+      _log('AUDIO ATTACHED/PLAYING from $remoteUserId speakerOn=$_isSpeakerOn');
     };
 
     pc.onIceCandidate = (c) {

@@ -28,7 +28,7 @@ import '../modules/Messages/Views/Chat_Screen.dart';
 import '../modules/Messages/Views/ForwardMessageScreen.dart';
 import '../modules/Messages/Views/create_group_screen.dart';
 import '../modules/Messages/Views/groups_list_screen.dart';
-import '../modules/Messages/Views/walkie_group_select_screen.dart';
+import '../modules/Walkie-talkie/Views/walkie_group_select_screen.dart';
 import '../modules/Track/Views/Search_Members.dart';
 import '../modules/Track/Views/TrackLocationScreen.dart';
 import '../modules/Walkie-talkie/WalkieTalkieScreen.dart';

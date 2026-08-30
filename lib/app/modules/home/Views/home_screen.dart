@@ -23,7 +23,7 @@ import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
 import '../../../routes/app_pages.dart';
 import '../../Messages/Views/call_screen.dart';
 import '../../Messages/Views/create_group_screen.dart';
-import '../../Messages/Views/walkie_group_select_screen.dart';
+import '../../Walkie-talkie/Views/walkie_group_select_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});

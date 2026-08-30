@@ -74,8 +74,6 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
             MediaQueryHelper.gapH(8, context),
             _buildSearchBar(),
             MediaQueryHelper.gapH(12, context),
-            _buildTabs(),
-            MediaQueryHelper.gapH(12, context),
             Expanded(child: _buildGroupList()),
           ],
         ),
