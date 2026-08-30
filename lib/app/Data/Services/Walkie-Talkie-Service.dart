@@ -159,11 +159,11 @@ class GroupWalkieService {
             avAudioSessionCategory: AVAudioSessionCategory.playAndRecord,
             avAudioSessionMode: AVAudioSessionMode.voiceChat,
             avAudioSessionCategoryOptions:
-            AVAudioSessionCategoryOptions.allowBluetooth |
-            AVAudioSessionCategoryOptions.allowBluetoothA2dp |
-            (speakerOn
-                ? AVAudioSessionCategoryOptions.defaultToSpeaker
-                : AVAudioSessionCategoryOptions.none),
+                AVAudioSessionCategoryOptions.allowBluetooth |
+                    AVAudioSessionCategoryOptions.allowBluetoothA2dp |
+                    (speakerOn
+                        ? AVAudioSessionCategoryOptions.defaultToSpeaker
+                        : AVAudioSessionCategoryOptions.none),
           ),
         );
       } else {
@@ -199,11 +199,11 @@ class GroupWalkieService {
 
   void _updateRoute(Set<AudioDevice> devices) {
     final hasBT = devices.any((d) =>
-    d.type == AudioDeviceType.bluetoothA2dp ||
+        d.type == AudioDeviceType.bluetoothA2dp ||
         d.type == AudioDeviceType.bluetoothSco ||
         d.type == AudioDeviceType.bluetoothLe);
     final hasHeadset = devices.any((d) =>
-    d.type == AudioDeviceType.wiredHeadset ||
+        d.type == AudioDeviceType.wiredHeadset ||
         d.type == AudioDeviceType.wiredHeadphones);
 
     if (hasBT) {
@@ -386,7 +386,7 @@ class GroupWalkieService {
       if (!Get.isRegistered<GroupWalkieController>()) return;
       final list = listRaw
           .map((p) =>
-          WalkieParticipant.fromMap(Map<String, dynamic>.from(p as Map)))
+              WalkieParticipant.fromMap(Map<String, dynamic>.from(p as Map)))
           .toList();
       Get.find<GroupWalkieController>().updateParticipants(
         list,
@@ -749,7 +749,6 @@ class GroupWalkieService {
     return true;
   }
 
-  // FORCE_SYNC FIX: Emits release always to prevent stuck on peer side
   Future<void> stopTalking() async {
     _isTalking = false;
     await _enableMic(false);
@@ -794,7 +793,7 @@ class GroupWalkieService {
     }
     await _configureAudioSession(speakerOn: speakerOn);
     audioRoute.value =
-    speakerOn ? WalkieAudioRoute.speaker : WalkieAudioRoute.earpiece;
+        speakerOn ? WalkieAudioRoute.speaker : WalkieAudioRoute.earpiece;
     if (Get.isRegistered<GroupWalkieController>()) {
       Get.find<GroupWalkieController>().setAudioRoute(audioRoute.value);
     }

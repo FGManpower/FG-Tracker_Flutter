@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:fgtracker/app/Data/Services/Walkie-Talkie-Service.dart';
 
 enum WalkieRole { caller, receiver }
+
 enum WalkieAudioState { idle, listening, talking }
 
 class WalkieParticipant {
@@ -93,8 +94,7 @@ class GroupWalkieController extends GetxController {
     audioRoute.value = GroupWalkieService.instance.audioRoute.value;
     isSpeakerOn.value = GroupWalkieService.instance.isSpeakerOn;
     isMuted.value = GroupWalkieService.instance.isMuted;
-    isConnected.value =
-        GroupWalkieService.instance.socket?.connected ?? false;
+    isConnected.value = GroupWalkieService.instance.socket?.connected ?? false;
   }
 
   @override
@@ -155,9 +155,9 @@ class GroupWalkieController extends GetxController {
   }
 
   void updateParticipants(
-      List<WalkieParticipant> list, {
-        String? activeSpeaker,
-      }) {
+    List<WalkieParticipant> list, {
+    String? activeSpeaker,
+  }) {
     participants.assignAll(list);
     totalParticipants.value = list.length;
 

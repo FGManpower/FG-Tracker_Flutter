@@ -28,6 +28,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
   static const double _lockThreshold = 80.0;
   bool _hasLeft = false;
   bool _pttInProgress = false;
+  bool _allowPop = false;
 
   final Color _bgLight = const Color(0xFFF5F5F8);
   final Color _cardWhite = Colors.white;
@@ -82,15 +83,15 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
 
     _rippleWorker =
         everAll([controller.activeSpeakerId, controller.audioState], (_) {
-          if (controller.isTalking || controller.hasActiveSpeaker) {
-            if (!_rippleController.isAnimating) {
-              _rippleController.repeat();
-            }
-          } else {
-            _rippleController.stop();
-            _rippleController.reset();
-          }
-        });
+      if (controller.isTalking || controller.hasActiveSpeaker) {
+        if (!_rippleController.isAnimating) {
+          _rippleController.repeat();
+        }
+      } else {
+        _rippleController.stop();
+        _rippleController.reset();
+      }
+    });
 
     _pulseWorker = ever(controller.isPressed, (bool pressed) {
       if (pressed && !controller.isSelfLocked.value) {
@@ -125,7 +126,6 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
     controller.reset();
   }
 
-  // RELIABLE HOLD-ONLY: Double taps are completely discarded
   Future<void> _onPTTPressed() async {
     if (_pttInProgress) return;
     if (controller.isPressed.value) return;
@@ -270,11 +270,10 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
   @override
   Widget build(BuildContext context) {
     return PopScope(
-      canPop: false,
+      canPop: _allowPop,
       onPopInvokedWithResult: (didPop, result) async {
         if (didPop) return;
-        await _safeLeave();
-        if (mounted) Get.back();
+        _showExitDialog();
       },
       child: Scaffold(
         backgroundColor: _bgLight,
@@ -319,9 +318,8 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
         children: [
           _headerButton(
             icon: Icons.arrow_back_rounded,
-            onTap: () async {
-              await _safeLeave();
-              Get.back();
+            onTap: () {
+              _showExitDialog();
             },
           ),
           SizedBox(width: 12.w),
@@ -359,7 +357,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
             ),
             child: PopupMenuButton<String>(
               icon:
-              Icon(Icons.more_vert_rounded, color: _textDark, size: 22.sp),
+                  Icon(Icons.more_vert_rounded, color: _textDark, size: 22.sp),
               color: _cardWhite,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(14.r),
@@ -489,10 +487,10 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                     ),
                     SizedBox(height: 4.h),
                     Obx(() => Text(
-                      "${controller.totalParticipants.value} Members Online",
-                      style: TextStyle(
-                          color: _textSecondary, fontSize: 12.sp),
-                    )),
+                          "${controller.totalParticipants.value} Members Online",
+                          style:
+                              TextStyle(color: _textSecondary, fontSize: 12.sp),
+                        )),
                   ],
                 ),
               ),
@@ -510,7 +508,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                 ),
                 style: OutlinedButton.styleFrom(
                   padding:
-                  EdgeInsets.symmetric(horizontal: 10.w, vertical: 8.h),
+                      EdgeInsets.symmetric(horizontal: 10.w, vertical: 8.h),
                   side: BorderSide(color: _softPurple),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20.r),
@@ -528,7 +526,6 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
     );
   }
 
-  // FIXED OVERFLOW: Height adjusted safely
   Widget _buildMembersHorizontalList() {
     return Obx(() {
       final sortedList = controller.sortedParticipants;
@@ -614,11 +611,11 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                     ),
                     child: p.isSpeaking
                         ? Icon(Icons.mic_rounded,
-                        color: Colors.white, size: 8.sp)
+                            color: Colors.white, size: 8.sp)
                         : p.isMuted
-                        ? Icon(Icons.mic_off_rounded,
-                        color: Colors.white, size: 8.sp)
-                        : null,
+                            ? Icon(Icons.mic_off_rounded,
+                                color: Colors.white, size: 8.sp)
+                            : null,
                   ),
                 ),
               ],
@@ -684,26 +681,26 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
             mainAxisSize: MainAxisSize.min,
             children: [
               Obx(() => Container(
-                width: 8.r,
-                height: 8.r,
-                decoration: BoxDecoration(
-                  color: controller.isConnected.value
-                      ? _activeGreen
-                      : _mutedRed,
-                  shape: BoxShape.circle,
-                ),
-              )),
+                    width: 8.r,
+                    height: 8.r,
+                    decoration: BoxDecoration(
+                      color: controller.isConnected.value
+                          ? _activeGreen
+                          : _mutedRed,
+                      shape: BoxShape.circle,
+                    ),
+                  )),
               SizedBox(width: 8.w),
               Obx(() => Text(
-                controller.isConnected.value
-                    ? "You are Connected"
-                    : "Reconnecting...",
-                style: TextStyle(
-                  color: _textDark,
-                  fontSize: 12.sp,
-                  fontWeight: FontWeight.w600,
-                ),
-              )),
+                    controller.isConnected.value
+                        ? "You are Connected"
+                        : "Reconnecting...",
+                    style: TextStyle(
+                      color: _textDark,
+                      fontSize: 12.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  )),
             ],
           ),
         ),
@@ -724,7 +721,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                       alignment: Alignment.center,
                       children: List.generate(4, (i) {
                         final progress =
-                        ((_rippleController.value + i * 0.25) % 1.0);
+                            ((_rippleController.value + i * 0.25) % 1.0);
                         final size = 120.r + (progress * 220.r);
                         final opacity = (1 - progress).clamp(0.0, 1.0);
                         return Container(
@@ -810,7 +807,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                   bottom: 220.h,
                   child: Container(
                     padding:
-                    EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+                        EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
                     decoration: BoxDecoration(
                       color: _cardWhite,
                       borderRadius: BorderRadius.circular(16.r),
@@ -892,13 +889,13 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                                 color: Colors.white, size: 14.sp),
                             SizedBox(width: 6.w),
                             Obx(() => Text(
-                              "Auto-unlock in ${controller.lockRemainingSeconds.value}s",
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 12.sp,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            )),
+                                  "Auto-unlock in ${controller.lockRemainingSeconds.value}s",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 12.sp,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                )),
                           ],
                         ),
                       ),
@@ -922,8 +919,8 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                 isMuted
                     ? Icons.headphones_rounded
                     : isSelfLocked
-                    ? Icons.lock_rounded
-                    : Icons.volume_up_rounded,
+                        ? Icons.lock_rounded
+                        : Icons.volume_up_rounded,
                 color: isMuted ? _mutedRed : _primaryPurple,
                 size: 16.sp,
               ),
@@ -932,10 +929,10 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                 isMuted
                     ? "Listening Only"
                     : isSelfLocked
-                    ? "Locked — Tap mic to stop"
-                    : isTalking
-                    ? "Release to Stop"
-                    : "Push and hold to talk",
+                        ? "Locked — Tap mic to stop"
+                        : isTalking
+                            ? "Release to Stop"
+                            : "Push and hold to talk",
                 style: TextStyle(
                   color: isMuted ? _mutedRed : _primaryPurple,
                   fontSize: 13.sp,
@@ -1035,10 +1032,10 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                   isLocked
                       ? Icons.lock_rounded
                       : isSelfLocked
-                      ? Icons.lock_open_rounded
-                      : isBusy
-                      ? Icons.mic_off_rounded
-                      : Icons.mic_rounded,
+                          ? Icons.lock_open_rounded
+                          : isBusy
+                              ? Icons.mic_off_rounded
+                              : Icons.mic_rounded,
                   color: Colors.white,
                   size: 38.sp,
                 ),
@@ -1047,8 +1044,8 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                   isSelfLocked
                       ? "Tap to Unlock"
                       : isTalking
-                      ? "Talking..."
-                      : "Hold to Talk",
+                          ? "Talking..."
+                          : "Hold to Talk",
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 11.sp,
@@ -1087,7 +1084,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
               borderRadius: BorderRadius.circular(12.r),
             ),
             child:
-            Icon(Icons.mic_off_rounded, color: Colors.white, size: 22.sp),
+                Icon(Icons.mic_off_rounded, color: Colors.white, size: 22.sp),
           ),
           SizedBox(width: 12.w),
           Expanded(
@@ -1111,12 +1108,12 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
             ),
           ),
           Obx(() => Switch(
-            value: controller.isMuted.value,
-            onChanged: (v) async {
-              await GroupWalkieService.instance.toggleMute();
-            },
-            activeColor: _primaryPurple,
-          )),
+                value: controller.isMuted.value,
+                onChanged: (v) async {
+                  await GroupWalkieService.instance.toggleMute();
+                },
+                activeColor: _primaryPurple,
+              )),
         ],
       ),
     );
@@ -1127,23 +1124,23 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
       children: [
         Expanded(
           child: Obx(() => _actionButton(
-            icon: controller.audioRouteIcon,
-            label: controller.audioRouteLabel,
-            onTap: () async {
-              if (controller.audioRoute.value ==
-                  WalkieAudioRoute.bluetooth ||
-                  controller.audioRoute.value == WalkieAudioRoute.headset) {
-                Get.snackbar(
-                  "Audio Route",
-                  "Routing to ${controller.audioRouteLabel}",
-                  snackPosition: SnackPosition.BOTTOM,
-                );
-                return;
-              }
-              final next = !controller.isSpeakerOn.value;
-              await GroupWalkieService.instance.toggleSpeaker(next);
-            },
-          )),
+                icon: controller.audioRouteIcon,
+                label: controller.audioRouteLabel,
+                onTap: () async {
+                  if (controller.audioRoute.value ==
+                          WalkieAudioRoute.bluetooth ||
+                      controller.audioRoute.value == WalkieAudioRoute.headset) {
+                    Get.snackbar(
+                      "Audio Route",
+                      "Routing to ${controller.audioRouteLabel}",
+                      snackPosition: SnackPosition.BOTTOM,
+                    );
+                    return;
+                  }
+                  final next = !controller.isSpeakerOn.value;
+                  await GroupWalkieService.instance.toggleSpeaker(next);
+                },
+              )),
         ),
         SizedBox(width: 12.w),
         Expanded(
@@ -1217,7 +1214,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
       AlertDialog(
         backgroundColor: _cardWhite,
         shape:
-        RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
         title: Text(
           "Exit Walkie?",
           style: TextStyle(
