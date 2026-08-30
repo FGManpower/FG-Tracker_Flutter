@@ -86,7 +86,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   final firebaseNotificationServices notificationServices =
-      firebaseNotificationServices();
+  firebaseNotificationServices();
 
   @override
   void initState() {
@@ -95,7 +95,7 @@ class _HomeScreenState extends State<HomeScreen> {
     notificationServices.setupInteractMessage(context);
     notificationServices.askPermission();
     firebaseNotificationServices().getDiviceToken().then(
-      (value) {
+          (value) {
         debugPrint("token=>${value}");
       },
     );
@@ -107,7 +107,6 @@ class _HomeScreenState extends State<HomeScreen> {
       Permission.microphone,
       Permission.camera,
       Permission.audio,
-      Permission.microphone,
       Permission.notification,
     ].request();
   }
@@ -120,11 +119,6 @@ class _HomeScreenState extends State<HomeScreen> {
     await controller.getProfileData();
     await groupController.getGroupData();
     await trackingController.loadLocationSharing();
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
   }
 
   @override
@@ -175,9 +169,7 @@ class _HomeScreenState extends State<HomeScreen> {
               subtitle: "Total",
             ),
           ),
-
           MediaQueryHelper.gapW(10, context),
-
           Expanded(
             child: _buildStatCard(
               icon: Icons.person,
@@ -187,9 +179,7 @@ class _HomeScreenState extends State<HomeScreen> {
               subtitle: "Now",
             ),
           ),
-
           MediaQueryHelper.gapW(10, context),
-
           Expanded(
             child: _buildStatCard(
               icon: Icons.people_alt,
@@ -199,9 +189,7 @@ class _HomeScreenState extends State<HomeScreen> {
               subtitle: "Total",
             ),
           ),
-
           MediaQueryHelper.gapW(10, context),
-
           Expanded(
             child: _buildStatCard(
               icon: Icons.supervised_user_circle,
@@ -215,6 +203,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
+
   Widget _buildStatCard({
     required IconData icon,
     required Color iconColor,
@@ -463,7 +452,7 @@ class _HomeScreenState extends State<HomeScreen> {
             radius: 14.r,
             backgroundColor: const Color(0xFFE8F0FE),
             child:
-                Icon(Icons.person, size: 16.sp, color: const Color(0xFF6B4DFF)),
+            Icon(Icons.person, size: 16.sp, color: const Color(0xFF6B4DFF)),
           ),
         ),
         Container(
@@ -529,18 +518,6 @@ class _HomeScreenState extends State<HomeScreen> {
               fontsize: 16.sp,
               fontfamily: FontFamily.interBold,
             ),
-            // Row(
-            //   children: [
-            //     reausabletext(
-            //       "View All",
-            //       fontsize: 12.sp,
-            //       color: const Color(0xFF6B4DFF),
-            //       fontfamily: FontFamily.interSemiBold,
-            //     ),
-            //     Icon(Icons.arrow_forward,
-            //         size: 14.sp, color: const Color(0xFF6B4DFF)),
-            //   ],
-            // )
           ],
         ),
         MediaQueryHelper.gapH(15, context),
@@ -581,11 +558,11 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildActionCard(
-    String title,
-    IconData icon, {
-    VoidCallback? onTap,
-    bool isComingSoon = false,
-  }) {
+      String title,
+      IconData icon, {
+        VoidCallback? onTap,
+        bool isComingSoon = false,
+      }) {
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -690,38 +667,43 @@ class _HomeScreenState extends State<HomeScreen> {
                 },
                 child: Container(
                   padding: MediaQueryHelper.paddingSymmetric(
-                      vertical: 12, horizontal: 10, context: context),
+                      vertical: 12, horizontal: 8, context: context),
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
                         colors: [Color(0xFF8B78FF), Color(0xFF5A3FFF)]),
                     borderRadius: BorderRadius.circular(16.r),
                   ),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.group_add, color: Colors.white, size: 24.sp),
-                      MediaQueryHelper.gapW(8, context),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          reausabletext("Join Group",
+                      Icon(Icons.group_add, color: Colors.white, size: 22.sp),
+                      MediaQueryHelper.gapW(6, context),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            reausabletext(
+                              "Join Group",
                               color: Colors.white,
-                              fontsize: 14.sp,
-                              fontfamily: FontFamily.interBold),
-                          reausabletext("Join existing group",
-                              color: Colors.white70, fontsize: 10.sp),
-                        ],
+                              fontsize: 13.sp,
+                              fontfamily: FontFamily.interBold,
+                            ),
+                            reausabletext(
+                              "Join existing group",
+                              color: Colors.white70,
+                              fontsize: 9.sp,
+                            ),
+                          ],
+                        ),
                       ),
-                      const Spacer(),
                       Icon(Icons.arrow_forward,
-                          color: Colors.white, size: 18.sp),
+                          color: Colors.white, size: 16.sp),
                     ],
                   ),
                 ),
               ),
             ),
-            MediaQueryHelper.gapW(12, context),
+            MediaQueryHelper.gapW(10, context),
             Expanded(
               child: GestureDetector(
                 behavior: HitTestBehavior.opaque,
@@ -736,7 +718,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 },
                 child: Container(
                   padding: MediaQueryHelper.paddingSymmetric(
-                      vertical: 12, horizontal: 10, context: context),
+                      vertical: 12, horizontal: 8, context: context),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(16.r),
@@ -744,7 +726,6 @@ class _HomeScreenState extends State<HomeScreen> {
                         color: const Color(0xFF6B4DFF), width: 1.5.w),
                   ),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Container(
                         padding: MediaQueryHelper.paddingAll(2, context),
@@ -754,24 +735,30 @@ class _HomeScreenState extends State<HomeScreen> {
                               color: const Color(0xFF6B4DFF), width: 1.5.w),
                         ),
                         child: Icon(Icons.add,
-                            color: const Color(0xFF6B4DFF), size: 18.sp),
+                            color: const Color(0xFF6B4DFF), size: 16.sp),
                       ),
-                      MediaQueryHelper.gapW(8, context),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          reausabletext("Create Group",
+                      MediaQueryHelper.gapW(6, context),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            reausabletext(
+                              "Create Group",
                               color: const Color(0xFF6B4DFF),
-                              fontsize: 14.sp,
-                              fontfamily: FontFamily.interBold),
-                          reausabletext("Create new group",
-                              color: Colors.grey, fontsize: 10.sp),
-                        ],
+                              fontsize: 13.sp,
+                              fontfamily: FontFamily.interBold,
+                            ),
+                            reausabletext(
+                              "Create new group",
+                              color: Colors.grey,
+                              fontsize: 9.sp,
+                            ),
+                          ],
+                        ),
                       ),
-                      const Spacer(),
                       Icon(Icons.arrow_forward,
-                          color: const Color(0xFF6B4DFF), size: 18.sp),
+                          color: const Color(0xFF6B4DFF), size: 16.sp),
                     ],
                   ),
                 ),
