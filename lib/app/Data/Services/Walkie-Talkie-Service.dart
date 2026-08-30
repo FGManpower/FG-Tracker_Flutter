@@ -79,7 +79,6 @@ class GroupWalkieService {
     _isDisposed = false;
     _selfUserId = selfUserId;
 
-    _log('INIT start url=$websocketUrl');
     await _configureAudioSession(speakerOn: true);
     await _listenAudioDevices();
 
@@ -98,27 +97,24 @@ class GroupWalkieService {
     );
 
     socket!.onConnect((_) {
-      _log('SOCKET connected id=${socket?.id}');
       _listenersBound = false;
       _bindSocketListeners();
       _startPing();
       _notifyConnectionState(true);
 
       if (_currentGroupId != null) {
-        _log('SOCKET reconnect -> rejoin $_currentGroupId');
         socket?.emit('join_walkie_session', {'groupId': _currentGroupId});
       }
     });
 
     socket!.onDisconnect((_) {
-      _log('SOCKET disconnected');
       _listenersBound = false;
       _stopPing();
       _notifyConnectionState(false);
     });
 
-    socket!.onConnectError((e) => _log('SOCKET connect_error: $e'));
-    socket!.onError((e) => _log('SOCKET error: $e'));
+    socket!.onConnectError((e) => _log('connect_error: $e'));
+    socket!.onError((e) => _log('error: $e'));
   }
 
   void _notifyConnectionState(bool connected) {
@@ -148,14 +144,12 @@ class GroupWalkieService {
       }
       return _hasMicPermission;
     } catch (e) {
-      _log('MIC_PERMISSION error: $e');
       return false;
     }
   }
 
   Future<void> _configureAudioSession({required bool speakerOn}) async {
     if (_isDisposed) return;
-    _log('AUDIO session configure speakerOn=$speakerOn');
     try {
       final session = await AudioSession.instance;
 
@@ -165,11 +159,11 @@ class GroupWalkieService {
             avAudioSessionCategory: AVAudioSessionCategory.playAndRecord,
             avAudioSessionMode: AVAudioSessionMode.voiceChat,
             avAudioSessionCategoryOptions:
-                AVAudioSessionCategoryOptions.allowBluetooth |
-                    AVAudioSessionCategoryOptions.allowBluetoothA2dp |
-                    (speakerOn
-                        ? AVAudioSessionCategoryOptions.defaultToSpeaker
-                        : AVAudioSessionCategoryOptions.none),
+            AVAudioSessionCategoryOptions.allowBluetooth |
+            AVAudioSessionCategoryOptions.allowBluetoothA2dp |
+            (speakerOn
+                ? AVAudioSessionCategoryOptions.defaultToSpeaker
+                : AVAudioSessionCategoryOptions.none),
           ),
         );
       } else {
@@ -190,12 +184,8 @@ class GroupWalkieService {
       _isSpeakerOn = speakerOn;
       try {
         await Helper.setSpeakerphoneOn(speakerOn);
-      } catch (e) {
-        _log('AUDIO setSpeakerphoneOn error: $e');
-      }
-    } catch (e) {
-      _log('AUDIO session error: $e');
-    }
+      } catch (_) {}
+    } catch (_) {}
   }
 
   Future<void> _listenAudioDevices() async {
@@ -204,18 +194,16 @@ class GroupWalkieService {
       await _devicesSub?.cancel();
       _devicesSub = session.devicesStream.listen(_updateRoute);
       _updateRoute(await session.getDevices());
-    } catch (e) {
-      _log('AUDIO devices listen error: $e');
-    }
+    } catch (_) {}
   }
 
   void _updateRoute(Set<AudioDevice> devices) {
     final hasBT = devices.any((d) =>
-        d.type == AudioDeviceType.bluetoothA2dp ||
+    d.type == AudioDeviceType.bluetoothA2dp ||
         d.type == AudioDeviceType.bluetoothSco ||
         d.type == AudioDeviceType.bluetoothLe);
     final hasHeadset = devices.any((d) =>
-        d.type == AudioDeviceType.wiredHeadset ||
+    d.type == AudioDeviceType.wiredHeadset ||
         d.type == AudioDeviceType.wiredHeadphones);
 
     if (hasBT) {
@@ -230,8 +218,6 @@ class GroupWalkieService {
       audioRoute.value = WalkieAudioRoute.earpiece;
     }
 
-    _log('AUDIO route=${audioRoute.value} speakerOn=$_isSpeakerOn');
-
     if (Get.isRegistered<GroupWalkieController>()) {
       final c = Get.find<GroupWalkieController>();
       c.setAudioRoute(audioRoute.value);
@@ -242,7 +228,6 @@ class GroupWalkieService {
   void _bindSocketListeners() {
     if (_listenersBound) return;
     _listenersBound = true;
-    _log('SOCKET bind listeners');
 
     for (final e in [
       'walkie_invite',
@@ -286,14 +271,12 @@ class GroupWalkieService {
     });
 
     socket?.on('force_logout', (_) async {
-      _log('FORCE LOGOUT');
       await dispose();
     });
 
     socket?.on('walkie_existing_peers', (data) async {
       if (_isDisposed || data == null) return;
       final peers = (data['peers'] as List?) ?? [];
-      _log('EXISTING_PEERS count=${peers.length}');
 
       for (final p in peers) {
         final id = p.toString();
@@ -307,10 +290,7 @@ class GroupWalkieService {
       }
     });
 
-    socket?.on('walkie_peer_joined', (data) {
-      if (_isDisposed || data == null) return;
-      _log('PEER_JOINED ${data['userId']}');
-    });
+    socket?.on('walkie_peer_joined', (data) {});
 
     socket?.on('walkie_peer_left', (data) async {
       if (_isDisposed || data == null) return;
@@ -344,7 +324,6 @@ class GroupWalkieService {
 
     socket?.on('ptt_granted', (_) async {
       if (_isDisposed) return;
-      _log('PTT_GRANTED');
       await _enableMic(true);
       if (Get.isRegistered<GroupWalkieController>()) {
         Get.find<GroupWalkieController>().startTalking();
@@ -353,15 +332,11 @@ class GroupWalkieService {
 
     socket?.on('ptt_denied', (data) async {
       if (_isDisposed) return;
-      _log('PTT_DENIED $data');
       _isTalking = false;
       await _enableMic(false);
       if (Get.isRegistered<GroupWalkieController>()) {
         final c = Get.find<GroupWalkieController>();
-        c.stopTalking();
-        c.resetSelfLock();
-        c.setPressed(false);
-        c.setDragOffset(0.0);
+        c.forceUnlockAndReset();
         final reason = data?['reason']?.toString();
         if (reason == 'BUSY') {
           c.showBusyMessage(data['speakerName']?.toString() ?? 'Someone');
@@ -373,7 +348,6 @@ class GroupWalkieService {
 
     socket?.on('walkie_speaker_active', (data) {
       if (_isDisposed || data == null) return;
-      _log('SPEAKER_ACTIVE $data');
       if (Get.isRegistered<GroupWalkieController>()) {
         Get.find<GroupWalkieController>().onSpeakerActive(
           speakerId: data['speakerId']?.toString() ?? '',
@@ -385,7 +359,6 @@ class GroupWalkieService {
 
     socket?.on('walkie_speaker_stopped', (_) {
       if (_isDisposed) return;
-      _log('SPEAKER_STOPPED');
       if (Get.isRegistered<GroupWalkieController>()) {
         Get.find<GroupWalkieController>().onSpeakerStopped();
       }
@@ -397,7 +370,7 @@ class GroupWalkieService {
       if (!Get.isRegistered<GroupWalkieController>()) return;
       final list = listRaw
           .map((p) =>
-              WalkieParticipant.fromMap(Map<String, dynamic>.from(p as Map)))
+          WalkieParticipant.fromMap(Map<String, dynamic>.from(p as Map)))
           .toList();
       Get.find<GroupWalkieController>().updateParticipants(
         list,
@@ -407,16 +380,13 @@ class GroupWalkieService {
 
     socket?.on('walkie_channel_locked', (data) {
       if (_isDisposed || data == null) return;
-      _log('CHANNEL_LOCKED $data');
       if (Get.isRegistered<GroupWalkieController>()) {
         Get.find<GroupWalkieController>()
             .onChannelLocked(isLocked: data['isLocked'] == true);
       }
     });
 
-    socket?.on('walkie_error', (data) {
-      _log('ERROR ${data?['code']} ${data?['message']}');
-    });
+    socket?.on('walkie_error', (data) {});
   }
 
   Future<bool> _ensureLocalStream() async {
@@ -428,7 +398,6 @@ class GroupWalkieService {
     try {
       final granted = await _requestMicPermission();
       if (!granted) {
-        _log('LOCAL_STREAM permission denied');
         _streamCompleter!.complete(false);
         final result = await _streamCompleter!.future;
         _streamCompleter = null;
@@ -453,7 +422,6 @@ class GroupWalkieService {
       _streamCompleter = null;
       return result;
     } catch (e) {
-      _log('LOCAL_STREAM error: $e');
       _localStream = null;
       if (!_streamCompleter!.isCompleted) {
         _streamCompleter!.complete(false);
@@ -478,10 +446,7 @@ class GroupWalkieService {
     }
 
     final ok = await _ensureLocalStream();
-    if (!ok) {
-      _log('CREATE_PEER aborted (no mic)');
-      return null;
-    }
+    if (!ok) return null;
 
     final pc = await createPeerConnection(_rtcConfig);
 
@@ -502,7 +467,6 @@ class GroupWalkieService {
         await stream.addTrack(event.track);
         _remoteStreams[remoteUserId] = stream;
       }
-      _log('ON_TRACK attached from=$remoteUserId');
     };
 
     pc.onIceCandidate = (c) {
@@ -519,16 +483,12 @@ class GroupWalkieService {
       });
     };
 
-    pc.onIceGatheringState = (s) => _log('ICE_GATHER $remoteUserId => $s');
-    pc.onIceConnectionState = (s) => _log('ICE_CONN $remoteUserId => $s');
     pc.onConnectionState = (state) async {
-      _log('PC_STATE $remoteUserId => $state');
       if (state == RTCPeerConnectionState.RTCPeerConnectionStateFailed ||
           state == RTCPeerConnectionState.RTCPeerConnectionStateClosed) {
         await _closePeer(remoteUserId);
       }
     };
-    pc.onSignalingState = (s) => _log('SIGNAL $remoteUserId => $s');
 
     _peers[remoteUserId] = pc;
 
@@ -536,9 +496,7 @@ class GroupWalkieService {
     for (final ice in pending) {
       try {
         await pc.addCandidate(ice);
-      } catch (e) {
-        _log('CREATE_PEER pending ICE error: $e');
-      }
+      } catch (_) {}
     }
 
     return pc;
@@ -582,8 +540,7 @@ class GroupWalkieService {
         'targetUserId': remoteUserId,
         'sdp': offer.toMap(),
       });
-    } catch (e) {
-      _log('OFFER error: $e');
+    } catch (_) {
     } finally {
       _makingOffer.remove(remoteUserId);
     }
@@ -598,10 +555,7 @@ class GroupWalkieService {
       if (pc.signalingState ==
           RTCSignalingState.RTCSignalingStateHaveLocalOffer) {
         final self = _selfUserId ?? '';
-        if (self.compareTo(from) > 0) {
-          _log('HANDLE_OFFER glare ignore from $from');
-          return;
-        }
+        if (self.compareTo(from) > 0) return;
       }
 
       if (pc.signalingState == RTCSignalingState.RTCSignalingStateClosed) {
@@ -629,9 +583,7 @@ class GroupWalkieService {
         'targetUserId': from,
         'sdp': answer.toMap(),
       });
-    } catch (e) {
-      _log('HANDLE_OFFER error: $e');
-    }
+    } catch (_) {}
   }
 
   Future<void> _handleAnswer(String from, dynamic sdp) async {
@@ -649,9 +601,7 @@ class GroupWalkieService {
       await pc.setRemoteDescription(
         RTCSessionDescription(sdp['sdp'], sdp['type']),
       );
-    } catch (e) {
-      _log('HANDLE_ANSWER error: $e');
-    }
+    } catch (_) {}
   }
 
   Future<void> _handleIce(String from, dynamic iceMap) async {
@@ -680,9 +630,7 @@ class GroupWalkieService {
 
     try {
       await pc.addCandidate(ice);
-    } catch (e) {
-      _log('ICE add error: $e');
-    }
+    } catch (_) {}
   }
 
   Future<void> _closePeer(String userId) async {
@@ -711,18 +659,14 @@ class GroupWalkieService {
 
   Future<void> _enableMic(bool enabled) async {
     if (_localStream == null) return;
-
     final actualState = enabled && !_isMuted;
-
     for (final t in _localStream!.getAudioTracks()) {
       t.enabled = actualState;
-      _log('ENABLE_MIC track=${t.id} set to $actualState (isMuted=$_isMuted)');
     }
   }
 
   Future<bool> joinGroup(String groupId) async {
     if (_isDisposed) return false;
-    _log('JOIN_GROUP $groupId');
     _currentGroupId = groupId;
     _offeredTo.clear();
 
@@ -736,14 +680,12 @@ class GroupWalkieService {
     }
 
     await _configureAudioSession(speakerOn: _isSpeakerOn);
-
     socket?.emit('join_walkie_session', {'groupId': groupId});
     return true;
   }
 
   Future<void> leaveGroup() async {
     if (_currentGroupId == null) return;
-    _log('LEAVE_GROUP $_currentGroupId');
 
     final groupId = _currentGroupId;
     _currentGroupId = null;
@@ -777,10 +719,7 @@ class GroupWalkieService {
     if (_isDisposed) return false;
     if (_currentGroupId == null || _isTalking) return false;
 
-    if (_isMuted) {
-      _log('START_TALKING blocked — user is Muted');
-      return false;
-    }
+    if (_isMuted) return false;
 
     final ok = await _ensureLocalStream();
     if (!ok) {
@@ -807,12 +746,17 @@ class GroupWalkieService {
 
   Future<void> toggleMute() async {
     _isMuted = !_isMuted;
-    _log('TOGGLE_MUTE $_isMuted');
 
     if (_isMuted) {
       await _enableMic(false);
+
       if (_isTalking) {
-        await stopTalking();
+        _isTalking = false;
+        socket?.emit('ptt_release', {'groupId': _currentGroupId});
+
+        if (Get.isRegistered<GroupWalkieController>()) {
+          Get.find<GroupWalkieController>().forceUnlockAndReset();
+        }
       }
     }
 
@@ -833,7 +777,7 @@ class GroupWalkieService {
     }
     await _configureAudioSession(speakerOn: speakerOn);
     audioRoute.value =
-        speakerOn ? WalkieAudioRoute.speaker : WalkieAudioRoute.earpiece;
+    speakerOn ? WalkieAudioRoute.speaker : WalkieAudioRoute.earpiece;
     if (Get.isRegistered<GroupWalkieController>()) {
       Get.find<GroupWalkieController>().setAudioRoute(audioRoute.value);
     }
@@ -842,7 +786,6 @@ class GroupWalkieService {
   Future<void> dispose() async {
     if (_isDisposed) return;
     _isDisposed = true;
-    _log('DISPOSE');
 
     _isTalking = false;
     _stopPing();

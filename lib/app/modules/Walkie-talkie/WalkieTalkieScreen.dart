@@ -27,6 +27,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
 
   static const double _lockThreshold = 80.0;
   bool _hasLeft = false;
+  bool _pttInProgress = false;
 
   final Color _bgLight = const Color(0xFFF5F5F8);
   final Color _cardWhite = Colors.white;
@@ -38,7 +39,6 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
   final Color _textDark = const Color(0xFF1A1A2E);
   final Color _textSecondary = const Color(0xFF6B7280);
 
-  // Reactive listeners to stop CPU battery drain
   late final Worker _rippleWorker;
   late final Worker _pulseWorker;
 
@@ -47,7 +47,6 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
     super.initState();
     WalkieLaunchTracker.fromWalkieCall = true;
 
-    // Safe extraction of Get.arguments to prevent casting crash (Bug C4)
     if (Get.arguments is Map<String, dynamic>) {
       args = Get.arguments as Map<String, dynamic>;
     }
@@ -81,7 +80,6 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
       });
     }
 
-    // Dynamic animation control to save battery (Bug M4)
     _rippleWorker =
         everAll([controller.activeSpeakerId, controller.audioState], (_) {
       if (controller.isTalking || controller.hasActiveSpeaker) {
@@ -117,7 +115,6 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
     super.dispose();
   }
 
-  // Prevents Double emit on fast navigation teardown (Bug C2)
   Future<void> _safeLeave() async {
     if (_hasLeft) return;
     _hasLeft = true;
@@ -128,7 +125,11 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
     controller.reset();
   }
 
-  Future<void> _startTalking() async {
+  // HOLD-ONLY: Sirf press pe start hota hai, double-tap se nahi
+  Future<void> _onPTTPressed() async {
+    if (_pttInProgress) return;
+    if (controller.isPressed.value) return;
+    if (controller.isSelfLocked.value) return;
     if (controller.isChannelLocked.value) return;
 
     if (controller.isMuted.value) {
@@ -145,34 +146,34 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
       return;
     }
 
+    _pttInProgress = true;
     controller.setPressed(true);
     _lockHintController.repeat(reverse: true);
     HapticFeedback.mediumImpact();
 
     final ok = await GroupWalkieService.instance.startTalking();
+    _pttInProgress = false;
+
     if (!ok) {
-      _stopTalking();
+      controller.setPressed(false);
+      _lockHintController.stop();
+      _lockHintController.reset();
     }
   }
+
+  Future<void> _onPTTReleased() async {
+    if (!controller.isPressed.value) return;
+    // Locked hai toh release pe kuch nahi, sirf tap se unlock hoga
+    if (controller.isSelfLocked.value) return;
+    await _stopTalking();
+  }
+
   Future<void> _stopTalking() async {
     controller.setPressed(false);
     _lockHintController.stop();
     _lockHintController.reset();
     controller.resetSelfLock();
-
-    // Service automatically coordinates UI and resets mic state safely (Bug M2)
     await GroupWalkieService.instance.stopTalking();
-  }
-
-  Future<void> _onPTTPressed() async {
-    if (controller.isPressed.value) return;
-    await _startTalking();
-  }
-
-  Future<void> _onPTTReleased() async {
-    if (!controller.isPressed.value) return;
-    if (controller.isSelfLocked.value) return;
-    await _stopTalking();
   }
 
   Future<void> _unlockAndStop() async {
@@ -194,17 +195,35 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
   }
 
   void _onDragEnd(DragEndDetails details) {
-    controller.setDragOffset(0.0);
+    if (!controller.isSelfLocked.value) {
+      controller.setDragOffset(0.0);
+    }
   }
 
+  // LOCK with 30-sec auto expire
   Future<void> _lockPTT() async {
     if (controller.isSelfLocked.value) return;
     HapticFeedback.heavyImpact();
-    controller.toggleSelfLock(true);
     controller.setDragOffset(0.0);
     _pulseController.stop();
     _pulseController.animateTo(1.0,
         duration: const Duration(milliseconds: 150));
+
+    controller.activateSelfLock(() {
+      // Auto-expire callback
+      _autoExpireLock();
+    });
+  }
+
+  Future<void> _autoExpireLock() async {
+    if (!controller.isSelfLocked.value) return;
+    HapticFeedback.heavyImpact();
+    controller.showLockExpiredMessage();
+    controller.resetSelfLock();
+    controller.setPressed(false);
+    _lockHintController.stop();
+    _lockHintController.reset();
+    await GroupWalkieService.instance.stopTalking();
   }
 
   String _getInitials(String name) {
@@ -214,17 +233,51 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
     return name.substring(0, name.length >= 2 ? 2 : 1).toUpperCase();
   }
 
+  bool _isBadImageUrl(String url) {
+    if (url.isEmpty) return true;
+    if (url.contains('pngitem.com')) return true;
+    if (url.contains('placeholder')) return true;
+    if (url.contains('default-avatar')) return true;
+    return false;
+  }
+
+  Widget _buildSafeAvatar(WalkieParticipant p, double radius) {
+    final rawImage = p.image;
+    if (_isBadImageUrl(rawImage)) {
+      return CircleAvatar(
+        radius: radius,
+        backgroundColor: _softPurple,
+        child: Text(
+          _getInitials(p.name),
+          style: TextStyle(
+            color: _primaryPurple,
+            fontWeight: FontWeight.w700,
+            fontSize: 15.sp,
+          ),
+        ),
+      );
+    }
+    final fullUrl = rawImage.startsWith('http')
+        ? rawImage
+        : ConstRes.aImageBaseUrl + rawImage;
+
+    return CircleAvatar(
+      radius: radius,
+      backgroundColor: _softPurple,
+      backgroundImage: NetworkImage(fullUrl),
+      onBackgroundImageError: (_, __) {},
+      child: null,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    // Hardware/System Pop handling (Bug m5)
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) async {
         if (didPop) return;
         await _safeLeave();
-        if (mounted) {
-          Get.back();
-        }
+        if (mounted) Get.back();
       },
       child: Scaffold(
         backgroundColor: _bgLight,
@@ -290,10 +343,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                 SizedBox(height: 2.h),
                 Text(
                   "Group Communication",
-                  style: TextStyle(
-                    color: _textSecondary,
-                    fontSize: 12.sp,
-                  ),
+                  style: TextStyle(color: _textSecondary, fontSize: 12.sp),
                 ),
               ],
             ),
@@ -320,7 +370,6 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
               onSelected: (value) async {
                 switch (value) {
                   case 'mute-group':
-                    // Single entry toggle prevents double call desync (Bug M1)
                     await GroupWalkieService.instance.toggleMute();
                     break;
                   case 'exit':
@@ -444,10 +493,8 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                     SizedBox(height: 4.h),
                     Obx(() => Text(
                           "${controller.totalParticipants.value} Members Online",
-                          style: TextStyle(
-                            color: _textSecondary,
-                            fontSize: 12.sp,
-                          ),
+                          style:
+                              TextStyle(color: _textSecondary, fontSize: 12.sp),
                         )),
                   ],
                 ),
@@ -487,7 +534,6 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
   Widget _buildMembersHorizontalList() {
     return Obx(() {
       final sortedList = controller.sortedParticipants;
-
       if (sortedList.isEmpty) {
         return SizedBox(
           height: 90.h,
@@ -552,23 +598,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                       width: 2,
                     ),
                   ),
-                  child: CircleAvatar(
-                    radius: 24.r,
-                    backgroundColor: _softPurple,
-                    backgroundImage: p.image.isNotEmpty
-                        ? NetworkImage(ConstRes.aImageBaseUrl + p.image)
-                        : null,
-                    child: p.image.isEmpty
-                        ? Text(
-                            _getInitials(p.name),
-                            style: TextStyle(
-                              color: _primaryPurple,
-                              fontWeight: FontWeight.w700,
-                              fontSize: 15.sp,
-                            ),
-                          )
-                        : null,
-                  ),
+                  child: _buildSafeAvatar(p, 24.r),
                 ),
                 Positioned(
                   right: 0,
@@ -608,23 +638,17 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
             ),
           ),
           if (p.isSpeaking)
-            Text(
-              "Speaking",
-              style: TextStyle(
-                color: _primaryPurple,
-                fontSize: 10.sp,
-                fontWeight: FontWeight.w600,
-              ),
-            )
+            Text("Speaking",
+                style: TextStyle(
+                    color: _primaryPurple,
+                    fontSize: 10.sp,
+                    fontWeight: FontWeight.w600))
           else if (p.isMuted)
-            Text(
-              "Muted",
-              style: TextStyle(
-                color: _mutedRed,
-                fontSize: 10.sp,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+            Text("Muted",
+                style: TextStyle(
+                    color: _mutedRed,
+                    fontSize: 10.sp,
+                    fontWeight: FontWeight.w600)),
         ],
       ),
     );
@@ -798,34 +822,80 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                   ),
                 );
               }),
-              GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTapDown: (_) => _onPTTPressed(),
-                onTapUp: (_) => _onPTTReleased(),
-                onTapCancel: () => _onPTTReleased(),
-                onVerticalDragStart: (_) {
-                  if (!controller.isPressed.value) _onPTTPressed();
-                },
-                onVerticalDragUpdate: _onDragUpdate,
-                onVerticalDragEnd: _onDragEnd,
-                child: Obx(() {
-                  final dragOffset =
-                      controller.dragOffset.value.clamp(0.0, _lockThreshold);
-                  return Transform.translate(
-                    offset: Offset(0, -dragOffset),
-                    child: _buildPTTButton(),
-                  );
-                }),
-              ),
+              // Muted user — grey listening view
+              Obx(() {
+                if (controller.isMuted.value) {
+                  return _buildMutedListeningView();
+                }
+                return Listener(
+                  behavior: HitTestBehavior.opaque,
+                  onPointerDown: (_) => _onPTTPressed(),
+                  onPointerUp: (_) => _onPTTReleased(),
+                  onPointerCancel: (_) => _onPTTReleased(),
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onVerticalDragUpdate: _onDragUpdate,
+                    onVerticalDragEnd: _onDragEnd,
+                    child: Obx(() {
+                      final dragOffset = controller.dragOffset.value
+                          .clamp(0.0, _lockThreshold);
+                      return Transform.translate(
+                        offset: Offset(0, -dragOffset),
+                        child: _buildPTTButton(),
+                      );
+                    }),
+                  ),
+                );
+              }),
+              // Locked overlay + countdown badge
               Obx(() {
                 if (!controller.isSelfLocked.value) {
                   return const SizedBox.shrink();
                 }
-                return Positioned.fill(
-                  child: GestureDetector(
-                    behavior: HitTestBehavior.opaque,
-                    onTap: _unlockAndStop,
-                  ),
+                return Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    Positioned.fill(
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: _unlockAndStop,
+                      ),
+                    ),
+                    Positioned(
+                      top: 20.h,
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 14.w, vertical: 8.h),
+                        decoration: BoxDecoration(
+                          color: _primaryPurple,
+                          borderRadius: BorderRadius.circular(20.r),
+                          boxShadow: [
+                            BoxShadow(
+                              color: _primaryPurple.withOpacity(0.3),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.lock_rounded,
+                                color: Colors.white, size: 14.sp),
+                            SizedBox(width: 6.w),
+                            Obx(() => Text(
+                                  "Auto-unlock in ${controller.lockRemainingSeconds.value}s",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 12.sp,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                )),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
                 );
               }),
             ],
@@ -835,21 +905,31 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
         Obx(() {
           final isTalking = controller.isTalking;
           final isSelfLocked = controller.isSelfLocked.value;
+          final isMuted = controller.isMuted.value;
 
           return Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(isSelfLocked ? Icons.lock_rounded : Icons.volume_up_rounded,
-                  color: _primaryPurple, size: 16.sp),
+              Icon(
+                isMuted
+                    ? Icons.headphones_rounded
+                    : isSelfLocked
+                        ? Icons.lock_rounded
+                        : Icons.volume_up_rounded,
+                color: isMuted ? _mutedRed : _primaryPurple,
+                size: 16.sp,
+              ),
               SizedBox(width: 6.w),
               Text(
-                isSelfLocked
-                    ? "Locked - Tap mic to stop"
-                    : isTalking
-                        ? "Release to Stop"
-                        : "Push and hold to talk",
+                isMuted
+                    ? "Listening Only"
+                    : isSelfLocked
+                        ? "Locked — Tap mic to stop"
+                        : isTalking
+                            ? "Release to Stop"
+                            : "Push and hold to talk",
                 style: TextStyle(
-                  color: _primaryPurple,
+                  color: isMuted ? _mutedRed : _primaryPurple,
                   fontSize: 13.sp,
                   fontWeight: FontWeight.w600,
                 ),
@@ -858,6 +938,50 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
           );
         }),
       ],
+    );
+  }
+
+  Widget _buildMutedListeningView() {
+    return Container(
+      width: 150.r,
+      height: 150.r,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.15),
+            blurRadius: 20,
+            spreadRadius: 2,
+          ),
+        ],
+      ),
+      padding: EdgeInsets.all(10.r),
+      child: Container(
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Colors.grey.shade300, Colors.grey.shade400],
+          ),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.headphones_rounded, color: Colors.white, size: 38.sp),
+            SizedBox(height: 4.h),
+            Text(
+              "Listening",
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 11.sp,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -973,10 +1097,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                 SizedBox(height: 2.h),
                 Text(
                   "Others won't hear you",
-                  style: TextStyle(
-                    color: _textSecondary,
-                    fontSize: 12.sp,
-                  ),
+                  style: TextStyle(color: _textSecondary, fontSize: 12.sp),
                 ),
               ],
             ),
@@ -984,7 +1105,6 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
           Obx(() => Switch(
                 value: controller.isMuted.value,
                 onChanged: (v) async {
-                  // Direct service execution handles controller status sync perfectly
                   await GroupWalkieService.instance.toggleMute();
                 },
                 activeColor: _primaryPurple,
@@ -1031,7 +1151,6 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
             icon: Icons.chat_bubble_outline_rounded,
             label: "Chat",
             onTap: () {
-              // Fixed C5: Secure navigation parameters (Clean string casting, No unsafe parsing)
               Get.toNamed(
                 Routes.groupChatScreen,
                 arguments: {
@@ -1106,10 +1225,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
         actions: [
           TextButton(
             onPressed: () => Get.back(),
-            child: Text(
-              "Cancel",
-              style: TextStyle(color: _textSecondary),
-            ),
+            child: Text("Cancel", style: TextStyle(color: _textSecondary)),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -1123,10 +1239,8 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                 borderRadius: BorderRadius.circular(10.r),
               ),
             ),
-            child: const Text(
-              "Exit Walkie",
-              style: TextStyle(color: Colors.white),
-            ),
+            child: const Text("Exit Walkie",
+                style: TextStyle(color: Colors.white)),
           ),
         ],
       ),

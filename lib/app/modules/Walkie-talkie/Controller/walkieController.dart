@@ -36,6 +36,8 @@ class WalkieParticipant {
 }
 
 class GroupWalkieController extends GetxController {
+  static const int lockDurationSeconds = 30;
+
   final role = WalkieRole.caller.obs;
   final audioState = WalkieAudioState.idle.obs;
 
@@ -51,6 +53,9 @@ class GroupWalkieController extends GetxController {
   final isPressed = false.obs;
   final dragOffset = 0.0.obs;
 
+  // Lock countdown (30 seconds max)
+  final lockRemainingSeconds = 0.obs;
+
   final participants = <WalkieParticipant>[].obs;
   final totalParticipants = 0.obs;
 
@@ -64,6 +69,7 @@ class GroupWalkieController extends GetxController {
 
   String? currentGroupId;
   Timer? _bannerTimer;
+  Timer? _lockCountdownTimer;
 
   bool get isTalking => audioState.value == WalkieAudioState.talking;
   bool get isListening => audioState.value == WalkieAudioState.listening;
@@ -95,6 +101,7 @@ class GroupWalkieController extends GetxController {
   @override
   void onClose() {
     _bannerTimer?.cancel();
+    _lockCountdownTimer?.cancel();
     reset();
     super.onClose();
   }
@@ -230,12 +237,42 @@ class GroupWalkieController extends GetxController {
     dragOffset.value = value;
   }
 
-  void toggleSelfLock(bool locked) {
-    isSelfLocked.value = locked;
+  // Called when user slides up to lock
+  void activateSelfLock(VoidCallback onExpire) {
+    isSelfLocked.value = true;
+    _startLockCountdown(onExpire);
+  }
+
+  void _startLockCountdown(VoidCallback onExpire) {
+    _lockCountdownTimer?.cancel();
+    lockRemainingSeconds.value = lockDurationSeconds;
+
+    _lockCountdownTimer = Timer.periodic(const Duration(seconds: 1), (t) {
+      if (lockRemainingSeconds.value <= 1) {
+        t.cancel();
+        lockRemainingSeconds.value = 0;
+        onExpire();
+      } else {
+        lockRemainingSeconds.value--;
+      }
+    });
   }
 
   void resetSelfLock() {
+    _lockCountdownTimer?.cancel();
+    _lockCountdownTimer = null;
+    lockRemainingSeconds.value = 0;
     isSelfLocked.value = false;
+  }
+
+  void forceUnlockAndReset() {
+    _lockCountdownTimer?.cancel();
+    _lockCountdownTimer = null;
+    lockRemainingSeconds.value = 0;
+    isSelfLocked.value = false;
+    isPressed.value = false;
+    dragOffset.value = 0.0;
+    stopTalking();
   }
 
   void showBusyMessage(String speakerName) {
@@ -246,15 +283,19 @@ class GroupWalkieController extends GetxController {
   }
 
   void showMutedMessage() {
-    _displayBanner("You are muted. Unmute to listen.", Colors.redAccent);
+    _displayBanner("You are muted — Listening only", Colors.redAccent);
   }
 
   void showLockedMessage() {
-    _displayBanner("Channel is locked", Colors.redAccent);
+    _displayBanner("Channel locked", Colors.redAccent);
   }
 
   void showPermissionDeniedMessage() {
     _displayBanner("Microphone permission required", Colors.redAccent);
+  }
+
+  void showLockExpiredMessage() {
+    _displayBanner("Lock timeout — Mic released", Colors.orange);
   }
 
   void onChannelLocked({required bool isLocked}) {
@@ -277,7 +318,9 @@ class GroupWalkieController extends GetxController {
 
   void reset() {
     _bannerTimer?.cancel();
+    _lockCountdownTimer?.cancel();
     _bannerTimer = null;
+    _lockCountdownTimer = null;
     role.value = WalkieRole.caller;
     audioState.value = WalkieAudioState.idle;
     isChannelLocked.value = false;
@@ -285,6 +328,7 @@ class GroupWalkieController extends GetxController {
     isSelfLocked.value = false;
     isPressed.value = false;
     dragOffset.value = 0.0;
+    lockRemainingSeconds.value = 0;
     participants.clear();
     totalParticipants.value = 0;
     activeSpeakerId.value = "";
