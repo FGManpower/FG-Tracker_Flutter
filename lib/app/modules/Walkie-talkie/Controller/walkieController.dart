@@ -1,6 +1,6 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:fgtracker/app/Data/Services/Walkie-Talkie-Service.dart';
 
 enum WalkieRole { caller, receiver }
@@ -45,7 +45,8 @@ class GroupWalkieController extends GetxController {
   final isMuted = false.obs;
   final isSelfLocked = false.obs;
   final isChannelLocked = false.obs;
-  final isConnected = true.obs;
+  final isConnected = false.obs;
+  final hasMicPermission = true.obs;
 
   final isPressed = false.obs;
   final dragOffset = 0.0.obs;
@@ -62,12 +63,14 @@ class GroupWalkieController extends GetxController {
   final statusColor = Rx<Color>(Colors.orange);
 
   String? currentGroupId;
+  Timer? _bannerTimer;
 
   bool get isTalking => audioState.value == WalkieAudioState.talking;
   bool get isListening => audioState.value == WalkieAudioState.listening;
   bool get hasActiveSpeaker => activeSpeakerId.value.isNotEmpty;
 
   List<WalkieParticipant> get sortedParticipants {
+    if (participants.isEmpty) return const [];
     final list = List<WalkieParticipant>.from(participants);
     list.sort((a, b) {
       if (a.isSpeaking && !b.isSpeaking) return -1;
@@ -84,10 +87,14 @@ class GroupWalkieController extends GetxController {
     super.onInit();
     audioRoute.value = GroupWalkieService.instance.audioRoute.value;
     isSpeakerOn.value = GroupWalkieService.instance.isSpeakerOn;
+    isMuted.value = GroupWalkieService.instance.isMuted;
+    isConnected.value =
+        GroupWalkieService.instance.socket?.connected ?? false;
   }
 
   @override
   void onClose() {
+    _bannerTimer?.cancel();
     reset();
     super.onClose();
   }
@@ -99,6 +106,18 @@ class GroupWalkieController extends GetxController {
   void setAudioRoute(WalkieAudioRoute route) {
     audioRoute.value = route;
     isSpeakerOn.value = route == WalkieAudioRoute.speaker;
+  }
+
+  void setConnected(bool value) {
+    isConnected.value = value;
+  }
+
+  void setMicPermission(bool granted) {
+    hasMicPermission.value = granted;
+  }
+
+  void setMuteFromService(bool muted) {
+    isMuted.value = muted;
   }
 
   IconData get audioRouteIcon {
@@ -142,11 +161,19 @@ class GroupWalkieController extends GetxController {
       if (speaker != null) {
         activeSpeakerName.value = speaker.name;
         activeSpeakerImage.value = speaker.image;
+        for (final p in participants) {
+          p.isSpeaking = p.userId == activeSpeaker;
+        }
+        participants.refresh();
       }
-    } else if (!hasActiveSpeaker) {
+    } else {
       activeSpeakerId.value = "";
       activeSpeakerName.value = "";
       activeSpeakerImage.value = "";
+      for (final p in participants) {
+        p.isSpeaking = false;
+      }
+      participants.refresh();
     }
   }
 
@@ -190,11 +217,9 @@ class GroupWalkieController extends GetxController {
   }
 
   void stopTalking() {
-    audioState.value = WalkieAudioState.listening;
-  }
-
-  void toggleMute() {
-    isMuted.value = !isMuted.value;
+    if (audioState.value == WalkieAudioState.talking) {
+      audioState.value = WalkieAudioState.listening;
+    }
   }
 
   void setPressed(bool value) {
@@ -225,29 +250,34 @@ class GroupWalkieController extends GetxController {
   }
 
   void showLockedMessage() {
-    _displayBanner("Channel is locked by admin", Colors.redAccent);
+    _displayBanner("Channel is locked", Colors.redAccent);
+  }
+
+  void showPermissionDeniedMessage() {
+    _displayBanner("Microphone permission required", Colors.redAccent);
   }
 
   void onChannelLocked({required bool isLocked}) {
     isChannelLocked.value = isLocked;
     _displayBanner(
-      isLocked ? "Channel locked by admin" : "Channel unlocked",
-      isLocked ? Colors.redAccent : Colors.greenAccent,
+      isLocked ? "Channel locked" : "Channel unlocked",
+      isLocked ? Colors.redAccent : Colors.green,
     );
   }
 
   void _displayBanner(String msg, Color color) {
+    _bannerTimer?.cancel();
     statusMessage.value = msg;
     statusColor.value = color;
     showStatus.value = true;
-    Future.delayed(const Duration(seconds: 2), () {
-      if (statusMessage.value == msg) {
-        showStatus.value = false;
-      }
+    _bannerTimer = Timer(const Duration(seconds: 2), () {
+      showStatus.value = false;
     });
   }
 
   void reset() {
+    _bannerTimer?.cancel();
+    _bannerTimer = null;
     role.value = WalkieRole.caller;
     audioState.value = WalkieAudioState.idle;
     isChannelLocked.value = false;
@@ -255,18 +285,14 @@ class GroupWalkieController extends GetxController {
     isSelfLocked.value = false;
     isPressed.value = false;
     dragOffset.value = 0.0;
-
     participants.clear();
     totalParticipants.value = 0;
-
     activeSpeakerId.value = "";
     activeSpeakerName.value = "";
     activeSpeakerImage.value = "";
-
     showStatus.value = false;
     statusMessage.value = "";
     statusColor.value = Colors.orange;
-
     currentGroupId = null;
   }
 }
