@@ -94,12 +94,7 @@ class AppPages {
       binding: SearchMember_Binding(),
       transitionDuration: const Duration(milliseconds: 500),
     ),
-    GetPage(
-      name: _Paths.QrCodeScreen,
-      page: () => QrCodeScreen(),
-      transition: Transition.rightToLeft,
-      transitionDuration: const Duration(milliseconds: 500),
-    ),
+
     GetPage(
       name: _Paths.Memberscreen,
       page: () => MemberscreenScreen(),

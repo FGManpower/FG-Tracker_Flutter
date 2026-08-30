@@ -2,6 +2,7 @@ import 'package:fgtracker/app/Core/values/Dialog/Common_dialog.dart';
 import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/Core/values/loading.dart';
 import 'package:fgtracker/app/Data/Repositories/GroupRepo.dart';
+import 'package:fgtracker/app/modules/Group/Views/QrScreen.dart';
 
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:flutter/cupertino.dart';
@@ -18,8 +19,7 @@ class JoinGroupController extends GetxController {
   var responseError = "".obs;
 
   Future<void> scanQRCodeFromCamera() async {
-    Get.toNamed(Routes.QRScanScreen);
-  }
+    QrCodeBottomSheet(groupName: '', groupCode: '',);  }
 
   Future<bool> joinGroup(
     BuildContext context, {

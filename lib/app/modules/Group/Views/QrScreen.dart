@@ -1,6 +1,5 @@
 import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/config/themes_data.dart';
-import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/modules/Group/controller/QrController.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
@@ -11,25 +10,50 @@ import 'package:pretty_qr_code/pretty_qr_code.dart';
 import 'package:screenshot/screenshot.dart';
 import '../../../../gen/assets.gen.dart';
 
-class QrCodeScreen extends StatefulWidget {
-  const QrCodeScreen({
+class QrCodeBottomSheet extends StatefulWidget {
+  final String groupName;
+  final String groupCode;
+
+  const QrCodeBottomSheet({
     super.key,
+    required this.groupName,
+    required this.groupCode,
   });
+
+  static void show(
+    BuildContext context, {
+    required String groupName,
+    required String groupCode,
+  }) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => QrCodeBottomSheet(
+        groupName: groupName,
+        groupCode: groupCode,
+      ),
+    );
+  }
+
   @override
-  State<QrCodeScreen> createState() => _QrCodeScreenState();
+  State<QrCodeBottomSheet> createState() => _QrCodeBottomSheetState();
 }
 
-class _QrCodeScreenState extends State<QrCodeScreen>
+class _QrCodeBottomSheetState extends State<QrCodeBottomSheet>
     with SingleTickerProviderStateMixin {
   final controller = Get.put(QrController());
   late AnimationController _animationController;
   late Animation<double> _scaleAnimation;
 
+  final Color primaryPurple = const Color(0xFF4A3BD1);
+  final Color bgColor = const Color(0xFFF7F7FA);
+
   @override
   void initState() {
     super.initState();
     controller.initializeNotifications();
-
+    controller.groupCode.value = widget.groupCode;
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 600),
@@ -48,226 +72,234 @@ class _QrCodeScreenState extends State<QrCodeScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: BoxDecoration(
-          image: DecorationImage(
-              image: AssetImage(Assets.images.qrCodeBg.path),
-              fit: BoxFit.cover,
-              opacity: 0.15),
-          color: ToggleThemeData.darkPurple,
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(25.r),
+          topRight: Radius.circular(25.r),
         ),
-        child: SingleChildScrollView(
-          child: Padding(
-              padding: EdgeInsets.only(left: 10.w, right: 10.w, top: 40.h),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+      ),
+      child: SafeArea(
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 15.h),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40.w,
+                height: 4.h,
+                decoration: BoxDecoration(
+                  color: Colors.grey.withOpacity(0.4),
+                  borderRadius: BorderRadius.circular(10.r),
+                ),
+              ),
+              SizedBox(height: 15.h),
+              Stack(
+                alignment: Alignment.center,
                 children: [
-                  Padding(
-                    padding: EdgeInsets.only(left: 5.w),
-                    child: BackpressIcon(context, color: ToggleThemeData.white),
+                  Align(
+                    alignment: Alignment.center,
+                    child: Text(
+                      widget.groupName,
+                      style: TextStyle(
+                        fontSize: 18.sp,
+                        fontFamily: FontFamily.interSemiBold,
+                        color: Colors.black,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ),
-                  SizedBox(
-                    height: 40.h,
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: InkWell(
+                      onTap: () => Get.back(),
+                      child: Container(
+                        padding: EdgeInsets.all(8.r),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(10.r),
+                          border: Border.all(
+                              color: Colors.grey.withOpacity(0.2), width: 1),
+                        ),
+                        child: Icon(Icons.close,
+                            size: 18.sp, color: primaryPurple),
+                      ),
+                    ),
+                  )
+                ],
+              ),
+              SizedBox(height: 5.h),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    "Team Code: ",
+                    style: TextStyle(
+                      fontSize: 14.sp,
+                      color: Colors.grey.shade600,
+                      fontFamily: FontFamily.interRegular,
+                    ),
                   ),
-                  Center(
-                    child: controller.groupCode.isNotEmpty
-                        ? Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
+                  Text(
+                    controller.groupCode.toString(),
+                    style: TextStyle(
+                      fontSize: 14.sp,
+                      color: primaryPurple,
+                      fontFamily: FontFamily.interSemiBold,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  SizedBox(width: 5.w),
+                  GestureDetector(
+                    onTap: () {
+                      Clipboard.setData(
+                          ClipboardData(text: controller.groupCode.toString()));
+                      Utils().fluttertoast("Group code copied!");
+                    },
+                    child: Icon(Icons.copy, size: 16.sp, color: primaryPurple),
+                  ),
+                ],
+              ),
+              SizedBox(height: 25.h),
+              controller.groupCode.isNotEmpty
+                  ? ScaleTransition(
+                      scale: _scaleAnimation,
+                      child: Screenshot(
+                        controller: controller.screenshotController,
+                        child: Container(
+                          width: double.infinity,
+                          padding: EdgeInsets.symmetric(
+                              vertical: 30.h, horizontal: 20.w),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(20.r),
+                            boxShadow: [
+                              BoxShadow(
+                                color: primaryPurple.withOpacity(0.05),
+                                blurRadius: 20,
+                                spreadRadius: 5,
+                                offset: const Offset(0, 5),
+                              ),
+                            ],
+                          ),
+                          child: Column(
                             children: [
-                              ScaleTransition(
-                                scale: _scaleAnimation,
-                                child: Screenshot(
-                                  controller: controller.screenshotController,
-                                  child: Container(
-                                    margin: EdgeInsets.only(
-                                        top: 5.h,
-                                        bottom: 15.h,
-                                        right: 5.w,
-                                        left: 5.w),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(15.r),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.black.withOpacity(0.1),
-                                          blurRadius: 10,
-                                          offset: const Offset(0, 4),
-                                        ),
-                                      ],
+                              SizedBox(
+                                width: 200.w,
+                                height: 200.w,
+                                child: PrettyQrView.data(
+                                  data: controller.groupCode.toString(),
+                                  errorCorrectLevel: QrErrorCorrectLevel.H,
+                                  decoration: PrettyQrDecoration(
+                                    shape: PrettyQrRoundedSymbol(
+                                      color: Colors.black,
+                                      borderRadius: BorderRadius.circular(5.r),
                                     ),
-                                    child: Padding(
-                                      padding: EdgeInsets.all(20.r),
-                                      child: Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          reausabletext(
-                                            'Scan This QR Code',
-                                            fontsize: 21,
-                                            fontfamily:
-                                                FontFamily.interSemiBold,
-                                            color: Colors.black,
-                                          ),
-                                          SizedBox(height: 20.h),
-                                          Padding(
-                                            padding: EdgeInsets.symmetric(
-                                                horizontal: 10.w),
-                                            child: ClipRRect(
-                                              borderRadius:
-                                                  BorderRadius.circular(33.r),
-                                              child: Container(
-                                                padding: EdgeInsets.all(25.r),
-                                                decoration: BoxDecoration(
-                                                  color:
-                                                      ToggleThemeData.Appcolor,
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          33.r),
-                                                  boxShadow: [
-                                                    BoxShadow(
-                                                      color: Colors.black
-                                                          .withOpacity(0.05),
-                                                      blurRadius: 10,
-                                                      offset: Offset(0, 5),
-                                                    ),
-                                                  ],
-                                                ),
-                                                child: PrettyQrView.data(
-                                                  data: controller.groupCode
-                                                      .toString(),
-                                                  errorCorrectLevel:
-                                                      QrErrorCorrectLevel.M,
-                                                  decoration:
-                                                      PrettyQrDecoration(
-                                                    shape:
-                                                        PrettyQrRoundedSymbol(
-                                                      color: Colors.white,
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              10.r),
-                                                    ),
-                                                    image:
-                                                        PrettyQrDecorationImage(
-                                                      image: AssetImage(Assets
-                                                          .icons.appIcon.path),
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                          SizedBox(height: 10.h),
-                                          Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.center,
-                                            children: [
-                                              reausabletext("Team Code ",
-                                                  color: Colors.black,
-                                                  fontsize: 14,
-                                                  fontfamily:
-                                                      FontFamily.interRegular),
-                                              Text(
-                                                controller.groupCode.toString(),
-                                                textAlign: TextAlign.center,
-                                                style: TextStyle(
-                                                    fontSize: 14.sp,
-                                                    color: ToggleThemeData
-                                                        .darkPurple,
-                                                    fontFamily: FontFamily
-                                                        .interSemiBold),
-                                              ),
-                                              TextButton.icon(
-                                                onPressed: () {
-                                                  Clipboard.setData(
-                                                      ClipboardData(
-                                                          text: controller
-                                                              .groupCode
-                                                              .toString()));
-
-                                                  Utils().fluttertoast(
-                                                      "Group code copied!");
-                                                },
-                                                icon: Icon(Icons.copy,
-                                                    size: 18.sp,
-                                                    color: Colors.black54),
-                                                label: reausabletext("",
-                                                    color: Colors.black54,
-                                                    fontsize: 14),
-                                              ),
-                                            ],
-                                          ),
-                                          SizedBox(height: 15.h),
-                                          reausabletext(
-                                              "Share this code to let other’s join your group",
-                                              align: TextAlign.center,
-                                              fontsize: 14,
-                                              color: Colors.black54,
-                                              fontweight: FontWeight.w400,
-                                              fontfamily:
-                                                  FontFamily.interMedium),
-                                          SizedBox(height: 10.h),
-                                        ],
-                                      ),
+                                    image: PrettyQrDecorationImage(
+                                      // Yaha aapka center logo hai
+                                      image:
+                                          AssetImage(Assets.icons.appIcon.path),
+                                      padding: const EdgeInsets.all(5),
                                     ),
                                   ),
                                 ),
                               ),
-                              SizedBox(height: 32.h),
-                              Padding(
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: 10.w, vertical: 10.h),
-                                child: Row(
-                                  children: [
-                                    Expanded(
-                                      child: reausablebutton(
-                                        icon: Icons.share,
-                                        title: "Share",
-                                        iconColor: Color(0xffFFE400),
-                                        borderradiues: 25,
-                                        fontSize: 14,
-                                        backgroundColor:
-                                            ToggleThemeData.Appcolor,
-                                        iconSize: 20,
-                                        ontap: () => controller.shareQrCode(
-                                            context,
-                                            controller.groupCode.toString()),
-                                      ),
-                                    ),
-                                    SizedBox(
-                                      width: 20.w,
-                                    ),
-                                    Expanded(
-                                      child: reausablebutton(
-                                        icon: Icons.download_rounded,
-                                        title: "Download",
-                                        iconColor: Color(0xffFFE400),
-                                        borderradiues: 25,
-                                        fontSize: 14,
-                                        backgroundColor:
-                                            ToggleThemeData.Appcolor,
-                                        iconSize: 20,
-                                        ontap: () =>
-                                            controller.downloadQrCode(context),
-                                      ),
-                                    ),
-                                  ],
+                              SizedBox(height: 25.h),
+                              Text(
+                                "Scan this QR code to join the group",
+                                style: TextStyle(
+                                  fontSize: 13.sp,
+                                  color: Colors.grey.shade600,
+                                  fontFamily: FontFamily.interMedium,
                                 ),
-                              )
+                              ),
                             ],
-                          )
-                        : reausabletext(
-                            "No Group Code Available",
-                            fontsize: 16,
-                            fontweight: FontWeight.w500,
-                            color: Colors.black54,
                           ),
+                        ),
+                      ),
+                    )
+                  : Padding(
+                      padding: EdgeInsets.symmetric(vertical: 50.h),
+                      child: Text(
+                        "No Group Code Available",
+                        style: TextStyle(
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                    ),
+              SizedBox(height: 30.h),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  _buildActionButton(
+                    icon: Icons.share_outlined,
+                    title: "Share QR",
+                    onTap: () => controller.shareQrCode(
+                        context, controller.groupCode.toString()),
+                  ),
+                  SizedBox(width: 10.w),
+                  _buildActionButton(
+                    icon: Icons.download_outlined,
+                    title: "Download",
+                    onTap: () => controller.downloadQrCode(context),
+                  ),
+                  SizedBox(width: 10.w),
+                  _buildActionButton(
+                    icon: Icons.refresh_outlined,
+                    title: "Refresh",
+                    onTap: () {
+                      // TODO: Add refresh group code logic here if required
+                      Utils().fluttertoast("Refreshing...");
+                    },
                   ),
                 ],
-              )),
+              ),
+              SizedBox(height: 10.h),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActionButton({
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+  }) {
+    return Expanded(
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(10.r),
+        child: Container(
+          padding: EdgeInsets.symmetric(vertical: 12.h),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(10.r),
+            border: Border.all(color: Colors.grey.withOpacity(0.15), width: 1),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 16.sp, color: primaryPurple),
+              SizedBox(width: 5.w),
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 12.sp,
+                  color: primaryPurple,
+                  fontFamily: FontFamily.interSemiBold,
+                  fontWeight: FontWeight.w600,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -2,6 +2,7 @@ import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/Dialog/Common_dialog.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Model/GroupRes.dart';
+import 'package:fgtracker/app/modules/Group/Views/QrScreen.dart';
 import 'package:fgtracker/app/modules/Group/controller/MemberController.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:flutter/cupertino.dart';
@@ -254,11 +255,10 @@ class CreatedGroupUi extends StatelessWidget {
                         GestureDetector(
                           onTap: () {
                             if (data == null) return;
-                            Get.toNamed(
-                              Routes.QrCodeScreen,
-                              arguments: {
-                                "groupCode": data.groupCode ?? "",
-                              },
+                            QrCodeBottomSheet.show(
+                              context,
+                              groupName: data.groupName ?? "Group",
+                              groupCode: data.groupCode ?? "",
                             );
                           },
                           child: Row(

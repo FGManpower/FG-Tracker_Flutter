@@ -16,9 +16,7 @@ class QrController extends GetxController {
 
   @override
   void onInit() {
-    // TODO: implement onInit
     super.onInit();
-    groupCode.value = Get.arguments["groupCode"] ?? "";
   }
 
   final ScreenshotController screenshotController = ScreenshotController();

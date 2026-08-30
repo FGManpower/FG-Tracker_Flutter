@@ -24,6 +24,7 @@ import 'package:skeletonizer/skeletonizer.dart';
 import '../../../Core/util/DateTime_Format.dart';
 import '../../../Data/Services/Tracking.dart';
 import '../../Track/Widget/TrackLAppBar.dart';
+import 'QrScreen.dart';
 
 class MemberscreenScreen extends GetView<MemberController> {
   @override
@@ -351,12 +352,10 @@ class MemberscreenScreen extends GetView<MemberController> {
                         child: InkWell(
                           borderRadius: BorderRadius.circular(16.r),
                           onTap: () {
-                            Get.toNamed(
-                              Routes.QrCodeScreen,
-                              arguments: {
-                                "groupCode": controller.arguments!["groupCode"]
-                                    .toString(),
-                              },
+                            QrCodeBottomSheet.show(
+                              context,
+                              groupName: controller.arguments!["groupName"].toString(),
+                              groupCode: controller.arguments!["groupCode"].toString(),
                             );
                           },
                           child: Container(
