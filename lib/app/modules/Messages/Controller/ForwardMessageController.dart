@@ -6,7 +6,7 @@ import '../../../Model/GroupRes.dart';
 import '../../../Model/user_profileList_res.dart';
 import '../../../modules/Group/controller/search_controller.dart';
 import '../../Group/controller/Group_Controller.dart';
-import 'Socket_Message_Services.dart';
+import '../../../Data/Services/Socket/Socket_Message_Services.dart';
 
 class ForwardMessageController extends GetxController {
   late MessageData message;
@@ -49,16 +49,14 @@ class ForwardMessageController extends GetxController {
       if (userController.allUserProfileData.isEmpty) {
         await userController.getRegisteredContacts();
       }
-      if (groupController.newlyCreatedGroups.isEmpty &&
-          groupController.createdGroups.isEmpty) {
+      if (groupController.groupData.isEmpty) {
         await groupController.getGroupData();
       }
       filteredUsers.assignAll(
         userController.allUserProfileData,
       );
       final groups = <GroupsResData>[
-        ...groupController.newlyCreatedGroups,
-        ...groupController.createdGroups,
+        ...groupController.groupData,
       ];
       filteredGroups.assignAll(groups);
     } catch (e) {
@@ -79,8 +77,7 @@ class ForwardMessageController extends GetxController {
       );
 
       filteredGroups.assignAll([
-        ...groupController.newlyCreatedGroups,
-        ...groupController.createdGroups,
+        ...groupController.groupData,
       ]);
 
       return;
@@ -97,8 +94,7 @@ class ForwardMessageController extends GetxController {
     );
 
     final groups = <GroupsResData>[
-      ...groupController.newlyCreatedGroups,
-      ...groupController.createdGroups,
+      ...groupController.groupData,
     ];
 
     filteredGroups.assignAll(
@@ -118,8 +114,7 @@ class ForwardMessageController extends GetxController {
     );
 
     filteredGroups.assignAll([
-      ...groupController.newlyCreatedGroups,
-      ...groupController.createdGroups,
+      ...groupController.groupData,
     ]);
   }
 
@@ -162,8 +157,6 @@ class ForwardMessageController extends GetxController {
   int get selectedCount => selectedUsers.length + selectedGroups.length;
 
   bool get hasSelection => selectedCount > 0;
-
-
 
   Future<void> forwardMessage() async {
     if (!hasSelection) {
@@ -208,14 +201,7 @@ class ForwardMessageController extends GetxController {
           groupId: groupId,
         );
       }
-
-      debugPrint(
-        "Forward request emitted for ${selectedCount} destination(s)",
-      );
-
     } catch (e) {
-      debugPrint("Forward message error: $e");
-
       Get.snackbar(
         "Error",
         "Unable to send forward request.",

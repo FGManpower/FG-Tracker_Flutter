@@ -24,7 +24,7 @@ import '../../../Data/Repositories/GetMessageRepo.dart';
 
 import '../../../Model/GetMessage.dart';
 
-import 'Socket_Message_Services.dart';
+import '../../../Data/Services/Socket/Socket_Message_Services.dart';
 
 class GroupMessageController extends GetxController {
   final socketService = SocketMessageService.instance;

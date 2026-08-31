@@ -1,9 +1,9 @@
+import 'package:fgtracker/app/Data/Services/Socket/Socket_Walkie-Talkie-Service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import '../../../../gen/assets.gen.dart';
-import '../../../Data/Services/Walkie-Talkie-Service.dart';
 import '../../../routes/app_pages.dart';
 
 class WalkieInviteDialog {

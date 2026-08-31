@@ -10,8 +10,6 @@ class SocketMessageService extends GetxService {
 
   IO.Socket? _socket;
 
-  Function(dynamic)? _dashboardCountsCallback;
-
   bool get isSocketConnected => _socket?.connected == true;
 
   IO.Socket get socket {
@@ -27,14 +25,6 @@ class SocketMessageService extends GetxService {
     int? groupId,
   }) async {
     if (_socket != null && _socket!.connected) {
-      print("CHAT SOCKET ALREADY CONNECTED");
-
-      _registerDashboardListener();
-
-      if (_dashboardCountsCallback != null) {
-        getGroupDashboardCounts(userId: userId);
-      }
-
       if (groupId != null) {
         joinUserInGroup(userId, groupId);
         markSeen(userId, groupId);
@@ -42,8 +32,6 @@ class SocketMessageService extends GetxService {
 
       return;
     }
-
-    print("CREATING CHAT SOCKET...");
 
     _socket = IO.io(
       "$socketUrl/chat",
@@ -54,86 +42,19 @@ class SocketMessageService extends GetxService {
     );
 
     _socket?.onConnect((_) {
-      print("=================================");
-      print("CHAT SOCKET CONNECTED");
-      print("=================================");
-
       if (groupId != null) {
         joinUserInGroup(userId, groupId);
         markSeen(userId, groupId);
       }
-
-      _registerDashboardListener();
-
-      if (_dashboardCountsCallback != null) {
-        getGroupDashboardCounts(userId: userId);
-      }
-    });
-
-    _socket?.onAny((event, data) {
-      log("MessageAllEventCalled: $event => $data");
     });
 
     _socket?.onDisconnect((_) {
-      print("CHAT SOCKET DISCONNECTED");
+      log("CHAT SOCKET DISCONNECTED");
     });
 
     _socket?.onError((error) {
-      print("CHAT SOCKET ERROR =====> $error");
+      log("CHAT SOCKET ERROR =====> $error");
     });
-  }
-
-  void _registerDashboardListener() {
-    if (_socket == null) return;
-
-    _socket!.off("group_dashboard_counts");
-
-    _socket!.on("group_dashboard_counts", (data) {
-      print("🔥🔥🔥 GROUP DASHBOARD COUNTS RECEIVED 🔥🔥🔥");
-      print("TYPE => ${data.runtimeType}");
-      print("DATA => $data");
-
-      _dashboardCountsCallback?.call(data);
-    });
-
-    print("✅ Dashboard listener registered");
-  }
-
-  void listenGroupDashboardCounts({
-    required Function(dynamic) callback,
-  }) {
-    _dashboardCountsCallback = callback;
-
-    print("Dashboard callback registered");
-
-    if (_socket != null && _socket!.connected) {
-      _registerDashboardListener();
-    }
-  }
-
-  void getGroupDashboardCounts({
-    required String userId,
-  }) {
-    if (_socket == null) {
-      print("Dashboard request skipped: socket not initialized");
-      return;
-    }
-
-    if (!_socket!.connected) {
-      print("Dashboard request skipped: socket not connected");
-      return;
-    }
-
-    final payload = {
-      "userId": userId,
-    };
-
-    print("GET GROUP DASHBOARD COUNTS =====> $payload");
-
-    _socket!.emit(
-      "get_group_dashboard_counts",
-      payload,
-    );
   }
 
   void joinUserInGroup(
@@ -190,7 +111,7 @@ class SocketMessageService extends GetxService {
       'replySender': replySender,
     };
 
-    print("SEND PAYLOAD =====> $msg");
+
 
     _socket?.emit(
       "send_message",
@@ -222,12 +143,7 @@ class SocketMessageService extends GetxService {
     _socket?.on(
       'receive_message',
       (data) {
-        print("=================================");
-        print("RECEIVE MESSAGE");
-        print("Message Type : ${data['messageType']}");
-        print("Content      : ${data['content']}");
-        print("Full Data    : $data");
-        print("=================================");
+
 
         final dataGroupId = int.tryParse(data['groupId'].toString());
 
@@ -333,8 +249,6 @@ class SocketMessageService extends GetxService {
       "userId": userId,
     };
 
-    print("EDIT MESSAGE PAYLOAD =====> $payload");
-
     socket.emit(
       "editMessage",
       payload,
@@ -349,10 +263,6 @@ class SocketMessageService extends GetxService {
     socket.on(
       "messageEdited",
       (data) {
-        print("============= MESSAGE EDITED =============");
-        print(data);
-        print("===========================================");
-
         callback(data);
       },
     );
@@ -368,9 +278,6 @@ class SocketMessageService extends GetxService {
       "userId": userId,
       "deleteType": deleteType,
     };
-
-    print("DELETE MESSAGE PAYLOAD =====> $payload");
-
     socket.emit(
       "delete_message",
       payload,
@@ -385,10 +292,6 @@ class SocketMessageService extends GetxService {
     socket.on(
       "message_deleted",
       (data) {
-        print("============= MESSAGE DELETED =============");
-        print(data);
-        print("===========================================");
-
         callback(data);
       },
     );
@@ -411,8 +314,6 @@ class SocketMessageService extends GetxService {
       "pinnedByName": pinnedByName,
     };
 
-    print("PIN MESSAGE PAYLOAD =====> $payload");
-
     socket.emit(
       "pin_message",
       payload,
@@ -432,7 +333,6 @@ class SocketMessageService extends GetxService {
       if (chatType == "private") "receiverId": receiverId,
     };
 
-    print("UNPIN MESSAGE PAYLOAD =====> $payload");
 
     socket.emit(
       "unpin_message",
@@ -448,7 +348,6 @@ class SocketMessageService extends GetxService {
     socket.on(
       "message_pinned",
       (data) {
-        print("MESSAGE PINNED EVENT =====> $data");
 
         callback(
           Map<String, dynamic>.from(data),
@@ -465,7 +364,6 @@ class SocketMessageService extends GetxService {
     socket.on(
       "message_unpinned",
       (data) {
-        print("MESSAGE UNPINNED EVENT =====> $data");
 
         callback(
           Map<String, dynamic>.from(data),

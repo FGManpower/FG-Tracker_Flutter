@@ -1,8 +1,4 @@
-// ignore_for_file: unused_import
-
 import 'dart:io';
-
-import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:location/location.dart' hide PermissionStatus;
@@ -11,9 +7,6 @@ import 'package:permission_handler/permission_handler.dart';
 class PermissionController extends GetxController {
   final Location _location = Location();
 
-  /// 0 = Ask Permission
-  /// 1 = Enable GPS
-  /// 2 = Done
   RxInt step = 0.obs;
 
   @override
@@ -28,22 +21,17 @@ class PermissionController extends GetxController {
   }
 
   Future<int> getStartingStep() async {
-    final locationWhenInUse =
-    await Permission.locationWhenInUse.status;
+    final locationWhenInUse = await Permission.locationWhenInUse.status;
 
-    final locationAlways =
-    await Permission.locationAlways.status;
+    final locationAlways = await Permission.locationAlways.status;
 
     bool isLocationGranted =
-        locationWhenInUse.isGranted &&
-            locationAlways.isGranted;
+        locationWhenInUse.isGranted && locationAlways.isGranted;
 
     if (Platform.isIOS) {
-      LocationPermission permission =
-      await Geolocator.checkPermission();
+      LocationPermission permission = await Geolocator.checkPermission();
 
-      isLocationGranted =
-          permission == LocationPermission.always;
+      isLocationGranted = permission == LocationPermission.always;
     }
 
     if (!isLocationGranted) return 0;
@@ -61,12 +49,10 @@ class PermissionController extends GetxController {
     /// STEP 0 -> LOCATION PERMISSION
     if (currentStep == 0) {
       if (Platform.isAndroid) {
-        final whenInUse =
-        await Permission.locationWhenInUse.request();
+        final whenInUse = await Permission.locationWhenInUse.request();
 
         if (whenInUse.isGranted) {
-          final always =
-          await Permission.locationAlways.request();
+          final always = await Permission.locationAlways.request();
 
           if (always.isGranted) {
             step.value = 1;
@@ -77,27 +63,21 @@ class PermissionController extends GetxController {
           await openAppSettings();
         }
       } else {
-        LocationPermission permission =
-        await Geolocator.requestPermission();
+        LocationPermission permission = await Geolocator.requestPermission();
 
         if (permission == LocationPermission.always) {
           step.value = 1;
-        } else if (permission ==
-            LocationPermission.whileInUse ||
-            permission ==
-                LocationPermission.deniedForever) {
+        } else if (permission == LocationPermission.whileInUse ||
+            permission == LocationPermission.deniedForever) {
           await Geolocator.openAppSettings();
         }
       }
     }
-
-    /// STEP 1 -> ENABLE GPS
     else if (currentStep == 1) {
       final gpsEnabled = await _location.serviceEnabled();
 
       if (!gpsEnabled) {
-        bool requested =
-        await _location.requestService();
+        bool requested = await _location.requestService();
 
         if (requested) {
           step.value = 2;

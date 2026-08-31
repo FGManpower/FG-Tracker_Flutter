@@ -5,7 +5,7 @@ import 'package:fgtracker/app/Core/constant/notification_holder.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Data/Services/CallEvents_NotificationServices.dart';
-import 'package:fgtracker/app/Data/Services/SignallingService.dart';
+import 'package:fgtracker/app/Data/Services/Socket/Socket_SignallingService.dart';
 import 'package:fgtracker/app/Data/Services/ringtone_service.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';

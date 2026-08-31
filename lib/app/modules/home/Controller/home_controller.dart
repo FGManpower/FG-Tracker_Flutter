@@ -1,43 +1,57 @@
+import 'dart:async';
 import 'dart:convert';
+
+import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Data/Repositories/Profile_Repo.dart';
+import 'package:fgtracker/app/Data/Repositories/banner_Repo.dart';
+import 'package:fgtracker/app/Data/Services/Socket/Socket_Dashboard_Service.dart';
 import 'package:fgtracker/app/Model/ProfileRes.dart';
+import 'package:fgtracker/app/Model/group_count_detail.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 
-import '../../../Model/banner_model.dart'; // Ensure model path is correct
+import '../../../Model/banner_model.dart';
 
 class HomeController extends GetxController {
   RxBool ProfileData_loading = false.obs;
-  var Respone_Error = "".obs;
-  var isLoadingBanners = false.obs;
+  RxString Respone_Error = ''.obs;
 
-  var bannerList = <Data>[].obs;
   Rx<UserData> userData = UserData().obs;
+  Rx<GroupCountDetail> groupCount = GroupCountDetail().obs;
+  StreamSubscription<dynamic>? _groupCountSubscription;
 
-  final String _baseUrl = "http://fgtracker.in:3000";
-
-  // Possible endpoint variants to handle backend routing differences
-  final List<String> _possibleEndpoints = [
-    '/api/getBanners',
-    '/api/v1/getBanners',
-    '/api/banners',
-    '/getBanners',
-  ];
+  RxList<BannerData> bannerList = <BannerData>[].obs;
+  RxString BannerResponeMessage = ''.obs;
+  RxBool isLoadingBanners = false.obs;
 
   @override
   void onInit() {
     super.onInit();
+    SocketDashboardService.instance.init();
+    _listenGroupCount();
     fetchBanners();
+  }
+
+  void _listenGroupCount() {
+    _groupCountSubscription?.cancel();
+    _groupCountSubscription =
+        SocketDashboardService.instance.groupCountStream.listen((data) {
+      groupCount.value = GroupCountDetail.fromJson(data);
+    });
+  }
+
+  void refreshGroupCount() {
+    SocketDashboardService.instance.requestGroupCount();
   }
 
   Future<void> getProfileData() async {
     try {
       ProfileData_loading.value = true;
-      var profileData = await ProfileRepo.getProfileData();
+      final profileData = await ProfileRepo.getProfileData();
       if (profileData.status == true) {
         userData.value = profileData.data!;
-        Respone_Error.value = "";
+        Respone_Error.value = '';
       }
     } catch (e) {
       Respone_Error.value = e.toString();
@@ -48,46 +62,26 @@ class HomeController extends GetxController {
 
   Future<void> fetchBanners() async {
     try {
-      isLoadingBanners(true);
-      bool fetchedSuccessfully = false;
+      isLoadingBanners.value=true;
 
-      for (String endpoint in _possibleEndpoints) {
-        final Uri url = Uri.parse('$_baseUrl$endpoint');
-        debugPrint("Trying Banner Endpoint: $url");
-
-        try {
-          final response = await http.get(url).timeout(const Duration(seconds: 8));
-
-          if (response.statusCode == 200) {
-            var result = json.decode(response.body);
-            bannermodel model = bannermodel.fromJson(result);
-
-            if (model.success == true && model.data != null && model.data!.isNotEmpty) {
-              // Parse images and prepend domain if relative path is returned
-              for (var item in model.data!) {
-                if (item.imageUrl != null && !item.imageUrl!.startsWith('http')) {
-                  item.imageUrl = "$_baseUrl${item.imageUrl}";
-                }
-              }
-              bannerList.assignAll(model.data!);
-              fetchedSuccessfully = true;
-              debugPrint("Successfully loaded ${bannerList.length} banners from $endpoint");
-              break;
-            }
-          }
-        } catch (e) {
-          debugPrint("Failed fetching from $endpoint: $e");
-        }
-      }
-
-      if (!fetchedSuccessfully) {
-        bannerList.clear();
+      var result = await BannerRepo.getBanner();
+      if (result.success == true) {
+        isLoadingBanners(false);
+        bannerList.value = result.data!;
+        BannerResponeMessage.value = "";
+      } else {
+        isLoadingBanners(false);
+        // BannerResponeMessage.value = result.message.toString();
       }
     } catch (e) {
-      debugPrint("Error fetching banners: $e");
-      bannerList.clear();
-    } finally {
       isLoadingBanners(false);
+      BannerResponeMessage.value = e.toString();
     }
+  }
+
+  @override
+  void onClose() {
+    _groupCountSubscription?.cancel();
+    super.onClose();
   }
 }

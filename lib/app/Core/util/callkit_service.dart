@@ -7,7 +7,7 @@ import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../Data/Services/CallStateTracker.dart';
-import '../../Data/Services/SignallingService.dart';
+import '../../Data/Services/Socket/Socket_SignallingService.dart';
 import '../../Model/call_model.dart';
 import '../../routes/app_pages.dart';
 import '../constant/pref_res.dart';

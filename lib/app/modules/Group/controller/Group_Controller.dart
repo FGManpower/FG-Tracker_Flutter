@@ -18,8 +18,7 @@ class GroupController extends GetxController {
   final groupName = TextEditingController();
   final groupDesc = TextEditingController();
   RxBool groupDataLoading = false.obs;
-  var newlyCreatedGroups = <GroupsResData>[].obs;
-  var createdGroups = <GroupsResData>[].obs;
+  var groupData = <GroupsResData>[].obs;
   var responseError = "".obs;
 
   Future<void> decodeQRCodeFromGallery() async {
@@ -98,19 +97,9 @@ class GroupController extends GetxController {
       groupDataLoading.value = true;
       var result = await GroupRepo.getGroupData();
       if (result.status == true) {
-        newlyCreatedGroups.value = result.data!.newlyCreatedGroups!;
-        createdGroups.value = result.data!.createdGroups!;
+        groupData.value = result.data!.groupData!;
         responseError.value = "";
         groupDataLoading.value = false;
-        try {
-          List<GroupsResData> groupData = [];
-          groupData.addAll(newlyCreatedGroups);
-          groupData.addAll(createdGroups);
-
-          TrackingController.instance.inItAllGroups(groups: groupData);
-        } catch (e) {
-          debugPrint("error in inItAllGroups:${e}");
-        }
       } else {
         groupDataLoading.value = false;
         responseError.value = result.message.toString();
@@ -201,7 +190,6 @@ class GroupController extends GetxController {
       var result = await GroupRepo.exitGroups(param);
       if (result.status == true) {
         Loading().dismissloading();
-        // leaveGroup(context, groupId: groupId);
       } else {
         Loading().dismissloading();
         CommonDialog.errorMessage(result.message);
@@ -210,20 +198,5 @@ class GroupController extends GetxController {
       Loading().dismissloading();
       CommonDialog.errorMessage(e.toString());
     }
-    // try {
-    //   Loading().showloading();
-    //   final param = {"groupId": groupId , "userId": PrefConst.userId};
-    //   var result = await GroupRepo.exitGroups(param);
-    //   Loading().dismissloading();
-    //   if (result.status == true) {
-    //     Utils().fluttertoast(result.message.toString());
-    //     getGroupData();
-    //   } else {
-    //     CommonDialog.errorMessage(result.message);
-    //   }
-    // } catch (e) {
-    //   Loading().dismissloading();
-    //   CommonDialog.errorMessage(e.toString());
-    // }
   }
 }

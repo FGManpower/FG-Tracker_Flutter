@@ -1,16 +1,15 @@
-import 'package:fgtracker/app/Core/values/responsive.dart';
 import 'package:fgtracker/app/modules/Application/Controller/InitiateController.dart';
+import 'package:fgtracker/gen/assets.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:fgtracker/gen/assets.gen.dart';
 
-class Splashscreen extends StatelessWidget  {
-  const Splashscreen({Key? key}) : super(key: key);
+class Splashscreen extends StatelessWidget {
+  const Splashscreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put(InitiateController());
+    final InitiateController controller = Get.put(InitiateController());
 
     return Scaffold(
       body: Container(
@@ -26,40 +25,58 @@ class Splashscreen extends StatelessWidget  {
           child: Stack(
             alignment: Alignment.center,
             children: [
-              AnimatedBuilder(
-                animation: controller.animationController,
-                builder: (context, child) {
-                  double size = MediaQueryHelper.width(200) +
-                      (controller.animationController.value *
-                          MediaQueryHelper.width(80));
-                  double opacity = (1 - controller.animationController.value) * 0.2;
-                  return Container(
-                    width: size,
-                    height: size,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.white.withOpacity(opacity),
-                    ),
-                  );
-                },
-              ),
+              _PulseCircle(animation: controller.animationController),
               FadeTransition(
                 opacity: controller.fadeAnimation,
                 child: ScaleTransition(
                   scale: controller.scaleAnimation,
-                  child: ClipRRect(
-                    borderRadius:BorderRadiusGeometry.circular(100.r) ,
-                    child: Image.asset(
-                      Assets.icons.appIcon.path,
-                      height: MediaQueryHelper.height(180),
-                      width: MediaQueryHelper.width(180),
-                    ),
-                  ),
+                  child: const _SplashLogo(),
                 ),
               ),
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _PulseCircle extends StatelessWidget {
+  const _PulseCircle({required this.animation});
+
+  final Animation<double> animation;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: animation,
+      builder: (context, child) {
+        final double size = 200.w + (animation.value * 80.w);
+        final double opacity = (1 - animation.value) * 0.2;
+        return Container(
+          width: size,
+          height: size,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: Colors.white.withOpacity(opacity),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _SplashLogo extends StatelessWidget {
+  const _SplashLogo();
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(100.r),
+      child: Image.asset(
+        Assets.icons.appIcon.path,
+        height: 180.w,
+        width: 180.w,
       ),
     );
   }

@@ -5,7 +5,7 @@ import '../../../Core/constant/pref_res.dart';
 import '../../../Core/util/decomPress.dart';
 import '../../../Core/values/global.dart';
 import '../../../Data/Services/CallStateTracker.dart';
-import '../../../Data/Services/SignallingService.dart';
+import '../../../Data/Services/Socket/Socket_SignallingService.dart';
 import '../../../Model/call_model.dart';
 import '../../../routes/app_pages.dart';
 

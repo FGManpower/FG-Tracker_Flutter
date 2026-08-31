@@ -4,7 +4,6 @@ import 'package:fgtracker/app/Core/values/loading.dart';
 import 'package:fgtracker/app/Data/Repositories/GroupRepo.dart';
 import 'package:fgtracker/app/modules/Group/Views/QrScreen.dart';
 
-import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 

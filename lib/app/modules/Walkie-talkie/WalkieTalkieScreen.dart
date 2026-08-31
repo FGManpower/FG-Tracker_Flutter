@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'package:fgtracker/app/Data/Services/Walkie-Talkie-Service.dart';
+import 'package:fgtracker/app/Data/Services/Socket/Socket_Walkie-Talkie-Service.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Controller/walkieController.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:flutter/material.dart';

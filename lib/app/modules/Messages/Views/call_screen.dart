@@ -91,13 +91,13 @@ class _CallScreenState extends State<CallScreen> {
         child: Column(
           children: [
             _buildAppBar(),
-            MediaQueryHelper.gapH(8, context),
+            MediaQueryHelper.gapH(8, ),
             _buildSearchBar(),
-            MediaQueryHelper.gapH(14, context),
+            MediaQueryHelper.gapH(14, ),
             _buildTopTabs(),
-            MediaQueryHelper.gapH(14, context),
+            MediaQueryHelper.gapH(14, ),
             _buildFilters(),
-            MediaQueryHelper.gapH(10, context),
+            MediaQueryHelper.gapH(10, ),
             Expanded(child: _buildCallList()),
             _buildKeypadBar(),
           ],
@@ -109,7 +109,7 @@ class _CallScreenState extends State<CallScreen> {
   Widget _buildAppBar() {
     return Padding(
       padding: MediaQueryHelper.paddingSymmetric(
-          horizontal: 16, vertical: 8, context: context),
+          horizontal: 16, vertical: 8,),
       child: Row(
         children: [
           GestureDetector(
@@ -136,11 +136,11 @@ class _CallScreenState extends State<CallScreen> {
   Widget _buildSearchBar() {
     return Padding(
       padding:
-          MediaQueryHelper.paddingSymmetric(horizontal: 16, context: context),
+          MediaQueryHelper.paddingSymmetric(horizontal: 16, ),
       child: Container(
         height: 48.h,
         padding:
-            MediaQueryHelper.paddingSymmetric(horizontal: 14, context: context),
+            MediaQueryHelper.paddingSymmetric(horizontal: 14, ),
         decoration: BoxDecoration(
           color: const Color(0xFFF3F4F8),
           borderRadius: BorderRadius.circular(12.r),
@@ -148,7 +148,7 @@ class _CallScreenState extends State<CallScreen> {
         child: Row(
           children: [
             Icon(Icons.search, size: 20.sp, color: Colors.grey),
-            MediaQueryHelper.gapW(10, context),
+            MediaQueryHelper.gapW(10, ),
             Expanded(
               child: TextField(
                 decoration: InputDecoration(
@@ -173,7 +173,7 @@ class _CallScreenState extends State<CallScreen> {
   Widget _buildTopTabs() {
     return Padding(
       padding:
-          MediaQueryHelper.paddingSymmetric(horizontal: 16, context: context),
+          MediaQueryHelper.paddingSymmetric(horizontal: 16, ),
       child: Row(
         children: [
           _topTab("Recent", 0),
@@ -219,15 +219,15 @@ class _CallScreenState extends State<CallScreen> {
       child: ListView(
         scrollDirection: Axis.horizontal,
         padding:
-            MediaQueryHelper.paddingSymmetric(horizontal: 16, context: context),
+            MediaQueryHelper.paddingSymmetric(horizontal: 16, ),
         children: [
           _filterChip("All", null, 0),
-          MediaQueryHelper.gapW(8, context),
+          MediaQueryHelper.gapW(8, ),
           _filterChip("Missed", Icons.call_missed, 1, iconColor: Colors.red),
-          MediaQueryHelper.gapW(8, context),
+          MediaQueryHelper.gapW(8, ),
           _filterChip("Outgoing", Icons.call_made, 2,
               iconColor: const Color(0xFF10B981)),
-          MediaQueryHelper.gapW(8, context),
+          MediaQueryHelper.gapW(8, ),
           _filterChip("Incoming", Icons.call_received, 3,
               iconColor: const Color(0xFF3B82F6)),
         ],
@@ -242,7 +242,7 @@ class _CallScreenState extends State<CallScreen> {
       onTap: () => setState(() => _selectedFilter = index),
       child: Container(
         padding: MediaQueryHelper.paddingSymmetric(
-            horizontal: 14, vertical: 6, context: context),
+            horizontal: 14, vertical: 6, ),
         decoration: BoxDecoration(
           color: selected ? const Color(0xFFEDE9FF) : const Color(0xFFF3F4F8),
           borderRadius: BorderRadius.circular(20.r),
@@ -251,7 +251,7 @@ class _CallScreenState extends State<CallScreen> {
           children: [
             if (icon != null) ...[
               Icon(icon, size: 14.sp, color: iconColor ?? Colors.grey),
-              MediaQueryHelper.gapW(6, context),
+              MediaQueryHelper.gapW(6, ),
             ],
             reausabletext(
               label,
@@ -271,13 +271,13 @@ class _CallScreenState extends State<CallScreen> {
       children: [
         _sectionTitle("Today"),
         ..._todayCalls.map(_callTile),
-        MediaQueryHelper.gapH(10, context),
+        MediaQueryHelper.gapH(10, ),
         _sectionTitle("Yesterday"),
         ..._yesterdayCalls.map(_callTile),
-        MediaQueryHelper.gapH(10, context),
+        MediaQueryHelper.gapH(10, ),
         _sectionTitle("12 May 2024"),
         ..._mayCalls.map(_callTile),
-        MediaQueryHelper.gapH(10, context),
+        MediaQueryHelper.gapH(10, ),
       ],
     );
   }
@@ -321,7 +321,7 @@ class _CallScreenState extends State<CallScreen> {
       child: Row(
         children: [
           _avatar(c),
-          MediaQueryHelper.gapW(12, context),
+          MediaQueryHelper.gapW(12, ),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -332,11 +332,11 @@ class _CallScreenState extends State<CallScreen> {
                   fontfamily: FontFamily.interBold,
                   color: Colors.black87,
                 ),
-                MediaQueryHelper.gapH(3, context),
+                MediaQueryHelper.gapH(3, ),
                 Row(
                   children: [
                     Icon(typeIcon, size: 12.sp, color: typeColor),
-                    MediaQueryHelper.gapW(4, context),
+                    MediaQueryHelper.gapW(4, ),
                     reausabletext(
                       "$type • ${c['time']}",
                       fontsize: 11.sp,
@@ -352,7 +352,7 @@ class _CallScreenState extends State<CallScreen> {
             fontsize: 12.sp,
             color: Colors.grey,
           ),
-          MediaQueryHelper.gapW(12, context),
+          MediaQueryHelper.gapW(12, ),
           Icon(Icons.phone, color: const Color(0xFF6B4DFF), size: 22.sp),
         ],
       ),
@@ -436,7 +436,7 @@ class _CallScreenState extends State<CallScreen> {
                   size: 22.sp,
                 ),
               ),
-              MediaQueryHelper.gapH(4, context),
+              MediaQueryHelper.gapH(4),
               reausabletext(
                 "Keypad",
                 fontsize: 11.sp,

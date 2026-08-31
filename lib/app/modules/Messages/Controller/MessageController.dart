@@ -21,7 +21,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:video_player/video_player.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
 import '../../../routes/app_pages.dart';
-import 'Socket_Message_Services.dart';
+import '../../../Data/Services/Socket/Socket_Message_Services.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 class MessageController extends GetxController with WidgetsBindingObserver {

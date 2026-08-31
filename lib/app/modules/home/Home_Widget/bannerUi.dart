@@ -1,9 +1,13 @@
 import 'package:card_swiper/card_swiper.dart';
+import 'package:fgtracker/app/Core/theme/appTheme.dart';
+import 'package:fgtracker/app/Core/values/utility.dart';
+import 'package:fgtracker/app/global_widget/common_widget.dart';
+import 'package:fgtracker/gen/assets.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-
 import 'package:fgtracker/app/modules/home/Controller/home_controller.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import '../../../Model/banner_model.dart';
 
 class BannerUi extends StatelessWidget {
@@ -13,88 +17,108 @@ class BannerUi extends StatelessWidget {
       ? Get.find<HomeController>()
       : Get.put(HomeController());
 
+  Widget _buildBannerSkeleton() {
+    return SizedBox(
+      height: 140.h,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        padding: EdgeInsets.symmetric(horizontal: 4.w),
+        itemCount: 1,
+        separatorBuilder: (_, __) => SizedBox(width: 8.w),
+        itemBuilder: (_, index) {
+          return Skeletonizer(
+            enabled: true,
+            child: Container(
+              width: MediaQuery.of(Get.context!).size.width - 8.w,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(16.r),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      if (controller.isLoadingBanners.value) {
-        return Container(
-          height: 140.h,
-          width: double.infinity,
-          decoration: BoxDecoration(
-            color: Colors.grey.shade200,
-            borderRadius: BorderRadius.circular(16.r),
-          ),
-          child: const Center(
-            child: CircularProgressIndicator(),
+      if (controller.BannerResponeMessage.value.isNotEmpty) {
+        return LostinternetConnection(
+            retry: () {
+              controller.fetchBanners();
+            },
+            messgae: controller.BannerResponeMessage.value.toString());
+      } else if (controller.isLoadingBanners.value) {
+        return _buildBannerSkeleton();
+      } else if (controller.bannerList.isEmpty) {
+        return DataEmpty_AssetsIcon(assetspath: Assets.images.notFount.path);
+      } else {
+        return SizedBox(
+          height: 160.h,
+          child: Swiper(
+            itemCount: controller.bannerList.length,
+            autoplay: true,
+            autoplayDelay: 3500,
+            duration: 800,
+            pagination: SwiperPagination(
+              alignment: Alignment.bottomCenter,
+              builder: DotSwiperPaginationBuilder(
+                activeColor: const Color(0xFF6B4DFF),
+                color: Colors.white.withOpacity(0.6),
+                size: 6.0.r,
+                activeSize: 8.0.r,
+                space: 4.0.w,
+              ),
+            ),
+            itemBuilder: (BuildContext context, int index) {
+              BannerData banner = controller.bannerList[index];
+
+              return Container(
+                margin: EdgeInsets.symmetric(horizontal: 4.w),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16.r),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.06),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(16.r),
+                  child: Image.network(
+                    Utility.isNullEmptyOrFalse(banner.imageUrl)
+                        ? MyAppTheme.notFoundImg
+                        : banner.imageUrl.toString(),
+                    fit: BoxFit.contain,
+                    width: double.infinity,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        color: Colors.grey.shade300,
+                        child: const Center(
+                          child: Icon(Icons.broken_image, color: Colors.grey),
+                        ),
+                      );
+                    },
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return Container(
+                        color: Colors.grey.shade100,
+                        child: const Center(
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              );
+            },
           ),
         );
       }
-
-      if (controller.bannerList.isEmpty) {
-        return const SizedBox.shrink();
-      }
-
-      return SizedBox(
-        height: 140.h,
-        child: Swiper(
-          itemCount: controller.bannerList.length,
-          autoplay: true,
-          autoplayDelay: 3500,
-          duration: 800,
-          pagination: SwiperPagination(
-            alignment: Alignment.bottomCenter,
-            builder: DotSwiperPaginationBuilder(
-              activeColor: const Color(0xFF6B4DFF),
-              color: Colors.white.withOpacity(0.6),
-              size: 6.0.r,
-              activeSize: 8.0.r,
-              space: 4.0.w,
-            ),
-          ),
-          itemBuilder: (BuildContext context, int index) {
-            final Data banner = controller.bannerList[index];
-
-            return Container(
-              margin: EdgeInsets.symmetric(horizontal: 4.w),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16.r),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.06),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(16.r),
-                child: Image.network(
-                  banner.imageUrl ?? '',
-                  fit: BoxFit.cover,
-                  width: double.infinity,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      color: Colors.grey.shade300,
-                      child: const Center(
-                        child: Icon(Icons.broken_image, color: Colors.grey),
-                      ),
-                    );
-                  },
-                  loadingBuilder: (context, child, loadingProgress) {
-                    if (loadingProgress == null) return child;
-                    return Container(
-                      color: Colors.grey.shade100,
-                      child: const Center(
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      ),
-                    );
-                  },
-                ),
-              ),
-            );
-          },
-        ),
-      );
     });
   }
 }

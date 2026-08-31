@@ -7,27 +7,22 @@ class GroupService {
     try {
       var result = await GroupRepo.getGroupData();
       if (result.status == true && result.data != null) {
-        final Set<String> groupIds = {}; // Use Set to avoid duplicate IDs
+        final Set<String> groupIds = {};
 
-        // Safely extract and convert all IDs to String
-        result.data?.createdGroups?.forEach((item) {
+
+        result.data?.groupData?.forEach((item) {
           if (item.id != null) {
             groupIds.add(item.id.toString());
           }
         });
 
-        result.data?.newlyCreatedGroups?.forEach((item) {
-          if (item.id != null) {
-            groupIds.add(item.id.toString());
-          }
-        });
 
         return groupIds.toList();
       } else {
         return [];
       }
     } catch (e) {
-      print("❌ Error fetching group data: $e");
+      print("Error fetching group data: $e");
       return [];
     }
   }

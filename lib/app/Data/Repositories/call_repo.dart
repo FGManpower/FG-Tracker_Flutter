@@ -6,13 +6,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../Core/constant/const_res.dart' show ConstRes;
 import '../../Core/constant/pref_res.dart';
+
 class CallRepo {
   static Future<callDetailRes> callDetailData(String callId) async {
     var response = await HttpUtil().get("/getCallDetail?callId=$callId");
     return callDetailRes.fromJson(response);
   }
-
-
 
   Future<bool> isCallActive(String callId) async {
     try {
@@ -31,10 +30,8 @@ class CallRepo {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        print("========REsponseData======${data}");
 
-        final status =
-        data['callDetail']?['status']?.toString().toLowerCase();
+        final status = data['callDetail']?['status']?.toString().toLowerCase();
 
         return !(status == 'missed' ||
             status == 'rejected' ||

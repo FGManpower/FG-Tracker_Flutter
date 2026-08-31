@@ -23,36 +23,25 @@ class GroupRes {
 }
 
 class GroupData {
-  List<GroupsResData>? newlyCreatedGroups;
-  List<GroupsResData>? createdGroups;
+  List<GroupsResData>? groupData;
 
-  GroupData({this.newlyCreatedGroups, this.createdGroups});
+  GroupData({this.groupData});
 
   GroupData.fromJson(Map<String, dynamic> json) {
-    if (json['newlyCreatedGroups'] != null) {
-      newlyCreatedGroups = <GroupsResData>[];
-      json['newlyCreatedGroups'].forEach((v) {
-        newlyCreatedGroups!.add(GroupsResData.fromJson(v));
-      });
-    }
-    if (json['createdGroups'] != null) {
-      createdGroups = <GroupsResData>[];
-      json['createdGroups'].forEach((v) {
-        createdGroups!.add(GroupsResData.fromJson(v));
+    if (json['groups'] != null) {
+      groupData = <GroupsResData>[];
+      json['groups'].forEach((v) {
+        groupData!.add(GroupsResData.fromJson(v));
       });
     }
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
-    if (newlyCreatedGroups != null) {
-      data['newlyCreatedGroups'] =
-          newlyCreatedGroups!.map((v) => v.toJson()).toList();
+    if (groupData != null) {
+      data['groups'] = groupData!.map((v) => v.toJson()).toList();
     }
-    if (createdGroups != null) {
-      data['createdGroups'] =
-          createdGroups!.map((v) => v.toJson()).toList();
-    }
+
     return data;
   }
 }

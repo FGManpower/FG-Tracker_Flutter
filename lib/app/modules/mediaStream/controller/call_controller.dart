@@ -14,7 +14,7 @@ import 'package:proximity_screen_lock/proximity_screen_lock.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 import '../../../../gen/assets.gen.dart';
 import '../../../Core/global/launchedFromCall.dart';
-import '../../../Data/Services/SignallingService.dart';
+import '../../../Data/Services/Socket/Socket_SignallingService.dart';
 
 class CallController extends GetxController {
   final socket = SignallingService.instance.socket;

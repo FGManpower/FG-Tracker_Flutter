@@ -32,6 +32,7 @@ import '../modules/Walkie-talkie/Views/walkie_group_select_screen.dart';
 import '../modules/Track/Views/Search_Members.dart';
 import '../modules/Track/Views/TrackLocationScreen.dart';
 import '../modules/Walkie-talkie/WalkieTalkieScreen.dart';
+import '../modules/home/Views/bottom_actions_bar.dart';
 import '../modules/mediaStream/Views/incoming_call_screen.dart';
 part 'app_routes.dart';
 
@@ -186,17 +187,17 @@ class AppPages {
       // binding: VideoBinding(),
       transitionDuration: const Duration(milliseconds: 500),
     ),
-    GetPage(
-      name: Routes.GroupsList,
-      page: () => GroupsListScreen(),
-    ),
+    // GetPage(
+    //   name: Routes.GroupsList,
+    //   page: () => GroupsListScreen(),
+    // ),
 
-    GetPage(
-      name: _Paths.CreateGroup,
-      page: () => CreateGroupScreen(),
-      transition: Transition.rightToLeft,
-      transitionDuration: const Duration(milliseconds: 400),
-    ),
+    // GetPage(
+    //   name: _Paths.CreateGroup,
+    //   page: () => BottomActionsBar(),
+    //   transition: Transition.rightToLeft,
+    //   transitionDuration: const Duration(milliseconds: 400),
+    // ),
 
     GetPage(
       name: Routes.WalkieGroupSelect,

@@ -1,3 +1,4 @@
+import 'package:fgtracker/app/Core/constant/urls.dart';
 import 'package:fgtracker/app/Core/util/http/http_util.dart';
 import 'package:fgtracker/app/Model/CommonRes.dart';
 import 'package:fgtracker/app/Model/GroupRes.dart';
@@ -16,7 +17,7 @@ class GroupRepo{
   }
 
   static Future<GroupRes> getGroupData() async {
-    var response = await HttpUtil().get("/getGroup");
+    var response = await HttpUtil().get(Urls.getAllGroup);
     return GroupRes.fromJson(response);
   }
 

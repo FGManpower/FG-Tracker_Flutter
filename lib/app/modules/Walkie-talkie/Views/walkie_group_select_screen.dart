@@ -1,11 +1,12 @@
-import 'package:fgtracker/app/Core/values/responsive.dart';
+import 'package:fgtracker/app/Model/GroupRes.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/WalkieTalkieScreen.dart';
+import 'package:fgtracker/gen/assets.gen.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:fgtracker/app/Model/GroupRes.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import '../../Group/controller/Group_Controller.dart';
 
 class WalkieGroupSelectScreen extends StatefulWidget {
@@ -17,9 +18,9 @@ class WalkieGroupSelectScreen extends StatefulWidget {
 }
 
 class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
-  int _selectedTab = 0;
-
-  final GroupController _groupController = Get.put(GroupController());
+  final GroupController controller = Get.put(GroupController());
+  final TextEditingController _searchController = TextEditingController();
+  RxString _searchQuery = ''.obs;
 
   final List<Map<String, Color>> _colorPool = [
     {'bg': const Color(0xFFE8DEFF), 'icon': const Color(0xFF6B4DFF)},
@@ -31,36 +32,28 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
     {'bg': const Color(0xFFEDE9FE), 'icon': const Color(0xFF8B5CF6)},
   ];
 
-  static final List<Map<String, dynamic>> _recentGroups = [
-    {
-      'name': 'Logistics Group',
-      'members': 8,
-      'color': const Color(0xFFD1FAE5),
-      'iconColor': const Color(0xFF10B981),
-      'muted': true,
-    },
-    {
-      'name': 'Security Group',
-      'members': 10,
-      'color': const Color(0xFFE0E7FF),
-      'iconColor': const Color(0xFF6366F1),
-      'muted': false,
-    },
-    {
-      'name': 'Construction Group',
-      'members': 12,
-      'color': const Color(0xFFE8DEFF),
-      'iconColor': const Color(0xFF6B4DFF),
-      'muted': false,
-    },
-  ];
+  List<GroupsResData> get _filteredGroups {
+    final String query = _searchQuery.value.trim().toLowerCase();
+    if (query.isEmpty) return controller.groupData;
+    return controller.groupData.where((group) {
+      final String name = (group.groupName ?? '').toLowerCase();
+      final String code = (group.groupCode ?? '').toLowerCase();
+      return name.contains(query) || code.contains(query);
+    }).toList();
+  }
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _groupController.getGroupData();
+      controller.getGroupData();
     });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   @override
@@ -71,10 +64,38 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
         child: Column(
           children: [
             _buildAppBar(),
-            MediaQueryHelper.gapH(8, context),
+            SizedBox(height: 8.h),
             _buildSearchBar(),
-            MediaQueryHelper.gapH(12, context),
-            Expanded(child: _buildGroupList()),
+            SizedBox(height: 12.h),
+            Expanded(
+              child: Obx(() {
+                if (controller.responseError.value.isNotEmpty) {
+                  return LostinternetConnection(
+                    retry: () {
+                      controller.getGroupData();
+                    },
+                    messgae: controller.responseError.value.toString(),
+                  );
+                }
+                if (controller.groupDataLoading.value) {
+                  return _buildGroupList(isLoading: true);
+                }
+                final List<GroupsResData> groups = _filteredGroups;
+                if (groups.isEmpty) {
+                  return controller.groupData.isEmpty
+                      ? DataEmpty_AssetsIcon(
+                      assetspath: Assets.images.notFount.path)
+                      : Center(
+                    child: reausabletext(
+                      "No groups found",
+                      fontsize: 14.sp,
+                      color: Colors.grey,
+                    ),
+                  );
+                }
+                return _buildGroupList(data: groups, isLoading: false);
+              }),
+            ),
           ],
         ),
       ),
@@ -83,14 +104,13 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
 
   Widget _buildAppBar() {
     return Padding(
-      padding: MediaQueryHelper.paddingSymmetric(
-          horizontal: 16, vertical: 8, context: context),
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
       child: Row(
         children: [
           GestureDetector(
             onTap: () => Get.back(),
             child: Container(
-              padding: MediaQueryHelper.paddingAll(8, context),
+              padding: EdgeInsets.all(8.w),
               decoration: BoxDecoration(
                 color: Colors.white,
                 shape: BoxShape.circle,
@@ -101,11 +121,14 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                   ),
                 ],
               ),
-              child: Icon(Icons.arrow_back_ios_new,
-                  size: 16.sp, color: Colors.black87),
+              child: Icon(
+                Icons.arrow_back_ios_new,
+                size: 16.sp,
+                color: Colors.black87,
+              ),
             ),
           ),
-          MediaQueryHelper.gapW(12, context),
+          SizedBox(width: 12.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -124,7 +147,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
               ],
             ),
           ),
-          MediaQueryHelper.gapW(8, context),
+          SizedBox(width: 8.w),
           _circleIcon(Icons.add),
         ],
       ),
@@ -133,7 +156,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
 
   Widget _circleIcon(IconData icon) {
     return Container(
-      padding: MediaQueryHelper.paddingAll(8, context),
+      padding: EdgeInsets.all(8.w),
       decoration: BoxDecoration(
         color: Colors.white,
         shape: BoxShape.circle,
@@ -150,15 +173,13 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
 
   Widget _buildSearchBar() {
     return Padding(
-      padding:
-          MediaQueryHelper.paddingSymmetric(horizontal: 16, context: context),
+      padding: EdgeInsets.symmetric(horizontal: 16.w),
       child: Row(
         children: [
           Expanded(
             child: Container(
               height: 44.h,
-              padding: MediaQueryHelper.paddingSymmetric(
-                  horizontal: 14, context: context),
+              padding: EdgeInsets.symmetric(horizontal: 14.w),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(14.r),
@@ -167,26 +188,43 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
               child: Row(
                 children: [
                   Icon(Icons.search, size: 18.sp, color: Colors.grey),
-                  MediaQueryHelper.gapW(8, context),
+                  SizedBox(width: 8.w),
                   Expanded(
-                    child: TextField(
-                      decoration: InputDecoration(
-                        hintText: "Search groups",
-                        hintStyle: TextStyle(
-                          fontSize: 13.sp,
-                          color: Colors.grey,
-                          fontFamily: FontFamily.interRegular,
+                    child: Obx(() {
+                      return TextField(
+                        controller: _searchController,
+                        onChanged: (value) => _searchQuery.value = value,
+                        decoration: InputDecoration(
+                          hintText: "Search groups",
+                          hintStyle: TextStyle(
+                            fontSize: 13.sp,
+                            color: Colors.grey,
+                            fontFamily: FontFamily.interRegular,
+                          ),
+                          border: InputBorder.none,
+                          isDense: true,
+                          suffixIcon: _searchQuery.value.isEmpty
+                              ? null
+                              : GestureDetector(
+                            onTap: () {
+                              _searchController.clear();
+                              _searchQuery.value = '';
+                            },
+                            child: Icon(
+                              Icons.close,
+                              size: 16.sp,
+                              color: Colors.grey,
+                            ),
+                          ),
                         ),
-                        border: InputBorder.none,
-                        isDense: true,
-                      ),
-                    ),
+                      );
+                    }),
                   ),
                 ],
               ),
             ),
           ),
-          MediaQueryHelper.gapW(10, context),
+          SizedBox(width: 10.w),
           Container(
             height: 44.h,
             width: 44.w,
@@ -196,178 +234,32 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
               border: Border.all(color: Colors.grey.withOpacity(0.15)),
             ),
             child:
-                Icon(Icons.tune, size: 18.sp, color: const Color(0xFF6B4DFF)),
+            Icon(Icons.tune, size: 18.sp, color: const Color(0xFF6B4DFF)),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildTabs() {
-    return Padding(
-      padding:
-          MediaQueryHelper.paddingSymmetric(horizontal: 16, context: context),
-      child: Container(
-        padding: EdgeInsets.all(4.w),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(30.r),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.04),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: GestureDetector(
-                onTap: () => setState(() => _selectedTab = 0),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 220),
-                  curve: Curves.easeInOut,
-                  padding: EdgeInsets.symmetric(vertical: 10.h),
-                  decoration: BoxDecoration(
-                    color: _selectedTab == 0
-                        ? const Color(0xFF6B4DFF)
-                        : Colors.transparent,
-                    borderRadius: BorderRadius.circular(26.r),
-                    boxShadow: _selectedTab == 0
-                        ? [
-                            BoxShadow(
-                              color: const Color(0xFF6B4DFF).withOpacity(0.35),
-                              blurRadius: 8,
-                              offset: const Offset(0, 3),
-                            )
-                          ]
-                        : null,
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.groups,
-                        size: 16.sp,
-                        color: _selectedTab == 0 ? Colors.white : Colors.grey,
-                      ),
-                      MediaQueryHelper.gapW(6, context),
-                      reausabletext(
-                        "All Groups",
-                        fontsize: 13.sp,
-                        color: _selectedTab == 0 ? Colors.white : Colors.grey,
-                        fontfamily: FontFamily.interSemiBold,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            Expanded(
-              child: GestureDetector(
-                onTap: () => setState(() => _selectedTab = 1),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 220),
-                  curve: Curves.easeInOut,
-                  padding: EdgeInsets.symmetric(vertical: 10.h),
-                  decoration: BoxDecoration(
-                    color: _selectedTab == 1
-                        ? const Color(0xFF6B4DFF)
-                        : Colors.transparent,
-                    borderRadius: BorderRadius.circular(26.r),
-                    boxShadow: _selectedTab == 1
-                        ? [
-                            BoxShadow(
-                              color: const Color(0xFF6B4DFF).withOpacity(0.35),
-                              blurRadius: 8,
-                              offset: const Offset(0, 3),
-                            )
-                          ]
-                        : null,
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.access_time,
-                        size: 16.sp,
-                        color: _selectedTab == 1 ? Colors.white : Colors.grey,
-                      ),
-                      MediaQueryHelper.gapW(6, context),
-                      reausabletext(
-                        "Recent",
-                        fontsize: 13.sp,
-                        color: _selectedTab == 1 ? Colors.white : Colors.grey,
-                        fontfamily: FontFamily.interSemiBold,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
+  Widget _buildGroupList({
+    List<GroupsResData>? data,
+    bool isLoading = false,
+  }) {
+    final List<GroupsResData>? items = isLoading ? null : data;
+    final int itemCount = items?.length ?? 6;
+    return Skeletonizer(
+      enabled: items == null,
+      child: ListView.separated(
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
+        itemCount: itemCount,
+        separatorBuilder: (_, __) => SizedBox(height: 10.h),
+        itemBuilder: (context, index) {
+          final List<GroupsResData>? list = items;
+          if (list == null) return const _GroupCardSkeleton();
+          return _apiGroupCard(list[index], index);
+        },
       ),
     );
-  }
-
-  Widget _buildGroupList() {
-    return Obx(() {
-      if (_selectedTab == 0) {
-        if (_groupController.groupDataLoading.value) {
-          return const Center(
-            child: CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF6B4DFF)),
-            ),
-          );
-        }
-
-        final List<GroupsResData> allApiGroups = [];
-        allApiGroups.addAll(_groupController.newlyCreatedGroups);
-        allApiGroups.addAll(_groupController.createdGroups);
-
-        if (allApiGroups.isEmpty) {
-          return Center(
-            child: reausabletext(
-              "No groups found",
-              fontsize: 14.sp,
-              color: Colors.grey,
-            ),
-          );
-        }
-
-        return ListView.separated(
-          padding: MediaQueryHelper.paddingSymmetric(
-              horizontal: 16, vertical: 4, context: context),
-          itemCount: allApiGroups.length,
-          separatorBuilder: (_, __) => MediaQueryHelper.gapH(10, context),
-          itemBuilder: (context, index) {
-            return _apiGroupCard(allApiGroups[index], index);
-          },
-        );
-      } else {
-        final groups = _recentGroups;
-        if (groups.isEmpty) {
-          return Center(
-            child: reausabletext(
-              "No recent groups found",
-              fontsize: 14.sp,
-              color: Colors.grey,
-            ),
-          );
-        }
-        return ListView.separated(
-          padding: MediaQueryHelper.paddingSymmetric(
-              horizontal: 16, vertical: 4, context: context),
-          itemCount: groups.length,
-          separatorBuilder: (_, __) => MediaQueryHelper.gapH(10, context),
-          itemBuilder: (context, index) {
-            return _dummyGroupCard(groups[index]);
-          },
-        );
-      }
-    });
   }
 
   Widget _apiGroupCard(GroupsResData group, int index) {
@@ -376,7 +268,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
     return InkWell(
       onTap: () {
         Get.to(
-          () => const GroupWalkieScreen(),
+              () => const GroupWalkieScreen(),
           arguments: {
             'groupId': group.id?.toString() ?? "",
             'groupName': group.groupName ?? "Unknown Group",
@@ -387,8 +279,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
       },
       borderRadius: BorderRadius.circular(16.r),
       child: Container(
-        padding: MediaQueryHelper.paddingSymmetric(
-            horizontal: 12, vertical: 12, context: context),
+        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16.r),
@@ -416,7 +307,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                 size: 22.sp,
               ),
             ),
-            MediaQueryHelper.gapW(12, context),
+            SizedBox(width: 12.w),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -427,12 +318,15 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                     fontfamily: FontFamily.interSemiBold,
                     color: Colors.black87,
                   ),
-                  MediaQueryHelper.gapH(4, context),
+                  SizedBox(height: 4.h),
                   Row(
                     children: [
-                      Icon(Icons.people_alt_outlined,
-                          size: 12.sp, color: Colors.grey),
-                      MediaQueryHelper.gapW(4, context),
+                      Icon(
+                        Icons.people_alt_outlined,
+                        size: 12.sp,
+                        color: Colors.grey,
+                      ),
+                      SizedBox(width: 4.w),
                       reausabletext(
                         "${group.memberCount ?? 0} Members",
                         fontsize: 11.sp,
@@ -444,7 +338,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
               ),
             ),
             Container(
-              padding: MediaQueryHelper.paddingAll(8, context),
+              padding: EdgeInsets.all(8.w),
               decoration: BoxDecoration(
                 color: const Color(0xFFF3F0FF),
                 borderRadius: BorderRadius.circular(10.r),
@@ -460,13 +354,15 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
       ),
     );
   }
+}
 
-  Widget _dummyGroupCard(Map<String, dynamic> g) {
-    final bool muted = g['muted'] as bool? ?? false;
+class _GroupCardSkeleton extends StatelessWidget {
+  const _GroupCardSkeleton();
 
+  @override
+  Widget build(BuildContext context) {
     return Container(
-      padding: MediaQueryHelper.paddingSymmetric(
-          horizontal: 12, vertical: 12, context: context),
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16.r),
@@ -485,62 +381,31 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
             width: 44.w,
             height: 44.w,
             decoration: BoxDecoration(
-              color: g['color'] as Color,
+              color: Colors.grey.shade200,
               shape: BoxShape.circle,
             ),
-            child: Icon(
-              Icons.groups,
-              color: g['iconColor'] as Color,
-              size: 22.sp,
-            ),
           ),
-          MediaQueryHelper.gapW(12, context),
+          SizedBox(width: 12.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                reausabletext(
-                  g['name'] as String,
-                  fontsize: 14.sp,
-                  fontfamily: FontFamily.interSemiBold,
-                  color: Colors.black87,
+                Text(
+                  "Group name placeholder",
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    fontFamily: FontFamily.interSemiBold,
+                  ),
                 ),
-                MediaQueryHelper.gapH(4, context),
-                Row(
-                  children: [
-                    Icon(Icons.people_alt_outlined,
-                        size: 12.sp, color: Colors.grey),
-                    MediaQueryHelper.gapW(4, context),
-                    reausabletext(
-                      "${g['members']} Members",
-                      fontsize: 11.sp,
-                      color: Colors.grey,
-                    ),
-                  ],
+                SizedBox(height: 4.h),
+                Text(
+                  "Members placeholder",
+                  style: TextStyle(fontSize: 11.sp),
                 ),
               ],
             ),
           ),
-          if (muted) ...[
-            Icon(
-              Icons.mic_off_rounded,
-              size: 16.sp,
-              color: const Color(0xFF6B4DFF).withOpacity(0.5),
-            ),
-            MediaQueryHelper.gapW(6, context),
-          ],
-          Container(
-            padding: MediaQueryHelper.paddingAll(8, context),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF3F0FF),
-              borderRadius: BorderRadius.circular(10.r),
-            ),
-            child: Icon(
-              Icons.cell_tower,
-              size: 18.sp,
-              color: const Color(0xFF6B4DFF),
-            ),
-          ),
+          Icon(Icons.cell_tower, size: 18.sp),
         ],
       ),
     );

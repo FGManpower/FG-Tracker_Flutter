@@ -28,7 +28,6 @@ class PermissionGuard {
     }
 
     if (autoFetchLocation && context.mounted) {
-//=========== Get Current Location function call ==========>
     }
 
     return true;

@@ -1,4 +1,3 @@
-import 'package:fgtracker/app/Core/values/responsive.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
@@ -90,26 +89,25 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
         child: Column(
           children: [
             _buildAppBar(),
-            MediaQueryHelper.gapH(12, context),
+            SizedBox(height: 12.h),
             _buildTabs(),
-            MediaQueryHelper.gapH(12, context),
+            SizedBox(height: 12.h),
             _buildSearchBar(),
-            MediaQueryHelper.gapH(14, context),
+            SizedBox(height: 14.h),
             Expanded(
               child: ListView(
-                padding: MediaQueryHelper.paddingSymmetric(
-                    horizontal: 16, context: context),
+                padding: EdgeInsets.symmetric(horizontal: 16.w),
                 children: [
                   if (_selectedTab == 0) ...[
                     _buildFrequentSection(),
-                    MediaQueryHelper.gapH(18, context),
+                    SizedBox(height: 18.h),
                     _buildContactsSection(),
-                    MediaQueryHelper.gapH(18, context),
+                    SizedBox(height: 18.h),
                     _buildGroupsSection(),
                   ] else ...[
                     _buildGroupsSection(),
                   ],
-                  MediaQueryHelper.gapH(20, context),
+                  SizedBox(height: 20.h),
                 ],
               ),
             ),
@@ -121,12 +119,11 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
 
   Widget _buildAppBar() {
     return Padding(
-      padding: MediaQueryHelper.paddingSymmetric(
-          horizontal: 16, vertical: 8, context: context),
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
       child: Row(
         children: [
           _roundIconBtn(Icons.arrow_back_ios_new, onTap: () => Get.back()),
-          MediaQueryHelper.gapW(12, context),
+          SizedBox(width: 12.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -145,7 +142,7 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
               ],
             ),
           ),
-          MediaQueryHelper.gapW(8, context),
+          SizedBox(width: 8.w),
           _roundIconBtn(Icons.more_horiz),
         ],
       ),
@@ -175,8 +172,7 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
 
   Widget _buildTabs() {
     return Padding(
-      padding:
-      MediaQueryHelper.paddingSymmetric(horizontal: 16, context: context),
+      padding: EdgeInsets.symmetric(horizontal: 16.w),
       child: Container(
         height: 48.h,
         padding: EdgeInsets.all(4.w),
@@ -236,7 +232,7 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
                                     ? Colors.white
                                     : const Color(0xFF6B4DFF),
                               ),
-                              MediaQueryHelper.gapW(6, context),
+                              SizedBox(width: 6.w),
                               reausabletext(
                                 "Contacts",
                                 fontsize: 13.sp,
@@ -267,7 +263,7 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
                                     ? Colors.white
                                     : const Color(0xFF6B4DFF),
                               ),
-                              MediaQueryHelper.gapW(6, context),
+                              SizedBox(width: 6.w),
                               reausabletext(
                                 "Groups",
                                 fontsize: 13.sp,
@@ -290,17 +286,16 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
       ),
     );
   }
+
   Widget _buildSearchBar() {
     return Padding(
-      padding:
-      MediaQueryHelper.paddingSymmetric(horizontal: 16, context: context),
+      padding: EdgeInsets.symmetric(horizontal: 16.w),
       child: Row(
         children: [
           Expanded(
             child: Container(
               height: 46.h,
-              padding: MediaQueryHelper.paddingSymmetric(
-                  horizontal: 14, context: context),
+              padding: EdgeInsets.symmetric(horizontal: 14.w),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(14.r),
@@ -309,7 +304,7 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
               child: Row(
                 children: [
                   Icon(Icons.search, size: 18.sp, color: Colors.grey),
-                  MediaQueryHelper.gapW(8, context),
+                  SizedBox(width: 8.w),
                   Expanded(
                     child: TextField(
                       decoration: InputDecoration(
@@ -328,7 +323,7 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
               ),
             ),
           ),
-          MediaQueryHelper.gapW(10, context),
+          SizedBox(width: 10.w),
           Container(
             height: 46.h,
             width: 46.w,
@@ -376,13 +371,13 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _sectionHeader("Frequently Called"),
-        MediaQueryHelper.gapH(12, context),
+        SizedBox(height: 12.h),
         SizedBox(
           height: 110.h,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             itemCount: _frequent.length,
-            separatorBuilder: (_, __) => MediaQueryHelper.gapW(14, context),
+            separatorBuilder: (_, __) => SizedBox(width: 14.w),
             itemBuilder: (context, i) {
               final c = _frequent[i];
               return SizedBox(
@@ -430,7 +425,7 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
                         ),
                       ],
                     ),
-                    MediaQueryHelper.gapH(6, context),
+                    SizedBox(height: 6.h),
                     reausabletext(
                       c['name'] as String,
                       fontsize: 11.sp,
@@ -459,7 +454,7 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _sectionHeader("Contacts"),
-        MediaQueryHelper.gapH(10, context),
+        SizedBox(height: 10.h),
         ..._contacts.map((c) => _contactTile(c)),
       ],
     );
@@ -468,8 +463,7 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
   Widget _contactTile(Map<String, dynamic> c) {
     return Container(
       margin: EdgeInsets.only(bottom: 8.h),
-      padding: MediaQueryHelper.paddingSymmetric(
-          horizontal: 12, vertical: 10, context: context),
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(14.r),
@@ -505,7 +499,7 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
               ),
             ],
           ),
-          MediaQueryHelper.gapW(12, context),
+          SizedBox(width: 12.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -516,7 +510,7 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
                   fontfamily: FontFamily.interSemiBold,
                   color: Colors.black87,
                 ),
-                MediaQueryHelper.gapH(2, context),
+                SizedBox(height: 2.h),
                 reausabletext(
                   c['team'] as String,
                   fontsize: 11.sp,
@@ -536,7 +530,7 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _sectionHeader("Groups"),
-        MediaQueryHelper.gapH(10, context),
+        SizedBox(height: 10.h),
         ..._groups.map((g) => _groupTile(g)),
       ],
     );
@@ -545,8 +539,7 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
   Widget _groupTile(Map<String, dynamic> g) {
     return Container(
       margin: EdgeInsets.only(bottom: 8.h),
-      padding: MediaQueryHelper.paddingSymmetric(
-          horizontal: 12, vertical: 10, context: context),
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(14.r),
@@ -587,7 +580,7 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
               ),
             ],
           ),
-          MediaQueryHelper.gapW(12, context),
+          SizedBox(width: 12.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -598,7 +591,7 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
                   fontfamily: FontFamily.interSemiBold,
                   color: Colors.black87,
                 ),
-                MediaQueryHelper.gapH(2, context),
+                SizedBox(height: 2.h),
                 reausabletext(
                   "${g['members']} Members",
                   fontsize: 11.sp,

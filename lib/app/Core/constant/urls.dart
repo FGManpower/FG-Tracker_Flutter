@@ -9,6 +9,8 @@ class Urls {
   static const String logOut = '${ConstRes.aBaseUrl}logOut';
   static const String resendOtp = '${ConstRes.aBaseUrl}resendOtp';
   static const String updateProfile = '${ConstRes.aBaseUrl}updateProfile';
+  static const String banner = '${ConstRes.aBaseUrl}banners';
+  static const String getAllGroup = '${ConstRes.aBaseUrl}get-all-group';
 
   ///------------------------ Params ------------------------///
   static const String apiKeyName = 'apikey';
