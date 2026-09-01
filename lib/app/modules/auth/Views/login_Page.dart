@@ -1,267 +1,356 @@
-
-
 import 'package:country_code_picker/country_code_picker.dart';
-import 'package:fgtracker/app/Core/theme/AppText.dart';
-import 'package:fgtracker/app/Core/values/Curve/Login_Curve.dart';
-import 'package:fgtracker/app/config/themes_data.dart';
 import 'package:fgtracker/app/modules/auth/Controller/login_controller.dart';
-import 'package:fgtracker/gen/assets.gen.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:fgtracker/app/global_widget/common_widget.dart';
-
 
 class LoginPage extends GetView<Login_Controller> {
+  const LoginPage({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: SingleChildScrollView(
-        child: Column(
+      resizeToAvoidBottomInset: false,
+      body: Container(
+        margin: EdgeInsets.only(bottom: 30),
+        width: double.infinity,
+        height: double.infinity,
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('assets/images/bg_image.png'),
+            fit: BoxFit.cover,
+          ),
+        ),
+        child: Stack(
           children: [
-            ClipPath(
-              clipper: CurvedDiagonalClipper(cutHeightFactor: 0.8),
-              child: Container(
-                height: 360.h,
-                width: double.infinity,
-                clipBehavior: Clip.antiAlias,
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Color(0xFF4B3FDD), Color(0xFF7E6FF3)],
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                  ),
-                ),
-                child: Stack(
-                  clipBehavior: Clip.hardEdge,
-                  children: [
-                    Positioned(
-                      right: 10.w,
-                      bottom: 160.h,
-                      child: Icon(
-                        Icons.location_on,
-                        size: 70.sp,
-                        color: Colors.white.withOpacity(0.08),
-                      ),
-                    ),
-                    Positioned(
-                      left: 20.w,
-                      bottom: 20.h,
-                      child: Icon(
-                        Icons.location_on,
-                        size: 50.sp,
-                        color: Colors.white.withOpacity(0.12),
-                      ),
-                    ),
-                    Positioned(
-                      left: 40.w,
-                      bottom: 50.h,
-                      child: Icon(
-                        Icons.location_on,
-                        size: 130.sp,
-                        color: Colors.white.withOpacity(0.1),
-                      ),
-                    ),
-                    Padding(
-                      padding:
-                      EdgeInsets.only(top: 80.h, left: 15.w, right: 24.w),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-
-                            children: [
-                              CircleAvatar(
-                                radius: 48.r,
-                                backgroundColor: Colors.white,
-                                backgroundImage:
-                                AssetImage(Assets.icons.appIcon.path),
+            Positioned(
+              // top: 0,
+              bottom: 10,
+              left: 0,
+              right: 0,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 20.w),
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      alignment: Alignment.topCenter,
+                      children: [
+                        Container(
+                          margin: EdgeInsets.only(top: 40.h),
+                          padding: EdgeInsets.only(
+                            left: 20.w,
+                            right: 20.w,
+                            top: 50.h,
+                            bottom: 35.h,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(30.r),
+                            boxShadow: [
+                              BoxShadow(
+                                color:
+                                    const Color(0xFF4B3FDD).withOpacity(0.12),
+                                blurRadius: 25,
+                                spreadRadius: 2,
+                                offset: const Offset(0, 10),
                               ),
-                              SizedBox(width: 10.w),
-                           Flexible(child:    reausabletext(
-                             "Welcome Back",
-                             color: Colors.white,
-                             fontsize: 32,
-                             fontfamily: FontFamily.interBold,
-                           ),),
-
                             ],
                           ),
-                          SizedBox(height: 12.h),
-                          reausabletext(
-                            "We’re glad to see you again. Log in to access your account and explore our latest features.",
-                            color: ToggleThemeData.white,
-                            fontsize: 14,
-                            align: TextAlign.start,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            Padding(
-              padding: EdgeInsets.only(left: 20.w,right:20.w, top: 60.h),
-              child: Container(
-                width: double.infinity,
-                padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 25.h),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20.r),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    reausabletext(
-                      "Log In Details",
-                      color: Colors.black,
-                      fontsize: 15,
-                      fontfamily: FontFamily.interMedium,
-                    ),
-                    SizedBox(height: 16.h),
-
-                    Form(
-                      key: controller.loginKey,
-                      child: Column(
-                        children: [
-                          Obx(() => Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
                             children: [
-                              Container(
-                                padding:
-                                EdgeInsets.symmetric(vertical: 0.h),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFF8F6FF),
-                                  borderRadius: BorderRadius.circular(40.r),
-                                  border: Border.all(
-                                    color: controller.mobileErrorText.value
-                                        .isEmpty
-                                        ? ToggleThemeData.darkPurple
-                                        : Colors.red,
-                                    width: 1,
-                                  ),
+                              Text(
+                                "Log In",
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 22.sp,
+                                  fontWeight: FontWeight.bold,
+                                  fontFamily: FontFamily.interBold,
                                 ),
-                                child: Row(
+                              ),
+                              SizedBox(height: 2.h),
+                              Text(
+                                "to Continue",
+                                style: TextStyle(
+                                  color: const Color(0xFF6754F4),
+                                  fontSize: 15.sp,
+                                  fontWeight: FontWeight.w600,
+                                  fontFamily: FontFamily.interMedium,
+                                ),
+                              ),
+                              SizedBox(height: 35.h),
+                              Form(
+                                key: controller.loginKey,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    CountryCodePicker(
-                                      onChanged: (country) {
-                                        controller.selectedDialCode =
-                                            country.dialCode ?? '+91';
-                                      },
-                                      initialSelection: 'IN',
-                                      favorite: ['+91', 'IN'],
-                                      flagWidth: 20.sp,
-                                      textStyle: TextStyle(
-                                        fontSize: 14.sp,
-                                        color: ToggleThemeData.darkPurple,
+                                    _buildPhoneInputField(),
+                                    Obx(
+                                      () => AnimatedSwitcher(
+                                        duration:
+                                            const Duration(milliseconds: 250),
+                                        child: controller.mobileErrorText.value
+                                                .isNotEmpty
+                                            ? Padding(
+                                                padding: EdgeInsets.only(
+                                                    left: 10.w, top: 8.h),
+                                                child: Text(
+                                                  controller
+                                                      .mobileErrorText.value,
+                                                  key: ValueKey(
+                                                    controller
+                                                        .mobileErrorText.value,
+                                                  ),
+                                                  style: TextStyle(
+                                                    color: Colors.red,
+                                                    fontSize: 12.sp,
+                                                    fontFamily:
+                                                        FontFamily.interMedium,
+                                                  ),
+                                                ),
+                                              )
+                                            : const SizedBox.shrink(),
                                       ),
                                     ),
-                                    Container(
-                                      height: 30.h,
-                                      width: 1.w,
-                                      color: Colors.black,
-                                    ),
-                                    SizedBox(width: 8.w),
-                                    Expanded(
-                                      child: TextFormField(
-                                        focusNode:
-                                        controller.phoneFocusNode,
-                                        inputFormatters: [
-                                          FilteringTextInputFormatter
-                                              .digitsOnly
-                                        ],
-                                        style: TextStyle(
-                                          fontSize: 16.sp,
-                                          fontFamily:
-                                          FontFamily.interMedium,
-                                        ),
-                                        controller:
-                                        controller.mobNoController,
-                                        keyboardType:
-                                        TextInputType.phone,
-                                        textInputAction:
-                                        TextInputAction.done,
-                                        maxLength: 18,
-                                        decoration: InputDecoration(
-                                          counterText: '',
-                                          border: InputBorder.none,
-                                          hintText: 'Enter Mobile Number',
-                                          hintStyle: TextStyle(
-                                            fontSize: 14.sp,
-                                            color: ToggleThemeData
-                                                .darkPurple,
-                                          ),
-                                        ),
-                                        onChanged: (_) {
-                                          controller.mobileErrorText.value =
-                                          '';
-                                        },
-                                        onFieldSubmitted: (_) {
-                                          controller.phoneFocusNode
-                                              .unfocus();
-                                        },
-                                      ),
-                                    ),
+                                    SizedBox(height: 35.h),
+                                    _buildGradientLoginButton(),
                                   ],
                                 ),
                               ),
-                              AnimatedSwitcher(
-                                duration:
-                                const Duration(milliseconds: 250),
-                                child: controller.mobileErrorText.value
-                                    .isNotEmpty
-                                    ? Padding(
-                                  padding: EdgeInsets.only(
-                                      left: 20.w, top: 6.h),
-                                  child: Text(
-                                    controller.mobileErrorText.value,
-                                    key: ValueKey(controller
-                                        .mobileErrorText.value),
-                                    style: TextStyle(
-                                      color: Colors.red,
-                                      fontSize: 12.sp,
-                                      fontFamily: FontFamily
-                                          .interMedium,
-                                    ),
-                                  ),
+                            ],
+                          ),
+                        ),
+                        Positioned(
+                          top: 0,
+                          child: Container(
+                            height: 75.h,
+                            width: 75.h,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(50.r),
+                              boxShadow: [
+                                BoxShadow(
+                                  color:
+                                      const Color(0xFF6754F4).withOpacity(0.15),
+                                  blurRadius: 20,
+                                  spreadRadius: 0,
+                                  offset: const Offset(0, 10),
                                 )
-                                    : const SizedBox.shrink(),
+                              ],
+                            ),
+                            child: Center(
+                              child: Icon(
+                                Icons.person_outline_rounded,
+                                size: 45.sp,
+                                color: const Color(0xFF6754F4),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: 11.h),
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 20.w),
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      alignment: Alignment.centerLeft,
+                      children: [
+                        Container(
+                          width: double.infinity,
+                          padding: EdgeInsets.symmetric(
+                            vertical: 14.h,
+                            horizontal: 20.w,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.95),
+                            borderRadius: BorderRadius.circular(20.r),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.verified_user_rounded,
+                                color: const Color(0xFF5D47F1),
+                                size: 34.sp,
+                              ),
+                              SizedBox(width: 12.w),
+                              RichText(
+                                text: TextSpan(
+                                  style: TextStyle(
+                                    color: Colors.black87,
+                                    fontSize: 12.sp,
+                                    fontFamily: FontFamily.interMedium,
+                                  ),
+                                  children: [
+                                    const TextSpan(text: "Your data is "),
+                                    TextSpan(
+                                      text: "100% ",
+                                      style: TextStyle(
+                                        color: const Color(0xFF5D47F1),
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const TextSpan(text: "secure"),
+                                  ],
+                                ),
                               ),
                             ],
-                          )),
-                          SizedBox(height: 20.h),
-
-                          reausablebutton(
-                            title: AppText.login,
-                            ontap: () async {
-
-                              controller.login();
-                            },
-                            borderradiues: 25.r,
                           ),
-                        ],
-                      ),
+                        ),
+                        Positioned(
+                          right: -10.w,
+                          top: -48.h,
+                          child: Image.asset(
+                            'assets/images/lock_3d.png',
+                            height: 120.h,
+                            width: 120.w,
+                            fit: BoxFit.contain,
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ],
         ),
-      )
+      ),
+    );
+  }
+
+  Widget _buildPhoneInputField() {
+    return Container(
+      padding: EdgeInsets.symmetric(vertical: 2.h),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(30.r),
+        border: Border.all(
+          color: const Color(0xFFC7C0FA),
+          width: 1.5,
+        ),
+      ),
+      child: Row(
+        children: [
+          CountryCodePicker(
+            onChanged: (country) {
+              controller.selectedDialCode = country.dialCode ?? '+91';
+            },
+            initialSelection: 'IN',
+            favorite: const ['+91', 'IN'],
+            showFlagDialog: true,
+            showFlagMain: true,
+            flagWidth: 19.sp,
+            textStyle: TextStyle(
+              fontSize: 14.sp,
+              color: Colors.black87,
+              fontWeight: FontWeight.w600,
+            ),
+            padding: EdgeInsets.symmetric(horizontal: 8.w),
+            showCountryOnly: false,
+            showOnlyCountryWhenClosed: false,
+            alignLeft: false,
+          ),
+          Container(
+            height: 25.h,
+            width: 1.5.w,
+            color: const Color(0xFFC7C0FA),
+          ),
+          SizedBox(width: 8.w),
+          Expanded(
+            child: TextFormField(
+              focusNode: controller.phoneFocusNode,
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+              ],
+              style: TextStyle(
+                fontSize: 15.sp,
+                fontFamily: FontFamily.interMedium,
+                color: Colors.black,
+              ),
+              controller: controller.mobNoController,
+              keyboardType: TextInputType.phone,
+              textInputAction: TextInputAction.done,
+              maxLength: 15,
+              decoration: InputDecoration(
+                counterText: '',
+                border: InputBorder.none,
+                hintText: 'Enter Mobile Number',
+                hintStyle: TextStyle(
+                  fontSize: 14.sp,
+                  color: Colors.grey.shade500,
+                ),
+                contentPadding: EdgeInsets.zero,
+              ),
+              onChanged: (_) {
+                controller.mobileErrorText.value = '';
+              },
+              onFieldSubmitted: (_) {
+                controller.phoneFocusNode.unfocus();
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGradientLoginButton() {
+    return InkWell(
+      onTap: () async {
+        controller.login();
+      },
+      borderRadius: BorderRadius.circular(30.r),
+      child: Container(
+        width: double.infinity,
+        padding: EdgeInsets.symmetric(vertical: 17.h),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(30.r),
+          gradient: const LinearGradient(
+            colors: [
+              Color(0xFF7B66F6),
+              Color(0xFF533EF0),
+            ],
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF5D47F1).withOpacity(0.4),
+              blurRadius: 15,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Text(
+              "Log In to Continue",
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 15.sp,
+                fontWeight: FontWeight.w600,
+                fontFamily: FontFamily.interBold,
+              ),
+            ),
+            Positioned(
+              right: 20.w,
+              child: Icon(
+                Icons.arrow_forward_rounded,
+                color: Colors.white,
+                size: 20.sp,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

@@ -1,4 +1,5 @@
 import 'package:fgtracker/app/global_widget/common_widget.dart';
+import 'package:fgtracker/app/modules/Track/Views/Tracking_screen.dart';
 import 'package:fgtracker/app/modules/mediaStream/Views/call_screen.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
@@ -42,8 +43,12 @@ class QuickActionsSection extends StatelessWidget {
               Icons.settings_cell,
               onTap: () => Get.toNamed(Routes.WalkieGroupSelect),
             ),
-            _QuickActionCard("Tracking", Icons.location_on, isComingSoon: false),
             _QuickActionCard(
+              "Tracking",
+              Icons.location_on,
+              isComingSoon: false,
+              onTap: () => Get.to(() => TrackingScreen()),
+            ),            _QuickActionCard(
               "Chatting",
               Icons.message_outlined,
               // onTap: () => Get.to(() => const VideoCallScreen()),
