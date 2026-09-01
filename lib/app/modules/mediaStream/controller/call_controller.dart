@@ -10,7 +10,7 @@ import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'package:get/get.dart' hide navigator;
 import 'package:flutter_webrtc/flutter_webrtc.dart';
-import 'package:proximity_screen_lock/proximity_screen_lock.dart';
+// import 'package:proximity_screen_lock/proximity_screen_lock.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 import '../../../../gen/assets.gen.dart';
 import '../../../Core/global/launchedFromCall.dart';
@@ -447,9 +447,9 @@ class CallController extends GetxController {
     await Helper.setSpeakerphoneOn(isSpeakerOn);
 
     if (isSpeakerOn) {
-      await ProximityScreenLock.setActive(false);
+      // await ProximityScreenLock.setActive(false);
     } else {
-      await ProximityScreenLock.setActive(true);
+      // await ProximityScreenLock.setActive(true);
     }
 
     update();
@@ -534,12 +534,12 @@ class CallController extends GetxController {
 
   Future<void> startAudioCall() async {
     await WakelockPlus.enable();
-    await ProximityScreenLock.setActive(true);
+    // await ProximityScreenLock.setActive(true);
   }
 
   Future<void> endAudioCall() async {
     await WakelockPlus.disable();
-    await ProximityScreenLock.setActive(false);
+    // await ProximityScreenLock.setActive(false);
   }
 
   @override
