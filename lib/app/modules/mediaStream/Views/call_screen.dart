@@ -34,6 +34,7 @@ class _CallScreenState extends State<CallScreen>
 
   @override
   void dispose() {
+
     _tabController.dispose();
     super.dispose();
   }
@@ -59,6 +60,7 @@ class _CallScreenState extends State<CallScreen>
                   CallContactsTab(),
                   CallGroupsTab(),
                 ],
+
               ),
             ),
           ],
@@ -82,15 +84,12 @@ class _CallScreenState extends State<CallScreen>
           Expanded(
             child: reausabletext(
               "Audio / Video Call",
-              fontsize: 18.sp,
+              fontsize: 14.sp,
               fontfamily: FontFamily.interBold,
               color: Colors.black87,
             ),
           ),
-          SizedBox(width: 8.w),
-          const _RoundIconButton(icon: Icons.videocam_rounded),
-          SizedBox(width: 10.w),
-          const _RoundIconButton(icon: Icons.more_horiz),
+
         ],
       ),
     );

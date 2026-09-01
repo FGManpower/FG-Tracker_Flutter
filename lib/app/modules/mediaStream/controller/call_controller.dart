@@ -1,4 +1,7 @@
+import 'package:fgtracker/app/Data/Repositories/GroupRepo.dart';
+import 'package:fgtracker/app/Data/Services/contact_services.dart';
 import 'package:fgtracker/app/Model/GroupRes.dart';
+import 'package:fgtracker/app/Model/user_profileList_res.dart';
 import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -13,6 +16,92 @@ class CallController extends GetxController {
   final TextEditingController searchController = TextEditingController();
   final RxInt selectedTab = 0.obs;
   final RxString searchQuery = ''.obs;
+
+  final ContactService _contactService = ContactService();
+
+  RxBool contactLoading = false.obs;
+  RxBool isSearching = false.obs;
+  var allUserProfileData = <UserListData>[].obs;
+  var filteredUsers = <UserListData>[].obs;
+  var responseError = "".obs;
+
+  Future<void> getRegisteredContacts() async {
+    try {
+      contactLoading.value = true;
+      responseError.value = "";
+
+      final contactNumbers = await _contactService.getMobileNumbers();
+
+      if (contactNumbers.isEmpty) {
+        allUserProfileData.clear();
+        filteredUsers.clear();
+        return;
+      }
+
+      final result = await GroupRepo.getAllUserData();
+
+      if (result.status == true) {
+        final users = result.userData ?? [];
+
+        final contactNumberSet = contactNumbers.toSet();
+
+        final matchedUsers = users.where((user) {
+          final String mobileNo = _normalizePhone(user.mobileNo ?? '');
+          return contactNumberSet.contains(mobileNo);
+        }).toList();
+
+        allUserProfileData.value = matchedUsers;
+        filteredUsers.value = matchedUsers;
+      } else {
+        responseError.value = result.message ?? "Something went wrong";
+      }
+    } catch (e) {
+      responseError.value = e.toString();
+    } finally {
+      contactLoading.value = false;
+    }
+  }
+
+  void filterUsers(String value) {
+    value = value.trim().toLowerCase();
+
+    if (value.isEmpty) {
+      filteredUsers.value = allUserProfileData;
+      return;
+    }
+
+    final String queryDigits = _normalizePhone(value);
+
+    filteredUsers.value = allUserProfileData.where((user) {
+      final String name = (user.name ?? '').toLowerCase();
+
+      final bool mobileMatch = queryDigits.isNotEmpty &&
+          _normalizePhone(user.mobileNo ?? '').contains(queryDigits);
+
+      return name.contains(value) || mobileMatch;
+    }).toList();
+  }
+
+  String _normalizePhone(String phone) {
+    String digits = phone.replaceAll(RegExp(r'[^0-9]'), '');
+    if (digits.startsWith('91') && digits.length > 10) {
+      digits = digits.substring(2);
+    }
+    if (digits.length > 10) {
+      digits = digits.substring(digits.length - 10);
+    }
+    return digits;
+  }
+
+  void clearSearch() {
+    searchController.clear();
+    searchQuery.value = '';
+    filteredUsers.value = allUserProfileData;
+  }
+
+  Future<void> refreshContacts() async {
+    await getRegisteredContacts();
+  }
 
   static const List<Map<String, String>> recentCalls = [
     {
@@ -89,74 +178,6 @@ class CallController extends GetxController {
     },
   ];
 
-  static const List<Map<String, String>> allContacts = [
-    {
-      'name': 'Vikram Singh',
-      'phone': '+91 98765 43211',
-      'avatar': 'https://i.pravatar.cc/150?img=1',
-    },
-    {
-      'name': 'Anjali Gupta',
-      'phone': '+91 87654 32110',
-      'avatar': 'https://i.pravatar.cc/150?img=2',
-    },
-    {
-      'name': 'Karan Malhotra',
-      'phone': '+91 76543 21099',
-      'avatar': 'https://i.pravatar.cc/150?img=3',
-    },
-    {
-      'name': 'Sandeep Yadav',
-      'phone': '+91 65432 10988',
-      'avatar': 'https://i.pravatar.cc/150?img=4',
-    },
-    {
-      'name': 'Manoj Kumar',
-      'phone': '+91 54321 09876',
-      'avatar': 'https://i.pravatar.cc/150?img=5',
-    },
-    {
-      'name': 'Rakesh Patel',
-      'phone': '+91 98760 11223',
-      'avatar': 'https://i.pravatar.cc/150?img=6',
-    },
-    {
-      'name': 'Deepak Sharma',
-      'phone': '+91 87650 44321',
-      'avatar': 'https://i.pravatar.cc/150?img=7',
-    },
-    {
-      'name': 'Pooja Verma',
-      'phone': '+91 76540 33211',
-      'avatar': 'https://i.pravatar.cc/150?img=8',
-    },
-    {
-      'name': 'Amit Singh',
-      'phone': '+91 65430 22109',
-      'avatar': 'https://i.pravatar.cc/150?img=9',
-    },
-    {
-      'name': 'Sahil Mehta',
-      'phone': '+91 54320 11098',
-      'avatar': 'https://i.pravatar.cc/150?img=10',
-    },
-    {
-      'name': 'Neha Yadav',
-      'phone': '+91 98761 55432',
-      'avatar': 'https://i.pravatar.cc/150?img=11',
-    },
-    {
-      'name': 'Gaurav Kumar',
-      'phone': '+91 87651 66778',
-      'avatar': 'https://i.pravatar.cc/150?img=12',
-    },
-    {
-      'name': 'Sheetal Gupta',
-      'phone': '+91 76541 77889',
-      'avatar': 'https://i.pravatar.cc/150?img=13',
-    },
-  ];
-
   List<Map<String, String>> get filteredRecentCalls {
     final String query = _query;
     if (query.isEmpty) return recentCalls;
@@ -164,16 +185,6 @@ class CallController extends GetxController {
         .where((call) =>
     (call['name'] ?? '').toLowerCase().contains(query) ||
         (call['type'] ?? '').toLowerCase().contains(query))
-        .toList();
-  }
-
-  List<Map<String, String>> get filteredContacts {
-    final String query = _query;
-    if (query.isEmpty) return allContacts;
-    return allContacts
-        .where((contact) =>
-    (contact['name'] ?? '').toLowerCase().contains(query) ||
-        (contact['phone'] ?? '').toLowerCase().contains(query))
         .toList();
   }
 
@@ -195,11 +206,9 @@ class CallController extends GetxController {
 
   void switchTab(int index) => selectedTab.value = index;
 
-  void onSearchChanged(String value) => searchQuery.value = value;
-
-  void clearSearch() {
-    searchController.clear();
-    searchQuery.value = '';
+  void onSearchChanged(String value) {
+    searchQuery.value = value;
+    filterUsers(value);
   }
 
   void loadGroups() => _groupController.getGroupData();
@@ -209,6 +218,8 @@ class CallController extends GetxController {
     searchController.dispose();
     searchQuery.close();
     selectedTab.close();
+    contactLoading.close();
+    responseError.close();
     super.onClose();
   }
 }

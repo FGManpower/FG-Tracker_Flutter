@@ -33,36 +33,10 @@ class CallGroupsTab extends StatelessWidget {
             controller.groups.isEmpty ? "No groups yet" : "No groups found",
           );
         }
-        return ListView(
+        return
+          ListView(
           padding: EdgeInsets.fromLTRB(16.w, 4.h, 16.w, 120.h),
           children: [
-            Row(
-              children: [
-                reausabletext(
-                  "All Groups",
-                  fontsize: 14.sp,
-                  fontfamily: FontFamily.interBold,
-                  color: Colors.black87,
-                ),
-                const Spacer(),
-                Row(
-                  children: [
-                    reausabletext(
-                      "Sort by: Recent",
-                      fontsize: 12.sp,
-                      color: const Color(0xFF6B4DFF),
-                      fontfamily: FontFamily.interSemiBold,
-                    ),
-                    Icon(
-                      Icons.arrow_drop_down,
-                      size: 18.sp,
-                      color: const Color(0xFF6B4DFF),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            SizedBox(height: 8.h),
             for (int i = 0; i < groups.length; i++) ...[
               _GroupTile(group: groups[i]),
               SizedBox(height: 14.h),
