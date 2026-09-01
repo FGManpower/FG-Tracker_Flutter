@@ -1,4 +1,4 @@
-import 'package:fgtracker/app/modules/mediaStream/controller/call_controller.dart';
+import 'package:fgtracker/app/modules/mediaStream/controller/calling_controller.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -13,7 +13,7 @@ import '../../../global_widget/common_widget.dart';
 class AudiocallScreen extends StatelessWidget {
   AudiocallScreen({super.key, required this.controller});
 
-  CallController controller;
+  CallingController controller;
   @override
   Widget build(BuildContext context) {
     return Padding(

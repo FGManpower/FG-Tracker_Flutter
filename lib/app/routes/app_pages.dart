@@ -18,21 +18,17 @@ import 'package:fgtracker/app/modules/auth/Views/registration_screen.dart';
 import 'package:fgtracker/app/modules/home/Views/AboutUs.dart';
 import 'package:fgtracker/app/modules/home/Views/home_screen.dart';
 import 'package:fgtracker/app/modules/mediaStream/Bindings/call_binding.dart';
-import 'package:fgtracker/app/modules/mediaStream/Views/call_screen.dart';
+import 'package:fgtracker/app/modules/mediaStream/Views/calling_screen.dart';
 import 'package:get/get.dart';
 import '../modules/Group/Views/QRScanScreen.dart';
-import '../modules/Group/Views/QrScreen.dart';
 
 import '../modules/Messages/Bindings/ForwardMessageBinding.dart';
 import '../modules/Messages/Views/Chat_Screen.dart';
 import '../modules/Messages/Views/ForwardMessageScreen.dart';
-import '../modules/Messages/Views/create_group_screen.dart';
-import '../modules/Messages/Views/groups_list_screen.dart';
 import '../modules/Walkie-talkie/Views/walkie_group_select_screen.dart';
 import '../modules/Track/Views/Search_Members.dart';
 import '../modules/Track/Views/TrackLocationScreen.dart';
 import '../modules/Walkie-talkie/WalkieTalkieScreen.dart';
-import '../modules/home/Views/bottom_actions_bar.dart';
 import '../modules/mediaStream/Views/incoming_call_screen.dart';
 part 'app_routes.dart';
 
@@ -142,7 +138,7 @@ class AppPages {
     ),
     GetPage(
       name: _Paths.callScreen,
-      page: () => CallScreen(),
+      page: () => CallingScreen(),
       transition: Transition.rightToLeft,
       binding: StreamBinding(),
       transitionDuration: const Duration(milliseconds: 500),
