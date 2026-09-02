@@ -1,5 +1,6 @@
 import 'package:fgtracker/app/Model/GroupRes.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
+import 'package:fgtracker/app/modules/mediaStream/Widget/call_widget.dart';
 import 'package:fgtracker/app/modules/mediaStream/controller/call_controller.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
@@ -34,14 +35,16 @@ class CallGroupsTab extends StatelessWidget {
           );
         }
         return
-          ListView(
+          ListView.builder(
           padding: EdgeInsets.fromLTRB(16.w, 4.h, 16.w, 120.h),
-          children: [
-            for (int i = 0; i < groups.length; i++) ...[
-              _GroupTile(group: groups[i]),
-              SizedBox(height: 14.h),
-            ],
-          ],
+          itemCount: groups.length,
+          itemBuilder: (context, index) {
+            return Padding(
+              padding:  EdgeInsets.only(bottom: 10.h),
+              child: _GroupTile(group: groups[index]),
+            );
+          },
+
         );
       }),
     );
@@ -91,30 +94,15 @@ class _GroupTile extends StatelessWidget {
           ),
         ),
         SizedBox(width: 8.w),
-        const _CallActionChip(icon: Icons.videocam_rounded),
+         CallActionChip(icon: Icons.videocam_rounded),
+        SizedBox(width: 7.w),
+         CallActionChip(icon: Icons.call),
       ],
     );
   }
 }
 
-class _CallActionChip extends StatelessWidget {
-  const _CallActionChip({required this.icon});
 
-  final IconData icon;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 44.w,
-      height: 32.h,
-      decoration: BoxDecoration(
-        color: const Color(0xFF4818F0),
-        borderRadius: BorderRadius.circular(10.r),
-      ),
-      child: Icon(icon, size: 16.sp, color: Colors.white),
-    );
-  }
-}
 
 class _GroupListSkeleton extends StatelessWidget {
   const _GroupListSkeleton();

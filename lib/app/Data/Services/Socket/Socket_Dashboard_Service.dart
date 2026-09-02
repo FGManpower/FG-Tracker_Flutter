@@ -32,7 +32,6 @@ class SocketDashboardService extends GetxService {
 
     _socket!.onConnect((_) => requestGroupCount());
     _socket!.on('group_dashboard_counts', (data) {
-      log("getGroupDashcount:${data['data']}");
       if (!_groupCountController.isClosed) {
         _groupCountController.add(data['data']);
       }

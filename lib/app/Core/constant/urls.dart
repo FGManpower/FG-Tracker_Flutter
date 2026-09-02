@@ -11,6 +11,7 @@ class Urls {
   static const String updateProfile = '${ConstRes.aBaseUrl}updateProfile';
   static const String banner = '${ConstRes.aBaseUrl}banners';
   static const String getAllGroup = '${ConstRes.aBaseUrl}get-all-group';
+  static const String recentCallHistory = '${ConstRes.aBaseUrl}history';
 
   ///------------------------ Params ------------------------///
   static const String apiKeyName = 'apikey';

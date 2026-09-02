@@ -96,7 +96,7 @@ class LocationService extends GetxService {
       currentPosition = location;
 
       if (!TrackingController.instance.isLocationSharing.value) {
-        log("👻 Ghost Mode Enabled - Location not shared");
+        log("Ghost Mode Enabled - Location not shared");
         return;
       }
 

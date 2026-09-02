@@ -1,5 +1,9 @@
+import 'dart:developer';
+
+import 'package:fgtracker/app/Core/constant/urls.dart';
 import 'package:fgtracker/app/Core/util/http/http_util.dart';
 import 'package:fgtracker/app/Model/callDetailRes.dart';
+import 'package:fgtracker/app/Model/recent_call.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -11,6 +15,13 @@ class CallRepo {
   static Future<callDetailRes> callDetailData(String callId) async {
     var response = await HttpUtil().get("/getCallDetail?callId=$callId");
     return callDetailRes.fromJson(response);
+  }
+
+  static Future<recent_Call_Res> getRecentCall(
+      {String page = "0", String type = "all"}) async {
+    var response =
+        await HttpUtil().get("${Urls.recentCallHistory}?page=$page&type=$type");
+    return recent_Call_Res.fromJson(response);
   }
 
   Future<bool> isCallActive(String callId) async {
@@ -38,7 +49,7 @@ class CallRepo {
             status == 'ended');
       }
     } catch (e) {
-      print("Call Status Check Error => $e");
+      log("Call Status Check Error => $e");
     }
 
     return false;

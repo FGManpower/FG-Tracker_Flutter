@@ -1,28 +1,16 @@
-import 'dart:async';
-import 'dart:developer';
-
-import 'package:flutter/material.dart';
-import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
-import 'package:flutter_webrtc/flutter_webrtc.dart';
-import 'package:get/get.dart' hide navigator;
-import 'package:wakelock_plus/wakelock_plus.dart';
-
-import 'package:fgtracker/app/Core/constant/pref_res.dart';
-import 'package:fgtracker/app/Core/values/global.dart';
-import 'package:fgtracker/app/Core/values/utility.dart';
 import 'package:fgtracker/app/Data/Repositories/GroupRepo.dart';
+import 'package:fgtracker/app/Data/Repositories/call_repo.dart';
 import 'package:fgtracker/app/Data/Services/contact_services.dart';
 import 'package:fgtracker/app/Model/GroupRes.dart';
+import 'package:fgtracker/app/Model/recent_call.dart';
 import 'package:fgtracker/app/Model/user_profileList_res.dart';
 import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
-import 'package:fgtracker/app/routes/app_pages.dart';
-import '../../../../gen/assets.gen.dart';
-import '../../../Core/global/launchedFromCall.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart' hide navigator;
 
 class CallController extends GetxController {
   static CallController get instance => Get.put(CallController());
 
-  // Controller Dependencies
   final GroupController _groupController = Get.isRegistered<GroupController>()
       ? Get.find<GroupController>()
       : Get.put(GroupController());
@@ -30,72 +18,25 @@ class CallController extends GetxController {
   final ContactService _contactService = ContactService();
   final TextEditingController searchController = TextEditingController();
 
-  // Observable Variables (UI State)
   final RxInt selectedTab = 0.obs;
   final RxString searchQuery = ''.obs;
   final RxBool contactLoading = false.obs;
   final RxBool isSearching = false.obs;
   final RxString responseError = "".obs;
 
-  // Contacts Lists
   var allUserProfileData = <UserListData>[].obs;
   var filteredUsers = <UserListData>[].obs;
 
-  // WebRTC & Call State Fields
-  final RxString callStatus = "Connecting...".obs;
-  final RxInt callDurationSeconds = 0.obs;
-  Timer? _durationTimer;
+  final RxBool recentCallLoading = false.obs;
+  final RxBool recentCallLoadingMore = false.obs;
+  final RxString recentCallResponseError = "".obs;
+  final RxInt pagination = 1.obs;
+  final RxBool hasMoreRecentCalls = true.obs;
+  final RxString recentCallFilter = 'All'.obs;
+  final RxList<Map<String, String>> recentCallList =
+      <Map<String, String>>[].obs;
 
-  RTCPeerConnection? peer;
-  MediaStream? localStream;
-  final List<RTCIceCandidate> iceCandidates = [];
-  dynamic socket;
-
-  Map<String, dynamic> get args => Get.arguments ?? {};
-  bool get fromCallKit => args["fromCallKit"] ?? false;
-  dynamic get offer => args["offer"];
-  dynamic get callerId => args["callerId"];
-  dynamic get callId => args["callId"];
-  dynamic get remoteUserId => args["remoteUserId"];
-  bool get is_video => args["is_video"] ?? false;
-
-  bool isAudioOn = true;
-  bool isVideoOn = true;
-  bool isFrontCamera = true;
-  bool isSpeakerOn = false;
-
-  static const List<Map<String, String>> recentCalls = [
-    {
-      'name': 'Vikram Singh',
-      'type': 'Outgoing Video Call',
-      'time': 'Today, 10:24 AM',
-      'avatar': 'https://i.pravatar.cc/150?img=12',
-    },
-    {
-      'name': 'Anjali Gupta',
-      'type': 'Missed Audio Call',
-      'time': 'Today, 09:58 AM',
-      'avatar': 'https://i.pravatar.cc/150?img=45',
-    },
-    {
-      'name': 'Karan Malhotra',
-      'type': 'Outgoing Audio Call',
-      'time': 'Yesterday, 06:45 PM',
-      'avatar': 'https://i.pravatar.cc/150?img=13',
-    },
-    {
-      'name': 'Neha Yadav',
-      'type': 'Outgoing Video Call',
-      'time': 'Yesterday, 05:30 PM',
-      'avatar': 'https://i.pravatar.cc/150?img=47',
-    },
-    {
-      'name': 'Sandeep Yadav',
-      'type': 'Incoming Audio Call',
-      'time': 'Yesterday, 02:15 PM',
-      'avatar': 'https://i.pravatar.cc/150?img=33',
-    },
-  ];
+  final List<_RecentEntry> _recentRaw = <_RecentEntry>[];
 
   @override
   void onClose() {
@@ -104,10 +45,13 @@ class CallController extends GetxController {
     selectedTab.close();
     contactLoading.close();
     responseError.close();
-    _clearTimers();
+    recentCallLoading.close();
+    recentCallLoadingMore.close();
+    recentCallResponseError.close();
+    recentCallFilter.close();
+    hasMoreRecentCalls.close();
     super.onClose();
   }
-
 
   Future<void> getRegisteredContacts() async {
     try {
@@ -159,7 +103,6 @@ class CallController extends GetxController {
       final String name = (user.name ?? '').toLowerCase();
       final bool mobileMatch = queryDigits.isNotEmpty &&
           _normalizePhone(user.mobileNo ?? '').contains(queryDigits);
-
       return name.contains(value) || mobileMatch;
     }).toList();
   }
@@ -185,155 +128,223 @@ class CallController extends GetxController {
     await getRegisteredContacts();
   }
 
-
-  Future<void> initializeCall() async {
-    if (fromCallKit || (args["callType"] == "Incoming" && offer == null)) {
-      callStatus.value = "Connecting...";
-
-      socket?.emit("acceptCallFromCallKit", {
-        "callerId": callerId,
-        "sessionId": CallSessionState.sessionId ?? args["sessionId"],
-        "callId": callId,
-        "receiverId": Global.storageServices.get(PrefConst.userId),
-      });
-    } else {
-      log("====== Outgoing Call ======");
-
-      peer?.onIceCandidate = (c) => iceCandidates.add(c);
-
-      socket?.on("callAnswered", (data) async {
-        await peer?.setRemoteDescription(
-          RTCSessionDescription(
-            data["sdpAnswer"]["sdp"],
-            data["sdpAnswer"]["type"],
-          ),
-        );
-
-        for (var c in iceCandidates) {
-          if (c.candidate == null) continue;
-          socket?.emit("IceCandidate", {
-            "remoteUserId": remoteUserId,
-            "iceCandidate": {
-              "id": c.sdpMid,
-              "label": c.sdpMLineIndex,
-              "candidate": c.candidate,
-            },
-          });
-        }
-        iceCandidates.clear();
-
-        peer?.onIceCandidate = (c) {
-          if (c.candidate == null) return;
-          socket?.emit("IceCandidate", {
-            "remoteUserId": remoteUserId,
-            "iceCandidate": {
-              "id": c.sdpMid,
-              "label": c.sdpMLineIndex,
-              "candidate": c.candidate,
-            },
-          });
-        };
-      });
-
-      final sdpOffer = await peer?.createOffer();
-      if (sdpOffer != null) {
-        await peer?.setLocalDescription(sdpOffer);
-
-        socket?.emit("makeCall", {
-          "remoteUserId": remoteUserId,
-          "sdpOffer": sdpOffer.toMap(),
-          "is_video": is_video,
-          "callerId": Global.storageServices.get(PrefConst.userId),
-        });
-      }
-    }
-  }
-
-  Future<void> endCall({String? type}) async {
-    _clearTimers();
-
-    final myUserId = Global.storageServices.get(PrefConst.userId).toString();
-    final targetUser = (myUserId == callerId.toString()) ? remoteUserId : callerId;
-
-    var param = {
-      "callId": callId,
-      "remoteUserId": targetUser.toString(),
-    };
-
-    if (callStatus.value != "Connected") {
-      // Logic for non-connected call disconnects (optional)
-    }
-
-    if (type != "missedCall") {
-      log("========CallEndParameterDetail:$param");
-      socket?.emit("endCall", param);
-    }
-
-    resetPeer();
-
-    if (CallSessionState.sessionId != null) {
-      log("========CallerSideSessionId:${CallSessionState.sessionId}");
-      callEnded(
-        CallSessionState.sessionId.toString(),
-        type: "endCallMethodHittedFromController-Type:$type",
+  Future<void> getRecentCall() async {
+    if (recentCallLoading.value || recentCallLoadingMore.value) return;
+    recentCallLoading.value = true;
+    recentCallResponseError.value = "";
+    try {
+      final result = await CallRepo.getRecentCall(
+        page: pagination.value.toString(),
       );
+      if (result.status == true) {
+        final data = result.data;
+        if (data != null) {
+          _addBucket('today', data.today);
+          _addBucket('yesterday', data.yesterday);
+          _addBucket('older', data.older);
+          _rebuildRecentDisplay();
+          final meta = result.pagination;
+          if (meta != null) {
+            hasMoreRecentCalls.value = meta.hasNextPage ??
+                (meta.totalRecords != null &&
+                    recentCallList.length < meta.totalRecords!);
+          }
+        } else {
+          hasMoreRecentCalls.value = false;
+        }
+      } else {
+        recentCallResponseError.value =
+            result.message ?? "Something went wrong";
+      }
+    } catch (e) {
+      recentCallResponseError.value = e.toString();
+    } finally {
+      recentCallLoading.value = false;
+    }
+  }
+
+  Future<void> loadMoreRecentCalls() async {
+    if (recentCallLoading.value ||
+        recentCallLoadingMore.value ||
+        !hasMoreRecentCalls.value) {
+      return;
+    }
+    recentCallLoadingMore.value = true;
+    try {
+      final int nextPage = pagination.value + 1;
+      final result = await CallRepo.getRecentCall(
+        page: nextPage.toString(),
+      );
+      if (result.status == true) {
+        final int before = _recentRaw.length;
+        final data = result.data;
+        if (data != null) {
+          _addBucket('today', data.today);
+          _addBucket('yesterday', data.yesterday);
+          _addBucket('older', data.older);
+        }
+        if (_recentRaw.length == before) {
+          hasMoreRecentCalls.value = false;
+        } else {
+          pagination.value = nextPage;
+          _rebuildRecentDisplay();
+          final meta = result.pagination;
+          if (meta != null) {
+            hasMoreRecentCalls.value = meta.hasNextPage ??
+                (meta.totalRecords != null &&
+                    recentCallList.length < meta.totalRecords!);
+          }
+        }
+      } else {
+        hasMoreRecentCalls.value = false;
+      }
+    } catch (_) {
+    } finally {
+      recentCallLoadingMore.value = false;
+    }
+  }
+
+  Future<void> refreshRecentCalls() async {
+    _recentRaw.clear();
+    recentCallList.clear();
+    pagination.value = 1;
+    hasMoreRecentCalls.value = true;
+    recentCallLoading.value = false;
+    recentCallLoadingMore.value = false;
+    await getRecentCall();
+  }
+
+  void _addBucket(String section, List<CallingDetail>? items) {
+    if (items == null) return;
+    for (final CallingDetail call in items) {
+      _recentRaw.add(_RecentEntry(section, call));
+    }
+  }
+
+  void _rebuildRecentDisplay() {
+    recentCallList.value = _recentRaw.map(_buildRow).toList();
+  }
+
+  Map<String, String> _buildRow(_RecentEntry entry) {
+    final CallingDetail call = entry.call;
+    final RecentContact? contact = call.contact;
+    final String name = [
+      contact?.firstName,
+      contact?.lastName,
+    ].whereType<String>().join(' ').trim();
+    return {
+      'name': name.isEmpty ? 'Unknown' : name,
+      'type': _composeTypeLabel(call),
+      'time': _composeTimeLabel(entry),
+      'avatar': (contact?.avatar ?? '').trim(),
+      'callType': (call.type ?? '').trim(),
+      'callerId': (contact?.id ?? '').trim(),
+    };
+  }
+
+  String _composeTypeLabel(CallingDetail call) {
+    final String type = (call.type ?? '').trim().toLowerCase();
+    final String direction = (call.direction ?? '').trim().toLowerCase();
+    final String status = (call.status ?? '').trim().toLowerCase();
+
+    String kind;
+    if (type.contains('video')) {
+      kind = 'Video';
+    } else if (type.contains('audio')) {
+      kind = 'Audio';
+    } else {
+      kind = type.isEmpty ? 'Call' : _capitalize(type);
     }
 
-    if (args["callType"] == "outGoing") {
-      stopSound();
+    if (status.contains('missed')) return 'Missed $kind Call';
+    if (status.contains('cancel') ||
+        status.contains('reject') ||
+        status.contains('declin')) {
+      return 'Cancelled $kind Call';
+    }
+    if (direction.contains('in')) return 'Incoming $kind Call';
+    if (direction.contains('out')) return 'Outgoing $kind Call';
+    return '$kind Call';
+  }
+
+  String _composeTimeLabel(_RecentEntry entry) {
+    final CallingDetail call = entry.call;
+    final String time = (call.time ?? '').trim();
+    final String dateRaw = (call.date ?? '').trim().toLowerCase();
+    final String dateStr = (call.date ?? '').trim();
+
+    String sectionLabel;
+    if (dateRaw.contains('today')) {
+      sectionLabel = 'Today';
+    } else if (dateRaw.contains('yesterday')) {
+      sectionLabel = 'Yesterday';
+    } else if (entry.section == 'today') {
+      sectionLabel = 'Today';
+    } else if (entry.section == 'yesterday') {
+      sectionLabel = 'Yesterday';
+    } else if (dateStr.isNotEmpty) {
+      sectionLabel = _formatDate(dateStr);
+    } else if ((call.calledAt ?? '').isNotEmpty) {
+      sectionLabel = _formatDate(call.calledAt!);
+    } else {
+      sectionLabel = '';
     }
 
-    await WakelockPlus.disable();
+    if (sectionLabel.isEmpty) return time;
+    return time.isNotEmpty ? '$sectionLabel, $time' : sectionLabel;
+  }
 
-    if (Get.currentRoute != Routes.Home_Screen) {
-      Get.offAllNamed(Routes.Home_Screen);
-      log("========CallerSideSessionId2:${CallSessionState.sessionId}");
+  String _formatDate(String raw) {
+    final DateTime? dt = DateTime.tryParse(raw);
+    if (dt != null) {
+      const List<String> months = [
+        'Jan',
+        'Feb',
+        'Mar',
+        'Apr',
+        'May',
+        'Jun',
+        'Jul',
+        'Aug',
+        'Sep',
+        'Oct',
+        'Nov',
+        'Dec',
+      ];
+      return '${dt.day} ${months[dt.month - 1]}';
     }
+    return raw;
   }
 
-
-  void toggleMic() {
-    isAudioOn = !isAudioOn;
-    localStream?.getAudioTracks().forEach((t) => t.enabled = isAudioOn);
-    update();
+  String _capitalize(String value) {
+    if (value.isEmpty) return value;
+    return value[0].toUpperCase() + value.substring(1);
   }
 
-  void toggleCamera() {
-    if (is_video == false) return;
-    isVideoOn = !isVideoOn;
-    localStream?.getVideoTracks().forEach((t) => t.enabled = isVideoOn);
-    update();
+  void setRecentCallFilter(String value) {
+    if (recentCallFilter.value == value) return;
+    recentCallFilter.value = value;
   }
 
-  void switchCamera() {
-    if (is_video == false) return;
-    isFrontCamera = !isFrontCamera;
-    localStream?.getVideoTracks().forEach((t) => t.switchCamera());
-    update();
+  List<Map<String, String>> get filteredRecentCalls {
+    final String query = _query;
+    final String filter = recentCallFilter.value;
+    return recentCallList.where((call) {
+      final String name = (call['name'] ?? '').toLowerCase();
+      final String type = (call['type'] ?? '').toLowerCase();
+      final bool matchQuery =
+          query.isEmpty || name.contains(query) || type.contains(query);
+      bool matchFilter = filter == 'All';
+      if (filter == 'Missed') {
+        matchFilter = type.contains('missed');
+      } else if (filter == 'Outgoing') {
+        matchFilter = type.contains('outgoing');
+      } else if (filter == 'Incoming') {
+        matchFilter = type.contains('incoming');
+      }
+      return matchQuery && matchFilter;
+    }).toList();
   }
-
-  Future<void> enableSpeaker() async {
-    await Helper.setSpeakerphoneOn(true);
-    isSpeakerOn = true;
-    update();
-  }
-
-  Future<void> toggleSpeaker() async {
-    isSpeakerOn = !isSpeakerOn;
-    await Helper.setSpeakerphoneOn(isSpeakerOn);
-    update();
-  }
-
-  Future<void> startAudioCall() async {
-    await WakelockPlus.enable();
-    // await ProximityScreenLock.setActive(true);
-  }
-
-  Future<void> endAudioCall() async {
-    await WakelockPlus.disable();
-    // await ProximityScreenLock.setActive(false);
-  }
-
 
   List<GroupsResData> get filteredGroups {
     final String query = _query;
@@ -343,16 +354,6 @@ class CallController extends GetxController {
       final String code = (group.groupCode ?? '').toLowerCase();
       return name.contains(query) || code.contains(query);
     }).toList();
-  }
-
-  List<Map<String, String>> get filteredRecentCalls {
-    final String query = _query;
-    if (query.isEmpty) return recentCalls;
-    return recentCalls
-        .where((call) =>
-    (call['name'] ?? '').toLowerCase().contains(query) ||
-        (call['type'] ?? '').toLowerCase().contains(query))
-        .toList();
   }
 
   bool get isGroupsLoading => _groupController.groupDataLoading.value;
@@ -369,31 +370,11 @@ class CallController extends GetxController {
   }
 
   void loadGroups() => _groupController.getGroupData();
+}
 
+class _RecentEntry {
+  _RecentEntry(this.section, this.call);
 
-  String get formattedDuration {
-    final minutes = (callDurationSeconds.value ~/ 60).toString().padLeft(2, '0');
-    final seconds = (callDurationSeconds.value % 60).toString().padLeft(2, '0');
-    return "$minutes:$seconds";
-  }
-
-  void stopSound() {
-    FlutterRingtonePlayer().stop();
-  }
-
-  void resetPeer() {
-    peer?.dispose();
-    peer = null;
-    localStream?.dispose();
-    localStream = null;
-  }
-
-  void _clearTimers() {
-    _durationTimer?.cancel();
-    _durationTimer = null;
-  }
-
-  void callEnded(String sessionId, {required String type}) {
-    log("Session Call Ended: $sessionId with execution type: $type");
-  }
+  final String section;
+  final CallingDetail call;
 }

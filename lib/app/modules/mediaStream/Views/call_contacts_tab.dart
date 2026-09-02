@@ -63,7 +63,7 @@ class _CallContactsTabState extends State<CallContactsTab> {
         itemCount: loading ? 8 : contactData.length,
         itemBuilder: (context, index) {
           if (loading) {
-            return  SkeletonContactRow();
+            return SkeletonContactRow();
           }
           return _ContactRow(
             user: contactData[index],
@@ -140,15 +140,13 @@ class _CallContactsTabState extends State<CallContactsTab> {
             ),
           ),
           SizedBox(width: 8.w),
-          InkWell(
-            child:  CallActionChip(
-              icon: Icons.videocam_rounded,
-            ),
+          CallActionChip(
+            icon: Icons.videocam_rounded,
             onTap: onTapVideo,
           ),
           SizedBox(width: 10.w),
-          InkWell(
-            child:  CallActionChip(icon: Icons.call_rounded),
+          CallActionChip(
+            icon: Icons.call_rounded,
             onTap: onTapAudio,
           ),
         ],
@@ -158,7 +156,7 @@ class _CallContactsTabState extends State<CallContactsTab> {
 }
 
 class SkeletonContactRow extends StatelessWidget {
-   SkeletonContactRow();
+  SkeletonContactRow();
 
   @override
   Widget build(BuildContext context) {
@@ -188,13 +186,11 @@ class SkeletonContactRow extends StatelessWidget {
             ),
           ),
           SizedBox(width: 8.w),
-           CallActionChip(icon: Icons.videocam_rounded),
+          CallActionChip(icon: Icons.videocam_rounded),
           SizedBox(width: 10.w),
-           CallActionChip(icon: Icons.call_rounded),
+          CallActionChip(icon: Icons.call_rounded),
         ],
       ),
     );
   }
 }
-
-
