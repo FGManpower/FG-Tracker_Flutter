@@ -459,11 +459,11 @@ class TrackingController extends GetxController {
     } catch (e) {
       log("❌ Failed to preload image: $e");
     }
+    final newPosition = LatLng(data.latitude!, data.longitude!);
+    final oldPosition = _markerPositions[data.userId.toString()] ?? newPosition;
 
     final icon = await getCustomIcon(profileImageUrl, isOnline);
 
-    final newPosition = LatLng(data.latitude!, data.longitude!);
-    final oldPosition = _markerPositions[data.userId.toString()] ?? newPosition;
 
     Marker markerBuilder(LatLng position) => Marker(
           markerId: MarkerId(data.userId.toString()),
@@ -471,41 +471,7 @@ class TrackingController extends GetxController {
           icon: icon,
           clusterManagerId: const ClusterManagerId(_clusterManagerId),
           onTap: () async {
-            final dest = LatLng(data.latitude!, data.longitude!);
-            double distanceKm = 0.0;
 
-            if (locationService.currentPosition != null) {
-              final origin = LatLng(
-                locationService.currentPosition!.latitude!,
-                locationService.currentPosition!.longitude!,
-              );
-
-              distanceKm = _calculateDistance(
-                origin.latitude,
-                origin.longitude,
-                dest.latitude,
-                dest.longitude,
-              );
-            }
-            print("====== OPEN MEMBER INFO ======");
-            print("Name : ${data.name}");
-            print("LocationSharing : ${data.locationSharing}");
-            print("LastSeen : ${data.lastSeen}");
-            print("==============================");
-            DialogBox().showRouteDetailsBottomSheet(
-                destination: dest,
-                distance: distanceKm,
-                name: data.name,
-                isGroupChat: false,
-                imageUrl: profileImageUrl,
-                lastSeen: Tracking().getTimeAgo(
-                  DateTime.parse(data.lastSeen!),
-                ),
-                userId: int.tryParse(data.userId.toString()),
-                groupId: int.tryParse(data.groupId.toString()),
-                id: int.tryParse(data.id.toString()),
-                status: isOnline,
-                isLocationSharing: data.locationSharing!);
           },
         );
 

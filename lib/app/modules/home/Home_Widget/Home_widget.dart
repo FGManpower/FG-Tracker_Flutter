@@ -188,3 +188,110 @@ class GroupRow extends StatelessWidget {
     );
   }
 }
+
+class MapLoading extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 190.h,
+      decoration: BoxDecoration(
+        color: const Color(0xFFF0F4F8),
+        borderRadius: BorderRadius.circular(20.r),
+      ),
+      child: const Center(
+        child: CircularProgressIndicator(
+          color: Color(0xFF6B4DFF),
+        ),
+      ),
+    );
+  }
+}
+
+class MapControlBtn extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback onTap;
+
+  const MapControlBtn({
+    required this.icon,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(8.r),
+      elevation: 3,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(8.r),
+        child: Padding(
+          padding: EdgeInsets.all(7.w),
+          child: Icon(
+            icon,
+            size: 18.sp,
+            color: Colors.black87,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class MapFilterBadge extends StatelessWidget {
+  final String text;
+  final IconData icon;
+  final VoidCallback onTap;
+
+  const MapFilterBadge({
+    required this.text,
+    required this.icon,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8.r),
+      child: Container(
+        padding: EdgeInsets.symmetric(
+          horizontal: 8.w,
+          vertical: 6.h,
+        ),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(8.r),
+          border: Border.all(
+            color: Colors.grey.withOpacity(0.2),
+          ),
+        ),
+        child: Row(
+          children: [
+            if (icon != Icons.keyboard_arrow_down) ...[
+              Icon(
+                icon,
+                size: 14.sp,
+                color: const Color(0xFF6B4DFF),
+              ),
+              SizedBox(width: 4.w),
+            ],
+            reausabletext(
+              text,
+              fontsize: 11.sp,
+              color: Colors.black87,
+            ),
+            if (icon == Icons.keyboard_arrow_down) ...[
+              SizedBox(width: 4.w),
+              Icon(
+                icon,
+                size: 16.sp,
+                color: Colors.black87,
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
