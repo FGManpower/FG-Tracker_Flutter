@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import 'dart:async';
 import 'dart:developer';
 
@@ -15,298 +16,61 @@ import 'package:wakelock_plus/wakelock_plus.dart';
 import '../../../../gen/assets.gen.dart';
 import '../../../Core/global/launchedFromCall.dart';
 import '../../../Data/Services/Socket/Socket_SignallingService.dart';
+=======
+import 'package:fgtracker/app/Data/Repositories/GroupRepo.dart';
+import 'package:fgtracker/app/Data/Services/contact_services.dart';
+import 'package:fgtracker/app/Model/GroupRes.dart';
+import 'package:fgtracker/app/Model/user_profileList_res.dart';
+import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+>>>>>>> aeab971df3f35b44acff250210b2e56f6aca3a27
 
 class CallController extends GetxController {
-  final socket = SignallingService.instance.socket;
+  static CallController get instance => Get.put(CallController());
 
-  final localRenderer = RTCVideoRenderer();
-  final remoteRenderer = RTCVideoRenderer();
+  final GroupController _groupController = Get.isRegistered<GroupController>()
+      ? Get.find<GroupController>()
+      : Get.put(GroupController());
 
-  RTCPeerConnection? peer;
-  MediaStream? localStream;
+  final TextEditingController searchController = TextEditingController();
+  final RxInt selectedTab = 0.obs;
+  final RxString searchQuery = ''.obs;
 
-  List<RTCIceCandidate> iceCandidates = [];
-  RxString callStatus = "Calling".obs;
-  bool isAudioOn = true;
-  bool isVideoOn = true;
-  bool isFrontCamera = true;
-  dynamic callId;
-  late String callerId;
-  late String remoteUserId;
-  late bool is_video;
-  dynamic offer;
-  bool isSpeakerOn = false;
-  bool fromCallKit = false;
+  final ContactService _contactService = ContactService();
 
-  final args = Get.arguments;
-  Timer? callTimer;
-  int callDurationSeconds = 0;
+  RxBool contactLoading = false.obs;
+  RxBool isSearching = false.obs;
+  var allUserProfileData = <UserListData>[].obs;
+  var filteredUsers = <UserListData>[].obs;
+  var responseError = "".obs;
 
-  Timer? missedCallTimer;
-  var missCallDurationSeconds = 40.obs;
-
-  @override
-  void onInit() {
-    callerId = args["callerId"]?.toString() ?? "";
-    remoteUserId = args["remoteUserId"]?.toString() ?? "";
-    offer = args["offer"];
-    is_video = args["is_video"] == true;
-    fromCallKit = args["fromCallKit"] == true;
-
-    if (args["callId"] != null) {
-      callId = args["callId"];
-    }
-
-    if (callId == null && args["sessionId"] != null) {
-      callId = args["sessionId"];
-    }
-
-    localRenderer.initialize();
-    remoteRenderer.initialize();
-
-    _setupPeer();
-    _listenForCallEvents();
-
-    if (args["callType"] == "outGoing") {
-      playSound();
-    }
-
-    WakelockPlus.enable();
-
+  Future<void> getRegisteredContacts() async {
     try {
-      TrackingController.instance.initializeLocation();
-    } catch (e) {
-      log("==============CallLocationException======${e.toString()}");
-    }
+      contactLoading.value = true;
+      responseError.value = "";
 
-    super.onInit();
-  }
+      final contactNumbers = await _contactService.getMobileNumbers();
 
-  void _listenForCallEvents() {
-    socket?.off("callRejected");
-    socket?.off("callEnded");
-    socket?.off("missedCall");
-    socket?.off("callStatus");
-    socket?.off("callCreated");
-    socket?.off("newCall");
-    socket?.off("sdpOfferFromCaller");
-
-
-    socket?.on("sdpOfferFromCaller", (data) async {
-      log("====== Received SDP Offer from Caller (CallKit flow) ======");
-      log("Data: $data");
-
-      if (peer == null) return;
-
-      try {
-        final sdp = data["sdpOffer"] ?? data["offer"];
-        if (sdp == null) return;
-
-        offer = sdp;
-        callId = data["callId"] ?? callId;
-
-        await peer!.setRemoteDescription(
-          RTCSessionDescription(sdp["sdp"], sdp["type"]),
-        );
-
-        final answer = await peer!.createAnswer();
-        await peer!.setLocalDescription(answer);
-
-        peer!.onIceCandidate = (c) {
-          if (c.candidate == null) return;
-          socket!.emit("IceCandidate", {
-            "remoteUserId": callerId,
-            "iceCandidate": {
-              "id": c.sdpMid,
-              "label": c.sdpMLineIndex,
-              "candidate": c.candidate,
-            },
-          });
-        };
-
-        socket!.emit("answerCall", {
-          "callId": callId,
-          "callerId": callerId,
-          "sdpAnswer": answer.toMap(),
-        });
-
-        callStatus.value = "Connecting";
-      } catch (e) {
-        log("Error handling sdpOfferFromCaller: $e");
-      }
-    });
-
-    socket!.on("newCall", (data) {
-      socket?.emit("CallingStatus", {
-        "callId": data['callId'].toString(),
-        "remoteUserId": int.tryParse(data['callerId'].toString()) ?? 0,
-        "callingStatus": "Ringing",
-      });
-    });
-
-    socket!.on("callRejected", (data) async {
-      _clearTimers();
-
-      if (CallSessionState.sessionId != null) {
-        callEnded(CallSessionState.sessionId.toString(),
-            type: "CallRejectedFromController");
-      }
-
-      resetPeer();
-      Get.back();
-    });
-
-    socket!.on("callEnded", (data) async {
-      _clearTimers();
-
-      resetPeer();
-      if (CallSessionState.sessionId != null) {
-        callEnded(data['sessionId'].toString(),
-            type: "callEndedFromController");
-      }
-      if (args["callType"] == "outGoing") {
-        stopSound();
-      }
-      if (Get.currentRoute != Routes.Home_Screen) {
-        Get.offAllNamed(Routes.Home_Screen);
-      }
-    });
-
-    socket!.on("missedCall", (data) async {
-      log("==========MissedCallCalled=======$data");
-      _clearTimers();
-      if (CallSessionState.sessionId != null) {
-        callEnded(CallSessionState.sessionId.toString(),
-            type: "missedCallFromController");
-      }
-
-      resetPeer();
-      Get.back();
-    });
-
-    socket?.on("callStatus", (data) {
-      log("CALL STATUS: $data");
-
-      if (data['status'] != null) {
-        callStatus.value = data['status'];
-      }
-    });
-
-    socket?.on("callCreated", (data) {
-      callId = data['callId'];
-      startMissedCallTimer();
-    });
-  }
-
-  void resetPeer() {
-    try {
-      peer?.close();
-      localStream?.dispose();
-    } catch (_) {}
-    peer = null;
-    localStream = null;
-  }
-
-  void safeAddCandidate(dynamic data) {
-    if (peer == null) return;
-    final c = RTCIceCandidate(
-      data["iceCandidate"]["candidate"],
-      data["iceCandidate"]["id"],
-      data["iceCandidate"]["label"],
-    );
-    peer!.addCandidate(c);
-  }
-
-  Future<void> _setupPeer() async {
-    resetPeer();
-
-    socket!.off("IceCandidate");
-    socket!.off("callAnswered");
-
-    peer = await createPeerConnection({
-      'iceServers': [
-        {
-          'urls': ['stun:stun.l.google.com:19302'],
-        },
-        {
-          'urls': [
-            'turn:89.116.23.2:3478?transport=udp',
-            'turn:89.116.23.2:3478?transport=tcp',
-            'turns:89.116.23.2:443?transport=tcp',
-          ],
-          'username': 'fgtracker',
-          'credential': 'FGM_Tracker@2025',
-        }
-      ],
-      'iceTransportPolicy': 'all',
-    });
-
-    peer!.onTrack = (event) {
-      remoteRenderer.srcObject = event.streams[0];
-      update();
-
-      missedCallTimer?.cancel();
-      missedCallTimer = null;
-
-      startCallTimer();
-      callStatus.value = "Connected";
-    };
-
-    localStream = await navigator.mediaDevices.getUserMedia({
-      'audio': true,
-      'video': is_video == true
-          ? {'facingMode': isFrontCamera ? 'user' : 'environment'}
-          : false,
-    });
-
-    await enableSpeaker();
-
-    for (var t in localStream!.getTracks()) {
-      peer!.addTrack(t, localStream!);
-    }
-
-    localRenderer.srcObject = localStream;
-    update();
-
-    socket!.on("IceCandidate", (data) {
-      if (peer == null) {
-        Future.delayed(const Duration(milliseconds: 300), () {
-          if (peer != null) safeAddCandidate(data);
-        });
+      if (contactNumbers.isEmpty) {
+        allUserProfileData.clear();
+        filteredUsers.clear();
         return;
       }
-      safeAddCandidate(data);
-    });
 
-    // ========== INCOMING CALL (has SDP offer) ==========
-    if (offer != null) {
-      log("====== Normal Incoming Call (has offer) ======");
+      final result = await GroupRepo.getAllUserData();
 
-      await peer!.setRemoteDescription(
-        RTCSessionDescription(offer["sdp"], offer["type"]),
-      );
-      final answer = await peer!.createAnswer();
-      await peer!.setLocalDescription(answer);
+      if (result.status == true) {
+        final users = result.userData ?? [];
 
-      peer!.onIceCandidate = (c) {
-        if (c.candidate == null) return;
-        socket!.emit("IceCandidate", {
-          "remoteUserId": callerId,
-          "iceCandidate": {
-            "id": c.sdpMid,
-            "label": c.sdpMLineIndex,
-            "candidate": c.candidate,
-          },
-        });
-      };
+        final contactNumberSet = contactNumbers.toSet();
 
-      socket!.emit("answerCall", {
-        "callId": callId,
-        "callerId": callerId,
-        "sdpAnswer": answer.toMap(),
-      });
-    }
+        final matchedUsers = users.where((user) {
+          final String mobileNo = _normalizePhone(user.mobileNo ?? '');
+          return contactNumberSet.contains(mobileNo);
+        }).toList();
 
+<<<<<<< HEAD
     else if (fromCallKit || (args["callType"] == "Incoming" && offer == null)) {
 
 
@@ -461,77 +225,147 @@ class CallController extends GetxController {
     if (Utility.isNotNullEmptyOrFalse("$minutes:$seconds")) {
       if (args["callType"] == "outGoing") {
         stopSound();
+=======
+        allUserProfileData.value = matchedUsers;
+        filteredUsers.value = matchedUsers;
+      } else {
+        responseError.value = result.message ?? "Something went wrong";
+>>>>>>> aeab971df3f35b44acff250210b2e56f6aca3a27
       }
+    } catch (e) {
+      responseError.value = e.toString();
+    } finally {
+      contactLoading.value = false;
     }
-    return "$minutes:$seconds";
   }
 
-  void startCallTimer() {
-    if (callTimer != null) return;
+  void filterUsers(String value) {
+    value = value.trim().toLowerCase();
 
-    callTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      callDurationSeconds++;
-      update();
-    });
+    if (value.isEmpty) {
+      filteredUsers.value = allUserProfileData;
+      return;
+    }
+
+    final String queryDigits = _normalizePhone(value);
+
+    filteredUsers.value = allUserProfileData.where((user) {
+      final String name = (user.name ?? '').toLowerCase();
+
+      final bool mobileMatch = queryDigits.isNotEmpty &&
+          _normalizePhone(user.mobileNo ?? '').contains(queryDigits);
+
+      return name.contains(value) || mobileMatch;
+    }).toList();
   }
 
-  void startMissedCallTimer() {
-    missedCallTimer?.cancel();
-    missCallDurationSeconds.value = 40;
-
-    missedCallTimer = Timer.periodic(
-      const Duration(seconds: 1),
-      (timer) {
-        if (isClosed) {
-          timer.cancel();
-          return;
-        }
-
-        if (missCallDurationSeconds.value > 0) {
-          missCallDurationSeconds.value--;
-        }
-
-        if (missCallDurationSeconds.value == 0) {
-          timer.cancel();
-          missedCall();
-
-        }
-      },
-    );
+  String _normalizePhone(String phone) {
+    String digits = phone.replaceAll(RegExp(r'[^0-9]'), '');
+    if (digits.startsWith('91') && digits.length > 10) {
+      digits = digits.substring(2);
+    }
+    if (digits.length > 10) {
+      digits = digits.substring(digits.length - 10);
+    }
+    return digits;
   }
 
-  void missedCall(){
-    var param = {
-      "callId": callId,
-      "remoteUserId": remoteUserId,
-    };
-    print("MISS CALL EMIT => $param");
-    socket?.emit("missCall", param);
-    log("=======MissedCallParam===$param");
-
-    endCall(type: "missedCall");
-  }
-  void _clearTimers() {
-    callTimer?.cancel();
-    missedCallTimer?.cancel();
-    callTimer = null;
-    missedCallTimer = null;
-    missCallDurationSeconds.value = 0;
+  void clearSearch() {
+    searchController.clear();
+    searchQuery.value = '';
+    filteredUsers.value = allUserProfileData;
   }
 
-  void playSound() {
-    FlutterRingtonePlayer().play(
-      asAlarm: false,
-      fromAsset: Assets.music.ringing,
-      looping: true,
-      volume: 1.0,
-    );
+  Future<void> refreshContacts() async {
+    await getRegisteredContacts();
   }
 
-  void stopSound() {
-    FlutterRingtonePlayer().stop();
+  static const List<Map<String, String>> recentCalls = [
+    {
+      'name': 'Vikram Singh',
+      'type': 'Outgoing Video Call',
+      'time': 'Today, 10:24 AM',
+      'avatar': 'https://i.pravatar.cc/150?img=12',
+    },
+    {
+      'name': 'Anjali Gupta',
+      'type': 'Missed Audio Call',
+      'time': 'Today, 09:58 AM',
+      'avatar': 'https://i.pravatar.cc/150?img=45',
+    },
+    {
+      'name': 'Karan Malhotra',
+      'type': 'Outgoing Audio Call',
+      'time': 'Yesterday, 06:45 PM',
+      'avatar': 'https://i.pravatar.cc/150?img=13',
+    },
+    {
+      'name': 'Neha Yadav',
+      'type': 'Outgoing Video Call',
+      'time': 'Yesterday, 05:30 PM',
+      'avatar': 'https://i.pravatar.cc/150?img=47',
+    },
+    {
+      'name': 'Sandeep Yadav',
+      'type': 'Incoming Audio Call',
+      'time': 'Yesterday, 02:15 PM',
+      'avatar': 'https://i.pravatar.cc/150?img=33',
+    },
+    {
+      'name': 'Manoj Kumar',
+      'type': 'Missed Video Call',
+      'time': 'Yesterday, 11:20 AM',
+      'avatar': 'https://i.pravatar.cc/150?img=15',
+    },
+    {
+      'name': 'Pooja Verma',
+      'type': 'Outgoing Audio Call',
+      'time': '15 May, 08:30 PM',
+      'avatar': 'https://i.pravatar.cc/150?img=48',
+    },
+    {
+      'name': 'Amit Singh',
+      'type': 'Incoming Video Call',
+      'time': '15 May, 07:10 PM',
+      'avatar': 'https://i.pravatar.cc/150?img=68',
+    },
+    {
+      'name': 'Rakesh Patel',
+      'type': 'Outgoing Audio Call',
+      'time': '15 May, 03:45 PM',
+      'avatar': 'https://i.pravatar.cc/150?img=14',
+    },
+    {
+      'name': 'Deepak Sharma',
+      'type': 'Outgoing Video Call',
+      'time': '14 May, 09:15 PM',
+      'avatar': 'https://i.pravatar.cc/150?img=59',
+    },
+    {
+      'name': 'Sahil Mehta',
+      'type': 'Missed Audio Call',
+      'time': '14 May, 07:40 PM',
+      'avatar': 'https://i.pravatar.cc/150?img=32',
+    },
+    {
+      'name': 'Sheetal Gupta',
+      'type': 'Outgoing Audio Call',
+      'time': '14 May, 05:30 PM',
+      'avatar': 'https://i.pravatar.cc/150?img=11',
+    },
+  ];
+
+  List<Map<String, String>> get filteredRecentCalls {
+    final String query = _query;
+    if (query.isEmpty) return recentCalls;
+    return recentCalls
+        .where((call) =>
+    (call['name'] ?? '').toLowerCase().contains(query) ||
+        (call['type'] ?? '').toLowerCase().contains(query))
+        .toList();
   }
 
+<<<<<<< HEAD
   Future<void> startAudioCall() async {
     await WakelockPlus.enable();
     // await ProximityScreenLock.setActive(true);
@@ -540,18 +374,40 @@ class CallController extends GetxController {
   Future<void> endAudioCall() async {
     await WakelockPlus.disable();
     // await ProximityScreenLock.setActive(false);
+=======
+  List<GroupsResData> get filteredGroups {
+    final String query = _query;
+    if (query.isEmpty) return _groupController.groupData;
+    return _groupController.groupData.where((group) {
+      final String name = (group.groupName ?? '').toLowerCase();
+      final String code = (group.groupCode ?? '').toLowerCase();
+      return name.contains(query) || code.contains(query);
+    }).toList();
   }
+
+  bool get isGroupsLoading => _groupController.groupDataLoading.value;
+  String get groupsError => _groupController.responseError.value;
+  List<GroupsResData> get groups => _groupController.groupData;
+
+  String get _query => searchQuery.value.trim().toLowerCase();
+
+  void switchTab(int index) => selectedTab.value = index;
+
+  void onSearchChanged(String value) {
+    searchQuery.value = value;
+    filterUsers(value);
+>>>>>>> aeab971df3f35b44acff250210b2e56f6aca3a27
+  }
+
+  void loadGroups() => _groupController.getGroupData();
 
   @override
   void onClose() {
-    _clearTimers();
-    resetPeer();
-    localRenderer.dispose();
-    remoteRenderer.dispose();
-    if (args["callType"] == "outGoing") {
-      stopSound();
-    }
-    WakelockPlus.disable();
+    searchController.dispose();
+    searchQuery.close();
+    selectedTab.close();
+    contactLoading.close();
+    responseError.close();
     super.onClose();
   }
 }

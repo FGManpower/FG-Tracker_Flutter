@@ -1,6 +1,6 @@
 
 
-import 'package:fgtracker/app/modules/mediaStream/controller/call_controller.dart';
+import 'package:fgtracker/app/modules/mediaStream/controller/calling_controller.dart';
 import 'package:get/get.dart';
 
 import '../controller/incoming_call_controller.dart';
@@ -10,8 +10,8 @@ import '../controller/incoming_call_controller.dart';
 class StreamBinding extends Bindings {
   @override
   void dependencies() {
-    Get.lazyPut<CallController>(
-      () => CallController(),
+    Get.lazyPut<CallingController>(
+      () => CallingController(),
     );
   }
 }

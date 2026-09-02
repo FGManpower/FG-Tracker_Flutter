@@ -20,8 +20,9 @@ class RegistrationScreen extends GetView<RegistrationController> {
     bool isUpdate = controller.arguments?['type'] == "Update";
 
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       backgroundColor:
-          isUpdate ? const Color(0xFFEEE9FE) : const Color(0xFFEDE9FE),
+      isUpdate ? const Color(0xFFEEE9FE) : const Color(0xFFEDE9FE),
       body: Form(
         key: controller.registerKey,
         child: isUpdate
@@ -160,7 +161,7 @@ class RegistrationScreen extends GetView<RegistrationController> {
                         ],
                       ),
                       child: Obx(
-                          () => _getAvatarImage(70.r, const Color(0xFF6B4DFF))),
+                              () => _getAvatarImage(70.r, const Color(0xFF6B4DFF))),
                     ),
                   ),
                 ],
@@ -197,7 +198,7 @@ class RegistrationScreen extends GetView<RegistrationController> {
                 ),
               ),
               child: Transform.translate(
-                offset: Offset(0, 10.h),
+                offset: Offset(0, 02.h),
                 child: Row(
                   children: [
                     GestureDetector(
@@ -230,7 +231,8 @@ class RegistrationScreen extends GetView<RegistrationController> {
                 ),
               ),
             ),
-          ),          Expanded(
+          ),
+          Expanded(
             child: Transform.translate(
               offset: Offset(0, -116.h),
               child: Container(
@@ -257,50 +259,34 @@ class RegistrationScreen extends GetView<RegistrationController> {
                         child: Stack(
                           alignment: Alignment.bottomRight,
                           children: [
-                            Container(
-                              padding: EdgeInsets.all(12.w),
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: const Color(0xFFE2E2E2),
-                                  width: 1.5.w,
-                                ),
-                              ),
-                              child: Container(
-                                padding: EdgeInsets.all(3.w),
-                                decoration: const BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: Colors.white,
-                                ),
+                            CircleAvatar(
+                              radius: 66.r,
+                              backgroundColor: const Color(0xFFE2E2E2),
+                              child: CircleAvatar(
+                                radius: 64.r,
+                                backgroundColor: Colors.white,
                                 child: Obx(
-                                  () => _getAvatarImage(
-                                      55.r, const Color(0xFFEDE9FE)),
+                                      () => _getAvatarImage(
+                                    55.r,
+                                    const Color(0xFFEDE9FE),
+                                  ),
                                 ),
                               ),
                             ),
                             Positioned(
                               right: 4.w,
                               bottom: 4.w,
-                              child: Container(
-                                padding: EdgeInsets.all(8.w),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFF6B4DFF),
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                      color: Colors.white, width: 3.w),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: const Color(0xFF6B4DFF)
-                                          .withOpacity(0.3),
-                                      blurRadius: 6,
-                                      offset: const Offset(0, 2),
-                                    ),
-                                  ],
-                                ),
-                                child: const Icon(
-                                  Icons.camera_alt,
-                                  color: Colors.white,
-                                  size: 18,
+                              child: CircleAvatar(
+                                radius: 19.r,
+                                backgroundColor: Colors.white,
+                                child: CircleAvatar(
+                                  radius: 15.r,
+                                  backgroundColor: const Color(0xFF6B4DFF),
+                                  child: Icon(
+                                    Icons.camera_alt,
+                                    color: Colors.white,
+                                    size: 18.sp,
+                                  ),
                                 ),
                               ),
                             ),
@@ -308,18 +294,17 @@ class RegistrationScreen extends GetView<RegistrationController> {
                         ),
                       ),
                       SizedBox(height: 12.h),
-                      reausabletext(
-                        "Tap on the photo to change",
-                        color: Colors.grey,
-                        fontsize: 14.sp,
-                      ),
+                      reausabletext("Tap on the photo to change",
+                          color: Colors.grey,
+                          fontsize: 13.sp,
+                          fontweight: FontWeight(700)),
                       SizedBox(height: 28.h),
                       Align(
                         alignment: Alignment.centerLeft,
                         child: reausabletext(
                           "Personal Information",
                           color: const Color(0xFF6B4DFF),
-                          fontsize: 18.sp,
+                          fontsize: 15.sp,
                           fontfamily: FontFamily.interBold,
                         ),
                       ),
@@ -337,24 +322,13 @@ class RegistrationScreen extends GetView<RegistrationController> {
                         enabled: false,
                       ),
                       SizedBox(height: 40.h),
-                      GestureDetector(
-                        onTap: () => controller.updateProfile(controller),
-                        child: Container(
-                          width: double.infinity,
-                          padding: EdgeInsets.symmetric(vertical: 18.h),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF6B4DFF),
-                            borderRadius: BorderRadius.circular(20.r),
-                          ),
-                          child: Center(
-                            child: reausabletext(
-                              "Save Changes",
-                              color: Colors.white,
-                              fontsize: 16.sp,
-                              fontfamily: FontFamily.interBold,
-                            ),
-                          ),
-                        ),
+                      reausablebutton(
+                        ontap: () => controller.updateProfile(controller),
+                        title: "Save Changes",
+                        height: 56,
+                        borderradiues: 20,
+                        fontSize: 16,
+                        backgroundColor: const Color(0xFF6B4DFF),
                       ),
                     ],
                   ),
@@ -403,10 +377,10 @@ class RegistrationScreen extends GetView<RegistrationController> {
 
   Widget _buildRegTextField(
       {required TextEditingController controller,
-      required IconData icon,
-      required String hint,
-      bool enabled = true,
-      String? Function(String?)? validator}) {
+        required IconData icon,
+        required String hint,
+        bool enabled = true,
+        String? Function(String?)? validator}) {
     return TextFormField(
       controller: controller,
       enabled: enabled,
@@ -421,7 +395,7 @@ class RegistrationScreen extends GetView<RegistrationController> {
         prefixIcon: Icon(icon, color: const Color(0xFF6B4DFF)),
         filled: true,
         fillColor: Colors.transparent,
-        contentPadding: EdgeInsets.symmetric(vertical: 18.h),
+        contentPadding: EdgeInsets.symmetric(vertical: 10.h),
         border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(30.r),
             borderSide: const BorderSide(color: Color(0xFFD6CFFF))),
@@ -470,23 +444,47 @@ class RegistrationScreen extends GetView<RegistrationController> {
     });
   }
 
-  Widget _buildEditProfileField(
-      {required String label,
-      required TextEditingController controller,
-      required IconData icon,
-      bool enabled = true}) {
+  Widget _buildEditProfileField({
+    required String label,
+    required TextEditingController controller,
+    required IconData icon,
+    bool enabled = true,
+  }) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 5.h),
+      padding: EdgeInsets.symmetric(
+        horizontal: 15.w,
+        vertical: 2.h,
+      ),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(color: Colors.grey.shade200, width: 1.5),
+        border: Border.all(
+          color: Colors.grey.shade200,
+          width: 1.5,
+        ),
       ),
       child: Row(
         children: [
           Container(
-            padding: EdgeInsets.all(10.w),
-            child: Icon(icon, color: const Color(0xFF6B4DFF), size: 26.sp),
+            width: 40.w,
+            height: 40.w,
+            decoration: BoxDecoration(
+              color: const Color(0xFFF8F6FF),
+              borderRadius: BorderRadius.circular(12.r),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF6B4DFF).withOpacity(0.08),
+                  blurRadius: 8,
+                  spreadRadius: 1,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Icon(
+              icon,
+              color: const Color(0xFF6B4DFF),
+              size: 21.sp,
+            ),
           ),
           SizedBox(width: 10.w),
           Expanded(
@@ -495,17 +493,26 @@ class RegistrationScreen extends GetView<RegistrationController> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 SizedBox(height: 5.h),
-                reausabletext(label, fontsize: 13.sp, color: Colors.grey),
+                reausabletext(
+                  label,
+                  fontsize: 13.sp,
+                  fontweight: FontWeight(600),
+                  color: Colors.grey,
+                ),
                 TextFormField(
                   controller: controller,
                   enabled: enabled,
                   style: TextStyle(
-                      fontSize: 15.sp,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87),
+                    fontSize: 15.sp,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
                   decoration: const InputDecoration(
                     isDense: true,
-                    contentPadding: EdgeInsets.only(bottom: 10, top: 5),
+                    contentPadding: EdgeInsets.only(
+                      bottom: 10,
+                      top: 5,
+                    ),
                     border: InputBorder.none,
                     enabledBorder: InputBorder.none,
                     focusedBorder: InputBorder.none,
