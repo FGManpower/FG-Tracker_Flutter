@@ -67,7 +67,6 @@ class HomeController extends GetxController {
         BannerResponeMessage.value = "";
       } else {
         isLoadingBanners(false);
-        // BannerResponeMessage.value = result.message.toString();
       }
     } catch (e) {
       isLoadingBanners(false);

@@ -14,7 +14,7 @@ class SocketService extends GetxService {
 
   IO.Socket get socket {
     if (_socket == null) {
-      log("⚠️ Socket accessed before initialization");
+      log(" Socket accessed before initialization");
       throw Exception("Socket not initialized");
     }
     return _socket!;
@@ -29,14 +29,14 @@ class SocketService extends GetxService {
     });
 
     _socket?.onConnect((_) {
-      log("✅Location Socket connected");
+      log("Location Socket connected");
       for (String groupId in connectedGroupIds) {
         _rejoinGroup(groupId);
       }
     });
 
-    _socket?.onDisconnect((_) => log("❌ Socket disconnected"));
-    _socket?.onError((err) => log("❌ Socket error: $err"));
+    _socket?.onDisconnect((_) => log(" Socket disconnected"));
+    _socket?.onError((err) => log("Socket error: $err"));
   }
 
 
@@ -47,7 +47,7 @@ class SocketService extends GetxService {
         "userId": userId,
       });
       connectedGroupIds.add(groupId);
-      log("📤 Joined group $groupId");
+      log(" Joined group $groupId");
     }
   }
 
@@ -64,7 +64,7 @@ class SocketService extends GetxService {
     if (!isSocketConnected) return;
 
     if (userId.isEmpty || lat == null || lng == null) {
-      log("❌ Invalid data: userId=$userId, lat=$lat, lng=$lng");
+      log("Invalid data: userId=$userId, lat=$lat, lng=$lng");
       return;
     }
 
@@ -136,7 +136,7 @@ class SocketService extends GetxService {
       "groupId": groupId,
       "userId": userId,
     });
-    log("🔁 Rejoined group after reconnect: $groupId");
+    log(" Rejoined group after reconnect: $groupId");
   }
 
   void deleteGroup({required String groupId}) {
@@ -147,7 +147,7 @@ class SocketService extends GetxService {
       connectedGroupIds.remove(groupId);
       log("🗑️ Deleted group: $groupId");
     } else {
-      log("⚠️ Cannot delete group. Socket not connected.");
+      log("Cannot delete group. Socket not connected.");
     }
   }
 

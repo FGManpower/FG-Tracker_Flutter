@@ -90,16 +90,12 @@ class ChatBottomSheet {
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      builder: (_) {
+      builder: (sheetContext) {
         return Container(
-          margin: EdgeInsets.all(0.w),
-          padding: EdgeInsets.symmetric(
-            horizontal: 0.w,
-            vertical: 18.h,
-          ),
+          padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 24.h),
           decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(28.r),
+            color: const Color(0xFFF5F3FB),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(28.r)),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -113,57 +109,100 @@ class ChatBottomSheet {
                 ),
               ),
               SizedBox(height: 18.h),
-              Text(
-                "Attach",
-                style: TextStyle(
-                  fontSize: 17.sp,
-                  fontWeight: FontWeight.w700,
-                ),
+
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "Attach / Upload",
+                          style: TextStyle(
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        SizedBox(height: 4.h),
+                        Text(
+                          "Share files and media with your team",
+                          style: TextStyle(
+                            fontSize: 13.sp,
+                            color: Colors.grey.shade600,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () => Navigator.pop(sheetContext),
+                    child: Container(
+                      height: 32.w,
+                      width: 32.w,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF3F0FF),
+                        borderRadius: BorderRadius.circular(10.r),
+                      ),
+                      child: Icon(
+                        Icons.close_rounded,
+                        size: 18.sp,
+                        color: const Color(0xFF5045B9),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              SizedBox(height: 24.h),
-              Wrap(
-                alignment: WrapAlignment.start,
-                spacing: 10.w,
-                runSpacing: 20.h,
+              SizedBox(height: 22.h),
+
+              GridView.count(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                crossAxisCount: 4,
+                mainAxisSpacing: 12.h,
+                crossAxisSpacing: 10.w,
+                childAspectRatio: 0.85,
                 children: [
                   _attachmentItem(
-                    icon: Icons.photo,
-                    color: const Color(0xff4F8EF7),
+                    icon: Icons.image_rounded,
+                    iconColor: const Color(0xFF7B61FF),
+                    bgColor: const Color(0xFFF0EBFF),
                     title: "Gallery",
-                    subtitle: "Photos & Videos",
                     onTap: onGallery,
                   ),
                   _attachmentItem(
-                    icon: Icons.description_rounded,
-                    color: const Color(0xff7B61FF),
-                    title: "Document",
-                    subtitle: "File",
-                    onTap: onDocument,
-                  ),
-                  _attachmentItem(
-                    icon: Icons.camera_alt_outlined,
-                    color: const Color(0xff4F8EF7),
+                    icon: Icons.camera_alt_rounded,
+                    iconColor: const Color(0xFF22C55E),
+                    bgColor: const Color(0xFFE8F9EF),
                     title: "Camera",
-                    subtitle: "Camera",
                     onTap: onCamera,
                   ),
                   _attachmentItem(
-                    icon: Icons.location_on,
-                    color: const Color(0xff2E7D32),
+                    icon: Icons.description_rounded,
+                    iconColor: const Color(0xFF3B82F6),
+                    bgColor: const Color(0xFFE8F1FF),
+                    title: "Document",
+                    onTap: onDocument,
+                  ),
+                  _attachmentItem(
+                    icon: Icons.location_on_rounded,
+                    iconColor: const Color(0xFF3B82F6),
+                    bgColor: const Color(0xFFE8F1FF),
                     title: "Location",
-                    subtitle: "Map",
                     onTap: onLocation,
                   ),
                   _attachmentItem(
-                    icon: Icons.person,
-                    color: const Color(0xff00A884),
+                    icon: Icons.person_rounded,
+                    iconColor: const Color(0xFF7B61FF),
+                    bgColor: const Color(0xFFF0EBFF),
                     title: "Contact",
-                    subtitle: "Phone",
                     onTap: onContact,
                   ),
                 ],
               ),
-              SizedBox(height: 20.h),
+              SizedBox(height: 8.h),
             ],
           ),
         );
@@ -173,53 +212,67 @@ class ChatBottomSheet {
 
   static Widget _attachmentItem({
     required IconData icon,
-    required Color color,
+    required Color iconColor,
+    required Color bgColor,
     required String title,
-    required String subtitle,
     required VoidCallback onTap,
   }) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(16.r),
-      onTap: onTap,
-      child: SizedBox(
-        width: 85.w,
-        child: Column(
-          children: [
-            Container(
-              width: 56.w,
-              height: 56.w,
-              decoration: BoxDecoration(
-                color: color.withOpacity(.12),
-                shape: BoxShape.circle,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16.r),
+        onTap: onTap,
+        child: Container(
+          width: double.infinity,
+          padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 4.w),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16.r),
+            border: Border.all(color: Colors.grey.shade100),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.04),
+                blurRadius: 6,
+                offset: const Offset(0, 2),
               ),
-              child: Icon(
-                icon,
-                color: color,
-                size: 28.sp,
+            ],
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 36.w,
+                height: 36.w,
+                decoration: BoxDecoration(
+                  color: bgColor,
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                child: Icon(
+                  icon,
+                  color: iconColor,
+                  size: 20.sp,
+                ),
               ),
-            ),
-            SizedBox(height: 8.h),
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: 12.sp,
-                fontWeight: FontWeight.w600,
+              SizedBox(height: 6.h),
+              Text(
+                title,
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 11.sp,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black87,
+                  height: 1.1,
+                ),
               ),
-            ),
-            SizedBox(height: 2.h),
-            Text(
-              subtitle,
-              style: TextStyle(
-                fontSize: 10.sp,
-                color: Colors.grey,
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
-
   static Widget rowFile(
       {required String title,
       required IconData icon,

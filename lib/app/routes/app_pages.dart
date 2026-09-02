@@ -22,6 +22,7 @@ import 'package:fgtracker/app/modules/mediaStream/Views/calling_screen.dart';
 import 'package:get/get.dart';
 import '../modules/Group/Views/QRScanScreen.dart';
 
+import '../modules/Group/Views/groups_list_screen.dart';
 import '../modules/Messages/Bindings/ForwardMessageBinding.dart';
 import '../modules/Messages/Views/Chat_Screen.dart';
 import '../modules/Messages/Views/ForwardMessageScreen.dart';
@@ -32,6 +33,7 @@ import '../modules/Walkie-talkie/WalkieTalkieScreen.dart';
 
 import '../modules/home/Bindings/SosBinding.dart';
 import '../modules/home/Views/sos_screen.dart';
+
 
 import '../modules/mediaStream/Views/incoming_call_screen.dart';
 part 'app_routes.dart';
@@ -194,10 +196,10 @@ class AppPages {
       binding: SosBinding(),
       transitionDuration: const Duration(milliseconds: 500),
     ),
-    // GetPage(
-    //   name: Routes.GroupsList,
-    //   page: () => GroupsListScreen(),
-    // ),
+    GetPage(
+      name: Routes.GroupsList,
+      page: () => GroupsListScreen(),
+    ),
 
     // GetPage(
     //   name: _Paths.CreateGroup,
