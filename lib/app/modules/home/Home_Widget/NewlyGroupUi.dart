@@ -151,9 +151,10 @@ class NewlyGroupUi extends StatelessWidget {
                                                         value.toString(),
                                                   );
                                                 },
-                                                activeColor:
+                                                activeTrackColor:
                                                     const Color(0xff5045B9),
-                                                trackColor: Colors.black26,
+                                                inactiveTrackColor:
+                                                    Colors.black26,
                                               ),
                                             )
                                           : Icon(
@@ -256,14 +257,14 @@ class NewlyGroupUi extends StatelessWidget {
                                                   .get(PrefConst.userId)
                                                   .toString(),
                                               onSuccess: (success) {
-                                                if(success){
-                                                  groupController.getGroupData();
+                                                if (success) {
+                                                  groupController
+                                                      .getGroupData();
                                                 }
                                               },
                                             );
                                           },
                                         );
-
                                       },
                                       child: Container(
                                         width: double.maxFinite,

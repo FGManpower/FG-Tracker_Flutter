@@ -9,14 +9,12 @@ import 'package:wakelock_plus/wakelock_plus.dart';
 
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
-import 'package:fgtracker/app/Core/values/utility.dart';
 import 'package:fgtracker/app/Data/Repositories/GroupRepo.dart';
 import 'package:fgtracker/app/Data/Services/contact_services.dart';
 import 'package:fgtracker/app/Model/GroupRes.dart';
 import 'package:fgtracker/app/Model/user_profileList_res.dart';
 import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
-import '../../../../gen/assets.gen.dart';
 import '../../../Core/global/launchedFromCall.dart';
 
 class CallController extends GetxController {
@@ -108,7 +106,6 @@ class CallController extends GetxController {
     super.onClose();
   }
 
-
   Future<void> getRegisteredContacts() async {
     try {
       contactLoading.value = true;
@@ -185,7 +182,6 @@ class CallController extends GetxController {
     await getRegisteredContacts();
   }
 
-
   Future<void> initializeCall() async {
     if (fromCallKit || (args["callType"] == "Incoming" && offer == null)) {
       callStatus.value = "Connecting...";
@@ -253,7 +249,8 @@ class CallController extends GetxController {
     _clearTimers();
 
     final myUserId = Global.storageServices.get(PrefConst.userId).toString();
-    final targetUser = (myUserId == callerId.toString()) ? remoteUserId : callerId;
+    final targetUser =
+        (myUserId == callerId.toString()) ? remoteUserId : callerId;
 
     var param = {
       "callId": callId,
@@ -290,7 +287,6 @@ class CallController extends GetxController {
       log("========CallerSideSessionId2:${CallSessionState.sessionId}");
     }
   }
-
 
   void toggleMic() {
     isAudioOn = !isAudioOn;
@@ -334,7 +330,6 @@ class CallController extends GetxController {
     // await ProximityScreenLock.setActive(false);
   }
 
-
   List<GroupsResData> get filteredGroups {
     final String query = _query;
     if (query.isEmpty) return _groupController.groupData;
@@ -350,8 +345,8 @@ class CallController extends GetxController {
     if (query.isEmpty) return recentCalls;
     return recentCalls
         .where((call) =>
-    (call['name'] ?? '').toLowerCase().contains(query) ||
-        (call['type'] ?? '').toLowerCase().contains(query))
+            (call['name'] ?? '').toLowerCase().contains(query) ||
+            (call['type'] ?? '').toLowerCase().contains(query))
         .toList();
   }
 
@@ -370,9 +365,9 @@ class CallController extends GetxController {
 
   void loadGroups() => _groupController.getGroupData();
 
-
   String get formattedDuration {
-    final minutes = (callDurationSeconds.value ~/ 60).toString().padLeft(2, '0');
+    final minutes =
+        (callDurationSeconds.value ~/ 60).toString().padLeft(2, '0');
     final seconds = (callDurationSeconds.value % 60).toString().padLeft(2, '0');
     return "$minutes:$seconds";
   }

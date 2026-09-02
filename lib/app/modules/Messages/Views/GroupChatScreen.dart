@@ -10,7 +10,6 @@ import 'package:fgtracker/app/modules/Messages/widgets/ChatList.dart';
 import 'package:fgtracker/app/widgets/PinnedMessageBanner.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:skeletonizer/skeletonizer.dart';
 import '../../../Core/constant/const_res.dart';
 
 import 'package:get/get.dart';
@@ -57,7 +56,7 @@ class GroupChatScreen extends GetView<GroupMessageController> {
                   final total = controller.searchResultIds.length;
                   final current = controller.currentSearchIndex.value;
                   final display =
-                  total == 0 ? "0/0" : "${total - current}/$total";
+                      total == 0 ? "0/0" : "${total - current}/$total";
                   return Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 8),
                     child: Center(
@@ -72,19 +71,19 @@ class GroupChatScreen extends GetView<GroupMessageController> {
                   );
                 }),
                 Obx(() => IconButton(
-                  icon: const Icon(Icons.keyboard_arrow_up,
-                      color: Colors.black),
-                  onPressed: controller.searchResultIds.isEmpty
-                      ? null
-                      : controller.previousSearchResult,
-                )),
+                      icon: const Icon(Icons.keyboard_arrow_up,
+                          color: Colors.black),
+                      onPressed: controller.searchResultIds.isEmpty
+                          ? null
+                          : controller.previousSearchResult,
+                    )),
                 Obx(() => IconButton(
-                  icon: const Icon(Icons.keyboard_arrow_down,
-                      color: Colors.black),
-                  onPressed: controller.searchResultIds.isEmpty
-                      ? null
-                      : controller.nextSearchResult,
-                )),
+                      icon: const Icon(Icons.keyboard_arrow_down,
+                          color: Colors.black),
+                      onPressed: controller.searchResultIds.isEmpty
+                          ? null
+                          : controller.nextSearchResult,
+                    )),
               ],
             );
           }
@@ -102,7 +101,7 @@ class GroupChatScreen extends GetView<GroupMessageController> {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border:
-                  Border.all(color: ToggleThemeData.darkPurple, width: 2.w),
+                      Border.all(color: ToggleThemeData.darkPurple, width: 2.w),
                 ),
                 child: Center(
                   child: Icon(
@@ -128,8 +127,8 @@ class GroupChatScreen extends GetView<GroupMessageController> {
                     radius: 20,
                     backgroundImage: controller.groupImage.isNotEmpty
                         ? NetworkImage(
-                      "${ConstRes.aImageBaseUrl}${controller.groupImage}",
-                    )
+                            "${ConstRes.aImageBaseUrl}${controller.groupImage}",
+                          )
                         : null,
                     backgroundColor: Colors.deepPurple.shade100,
                     child: controller.groupImage.isEmpty
@@ -155,7 +154,7 @@ class GroupChatScreen extends GetView<GroupMessageController> {
                           ),
                         ),
                         Obx(
-                              () => Text(
+                          () => Text(
                             "${controller.groupMembers.length} Members",
                             overflow: TextOverflow.ellipsis,
                             maxLines: 1,
@@ -337,7 +336,7 @@ class GroupChatScreen extends GetView<GroupMessageController> {
                         alignment: Alignment.topCenter,
                         child: AnimatedSlide(
                           offset:
-                          isVisible ? Offset.zero : const Offset(0, -0.8),
+                              isVisible ? Offset.zero : const Offset(0, -0.8),
                           duration: const Duration(milliseconds: 220),
                           curve: Curves.easeOutCubic,
                           child: AnimatedOpacity(
@@ -493,7 +492,7 @@ class GroupChatScreen extends GetView<GroupMessageController> {
               },
               onLocationSelected: () async {
                 final location = await Get.to<LocationMessage>(
-                      () => const LocationPickerPage(),
+                  () => const LocationPickerPage(),
                 );
 
                 if (location != null) {
@@ -504,7 +503,7 @@ class GroupChatScreen extends GetView<GroupMessageController> {
               },
               onContactSelected: () async {
                 final contact = await Get.to<ContactMessage>(
-                      () => const ContactPickerPage(),
+                  () => const ContactPickerPage(),
                 );
 
                 if (contact != null) {

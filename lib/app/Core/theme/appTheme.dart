@@ -1,4 +1,3 @@
-
 import 'package:fgtracker/app/Core/values/utility.dart';
 import 'package:fgtracker/app/config/themes_data.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
@@ -25,8 +24,8 @@ class MyAppTheme {
     return TextButton(
       onPressed: onPressed,
       style: ButtonStyle(
-          backgroundColor: MaterialStateProperty.all(buttonColor),
-          shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+          backgroundColor: WidgetStateProperty.all(buttonColor),
+          shape: WidgetStateProperty.all<RoundedRectangleBorder>(
               RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(radius),
                   side: BorderSide(color: borderColor)))),
@@ -61,7 +60,7 @@ class MyAppTheme {
     List<TextInputFormatter>? inputFormatters,
     String? Function(String?)? validator,
     int? maxLength,
-    var maxLines = null,
+    var maxLines,
     String? labelText,
     String? hintText,
     double? cursorHeight,
@@ -92,37 +91,33 @@ class MyAppTheme {
               color: Colors.black,
               fontFamily: FontFamily.interMedium,
             ),
-
             enabledBorder: OutlineInputBorder(
-                borderRadius:
-                BorderRadius.all(Radius.circular(OutlineInputBorderRadius.r)),
+                borderRadius: BorderRadius.all(
+                    Radius.circular(OutlineInputBorderRadius.r)),
                 borderSide: const BorderSide(
                     width: 1,
                     style: BorderStyle.solid,
                     color: ToggleThemeData.darkPurple)),
             disabledBorder: OutlineInputBorder(
-                borderRadius:
-                BorderRadius.all(Radius.circular(OutlineInputBorderRadius.r)),
+                borderRadius: BorderRadius.all(
+                    Radius.circular(OutlineInputBorderRadius.r)),
                 borderSide: const BorderSide(
                     width: 1,
                     style: BorderStyle.solid,
                     color: ToggleThemeData.darkPurple)),
-
             focusedBorder: OutlineInputBorder(
-                borderRadius:
-                BorderRadius.all(Radius.circular(OutlineInputBorderRadius.r)),
+                borderRadius: BorderRadius.all(
+                    Radius.circular(OutlineInputBorderRadius.r)),
                 borderSide: const BorderSide(
                     width: 2,
-
                     style: BorderStyle.solid,
                     color: ToggleThemeData.darkPurple)),
             counterText: "",
             border: OutlineInputBorder(
-                borderSide: const BorderSide(
-                    width: 1,
-
-                    style: BorderStyle.solid,
-                    color: ToggleThemeData.darkPurple),
+              borderSide: const BorderSide(
+                  width: 1,
+                  style: BorderStyle.solid,
+                  color: ToggleThemeData.darkPurple),
               borderRadius:
                   BorderRadius.all(Radius.circular(OutlineInputBorderRadius.r)),
             ),
@@ -270,4 +265,3 @@ class MyAppTheme {
     );
   }
 }
-

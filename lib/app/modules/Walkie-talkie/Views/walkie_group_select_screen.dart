@@ -20,7 +20,7 @@ class WalkieGroupSelectScreen extends StatefulWidget {
 class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
   final GroupController controller = Get.put(GroupController());
   final TextEditingController _searchController = TextEditingController();
-  RxString _searchQuery = ''.obs;
+  final RxString _searchQuery = ''.obs;
 
   final List<Map<String, Color>> _colorPool = [
     {'bg': const Color(0xFFE8DEFF), 'icon': const Color(0xFF6B4DFF)},
@@ -84,14 +84,14 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                 if (groups.isEmpty) {
                   return controller.groupData.isEmpty
                       ? DataEmpty_AssetsIcon(
-                      assetspath: Assets.images.notFount.path)
+                          assetspath: Assets.images.notFount.path)
                       : Center(
-                    child: reausabletext(
-                      "No groups found",
-                      fontsize: 14.sp,
-                      color: Colors.grey,
-                    ),
-                  );
+                          child: reausabletext(
+                            "No groups found",
+                            fontsize: 14.sp,
+                            color: Colors.grey,
+                          ),
+                        );
                 }
                 return _buildGroupList(data: groups, isLoading: false);
               }),
@@ -206,16 +206,16 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                           suffixIcon: _searchQuery.value.isEmpty
                               ? null
                               : GestureDetector(
-                            onTap: () {
-                              _searchController.clear();
-                              _searchQuery.value = '';
-                            },
-                            child: Icon(
-                              Icons.close,
-                              size: 16.sp,
-                              color: Colors.grey,
-                            ),
-                          ),
+                                  onTap: () {
+                                    _searchController.clear();
+                                    _searchQuery.value = '';
+                                  },
+                                  child: Icon(
+                                    Icons.close,
+                                    size: 16.sp,
+                                    color: Colors.grey,
+                                  ),
+                                ),
                         ),
                       );
                     }),
@@ -234,7 +234,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
               border: Border.all(color: Colors.grey.withOpacity(0.15)),
             ),
             child:
-            Icon(Icons.tune, size: 18.sp, color: const Color(0xFF6B4DFF)),
+                Icon(Icons.tune, size: 18.sp, color: const Color(0xFF6B4DFF)),
           ),
         ],
       ),
@@ -268,7 +268,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
     return InkWell(
       onTap: () {
         Get.to(
-              () => const GroupWalkieScreen(),
+          () => const GroupWalkieScreen(),
           arguments: {
             'groupId': group.id?.toString() ?? "",
             'groupName': group.groupName ?? "Unknown Group",

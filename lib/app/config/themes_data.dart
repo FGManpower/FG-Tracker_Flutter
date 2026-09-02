@@ -91,7 +91,7 @@ class ToggleThemeData {
       ),
     ),
     bottomNavigationBarTheme:
-    BottomNavigationBarThemeData(backgroundColor: ToggleThemeData.white),
+        BottomNavigationBarThemeData(backgroundColor: ToggleThemeData.white),
     canvasColor: ToggleThemeData.white,
     primaryColorLight: ToggleThemeData.white,
     cardColor: ToggleThemeData.white,
@@ -193,7 +193,7 @@ class ToggleThemeData {
     tabBarTheme: TabBarThemeData(
       labelColor: ToggleThemeData.white,
       unselectedLabelColor: Colors.grey,
-      overlayColor: MaterialStateProperty.all(Colors.transparent),
+      overlayColor: WidgetStateProperty.all(Colors.transparent),
     ),
     splashColor: Colors.transparent,
     highlightColor: Colors.transparent,

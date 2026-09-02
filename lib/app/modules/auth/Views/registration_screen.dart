@@ -297,7 +297,8 @@ class RegistrationScreen extends GetView<RegistrationController> {
                       reausabletext("Tap on the photo to change",
                           color: Colors.grey,
                           fontsize: 13.sp,
-                          fontweight: FontWeight(700)),
+                          // fontweight: FontWeight(700)
+                      ),
                       SizedBox(height: 28.h),
                       Align(
                         alignment: Alignment.centerLeft,
@@ -496,7 +497,7 @@ class RegistrationScreen extends GetView<RegistrationController> {
                 reausabletext(
                   label,
                   fontsize: 13.sp,
-                  fontweight: FontWeight(600),
+                  // fontweight: FontWeight(600),
                   color: Colors.grey,
                 ),
                 TextFormField(

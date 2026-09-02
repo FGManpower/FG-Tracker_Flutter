@@ -9,12 +9,12 @@ class ExpandableUserCard extends StatelessWidget {
   final VoidCallback onTap;
 
   const ExpandableUserCard({
-    Key? key,
+    super.key,
     required this.childBuilder,
     required this.data,
     required this.isExpanded,
     required this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +27,6 @@ class ExpandableUserCard extends StatelessWidget {
       child: Stack(
         children: [
           childBuilder(isExpanded),
-          
         ],
       ),
     );
@@ -46,6 +45,4 @@ class ExpandableUserCard extends StatelessWidget {
       ],
     );
   }
-
-
 }

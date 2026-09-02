@@ -27,6 +27,8 @@ import '../../Track/Widget/TrackLAppBar.dart';
 import 'QrScreen.dart';
 
 class MemberscreenScreen extends GetView<MemberController> {
+  const MemberscreenScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Obx(
@@ -164,11 +166,10 @@ class MemberscreenScreen extends GetView<MemberController> {
                                   .get(PrefConst.userId)
                                   .toString(),
                               onSuccess: (success) {
-                                if(success){
+                                if (success) {
                                   Get.offAllNamed(Routes.Home_Screen);
                                 }
                               },
-
                             );
                           },
                         );
@@ -201,11 +202,10 @@ class MemberscreenScreen extends GetView<MemberController> {
                             //   "groupName": controller.arguments!['groupName'],
                             // });
 
-
                             Get.toNamed(
                               Routes.groupWalkieScreen,
                               arguments: {
-                                "groupId":  int.parse(controller
+                                "groupId": int.parse(controller
                                     .arguments!['groupId']
                                     .toString()),
                                 "groupName": controller.arguments!['groupName'],
@@ -214,7 +214,9 @@ class MemberscreenScreen extends GetView<MemberController> {
                             );
                           },
                           height: 55),
-                      SizedBox(height: 10.h,),
+                      SizedBox(
+                        height: 10.h,
+                      ),
                       Row(
                         children: [
                           Expanded(
@@ -224,12 +226,14 @@ class MemberscreenScreen extends GetView<MemberController> {
                                 fontSize: 12,
                                 borderradiues: 50,
                                 ontap: () {
-                                  Get.toNamed(Routes.LocationTracking, arguments: {
-                                    "groupId": int.parse(controller
-                                        .arguments!['groupId']
-                                        .toString()),
-                                    "groupName": controller.arguments!['groupName'],
-                                  });
+                                  Get.toNamed(Routes.LocationTracking,
+                                      arguments: {
+                                        "groupId": int.parse(controller
+                                            .arguments!['groupId']
+                                            .toString()),
+                                        "groupName":
+                                            controller.arguments!['groupName'],
+                                      });
                                 },
                                 height: 55),
                           ),
@@ -354,8 +358,10 @@ class MemberscreenScreen extends GetView<MemberController> {
                           onTap: () {
                             QrCodeBottomSheet.show(
                               context,
-                              groupName: controller.arguments!["groupName"].toString(),
-                              groupCode: controller.arguments!["groupCode"].toString(),
+                              groupName:
+                                  controller.arguments!["groupName"].toString(),
+                              groupCode:
+                                  controller.arguments!["groupCode"].toString(),
                             );
                           },
                           child: Container(
@@ -531,45 +537,54 @@ class MemberscreenScreen extends GetView<MemberController> {
                                           ),
                                           SizedBox(height: 8.h),
                                           Row(
-
                                             children: [
-                                            data.locationSharing==true?  InkWell(
-                                                borderRadius:
-                                                    BorderRadius.circular(20.r),
-                                                onTap: () {
-                                                  Get.toNamed(
-                                                    Routes.LocationTracking,
-                                                    arguments: {
-                                                      "groupId": int.parse(
-                                                        controller.arguments![
-                                                                'groupId']
-                                                            .toString(),
+                                              data.locationSharing == true
+                                                  ? InkWell(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              20.r),
+                                                      onTap: () {
+                                                        Get.toNamed(
+                                                          Routes
+                                                              .LocationTracking,
+                                                          arguments: {
+                                                            "groupId":
+                                                                int.parse(
+                                                              controller
+                                                                  .arguments![
+                                                                      'groupId']
+                                                                  .toString(),
+                                                            ),
+                                                            "groupName": controller
+                                                                    .arguments![
+                                                                'groupName'],
+                                                            "targetUserId": data
+                                                                .userId
+                                                                .toString(),
+                                                          },
+                                                        );
+                                                      },
+                                                      child: Container(
+                                                        padding:
+                                                            EdgeInsets.all(8),
+                                                        decoration:
+                                                            BoxDecoration(
+                                                          color: ToggleThemeData
+                                                              .darkPurple
+                                                              .withOpacity(
+                                                                  0.08),
+                                                          shape:
+                                                              BoxShape.circle,
+                                                        ),
+                                                        child: Icon(
+                                                          Icons.near_me,
+                                                          color: ToggleThemeData
+                                                              .darkPurple,
+                                                          size: 18.sp,
+                                                        ),
                                                       ),
-                                                      "groupName":
-                                                          controller.arguments![
-                                                              'groupName'],
-                                                      "targetUserId": data
-                                                          .userId
-                                                          .toString(),
-                                                    },
-                                                  );
-                                                },
-                                                child: Container(
-                                                  padding: EdgeInsets.all(8),
-                                                  decoration: BoxDecoration(
-                                                    color: ToggleThemeData
-                                                        .darkPurple
-                                                        .withOpacity(0.08),
-                                                    shape: BoxShape.circle,
-                                                  ),
-                                                  child: Icon(
-                                                    Icons.near_me,
-                                                    color: ToggleThemeData
-                                                        .darkPurple,
-                                                    size: 18.sp,
-                                                  ),
-                                                ),
-                                              ):SizedBox(),
+                                                    )
+                                                  : SizedBox(),
                                               // InkWell(
                                               //   onTap: () {
                                               //     WalkieController()
@@ -706,7 +721,6 @@ class MemberscreenScreen extends GetView<MemberController> {
                               .get(PrefConst.userId)
                               .toString() !=
                           data?.userId.toString()) {
-
                         Get.toNamed(
                           Routes.chatScreen,
                           arguments: {

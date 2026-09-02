@@ -28,7 +28,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
   static const double _lockThreshold = 80.0;
   bool _hasLeft = false;
   bool _pttInProgress = false;
-  bool _allowPop = false;
+  final bool _allowPop = false;
 
   final Color _bgLight = const Color(0xFFF5F5F8);
   final Color _cardWhite = Colors.white;
@@ -1091,7 +1091,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                 onChanged: (v) async {
                   await GroupWalkieService.instance.toggleMute();
                 },
-                activeColor: _primaryPurple,
+                activeThumbColor: _primaryPurple,
               )),
         ],
       ),

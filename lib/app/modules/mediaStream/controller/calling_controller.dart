@@ -10,7 +10,7 @@ import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'package:get/get.dart' hide navigator;
 import 'package:flutter_webrtc/flutter_webrtc.dart';
-import 'package:proximity_screen_lock/proximity_screen_lock.dart';
+// import 'package:proximity_screen_lock/proximity_screen_lock.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 import '../../../../gen/assets.gen.dart';
 import '../../../Core/global/launchedFromCall.dart';
@@ -90,7 +90,6 @@ class CallingController extends GetxController {
     socket?.off("callCreated");
     socket?.off("newCall");
     socket?.off("sdpOfferFromCaller");
-
 
     socket?.on("sdpOfferFromCaller", (data) async {
       log("====== Received SDP Offer from Caller (CallKit flow) ======");
@@ -305,11 +304,8 @@ class CallingController extends GetxController {
         "callerId": callerId,
         "sdpAnswer": answer.toMap(),
       });
-    }
-
-    else if (fromCallKit || (args["callType"] == "Incoming" && offer == null)) {
-
-
+    } else if (fromCallKit ||
+        (args["callType"] == "Incoming" && offer == null)) {
       callStatus.value = "Connecting...";
 
       // Tell the caller that we accepted from CallKit and request the SDP
@@ -321,9 +317,7 @@ class CallingController extends GetxController {
       });
 
       // We will receive the offer via "sdpOfferFromCaller" listener
-    }
-
-    else {
+    } else {
       log("====== Outgoing Call ======");
 
       peer!.onIceCandidate = (c) => iceCandidates.add(c);
@@ -386,11 +380,7 @@ class CallingController extends GetxController {
       "remoteUserId": targetUser.toString(),
     };
 
-
-
-    if(callStatus.value != "Connected"){
-
-    }
+    if (callStatus.value != "Connected") {}
     if (type != "missedCall") {
       log("========CallEndParameterDetail:$param");
       socket?.emit("endCall", param);
@@ -401,7 +391,7 @@ class CallingController extends GetxController {
     if (CallSessionState.sessionId != null) {
       log("========CallerSideSessionId:${CallSessionState.sessionId}");
       callEnded(CallSessionState.sessionId.toString(),
-          type: "endCallMethodHittedFromController-Type:${type}");
+          type: "endCallMethodHittedFromController-Type:$type");
     }
 
     if (args["callType"] == "outGoing") {
@@ -447,9 +437,9 @@ class CallingController extends GetxController {
     await Helper.setSpeakerphoneOn(isSpeakerOn);
 
     if (isSpeakerOn) {
-      await ProximityScreenLock.setActive(false);
+      // await ProximityScreenLock.setActive(false);
     } else {
-      await ProximityScreenLock.setActive(true);
+      // await ProximityScreenLock.setActive(true);
     }
 
     update();
@@ -494,13 +484,12 @@ class CallingController extends GetxController {
         if (missCallDurationSeconds.value == 0) {
           timer.cancel();
           missedCall();
-
         }
       },
     );
   }
 
-  void missedCall(){
+  void missedCall() {
     var param = {
       "callId": callId,
       "remoteUserId": remoteUserId,
@@ -511,6 +500,7 @@ class CallingController extends GetxController {
 
     endCall(type: "missedCall");
   }
+
   void _clearTimers() {
     callTimer?.cancel();
     missedCallTimer?.cancel();
@@ -534,12 +524,12 @@ class CallingController extends GetxController {
 
   Future<void> startAudioCall() async {
     await WakelockPlus.enable();
-    await ProximityScreenLock.setActive(true);
+    // await ProximityScreenLock.setActive(true);
   }
 
   Future<void> endAudioCall() async {
     await WakelockPlus.disable();
-    await ProximityScreenLock.setActive(false);
+    // await ProximityScreenLock.setActive(false);
   }
 
   @override

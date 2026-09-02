@@ -1,5 +1,3 @@
-
-
 import 'dart:async';
 import 'dart:developer';
 import 'dart:io';
@@ -45,7 +43,7 @@ class OtpController extends GetxController {
 
     otpController = OTPTextEditController(
       codeLength: 4,
-      onCodeReceive: (code) => log('$code'),
+      onCodeReceive: (code) => log(code),
       otpInteractor: otpInteractor,
     )..startListenUserConsent(
         (code) {
@@ -147,7 +145,7 @@ class OtpController extends GetxController {
         'Voip_Device': voipDeviceId.value ?? "",
         'Platform': Platform.isAndroid ? "android" : "ios",
       };
-      print("==================VeriefyParam==========${param}");
+      print("==================VeriefyParam==========$param");
       var result = await AuthRepo.VeriefyOtp(param);
       if (result.status == true) {
         Loading().dismissloading();
@@ -163,10 +161,9 @@ class OtpController extends GetxController {
               websocketUrl: ConstRes.socketUrl,
               selfUserId: result.data!.userId.toString(),
             );
-
           }
         } catch (e) {
-          log("login_SocketException====${e}");
+          log("login_SocketException====$e");
         }
 
         Global.storageServices.setString(

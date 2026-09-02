@@ -33,11 +33,11 @@ class ChatBubble extends StatelessWidget {
   final MessageController controller;
 
   const ChatBubble({
-    Key? key,
+    super.key,
     required this.message,
     required this.controller,
     required this.context,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -787,14 +787,14 @@ class GroupChatBubble extends StatelessWidget {
   final GroupMessageController controller;
 
   const GroupChatBubble({
-    Key? key,
+    super.key,
     required this.message,
     required this.controller,
     required this.context,
     this.isGroup = false,
     this.groupId,
     this.groupName,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

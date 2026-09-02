@@ -26,12 +26,13 @@ class MobileNumberView extends StatelessWidget {
       String displayNumber;
       if (controller.obscureNumber.value) {
         if (mobileNumber.length >= 2) {
-          displayNumber = '••••••${mobileNumber.substring(mobileNumber.length - 4)}';
+          displayNumber =
+              '••••••${mobileNumber.substring(mobileNumber.length - 4)}';
         } else {
           displayNumber = '••••••';
         }
       } else {
-        displayNumber = '$mobileNumber';
+        displayNumber = mobileNumber;
       }
 
       return Row(

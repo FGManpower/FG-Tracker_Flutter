@@ -137,18 +137,17 @@ class GroupRow extends StatelessWidget {
   final bool showDivider;
 
   const GroupRow({
-    Key? key,
+    super.key,
     required this.title,
     required this.value,
     this.showDivider = true,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-
         Flexible(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -163,14 +162,13 @@ class GroupRow extends StatelessWidget {
               ),
               SizedBox(height: 7.h),
               reausabletext(
-              //   widths: 52,
+                //   widths: 52,
                 value,
                 fontfamily: FontFamily.interSemiBold,
                 fontsize: 10,
                 color: const Color(0xff5045B9),
                 maxline: 1,
                 textoverflow: TextOverflow.ellipsis,
-
               ),
             ],
           ),

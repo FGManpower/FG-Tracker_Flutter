@@ -12,6 +12,8 @@ import '../../../routes/app_pages.dart';
 import '../Controller/SearchController.dart';
 
 class SearchMembers extends GetView<SearchMemberController> {
+  const SearchMembers({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Obx(

@@ -2,38 +2,93 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:fgtracker/app/global_widget/common_widget.dart';
-import 'package:fgtracker/gen/fonts.gen.dart';
-import '../../../global_widget/input_widget.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:fgtracker/app/Core/constant/const_res.dart';
 import '../Controller/SosController.dart';
 
 class SosScreen extends GetView<SosController> {
   const SosScreen({super.key});
 
+  void _showImageSourceDialog(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+      ),
+      builder: (ctx) => Padding(
+        padding: EdgeInsets.all(20.w),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              "Select Image Source",
+              style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 16.h),
+            ListTile(
+              leading: const Icon(Icons.camera_alt, color: Color(0xFF6B4DFF)),
+              title: const Text("Camera"),
+              onTap: () {
+                Navigator.pop(ctx);
+                controller.pickImage(ImageSource.camera);
+              },
+            ),
+            ListTile(
+              leading:
+              const Icon(Icons.photo_library, color: Color(0xFF6B4DFF)),
+              title: const Text("Gallery"),
+              onTap: () {
+                Navigator.pop(ctx);
+                controller.pickImage(ImageSource.gallery);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFFAFAFA),
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: const Color(0xFFFAFAFA),
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black87),
-          onPressed: () => Get.back(),
+        leading: Padding(
+          padding: EdgeInsets.only(left: 12.w),
+          child: Container(
+            margin: EdgeInsets.all(6.r),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12.r),
+              border: Border.all(color: Colors.grey.withOpacity(0.2)),
+            ),
+            child: IconButton(
+              icon: Icon(Icons.arrow_back, color: Colors.black87, size: 20.sp),
+              padding: EdgeInsets.zero,
+              onPressed: () => Get.back(),
+            ),
+          ),
         ),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            reausabletext(
+            Text(
               "SOS Alert",
-              fontsize: 18.sp,
-              fontfamily: FontFamily.interBold,
-              color: Colors.black87,
+              style: TextStyle(
+                fontSize: 17.sp,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
             ),
-            reausabletext(
+            Text(
               "Send alert to nearby people",
-              fontsize: 11.sp,
-              color: Colors.black54,
+              style: TextStyle(
+                fontSize: 11.sp,
+                color: Colors.black54,
+              ),
             ),
           ],
         ),
@@ -42,16 +97,25 @@ class SosScreen extends GetView<SosController> {
             child: Padding(
               padding: EdgeInsets.only(right: 16.w),
               child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                 decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey.withOpacity(0.3)),
+                  color: Colors.white,
+                  border: Border.all(color: Colors.grey.withOpacity(0.2)),
                   borderRadius: BorderRadius.circular(20.r),
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.info_outline, size: 14.sp, color: Colors.black87),
+                    Icon(Icons.info_outline,
+                        size: 14.sp, color: Colors.black87),
                     SizedBox(width: 4.w),
-                    reausabletext("How it works", fontsize: 11.sp, color: Colors.black87),
+                    Text(
+                      "How it works",
+                      style: TextStyle(
+                        fontSize: 11.sp,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.black87,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -59,259 +123,452 @@ class SosScreen extends GetView<SosController> {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(16.w),
-        child: Column(
-          children: [
-            Container(
-              padding: EdgeInsets.all(24.w),
-              decoration: BoxDecoration(
-                color: Colors.red.withOpacity(0.05),
-                shape: BoxShape.circle,
-              ),
-              child: Container(
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Container(
                 padding: EdgeInsets.all(20.w),
                 decoration: BoxDecoration(
-                  color: Colors.red.withOpacity(0.1),
+                  color: Colors.red.withOpacity(0.04),
                   shape: BoxShape.circle,
                 ),
                 child: Container(
-                  width: 70.w,
-                  height: 70.h,
-                  decoration: const BoxDecoration(
-                    color: Colors.red,
+                  padding: EdgeInsets.all(16.w),
+                  decoration: BoxDecoration(
+                    color: Colors.red.withOpacity(0.08),
                     shape: BoxShape.circle,
                   ),
-                  alignment: Alignment.center,
-                  child: reausabletext(
-                    "SOS",
-                    fontsize: 20.sp,
-                    fontfamily: FontFamily.interBold,
-                    color: Colors.white,
+                  child: Container(
+                    width: 65.w,
+                    height: 65.h,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFF12E43),
+                      shape: BoxShape.circle,
+                    ),
+                    alignment: Alignment.center,
+                    child: Text(
+                      "SOS",
+                      style: TextStyle(
+                        fontSize: 18.sp,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
                   ),
                 ),
               ),
-            ),
-            SizedBox(height: 12.h),
-            reausabletext(
-              "Need Help?",
-              fontsize: 18.sp,
-              fontfamily: FontFamily.interBold,
-              color: Colors.black87,
-              align: TextAlign.center,
-            ),
-            SizedBox(height: 6.h),
-            reausabletext(
-              "Send an SOS alert to nearby people.\nThey will be notified and can assist you.",
-              fontsize: 12.sp,
-              color: Colors.black54,
-              align: TextAlign.center,
-            ),
-            SizedBox(height: 20.h),
-            Container(
-              padding: EdgeInsets.all(16.w),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16.r),
-                border: Border.all(color: Colors.grey.withOpacity(0.15)),
-                boxShadow: [
-                  BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, spreadRadius: 2),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: EdgeInsets.all(8.w),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF6B4DFF).withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(8.r),
-                        ),
-                        child: Icon(Icons.camera_alt, size: 16.sp, color: const Color(0xFF6B4DFF)),
-                      ),
-                      SizedBox(width: 10.w),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          reausabletext("Add Photo (Optional)", fontsize: 13.sp, fontfamily: FontFamily.interSemiBold),
-                          reausabletext("Attach a photo to help others understand the situation better.", fontsize: 10.sp, color: Colors.black54),
-                        ],
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 14.h),
-                  GestureDetector(
-                    onTap: () => controller.pickImageFromCamera(),
-                    child: Container(
-                      height: 90.h,
-                      width: 90.w,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF8F9FA),
-                        borderRadius: BorderRadius.circular(12.r),
-                        border: Border.all(color: Colors.grey.withOpacity(0.3)),
-                      ),
-                      child: Obx(() => controller.imagePath.value.isEmpty
-                          ? Icon(Icons.add, size: 24.sp, color: const Color(0xFF6B4DFF))
-                          : ClipRRect(
-                        borderRadius: BorderRadius.circular(12.r),
-                        child: Image.file(
-                          File(controller.imagePath.value),
-                          fit: BoxFit.cover,
-                        ),
-                      )),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(height: 16.h),
-            Container(
-              padding: EdgeInsets.all(16.w),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16.r),
-                border: Border.all(color: Colors.grey.withOpacity(0.15)),
-                boxShadow: [
-                  BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, spreadRadius: 2),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: EdgeInsets.all(8.w),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF6B4DFF).withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(8.r),
-                        ),
-                        child: Icon(Icons.group, size: 16.sp, color: const Color(0xFF6B4DFF)),
-                      ),
-                      SizedBox(width: 10.w),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          reausabletext("Notify Your Family (Minimum 1 required)", fontsize: 13.sp, fontfamily: FontFamily.interSemiBold),
-                          reausabletext("Add at least 1 family member to send SOS alert", fontsize: 10.sp, color: Colors.black54),
-                        ],
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 14.h),
-                  Container(
-                    width: double.infinity,
-                    padding: EdgeInsets.symmetric(vertical: 12.h),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF6F4FF),
-                      borderRadius: BorderRadius.circular(30.r),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.add, size: 16.sp, color: const Color(0xFF6B4DFF)),
-                        SizedBox(width: 6.w),
-                        reausabletext("Add Family Member", fontsize: 12.sp, fontfamily: FontFamily.interSemiBold, color: const Color(0xFF6B4DFF)),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(height: 16.h),
-            Container(
-              padding: EdgeInsets.all(16.w),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16.r),
-                border: Border.all(color: Colors.grey.withOpacity(0.15)),
-                boxShadow: [
-                  BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, spreadRadius: 2),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  reausabletext("Select Reason", fontsize: 13.sp, fontfamily: FontFamily.interSemiBold),
-                  SizedBox(height: 12.h),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      _buildReasonItem("Medical", Icons.favorite, Colors.pink),
-                      _buildReasonItem("Accident", Icons.car_crash, Colors.orange),
-                      _buildReasonItem("Safety", Icons.security, Colors.red),
-                      _buildReasonItem("Threat", Icons.coronavirus, Colors.purple),
-                      _buildReasonItem("Other", Icons.more_horiz, Colors.grey),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(height: 16.h),
-            Obx(() => InputField(
-              title: controller.selectedReason.value == 'Other' ? "Add Details (Mandatory)" : "Add Details (Optional)",
-              controller: controller.detailsController,
-              hintText: "Type any additional details...",
-              maxLines: 3,
-              maxLength: 200,
-            )),
-            SizedBox(height: 20.h),
-            GestureDetector(
-              onTap: () => controller.sendSosAlert(context),
-              child: Container(
-                width: double.infinity,
-                padding: EdgeInsets.symmetric(vertical: 16.h, horizontal: 20.w),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFFE53935), Color(0xFFB71C1C)],
-                  ),
-                  borderRadius: BorderRadius.circular(40.r),
-                  boxShadow: [
-                    BoxShadow(color: Colors.red.withOpacity(0.3), blurRadius: 10, offset: const Offset(0, 4)),
-                  ],
+              SizedBox(height: 8.h),
+              Text(
+                "Need Help?",
+                style: TextStyle(
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 4.h),
+              Text(
+                "Send an SOS alert to nearby people.\nThey will be notified and can assist you.",
+                style: TextStyle(
+                  fontSize: 11.sp,
+                  color: Colors.black54,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 16.h),
+              Container(
+                padding: EdgeInsets.all(14.w),
+                decoration: _cardDecoration(),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
                       children: [
                         Container(
-                          padding: EdgeInsets.all(8.w),
-                          decoration: const BoxDecoration(
-                            color: Colors.white24,
-                            shape: BoxShape.circle,
+                          padding: EdgeInsets.all(7.w),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF6B4DFF).withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8.r),
                           ),
-                          child: Icon(Icons.near_me, color: Colors.white, size: 16.sp),
+                          child: Icon(Icons.camera_alt,
+                              size: 15.sp, color: const Color(0xFF6B4DFF)),
                         ),
-                        SizedBox(width: 12.w),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            reausabletext("Send SOS Alert", fontsize: 15.sp, fontfamily: FontFamily.interBold, color: Colors.white),
-                            reausabletext("Alert will be sent to nearby people", fontsize: 10.sp, color: Colors.white70),
-                          ],
+                        SizedBox(width: 10.w),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "Add Photo (Optional)",
+                                style: TextStyle(
+                                  fontSize: 12.sp,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              SizedBox(height: 2.h),
+                              Text(
+                                "Attach a photo to help others understand better.",
+                                style: TextStyle(
+                                  fontSize: 9.sp,
+                                  color: Colors.black54,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ],
                     ),
-                    const Icon(Icons.arrow_forward, color: Colors.white),
+                    SizedBox(height: 10.h),
+                    GestureDetector(
+                      onTap: () => _showImageSourceDialog(context),
+                      child: Container(
+                        height: 75.h,
+                        width: 75.w,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF8F9FA),
+                          borderRadius: BorderRadius.circular(10.r),
+                          border:
+                          Border.all(color: Colors.grey.withOpacity(0.3)),
+                        ),
+                        child: Obx(() => controller.imagePath.value.isEmpty
+                            ? Icon(Icons.add,
+                            size: 22.sp, color: const Color(0xFF6B4DFF))
+                            : ClipRRect(
+                          borderRadius: BorderRadius.circular(10.r),
+                          child: Image.file(
+                            File(controller.imagePath.value),
+                            fit: BoxFit.cover,
+                          ),
+                        )),
+                      ),
+                    ),
                   ],
                 ),
               ),
-            ),
-            SizedBox(height: 16.h),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.verified_user_outlined, size: 12.sp, color: Colors.black54),
-                SizedBox(width: 6.w),
-                reausabletext("Your alert will be sent to nearby people and your family members.", fontsize: 10.sp, color: Colors.black54),
-              ],
-            ),
-          ],
+              SizedBox(height: 12.h),
+              Container(
+                padding: EdgeInsets.all(14.w),
+                decoration: _cardDecoration(),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: EdgeInsets.all(7.w),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF6B4DFF).withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8.r),
+                          ),
+                          child: Icon(Icons.group,
+                              size: 15.sp, color: const Color(0xFF6B4DFF)),
+                        ),
+                        SizedBox(width: 10.w),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "Notify Your Family (1 to 5 required)",
+                                style: TextStyle(
+                                  fontSize: 12.sp,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              SizedBox(height: 2.h),
+                              Obx(() => Text(
+                                controller.selectedFamilyMembers.isEmpty
+                                    ? "Add at least 1 family member to send SOS alert"
+                                    : "${controller.selectedFamilyMembers.length} member(s) selected",
+                                style: TextStyle(
+                                  fontSize: 9.sp,
+                                  color: controller
+                                      .selectedFamilyMembers.isEmpty
+                                      ? Colors.black54
+                                      : const Color(0xFF6B4DFF),
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              )),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    Obx(() => controller.selectedFamilyMembers.isNotEmpty
+                        ? Padding(
+                      padding: EdgeInsets.only(top: 10.h),
+                      child: SizedBox(
+                        height: 45.h,
+                        child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount:
+                          controller.selectedFamilyMembers.length,
+                          itemBuilder: (context, index) {
+                            final user =
+                            controller.selectedFamilyMembers[index];
+                            final profileUrl = (user
+                                .profileImage?.isNotEmpty ??
+                                false)
+                                ? "${ConstRes.aImageBaseUrl}${user.profileImage}"
+                                : null;
+
+                            return Container(
+                              margin: EdgeInsets.only(right: 8.w),
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 10.w, vertical: 4.h),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF6F4FF),
+                                borderRadius: BorderRadius.circular(20.r),
+                                border: Border.all(
+                                    color: const Color(0xFF6B4DFF)
+                                        .withOpacity(0.3)),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  CircleAvatar(
+                                    radius: 12.r,
+                                    backgroundColor: Colors.grey.shade200,
+                                    backgroundImage: profileUrl != null
+                                        ? NetworkImage(profileUrl)
+                                        : null,
+                                    child: profileUrl == null
+                                        ? Text(
+                                      (user.name?.isNotEmpty ??
+                                          false)
+                                          ? user.name![0]
+                                          .toUpperCase()
+                                          : "U",
+                                      style: TextStyle(
+                                          fontSize: 10.sp,
+                                          fontWeight:
+                                          FontWeight.bold),
+                                    )
+                                        : null,
+                                  ),
+                                  SizedBox(width: 6.w),
+                                  Text(
+                                    user.name?.split(' ')[0] ?? "",
+                                    style: TextStyle(
+                                        fontSize: 11.sp,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black87),
+                                  ),
+                                  SizedBox(width: 4.w),
+                                  InkWell(
+                                    onTap: () => controller
+                                        .removeFamilyMember(index),
+                                    child: Icon(Icons.close,
+                                        size: 14.sp, color: Colors.red),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    )
+                        : const SizedBox.shrink()),
+                    SizedBox(height: 10.h),
+                    GestureDetector(
+                      onTap: () => controller.openFamilyBottomSheet(context),
+                      child: Container(
+                        width: double.infinity,
+                        padding: EdgeInsets.symmetric(vertical: 10.h),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF6F4FF),
+                          borderRadius: BorderRadius.circular(30.r),
+                          border: Border.all(
+                              color: const Color(0xFF6B4DFF).withOpacity(0.2)),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.add,
+                                size: 15.sp, color: const Color(0xFF6B4DFF)),
+                            SizedBox(width: 6.w),
+                            Text(
+                              "Add Family Member",
+                              style: TextStyle(
+                                fontSize: 11.sp,
+                                fontWeight: FontWeight.w600,
+                                color: const Color(0xFF6B4DFF),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: 12.h),
+              Container(
+                padding: EdgeInsets.all(14.w),
+                decoration: _cardDecoration(),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Select Reason",
+                      style: TextStyle(
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    SizedBox(height: 10.h),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        _buildReasonItem(
+                            "Medical", Icons.favorite, Colors.pink),
+                        _buildReasonItem(
+                            "Accident", Icons.car_crash, Colors.orange),
+                        _buildReasonItem("Safety", Icons.security, Colors.red),
+                        _buildReasonItem(
+                            "Threat", Icons.coronavirus, Colors.purple),
+                        _buildReasonItem(
+                            "Other", Icons.more_horiz, Colors.grey),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: 12.h),
+              Container(
+                padding: EdgeInsets.all(14.w),
+                decoration: _cardDecoration(),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Obx(() => Text(
+                      controller.selectedReason.value == 'Other'
+                          ? "Add Details (Mandatory)"
+                          : "Add Details (Optional)",
+                      style: TextStyle(
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    )),
+                    SizedBox(height: 8.h),
+                    TextField(
+                      controller: controller.detailsController,
+                      maxLines: 2,
+                      maxLength: 200,
+                      style: TextStyle(fontSize: 12.sp),
+                      decoration: InputDecoration(
+                        hintText: "Type any additional details...",
+                        hintStyle: TextStyle(
+                            fontSize: 11.sp, color: Colors.grey.shade400),
+                        contentPadding: EdgeInsets.symmetric(
+                            horizontal: 12.w, vertical: 10.h),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10.r)),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10.r),
+                          borderSide: BorderSide(color: Colors.grey.shade300),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10.r),
+                          borderSide:
+                          const BorderSide(color: Color(0xFF6B4DFF)),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: 16.h),
+              GestureDetector(
+                onTap: () => controller.sendSosAlert(context),
+                child: Container(
+                  width: double.infinity,
+                  padding:
+                  EdgeInsets.symmetric(vertical: 14.h, horizontal: 16.w),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFFE53935), Color(0xFFB71C1C)],
+                    ),
+                    borderRadius: BorderRadius.circular(35.r),
+                    boxShadow: [
+                      BoxShadow(
+                          color: Colors.red.withOpacity(0.3),
+                          blurRadius: 8,
+                          offset: const Offset(0, 3)),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Container(
+                        padding: EdgeInsets.all(6.w),
+                        decoration: const BoxDecoration(
+                            color: Colors.white24, shape: BoxShape.circle),
+                        child: Icon(Icons.near_me,
+                            color: Colors.white, size: 14.sp),
+                      ),
+                      Column(
+                        children: [
+                          Text(
+                            "Send SOS Alert",
+                            style: TextStyle(
+                              fontSize: 14.sp,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                          Text(
+                            "Alert will be sent to nearby people",
+                            style: TextStyle(
+                              fontSize: 9.sp,
+                              color: Colors.white70,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Icon(Icons.arrow_forward,
+                          color: Colors.white, size: 16.sp),
+                    ],
+                  ),
+                ),
+              ),
+              SizedBox(height: 10.h),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.verified_user_outlined,
+                      size: 11.sp, color: Colors.black54),
+                  SizedBox(width: 5.w),
+                  Text(
+                    "Your alert will be sent to nearby people and your family members.",
+                    style: TextStyle(
+                      fontSize: 9.sp,
+                      color: Colors.black54,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
+    );
+  }
+
+  BoxDecoration _cardDecoration() {
+    return BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(14.r),
+      boxShadow: [
+        BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 8,
+            spreadRadius: 1),
+      ],
     );
   }
 
@@ -323,23 +580,28 @@ class SosScreen extends GetView<SosController> {
         child: Column(
           children: [
             Container(
-              padding: EdgeInsets.all(12.w),
+              padding: EdgeInsets.all(10.w),
               decoration: BoxDecoration(
-                color: isSelected ? color.withOpacity(0.15) : Colors.grey.withOpacity(0.08),
-                borderRadius: BorderRadius.circular(12.r),
+                color: isSelected
+                    ? color.withOpacity(0.12)
+                    : Colors.grey.withOpacity(0.06),
+                borderRadius: BorderRadius.circular(10.r),
                 border: Border.all(
                   color: isSelected ? color : Colors.transparent,
-                  width: 1.5,
+                  width: 1.2,
                 ),
               ),
-              child: Icon(icon, size: 20.sp, color: isSelected ? color : Colors.black54),
+              child: Icon(icon,
+                  size: 18.sp, color: isSelected ? color : Colors.black54),
             ),
-            SizedBox(height: 6.h),
-            reausabletext(
+            SizedBox(height: 4.h),
+            Text(
               label,
-              fontsize: 10.sp,
-              fontfamily: isSelected ? FontFamily.interSemiBold : FontFamily.interRegular,
-              color: isSelected ? color : Colors.black87,
+              style: TextStyle(
+                fontSize: 9.sp,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                color: isSelected ? color : Colors.black87,
+              ),
             ),
           ],
         ),

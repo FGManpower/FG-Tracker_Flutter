@@ -11,17 +11,17 @@ class UserProfileListRes {
     if (json['UserData'] != null) {
       userData = <UserListData>[];
       json['UserData'].forEach((v) {
-        userData!.add(new UserListData.fromJson(v));
+        userData!.add(UserListData.fromJson(v));
       });
     }
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['status'] = this.status;
-    data['message'] = this.message;
-    if (this.userData != null) {
-      data['UserData'] = this.userData!.map((v) => v.toJson()).toList();
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['status'] = status;
+    data['message'] = message;
+    if (userData != null) {
+      data['UserData'] = userData!.map((v) => v.toJson()).toList();
     }
     return data;
   }
@@ -43,11 +43,11 @@ class UserListData {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['UserId'] = this.userId;
-    data['ProfileImage'] = this.profileImage;
-    data['Name'] = this.name;
-    data['MobileNo'] = this.mobileNo;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['UserId'] = userId;
+    data['ProfileImage'] = profileImage;
+    data['Name'] = name;
+    data['MobileNo'] = mobileNo;
     return data;
   }
 }

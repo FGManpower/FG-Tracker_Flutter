@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../deep_Link/Context_Utility.dart';
 
-
 // class MediaQueryHelper {
 //   static const double _baseWidth = 375.0;
 //   static const double _baseHeight = 812.0;
@@ -36,11 +35,6 @@ import '../deep_Link/Context_Utility.dart';
 //
 //   static SizedBox gapW(double value) => SizedBox(width: width(value));
 // }
-
-
-
-import 'package:flutter/material.dart';
-import '../deep_Link/Context_Utility.dart';
 
 class MediaQueryHelper {
   static const double _baseWidth = 375.0;

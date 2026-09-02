@@ -2,15 +2,13 @@ import 'package:fgtracker/app/Core/values/BottomSheets/pemission_bottomSheet.dar
 import 'package:fgtracker/app/modules/home/Controller/permission_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 
 class PermissionGuard {
   static Future<bool> checkAndRequestAllPermissions(
-      BuildContext context, {
-        bool autoFetchLocation = false,
-      }) async {
-    final controller =
-    Get.put(PermissionController());
+    BuildContext context, {
+    bool autoFetchLocation = false,
+  }) async {
+    final controller = Get.put(PermissionController());
 
     int step = await controller.getStartingStep();
 
@@ -27,8 +25,7 @@ class PermissionGuard {
       return false;
     }
 
-    if (autoFetchLocation && context.mounted) {
-    }
+    if (autoFetchLocation && context.mounted) {}
 
     return true;
   }

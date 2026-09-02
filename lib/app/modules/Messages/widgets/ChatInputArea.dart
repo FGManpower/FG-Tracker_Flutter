@@ -125,9 +125,8 @@ class _ChatInputAreaState extends State<ChatInputArea> {
     return SafeArea(
       child: Obx(() {
         final isMessageNotEmpty = widget.messageText.value.trim().isNotEmpty;
-        final editingMessage =
-            widget.messageController?.editingMessage.value ??
-                widget.groupMessageController?.editingMessage.value;
+        final editingMessage = widget.messageController?.editingMessage.value ??
+            widget.groupMessageController?.editingMessage.value;
 
         final isEditing = editingMessage != null;
         if (editingMessage != null &&
@@ -141,12 +140,11 @@ class _ChatInputAreaState extends State<ChatInputArea> {
 
             widget.textController.text = text;
 
-            widget.textController.selection =
-                TextSelection.fromPosition(
-                  TextPosition(
-                    offset: text.length,
-                  ),
-                );
+            widget.textController.selection = TextSelection.fromPosition(
+              TextPosition(
+                offset: text.length,
+              ),
+            );
 
             widget.messageText.value = text;
 
@@ -293,7 +291,6 @@ class _ChatInputAreaState extends State<ChatInputArea> {
                           ],
                         ),
                       ),
-
                     Row(
                       children: [
                         SizedBox(width: 5.w),
@@ -320,10 +317,7 @@ class _ChatInputAreaState extends State<ChatInputArea> {
                               Row(
                                 children: [
                                   Flexible(
-
-                                    child:
-
-                                    TextField(
+                                    child: TextField(
                                       controller: widget.textController,
                                       focusNode: focusNode,
                                       onChanged: (val) {
@@ -375,8 +369,9 @@ class _ChatInputAreaState extends State<ChatInputArea> {
                                                       await FileServices()
                                                           .pickMultipleMediaFromGallery();
 
-                                                  if (mediaFiles.isEmpty)
+                                                  if (mediaFiles.isEmpty) {
                                                     return;
+                                                  }
 
                                                   final List<File> images = [];
                                                   final List<String> videos =
@@ -502,39 +497,40 @@ class _ChatInputAreaState extends State<ChatInputArea> {
                                       onTap: widget.isSending.value
                                           ? null
                                           : () {
-                                        if (isEditing) {
-                                          final newText =
-                                          widget.textController.text.trim();
+                                              if (isEditing) {
+                                                final newText = widget
+                                                    .textController.text
+                                                    .trim();
 
-                                          if (newText.isEmpty) return;
+                                                if (newText.isEmpty) return;
 
-                                          if (widget.messageController != null) {
-                                            widget.messageController!
-                                                .updateEditedMessage(
-                                              newText: newText,
-                                            );
-                                          } else if (widget.groupMessageController !=
-                                              null) {
-                                            widget.groupMessageController!
-                                                .updateEditedMessage(
-                                              newText: newText,
-                                            );
-                                          }
+                                                if (widget.messageController !=
+                                                    null) {
+                                                  widget.messageController!
+                                                      .updateEditedMessage(
+                                                    newText: newText,
+                                                  );
+                                                } else if (widget
+                                                        .groupMessageController !=
+                                                    null) {
+                                                  widget.groupMessageController!
+                                                      .updateEditedMessage(
+                                                    newText: newText,
+                                                  );
+                                                }
 
-                                          widget.textController.clear();
-                                          widget.messageText.value = "";
-                                        } else {
-                                          widget.onSend();
-                                        }
-                                      },
+                                                widget.textController.clear();
+                                                widget.messageText.value = "";
+                                              } else {
+                                                widget.onSend();
+                                              }
+                                            },
                                       child: CircleAvatar(
                                         radius: 24.r,
                                         backgroundColor:
-                                        ToggleThemeData.darkPurple,
+                                            ToggleThemeData.darkPurple,
                                         child: Icon(
-                                          isEditing
-                                              ? Icons.check
-                                              : Icons.send,
+                                          isEditing ? Icons.check : Icons.send,
                                           color: Colors.white,
                                         ),
                                       ),

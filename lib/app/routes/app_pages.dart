@@ -31,7 +31,6 @@ import '../modules/Track/Views/TrackLocationScreen.dart';
 import '../modules/Walkie-talkie/WalkieTalkieScreen.dart';
 
 import '../modules/home/Bindings/SosBinding.dart';
-import '../modules/home/Views/bottom_actions_bar.dart';
 import '../modules/home/Views/sos_screen.dart';
 
 import '../modules/mediaStream/Views/incoming_call_screen.dart';

@@ -1,15 +1,11 @@
 import 'dart:async';
-import 'dart:convert';
 
-import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Data/Repositories/Profile_Repo.dart';
 import 'package:fgtracker/app/Data/Repositories/banner_Repo.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Dashboard_Service.dart';
 import 'package:fgtracker/app/Model/ProfileRes.dart';
 import 'package:fgtracker/app/Model/group_count_detail.dart';
-import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
-import 'package:http/http.dart' as http;
 
 import '../../../Model/banner_model.dart';
 
@@ -62,7 +58,7 @@ class HomeController extends GetxController {
 
   Future<void> fetchBanners() async {
     try {
-      isLoadingBanners.value=true;
+      isLoadingBanners.value = true;
 
       var result = await BannerRepo.getBanner();
       if (result.success == true) {

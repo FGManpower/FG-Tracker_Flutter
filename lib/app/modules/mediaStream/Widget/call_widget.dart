@@ -15,9 +15,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 //   );
 // }
 
-
 class CallActionChip extends StatelessWidget {
-  CallActionChip({required this.icon});
+  const CallActionChip({super.key, required this.icon});
 
   final IconData icon;
 
