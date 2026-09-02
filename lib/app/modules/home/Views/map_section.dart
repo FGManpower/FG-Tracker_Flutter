@@ -4,6 +4,8 @@ import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
+import 'package:fgtracker/app/routes/app_pages.dart';
 
 class MapSection extends StatelessWidget {
   const MapSection({super.key});
@@ -97,6 +99,23 @@ class MapSection extends StatelessWidget {
                       _MapControlBtn(Icons.remove),
                       SizedBox(height: 8.h),
                       _MapControlBtn(Icons.my_location),
+                      SizedBox(height: 8.h),
+                      InkWell(
+                        onTap: () {
+                          Get.toNamed(Routes.SOSScreen);
+                        },
+                        child: Container(
+                          padding: EdgeInsets.all(6.w),
+                          decoration: BoxDecoration(
+                            color: Colors.red,
+                            borderRadius: BorderRadius.circular(8.r),
+                            boxShadow: [
+                              BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 4),
+                            ],
+                          ),
+                          child: Icon(Icons.warning, size: 16.sp, color: Colors.white),
+                        ),
+                      ),
                     ],
                   ),
                 ),

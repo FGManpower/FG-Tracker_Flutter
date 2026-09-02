@@ -29,6 +29,12 @@ import '../modules/Walkie-talkie/Views/walkie_group_select_screen.dart';
 import '../modules/Track/Views/Search_Members.dart';
 import '../modules/Track/Views/TrackLocationScreen.dart';
 import '../modules/Walkie-talkie/WalkieTalkieScreen.dart';
+<<<<<<< HEAD
+import '../modules/home/Bindings/SosBinding.dart';
+import '../modules/home/Views/bottom_actions_bar.dart';
+import '../modules/home/Views/sos_screen.dart';
+=======
+>>>>>>> aeab971df3f35b44acff250210b2e56f6aca3a27
 import '../modules/mediaStream/Views/incoming_call_screen.dart';
 part 'app_routes.dart';
 
@@ -181,6 +187,13 @@ class AppPages {
       page: () => CameraScreen(),
       transition: Transition.rightToLeft,
       // binding: VideoBinding(),
+      transitionDuration: const Duration(milliseconds: 500),
+    ),
+    GetPage(
+      name: _Paths.SOSScreen,
+      page: () => SosScreen(),
+      transition: Transition.rightToLeft,
+      binding: SosBinding(),
       transitionDuration: const Duration(milliseconds: 500),
     ),
     // GetPage(
