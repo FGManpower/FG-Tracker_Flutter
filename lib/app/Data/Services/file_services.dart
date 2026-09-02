@@ -8,7 +8,6 @@ import 'package:image_picker_android/image_picker_android.dart';
 import 'package:path_provider/path_provider.dart' as path_provider;
 import 'package:image_picker_platform_interface/image_picker_platform_interface.dart';
 
-
 class FileServices {
   final ImagePicker _picker = ImagePicker();
 
@@ -58,7 +57,7 @@ class FileServices {
       final file = File(video.path);
 
       return file;
-    } catch (e, s) {
+    } catch (e) {
       return null;
     }
   }

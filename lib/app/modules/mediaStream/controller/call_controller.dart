@@ -1,3 +1,17 @@
+<<<<<<< HEAD
+import 'dart:async';
+import 'dart:developer';
+
+import 'package:flutter/material.dart';
+import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
+import 'package:flutter_webrtc/flutter_webrtc.dart';
+import 'package:get/get.dart' hide navigator;
+import 'package:wakelock_plus/wakelock_plus.dart';
+
+import 'package:fgtracker/app/Core/constant/pref_res.dart';
+import 'package:fgtracker/app/Core/values/global.dart';
+=======
+>>>>>>> dad19844ab29312734af3c86f000edf4ffa19d1e
 import 'package:fgtracker/app/Data/Repositories/GroupRepo.dart';
 import 'package:fgtracker/app/Data/Repositories/call_repo.dart';
 import 'package:fgtracker/app/Data/Services/contact_services.dart';
@@ -5,8 +19,13 @@ import 'package:fgtracker/app/Model/GroupRes.dart';
 import 'package:fgtracker/app/Model/recent_call.dart';
 import 'package:fgtracker/app/Model/user_profileList_res.dart';
 import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
+<<<<<<< HEAD
+import 'package:fgtracker/app/routes/app_pages.dart';
+import '../../../Core/global/launchedFromCall.dart';
+=======
 import 'package:flutter/material.dart';
 import 'package:get/get.dart' hide navigator;
+>>>>>>> dad19844ab29312734af3c86f000edf4ffa19d1e
 
 class CallController extends GetxController {
   static CallController get instance => Get.put(CallController());
@@ -128,6 +147,99 @@ class CallController extends GetxController {
     await getRegisteredContacts();
   }
 
+<<<<<<< HEAD
+  Future<void> initializeCall() async {
+    if (fromCallKit || (args["callType"] == "Incoming" && offer == null)) {
+      callStatus.value = "Connecting...";
+
+      socket?.emit("acceptCallFromCallKit", {
+        "callerId": callerId,
+        "sessionId": CallSessionState.sessionId ?? args["sessionId"],
+        "callId": callId,
+        "receiverId": Global.storageServices.get(PrefConst.userId),
+      });
+    } else {
+      log("====== Outgoing Call ======");
+
+      peer?.onIceCandidate = (c) => iceCandidates.add(c);
+
+      socket?.on("callAnswered", (data) async {
+        await peer?.setRemoteDescription(
+          RTCSessionDescription(
+            data["sdpAnswer"]["sdp"],
+            data["sdpAnswer"]["type"],
+          ),
+        );
+
+        for (var c in iceCandidates) {
+          if (c.candidate == null) continue;
+          socket?.emit("IceCandidate", {
+            "remoteUserId": remoteUserId,
+            "iceCandidate": {
+              "id": c.sdpMid,
+              "label": c.sdpMLineIndex,
+              "candidate": c.candidate,
+            },
+          });
+        }
+        iceCandidates.clear();
+
+        peer?.onIceCandidate = (c) {
+          if (c.candidate == null) return;
+          socket?.emit("IceCandidate", {
+            "remoteUserId": remoteUserId,
+            "iceCandidate": {
+              "id": c.sdpMid,
+              "label": c.sdpMLineIndex,
+              "candidate": c.candidate,
+            },
+          });
+        };
+      });
+
+      final sdpOffer = await peer?.createOffer();
+      if (sdpOffer != null) {
+        await peer?.setLocalDescription(sdpOffer);
+
+        socket?.emit("makeCall", {
+          "remoteUserId": remoteUserId,
+          "sdpOffer": sdpOffer.toMap(),
+          "is_video": is_video,
+          "callerId": Global.storageServices.get(PrefConst.userId),
+        });
+      }
+    }
+  }
+
+  Future<void> endCall({String? type}) async {
+    _clearTimers();
+
+    final myUserId = Global.storageServices.get(PrefConst.userId).toString();
+    final targetUser =
+        (myUserId == callerId.toString()) ? remoteUserId : callerId;
+
+    var param = {
+      "callId": callId,
+      "remoteUserId": targetUser.toString(),
+    };
+
+    if (callStatus.value != "Connected") {
+      // Logic for non-connected call disconnects (optional)
+    }
+
+    if (type != "missedCall") {
+      log("========CallEndParameterDetail:$param");
+      socket?.emit("endCall", param);
+    }
+
+    resetPeer();
+
+    if (CallSessionState.sessionId != null) {
+      log("========CallerSideSessionId:${CallSessionState.sessionId}");
+      callEnded(
+        CallSessionState.sessionId.toString(),
+        type: "endCallMethodHittedFromController-Type:$type",
+=======
   Future<void> getRecentCall() async {
     if (recentCallLoading.value || recentCallLoadingMore.value) return;
     recentCallLoading.value = true;
@@ -135,6 +247,7 @@ class CallController extends GetxController {
     try {
       final result = await CallRepo.getRecentCall(
         page: pagination.value.toString(),
+>>>>>>> dad19844ab29312734af3c86f000edf4ffa19d1e
       );
       if (result.status == true) {
         final data = result.data;
@@ -163,6 +276,12 @@ class CallController extends GetxController {
     }
   }
 
+<<<<<<< HEAD
+  void toggleMic() {
+    isAudioOn = !isAudioOn;
+    localStream?.getAudioTracks().forEach((t) => t.enabled = isAudioOn);
+    update();
+=======
   Future<void> loadMoreRecentCalls() async {
     if (recentCallLoading.value ||
         recentCallLoadingMore.value ||
@@ -202,6 +321,7 @@ class CallController extends GetxController {
     } finally {
       recentCallLoadingMore.value = false;
     }
+>>>>>>> dad19844ab29312734af3c86f000edf4ffa19d1e
   }
 
   Future<void> refreshRecentCalls() async {
@@ -294,6 +414,8 @@ class CallController extends GetxController {
     return time.isNotEmpty ? '$sectionLabel, $time' : sectionLabel;
   }
 
+<<<<<<< HEAD
+=======
   String _formatDate(String raw) {
     final DateTime? dt = DateTime.tryParse(raw);
     if (dt != null) {
@@ -346,6 +468,7 @@ class CallController extends GetxController {
     }).toList();
   }
 
+>>>>>>> dad19844ab29312734af3c86f000edf4ffa19d1e
   List<GroupsResData> get filteredGroups {
     final String query = _query;
     if (query.isEmpty) return _groupController.groupData;
@@ -356,6 +479,19 @@ class CallController extends GetxController {
     }).toList();
   }
 
+<<<<<<< HEAD
+  List<Map<String, String>> get filteredRecentCalls {
+    final String query = _query;
+    if (query.isEmpty) return recentCalls;
+    return recentCalls
+        .where((call) =>
+            (call['name'] ?? '').toLowerCase().contains(query) ||
+            (call['type'] ?? '').toLowerCase().contains(query))
+        .toList();
+  }
+
+=======
+>>>>>>> dad19844ab29312734af3c86f000edf4ffa19d1e
   bool get isGroupsLoading => _groupController.groupDataLoading.value;
   String get groupsError => _groupController.responseError.value;
   List<GroupsResData> get groups => _groupController.groupData;
@@ -372,9 +508,38 @@ class CallController extends GetxController {
   void loadGroups() => _groupController.getGroupData();
 }
 
+<<<<<<< HEAD
+  String get formattedDuration {
+    final minutes =
+        (callDurationSeconds.value ~/ 60).toString().padLeft(2, '0');
+    final seconds = (callDurationSeconds.value % 60).toString().padLeft(2, '0');
+    return "$minutes:$seconds";
+  }
+
+  void stopSound() {
+    FlutterRingtonePlayer().stop();
+  }
+
+  void resetPeer() {
+    peer?.dispose();
+    peer = null;
+    localStream?.dispose();
+    localStream = null;
+  }
+
+  void _clearTimers() {
+    _durationTimer?.cancel();
+    _durationTimer = null;
+  }
+
+  void callEnded(String sessionId, {required String type}) {
+    log("Session Call Ended: $sessionId with execution type: $type");
+  }
+=======
 class _RecentEntry {
   _RecentEntry(this.section, this.call);
 
   final String section;
   final CallingDetail call;
+>>>>>>> dad19844ab29312734af3c86f000edf4ffa19d1e
 }

@@ -10,10 +10,10 @@ class AudioBubble extends StatefulWidget {
   final bool isMe;
 
   const AudioBubble({
-    Key? key,
+    super.key,
     required this.audioUrl,
     required this.isMe,
-  }) : super(key: key);
+  });
 
   @override
   State<AudioBubble> createState() => _AudioBubbleState();

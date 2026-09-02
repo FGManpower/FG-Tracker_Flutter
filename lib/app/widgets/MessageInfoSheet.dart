@@ -12,20 +12,17 @@ class MessageInfoSheet extends StatelessWidget {
   final MemberData? memberData;
 
   const MessageInfoSheet({
-    Key? key,
+    super.key,
     required this.message,
     this.groupController,
     this.memberData,
-
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
     final isGroup = groupController != null;
 
-    final seenMembers = isGroup
-        ? _getSeenMembers()
-        : <dynamic>[];
+    final seenMembers = isGroup ? _getSeenMembers() : <dynamic>[];
 
     final seenCount = _getSeenCount();
 
@@ -99,7 +96,7 @@ class MessageInfoSheet extends StatelessWidget {
 
             if (isGroup)
               ...seenMembers.map(
-                    (member) => _buildMemberTile(member),
+                (member) => _buildMemberTile(member),
               )
             else
               _buildSingleSeenTile(),
@@ -113,9 +110,8 @@ class MessageInfoSheet extends StatelessWidget {
 
   int _getSeenCount() {
     if (message.seenBy is List) {
-      final uniqueIds = (message.seenBy as List)
-          .map((id) => id.toString())
-          .toSet();
+      final uniqueIds =
+          (message.seenBy as List).map((id) => id.toString()).toSet();
 
       return uniqueIds.length;
     }
@@ -138,9 +134,7 @@ class MessageInfoSheet extends StatelessWidget {
       return [];
     }
 
-    final seenIds = (message.seenBy as List)
-        .map((id) => id.toString())
-        .toSet();
+    final seenIds = (message.seenBy as List).map((id) => id.toString()).toSet();
 
     return groupController!.groupMembers.where((member) {
       return seenIds.contains(member.userId.toString());
@@ -292,14 +286,14 @@ class MessageInfoSheet extends StatelessWidget {
         radius: 21.r,
         backgroundImage: image.isNotEmpty
             ? NetworkImage(
-          "${ConstRes.aImageBaseUrl}$image",
-        )
+                "${ConstRes.aImageBaseUrl}$image",
+              )
             : null,
         child: image.isEmpty
             ? Icon(
-          Icons.person,
-          size: 20.sp,
-        )
+                Icons.person,
+                size: 20.sp,
+              )
             : null,
       ),
       title: Text(
@@ -346,13 +340,11 @@ class MessageInfoSheet extends StatelessWidget {
       );
     }
 
-    final name =
-    memberData?.name?.toString().trim().isNotEmpty == true
+    final name = memberData?.name?.toString().trim().isNotEmpty == true
         ? memberData!.name.toString()
         : "Unknown";
 
-    final image =
-        memberData?.profileImage?.toString() ?? "";
+    final image = memberData?.profileImage?.toString() ?? "";
 
     return ListTile(
       contentPadding: EdgeInsets.symmetric(
@@ -362,14 +354,14 @@ class MessageInfoSheet extends StatelessWidget {
         radius: 21.r,
         backgroundImage: image.isNotEmpty
             ? NetworkImage(
-          "${ConstRes.aImageBaseUrl}$image",
-        )
+                "${ConstRes.aImageBaseUrl}$image",
+              )
             : null,
         child: image.isEmpty
             ? Icon(
-          Icons.person,
-          size: 20.sp,
-        )
+                Icons.person,
+                size: 20.sp,
+              )
             : null,
       ),
       title: Text(
@@ -392,4 +384,5 @@ class MessageInfoSheet extends StatelessWidget {
         size: 18.sp,
       ),
     );
-  }}
+  }
+}

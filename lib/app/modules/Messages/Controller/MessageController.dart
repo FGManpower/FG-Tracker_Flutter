@@ -298,7 +298,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         if (data["chatType"] != "private") return;
 
         final msg = _messages.firstWhereOrNull(
-              (e) => e.id == messageId,
+          (e) => e.id == messageId,
         );
 
         if (msg != null) {
@@ -316,7 +316,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         if (data["chatType"] != "private") return;
 
         final currentUserId =
-        Global.storageServices.get(PrefConst.userId).toString();
+            Global.storageServices.get(PrefConst.userId).toString();
 
         final otherUserId = memberData.userId.toString();
 
@@ -324,10 +324,8 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         final receiverId = data["receiverId"].toString();
 
         final isSameChat =
-            (senderId == currentUserId &&
-                receiverId == otherUserId) ||
-                (senderId == otherUserId &&
-                    receiverId == currentUserId);
+            (senderId == currentUserId && receiverId == otherUserId) ||
+                (senderId == otherUserId && receiverId == currentUserId);
 
         if (!isSameChat) return;
 
@@ -549,7 +547,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
           replySender: replyMessage.value?.senderName,
         );
       }
-    } catch (e, stack) {
+    } catch (e) {
     } finally {
       isUploadingVideo.value = false;
       clearReply();
@@ -631,9 +629,9 @@ class MessageController extends GetxController with WidgetsBindingObserver {
   }
 
   Future<void> getMessageHistory(
-      String recieverId,
-      int groupId,
-      ) async {
+    String recieverId,
+    int groupId,
+  ) async {
     try {
       var result = await MessageRepo.MessageHistory(
         recieverId: recieverId,
@@ -649,7 +647,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
         if (pinnedId != null) {
           final pinned = _messages.firstWhereOrNull(
-                (message) => message.id == pinnedId,
+            (message) => message.id == pinnedId,
           );
 
           if (pinned != null) {
@@ -674,6 +672,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
       log("History Error: $e");
     }
   }
+
   void setReply(MessageData message) {
     replyMessage.value = message;
   }
@@ -808,7 +807,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
   void pinMessage(MessageData message) {
     final currentUserId =
-    Global.storageServices.get(PrefConst.userId).toString();
+        Global.storageServices.get(PrefConst.userId).toString();
 
     final otherUserId = memberData.userId.toString();
 
@@ -817,14 +816,13 @@ class MessageController extends GetxController with WidgetsBindingObserver {
       senderId: currentUserId,
       receiverId: otherUserId,
       messageId: message.id!,
-      pinnedByName:
-      Global.storageServices.get(PrefConst.userName) ?? "User",
+      pinnedByName: Global.storageServices.get(PrefConst.userName) ?? "User",
     );
   }
 
   void unpinMessage() {
     final currentUserId =
-    Global.storageServices.get(PrefConst.userId).toString();
+        Global.storageServices.get(PrefConst.userId).toString();
 
     final otherUserId = memberData.userId.toString();
 

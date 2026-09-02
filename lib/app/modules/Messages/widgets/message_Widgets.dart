@@ -24,24 +24,23 @@ class CommonChatAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   final String? lastSeen;
 
-  CommonChatAppBar(
-      {Key? key,
-        required this.profileImageUrl,
-        required this.userName,
-        required this.controller,
-        this.onBackTap,
-        this.onCallTap,
-        this.onVideoTap,
-        this.onUpdateGroupName,
-        this.onDeleteMember,
-        required this.groupName,
-        this.onGroupExit,
-        required this.isOnline,
-        this.lastSeen,
-        this.onDeleteGroup,
-        this.onSearchTap,
-        this.isGroupChat = false})
-      : super(key: key);
+  const CommonChatAppBar(
+      {super.key,
+      required this.profileImageUrl,
+      required this.userName,
+      required this.controller,
+      this.onBackTap,
+      this.onCallTap,
+      this.onVideoTap,
+      this.onUpdateGroupName,
+      this.onDeleteMember,
+      required this.groupName,
+      this.onGroupExit,
+      required this.isOnline,
+      this.lastSeen,
+      this.onDeleteGroup,
+      this.onSearchTap,
+      this.isGroupChat = false});
 
   @override
   Size get preferredSize => Size.fromHeight(kToolbarHeight);
@@ -198,8 +197,6 @@ class CommonChatAppBar extends StatelessWidget implements PreferredSizeWidget {
               //   ),
               //   if (isCreator)
 
-
-
               Builder(
                 builder: (context) {
                   if (isGroupChat && controller.isCreator == true) {
@@ -229,8 +226,7 @@ class CommonChatAppBar extends StatelessWidget implements PreferredSizeWidget {
                                     height: 5.h,
                                     decoration: BoxDecoration(
                                       color: Colors.grey.shade300,
-                                      borderRadius:
-                                      BorderRadius.circular(20.r),
+                                      borderRadius: BorderRadius.circular(20.r),
                                     ),
                                   ),
                                   SizedBox(height: 20.h),
@@ -265,8 +261,7 @@ class CommonChatAppBar extends StatelessWidget implements PreferredSizeWidget {
                                     icon: Icons.edit_rounded,
                                     iconColor: ToggleThemeData.darkPurple,
                                     title: "Update Group ",
-                                    subtitle:
-                                    "Change the current group detail",
+                                    subtitle: "Change the current group detail",
                                     onTap: () {
                                       Navigator.pop(context);
                                       onUpdateGroupName?.call();
@@ -277,8 +272,7 @@ class CommonChatAppBar extends StatelessWidget implements PreferredSizeWidget {
                                     icon: Icons.person_remove_rounded,
                                     iconColor: Colors.red,
                                     title: "Delete Member",
-                                    subtitle:
-                                    "Remove a member from this group",
+                                    subtitle: "Remove a member from this group",
                                     onTap: () {
                                       Navigator.pop(context);
                                       onDeleteMember?.call();
@@ -293,7 +287,7 @@ class CommonChatAppBar extends StatelessWidget implements PreferredSizeWidget {
                                       height: 52,
                                       borderradiues: 50,
                                       backgroundColor:
-                                      ToggleThemeData.darkPurple,
+                                          ToggleThemeData.darkPurple,
                                       textcolor: Colors.white,
                                       fontSize: 15,
                                     ),
@@ -339,8 +333,7 @@ class CommonChatAppBar extends StatelessWidget implements PreferredSizeWidget {
                                   height: 5.h,
                                   decoration: BoxDecoration(
                                     color: Colors.grey.shade300,
-                                    borderRadius:
-                                    BorderRadius.circular(20.r),
+                                    borderRadius: BorderRadius.circular(20.r),
                                   ),
                                 ),
                                 SizedBox(height: 20.h),
@@ -378,8 +371,7 @@ class CommonChatAppBar extends StatelessWidget implements PreferredSizeWidget {
                                     ontap: () => Navigator.pop(context),
                                     height: 52,
                                     borderradiues: 50,
-                                    backgroundColor:
-                                    ToggleThemeData.darkPurple,
+                                    backgroundColor: ToggleThemeData.darkPurple,
                                     textcolor: Colors.white,
                                     fontSize: 15,
                                   ),

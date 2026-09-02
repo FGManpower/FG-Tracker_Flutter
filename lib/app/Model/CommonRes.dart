@@ -2,7 +2,6 @@ class CommonResponse {
   bool? status;
   String? message;
 
-
   CommonResponse({this.status, this.message});
 
   CommonResponse.fromJson(Map<String, dynamic> json) {
@@ -11,9 +10,9 @@ class CommonResponse {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['status'] = this.status;
-    data['message'] = this.message;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['status'] = status;
+    data['message'] = message;
     return data;
   }
 }

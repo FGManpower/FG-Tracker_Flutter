@@ -1,31 +1,115 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:fgtracker/app/global_widget/common_widget.dart';
-import 'package:fgtracker/gen/fonts.gen.dart';
+import 'package:fgtracker/app/Model/user_profileList_res.dart';
+import 'package:fgtracker/app/Data/Services/contact_services.dart';
+import 'package:fgtracker/app/Data/Repositories/GroupRepo.dart';
+import '../../../Core/values/BottomSheets/sos_usesheet.dart';
 
 class SosController extends GetxController {
+  final ContactService _contactService = ContactService();
+  final ImagePicker _picker = ImagePicker();
+
   var selectedReason = 'Medical'.obs;
   var imagePath = ''.obs;
   final detailsController = TextEditingController();
 
-  final ImagePicker _picker = ImagePicker();
+  var allUsers = <UserListData>[].obs;
+  var selectedFamilyMembers = <UserListData>[].obs;
+  var isLoading = false.obs;
 
-  void selectReason(String reason) {
-    selectedReason.value = reason;
+  @override
+  void onInit() {
+    super.onInit();
+    fetchAllUsers();
   }
 
-  Future<void> pickImageFromCamera() async {
-    final XFile? pickedFile = await _picker.pickImage(source: ImageSource.camera);
+  Future<void> fetchAllUsers() async {
+    try {
+      isLoading.value = true;
+      final contactNumbers = await _contactService.getMobileNumbers();
+
+      if (contactNumbers.isEmpty) {
+        allUsers.clear();
+        return;
+      }
+
+      UserProfileListRes result = await GroupRepo.getAllUserData();
+      if (result.status == true && result.userData != null) {
+        final users = result.userData!;
+        final contactNumberSet = contactNumbers.toSet();
+
+        final matchedUsers = users.where((user) {
+          String mobileNo =
+              (user.mobileNo ?? '').replaceAll(RegExp(r'[^0-9]'), '');
+
+          if (mobileNo.startsWith('91') && mobileNo.length > 10) {
+            mobileNo = mobileNo.substring(2);
+          }
+
+          if (mobileNo.length > 10) {
+            mobileNo = mobileNo.substring(mobileNo.length - 10);
+          }
+
+          return contactNumberSet.contains(mobileNo);
+        }).toList();
+
+        allUsers.value = matchedUsers;
+      }
+    } catch (_) {
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<void> pickImage(ImageSource source) async {
+    final XFile? pickedFile = await _picker.pickImage(source: source);
     if (pickedFile != null) {
       imagePath.value = pickedFile.path;
     }
   }
 
+  void selectReason(String reason) {
+    selectedReason.value = reason;
+  }
+
+  void addFamilyMember(UserListData user) {
+    if (selectedFamilyMembers.length < 5 &&
+        !selectedFamilyMembers
+            .any((element) => element.userId == user.userId)) {
+      selectedFamilyMembers.add(user);
+    }
+  }
+
+  void removeFamilyMember(int index) {
+    selectedFamilyMembers.removeAt(index);
+  }
+
+  Future<void> openFamilyBottomSheet(BuildContext context) async {
+    await fetchAllUsers();
+    final UserListData? result = await SosUserSheet().showAllUserBottomSheet(
+      context,
+      allUsers,
+    );
+    if (result != null) {
+      addFamilyMember(result);
+    }
+  }
+
   void sendSosAlert(BuildContext context) {
-    if (selectedReason.value == 'Other' && detailsController.text.trim().isEmpty) {
+    if (selectedFamilyMembers.isEmpty) {
+      Get.snackbar(
+        "Required",
+        "Add at least 1 family member to send SOS alert",
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+      return;
+    }
+
+    if (selectedReason.value == 'Other' &&
+        detailsController.text.trim().isEmpty) {
       Get.snackbar(
         "Required",
         "Add Details is mandatory when 'Other' reason is selected",
@@ -53,43 +137,59 @@ class SosController extends GetxController {
                 children: [
                   GestureDetector(
                     onTap: () => Navigator.pop(ctx),
-                    child: const Icon(Icons.close, color: Colors.black54),
+                    child:
+                        Icon(Icons.close, color: Colors.black54, size: 20.sp),
                   ),
                 ],
               ),
+              SizedBox(height: 4.h),
               Container(
                 padding: EdgeInsets.all(16.w),
                 decoration: BoxDecoration(
-                  color: Colors.green.withOpacity(0.1),
+                  color: Colors.green.withOpacity(0.08),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(
-                  Icons.check_rounded,
-                  size: 40.sp,
-                  color: Colors.green,
+                child: Container(
+                  padding: EdgeInsets.all(12.w),
+                  decoration: BoxDecoration(
+                    color: Colors.green.withOpacity(0.15),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(Icons.check, size: 32.sp, color: Colors.green),
                 ),
               ),
               SizedBox(height: 16.h),
-              reausabletext(
+              Text(
                 "SOS Alert Sent!",
-                fontsize: 18.sp,
-                fontfamily: FontFamily.interBold,
-                color: Colors.black87,
-                align: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 18.sp,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+                textAlign: TextAlign.center,
               ),
               SizedBox(height: 6.h),
-              reausabletext(
+              Text(
                 "Your alert has been sent to nearby people.",
-                fontsize: 12.sp,
-                color: Colors.black54,
-                align: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 12.sp,
+                  color: Colors.black54,
+                ),
+                textAlign: TextAlign.center,
               ),
               SizedBox(height: 20.h),
-              _buildPopupInfoRow(Icons.group, "People within 2 km radius", "will be notified"),
-              SizedBox(height: 10.h),
-              _buildPopupInfoRow(Icons.notifications_active, "Stay calm, help is on the way", "We will notify you of any updates"),
-              SizedBox(height: 10.h),
-              _buildPopupInfoRow(Icons.location_on, "Live tracking started", "Your location is being shared"),
+              _buildPopupInfoRow(
+                  Icons.group, "People within 2 km radius", "will be notified"),
+              SizedBox(height: 12.h),
+              _buildPopupInfoRow(
+                  Icons.notifications_active_outlined,
+                  "Stay calm, help is on the way",
+                  "We will notify you of any updates"),
+              SizedBox(height: 12.h),
+              _buildPopupInfoRow(
+                  Icons.location_on_outlined,
+                  "Live tracking started",
+                  "Your location is being shared with ${selectedFamilyMembers.length} family member(s)"),
               SizedBox(height: 24.h),
               SizedBox(
                 width: double.infinity,
@@ -98,18 +198,20 @@ class SosController extends GetxController {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF6B4DFF),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(50.r),
+                      borderRadius: BorderRadius.circular(30.r),
                     ),
                   ),
                   onPressed: () {
                     Navigator.pop(ctx);
                     Get.back();
                   },
-                  child: reausabletext(
+                  child: Text(
                     "OK, Got It",
-                    fontsize: 15.sp,
-                    fontfamily: FontFamily.interBold,
-                    color: Colors.white,
+                    style: TextStyle(
+                      fontSize: 15.sp,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
               ),
@@ -129,15 +231,29 @@ class SosController extends GetxController {
             color: const Color(0xFF6B4DFF).withOpacity(0.1),
             shape: BoxShape.circle,
           ),
-          child: Icon(icon, size: 16.sp, color: const Color(0xFF6B4DFF)),
+          child: Icon(icon, size: 18.sp, color: const Color(0xFF6B4DFF)),
         ),
         SizedBox(width: 12.w),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              reausabletext(title, fontsize: 12.sp, fontfamily: FontFamily.interSemiBold, color: Colors.black87),
-              reausabletext(subtitle, fontsize: 10.sp, color: Colors.black54),
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 12.sp,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black87,
+                ),
+              ),
+              SizedBox(height: 2.h),
+              Text(
+                subtitle,
+                style: TextStyle(
+                  fontSize: 10.sp,
+                  color: Colors.black54,
+                ),
+              ),
             ],
           ),
         ),

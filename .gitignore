@@ -47,3 +47,6 @@ assets/service_account.json
 
 git filter-repo --https://github.com/FGManpower/FG-Tracker_Flutter.git
  /assets/service_account.json --invert-paths
+
+# FVM Version Cache
+.fvm/

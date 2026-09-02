@@ -86,7 +86,7 @@ class CustomNotificationServices {
       final call = IncomingCallModel.fromMap(data);
       CallStateTracker.isIncomingCallScreenOpen = false;
       Map<String, dynamic>? offer =
-          await decomPress().decompressSDPOffer(call.sdpOfferCompressed);
+          decomPress().decompressSDPOffer(call.sdpOfferCompressed);
       Get.offNamed(
         Routes.callScreen,
         arguments: {

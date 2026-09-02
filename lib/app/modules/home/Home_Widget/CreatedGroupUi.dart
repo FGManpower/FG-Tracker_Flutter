@@ -116,40 +116,40 @@ class CreatedGroupUi extends StatelessWidget {
                           SizedBox(width: 4.w),
                           isCreator
                               ? Transform.translate(
-                            offset: Offset(8.w, 0),
-                            child: Transform.scale(
-                              scale: 0.50,
-                              child: CupertinoSwitch(
-                                value: isActive,
-                                onChanged: (value) {
-                                  if (data == null) return;
+                                  offset: Offset(8.w, 0),
+                                  child: Transform.scale(
+                                    scale: 0.50,
+                                    child: CupertinoSwitch(
+                                      value: isActive,
+                                      onChanged: (value) {
+                                        if (data == null) return;
 
-                                  groupController.updateGroup(
-                                    groupController,
-                                    groupId: data.id?.toString() ?? "",
-                                    groupStatus: value.toString(),
-                                  );
-                                },
-                                activeColor: const Color(0xff5045B9),
-                                trackColor: Colors.black26,
-                              ),
-                            ),
-                          )
-                              :  SizedBox(
-                            width: 40.w,
-                            height: 38.h,
-                            child: Center(
-                              child: Icon(
-                                isActive
-                                    ? Icons.check_circle_outline
-                                    : Icons.cancel_sharp,
-                                color: isActive
-                                    ? Colors.green
-                                    : Colors.redAccent,
-                                size: 20.sp,
-                              ),
-                            ),
-                          ),
+                                        groupController.updateGroup(
+                                          groupController,
+                                          groupId: data.id?.toString() ?? "",
+                                          groupStatus: value.toString(),
+                                        );
+                                      },
+                                      activeTrackColor: const Color(0xff5045B9),
+                                      inactiveTrackColor: Colors.black26,
+                                    ),
+                                  ),
+                                )
+                              : SizedBox(
+                                  width: 40.w,
+                                  height: 38.h,
+                                  child: Center(
+                                    child: Icon(
+                                      isActive
+                                          ? Icons.check_circle_outline
+                                          : Icons.cancel_sharp,
+                                      color: isActive
+                                          ? Colors.green
+                                          : Colors.redAccent,
+                                      size: 20.sp,
+                                    ),
+                                  ),
+                                ),
                         ],
                       ),
                       SizedBox(height: 8.h),
@@ -179,7 +179,6 @@ class CreatedGroupUi extends StatelessWidget {
                               ],
                             ),
                           ),
-
                           Padding(
                             padding: EdgeInsets.only(top: 2.h),
                             child: Container(
@@ -188,9 +187,7 @@ class CreatedGroupUi extends StatelessWidget {
                               color: const Color(0xff5045B9),
                             ),
                           ),
-
                           SizedBox(width: 8.w),
-
                           Expanded(
                             flex: 2,
                             child: Column(
@@ -213,7 +210,6 @@ class CreatedGroupUi extends StatelessWidget {
                               ],
                             ),
                           ),
-
                           Padding(
                             padding: EdgeInsets.only(top: 2.h),
                             child: Container(
@@ -222,9 +218,7 @@ class CreatedGroupUi extends StatelessWidget {
                               color: const Color(0xff5045B9),
                             ),
                           ),
-
                           SizedBox(width: 8.w),
-
                           Expanded(
                             flex: 2,
                             child: Column(
@@ -325,8 +319,7 @@ class CreatedGroupUi extends StatelessWidget {
                               borderRadius: BorderRadius.circular(8.r),
                             ),
                             child: Row(
-                              mainAxisAlignment:
-                              MainAxisAlignment.spaceBetween,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 reausabletext(
                                   "Exit Group",

@@ -9,7 +9,7 @@ class UpdateState {
   final bool isUpdating;
   final double progress; // New field for update progress
 
-  UpdateState({
+  const UpdateState({
     this.currentTrack = UpdateTrack.stable,
     this.isCheckingForUpdates = false,
     this.isRestartApp = false,

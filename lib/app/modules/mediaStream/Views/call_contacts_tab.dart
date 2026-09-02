@@ -140,6 +140,16 @@ class _CallContactsTabState extends State<CallContactsTab> {
             ),
           ),
           SizedBox(width: 8.w),
+<<<<<<< HEAD
+          InkWell(
+            onTap: onTapVideo,
+            child: CallActionChip(
+              icon: Icons.videocam_rounded,
+            ),
+          ),
+          SizedBox(width: 10.w),
+          InkWell(
+=======
           CallActionChip(
             icon: Icons.videocam_rounded,
             onTap: onTapVideo,
@@ -147,7 +157,9 @@ class _CallContactsTabState extends State<CallContactsTab> {
           SizedBox(width: 10.w),
           CallActionChip(
             icon: Icons.call_rounded,
+>>>>>>> dad19844ab29312734af3c86f000edf4ffa19d1e
             onTap: onTapAudio,
+            child: CallActionChip(icon: Icons.call_rounded),
           ),
         ],
       ),
@@ -156,7 +168,11 @@ class _CallContactsTabState extends State<CallContactsTab> {
 }
 
 class SkeletonContactRow extends StatelessWidget {
+<<<<<<< HEAD
+  const SkeletonContactRow({super.key});
+=======
   SkeletonContactRow();
+>>>>>>> dad19844ab29312734af3c86f000edf4ffa19d1e
 
   @override
   Widget build(BuildContext context) {

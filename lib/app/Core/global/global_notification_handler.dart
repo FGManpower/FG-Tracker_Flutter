@@ -60,8 +60,6 @@ Future<void> handlePendingNotification() async {
 
   final Map<String, dynamic> callData = jsonDecode(response.payload!);
 
-
-
   if (response.actionId == "CALL_ACCEPT") {
     await _ensureSocketReady();
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -114,7 +112,7 @@ Future<void> handleTerminatedCallIfAny() async {
   if (details?.notificationResponse != null) {
     response = details!.notificationResponse;
   }
-  debugPrint("======response-${response}");
+  debugPrint("======response-$response");
   response ??= NotificationHolder.pendingResponse;
 
   if (response == null || response.payload == null) return;

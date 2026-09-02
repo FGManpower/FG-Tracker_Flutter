@@ -3,9 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 
-
 class CallActionChip extends StatelessWidget {
+<<<<<<< HEAD
+  const CallActionChip({super.key, required this.icon});
+=======
    CallActionChip({required this.icon,this.onTap});
+>>>>>>> dad19844ab29312734af3c86f000edf4ffa19d1e
 
   final IconData icon;
   void Function()? onTap;

@@ -43,7 +43,6 @@ Widget buildTextField(
   IconData? icon,
   String hint, {
   TextEditingController? passwordController,
-
   required TextEditingController controller,
   bool isPassword = false,
   bool isConfirmPassword = false,
@@ -360,7 +359,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
         }
 
         if (widget.hint.toLowerCase().contains("phone")) {
-          if (value == null || value.trim().isEmpty) {
+          if (value.trim().isEmpty) {
             return "${widget.hint} is required";
           }
           return null;
@@ -394,7 +393,7 @@ Widget inputField(BuildContext context,
     void Function(String? value)? onFieldSubmitted,
     bool enable = true,
     int? maxLength,
-      Widget? prefixEmpty,
+    Widget? prefixEmpty,
     int? maxLines,
     TextInputType? keyboradtype,
     GlobalKey? key,
@@ -407,7 +406,7 @@ Widget inputField(BuildContext context,
       Utility.isNullEmptyOrFalse(title)
           ? SizedBox()
           : Padding(
-              padding: EdgeInsets.only(bottom: 5.h,left: 3.w),
+              padding: EdgeInsets.only(bottom: 5.h, left: 3.w),
               child: reausabletext(title ?? "",
                   fontsize: 16, fontfamily: FontFamily.interSemiBold),
             ),
@@ -429,14 +428,16 @@ Widget inputField(BuildContext context,
         controller: textctr,
         validator: validators,
         hintText: hintname,
-        prefixIcon: prefixicon==null?prefixEmpty:Padding(
-          padding: EdgeInsets.only(left: 10.w, right: 10.w),
-          child: Icon(
-            prefixicon,
-            size: 23.sp,
-            color: ToggleThemeData.darkPurple,
-          ),
-        ),
+        prefixIcon: prefixicon == null
+            ? prefixEmpty
+            : Padding(
+                padding: EdgeInsets.only(left: 10.w, right: 10.w),
+                child: Icon(
+                  prefixicon,
+                  size: 23.sp,
+                  color: ToggleThemeData.darkPurple,
+                ),
+              ),
       )
     ],
   );

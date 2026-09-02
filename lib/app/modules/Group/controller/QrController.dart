@@ -14,11 +14,6 @@ import 'package:share_plus/share_plus.dart';
 class QrController extends GetxController {
   var groupCode = "".obs;
 
-  @override
-  void onInit() {
-    super.onInit();
-  }
-
   final ScreenshotController screenshotController = ScreenshotController();
 
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
