@@ -5,7 +5,7 @@ class IncomingCallModel {
   final String callerName;
   final String callerProfileImage;
   final String? sdpOfferCompressed;
-  final int? callId;
+  final int? callId; 
 
   IncomingCallModel({
     required this.callerId,
