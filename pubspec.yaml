@@ -88,7 +88,7 @@ dependencies:
   video_thumbnail: ^0.5.3
   flutter_pdfview: ^1.4.4
   open_file: ^3.5.11
-#  proximity_screen_lock: ^2.3.0
+  proximity_screen_lock: ^2.3.0
   scrollable_positioned_list: ^0.3.8
   emoji_picker_flutter: ^3.1.0
   flutter_linkify: ^6.0.0
