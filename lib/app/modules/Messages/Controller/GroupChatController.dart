@@ -180,28 +180,22 @@ class GroupMessageController extends GetxController {
         if (messageId == null) return;
 
         final index = _messages.indexWhere(
-              (message) => message.id == messageId,
+          (message) => message.id == messageId,
         );
 
         if (index == -1) return;
 
         _messages[index].content = data["content"];
 
-        _messages[index].isEdited =
-            data["isEdited"] ?? true;
+        _messages[index].isEdited = data["isEdited"] ?? true;
 
-        _messages[index].editedAt =
-        data["editedAt"];
+        _messages[index].editedAt = data["editedAt"];
 
         updateMessageStream();
 
         log("GROUP MESSAGE EDITED => $messageId");
       },
     );
-
-
-
-
 
     socketService.listenMessageDeleted(
       callback: (data) {
@@ -232,7 +226,7 @@ class GroupMessageController extends GetxController {
         if (data["chatType"] != "group") return;
 
         final msg = _messages.firstWhereOrNull(
-              (e) => e.id == messageId,
+          (e) => e.id == messageId,
         );
 
         if (msg != null) {
@@ -249,8 +243,7 @@ class GroupMessageController extends GetxController {
 
         if (data["chatType"] != "group") return;
 
-        final dataGroupId =
-        int.tryParse(data["groupId"].toString());
+        final dataGroupId = int.tryParse(data["groupId"].toString());
 
         if (dataGroupId != groupId) return;
 
@@ -607,7 +600,7 @@ class GroupMessageController extends GetxController {
       ..addAll(
         List.generate(
           8,
-              (index) => MessageData(
+          (index) => MessageData(
             senderId: index.isEven ? 1 : 2,
             senderName: "",
             messageType: "text",
@@ -635,7 +628,7 @@ class GroupMessageController extends GetxController {
 
         if (pinnedId != null) {
           final pinned = _messages.firstWhereOrNull(
-                (message) => message.id == pinnedId,
+            (message) => message.id == pinnedId,
           );
 
           if (pinned != null) {
@@ -928,8 +921,7 @@ class GroupMessageController extends GetxController {
       chatType: "group",
       groupId: groupId,
       messageId: message.id!,
-      pinnedByName:
-      Global.storageServices.get(PrefConst.userName) ?? "User",
+      pinnedByName: Global.storageServices.get(PrefConst.userName) ?? "User",
     );
   }
 
@@ -1035,13 +1027,12 @@ class GroupMessageController extends GetxController {
     socketService.editMessage(
       messageId: message.id!,
       content: text,
-      userId: Global.storageServices
-          .get(PrefConst.userId)
-          .toString(),
+      userId: Global.storageServices.get(PrefConst.userId).toString(),
     );
 
     editingMessage.value = null;
   }
+
   @override
   void onClose() {
     focusNode.dispose();
