@@ -85,50 +85,59 @@ class _StatCard extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(16.r),
+        borderRadius: BorderRadius.circular(15.r),
         child: Container(
-          padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 6.w),
+          padding: EdgeInsets.symmetric(
+            vertical: 13.h,
+            horizontal: 6.w,
+          ),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(16.r),
+            borderRadius: BorderRadius.circular(15.r),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.04),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
+                blurRadius: 9,
+                offset: const Offset(0, 3),
               ),
             ],
-            border: Border.all(color: Colors.grey.withOpacity(0.1)),
+            border: Border.all(
+              color: Colors.grey.withOpacity(0.1),
+            ),
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               CircleAvatar(
-                radius: 18.r,
+                radius: 16.r,
                 backgroundColor: iconColor.withOpacity(0.15),
-                child: Icon(icon, color: iconColor, size: 20.sp),
+                child: Icon(
+                  icon,
+                  color: iconColor,
+                  size: 18.sp,
+                ),
               ),
-              SizedBox(height: 8.h),
+              SizedBox(height: 6.h),
               reausabletext(
                 title,
-                fontsize: 11.sp,
+                fontsize: 10.5.sp,
                 color: Colors.black87,
                 fontfamily: FontFamily.interSemiBold,
                 align: TextAlign.center,
               ),
-              SizedBox(height: 2.h),
+              SizedBox(height: 1.h),
               reausabletext(
                 value,
-                fontsize: 18.sp,
+                fontsize: 15.sp,
                 color: Colors.black,
                 fontfamily: FontFamily.interBold,
                 align: TextAlign.center,
               ),
-              SizedBox(height: 2.h),
+              SizedBox(height: 1.h),
               reausabletext(
                 subtitle,
-                fontsize: 10.sp,
+                fontsize: 9.5.sp,
                 color: Colors.grey,
                 align: TextAlign.center,
               ),

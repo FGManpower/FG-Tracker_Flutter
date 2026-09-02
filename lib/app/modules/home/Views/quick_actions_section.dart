@@ -56,7 +56,7 @@ class QuickActionsSection extends StatelessWidget {
             _QuickActionCard(
               "Group Chat",
               Icons.groups,
-              // onTap: () => Get.toNamed(Routes.GroupsList),
+               onTap: () => Get.toNamed(Routes.GroupsList),
             ),
 
             _QuickActionCard(

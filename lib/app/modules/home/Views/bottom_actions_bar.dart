@@ -70,7 +70,7 @@ class _JoinGroupButton extends StatelessWidget {
         );
       },
       child: Container(
-        padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 8.w),
+        padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 7.w),
         decoration: BoxDecoration(
           gradient: const LinearGradient(
             colors: [Color(0xFF8B78FF), Color(0xFF5A3FFF)],
@@ -127,7 +127,7 @@ class _CreateGroupButton extends StatelessWidget {
         showCreateGroupSheet();
       },
       child: Container(
-        padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 8.w),
+        padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 7.w),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16.r),

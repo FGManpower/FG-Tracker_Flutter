@@ -44,7 +44,7 @@ class MapSection extends StatelessWidget {
         ),
         SizedBox(height: 15.h),
         Container(
-          height: 200.h,
+          height: 190.h,
           width: double.infinity,
           decoration: BoxDecoration(
             color: const Color(0xFFF0F4F8),
