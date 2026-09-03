@@ -80,7 +80,8 @@ class _StatCard extends StatelessWidget {
     required this.title,
     required this.value,
     required this.subtitle,
-  }) : onTap = null;
+    this.onTap,
+  });
 
   final IconData icon;
   final Color iconColor;
