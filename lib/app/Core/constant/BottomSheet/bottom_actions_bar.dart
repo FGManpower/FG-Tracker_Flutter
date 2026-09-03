@@ -15,7 +15,7 @@ Future<void> showCreateGroupSheet() {
     isDismissible: true,
     enableDrag: true,
     backgroundColor: Colors.transparent,
-    barrierColor: Colors.black.withOpacity(0.45),
+    barrierColor: Colors.black.withValues(alpha: 0.45),
   );
 }
 
@@ -73,7 +73,7 @@ class _CreateGroupSheetState extends State<CreateGroupSheet> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(28.r)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 24,
             offset: const Offset(0, -6),
           ),
@@ -190,7 +190,7 @@ class _SheetHeader extends StatelessWidget {
             borderRadius: BorderRadius.circular(15.r),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF6B4DFF).withOpacity(0.3),
+                color: const Color(0xFF6B4DFF).withValues(alpha: 0.3),
                 blurRadius: 12,
                 offset: const Offset(0, 6),
               ),
@@ -368,10 +368,10 @@ class _RoundedField extends StatelessWidget {
         counterText: "",
         hintText: hint,
         hintStyle: TextStyle(
-          color: const Color(0xFF6B4DFF).withOpacity(0.45),
+          color: const Color(0xFF6B4DFF).withValues(alpha: 0.45),
           fontSize: 14.sp,
         ),
-        prefixIcon: Icon(icon, color: const Color(0xFF6B4DFF).withOpacity(0.7)),
+        prefixIcon: Icon(icon, color: const Color(0xFF6B4DFF).withValues(alpha: 0.7)),
         filled: true,
         fillColor: Colors.white,
         contentPadding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 18.h),
@@ -424,7 +424,7 @@ class _SubmitButton extends StatelessWidget {
           borderRadius: BorderRadius.circular(30.r),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF6B4DFF).withOpacity(0.35),
+              color: const Color(0xFF6B4DFF).withValues(alpha: 0.35),
               blurRadius: 16,
               offset: const Offset(0, 8),
             ),

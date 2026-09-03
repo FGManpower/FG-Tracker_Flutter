@@ -12,12 +12,12 @@ class MessageInfoSheet extends StatelessWidget {
   final MemberData? memberData;
 
   const MessageInfoSheet({
-    Key? key,
+    super.key,
     required this.message,
     this.groupController,
     this.memberData,
 
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

@@ -129,7 +129,7 @@ class ModalImage {
             borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black12.withOpacity(0.1),
+                color: Colors.black12.withValues(alpha: 0.1),
                 blurRadius: 10.r,
                 spreadRadius: 2.r,
               ),
@@ -210,7 +210,7 @@ class ModalImage {
             Container(
               padding: EdgeInsets.all(8.w),
               decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
+                color: color.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8.r),
               ),
               child: Icon(icon, color: color, size: 22.sp),
@@ -252,7 +252,7 @@ class ModalImage {
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black12.withOpacity(0.1),
+                  color: Colors.black12.withValues(alpha: 0.1),
                   blurRadius: 10.r,
                   spreadRadius: 2.r,
                 ),
@@ -279,7 +279,7 @@ class ModalImage {
                   Container(
                     padding: EdgeInsets.all(18.w),
                     decoration: BoxDecoration(
-                      color: AppColors.darkBlue.withOpacity(0.1),
+                      color: AppColors.darkBlue.withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(

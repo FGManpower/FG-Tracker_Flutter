@@ -36,7 +36,7 @@ class CreateGroupScreen extends StatelessWidget {
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.06),
+                            color: Colors.black.withValues(alpha: 0.06),
                             blurRadius: 10,
                             offset: const Offset(0, 4),
                           ),
@@ -143,7 +143,7 @@ class CreateGroupScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(30.r),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF6B4DFF).withOpacity(0.35),
+                          color: const Color(0xFF6B4DFF).withValues(alpha: 0.35),
                           blurRadius: 16,
                           offset: const Offset(0, 8),
                         ),
@@ -171,7 +171,7 @@ class CreateGroupScreen extends StatelessWidget {
         Container(
           padding: EdgeInsets.all(8.w),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.8),
+            color: Colors.white.withValues(alpha: 0.8),
             shape: BoxShape.circle,
           ),
           child: Icon(icon, size: 18.sp, color: const Color(0xFF6B4DFF)),
@@ -210,10 +210,10 @@ class CreateGroupScreen extends StatelessWidget {
         counterText: "",
         hintText: hint,
         hintStyle: TextStyle(
-          color: const Color(0xFF6B4DFF).withOpacity(0.45),
+          color: const Color(0xFF6B4DFF).withValues(alpha: 0.45),
           fontSize: 14.sp,
         ),
-        prefixIcon: Icon(icon, color: const Color(0xFF6B4DFF).withOpacity(0.7)),
+        prefixIcon: Icon(icon, color: const Color(0xFF6B4DFF).withValues(alpha: 0.7)),
         filled: true,
         fillColor: Colors.white,
         contentPadding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 18.h),

@@ -28,7 +28,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
   static const double _lockThreshold = 80.0;
   bool _hasLeft = false;
   bool _pttInProgress = false;
-  bool _allowPop = false;
+  final bool _allowPop = false;
 
   final Color _bgLight = const Color(0xFFF5F5F8);
   final Color _cardWhite = Colors.white;
@@ -349,7 +349,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
               borderRadius: BorderRadius.circular(14.r),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.04),
+                  color: Colors.black.withValues(alpha: 0.04),
                   blurRadius: 8,
                   offset: const Offset(0, 2),
                 )
@@ -391,7 +391,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
         borderRadius: BorderRadius.circular(14.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, 2),
           )
@@ -433,7 +433,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
         borderRadius: BorderRadius.circular(20.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 10,
             offset: const Offset(0, 2),
           )
@@ -559,7 +559,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                         height: 52.r * scale,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: _primaryPurple.withOpacity(opacity * 0.25),
+                          color: _primaryPurple.withValues(alpha: opacity * 0.25),
                         ),
                       );
                     },
@@ -650,7 +650,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
             borderRadius: BorderRadius.circular(20.r),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.03),
+                color: Colors.black.withValues(alpha: 0.03),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               )
@@ -709,7 +709,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             border: Border.all(
-                              color: _primaryPurple.withOpacity(opacity * 0.3),
+                              color: _primaryPurple.withValues(alpha: opacity * 0.3),
                               width: 1.5,
                             ),
                           ),
@@ -725,7 +725,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(
-                      color: _primaryPurple.withOpacity(0.06), width: 1),
+                      color: _primaryPurple.withValues(alpha: 0.06), width: 1),
                 ),
               ),
               Container(
@@ -734,7 +734,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(
-                      color: _primaryPurple.withOpacity(0.1), width: 1),
+                      color: _primaryPurple.withValues(alpha: 0.1), width: 1),
                 ),
               ),
               Obx(() {
@@ -792,7 +792,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                       borderRadius: BorderRadius.circular(16.r),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.06),
+                          color: Colors.black.withValues(alpha: 0.06),
                           blurRadius: 6,
                         ),
                       ],
@@ -855,7 +855,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                           borderRadius: BorderRadius.circular(20.r),
                           boxShadow: [
                             BoxShadow(
-                              color: _primaryPurple.withOpacity(0.3),
+                              color: _primaryPurple.withValues(alpha: 0.3),
                               blurRadius: 10,
                               offset: const Offset(0, 4),
                             ),
@@ -934,7 +934,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.15),
+            color: Colors.grey.withValues(alpha: 0.15),
             blurRadius: 20,
             spreadRadius: 2,
           ),
@@ -986,7 +986,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
             color: Colors.white,
             boxShadow: [
               BoxShadow(
-                color: _primaryPurple.withOpacity(0.25),
+                color: _primaryPurple.withValues(alpha: 0.25),
                 blurRadius: 30,
                 spreadRadius: 4,
               ),
@@ -1047,7 +1047,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 8,
             offset: const Offset(0, 2),
           )
@@ -1091,7 +1091,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                 onChanged: (v) async {
                   await GroupWalkieService.instance.toggleMute();
                 },
-                activeColor: _primaryPurple,
+                activeThumbColor: _primaryPurple,
               )),
         ],
       ),
@@ -1164,7 +1164,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
           borderRadius: BorderRadius.circular(16.r),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.03),
+              color: Colors.black.withValues(alpha: 0.03),
               blurRadius: 8,
               offset: const Offset(0, 2),
             )

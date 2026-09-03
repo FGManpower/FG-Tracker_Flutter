@@ -17,8 +17,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:share_plus/share_plus.dart';
-
-// 👇 Yaha apni nayi file ka path daalein
 import 'media_links_docs_screen.dart';
 
 class GroupProfileScreen extends StatefulWidget {
@@ -160,7 +158,7 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
               SizedBox(height: 16.h),
               _buildMembersSection(context),
               SizedBox(height: 16.h),
-              _buildFavoritesCard(), // Alag section jaisa figma me hai
+              _buildFavoritesCard(),
               SizedBox(height: 12.h),
               _buildDangerSection(context),
               SizedBox(height: 24.h),
@@ -180,7 +178,7 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
           borderRadius: BorderRadius.circular(12.r),
           boxShadow: [
             BoxShadow(
-              color: _purple.withOpacity(0.08), // Lavender shadow
+              color: _purple.withValues(alpha: 0.08),
               blurRadius: 6,
               offset: const Offset(0, 2),
             ),
@@ -313,13 +311,13 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
       child: GestureDetector(
         onTap: onTap,
         child: Container(
-          padding: EdgeInsets.symmetric(vertical: 12.h),
+          padding: EdgeInsets.symmetric(vertical: 10.h),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(14.r),
             boxShadow: [
               BoxShadow(
-                color: _purple.withOpacity(0.08), // Lavender shadow
+                color: _purple.withValues(alpha: 0.08),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
@@ -357,7 +355,27 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
         children: [
           InkWell(
             onTap: () {
-              Get.to(() => MediaLinksDocsScreen(mediaMessages: _mediaMessages));
+              final all = chatController.messageData.where((m) {
+                final t = (m.messageType ?? "").toLowerCase().trim();
+                if (t == "image" ||
+                    t == "image_text" ||
+                    t == "video" ||
+                    t == "document" ||
+                    t == "doc" ||
+                    t == "file" ||
+                    t == "link" ||
+                    t == "url" ||
+                    t.contains("link")) {
+                  return true;
+                }
+                final c = m.content ?? "";
+                return RegExp(
+                  r'(https?:\/\/[^\s]+)|(www\.[^\s]+)',
+                  caseSensitive: false,
+                ).hasMatch(c);
+              }).toList();
+
+              Get.to(() => MediaLinksDocsScreen(mediaMessages: all));
             },
             child: Row(
               children: [
@@ -402,7 +420,7 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
                   return ClipRRect(
                     borderRadius: BorderRadius.circular(12.r),
                     child: Container(
-                      width: 100.h, // Width ko bhi proportion me badhaya
+                      width: 100.h,
                       color: const Color(0xFFEDEBFB),
                       child: Stack(
                         fit: StackFit.expand,
@@ -490,7 +508,7 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
                   scale: 0.8,
                   child: Switch(
                     value: notificationsOn.value,
-                    activeColor: _purple,
+                    activeThumbColor: _purple,
                     onChanged: (v) => notificationsOn.value = v,
                   ),
                 ),
@@ -814,7 +832,7 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
-            color: _purple.withOpacity(0.12),
+            color: _purple.withValues(alpha: 0.12),
             blurRadius: 12,
             spreadRadius: 2,
             offset: const Offset(0, 0), // chaaro taraf equal shadow
@@ -903,7 +921,7 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 10,
             spreadRadius: 1,
             offset: const Offset(0, 2),

@@ -114,7 +114,7 @@ Future<void> handleTerminatedCallIfAny() async {
   if (details?.notificationResponse != null) {
     response = details!.notificationResponse;
   }
-  debugPrint("======response-${response}");
+  debugPrint("======response-$response");
   response ??= NotificationHolder.pendingResponse;
 
   if (response == null || response.payload == null) return;

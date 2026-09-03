@@ -109,7 +109,7 @@ class DocumentViewerScreen extends GetView<DocumentViewerController> {
                             BoxShadow(
                               color: getFileColor(
                                 controller.documentUrl,
-                              ).withOpacity(.25),
+                              ).withValues(alpha: .25),
                               blurRadius: 20,
                               offset: const Offset(0, 10),
                             ),
@@ -140,7 +140,7 @@ class DocumentViewerScreen extends GetView<DocumentViewerController> {
                           vertical: 6.h,
                         ),
                         decoration: BoxDecoration(
-                          color: AppColors.darkBlue.withOpacity(.08),
+                          color: AppColors.darkBlue.withValues(alpha: .08),
                           borderRadius: BorderRadius.circular(30.r),
                         ),
                         child: Text(
@@ -171,7 +171,7 @@ class DocumentViewerScreen extends GetView<DocumentViewerController> {
                                   width: 36.w,
                                   height: 36.w,
                                   decoration: BoxDecoration(
-                                    color: Colors.green.withOpacity(.1),
+                                    color: Colors.green.withValues(alpha: .1),
                                     shape: BoxShape.circle,
                                   ),
                                   child: Icon(

@@ -90,7 +90,7 @@ class _QrCodeBottomSheetState extends State<QrCodeBottomSheet>
                 width: 40.w,
                 height: 4.h,
                 decoration: BoxDecoration(
-                  color: Colors.grey.withOpacity(0.4),
+                  color: Colors.grey.withValues(alpha: 0.4),
                   borderRadius: BorderRadius.circular(10.r),
                 ),
               ),
@@ -120,7 +120,7 @@ class _QrCodeBottomSheetState extends State<QrCodeBottomSheet>
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(10.r),
                           border: Border.all(
-                              color: Colors.grey.withOpacity(0.2), width: 1),
+                              color: Colors.grey.withValues(alpha: 0.2), width: 1),
                         ),
                         child: Icon(Icons.close,
                             size: 18.sp, color: primaryPurple),
@@ -176,7 +176,7 @@ class _QrCodeBottomSheetState extends State<QrCodeBottomSheet>
                             borderRadius: BorderRadius.circular(20.r),
                             boxShadow: [
                               BoxShadow(
-                                color: primaryPurple.withOpacity(0.05),
+                                color: primaryPurple.withValues(alpha: 0.05),
                                 blurRadius: 20,
                                 spreadRadius: 5,
                                 offset: const Offset(0, 5),
@@ -269,7 +269,7 @@ class _QrCodeBottomSheetState extends State<QrCodeBottomSheet>
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(10.r),
-            border: Border.all(color: Colors.grey.withOpacity(0.15), width: 1),
+            border: Border.all(color: Colors.grey.withValues(alpha: 0.15), width: 1),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,

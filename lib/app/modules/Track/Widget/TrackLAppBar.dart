@@ -119,7 +119,7 @@ PopupMenuItem<String> popupItem({
           height: 32.h,
           width: 32.w,
           decoration: BoxDecoration(
-            color: ToggleThemeData.darkPurple.withOpacity(0.12),
+            color: ToggleThemeData.darkPurple.withValues(alpha: 0.12),
             shape: BoxShape.circle,
           ),
           child: Icon(
@@ -150,7 +150,7 @@ PopupMenuEntry<String> dividerMenuItem() {
     child: Container(
       height: 1,
       margin: EdgeInsets.symmetric(horizontal: 0),
-      color: Colors.black.withOpacity(0.15),
+      color: Colors.black.withValues(alpha: 0.15),
     ),
   );
 }

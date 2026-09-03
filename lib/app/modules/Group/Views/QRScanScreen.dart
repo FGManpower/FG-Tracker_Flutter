@@ -47,7 +47,7 @@ class QRScanScreen extends StatelessWidget {
               'Align QR inside the frame',
               textAlign: TextAlign.center,
               style: TextStyle(
-                  color: Colors.white.withOpacity(.9), fontSize: 16.sp),
+                  color: Colors.white.withValues(alpha: .9), fontSize: 16.sp),
             ),
           ),
           Positioned(
@@ -82,7 +82,7 @@ class QRScanScreen extends StatelessWidget {
             width: size,
             height: size,
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withValues(alpha: 0.2),
               shape: BoxShape.circle,
               border: Border.all(color: Colors.white24),
             ),

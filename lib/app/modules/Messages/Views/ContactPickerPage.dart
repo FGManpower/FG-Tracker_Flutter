@@ -116,7 +116,7 @@ class ContactPickerPage extends StatelessWidget {
                   return ListTile(
                     leading: CircleAvatar(
                       backgroundColor:
-                          ToggleThemeData.Appcolor.withOpacity(0.15),
+                          ToggleThemeData.Appcolor.withValues(alpha: 0.15),
                       backgroundImage:
                           thumbnail != null ? MemoryImage(thumbnail) : null,
                       child: thumbnail == null

@@ -44,7 +44,7 @@ class ContactBubbleWidget extends StatelessWidget {
       padding: EdgeInsets.all(12.w),
       decoration: BoxDecoration(
         color: isSentByMe
-            ? Colors.white.withOpacity(.12)
+            ? Colors.white.withValues(alpha: .12)
             : Colors.grey.shade100,
         borderRadius: BorderRadius.circular(12.r),
       ),
@@ -75,7 +75,7 @@ class ContactBubbleWidget extends StatelessWidget {
                     Text(
                       contact.phone,
                       style: TextStyle(
-                        color: textColor.withOpacity(.7),
+                        color: textColor.withValues(alpha: .7),
                         fontSize: 12.sp,
                       ),
                     ),

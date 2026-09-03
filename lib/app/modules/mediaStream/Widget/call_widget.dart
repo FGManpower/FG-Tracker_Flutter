@@ -5,7 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 
 class CallActionChip extends StatelessWidget {
-   CallActionChip({required this.icon,this.onTap});
+   CallActionChip({super.key, required this.icon,this.onTap});
 
   final IconData icon;
   void Function()? onTap;

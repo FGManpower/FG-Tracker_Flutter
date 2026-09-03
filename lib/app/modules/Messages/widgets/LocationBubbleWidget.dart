@@ -39,7 +39,7 @@ class LocationBubbleWidget extends StatelessWidget {
     }
 
     final bubbleColor = isSentByMe
-        ? Colors.white.withOpacity(.10)
+        ? Colors.white.withValues(alpha: .10)
         : const Color(0xffF7F7F9);
 
     return Column(

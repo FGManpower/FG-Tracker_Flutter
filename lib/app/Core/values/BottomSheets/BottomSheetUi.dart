@@ -201,7 +201,7 @@ class BottomSheetUi {
                                                       decoration: BoxDecoration(
                                                         color: ToggleThemeData
                                                             .Appcolor
-                                                            .withOpacity(.1),
+                                                            .withValues(alpha: .1),
                                                         borderRadius:
                                                         BorderRadius
                                                             .circular(20.r),
@@ -282,7 +282,7 @@ class BottomSheetUi {
                                               padding: EdgeInsets.all(9.w),
                                               decoration: BoxDecoration(
                                                 color: ToggleThemeData.Appcolor
-                                                    .withOpacity(0.1),
+                                                    .withValues(alpha: 0.1),
                                                 shape: BoxShape.circle,
                                               ),
                                               child: Icon(
@@ -318,7 +318,7 @@ class BottomSheetUi {
                                               padding: EdgeInsets.all(9.w),
                                               decoration: BoxDecoration(
                                                 color: Colors.green
-                                                    .withOpacity(0.1),
+                                                    .withValues(alpha: 0.1),
                                                 shape: BoxShape.circle,
                                               ),
                                               child: Icon(
@@ -354,7 +354,7 @@ class BottomSheetUi {
                                               padding: EdgeInsets.all(9.w),
                                               decoration: BoxDecoration(
                                                 color:
-                                                Colors.red.withOpacity(0.1),
+                                                Colors.red.withValues(alpha: 0.1),
                                                 shape: BoxShape.circle,
                                               ),
                                               child: Icon(

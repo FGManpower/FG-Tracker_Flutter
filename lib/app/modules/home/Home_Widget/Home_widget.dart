@@ -137,11 +137,11 @@ class GroupRow extends StatelessWidget {
   final bool showDivider;
 
   const GroupRow({
-    Key? key,
+    super.key,
     required this.title,
     required this.value,
     this.showDivider = true,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -190,6 +190,8 @@ class GroupRow extends StatelessWidget {
 }
 
 class MapLoading extends StatelessWidget {
+  const MapLoading({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -211,7 +213,7 @@ class MapControlBtn extends StatelessWidget {
   final IconData icon;
   final VoidCallback onTap;
 
-  const MapControlBtn({
+  const MapControlBtn({super.key, 
     required this.icon,
     required this.onTap,
   });
@@ -243,7 +245,7 @@ class MapFilterBadge extends StatelessWidget {
   final IconData icon;
   final VoidCallback onTap;
 
-  const MapFilterBadge({
+  const MapFilterBadge({super.key, 
     required this.text,
     required this.icon,
     required this.onTap,
@@ -263,7 +265,7 @@ class MapFilterBadge extends StatelessWidget {
           color: Colors.white,
           borderRadius: BorderRadius.circular(8.r),
           border: Border.all(
-            color: Colors.grey.withOpacity(0.2),
+            color: Colors.grey.withValues(alpha: 0.2),
           ),
         ),
         child: Row(

@@ -50,7 +50,7 @@ class CallingScreen extends StatelessWidget {
                               filter: ImageFilter.blur(sigmaX: 3, sigmaY: 3),
                               child: Container(
                                 height: 100.h,
-                                color: Colors.white.withOpacity(0.22),
+                                color: Colors.white.withValues(alpha: 0.22),
                                 padding: EdgeInsets.symmetric(vertical: 7.h),
                                 alignment: Alignment.center,
                                 child: Column(

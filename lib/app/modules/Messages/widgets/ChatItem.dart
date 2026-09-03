@@ -33,11 +33,13 @@ class ChatBubble extends StatelessWidget {
   final MessageController controller;
 
   const ChatBubble({
-    Key? key,
+    super.key,
     required this.message,
     required this.controller,
     required this.context,
-  }) : super(key: key);
+  });
+
+  static const Color _purple = Color(0xFF5045B9);
 
   @override
   Widget build(BuildContext context) {
@@ -71,6 +73,7 @@ class ChatBubble extends StatelessWidget {
       bottomLeft: Radius.circular(16),
       bottomRight: Radius.circular(16),
     );
+
     return Obx(
           () => Container(
         margin: EdgeInsets.symmetric(vertical: 6.h),
@@ -80,10 +83,7 @@ class ChatBubble extends StatelessWidget {
           children: [
             GestureDetector(
               onLongPress: () {
-                _showDeleteBottomSheet(
-                  context,
-                  isSentByMe,
-                );
+                _showMessageMenu(context, isSentByMe);
               },
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 300),
@@ -98,15 +98,15 @@ class ChatBubble extends StatelessWidget {
                   gradient: controller.highlightedMessageId.value == message.id
                       ? LinearGradient(
                     colors: [
-                      Colors.yellow.withOpacity(.35),
-                      Colors.yellow.withOpacity(.20),
+                      Colors.yellow.withValues(alpha: .35),
+                      Colors.yellow.withValues(alpha: .20),
                     ],
                   )
                       : bgColor,
                   borderRadius: borderRadius,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
+                      color: Colors.black.withValues(alpha: 0.05),
                       blurRadius: 4,
                       offset: const Offset(2, 2),
                     ),
@@ -312,7 +312,7 @@ class ChatBubble extends StatelessWidget {
               width: 240.w,
               padding: EdgeInsets.all(12.w),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(.08),
+                color: Colors.white.withValues(alpha: .08),
                 borderRadius: BorderRadius.circular(12.r),
               ),
               child: Row(
@@ -482,8 +482,9 @@ class ChatBubble extends StatelessWidget {
         margin: EdgeInsets.only(bottom: 8.h),
         padding: EdgeInsets.all(8.w),
         decoration: BoxDecoration(
-          color:
-          isSentByMe ? Colors.white.withOpacity(.15) : Colors.grey.shade200,
+          color: isSentByMe
+              ? Colors.white.withValues(alpha: .15)
+              : Colors.grey.shade200,
           borderRadius: BorderRadius.circular(8.r),
           border: Border(
             left: BorderSide(
@@ -519,218 +520,190 @@ class ChatBubble extends StatelessWidget {
     );
   }
 
-  void _showDeleteBottomSheet(
-      BuildContext context,
-      bool isSentByMe,
-      ) {
-    showModalBottomSheet(
+
+  void _showMessageMenu(BuildContext context, bool isSentByMe) {
+    final isPinned = controller.pinnedMessage.value?.id == message.id;
+    final isText = message.messageType == "text" ||
+        message.messageType == "text_message" ||
+        (message.messageType ?? "").isEmpty;
+
+    showDialog(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) {
-        return SafeArea(
-          top: false,
-          child: Container(
-            constraints: BoxConstraints(
-              maxHeight: MediaQuery.of(context).size.height * 0.85,
-            ),
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.vertical(
-                top: Radius.circular(20),
+      barrierColor: Colors.black.withOpacity(0.18),
+      builder: (ctx) {
+        return Stack(
+          children: [
+            Positioned.fill(
+              child: GestureDetector(
+                onTap: () => Navigator.pop(ctx),
+                behavior: HitTestBehavior.opaque,
+                child: const SizedBox.expand(),
               ),
             ),
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    margin: EdgeInsets.only(top: 12.h),
-                    width: 40.w,
-                    height: 4.h,
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade300,
-                      borderRadius: BorderRadius.circular(10.r),
-                    ),
-                  ),
-                  SizedBox(height: 12.h),
-                  ListTile(
-                    leading: Container(
-                      padding: EdgeInsets.all(8.w),
-                      decoration: BoxDecoration(
-                        color: Colors.blue.shade50,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(Icons.reply, color: Colors.blue, size: 20.sp),
-                    ),
-                    title: const Text("Reply",
-                        style: TextStyle(fontWeight: FontWeight.w600)),
-                    subtitle: Text("Reply to this message",
-                        style: TextStyle(fontSize: 12.sp, color: Colors.grey)),
-                    onTap: () {
-                      Navigator.pop(context);
-                      controller.setReply(message);
-                    },
-                  ),
-                  if (message.messageType == "text")
-                    ListTile(
-                      leading: Container(
-                        padding: EdgeInsets.all(8.w),
-                        decoration: BoxDecoration(
-                          color: Colors.purple.shade50,
-                          shape: BoxShape.circle,
-                        ),
-                        child:
-                        Icon(Icons.copy, color: Colors.purple, size: 20.sp),
-                      ),
-                      title: const Text("Copy",
-                          style: TextStyle(fontWeight: FontWeight.w600)),
-                      subtitle: Text("Copy message text",
-                          style:
-                          TextStyle(fontSize: 12.sp, color: Colors.grey)),
-                      onTap: () {
-                        Navigator.pop(context);
-                        Clipboard.setData(
-                            ClipboardData(text: message.content ?? ""));
-                        Utils().fluttertoast("Message copied");
-                      },
-                    ),
-                  ListTile(
-                    leading: const Icon(Icons.forward),
-                    title: const Text("Forward"),
-                    onTap: () {
-                      Get.back();
 
-                      Get.toNamed(
-                        Routes.forwardMessageScreen,
-                        arguments: {
-                          "message": message,
-                        },
-                      );
-                    },
+            Positioned(
+              top: 90.h,
+              right: 12.w,
+              child: Material(
+                color: Colors.transparent,
+                child: Container(
+                  width: 220.w,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF8F7FC),
+                    borderRadius: BorderRadius.circular(16.r),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.14),
+                        blurRadius: 24,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
                   ),
-                  if (isSentByMe && message.messageType == "text")
-                    ListTile(
-                      leading: Container(
-                        padding: EdgeInsets.all(8.w),
-                        decoration: BoxDecoration(
-                          color: Colors.orange.shade50,
-                          shape: BoxShape.circle,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(16.r),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _menuTile(
+                          icon: Icons.reply_rounded,
+                          iconColor: _purple,
+                          title: "Reply",
+                          onTap: () {
+                            Navigator.pop(ctx);
+                            controller.setReply(message);
+                          },
                         ),
-                        child: Icon(
-                          Icons.edit_outlined,
-                          color: Colors.orange,
-                          size: 20.sp,
-                        ),
-                      ),
-                      title: const Text(
-                        "Edit",
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      subtitle: const Text(
-                        "Edit this message",
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey,
-                        ),
-                      ),
-                      onTap: () {
-                        Navigator.pop(context);
 
-                        controller.startEditingMessage(message);
-                      },
-                    ),
-                  Obx(() {
-                    final isPinned =
-                        controller.pinnedMessage.value?.id == message.id;
-                    return ListTile(
-                      leading: Container(
-                        padding: EdgeInsets.all(8.w),
-                        decoration: BoxDecoration(
-                          color: isPinned
-                              ? Colors.red.shade50
-                              : Colors.green.shade50,
-                          shape: BoxShape.circle,
-                        ),
-                        child: Transform.rotate(
-                          angle: isPinned ? 0 : 0.7,
-                          child: Icon(
-                            isPinned ? Icons.push_pin_outlined : Icons.push_pin,
-                            color: isPinned ? Colors.red : Colors.green,
-                            size: 20.sp,
+                        if (isText)
+                          _menuTile(
+                            icon: Icons.copy_rounded,
+                            iconColor: _purple,
+                            title: "Copy",
+                            onTap: () async {
+                              Navigator.pop(ctx);
+                              await Clipboard.setData(
+                                ClipboardData(text: message.content ?? ""),
+                              );
+                              Utils().fluttertoast("Message copied");
+                            },
                           ),
+
+                        _menuTile(
+                          icon: Icons.forward_rounded,
+                          iconColor: _purple,
+                          title: "Forward",
+                          onTap: () {
+                            Navigator.pop(ctx);
+                            Get.toNamed(
+                              Routes.forwardMessageScreen,
+                              arguments: {"message": message},
+                            );
+                          },
                         ),
-                      ),
-                      title: Text(
-                        isPinned ? "Unpin Message" : "Pin Message",
-                        style: const TextStyle(fontWeight: FontWeight.w600),
-                      ),
-                      subtitle: Text(
-                        isPinned ? "Remove from pinned" : "Pin to top of chat",
-                        style: TextStyle(fontSize: 12.sp, color: Colors.grey),
-                      ),
-                      onTap: () {
-                        Navigator.pop(context);
-                        isPinned
-                            ? controller.unpinMessage()
-                            : controller.pinMessage(message);
-                      },
-                    );
-                  }),
-                  if (isSentByMe)
-                    ListTile(
-                      leading: Container(
-                        padding: EdgeInsets.all(8.w),
-                        decoration: BoxDecoration(
-                          color: Colors.orange.shade50,
-                          shape: BoxShape.circle,
+
+                        if (isSentByMe && isText)
+                          _menuTile(
+                            icon: Icons.edit_rounded,
+                            iconColor: _purple,
+                            title: "Edit",
+                            onTap: () {
+                              Navigator.pop(ctx);
+                              controller.startEditingMessage(message);
+                            },
+                          ),
+
+                        _menuTile(
+                          icon: Icons.push_pin_rounded,
+                          iconColor: isPinned ? Colors.redAccent : _purple,
+                          title: isPinned ? "Unpin Message" : "Pin Message",
+                          onTap: () {
+                            Navigator.pop(ctx);
+                            if (isPinned) {
+                              controller.unpinMessage();
+                            } else {
+                              controller.pinMessage(message);
+                            }
+                          },
                         ),
-                        child: Icon(Icons.delete_outline,
-                            color: Colors.orange, size: 20.sp),
-                      ),
-                      title: const Text("Delete for Everyone",
-                          style: TextStyle(fontWeight: FontWeight.w600)),
-                      subtitle: Text("Remove for all members",
-                          style:
-                          TextStyle(fontSize: 12.sp, color: Colors.grey)),
-                      onTap: () {
-                        Navigator.pop(context);
-                        controller.deleteMessage(
-                          messageId: message.id!,
-                          deleteType: "for_everyone",
-                        );
-                      },
+
+                        Divider(
+                          height: 1,
+                          thickness: 1,
+                          color: Colors.grey.shade200,
+                          indent: 12,
+                          endIndent: 12,
+                        ),
+
+                        if (isSentByMe)
+                          _menuTile(
+                            icon: Icons.delete_outline_rounded,
+                            iconColor: Colors.redAccent,
+                            title: "Delete for Everyone",
+                            isDestructive: true,
+                            onTap: () {
+                              Navigator.pop(ctx);
+                              controller.deleteMessage(
+                                messageId: message.id!,
+                                deleteType: "for_everyone",
+                              );
+                            },
+                          ),
+
+                        _menuTile(
+                          icon: Icons.delete_rounded,
+                          iconColor: Colors.redAccent,
+                          title: "Delete for Me",
+                          isDestructive: true,
+                          onTap: () {
+                            Navigator.pop(ctx);
+                            controller.deleteMessage(
+                              messageId: message.id!,
+                              deleteType: "for_me",
+                            );
+                          },
+                        ),
+                      ],
                     ),
-                  ListTile(
-                    leading: Container(
-                      padding: EdgeInsets.all(8.w),
-                      decoration: BoxDecoration(
-                        color: Colors.red.shade50,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(Icons.delete, color: Colors.red, size: 20.sp),
-                    ),
-                    title: const Text("Delete for Me",
-                        style: TextStyle(fontWeight: FontWeight.w600)),
-                    subtitle: Text("Remove from your chat",
-                        style: TextStyle(fontSize: 12.sp, color: Colors.grey)),
-                    onTap: () {
-                      Navigator.pop(context);
-                      controller.deleteMessage(
-                        messageId: message.id!,
-                        deleteType: "for_me",
-                      );
-                    },
                   ),
-                  SizedBox(height: 10.h),
-                ],
+                ),
               ),
             ),
-          ),
+          ],
         );
       },
+    );
+  }
+
+  Widget _menuTile({
+    required IconData icon,
+    required Color iconColor,
+    required String title,
+    required VoidCallback onTap,
+    bool isDestructive = false,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 13.h),
+        child: Row(
+          children: [
+            Icon(icon, size: 20.sp, color: iconColor),
+            SizedBox(width: 14.w),
+            Expanded(
+              child: Text(
+                title,
+                style: TextStyle(
+                  fontSize: 14.5.sp,
+                  fontWeight: FontWeight.w600,
+                  color: isDestructive
+                      ? Colors.redAccent
+                      : const Color(0xFF1A1A1A),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -777,7 +750,6 @@ class ChatBubble extends StatelessWidget {
     );
   }
 }
-
 class GroupChatBubble extends StatelessWidget {
   final MessageData message;
   final BuildContext context;
@@ -787,14 +759,14 @@ class GroupChatBubble extends StatelessWidget {
   final GroupMessageController controller;
 
   const GroupChatBubble({
-    Key? key,
+    super.key,
     required this.message,
     required this.controller,
     required this.context,
     this.isGroup = false,
     this.groupId,
     this.groupName,
-  }) : super(key: key);
+  });
 
   static const Color _purple = Color(0xFF5045B9);
   static const Color _myBubbleBg = Color(0xFFDCD6F5);
@@ -871,7 +843,7 @@ class GroupChatBubble extends StatelessWidget {
               ),
             Flexible(
               child: GestureDetector(
-                onLongPress: () => _showDeleteBottomSheet(context, isSentByMe),
+                onLongPress: () => _showMessageMenu(context, isSentByMe),
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 300),
                   constraints: BoxConstraints(
@@ -883,12 +855,12 @@ class GroupChatBubble extends StatelessWidget {
                   ),
                   decoration: BoxDecoration(
                     color: controller.highlightedMessageId.value == message.id
-                        ? Colors.yellow.withOpacity(.35)
+                        ? Colors.yellow.withValues(alpha: .35)
                         : bgColor,
                     borderRadius: borderRadius,
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.04),
+                        color: Colors.black.withValues(alpha: 0.04),
                         blurRadius: 4,
                         offset: const Offset(0, 2),
                       ),
@@ -1119,7 +1091,7 @@ class GroupChatBubble extends StatelessWidget {
         padding: EdgeInsets.all(8.w),
         decoration: BoxDecoration(
           color:
-          isSentByMe ? Colors.white.withOpacity(.5) : Colors.grey.shade100,
+          isSentByMe ? Colors.white.withValues(alpha: .5) : Colors.grey.shade100,
           borderRadius: BorderRadius.circular(10.r),
           border: Border(
             left: BorderSide(color: _purple, width: 3),
@@ -1272,7 +1244,7 @@ class GroupChatBubble extends StatelessWidget {
               padding: EdgeInsets.all(10.w),
               decoration: BoxDecoration(
                 color: isSentByMe
-                    ? Colors.white.withOpacity(0.6)
+                    ? Colors.white.withValues(alpha: 0.6)
                     : const Color(0xFFF3F1FB),
                 borderRadius: BorderRadius.circular(12.r),
               ),
@@ -1282,7 +1254,7 @@ class GroupChatBubble extends StatelessWidget {
                     width: 44.w,
                     height: 44.w,
                     decoration: BoxDecoration(
-                      color: _purple.withOpacity(0.12),
+                      color: _purple.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(10.r),
                     ),
                     child: Icon(icon, color: _purple, size: 24.sp),
@@ -1357,7 +1329,7 @@ class GroupChatBubble extends StatelessWidget {
         child: InkWell(
           borderRadius: BorderRadius.circular(12.r),
           onLongPress: () {
-            _showDeleteBottomSheet(context, isSentByMe);
+            _showMessageMenu(context, isSentByMe);
           },
           onDoubleTap: () async {
             await Clipboard.setData(
@@ -1389,251 +1361,190 @@ class GroupChatBubble extends StatelessWidget {
     return recipientIds.every((userId) => seenIds.contains(userId));
   }
 
-  void _showDeleteBottomSheet(
-      BuildContext context,
-      bool isSentByMe,
-      ) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) {
-        return SafeArea(
-          top: false,
-          child: Container(
-            constraints: BoxConstraints(
-              maxHeight: MediaQuery.of(context).size.height * 0.85,
-            ),
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-            ),
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    margin: EdgeInsets.only(top: 12.h),
-                    width: 40.w,
-                    height: 4.h,
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade300,
-                      borderRadius: BorderRadius.circular(10.r),
-                    ),
-                  ),
-                  SizedBox(height: 12.h),
-                  ListTile(
-                    leading: Container(
-                      padding: EdgeInsets.all(8.w),
-                      decoration: BoxDecoration(
-                        color: Colors.blue.shade50,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(Icons.reply, color: Colors.blue, size: 20.sp),
-                    ),
-                    title: const Text(
-                      "Reply",
-                      style: TextStyle(fontWeight: FontWeight.w600),
-                    ),
-                    onTap: () {
-                      Navigator.pop(context);
-                      controller.setReply(message);
-                    },
-                  ),
-                  if (message.messageType == "text")
-                    ListTile(
-                      leading: Container(
-                        padding: EdgeInsets.all(8.w),
-                        decoration: BoxDecoration(
-                          color: Colors.purple.shade50,
-                          shape: BoxShape.circle,
-                        ),
-                        child:
-                        Icon(Icons.copy, color: Colors.purple, size: 20.sp),
-                      ),
-                      title: const Text(
-                        "Copy",
-                        style: TextStyle(fontWeight: FontWeight.w600),
-                      ),
-                      onTap: () async {
-                        Navigator.pop(context);
-                        await Clipboard.setData(
-                          ClipboardData(text: message.content ?? ""),
-                        );
-                        Utils().fluttertoast("Message copied");
-                      },
-                    ),
-                  if (isSentByMe && message.messageType == "text")
-                    ListTile(
-                      leading: Container(
-                        padding: EdgeInsets.all(8.w),
-                        decoration: BoxDecoration(
-                          color: Colors.orange.shade50,
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          Icons.edit_outlined,
-                          color: Colors.orange,
-                          size: 20.sp,
-                        ),
-                      ),
-                      title: const Text(
-                        "Edit",
-                        style: TextStyle(fontWeight: FontWeight.w600),
-                      ),
-                      subtitle: const Text(
-                        "Edit this message",
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey,
-                        ),
-                      ),
-                      onTap: () {
-                        Navigator.pop(context);
-                        controller.startEditingMessage(message);
-                      },
-                    ),
-                  Obx(() {
-                    final isPinned =
-                        controller.pinnedMessage.value?.id == message.id;
 
-                    return ListTile(
-                      leading: Container(
-                        padding: EdgeInsets.all(8.w),
-                        decoration: BoxDecoration(
-                          color: isPinned
-                              ? Colors.red.shade50
-                              : Colors.green.shade50,
-                          shape: BoxShape.circle,
-                        ),
-                        child: Transform.rotate(
-                          angle: 0.7,
-                          child: Icon(
-                            isPinned ? Icons.push_pin_outlined : Icons.push_pin,
-                            color: isPinned ? Colors.red : Colors.green,
-                            size: 20.sp,
-                          ),
-                        ),
-                      ),
-                      title: Text(
-                        isPinned ? "Unpin Message" : "Pin Message",
-                        style: const TextStyle(fontWeight: FontWeight.w600),
-                      ),
-                      subtitle: Text(
-                        isPinned ? "Remove from pinned" : "Pin to top of chat",
-                        style: TextStyle(fontSize: 12.sp, color: Colors.grey),
-                      ),
-                      onTap: () {
-                        Navigator.pop(context);
-                        if (isPinned) {
-                          controller.unpinMessage();
-                        } else {
-                          controller.pinMessage(message);
-                        }
-                      },
-                    );
-                  }),
-                  ListTile(
-                    leading: Container(
-                      padding: EdgeInsets.all(8.w),
-                      decoration: BoxDecoration(
-                        color: Colors.blueGrey.shade50,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        Icons.info_outline,
-                        color: Colors.blueGrey,
-                        size: 20.sp,
-                      ),
-                    ),
-                    title: const Text(
-                      "Info",
-                      style: TextStyle(fontWeight: FontWeight.w600),
-                    ),
-                    subtitle: Text(
-                      "See message details",
-                      style: TextStyle(fontSize: 12.sp, color: Colors.grey),
-                    ),
-                    onTap: () {
-                      Navigator.pop(context);
-                      showModalBottomSheet(
-                        context: context,
-                        isScrollControlled: true,
-                        backgroundColor: Colors.transparent,
-                        builder: (_) {
-                          return MessageInfoSheet(
-                            message: message,
-                            groupController: controller,
-                          );
-                        },
-                      );
-                    },
-                  ),
-                  ListTile(
-                    leading: const Icon(Icons.forward),
-                    title: const Text("Forward"),
-                    onTap: () {
-                      Get.back();
-                      Get.toNamed(
-                        Routes.forwardMessageScreen,
-                        arguments: {"message": message},
-                      );
-                    },
-                  ),
-                  if (isSentByMe)
-                    ListTile(
-                      leading: Container(
-                        padding: EdgeInsets.all(8.w),
-                        decoration: BoxDecoration(
-                          color: Colors.orange.shade50,
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          Icons.delete_outline,
-                          color: Colors.orange,
-                          size: 20.sp,
-                        ),
-                      ),
-                      title: const Text(
-                        "Delete for Everyone",
-                        style: TextStyle(fontWeight: FontWeight.w600),
-                      ),
-                      onTap: () {
-                        Navigator.pop(context);
-                        controller.deleteMessage(
-                          messageId: message.id!,
-                          deleteType: "for_everyone",
-                        );
-                      },
-                    ),
-                  ListTile(
-                    leading: Container(
-                      padding: EdgeInsets.all(8.w),
-                      decoration: BoxDecoration(
-                        color: Colors.red.shade50,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(Icons.delete, color: Colors.red, size: 20.sp),
-                    ),
-                    title: const Text(
-                      "Delete for Me",
-                      style: TextStyle(fontWeight: FontWeight.w600),
-                    ),
-                    onTap: () {
-                      Navigator.pop(context);
-                      controller.deleteMessage(
-                        messageId: message.id!,
-                        deleteType: "for_me",
-                      );
-                    },
-                  ),
-                  SizedBox(height: 10.h),
-                ],
+  void _showMessageMenu(BuildContext context, bool isSentByMe) {
+    final isPinned = controller.pinnedMessage.value?.id == message.id;
+    final isText = message.messageType == "text" ||
+        message.messageType == "text_message" ||
+        (message.messageType ?? "").isEmpty;
+
+    showDialog(
+      context: context,
+      barrierColor: Colors.black.withOpacity(0.18),
+      builder: (ctx) {
+        return Stack(
+          children: [
+            Positioned.fill(
+              child: GestureDetector(
+                onTap: () => Navigator.pop(ctx),
+                behavior: HitTestBehavior.opaque,
+                child: const SizedBox.expand(),
               ),
             ),
-          ),
+
+            Positioned(
+              top: 90.h,
+              right: 12.w,
+              child: Material(
+                color: Colors.transparent,
+                child: Container(
+                  width: 220.w,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF8F7FC),
+                    borderRadius: BorderRadius.circular(16.r),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.14),
+                        blurRadius: 24,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(16.r),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _menuTile(
+                          icon: Icons.reply_rounded,
+                          iconColor: _purple,
+                          title: "Reply",
+                          onTap: () {
+                            Navigator.pop(ctx);
+                            controller.setReply(message);
+                          },
+                        ),
+
+                        if (isText)
+                          _menuTile(
+                            icon: Icons.copy_rounded,
+                            iconColor: _purple,
+                            title: "Copy",
+                            onTap: () async {
+                              Navigator.pop(ctx);
+                              await Clipboard.setData(
+                                ClipboardData(text: message.content ?? ""),
+                              );
+                              Utils().fluttertoast("Message copied");
+                            },
+                          ),
+
+                        _menuTile(
+                          icon: Icons.forward_rounded,
+                          iconColor: _purple,
+                          title: "Forward",
+                          onTap: () {
+                            Navigator.pop(ctx);
+                            Get.toNamed(
+                              Routes.forwardMessageScreen,
+                              arguments: {"message": message},
+                            );
+                          },
+                        ),
+
+                        if (isSentByMe && isText)
+                          _menuTile(
+                            icon: Icons.edit_rounded,
+                            iconColor: _purple,
+                            title: "Edit",
+                            onTap: () {
+                              Navigator.pop(ctx);
+                              controller.startEditingMessage(message);
+                            },
+                          ),
+
+                        _menuTile(
+                          icon: Icons.push_pin_rounded,
+                          iconColor: isPinned ? Colors.redAccent : _purple,
+                          title: isPinned ? "Unpin Message" : "Pin Message",
+                          onTap: () {
+                            Navigator.pop(ctx);
+                            if (isPinned) {
+                              controller.unpinMessage();
+                            } else {
+                              controller.pinMessage(message);
+                            }
+                          },
+                        ),
+
+                        Divider(
+                          height: 1,
+                          thickness: 1,
+                          color: Colors.grey.shade200,
+                          indent: 12,
+                          endIndent: 12,
+                        ),
+
+                        if (isSentByMe)
+                          _menuTile(
+                            icon: Icons.delete_outline_rounded,
+                            iconColor: Colors.redAccent,
+                            title: "Delete for Everyone",
+                            isDestructive: true,
+                            onTap: () {
+                              Navigator.pop(ctx);
+                              controller.deleteMessage(
+                                messageId: message.id!,
+                                deleteType: "for_everyone",
+                              );
+                            },
+                          ),
+
+                        _menuTile(
+                          icon: Icons.delete_rounded,
+                          iconColor: Colors.redAccent,
+                          title: "Delete for Me",
+                          isDestructive: true,
+                          onTap: () {
+                            Navigator.pop(ctx);
+                            controller.deleteMessage(
+                              messageId: message.id!,
+                              deleteType: "for_me",
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
         );
       },
+    );
+  }
+
+  Widget _menuTile({
+    required IconData icon,
+    required Color iconColor,
+    required String title,
+    required VoidCallback onTap,
+    bool isDestructive = false,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 13.h),
+        child: Row(
+          children: [
+            Icon(icon, size: 20.sp, color: iconColor),
+            SizedBox(width: 14.w),
+            Expanded(
+              child: Text(
+                title,
+                style: TextStyle(
+                  fontSize: 14.5.sp,
+                  fontWeight: FontWeight.w600,
+                  color: isDestructive
+                      ? Colors.redAccent
+                      : const Color(0xFF1A1A1A),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

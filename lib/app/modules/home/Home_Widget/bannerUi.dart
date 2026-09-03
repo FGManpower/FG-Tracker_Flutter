@@ -66,7 +66,7 @@ class BannerUi extends StatelessWidget {
               alignment: Alignment.bottomCenter,
               builder: DotSwiperPaginationBuilder(
                 activeColor: const Color(0xFF6B4DFF),
-                color: Colors.white.withOpacity(0.6),
+                color: Colors.white.withValues(alpha: 0.6),
                 size: 6.0.r,
                 activeSize: 8.0.r,
                 space: 4.0.w,
@@ -81,7 +81,7 @@ class BannerUi extends StatelessWidget {
                   borderRadius: BorderRadius.circular(16.r),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.06),
+                      color: Colors.black.withValues(alpha: 0.06),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),

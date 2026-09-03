@@ -12,6 +12,8 @@ import '../../../routes/app_pages.dart';
 import '../Controller/SearchController.dart';
 
 class SearchMembers extends GetView<SearchMemberController> {
+  const SearchMembers({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Obx(
@@ -199,7 +201,7 @@ class SearchMembers extends GetView<SearchMemberController> {
                               padding: EdgeInsets.all(8),
                               decoration: BoxDecoration(
                                 color: ToggleThemeData.darkPurple
-                                    .withOpacity(0.08),
+                                    .withValues(alpha: 0.08),
                                 shape: BoxShape.circle,
                               ),
                               child: Icon(

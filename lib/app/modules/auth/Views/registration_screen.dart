@@ -65,7 +65,7 @@ class RegistrationScreen extends GetView<RegistrationController> {
                       borderRadius: BorderRadius.circular(30.r),
                       boxShadow: [
                         BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
+                            color: Colors.black.withValues(alpha: 0.05),
                             blurRadius: 20,
                             spreadRadius: 5),
                       ],
@@ -206,7 +206,7 @@ class RegistrationScreen extends GetView<RegistrationController> {
                       child: Container(
                         padding: EdgeInsets.all(10.w),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
+                          color: Colors.white.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(15.r),
                         ),
                         child: const Icon(
@@ -243,7 +243,7 @@ class RegistrationScreen extends GetView<RegistrationController> {
                   borderRadius: BorderRadius.circular(28.r),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFF6B4DFF).withOpacity(0.12),
+                      color: const Color(0xFF6B4DFF).withValues(alpha: 0.12),
                       blurRadius: 24,
                       offset: const Offset(0, 8),
                     ),
@@ -473,7 +473,7 @@ class RegistrationScreen extends GetView<RegistrationController> {
               borderRadius: BorderRadius.circular(12.r),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF6B4DFF).withOpacity(0.08),
+                  color: const Color(0xFF6B4DFF).withValues(alpha: 0.08),
                   blurRadius: 8,
                   spreadRadius: 1,
                   offset: const Offset(0, 2),

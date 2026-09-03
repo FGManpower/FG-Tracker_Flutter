@@ -130,8 +130,8 @@ class CreatedGroupUi extends StatelessWidget {
                                     groupStatus: value.toString(),
                                   );
                                 },
-                                activeColor: const Color(0xff5045B9),
-                                trackColor: Colors.black26,
+                                activeTrackColor: const Color(0xff5045B9),
+                                inactiveTrackColor: Colors.black26,
                               ),
                             ),
                           )

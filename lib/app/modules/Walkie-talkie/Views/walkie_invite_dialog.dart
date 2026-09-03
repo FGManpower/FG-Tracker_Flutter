@@ -28,7 +28,7 @@ class WalkieInviteDialog {
     } catch (_) {}
 
     Get.generalDialog(
-      barrierColor: Colors.black.withOpacity(0.4),
+      barrierColor: Colors.black.withValues(alpha: 0.4),
       barrierDismissible: true,
       barrierLabel: 'WalkieInvite',
       transitionDuration: const Duration(milliseconds: 400),
@@ -136,12 +136,12 @@ class _BannerInviteWidgetState extends State<_BannerInviteWidget>
         color: _bgDark,
         borderRadius: BorderRadius.circular(24.r),
         border: Border.all(
-          color: Colors.white.withOpacity(0.08),
+          color: Colors.white.withValues(alpha: 0.08),
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.4),
+            color: Colors.black.withValues(alpha: 0.4),
             blurRadius: 30,
             offset: const Offset(0, 15),
           ),
@@ -183,7 +183,7 @@ class _BannerInviteWidgetState extends State<_BannerInviteWidget>
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.7),
+                    color: Colors.white.withValues(alpha: 0.7),
                     fontSize: 12.sp,
                     fontWeight: FontWeight.w500,
                   ),
@@ -197,7 +197,7 @@ class _BannerInviteWidgetState extends State<_BannerInviteWidget>
                     Text(
                       "Active Channel",
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.6),
+                        color: Colors.white.withValues(alpha: 0.6),
                         fontSize: 11.sp,
                         fontWeight: FontWeight.w500,
                       ),
@@ -267,7 +267,7 @@ class _BannerInviteWidgetState extends State<_BannerInviteWidget>
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: _lightPurple.withOpacity(opacity * 0.6),
+                        color: _lightPurple.withValues(alpha: opacity * 0.6),
                         width: 1.w,
                       ),
                     ),
@@ -282,7 +282,7 @@ class _BannerInviteWidgetState extends State<_BannerInviteWidget>
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: _btnRejectBg,
-              border: Border.all(color: _primaryPurple.withOpacity(0.3), width: 1),
+              border: Border.all(color: _primaryPurple.withValues(alpha: 0.3), width: 1),
             ),
             child: Icon(
               Icons.speaker_phone_rounded,
@@ -338,7 +338,7 @@ class _BannerInviteWidgetState extends State<_BannerInviteWidget>
               boxShadow: isGradient
                   ? [
                 BoxShadow(
-                  color: const Color(0xFF8B5CF6).withOpacity(0.4),
+                  color: const Color(0xFF8B5CF6).withValues(alpha: 0.4),
                   blurRadius: 12,
                   offset: const Offset(0, 4),
                 )

@@ -27,6 +27,8 @@ import '../../Track/Widget/TrackLAppBar.dart';
 import 'QrScreen.dart';
 
 class MemberscreenScreen extends GetView<MemberController> {
+  const MemberscreenScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Obx(
@@ -559,7 +561,7 @@ class MemberscreenScreen extends GetView<MemberController> {
                                                   decoration: BoxDecoration(
                                                     color: ToggleThemeData
                                                         .darkPurple
-                                                        .withOpacity(0.08),
+                                                        .withValues(alpha: 0.08),
                                                     shape: BoxShape.circle,
                                                   ),
                                                   child: Icon(
@@ -607,7 +609,7 @@ class MemberscreenScreen extends GetView<MemberController> {
                             Container(
                               margin: EdgeInsets.symmetric(horizontal: 16.w),
                               height: 1,
-                              color: Colors.grey.withOpacity(0.2),
+                              color: Colors.grey.withValues(alpha: 0.2),
                             ),
                         ],
                       ),
@@ -821,7 +823,7 @@ class MemberscreenScreen extends GetView<MemberController> {
                                             padding: EdgeInsets.all(8),
                                             decoration: BoxDecoration(
                                               color: ToggleThemeData.darkPurple
-                                                  .withOpacity(0.08),
+                                                  .withValues(alpha: 0.08),
                                               shape: BoxShape.circle,
                                             ),
                                             child: Icon(
@@ -863,7 +865,7 @@ class MemberscreenScreen extends GetView<MemberController> {
                           Container(
                             margin: EdgeInsets.symmetric(horizontal: 16.w),
                             height: 1,
-                            color: Colors.grey.withOpacity(0.2),
+                            color: Colors.grey.withValues(alpha: 0.2),
                           ),
                       ],
                     ),

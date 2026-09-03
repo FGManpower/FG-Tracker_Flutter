@@ -89,7 +89,7 @@ class GroupChatScreen extends GetView<GroupMessageController> {
                                   borderRadius: BorderRadius.circular(18),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.black.withOpacity(0.10),
+                                      color: Colors.black.withValues(alpha: 0.10),
                                       blurRadius: 8,
                                       offset: const Offset(0, 2),
                                     ),
@@ -399,20 +399,110 @@ class GroupChatScreen extends GetView<GroupMessageController> {
               },
             ),
             SizedBox(width: 2.w),
-            GestureDetector(
-              onTap: () => _showMoreMenu(context),
-              behavior: HitTestBehavior.opaque,
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 8.h),
-                child: Icon(
-                  Icons.more_vert_rounded,
-                  color: const Color(0xFF5045B9),
-                  size: 22.sp,
+
+
+            Theme(
+              data: Theme.of(context).copyWith(
+                splashColor: Colors.transparent,
+                highlightColor: Colors.transparent,
+              ),
+              child: PopupMenuButton<int>(
+                offset: const Offset(0, 50), // Position dropdown below the Appbar
+                color: const Color(0xFFF9F8FF), // Screenshot like soft background
+                elevation: 4,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16.r), // Rounded exactly like screenshot
                 ),
+                icon: Padding(
+                  padding: EdgeInsets.symmetric(vertical: 8.h),
+                  child: Icon(
+                    Icons.more_vert_rounded,
+                    color: const Color(0xFF5045B9),
+                    size: 24.sp,
+                  ),
+                ),
+                onSelected: (value) {
+                  if (value == 0) {
+                    controller.startSearch();
+                  } else if (value == 1) {
+                    groupController.groupName.text = controller.groupName;
+                    DialogBox().showUpdateGroupBottomSheet(
+                      context: context,
+                      controller: groupController,
+                      groupId: controller.groupId.toString(),
+                    );
+                  } else if (value == 2) {
+                    BottomSheetUi().showMemberBottomSheet(
+                      context,
+                      controller.groupMembers.toList(),
+                      isGroupChat: true,
+                      groupId: controller.groupId,
+                      groupName: controller.groupName,
+                      isDeleteMode: true,
+                    );
+                  }
+                },
+                itemBuilder: (context) {
+                  return [
+                    _buildPopupMenuItem(
+                      value: 0,
+                      icon: Icons.search,
+                      iconColor: const Color(0xFF5045B9),
+                      title: "Search Messages",
+                    ),
+                    if (controller.isCreator.value) ...[
+                      _buildPopupMenuItem(
+                        value: 1,
+                        icon: Icons.edit_rounded,
+                        iconColor: const Color(0xFF5045B9),
+                        title: "Update Group",
+                      ),
+                      _buildPopupMenuItem(
+                        value: 2,
+                        icon: Icons.person_remove_rounded,
+                        iconColor: Colors.redAccent,
+                        title: "Delete Member",
+                        isDestructive: true,
+                      ),
+                    ]
+                  ];
+                },
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  PopupMenuItem<int> _buildPopupMenuItem({
+    required int value,
+    required IconData icon,
+    required Color iconColor,
+    required String title,
+    bool isDestructive = false,
+  }) {
+    return PopupMenuItem<int>(
+      value: value,
+      padding: EdgeInsets.symmetric(horizontal: 16.w),
+      height: 46.h,
+      child: Row(
+        children: [
+          Icon(
+            icon,
+            color: iconColor,
+            size: 20.sp,
+          ),
+          SizedBox(width: 14.w),
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 14.sp,
+              fontWeight: FontWeight.w600,
+              color: isDestructive ? Colors.redAccent : const Color(0xFF1B1B1B),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -431,7 +521,7 @@ class GroupChatScreen extends GetView<GroupMessageController> {
           borderRadius: BorderRadius.circular(10.r),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
+              color: Colors.black.withValues(alpha: 0.04),
               blurRadius: 4,
               offset: const Offset(0, 1),
             ),
@@ -443,115 +533,6 @@ class GroupChatScreen extends GetView<GroupMessageController> {
           size: 18.sp,
         ),
       ),
-    );
-  }
-
-  void _showMoreMenu(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (_) {
-        return Container(
-          padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(30.r)),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 50.w,
-                height: 5.h,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
-                  borderRadius: BorderRadius.circular(20.r),
-                ),
-              ),
-              SizedBox(height: 20.h),
-              Text(
-                controller.isCreator.value ? "Group Actions" : "Chat Actions",
-                style: TextStyle(
-                  fontSize: 22.sp,
-                  fontWeight: FontWeight.w800,
-                  color: Colors.black87,
-                ),
-              ),
-              Text(
-                controller.isCreator.value
-                    ? "Manage your group settings"
-                    : "Manage your chat",
-                style: TextStyle(
-                  fontSize: 13.sp,
-                  color: Colors.grey.shade600,
-                ),
-              ),
-              SizedBox(height: 24.h),
-              actionTile(
-                icon: Icons.search,
-                iconColor: Colors.blueAccent,
-                title: "Search Messages",
-                subtitle: "Find messages by keyword",
-                onTap: () {
-                  Navigator.pop(context);
-                  controller.startSearch();
-                },
-              ),
-              if (controller.isCreator.value) ...[
-                SizedBox(height: 12.h),
-                actionTile(
-                  icon: Icons.edit_rounded,
-                  iconColor: _purple,
-                  title: "Update Group",
-                  subtitle: "Change the current group detail",
-                  onTap: () {
-                    Navigator.pop(context);
-                    groupController.groupName.text = controller.groupName;
-                    DialogBox().showUpdateGroupBottomSheet(
-                      context: context,
-                      controller: groupController,
-                      groupId: controller.groupId.toString(),
-                    );
-                  },
-                ),
-                SizedBox(height: 12.h),
-                actionTile(
-                  icon: Icons.person_remove_rounded,
-                  iconColor: Colors.red,
-                  title: "Delete Member",
-                  subtitle: "Remove a member from this group",
-                  onTap: () {
-                    Navigator.pop(context);
-                    BottomSheetUi().showMemberBottomSheet(
-                      context,
-                      controller.groupMembers.toList(),
-                      isGroupChat: true,
-                      groupId: controller.groupId,
-                      groupName: controller.groupName,
-                      isDeleteMode: true,
-                    );
-                  },
-                ),
-              ],
-              SizedBox(height: 20.h),
-              SizedBox(
-                width: double.infinity,
-                child: reausablebutton(
-                  title: "Cancel",
-                  ontap: () => Navigator.pop(context),
-                  height: 52,
-                  borderradiues: 50,
-                  backgroundColor: _purple,
-                  textcolor: Colors.white,
-                  fontSize: 15,
-                ),
-              ),
-              SizedBox(height: 10.h),
-            ],
-          ),
-        );
-      },
     );
   }
 }

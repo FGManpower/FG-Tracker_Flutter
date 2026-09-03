@@ -24,11 +24,11 @@ class LocationDataRes {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['status'] = this.status;
-    data['message'] = this.message;
-    if (this.locations != null) {
-      data['locations'] = this.locations!.map((v) => v.toJson()).toList();
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['status'] = status;
+    data['message'] = message;
+    if (locations != null) {
+      data['locations'] = locations!.map((v) => v.toJson()).toList();
     }
     return data;
   }
@@ -74,17 +74,17 @@ class LocationData {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['id'] = this.id;
-    data['userId'] = this.userId;
-    data['groupId'] = this.groupId;
-    data['latitude'] = this.latitude;
-    data['longitude'] = this.longitude;
-    data['lastSeen'] = this.lastSeen;
-    data['isOnline'] = this.isOnline;
-    data['name'] = this.name;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['id'] = id;
+    data['userId'] = userId;
+    data['groupId'] = groupId;
+    data['latitude'] = latitude;
+    data['longitude'] = longitude;
+    data['lastSeen'] = lastSeen;
+    data['isOnline'] = isOnline;
+    data['name'] = name;
     data['isCreator'] = isCreator;
-    data['ProfileImage'] = this.profileImage;
+    data['ProfileImage'] = profileImage;
     data['locationSharing'] = locationSharing;
     return data;
   }

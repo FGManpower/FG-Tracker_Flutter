@@ -65,7 +65,7 @@ class TrackingScreen extends StatelessWidget {
                   "Live location tracking",
                   style: TextStyle(
                     fontSize: 12,
-                    color: primaryColor.withOpacity(0.85),
+                    color: primaryColor.withValues(alpha: 0.85),
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -91,7 +91,7 @@ class TrackingScreen extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.03),
+              color: Colors.black.withValues(alpha: 0.03),
               blurRadius: 10,
               offset: const Offset(0, 2),
             ),
@@ -113,7 +113,7 @@ class TrackingScreen extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.02),
+              color: Colors.black.withValues(alpha: 0.02),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -280,7 +280,7 @@ class TrackingScreen extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -307,9 +307,9 @@ class TrackingScreen extends StatelessWidget {
                       height: 160,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: primaryColor.withOpacity(0.14),
+                        color: primaryColor.withValues(alpha: 0.14),
                         border: Border.all(
-                          color: primaryColor.withOpacity(0.22),
+                          color: primaryColor.withValues(alpha: 0.22),
                           width: 1.5,
                         ),
                       ),
@@ -345,7 +345,7 @@ class TrackingScreen extends StatelessWidget {
                             border: Border.all(color: Colors.white, width: 2.5),
                             boxShadow: [
                               BoxShadow(
-                                color: primaryColor.withOpacity(0.45),
+                                color: primaryColor.withValues(alpha: 0.45),
                                 blurRadius: 8,
                               ),
                             ],
@@ -781,7 +781,7 @@ class TrackingScreen extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    color: primaryColor.withOpacity(0.7),
+                    color: primaryColor.withValues(alpha: 0.7),
                     fontSize: 11,
                   ),
                 ),

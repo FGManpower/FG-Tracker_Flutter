@@ -310,7 +310,7 @@ class _NotificationBell extends StatelessWidget {
                     boxShadow: [
                       BoxShadow(
                         color:
-                        _Palette.purple.withOpacity(0.3),
+                        _Palette.purple.withValues(alpha: 0.3),
                         blurRadius: 4,
                         offset: const Offset(0, 2),
                       ),

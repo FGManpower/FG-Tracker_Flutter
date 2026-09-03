@@ -25,8 +25,8 @@ class MyAppTheme {
     return TextButton(
       onPressed: onPressed,
       style: ButtonStyle(
-          backgroundColor: MaterialStateProperty.all(buttonColor),
-          shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+          backgroundColor: WidgetStateProperty.all(buttonColor),
+          shape: WidgetStateProperty.all<RoundedRectangleBorder>(
               RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(radius),
                   side: BorderSide(color: borderColor)))),
@@ -61,7 +61,7 @@ class MyAppTheme {
     List<TextInputFormatter>? inputFormatters,
     String? Function(String?)? validator,
     int? maxLength,
-    var maxLines = null,
+    var maxLines,
     String? labelText,
     String? hintText,
     double? cursorHeight,

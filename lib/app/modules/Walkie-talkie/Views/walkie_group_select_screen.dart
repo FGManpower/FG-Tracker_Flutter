@@ -21,7 +21,7 @@ class WalkieGroupSelectScreen extends StatefulWidget {
 class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
   final GroupController controller = Get.put(GroupController());
   final TextEditingController _searchController = TextEditingController();
-  RxString _searchQuery = ''.obs;
+  final RxString _searchQuery = ''.obs;
 
 
 
@@ -109,7 +109,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Colors.black.withValues(alpha: 0.05),
                     blurRadius: 8,
                   ),
                 ],
@@ -155,7 +155,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 8,
           ),
         ],
@@ -176,7 +176,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(14.r),
-                border: Border.all(color: Colors.grey.withOpacity(0.15)),
+                border: Border.all(color: Colors.grey.withValues(alpha: 0.15)),
               ),
               child: Row(
                 children: [
@@ -224,7 +224,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(14.r),
-              border: Border.all(color: Colors.grey.withOpacity(0.15)),
+              border: Border.all(color: Colors.grey.withValues(alpha: 0.15)),
             ),
             child:
             Icon(Icons.tune, size: 18.sp, color: const Color(0xFF6B4DFF)),
@@ -278,12 +278,12 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
           borderRadius: BorderRadius.circular(16.r),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
+              color: Colors.black.withValues(alpha: 0.04),
               blurRadius: 10,
               offset: const Offset(0, 3),
             ),
           ],
-          border: Border.all(color: Colors.grey.withOpacity(0.08)),
+          border: Border.all(color: Colors.grey.withValues(alpha: 0.08)),
         ),
         child: Row(
           children: [
@@ -361,12 +361,12 @@ class _GroupCardSkeleton extends StatelessWidget {
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 10,
             offset: const Offset(0, 3),
           ),
         ],
-        border: Border.all(color: Colors.grey.withOpacity(0.08)),
+        border: Border.all(color: Colors.grey.withValues(alpha: 0.08)),
       ),
       child: Row(
         children: [

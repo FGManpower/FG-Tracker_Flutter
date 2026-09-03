@@ -25,7 +25,7 @@ class MentionlistItem extends StatelessWidget {
           borderRadius: BorderRadius.circular(12.r),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.25),
+              color: Colors.black.withValues(alpha: 0.25),
               blurRadius: 12,
               offset: const Offset(0, -4),
             ),
@@ -39,7 +39,7 @@ class MentionlistItem extends StatelessWidget {
             separatorBuilder: (context, index) => Divider(
               height: 1,
               thickness: 0.5,
-              color: Colors.white.withOpacity(0.15),
+              color: Colors.white.withValues(alpha: 0.15),
               indent: 70.w,
             ),
             itemBuilder: (context, index) {

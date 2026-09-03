@@ -18,7 +18,7 @@ import 'package:get/get.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 class GroupsListScreen extends StatefulWidget {
-  GroupsListScreen({super.key});
+  const GroupsListScreen({super.key});
 
   @override
   State<GroupsListScreen> createState() => _GroupsListScreenState();
@@ -428,8 +428,8 @@ class _GroupsListScreenState extends State<GroupsListScreen> {
                               scale: 0.7,
                               child: CupertinoSwitch(
                                 value: isActive,
-                                activeColor: const Color(0xff5045B9),
-                                trackColor: Colors.grey.shade300,
+                                activeTrackColor: const Color(0xff5045B9),
+                                inactiveTrackColor: Colors.grey.shade300,
                                 onChanged: (value) {
                                   if (data == null) return;
                                   groupController.updateGroup(

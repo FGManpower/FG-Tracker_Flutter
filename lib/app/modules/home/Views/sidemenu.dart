@@ -87,7 +87,7 @@ class Sidemenu extends StatelessWidget {
                     ),
                     child: CircleAvatar(
                       radius: 40.r,
-                      backgroundColor: Colors.white.withOpacity(0.3),
+                      backgroundColor: Colors.white.withValues(alpha: 0.3),
                       backgroundImage: NetworkImage(
                         Utility.isNotNullEmptyOrFalse(
                                 controller.userData.value.profileImage)
@@ -232,7 +232,7 @@ class Sidemenu extends StatelessWidget {
               color: Colors.white,
               boxShadow: [
                 BoxShadow(
-                    color: const Color(0xFF6B4DFF).withOpacity(0.2),
+                    color: const Color(0xFF6B4DFF).withValues(alpha: 0.2),
                     blurRadius: 10)
               ],
             ),
@@ -352,7 +352,7 @@ class Sidemenu extends StatelessWidget {
 
   Widget _divider() {
     return Divider(
-      color: Colors.grey.withOpacity(0.15),
+      color: Colors.grey.withValues(alpha: 0.15),
       thickness: 1,
       height: 10.h,
       indent: 15.w,

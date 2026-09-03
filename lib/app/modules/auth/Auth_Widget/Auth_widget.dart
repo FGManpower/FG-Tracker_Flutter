@@ -360,7 +360,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
         }
 
         if (widget.hint.toLowerCase().contains("phone")) {
-          if (value == null || value.trim().isEmpty) {
+          if (value.trim().isEmpty) {
             return "${widget.hint} is required";
           }
           return null;
