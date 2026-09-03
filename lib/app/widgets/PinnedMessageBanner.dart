@@ -1,5 +1,3 @@
-// lib/app/modules/Messages/widgets/PinnedMessageBanner.dart
-
 import 'package:fgtracker/app/Model/GetMessage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -17,6 +15,8 @@ class PinnedMessageBanner extends StatelessWidget {
     required this.onClose,
     required this.onUnpin,
   });
+
+  static const Color _purple = Color(0xFF5045B9);
 
   String _getPreviewText() {
     switch (pinnedMessage.messageType ?? "text") {
@@ -44,60 +44,37 @@ class PinnedMessageBanner extends StatelessWidget {
       onLongPress: () => _showUnpinSheet(context),
       child: Container(
         width: double.infinity,
-        margin: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+        margin: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12.r),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.06),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
+          color: const Color(0xFFEDEBFB),
+          borderRadius: BorderRadius.circular(14.r),
         ),
         child: Row(
           children: [
-            Container(
-              padding: EdgeInsets.all(6.w),
-              decoration: BoxDecoration(
-                color: const Color(0xFF25D366).withOpacity(0.12),
-                shape: BoxShape.circle,
-              ),
-              child: Transform.rotate(
-                angle: 0.7,
-                child: Icon(
-                  Icons.push_pin,
-                  color: const Color(0xFF25D366),
-                  size: 16.sp,
-                ),
+            // Purple pin icon
+            Transform.rotate(
+              angle: 0.6,
+              child: Icon(
+                Icons.push_pin,
+                color: _purple,
+                size: 20.sp,
               ),
             ),
-            SizedBox(width: 10.w),
+            SizedBox(width: 12.w),
 
-            Container(
-              width: 3.w,
-              height: 36.h,
-              decoration: BoxDecoration(
-                color: const Color(0xFF25D366),
-                borderRadius: BorderRadius.circular(2.r),
-              ),
-            ),
-            SizedBox(width: 10.w),
-
-            // Content
+            // Text section
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    pinnedMessage.senderName ?? "Pinned Message",
+                    "Pinned Message",
                     style: TextStyle(
                       fontWeight: FontWeight.w700,
-                      color: const Color(0xFF25D366),
-                      fontSize: 12.sp,
+                      color: _purple,
+                      fontSize: 13.sp,
                     ),
                   ),
                   SizedBox(height: 2.h),
@@ -106,29 +83,20 @@ class PinnedMessageBanner extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      color: Colors.grey.shade700,
-                      fontSize: 13.sp,
+                      color: Colors.black87,
+                      fontSize: 12.sp,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ],
               ),
             ),
 
-            // Close
-            GestureDetector(
-              onTap: onClose,
-              child: Container(
-                padding: EdgeInsets.all(4.w),
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade100,
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Icons.close,
-                  size: 16.sp,
-                  color: Colors.grey.shade600,
-                ),
-              ),
+            // Arrow forward
+            Icon(
+              Icons.chevron_right_rounded,
+              color: Colors.grey.shade500,
+              size: 22.sp,
             ),
           ],
         ),

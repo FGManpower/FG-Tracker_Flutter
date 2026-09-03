@@ -81,6 +81,9 @@ class _ChatInputAreaState extends State<ChatInputArea> {
   MessageData? _lastEditingMessage;
   late final FocusNode focusNode;
 
+  static const Color _purple = Color(0xFF5045B9);
+  static const Color _inputBg = Color(0xFFF5F3FB);
+
   @override
   void initState() {
     super.initState();
@@ -125,9 +128,8 @@ class _ChatInputAreaState extends State<ChatInputArea> {
     return SafeArea(
       child: Obx(() {
         final isMessageNotEmpty = widget.messageText.value.trim().isNotEmpty;
-        final editingMessage =
-            widget.messageController?.editingMessage.value ??
-                widget.groupMessageController?.editingMessage.value;
+        final editingMessage = widget.messageController?.editingMessage.value ??
+            widget.groupMessageController?.editingMessage.value;
 
         final isEditing = editingMessage != null;
         if (editingMessage != null &&
@@ -141,12 +143,11 @@ class _ChatInputAreaState extends State<ChatInputArea> {
 
             widget.textController.text = text;
 
-            widget.textController.selection =
-                TextSelection.fromPosition(
-                  TextPosition(
-                    offset: text.length,
-                  ),
-                );
+            widget.textController.selection = TextSelection.fromPosition(
+              TextPosition(
+                offset: text.length,
+              ),
+            );
 
             widget.messageText.value = text;
 
@@ -166,18 +167,14 @@ class _ChatInputAreaState extends State<ChatInputArea> {
           children: [
             SingleChildScrollView(
               child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
                 decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(20.r),
-                    topRight: Radius.circular(20.r),
-                  ),
+                  color: Colors.white,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.grey.shade300,
-                      offset: const Offset(0, -1),
-                      blurRadius: 4,
+                      color: Colors.black.withOpacity(0.04),
+                      offset: const Offset(0, -2),
+                      blurRadius: 10,
                     ),
                   ],
                 ),
@@ -200,11 +197,11 @@ class _ChatInputAreaState extends State<ChatInputArea> {
                         margin: EdgeInsets.only(bottom: 8.h),
                         padding: EdgeInsets.symmetric(
                           horizontal: 12.w,
-                          vertical: 14.h,
+                          vertical: 12.h,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.grey.shade200,
-                          borderRadius: BorderRadius.circular(20.r),
+                          color: _inputBg,
+                          borderRadius: BorderRadius.circular(30.r),
                         ),
                         child: Row(
                           children: [
@@ -214,11 +211,11 @@ class _ChatInputAreaState extends State<ChatInputArea> {
                               },
                               child: CircleAvatar(
                                 radius: 20.r,
-                                backgroundColor: Colors.red,
+                                backgroundColor: Colors.red.shade100,
                                 child: Icon(
-                                  Icons.delete,
-                                  color: Colors.white,
-                                  size: 20.sp,
+                                  Icons.delete_outline,
+                                  color: Colors.red,
+                                  size: 22.sp,
                                 ),
                               ),
                             ),
@@ -232,19 +229,20 @@ class _ChatInputAreaState extends State<ChatInputArea> {
                                     style: TextStyle(
                                       fontSize: 14.sp,
                                       fontWeight: FontWeight.w600,
+                                      color: _purple,
                                     ),
                                   ),
-                                  SizedBox(height: 8.h),
+                                  SizedBox(height: 6.h),
                                   SizedBox(
                                     height: 35.h,
                                     child: AnimatedWaveList(
                                       stream: voiceController.amplitudeStream,
                                       barBuilder: (animation, amplitude) =>
                                           WaveFormBar(
-                                        animation: animation,
-                                        amplitude: amplitude,
-                                        color: ToggleThemeData.darkPurple,
-                                      ),
+                                            animation: animation,
+                                            amplitude: amplitude,
+                                            color: _purple,
+                                          ),
                                     ),
                                   ),
                                 ],
@@ -261,42 +259,41 @@ class _ChatInputAreaState extends State<ChatInputArea> {
                               },
                               child: CircleAvatar(
                                 radius: 20.r,
-                                backgroundColor: Colors.orange,
+                                backgroundColor: Colors.orange.shade100,
                                 child: Icon(
                                   voiceController.isPaused.value
-                                      ? Icons.play_arrow
-                                      : Icons.pause,
-                                  color: Colors.white,
-                                  size: 20.sp,
+                                      ? Icons.play_arrow_rounded
+                                      : Icons.pause_rounded,
+                                  color: Colors.orange,
+                                  size: 22.sp,
                                 ),
                               ),
                             ),
-                            SizedBox(width: 12.w),
+                            SizedBox(width: 8.w),
                             GestureDetector(
                               onTap: () async {
                                 final path =
-                                    await voiceController.stopRecording();
+                                await voiceController.stopRecording();
                                 if (path != null) {
                                   widget.onVoiceSend!(path);
                                 }
                               },
                               child: CircleAvatar(
-                                radius: 20.r,
-                                backgroundColor: ToggleThemeData.darkPurple,
+                                radius: 22.r,
+                                backgroundColor: _purple,
                                 child: Icon(
-                                  Icons.send,
+                                  Icons.send_rounded,
                                   color: Colors.white,
-                                  size: 20.sp,
+                                  size: 18.sp,
                                 ),
                               ),
                             ),
                           ],
                         ),
                       ),
-
                     Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        SizedBox(width: 5.w),
                         Expanded(
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
@@ -317,257 +314,228 @@ class _ChatInputAreaState extends State<ChatInputArea> {
                                     );
                                   },
                                 ),
-                              Row(
-                                children: [
-                                  Flexible(
-
-                                    child:
-
-                                    TextField(
-                                      controller: widget.textController,
-                                      focusNode: focusNode,
-                                      onChanged: (val) {
-                                        widget.messageText.value = val;
-                                        if (widget.groupMembers?.isNotEmpty ==
-                                            true) {
-                                          widget.groupMessageController
-                                              ?.onTextChanged(
-                                            textController:
-                                                widget.textController,
-                                          );
-                                        }
-                                      },
-                                      style: TextStyle(
-                                        color: ToggleThemeData.white,
-                                        fontFamily: FontFamily.interMedium,
-                                        fontSize: 16.sp,
-                                      ),
-                                      maxLines: 3,
-                                      minLines: 1,
-                                      expands: false,
-                                      decoration: InputDecoration(
-                                        hintText: "Type a message",
-                                        prefixIcon: GestureDetector(
-                                          onTap: _toggleEmoji,
-                                          child: Icon(
-                                            Icons.emoji_emotions_outlined,
-                                            color: Colors.white,
-                                            size: 26.sp,
-                                          ),
-                                        ),
-                                        hintStyle:
-                                            TextStyle(color: Colors.white),
-                                        border: OutlineInputBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(30.r),
-                                          borderSide: BorderSide.none,
-                                        ),
-                                        suffixIcon: Padding(
-                                          padding: EdgeInsets.all(3.r),
-                                          child: GestureDetector(
-                                            onTap: () {
-                                              ChatBottomSheet.showFileOptions(
-                                                context,
-                                                onGallery: () async {
-                                                  Navigator.pop(context);
-
-                                                  final List<XFile> mediaFiles =
-                                                      await FileServices()
-                                                          .pickMultipleMediaFromGallery();
-
-                                                  if (mediaFiles.isEmpty)
-                                                    return;
-
-                                                  final List<File> images = [];
-                                                  final List<String> videos =
-                                                      [];
-
-                                                  const videoExtensions = [
-                                                    'mp4',
-                                                    'mov',
-                                                    'avi',
-                                                    'mkv',
-                                                    '3gp',
-                                                    'webm',
-                                                    'm4v'
-                                                  ];
-
-                                                  for (final file
-                                                      in mediaFiles) {
-                                                    final ext = file.path
-                                                        .split('.')
-                                                        .last
-                                                        .toLowerCase();
-                                                    if (videoExtensions
-                                                        .contains(ext)) {
-                                                      videos.add(file.path);
-                                                    } else {
-                                                      images
-                                                          .add(File(file.path));
-                                                    }
-                                                  }
-
-                                                  if (images.isNotEmpty) {
-                                                    widget.onImageSelected(
-                                                        images);
-                                                  }
-
-                                                  if (videos.isNotEmpty) {
-                                                    widget.onVideosSelected(
-                                                        videos);
-                                                  }
-                                                },
-                                                onDocument: () async {
-                                                  Navigator.pop(context);
-                                                  final file =
-                                                      await FileServices()
-                                                          .pickDocument();
-                                                  if (file != null) {
-                                                    widget.onDocumentSelected(
-                                                        file.path ?? "");
-                                                  }
-                                                },
-                                                onCamera: () {
-                                                  Navigator.pop(context);
-                                                  WidgetsBinding.instance
-                                                      .addPostFrameCallback(
-                                                          (_) async {
-                                                    final result =
-                                                        await Get.toNamed(Routes
-                                                            .cameraScreen);
-
-                                                    if (result != null &&
-                                                        result is String &&
-                                                        result.isNotEmpty) {
-                                                      final ext = result
-                                                          .split('.')
-                                                          .last
-                                                          .toLowerCase();
-                                                      const videoExtensions = [
-                                                        'mp4',
-                                                        'mov',
-                                                        'avi',
-                                                        'mkv',
-                                                        '3gp',
-                                                        'webm'
-                                                      ];
-
-                                                      if (videoExtensions
-                                                          .contains(ext)) {
-                                                        widget.onVideosSelected(
-                                                            [result]);
-                                                      } else {
-                                                        widget.onImageSelected(
-                                                            [File(result)]);
-                                                      }
-                                                    }
-                                                  });
-                                                },
-                                                onLocation: () async {
-                                                  Navigator.pop(context);
-                                                  widget.onLocationSelected();
-                                                },
-                                                onContact: () async {
-                                                  Navigator.pop(context);
-                                                  widget.onContactSelected();
-                                                },
-                                              );
-                                            },
-                                            child: CircleAvatar(
-                                              backgroundColor:
-                                                  ToggleThemeData.white,
-                                              radius: 16,
-                                              child: reausableIcon(
-                                                icon:
-                                                    Icons.file_present_outlined,
-                                                color: ToggleThemeData.Appcolor,
-                                                size: 25,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                        fillColor: ToggleThemeData.Appcolor,
-                                        filled: true,
-                                        contentPadding: EdgeInsets.symmetric(
-                                          horizontal: 15.w,
-                                          vertical: 14.h,
-                                        ),
+                              TextField(
+                                controller: widget.textController,
+                                focusNode: focusNode,
+                                onChanged: (val) {
+                                  widget.messageText.value = val;
+                                  if (widget.groupMembers?.isNotEmpty == true) {
+                                    widget.groupMessageController
+                                        ?.onTextChanged(
+                                      textController: widget.textController,
+                                    );
+                                  }
+                                },
+                                style: TextStyle(
+                                  color: Colors.black87,
+                                  fontFamily: FontFamily.interMedium,
+                                  fontSize: 15.sp,
+                                ),
+                                maxLines: 5,
+                                minLines: 1,
+                                decoration: InputDecoration(
+                                  hintText: "Type a message...",
+                                  hintStyle: TextStyle(
+                                    color: Colors.grey.shade700,
+                                    fontSize: 14.sp,
+                                    fontWeight: FontWeight.w400,
+                                  ),
+                                  prefixIcon: GestureDetector(
+                                    onTap: _toggleEmoji,
+                                    child: Padding(
+                                      padding: EdgeInsets.only(left: 4.w),
+                                      child: Icon(
+                                        Icons.sentiment_satisfied_alt_rounded,
+                                        color: const Color(0xFF5045B9),
+                                        size: 24.sp,
                                       ),
                                     ),
                                   ),
-                                  SizedBox(width: 8.w),
-                                  if (shouldShowSend &&
-                                      !voiceController.isRecording.value)
-                                    GestureDetector(
-                                      onTap: widget.isSending.value
-                                          ? null
-                                          : () {
-                                        if (isEditing) {
-                                          final newText =
-                                          widget.textController.text.trim();
-
-                                          if (newText.isEmpty) return;
-
-                                          if (widget.messageController != null) {
-                                            widget.messageController!
-                                                .updateEditedMessage(
-                                              newText: newText,
-                                            );
-                                          } else if (widget.groupMessageController !=
-                                              null) {
-                                            widget.groupMessageController!
-                                                .updateEditedMessage(
-                                              newText: newText,
-                                            );
+                                  suffixIcon: GestureDetector(
+                                    onTap: () {
+                                      ChatBottomSheet.showFileOptions(
+                                        context,
+                                        onGallery: () async {
+                                          Navigator.pop(context);
+                                          final List<XFile> mediaFiles =
+                                          await FileServices()
+                                              .pickMultipleMediaFromGallery();
+                                          if (mediaFiles.isEmpty) return;
+                                          final List<File> images = [];
+                                          final List<String> videos = [];
+                                          const videoExtensions = [
+                                            'mp4',
+                                            'mov',
+                                            'avi',
+                                            'mkv',
+                                            '3gp',
+                                            'webm',
+                                            'm4v'
+                                          ];
+                                          for (final file in mediaFiles) {
+                                            final ext = file.path
+                                                .split('.')
+                                                .last
+                                                .toLowerCase();
+                                            if (videoExtensions.contains(ext)) {
+                                              videos.add(file.path);
+                                            } else {
+                                              images.add(File(file.path));
+                                            }
                                           }
-
-                                          widget.textController.clear();
-                                          widget.messageText.value = "";
-                                        } else {
-                                          widget.onSend();
-                                        }
-                                      },
-                                      child: CircleAvatar(
-                                        radius: 24.r,
-                                        backgroundColor:
-                                        ToggleThemeData.darkPurple,
-                                        child: Icon(
-                                          isEditing
-                                              ? Icons.check
-                                              : Icons.send,
-                                          color: Colors.white,
-                                        ),
+                                          if (images.isNotEmpty) {
+                                            widget.onImageSelected(images);
+                                          }
+                                          if (videos.isNotEmpty) {
+                                            widget.onVideosSelected(videos);
+                                          }
+                                        },
+                                        onDocument: () async {
+                                          Navigator.pop(context);
+                                          final file = await FileServices()
+                                              .pickDocument();
+                                          if (file != null) {
+                                            widget.onDocumentSelected(
+                                                file.path ?? "");
+                                          }
+                                        },
+                                        onCamera: () {
+                                          Navigator.pop(context);
+                                          WidgetsBinding.instance
+                                              .addPostFrameCallback((_) async {
+                                            final result = await Get.toNamed(
+                                                Routes.cameraScreen);
+                                            if (result != null &&
+                                                result is String &&
+                                                result.isNotEmpty) {
+                                              final ext = result
+                                                  .split('.')
+                                                  .last
+                                                  .toLowerCase();
+                                              const videoExtensions = [
+                                                'mp4',
+                                                'mov',
+                                                'avi',
+                                                'mkv',
+                                                '3gp',
+                                                'webm'
+                                              ];
+                                              if (videoExtensions
+                                                  .contains(ext)) {
+                                                widget
+                                                    .onVideosSelected([result]);
+                                              } else {
+                                                widget.onImageSelected(
+                                                    [File(result)]);
+                                              }
+                                            }
+                                          });
+                                        },
+                                        onLocation: () async {
+                                          Navigator.pop(context);
+                                          widget.onLocationSelected();
+                                        },
+                                        onContact: () async {
+                                          Navigator.pop(context);
+                                          widget.onContactSelected();
+                                        },
+                                      );
+                                    },
+                                    child: Padding(
+                                      padding: EdgeInsets.only(right: 6.w),
+                                      child: Icon(
+                                        Icons.attach_file_rounded,
+                                        color: const Color(0xFF5045B9),
+                                        size: 24.sp,
                                       ),
-                                    )
-                                  else if (!voiceController.isRecording.value)
-                                    GestureDetector(
-                                      onTap: () async {
-                                        await voiceController.startRecording();
-                                      },
-                                      child: CircleAvatar(
-                                        radius: 24.r,
-                                        backgroundColor:
-                                            ToggleThemeData.darkPurple,
-                                        child: Icon(
-                                          Icons.mic,
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                    )
-                                  else
-                                    const SizedBox(),
-                                ],
+                                    ),
+                                  ),
+                                  fillColor: _inputBg,
+                                  filled: true,
+                                  contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 16.w,
+                                    vertical: 12.h,
+                                  ),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(30.r),
+                                    borderSide: BorderSide.none,
+                                  ),
+                                ),
                               ),
                             ],
                           ),
                         ),
+                        SizedBox(width: 8.w),
+                        if (shouldShowSend &&
+                            !voiceController.isRecording.value)
+                          Padding(
+                            padding: EdgeInsets.only(bottom: 2.h),
+                            child: GestureDetector(
+                              onTap: widget.isSending.value
+                                  ? null
+                                  : () {
+                                if (isEditing) {
+                                  final newText =
+                                  widget.textController.text.trim();
+                                  if (newText.isEmpty) return;
+                                  if (widget.messageController != null) {
+                                    widget.messageController!
+                                        .updateEditedMessage(
+                                      newText: newText,
+                                    );
+                                  } else if (widget
+                                      .groupMessageController !=
+                                      null) {
+                                    widget.groupMessageController!
+                                        .updateEditedMessage(
+                                      newText: newText,
+                                    );
+                                  }
+                                  widget.textController.clear();
+                                  widget.messageText.value = "";
+                                } else {
+                                  widget.onSend();
+                                }
+                              },
+                              child: CircleAvatar(
+                                radius: 24.r,
+                                backgroundColor: _purple,
+                                child: Icon(
+                                  isEditing ? Icons.check : Icons.send_rounded,
+                                  color: Colors.white,
+                                  size: 20.sp,
+                                ),
+                              ),
+                            ),
+                          )
+                        else if (!voiceController.isRecording.value)
+                          Padding(
+                            padding: EdgeInsets.only(bottom: 2.h),
+                            child: GestureDetector(
+                              onTap: () async {
+                                await voiceController.startRecording();
+                              },
+                              child: CircleAvatar(
+                                radius: 24.r,
+                                backgroundColor: _purple,
+                                child: Icon(
+                                  Icons.mic_none_rounded,
+                                  color: Colors.white,
+                                  size: 24.sp,
+                                ),
+                              ),
+                            ),
+                          )
+                        else
+                          const SizedBox(),
                       ],
                     ),
                     if (!voiceController.isRecording.value &&
                         (widget.messageController?.showEmoji.value ??
                             widget.groupMessageController?.showEmoji.value ??
                             false))
-                      SizedBox(
+                      Container(
+                        color: Colors.white,
                         height: 300.h,
                         child: EmojiPicker(
                           textEditingController: widget.textController,
@@ -580,13 +548,17 @@ class _ChatInputAreaState extends State<ChatInputArea> {
                             checkPlatformCompatibility: true,
                             emojiViewConfig: EmojiViewConfig(
                               columns: 8,
+                              backgroundColor: Colors.white,
                               emojiSizeMax: 10 *
                                   (ui.PlatformDispatcher.instance.views.first
                                       .devicePixelRatio),
                             ),
-                            categoryViewConfig: const CategoryViewConfig(),
+                            categoryViewConfig: const CategoryViewConfig(
+                                backgroundColor: Colors.white),
                             bottomActionBarConfig: const BottomActionBarConfig(
-                                showSearchViewButton: false, enabled: false),
+                                backgroundColor: Colors.white,
+                                showSearchViewButton: false,
+                                enabled: false),
                             searchViewConfig: const SearchViewConfig(),
                           ),
                         ),
@@ -617,7 +589,7 @@ class _ChatInputAreaState extends State<ChatInputArea> {
             return Expanded(
               child: Padding(
                 padding:
-                    EdgeInsets.only(right: index < displayCount - 1 ? 8.w : 0),
+                EdgeInsets.only(right: index < displayCount - 1 ? 8.w : 0),
                 child: AspectRatio(
                   aspectRatio: 1,
                   child: Stack(
@@ -636,7 +608,7 @@ class _ChatInputAreaState extends State<ChatInputArea> {
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(12.r),
                             child: Container(
-                              color: Colors.black.withOpacity(0.55),
+                              color: Colors.black.withOpacity(0.4),
                               child: Center(
                                 child: SizedBox(
                                   width: 35.w,
@@ -721,12 +693,11 @@ class _ChatInputAreaState extends State<ChatInputArea> {
             return Expanded(
               child: Padding(
                 padding:
-                    EdgeInsets.only(right: index < displayCount - 1 ? 8.w : 0),
+                EdgeInsets.only(right: index < displayCount - 1 ? 8.w : 0),
                 child: AspectRatio(
                   aspectRatio: 1,
                   child: Stack(
                     children: [
-                      // Thumbnail
                       ClipRRect(
                         borderRadius: BorderRadius.circular(12.r),
                         child: Container(
@@ -747,7 +718,6 @@ class _ChatInputAreaState extends State<ChatInputArea> {
                           }),
                         ),
                       ),
-
                       Positioned.fill(
                         child: Container(
                           decoration: BoxDecoration(
@@ -763,7 +733,6 @@ class _ChatInputAreaState extends State<ChatInputArea> {
                           ),
                         ),
                       ),
-
                       Positioned(
                         left: 6.w,
                         bottom: 6.h,
@@ -792,10 +761,9 @@ class _ChatInputAreaState extends State<ChatInputArea> {
                           );
                         }),
                       ),
-
                       Obx(() {
                         final isUploading =
-                            widget.uploadingVideoIndexes.contains(index);
+                        widget.uploadingVideoIndexes.contains(index);
                         if (!isUploading) return const SizedBox();
 
                         final progress =
@@ -818,7 +786,7 @@ class _ChatInputAreaState extends State<ChatInputArea> {
                                         strokeWidth: 3,
                                         backgroundColor: Colors.white24,
                                         valueColor:
-                                            const AlwaysStoppedAnimation<Color>(
+                                        const AlwaysStoppedAnimation<Color>(
                                           Colors.white,
                                         ),
                                       ),
@@ -839,7 +807,6 @@ class _ChatInputAreaState extends State<ChatInputArea> {
                           ),
                         );
                       }),
-
                       if (isLast)
                         Positioned.fill(
                           child: ClipRRect(
@@ -858,10 +825,9 @@ class _ChatInputAreaState extends State<ChatInputArea> {
                             ),
                           ),
                         ),
-
                       Obx(() {
                         final isUploading =
-                            widget.uploadingVideoIndexes.contains(index);
+                        widget.uploadingVideoIndexes.contains(index);
                         if (isUploading) return const SizedBox();
 
                         return Positioned(
@@ -919,28 +885,28 @@ class _ChatInputAreaState extends State<ChatInputArea> {
       child: Stack(
         children: [
           Container(
-            width: 280.w,
-            padding: EdgeInsets.all(14.w),
+            width: double.infinity,
+            padding: EdgeInsets.all(12.w),
             decoration: BoxDecoration(
-              color: const Color(0xff1F2937),
+              color: Colors.white,
               borderRadius: BorderRadius.circular(14.r),
               border: Border.all(
-                color: Colors.white.withOpacity(.08),
+                color: Colors.grey.shade200,
               ),
             ),
             child: Row(
               children: [
                 Container(
-                  width: 55.w,
-                  height: 55.w,
+                  width: 48.w,
+                  height: 48.w,
                   decoration: BoxDecoration(
-                    color: getFileColor(widget.documentPath.value),
-                    borderRadius: BorderRadius.circular(12.r),
+                    color: _purple.withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(10.r),
                   ),
                   child: Icon(
                     getFileIcon(widget.documentPath.value),
-                    color: Colors.white,
-                    size: 28.sp,
+                    color: _purple,
+                    size: 26.sp,
                   ),
                 ),
                 SizedBox(width: 12.w),
@@ -951,21 +917,22 @@ class _ChatInputAreaState extends State<ChatInputArea> {
                     children: [
                       Text(
                         widget.documentPath.value.split('/').last,
-                        maxLines: 2,
+                        maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                          color: Colors.white,
+                          color: Colors.black87,
                           fontSize: 13.sp,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
-                      SizedBox(height: 5.h),
+                      SizedBox(height: 3.h),
                       Text(
                         getFileExtension(widget.documentPath.value)
                             .toUpperCase(),
                         style: TextStyle(
-                          color: Colors.white70,
+                          color: Colors.grey.shade600,
                           fontSize: 11.sp,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ],
@@ -973,13 +940,13 @@ class _ChatInputAreaState extends State<ChatInputArea> {
                 ),
                 if (widget.isSending.value)
                   Padding(
-                    padding: EdgeInsets.only(left: 8.w),
+                    padding: EdgeInsets.only(left: 8.w, right: 4.w),
                     child: SizedBox(
                       width: 22.w,
                       height: 22.w,
-                      child: const CircularProgressIndicator(
+                      child: CircularProgressIndicator(
                         strokeWidth: 2.5,
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        valueColor: AlwaysStoppedAnimation<Color>(_purple),
                       ),
                     ),
                   ),
@@ -990,7 +957,7 @@ class _ChatInputAreaState extends State<ChatInputArea> {
             Positioned.fill(
               child: Container(
                 decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.35),
+                  color: Colors.white.withOpacity(0.5),
                   borderRadius: BorderRadius.circular(14.r),
                 ),
               ),
@@ -1002,12 +969,12 @@ class _ChatInputAreaState extends State<ChatInputArea> {
               child: GestureDetector(
                 onTap: () => widget.documentPath.value = '',
                 child: CircleAvatar(
-                  radius: 14.r,
-                  backgroundColor: Colors.black54,
+                  radius: 12.r,
+                  backgroundColor: Colors.black12,
                   child: Icon(
                     Icons.close,
-                    size: 16.sp,
-                    color: Colors.white,
+                    size: 14.sp,
+                    color: Colors.black54,
                   ),
                 ),
               ),

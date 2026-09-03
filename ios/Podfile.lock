@@ -1535,6 +1535,9 @@ PODS:
     - Flutter
   - package_info_plus (0.4.5):
     - Flutter
+  - path_provider_foundation (0.0.1):
+    - Flutter
+    - FlutterMacOS
   - permission_handler_apple (9.4.8):
     - Flutter
   - PromisesObjC (2.4.1)
@@ -1609,6 +1612,7 @@ DEPENDENCIES:
   - open_file_ios (from `.symlinks/plugins/open_file_ios/ios`)
   - otp_autofill (from `.symlinks/plugins/otp_autofill/ios`)
   - package_info_plus (from `.symlinks/plugins/package_info_plus/ios`)
+  - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
   - permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)
   - proximity_screen_lock_ios (from `.symlinks/plugins/proximity_screen_lock_ios/ios`)
   - qr_code_scanner_plus (from `.symlinks/plugins/qr_code_scanner_plus/ios`)
@@ -1731,6 +1735,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/otp_autofill/ios"
   package_info_plus:
     :path: ".symlinks/plugins/package_info_plus/ios"
+  path_provider_foundation:
+    :path: ".symlinks/plugins/path_provider_foundation/darwin"
   permission_handler_apple:
     :path: ".symlinks/plugins/permission_handler_apple/ios"
   proximity_screen_lock_ios:
@@ -1796,7 +1802,7 @@ SPEC CHECKSUMS:
   geocoding_ios: 33776c9ebb98d037b5e025bb0e7537f6dd19646e
   geolocator_apple: ab36aa0e8b7d7a2d7639b3b4e48308394e8cef5e
   Google-Maps-iOS-Utils: bed22fa703c919259b3901449434d60d994fae20
-  google_maps_flutter_ios: 17552876e72723da1d41accc22f03b5f7afbde69
+  google_maps_flutter_ios: 0cf046caf50b00d95071f79e8031fcd5ef902beb
   google_mlkit_barcode_scanning: f69335a73c797a582d5effc61175d1721020d770
   google_mlkit_commons: b4dfe2f6ae4cbf24010dc6640a28984d01343c86
   GoogleDataTransport: a24e58982ab3ba2f64d79613e027fe7f57e88539
@@ -1819,9 +1825,10 @@ SPEC CHECKSUMS:
   MLKitVision: 39a5a812db83c4a0794445088e567f3631c11961
   mobile_scanner: 9157936403f5a0644ca3779a38ff8404c5434a93
   nanopb: fad817b59e0457d11a5dfbde799381cd727c1275
-  open_file_ios: c1143c28b4c65f721cdd58d9fba2f7a1c55206cd
+  open_file_ios: 46184d802ee7959203f6392abcfa0dd49fdb5be0
   otp_autofill: a50d5ea8173b9a6fd930a4f1252416793a4e1906
   package_info_plus: af8e2ca6888548050f16fa2f1938db7b5a5df499
+  path_provider_foundation: bb55f6dbba17d0dccd6737fe6f7f34fbd0376880
   permission_handler_apple: 92d754bbaa7361d436db2d6c3c1c2a0fdcec462e
   PromisesObjC: 752c3227f599e3467650e47ea36f433eeb10c273
   proximity_screen_lock_ios: 62ed259009d1f9c131fb338bef55b73d9118bde0
@@ -1836,7 +1843,7 @@ SPEC CHECKSUMS:
   system_alert_window: d3a76823117f3591b4e72f3452f616c80f2482a2
   TOCropViewController: a916930c465b5d9445a74d95e0c0da931771b4df
   url_launcher_ios: 7a95fa5b60cc718a708b8f2966718e93db0cef1b
-  video_player_avfoundation: 3453f792138786248960ca029747fcd9f318ef52
+  video_player_avfoundation: dd410b52df6d2466a42d28550e33e4146928280a
   video_thumbnail: b637e0ad5f588ca9945f6e2c927f73a69a661140
   wakelock_plus: e29112ab3ef0b318e58cfa5c32326458be66b556
   WebRTC-SDK: e6006119cd730d6315d875e4a421b6cc8bb88833

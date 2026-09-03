@@ -6,8 +6,9 @@ import 'package:fgtracker/app/modules/IntroScreen/IntroScreen.dart';
 import 'package:fgtracker/app/modules/Messages/Bindings/Chat_binding.dart';
 import 'package:fgtracker/app/modules/Messages/Bindings/video_binding.dart';
 import 'package:fgtracker/app/modules/Messages/Views/DocumentViewerScreen.dart';
-import 'package:fgtracker/app/modules/Messages/Views/GroupChatScreen.dart';
+import 'package:fgtracker/app/modules/Messages/Views/Group/GroupChatScreen.dart';
 import 'package:fgtracker/app/modules/Messages/Views/cameraScreen.dart';
+import 'package:fgtracker/app/modules/Messages/Views/Group/groups_list_screen.dart';
 import 'package:fgtracker/app/modules/Messages/Views/videoPlayerScreen.dart';
 import 'package:fgtracker/app/modules/Notification/Views/Notification.dart';
 import 'package:fgtracker/app/modules/Track/Bindings/track_binding.dart';
@@ -21,7 +22,6 @@ import 'package:fgtracker/app/modules/mediaStream/Bindings/call_binding.dart';
 import 'package:fgtracker/app/modules/mediaStream/Views/calling_screen.dart';
 import 'package:get/get.dart';
 import '../modules/Group/Views/QRScanScreen.dart';
-
 import '../modules/Messages/Bindings/ForwardMessageBinding.dart';
 import '../modules/Messages/Views/Chat_Screen.dart';
 import '../modules/Messages/Views/ForwardMessageScreen.dart';
@@ -32,7 +32,6 @@ import '../modules/Walkie-talkie/WalkieTalkieScreen.dart';
 
 import '../modules/home/Bindings/SosBinding.dart';
 import '../modules/home/Views/sos_screen.dart';
-
 
 import '../modules/mediaStream/Views/incoming_call_screen.dart';
 part 'app_routes.dart';
@@ -195,10 +194,10 @@ class AppPages {
       binding: SosBinding(),
       transitionDuration: const Duration(milliseconds: 500),
     ),
-    // GetPage(
-    //   name: Routes.GroupsList,
-    //   page: () => GroupsListScreen(),
-    // ),
+    GetPage(
+      name: Routes.GroupsList,
+      page: () => GroupsListScreen(),
+    ),
 
     // GetPage(
     //   name: _Paths.CreateGroup,

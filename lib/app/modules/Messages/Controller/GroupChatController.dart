@@ -32,11 +32,11 @@ class GroupMessageController extends GetxController {
   final ItemScrollController itemScrollController = ItemScrollController();
 
   final ItemPositionsListener itemPositionsListener =
-      ItemPositionsListener.create();
+  ItemPositionsListener.create();
   final List<MessageData> _messages = [];
 
   final StreamController<List<MessageData>> _messageStreamController =
-      StreamController<List<MessageData>>.broadcast();
+  StreamController<List<MessageData>>.broadcast();
 
   Stream<List<MessageData>> get messageStream =>
       _messageStreamController.stream;
@@ -147,7 +147,7 @@ class GroupMessageController extends GetxController {
 
   void initializeGroupChat() {
     final currentUserId =
-        Global.storageServices.get(PrefConst.userId).toString();
+    Global.storageServices.get(PrefConst.userId).toString();
 
     socketService.init(
       ConstRes.socketUrl,
@@ -187,21 +187,15 @@ class GroupMessageController extends GetxController {
 
         _messages[index].content = data["content"];
 
-        _messages[index].isEdited =
-            data["isEdited"] ?? true;
+        _messages[index].isEdited = data["isEdited"] ?? true;
 
-        _messages[index].editedAt =
-        data["editedAt"];
+        _messages[index].editedAt = data["editedAt"];
 
         updateMessageStream();
 
         log("GROUP MESSAGE EDITED => $messageId");
       },
     );
-
-
-
-
 
     socketService.listenMessageDeleted(
       callback: (data) {
@@ -249,8 +243,7 @@ class GroupMessageController extends GetxController {
 
         if (data["chatType"] != "group") return;
 
-        final dataGroupId =
-        int.tryParse(data["groupId"].toString());
+        final dataGroupId = int.tryParse(data["groupId"].toString());
 
         if (dataGroupId != groupId) return;
 
@@ -317,10 +310,10 @@ class GroupMessageController extends GetxController {
   }
 
   Future<bool> uploadVideoAtIndex(
-    String path,
-    String caption,
-    int index,
-  ) async {
+      String path,
+      String caption,
+      int index,
+      ) async {
     try {
       final thumbnailPath = await generateThumbnailFile(path);
 
@@ -344,7 +337,7 @@ class GroupMessageController extends GetxController {
           groupId: groupId,
           messageType: "video",
           content:
-              "${result.videoUrl}||${result.thumbnail}||${result.duration}",
+          "${result.videoUrl}||${result.thumbnail}||${result.duration}",
           caption: caption,
           replyId: replyMessage.value?.id,
           replyMessage: replyMessage.value?.content,
@@ -500,7 +493,7 @@ class GroupMessageController extends GetxController {
           groupId: groupId,
           messageType: "video",
           content:
-              "${result.videoUrl}||${result.thumbnail}||${result.duration}",
+          "${result.videoUrl}||${result.thumbnail}||${result.duration}",
           caption: caption,
           replyId: replyMessage.value?.id,
           replyMessage: replyMessage.value?.content,
@@ -517,9 +510,9 @@ class GroupMessageController extends GetxController {
   }
 
   Future<void> uploadDocument(
-    String path,
-    String caption,
-  ) async {
+      String path,
+      String caption,
+      ) async {
     try {
       var result = await MessageRepo.uploadChatDocument(path);
 
@@ -694,7 +687,7 @@ class GroupMessageController extends GetxController {
         groupMembers.value = result.locations ?? [];
 
         final currentUserId =
-            Global.storageServices.get(PrefConst.userId).toString();
+        Global.storageServices.get(PrefConst.userId).toString();
 
         // Default
         isCreator.value = false;
@@ -741,7 +734,7 @@ class GroupMessageController extends GetxController {
     if (positions.isEmpty) return false;
 
     final maxVisible =
-        positions.map((e) => e.index).reduce((a, b) => a > b ? a : b);
+    positions.map((e) => e.index).reduce((a, b) => a > b ? a : b);
 
     return maxVisible >= _messages.length - 2;
   }
@@ -807,8 +800,8 @@ class GroupMessageController extends GetxController {
     // Filter members
     filteredMembers.value = groupMembers
         .where((member) =>
-            (member.name?.toLowerCase().contains(query) ?? false) ||
-            (member.name?.toLowerCase().contains(query) ?? false))
+    (member.name?.toLowerCase().contains(query) ?? false) ||
+        (member.name?.toLowerCase().contains(query) ?? false))
         .toList();
 
     showMentionList.value = filteredMembers.isNotEmpty;
@@ -877,11 +870,11 @@ class GroupMessageController extends GetxController {
 
     final results = _messages
         .where((msg) =>
-            msg.messageType == "text" &&
-            (msg.content?.toLowerCase().contains(
-                      searchQuery.value.toLowerCase(),
-                    ) ??
-                false))
+    msg.messageType == "text" &&
+        (msg.content?.toLowerCase().contains(
+          searchQuery.value.toLowerCase(),
+        ) ??
+            false))
         .map((msg) => msg.id!)
         .toList();
 
@@ -928,8 +921,7 @@ class GroupMessageController extends GetxController {
       chatType: "group",
       groupId: groupId,
       messageId: message.id!,
-      pinnedByName:
-      Global.storageServices.get(PrefConst.userName) ?? "User",
+      pinnedByName: Global.storageServices.get(PrefConst.userName) ?? "User",
     );
   }
 
@@ -996,7 +988,7 @@ class GroupMessageController extends GetxController {
 
     _floatingDateTimer = Timer(
       const Duration(milliseconds: 800),
-      () {
+          () {
         showFloatingDate.value = false;
       },
     );
@@ -1008,7 +1000,7 @@ class GroupMessageController extends GetxController {
     }
 
     final currentUserId =
-        Global.storageServices.get(PrefConst.userId).toString();
+    Global.storageServices.get(PrefConst.userId).toString();
 
     if (message.senderId.toString() != currentUserId) {
       return;
@@ -1035,13 +1027,12 @@ class GroupMessageController extends GetxController {
     socketService.editMessage(
       messageId: message.id!,
       content: text,
-      userId: Global.storageServices
-          .get(PrefConst.userId)
-          .toString(),
+      userId: Global.storageServices.get(PrefConst.userId).toString(),
     );
 
     editingMessage.value = null;
   }
+
   @override
   void onClose() {
     focusNode.dispose();

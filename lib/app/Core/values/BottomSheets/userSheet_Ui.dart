@@ -11,8 +11,8 @@ class UserSheetUi {
   final SearchUserController controller = Get.put(SearchUserController());
 
   Future<UserListData?> showAllUserBottomSheet(
-    BuildContext context,
-  ) async {
+      BuildContext context,
+      ) async {
     await controller.getRegisteredContacts();
 
     return await showModalBottomSheet<UserListData>(
@@ -45,7 +45,7 @@ class UserSheetUi {
               ),
               SizedBox(height: 20.h),
               Obx(
-                () => Column(
+                    () => Column(
                   children: [
                     Text(
                       "Add Group Member",
@@ -82,12 +82,12 @@ class UserSheetUi {
                   ),
                   suffixIcon: controller.searchValues.text.isNotEmpty
                       ? IconButton(
-                          onPressed: controller.clearSearch,
-                          icon: Icon(
-                            Icons.close,
-                            size: 20.sp,
-                          ),
-                        )
+                    onPressed: controller.clearSearch,
+                    icon: Icon(
+                      Icons.close,
+                      size: 20.sp,
+                    ),
+                  )
                       : null,
                   filled: true,
                   fillColor: Colors.grey.shade100,
@@ -182,7 +182,7 @@ class UserSheetUi {
                         final user = controller.filteredUsers[index];
 
                         final profileUrl = (user.profileImage?.isNotEmpty ??
-                                false)
+                            false)
                             ? "${ConstRes.aImageBaseUrl}${user.profileImage}"
                             : null;
 
@@ -238,19 +238,19 @@ class UserSheetUi {
                                     backgroundColor: Colors.grey.shade200,
                                     backgroundImage: profileUrl != null
                                         ? NetworkImage(
-                                            profileUrl,
-                                          )
+                                      profileUrl,
+                                    )
                                         : null,
                                     child: profileUrl == null
                                         ? Text(
-                                            (user.name?.isNotEmpty ?? false)
-                                                ? user.name![0].toUpperCase()
-                                                : "U",
-                                            style: TextStyle(
-                                              fontSize: 20.sp,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          )
+                                      (user.name?.isNotEmpty ?? false)
+                                          ? user.name![0].toUpperCase()
+                                          : "U",
+                                      style: TextStyle(
+                                        fontSize: 20.sp,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    )
                                         : null,
                                   ),
                                 ),
@@ -260,7 +260,7 @@ class UserSheetUi {
                                 Expanded(
                                   child: Column(
                                     crossAxisAlignment:
-                                        CrossAxisAlignment.start,
+                                    CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         user.name ?? "",

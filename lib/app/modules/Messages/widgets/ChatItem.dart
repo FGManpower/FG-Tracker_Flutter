@@ -42,41 +42,41 @@ class ChatBubble extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final currentUserId =
-        Global.storageServices.get(PrefConst.userId).toString();
+    Global.storageServices.get(PrefConst.userId).toString();
 
     final isSentByMe = message.senderId.toString() == currentUserId;
 
     final bgColor = isSentByMe
         ? const LinearGradient(
-            colors: [ToggleThemeData.darkPurple, ToggleThemeData.Appcolor],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          )
+      colors: [ToggleThemeData.darkPurple, ToggleThemeData.Appcolor],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    )
         : const LinearGradient(
-            colors: [Colors.white, Colors.white],
-          );
+      colors: [Colors.white, Colors.white],
+    );
 
     final textColor = isSentByMe ? Colors.white : Colors.black87;
 
     final borderRadius = isSentByMe
         ? const BorderRadius.only(
-            topLeft: Radius.circular(16),
-            topRight: Radius.circular(2),
-            bottomLeft: Radius.circular(16),
-            bottomRight: Radius.circular(16),
-          )
+      topLeft: Radius.circular(16),
+      topRight: Radius.circular(2),
+      bottomLeft: Radius.circular(16),
+      bottomRight: Radius.circular(16),
+    )
         : const BorderRadius.only(
-            topLeft: Radius.circular(2),
-            topRight: Radius.circular(16),
-            bottomLeft: Radius.circular(16),
-            bottomRight: Radius.circular(16),
-          );
+      topLeft: Radius.circular(2),
+      topRight: Radius.circular(16),
+      bottomLeft: Radius.circular(16),
+      bottomRight: Radius.circular(16),
+    );
     return Obx(
-      () => Container(
+          () => Container(
         margin: EdgeInsets.symmetric(vertical: 6.h),
         child: Column(
           crossAxisAlignment:
-              isSentByMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+          isSentByMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
           children: [
             GestureDetector(
               onLongPress: () {
@@ -97,11 +97,11 @@ class ChatBubble extends StatelessWidget {
                 decoration: BoxDecoration(
                   gradient: controller.highlightedMessageId.value == message.id
                       ? LinearGradient(
-                          colors: [
-                            Colors.yellow.withOpacity(.35),
-                            Colors.yellow.withOpacity(.20),
-                          ],
-                        )
+                    colors: [
+                      Colors.yellow.withOpacity(.35),
+                      Colors.yellow.withOpacity(.20),
+                    ],
+                  )
                       : bgColor,
                   borderRadius: borderRadius,
                   boxShadow: [
@@ -136,7 +136,7 @@ class ChatBubble extends StatelessWidget {
               ),
               child: Align(
                 alignment:
-                    isSentByMe ? Alignment.centerRight : Alignment.centerLeft,
+                isSentByMe ? Alignment.centerRight : Alignment.centerLeft,
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -179,10 +179,10 @@ class ChatBubble extends StatelessWidget {
   }
 
   Widget _buildMessageContent(
-    MessageData message,
-    Color textColor,
-    bool isSentByMe,
-  ) {
+      MessageData message,
+      Color textColor,
+      bool isSentByMe,
+      ) {
     if (message.messageType == "image" || message.messageType == "image_text") {
       final parts = message.content?.split("||") ?? [];
       final imagePart = message.content ?? "";
@@ -259,7 +259,7 @@ class ChatBubble extends StatelessWidget {
       final documentUrl = parts.isNotEmpty ? parts[0] : "";
 
       String documentName =
-          parts.length > 1 ? parts[1] : documentUrl.split('/').last;
+      parts.length > 1 ? parts[1] : documentUrl.split('/').last;
 
       documentName = removeDuplicateExtension(
         documentName,
@@ -440,9 +440,9 @@ class ChatBubble extends StatelessWidget {
   }
 
   Widget _buildReplyPreview(
-    MessageData message,
-    bool isSentByMe,
-  ) {
+      MessageData message,
+      bool isSentByMe,
+      ) {
     if (message.replyId == null) {
       return const SizedBox.shrink();
     }
@@ -483,7 +483,7 @@ class ChatBubble extends StatelessWidget {
         padding: EdgeInsets.all(8.w),
         decoration: BoxDecoration(
           color:
-              isSentByMe ? Colors.white.withOpacity(.15) : Colors.grey.shade200,
+          isSentByMe ? Colors.white.withOpacity(.15) : Colors.grey.shade200,
           borderRadius: BorderRadius.circular(8.r),
           border: Border(
             left: BorderSide(
@@ -520,9 +520,9 @@ class ChatBubble extends StatelessWidget {
   }
 
   void _showDeleteBottomSheet(
-    BuildContext context,
-    bool isSentByMe,
-  ) {
+      BuildContext context,
+      bool isSentByMe,
+      ) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -581,13 +581,13 @@ class ChatBubble extends StatelessWidget {
                           shape: BoxShape.circle,
                         ),
                         child:
-                            Icon(Icons.copy, color: Colors.purple, size: 20.sp),
+                        Icon(Icons.copy, color: Colors.purple, size: 20.sp),
                       ),
                       title: const Text("Copy",
                           style: TextStyle(fontWeight: FontWeight.w600)),
                       subtitle: Text("Copy message text",
                           style:
-                              TextStyle(fontSize: 12.sp, color: Colors.grey)),
+                          TextStyle(fontSize: 12.sp, color: Colors.grey)),
                       onTap: () {
                         Navigator.pop(context);
                         Clipboard.setData(
@@ -694,7 +694,7 @@ class ChatBubble extends StatelessWidget {
                           style: TextStyle(fontWeight: FontWeight.w600)),
                       subtitle: Text("Remove for all members",
                           style:
-                              TextStyle(fontSize: 12.sp, color: Colors.grey)),
+                          TextStyle(fontSize: 12.sp, color: Colors.grey)),
                       onTap: () {
                         Navigator.pop(context);
                         controller.deleteMessage(
@@ -735,11 +735,11 @@ class ChatBubble extends StatelessWidget {
   }
 
   Widget _buildHighlightedText(
-    String text,
-    String query, {
-    required TextStyle normalStyle,
-    required TextStyle highlightStyle,
-  }) {
+      String text,
+      String query, {
+        required TextStyle normalStyle,
+        required TextStyle highlightStyle,
+      }) {
     final lowerText = text.toLowerCase();
     final lowerQuery = query.toLowerCase();
     final List<InlineSpan> spans = [];
@@ -796,290 +796,210 @@ class GroupChatBubble extends StatelessWidget {
     this.groupName,
   }) : super(key: key);
 
+  static const Color _purple = Color(0xFF5045B9);
+  static const Color _myBubbleBg = Color(0xFFDCD6F5);
+  static const Color _otherBubbleBg = Colors.white;
+
   @override
   Widget build(BuildContext context) {
     final currentUserId =
-        Global.storageServices.get(PrefConst.userId).toString();
+    Global.storageServices.get(PrefConst.userId).toString();
 
     final isSentByMe = message.senderId.toString() == currentUserId;
 
-    final bgColor = isSentByMe
-        ? const LinearGradient(
-            colors: [ToggleThemeData.darkPurple, ToggleThemeData.Appcolor],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          )
-        : const LinearGradient(
-            colors: [
-              Colors.white,
-              Colors.white,
-            ],
-          );
+    final bgColor = isSentByMe ? _myBubbleBg : _otherBubbleBg;
 
-    final textColor = isSentByMe ? Colors.white : Colors.black87;
+    final textColor = Colors.black87;
 
     final borderRadius = isSentByMe
-        ? const BorderRadius.only(
-            topLeft: Radius.circular(16),
-            topRight: Radius.circular(2),
-            bottomLeft: Radius.circular(16),
-            bottomRight: Radius.circular(16),
-          )
-        : const BorderRadius.only(
-            topLeft: Radius.circular(2),
-            topRight: Radius.circular(16),
-            bottomLeft: Radius.circular(16),
-            bottomRight: Radius.circular(16),
-          );
+        ? BorderRadius.only(
+      topLeft: Radius.circular(16.r),
+      topRight: Radius.circular(16.r),
+      bottomLeft: Radius.circular(16.r),
+      bottomRight: Radius.circular(4.r),
+    )
+        : BorderRadius.only(
+      topLeft: Radius.circular(4.r),
+      topRight: Radius.circular(16.r),
+      bottomLeft: Radius.circular(16.r),
+      bottomRight: Radius.circular(16.r),
+    );
 
     return Obx(
-      () => Container(
+          () => Container(
         margin: EdgeInsets.symmetric(vertical: 6.h),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment:
-              isSentByMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+          isSentByMe ? MainAxisAlignment.end : MainAxisAlignment.start,
           children: [
             if (isGroup && !isSentByMe)
               Padding(
-                padding: EdgeInsets.only(
-                  right: 8.w,
-                  top: 18.h,
-                ),
+                padding: EdgeInsets.only(right: 8.w, top: 4.h),
                 child: GestureDetector(
                   onTap: () {
                     DialogBox().showRouteDetailsBottomSheet(
-                        destination: const LatLng(0, 0),
-                        distance: 0,
-                        userId: int.tryParse(
-                              message.senderId.toString(),
-                            ) ??
-                            0,
-                        groupId: groupId,
-                        groupName: groupName,
-                        name: message.senderName,
-                        imageUrl: message.senderImage,
-                        status: true,
-                        lastSeen: "",
-                        isGroupChat: true,
-                        isLocationSharing: message.locationSharing ?? false);
+                      destination: const LatLng(0, 0),
+                      distance: 0,
+                      userId: int.tryParse(message.senderId.toString()) ?? 0,
+                      groupId: groupId,
+                      groupName: groupName,
+                      name: message.senderName,
+                      imageUrl: message.senderImage,
+                      status: true,
+                      lastSeen: "",
+                      isGroupChat: true,
+                      isLocationSharing: message.locationSharing ?? false,
+                    );
                   },
                   child: CircleAvatar(
-                    radius: 20.r,
+                    radius: 18.r,
+                    backgroundColor: Colors.grey.shade200,
                     backgroundImage: message.senderImage != null &&
-                            message.senderImage!.isNotEmpty
+                        message.senderImage!.isNotEmpty
                         ? NetworkImage(
-                            "${ConstRes.aImageBaseUrl}${message.senderImage}",
-                          )
+                      "${ConstRes.aImageBaseUrl}${message.senderImage}",
+                    )
                         : null,
-                    child: message.senderImage == null ||
-                            message.senderImage!.isEmpty
-                        ? Icon(
-                            Icons.person,
-                            size: 18.sp,
-                          )
+                    child: (message.senderImage == null ||
+                        message.senderImage!.isEmpty)
+                        ? Icon(Icons.person,
+                        size: 18.sp, color: Colors.grey.shade500)
                         : null,
                   ),
                 ),
               ),
             Flexible(
-              child: Column(
-                crossAxisAlignment: isSentByMe
-                    ? CrossAxisAlignment.end
-                    : CrossAxisAlignment.start,
-                children: [
-                  if (isGroup)
-                    Padding(
-                      padding: EdgeInsets.only(
-                        left: isSentByMe ? 0 : 4.w,
-                        right: isSentByMe ? 4.w : 0,
-                        bottom: 4.h,
-                        top: 20.h,
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        mainAxisAlignment: isSentByMe
-                            ? MainAxisAlignment.end
-                            : MainAxisAlignment.start,
-                        children: [
-                          if (!isSentByMe) ...[
-                            Text(
-                              message.senderName?.toString() ?? "",
-                              style: TextStyle(
-                                fontSize: 11.sp,
-                                fontWeight: FontWeight.w700,
-                                color: Colors.black,
-                              ),
-                            ),
-                            SizedBox(width: 6.w),
-                            Text(
-                              formatTime(message.timestamp ?? ""),
-                              style: TextStyle(
-                                fontSize: 10.sp,
-                                color: Colors.grey[600],
-                              ),
-                            ),
-                          ] else ...[
-                            Text(
-                              formatTime(message.timestamp ?? ""),
-                              style: TextStyle(
-                                fontSize: 10.sp,
-                                color: Colors.grey[600],
-                              ),
-                            ),
-                            SizedBox(width: 6.w),
-                            Text(
-                              message.senderName?.toString() ?? "",
-                              style: TextStyle(
-                                fontSize: 11.sp,
-                                fontWeight: FontWeight.w700,
-                                color: Colors.black,
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                  GestureDetector(
-                    onLongPress: () {
-                      _showDeleteBottomSheet(
-                        context,
-                        isSentByMe,
-                      );
-                    },
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 300),
-                      constraints: BoxConstraints(
-                        maxWidth: MediaQuery.of(context).size.width * 0.72,
-                      ),
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 12.w,
-                        vertical: 10.h,
-                      ),
-                      decoration: BoxDecoration(
-                        gradient:
-                            controller.highlightedMessageId.value == message.id
-                                ? LinearGradient(
-                                    colors: [
-                                      Colors.yellow.withOpacity(.35),
-                                      Colors.yellow.withOpacity(.20),
-                                    ],
-                                  )
-                                : bgColor,
-                        borderRadius: borderRadius,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
-                            blurRadius: 4,
-                            offset: const Offset(2, 2),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _buildReplyPreview(
-                            message,
-                            isSentByMe,
-                          ),
-                          _buildMessageContent(
-                            message,
-                            textColor,
-                            isSentByMe,
-                          ),
-                        ],
-                      ),
-                    ),
+              child: GestureDetector(
+                onLongPress: () => _showDeleteBottomSheet(context, isSentByMe),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  constraints: BoxConstraints(
+                    maxWidth: MediaQuery.of(context).size.width * 0.75,
                   ),
-                  SizedBox(height: 4.h),
-                  Padding(
-                    padding: EdgeInsets.only(
-                      right: 4.w,
-                    ),
-                    child: Row(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 12.w,
+                    vertical: 8.h,
+                  ),
+                  decoration: BoxDecoration(
+                    color: controller.highlightedMessageId.value == message.id
+                        ? Colors.yellow.withOpacity(.35)
+                        : bgColor,
+                    borderRadius: borderRadius,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.04),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: IntrinsicWidth(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        if (message.isEdited == true)
+                        if (isGroup && !isSentByMe)
                           Padding(
-                            padding: EdgeInsets.only(right: 4.w),
+                            padding: EdgeInsets.only(bottom: 4.h),
                             child: Text(
-                              "edited",
+                              message.senderName?.toString() ?? "",
                               style: TextStyle(
-                                fontSize: 10.sp,
-                                color: Colors.grey[700],
-                                fontStyle: FontStyle.italic,
+                                fontSize: 12.sp,
+                                fontWeight: FontWeight.w700,
+                                color: _purple,
                               ),
                             ),
                           ),
-                        if (isSentByMe)
-                          Icon(
-                            (message.seenCount ?? 0) > 0
-                                ? Icons.done_all
-                                : Icons.done,
-                            size: 14.sp,
-                            color: _areAllMembersSeen(message)
-                                ? Colors.blueAccent
-                                : Colors.grey,
+                        _buildReplyPreview(message, isSentByMe),
+                        if (_isPlainTextMessage(message))
+                          _buildTextWithTime(
+                            message: message,
+                            textColor: textColor,
+                            isSentByMe: isSentByMe,
+                          )
+                        else ...[
+                          _buildMessageContent(message, textColor, isSentByMe),
+                          SizedBox(height: 4.h),
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: _buildTimeRow(isSentByMe),
                           ),
+                        ],
                       ],
                     ),
                   ),
-                ],
+                ),
               ),
             ),
-            if (isGroup && isSentByMe)
-              Padding(
-                padding: EdgeInsets.only(
-                  left: 8.w,
-                  top: 20.h,
-                ),
-                child: GestureDetector(
-                  onTap: () {
-                    DialogBox().showRouteDetailsBottomSheet(
-                        destination: const LatLng(0, 0),
-                        distance: 0,
-                        userId: int.tryParse(
-                              message.senderId.toString(),
-                            ) ??
-                            0,
-                        groupId: groupId,
-                        groupName: groupName,
-                        name: message.senderName,
-                        imageUrl: message.senderImage,
-                        status: true,
-                        lastSeen: "",
-                        isGroupChat: true,
-                        isLocationSharing: message.locationSharing ?? false);
-                  },
-                  child: CircleAvatar(
-                    radius: 20.r,
-                    backgroundImage: message.senderImage != null &&
-                            message.senderImage!.isNotEmpty
-                        ? NetworkImage(
-                            "${ConstRes.aImageBaseUrl}${message.senderImage}",
-                          )
-                        : null,
-                    child: message.senderImage == null ||
-                            message.senderImage!.isEmpty
-                        ? Icon(
-                            Icons.person,
-                            size: 18.sp,
-                          )
-                        : null,
-                  ),
-                ),
-              ),
           ],
         ),
       ),
     );
   }
 
+  bool _isPlainTextMessage(MessageData message) {
+    final type = message.messageType ?? "text";
+    return type == "text" || type == "text_message" || type.isEmpty;
+  }
+
+  Widget _buildTimeRow(bool isSentByMe) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (message.isEdited == true) ...[
+          Text(
+            "edited",
+            style: TextStyle(
+              fontSize: 9.sp,
+              color: Colors.grey.shade600,
+              fontStyle: FontStyle.italic,
+            ),
+          ),
+          SizedBox(width: 4.w),
+        ],
+        Text(
+          formatTime(message.timestamp ?? ""),
+          style: TextStyle(
+            fontSize: 10.sp,
+            color: Colors.grey.shade600,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        if (isSentByMe) ...[
+          SizedBox(width: 3.w),
+          Icon(
+            (message.seenCount ?? 0) > 0 ? Icons.done_all : Icons.done,
+            size: 14.sp,
+            color: _areAllMembersSeen(message) ? _purple : Colors.grey.shade500,
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildTextWithTime({
+    required MessageData message,
+    required Color textColor,
+    required bool isSentByMe,
+  }) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Expanded(
+          child: _buildTextContent(message, textColor, isSentByMe),
+        ),
+        SizedBox(width: 14.w),
+        _buildTimeRow(isSentByMe),
+      ],
+    );
+  }
+
   Widget _buildTextContent(
-    MessageData message,
-    Color textColor,
-    bool isSentByMe,
-  ) {
+      MessageData message,
+      Color textColor,
+      bool isSentByMe,
+      ) {
     final query = controller.searchQuery.value;
     final content = message.content?.toString() ?? "";
 
@@ -1090,15 +1010,17 @@ class GroupChatBubble extends StatelessWidget {
         query,
         normalStyle: TextStyle(
           color: textColor,
-          fontSize: 12.sp,
+          fontSize: 13.sp,
           fontFamily: FontFamily.interMedium,
+          height: 1.35,
         ),
         highlightStyle: TextStyle(
           backgroundColor: const Color(0xFFFFD700),
           color: Colors.black,
           fontWeight: FontWeight.bold,
-          fontSize: 12.sp,
+          fontSize: 13.sp,
           fontFamily: FontFamily.interMedium,
+          height: 1.35,
         ),
       );
     }
@@ -1107,12 +1029,14 @@ class GroupChatBubble extends StatelessWidget {
       text: content,
       style: TextStyle(
         color: textColor,
-        fontSize: 12.sp,
+        fontSize: 13.sp,
         fontFamily: FontFamily.interMedium,
+        height: 1.35,
       ),
-      linkStyle: const TextStyle(
-        color: Colors.blue,
+      linkStyle: TextStyle(
+        color: _purple,
         decoration: TextDecoration.underline,
+        fontSize: 13.sp,
       ),
       onOpen: (link) async {
         Uri uri = Uri.parse(link.url);
@@ -1126,11 +1050,11 @@ class GroupChatBubble extends StatelessWidget {
   }
 
   Widget _buildHighlightedText(
-    String text,
-    String query, {
-    required TextStyle normalStyle,
-    required TextStyle highlightStyle,
-  }) {
+      String text,
+      String query, {
+        required TextStyle normalStyle,
+        required TextStyle highlightStyle,
+      }) {
     final lowerText = text.toLowerCase();
     final lowerQuery = query.toLowerCase();
     final List<InlineSpan> spans = [];
@@ -1140,19 +1064,14 @@ class GroupChatBubble extends StatelessWidget {
       final index = lowerText.indexOf(lowerQuery, start);
       if (index == -1) {
         if (start < text.length) {
-          spans.add(TextSpan(
-            text: text.substring(start),
-            style: normalStyle,
-          ));
+          spans.add(TextSpan(text: text.substring(start), style: normalStyle));
         }
         break;
       }
 
       if (index > start) {
-        spans.add(TextSpan(
-          text: text.substring(start, index),
-          style: normalStyle,
-        ));
+        spans.add(
+            TextSpan(text: text.substring(start, index), style: normalStyle));
       }
 
       spans.add(TextSpan(
@@ -1167,12 +1086,9 @@ class GroupChatBubble extends StatelessWidget {
   }
 
   Widget _buildReplyPreview(MessageData message, bool isSentByMe) {
-    if (message.replyId == null) {
-      return const SizedBox.shrink();
-    }
+    if (message.replyId == null) return const SizedBox.shrink();
 
     String preview = message.replyMessage ?? "";
-
     switch (message.replyType) {
       case "image":
         preview = "📷 Photo";
@@ -1203,13 +1119,10 @@ class GroupChatBubble extends StatelessWidget {
         padding: EdgeInsets.all(8.w),
         decoration: BoxDecoration(
           color:
-              isSentByMe ? Colors.white.withOpacity(.15) : Colors.grey.shade200,
+          isSentByMe ? Colors.white.withOpacity(.5) : Colors.grey.shade100,
           borderRadius: BorderRadius.circular(10.r),
           border: Border(
-            left: BorderSide(
-              color: ToggleThemeData.darkPurple,
-              width: 3,
-            ),
+            left: BorderSide(color: _purple, width: 3),
           ),
         ),
         child: Column(
@@ -1220,7 +1133,7 @@ class GroupChatBubble extends StatelessWidget {
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 11.sp,
-                color: isSentByMe ? Colors.white : Colors.black,
+                color: _purple,
               ),
             ),
             SizedBox(height: 2.h),
@@ -1230,7 +1143,7 @@ class GroupChatBubble extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 fontSize: 11.sp,
-                color: isSentByMe ? Colors.white70 : Colors.grey.shade700,
+                color: Colors.grey.shade700,
               ),
             ),
           ],
@@ -1240,12 +1153,11 @@ class GroupChatBubble extends StatelessWidget {
   }
 
   Widget _buildMessageContent(
-    MessageData message,
-    Color textColor,
-    bool isSentByMe,
-  ) {
+      MessageData message,
+      Color textColor,
+      bool isSentByMe,
+      ) {
     if (message.messageType == "image" || message.messageType == "image_text") {
-      final parts = message.content?.split("||") ?? [];
       final imagePart = message.content ?? "";
       final caption = message.caption ?? "";
 
@@ -1268,22 +1180,19 @@ class GroupChatBubble extends StatelessWidget {
             reausabletext(
               caption,
               color: textColor,
-              fontsize: 11.sp,
+              fontsize: 12.sp,
             ),
         ],
       );
     } else if (message.messageType == "audio") {
       return AudioBubble(
         audioUrl: "${ConstRes.aImageBaseUrl}${message.content}",
-        isMe: false,
+        isMe: isSentByMe,
       );
     } else if (message.messageType == "video") {
       final parts = message.content?.split("||") ?? [];
-
       final videoPath = parts.isNotEmpty ? parts[0] : "";
-
       final thumbnailPath = parts.length > 1 ? parts[1] : "";
-
       final duration = parts.length > 2 ? parts[2] : "--:--";
 
       return Column(
@@ -1308,55 +1217,45 @@ class GroupChatBubble extends StatelessWidget {
               child: reausabletext(
                 message.caption!,
                 color: textColor,
-                fontsize: 11.sp,
+                fontsize: 12.sp,
               ),
             ),
         ],
       );
     } else if (message.messageType == "document") {
       final parts = message.content?.split("||") ?? [];
-
       final documentUrl = parts.isNotEmpty ? parts[0] : "";
-
       String documentName =
-          parts.length > 1 ? parts[1] : documentUrl.split('/').last;
-
-      documentName = removeDuplicateExtension(
-        documentName,
-      );
-
+      parts.length > 1 ? parts[1] : documentUrl.split('/').last;
+      documentName = removeDuplicateExtension(documentName);
       final extension = documentName.split('.').last.toLowerCase();
+      final fileSize = parts.length > 2 ? parts[2] : "";
 
       IconData icon;
       Color iconColor;
-
       switch (extension) {
         case "pdf":
-          icon = Icons.picture_as_pdf;
+          icon = Icons.picture_as_pdf_rounded;
           iconColor = Colors.red;
           break;
-
         case "doc":
         case "docx":
-          icon = Icons.description;
+          icon = Icons.description_rounded;
           iconColor = Colors.blue;
           break;
-
         case "xls":
         case "xlsx":
-          icon = Icons.table_chart;
+          icon = Icons.table_chart_rounded;
           iconColor = Colors.green;
           break;
-
         case "ppt":
         case "pptx":
-          icon = Icons.slideshow;
+          icon = Icons.slideshow_rounded;
           iconColor = Colors.orange;
           break;
-
         default:
-          icon = Icons.insert_drive_file;
-          iconColor = Colors.grey;
+          icon = Icons.insert_drive_file_rounded;
+          iconColor = _purple;
       }
 
       return Column(
@@ -1364,61 +1263,64 @@ class GroupChatBubble extends StatelessWidget {
         children: [
           InkWell(
             onTap: () async {
-              await DocumentService().openDocument(
-                "${ConstRes.aImageBaseUrl}$documentUrl",
-              );
+              await DocumentService()
+                  .openDocument("${ConstRes.aImageBaseUrl}$documentUrl");
             },
+            borderRadius: BorderRadius.circular(12.r),
             child: Container(
               width: 240.w,
-              padding: EdgeInsets.all(12.w),
+              padding: EdgeInsets.all(10.w),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(.08),
+                color: isSentByMe
+                    ? Colors.white.withOpacity(0.6)
+                    : const Color(0xFFF3F1FB),
                 borderRadius: BorderRadius.circular(12.r),
               ),
               child: Row(
                 children: [
                   Container(
-                    width: 50.w,
-                    height: 50.w,
+                    width: 44.w,
+                    height: 44.w,
                     decoration: BoxDecoration(
-                      color: iconColor,
+                      color: _purple.withOpacity(0.12),
                       borderRadius: BorderRadius.circular(10.r),
                     ),
-                    child: Icon(
-                      icon,
-                      color: Colors.white,
-                      size: 26.sp,
-                    ),
+                    child: Icon(icon, color: _purple, size: 24.sp),
                   ),
                   SizedBox(width: 10.w),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
                           documentName,
-                          maxLines: 2,
+                          maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
-                            color: textColor,
+                            color: Colors.black87,
                             fontSize: 12.sp,
-                            fontWeight: FontWeight.w600,
+                            fontWeight: FontWeight.w700,
                           ),
                         ),
-                        SizedBox(height: 4.h),
+                        SizedBox(height: 3.h),
                         Text(
-                          extension.toUpperCase(),
+                          fileSize.isNotEmpty
+                              ? "$fileSize • ${extension.toUpperCase()}"
+                              : extension.toUpperCase(),
                           style: TextStyle(
-                            color: Colors.grey,
+                            color: Colors.grey.shade600,
                             fontSize: 10.sp,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
                       ],
                     ),
                   ),
+                  SizedBox(width: 6.w),
                   Icon(
                     Icons.download_rounded,
-                    color: textColor,
+                    color: _purple,
                     size: 20.sp,
                   ),
                 ],
@@ -1431,7 +1333,7 @@ class GroupChatBubble extends StatelessWidget {
               child: reausabletext(
                 message.caption.toString(),
                 color: textColor,
-                fontsize: 11.sp,
+                fontsize: 12.sp,
                 fontfamily: FontFamily.interMedium,
               ),
             ),
@@ -1470,37 +1372,27 @@ class GroupChatBubble extends StatelessWidget {
   }
 
   bool _areAllMembersSeen(MessageData message) {
-    if (message.seenBy is! List) {
-      return false;
-    }
+    if (message.seenBy is! List) return false;
 
     final currentUserId =
-        Global.storageServices.get(PrefConst.userId).toString();
+    Global.storageServices.get(PrefConst.userId).toString();
 
     final recipientIds = controller.groupMembers
-        .where(
-          (member) => member.userId.toString() != currentUserId,
-        )
-        .map(
-          (member) => member.userId.toString(),
-        )
+        .where((member) => member.userId.toString() != currentUserId)
+        .map((member) => member.userId.toString())
         .toSet();
 
-    if (recipientIds.isEmpty) {
-      return false;
-    }
+    if (recipientIds.isEmpty) return false;
 
     final seenIds = (message.seenBy as List).map((id) => id.toString()).toSet();
 
-    return recipientIds.every(
-      (userId) => seenIds.contains(userId),
-    );
+    return recipientIds.every((userId) => seenIds.contains(userId));
   }
 
   void _showDeleteBottomSheet(
-    BuildContext context,
-    bool isSentByMe,
-  ) {
+      BuildContext context,
+      bool isSentByMe,
+      ) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -1514,9 +1406,7 @@ class GroupChatBubble extends StatelessWidget {
             ),
             decoration: const BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.vertical(
-                top: Radius.circular(20),
-              ),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
             ),
             child: SingleChildScrollView(
               child: Column(
@@ -1559,7 +1449,7 @@ class GroupChatBubble extends StatelessWidget {
                           shape: BoxShape.circle,
                         ),
                         child:
-                            Icon(Icons.copy, color: Colors.purple, size: 20.sp),
+                        Icon(Icons.copy, color: Colors.purple, size: 20.sp),
                       ),
                       title: const Text(
                         "Copy",
@@ -1589,9 +1479,7 @@ class GroupChatBubble extends StatelessWidget {
                       ),
                       title: const Text(
                         "Edit",
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                        ),
+                        style: TextStyle(fontWeight: FontWeight.w600),
                       ),
                       subtitle: const Text(
                         "Edit this message",
@@ -1602,7 +1490,6 @@ class GroupChatBubble extends StatelessWidget {
                       ),
                       onTap: () {
                         Navigator.pop(context);
-
                         controller.startEditingMessage(message);
                       },
                     ),
@@ -1661,20 +1548,14 @@ class GroupChatBubble extends StatelessWidget {
                     ),
                     title: const Text(
                       "Info",
-                      style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                      ),
+                      style: TextStyle(fontWeight: FontWeight.w600),
                     ),
                     subtitle: Text(
                       "See message details",
-                      style: TextStyle(
-                        fontSize: 12.sp,
-                        color: Colors.grey,
-                      ),
+                      style: TextStyle(fontSize: 12.sp, color: Colors.grey),
                     ),
                     onTap: () {
                       Navigator.pop(context);
-
                       showModalBottomSheet(
                         context: context,
                         isScrollControlled: true,
@@ -1693,12 +1574,9 @@ class GroupChatBubble extends StatelessWidget {
                     title: const Text("Forward"),
                     onTap: () {
                       Get.back();
-
                       Get.toNamed(
                         Routes.forwardMessageScreen,
-                        arguments: {
-                          "message": message,
-                        },
+                        arguments: {"message": message},
                       );
                     },
                   ),
