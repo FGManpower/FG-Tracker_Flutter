@@ -18,14 +18,17 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:share_plus/share_plus.dart';
 
-class GroupDetailsScreen extends StatefulWidget {
-  const GroupDetailsScreen({super.key});
+// 👇 Yaha apni nayi file ka path daalein
+import 'media_links_docs_screen.dart';
+
+class GroupProfileScreen extends StatefulWidget {
+  const GroupProfileScreen({super.key});
 
   @override
-  State<GroupDetailsScreen> createState() => _GroupDetailsScreenState();
+  State<GroupProfileScreen> createState() => _GroupProfileScreenState();
 }
 
-class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
+class _GroupProfileScreenState extends State<GroupProfileScreen> {
   final chatController = Get.find<GroupMessageController>();
   final groupController = Get.put(GroupController());
 
@@ -35,8 +38,7 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
   final RxBool notificationsOn = true.obs;
   final RxBool showAllMembers = false.obs;
 
-  String get _myId =>
-      Global.storageServices.get(PrefConst.userId).toString();
+  String get _myId => Global.storageServices.get(PrefConst.userId).toString();
 
   List<MessageData> get _mediaMessages {
     return chatController.messageData.where((m) {
@@ -109,63 +111,62 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: _bg,
-      body: SafeArea(
-        child: Column(
-          children: [
-            _buildTopBar(context),
-            Expanded(
-              child: Obx(() {
-                final _ = chatController.groupMembers.length;
-                final __ = chatController.pinnedMessage.value;
-
-                return ListView(
-                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-                  children: [
-                    _buildProfileHeader(),
-                    SizedBox(height: 18.h),
-                    _buildQuickActions(context),
-                    SizedBox(height: 16.h),
-                    _buildMediaCard(context),
-                    SizedBox(height: 12.h),
-                    _buildSettingsCard(context),
-                    SizedBox(height: 16.h),
-                    _buildMembersSection(context),
-                    SizedBox(height: 12.h),
-                    _buildDangerSection(context),
-                    SizedBox(height: 24.h),
-                  ],
-                );
-              }),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTopBar(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.fromLTRB(12.w, 8.h, 12.w, 4.h),
-      child: Row(
-        children: [
-          _roundBtn(
+      appBar: AppBar(
+        backgroundColor: _bg,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        leadingWidth: 64.w,
+        leading: Padding(
+          padding: EdgeInsets.only(left: 16.w, top: 8.h, bottom: 8.h),
+          child: _roundBtn(
             icon: Icons.arrow_back_rounded,
             onTap: () => Get.back(),
           ),
-          const Spacer(),
+        ),
+        actions: [
           if (chatController.isCreator.value)
-            _roundBtn(
-              icon: Icons.edit_rounded,
-              onTap: () {
-                groupController.groupName.text = chatController.groupName;
-                DialogBox().showUpdateGroupBottomSheet(
-                  context: context,
-                  controller: groupController,
-                  groupId: chatController.groupId.toString(),
-                );
-              },
+            Padding(
+              padding: EdgeInsets.only(right: 16.w, top: 8.h, bottom: 8.h),
+              child: _roundBtn(
+                icon: Icons.edit_rounded,
+                onTap: () {
+                  groupController.groupName.text = chatController.groupName;
+                  DialogBox().showUpdateGroupBottomSheet(
+                    context: context,
+                    controller: groupController,
+                    groupId: chatController.groupId.toString(),
+                  );
+                },
+              ),
             ),
         ],
+      ),
+      body: SafeArea(
+        child: Obx(() {
+          // Listen to changes
+          final _ = chatController.groupMembers.length;
+          final __ = chatController.pinnedMessage.value;
+
+          return ListView(
+            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+            children: [
+              _buildProfileHeader(),
+              SizedBox(height: 18.h),
+              _buildQuickActions(context),
+              SizedBox(height: 16.h),
+              _buildMediaCard(context),
+              SizedBox(height: 12.h),
+              _buildSettingsCard(context),
+              SizedBox(height: 16.h),
+              _buildMembersSection(context),
+              SizedBox(height: 16.h),
+              _buildFavoritesCard(), // Alag section jaisa figma me hai
+              SizedBox(height: 12.h),
+              _buildDangerSection(context),
+              SizedBox(height: 24.h),
+            ],
+          );
+        }),
       ),
     );
   }
@@ -174,15 +175,13 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        height: 40.w,
-        width: 40.w,
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12.r),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
-              blurRadius: 4,
+              color: _purple.withOpacity(0.08), // Lavender shadow
+              blurRadius: 6,
               offset: const Offset(0, 2),
             ),
           ],
@@ -211,16 +210,16 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
           ),
           child: chatController.groupImage.isNotEmpty
               ? ClipOval(
-            child: Image.network(
-              "${ConstRes.aImageBaseUrl}${chatController.groupImage}",
-              fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => Icon(
-                Icons.groups_rounded,
-                color: Colors.white,
-                size: 40.sp,
-              ),
-            ),
-          )
+                  child: Image.network(
+                    "${ConstRes.aImageBaseUrl}${chatController.groupImage}",
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => Icon(
+                      Icons.groups_rounded,
+                      color: Colors.white,
+                      size: 40.sp,
+                    ),
+                  ),
+                )
               : Icon(Icons.groups_rounded, color: Colors.white, size: 40.sp),
         ),
         SizedBox(height: 12.h),
@@ -240,7 +239,7 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
           TextSpan(
             children: [
               TextSpan(
-                text: "$total Members",
+                text: "${total.toString().padLeft(2, '0')} Members",
                 style: TextStyle(
                   fontSize: 12.sp,
                   color: Colors.grey.shade600,
@@ -270,7 +269,7 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
     return Row(
       children: [
         _quickAction(
-          icon: Icons.call_rounded,
+          icon: Icons.call_outlined,
           label: "Audio Call",
           onTap: () {
             Utils().fluttertoast("Select a member to call");
@@ -278,7 +277,7 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
         ),
         SizedBox(width: 10.w),
         _quickAction(
-          icon: Icons.videocam_rounded,
+          icon: Icons.videocam_outlined,
           label: "Video Call",
           onTap: () {
             Utils().fluttertoast("Select a member for video call");
@@ -286,10 +285,9 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
         ),
         SizedBox(width: 10.w),
         _quickAction(
-          icon: Icons.person_add_alt_1_rounded,
+          icon: Icons.person_add_alt_1_outlined,
           label: "Add Members",
           onTap: () {
-            // TODO: navigate to add member / join by code screen
             Utils().fluttertoast("Add members");
           },
         ),
@@ -321,8 +319,8 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
             borderRadius: BorderRadius.circular(14.r),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.03),
-                blurRadius: 6,
+                color: _purple.withOpacity(0.08), // Lavender shadow
+                blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
             ],
@@ -359,7 +357,7 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
         children: [
           InkWell(
             onTap: () {
-              Utils().fluttertoast("$total media items");
+              Get.to(() => MediaLinksDocsScreen(mediaMessages: _mediaMessages));
             },
             child: Row(
               children: [
@@ -379,19 +377,19 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
                   "$total",
                   style: TextStyle(
                     fontSize: 13.sp,
-                    color: _purple,
+                    color: Colors.grey.shade600,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
                 Icon(Icons.chevron_right_rounded,
-                    color: Colors.grey.shade500, size: 20.sp),
+                    color: Colors.grey.shade400, size: 20.sp),
               ],
             ),
           ),
           if (media.isNotEmpty) ...[
             SizedBox(height: 12.h),
             SizedBox(
-              height: 72.h,
+              height: 100.h, // Height badha di gayi
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 itemCount: media.length,
@@ -404,8 +402,7 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
                   return ClipRRect(
                     borderRadius: BorderRadius.circular(12.r),
                     child: Container(
-                      width: 72.w,
-                      height: 72.w,
+                      width: 100.h, // Width ko bhi proportion me badhaya
                       color: const Color(0xFFEDEBFB),
                       child: Stack(
                         fit: StackFit.expand,
@@ -431,7 +428,7 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
                                     _videoDuration(m),
                                     style: TextStyle(
                                       color: Colors.white,
-                                      fontSize: 9.sp,
+                                      fontSize: 10.sp,
                                       fontWeight: FontWeight.w600,
                                     ),
                                   ),
@@ -485,22 +482,22 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
           ),
           _divider(),
           Obx(() => _settingTile(
-            icon: Icons.notifications_none_rounded,
-            iconColor: _purple,
-            title: "Notifications",
-            subtitle: notificationsOn.value ? "All Messages" : "Muted",
-            trailing: Transform.scale(
-              scale: 0.8,
-              child: Switch(
-                value: notificationsOn.value,
-                activeColor: _purple,
-                onChanged: (v) => notificationsOn.value = v,
-              ),
-            ),
-          )),
+                icon: Icons.notifications_none_rounded,
+                iconColor: _purple,
+                title: "Notifications",
+                subtitle: notificationsOn.value ? "All Messages" : "Muted",
+                trailing: Transform.scale(
+                  scale: 0.8,
+                  child: Switch(
+                    value: notificationsOn.value,
+                    activeColor: _purple,
+                    onChanged: (v) => notificationsOn.value = v,
+                  ),
+                ),
+              )),
           _divider(),
           _settingTile(
-            icon: Icons.timer_outlined,
+            icon: Icons.lock_outline_rounded,
             iconColor: _purple,
             title: "Disappearing Messages",
             subtitle: "Messages will disappear after 7 days",
@@ -509,7 +506,7 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
           ),
           _divider(),
           _settingTile(
-            icon: Icons.link_rounded,
+            icon: Icons.reply_rounded,
             iconColor: _purple,
             title: "Invite via Link",
             onTap: () async {
@@ -588,12 +585,10 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
                 "${members.length}".padLeft(2, '0'),
                 style: TextStyle(
                   fontSize: 13.sp,
-                  color: _purple,
+                  color: Colors.grey.shade600,
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              SizedBox(width: 6.w),
-              Icon(Icons.search_rounded, color: _purple, size: 18.sp),
             ],
           ),
         ),
@@ -601,18 +596,23 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
           padding: EdgeInsets.symmetric(vertical: 6.h),
           child: Column(
             children: [
-              ...visible.map((m) => _memberTile(context, m)),
+              for (int i = 0; i < visible.length; i++) ...[
+                _memberTile(context, visible[i]),
+                if (i < visible.length - 1)
+                  Divider(
+                      height: 1,
+                      color: Colors.grey.shade100,
+                      indent: 64.w,
+                      endIndent: 16.w),
+              ],
               if (members.length > 3)
                 TextButton(
-                  onPressed: () =>
-                  showAllMembers.value = !showAllMembers.value,
+                  onPressed: () => showAllMembers.value = !showAllMembers.value,
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        showAllMembers.value
-                            ? "Show less"
-                            : "View all members",
+                        showAllMembers.value ? "Show less" : "View all members",
                         style: TextStyle(
                           color: _purple,
                           fontWeight: FontWeight.w600,
@@ -645,7 +645,7 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
         : null;
 
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
       child: Row(
         children: [
           CircleAvatar(
@@ -654,13 +654,13 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
             backgroundImage: img != null ? NetworkImage(img) : null,
             child: img == null
                 ? Text(
-              name.isNotEmpty ? name[0].toUpperCase() : "?",
-              style: TextStyle(
-                color: _purple,
-                fontWeight: FontWeight.w700,
-                fontSize: 16.sp,
-              ),
-            )
+                    name.isNotEmpty ? name[0].toUpperCase() : "?",
+                    style: TextStyle(
+                      color: _purple,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 16.sp,
+                    ),
+                  )
                 : null,
           ),
           SizedBox(width: 10.w),
@@ -694,9 +694,8 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
                   _statusText(m),
                   style: TextStyle(
                     fontSize: 11.sp,
-                    color: online
-                        ? const Color(0xFF2BB673)
-                        : Colors.grey.shade500,
+                    color:
+                        online ? const Color(0xFF2BB673) : Colors.grey.shade500,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -710,6 +709,7 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
           PopupMenuButton<String>(
             icon: Icon(Icons.more_vert_rounded,
                 color: Colors.grey.shade500, size: 20.sp),
+            color: Colors.white,
             onSelected: (value) {
               if (value == "chat") {
                 final memberData = MemberData(
@@ -751,7 +751,7 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
                 CommonDialog.ConfirmationDialog(
                   title: "Remove Member",
                   content:
-                  "Are you sure you want to remove $name from the group?",
+                      "Are you sure you want to remove $name from the group?",
                   confirm: "Remove",
                   onConfirm: () {
                     Get.back();
@@ -805,18 +805,36 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
     );
   }
 
+  Widget _buildFavoritesCard() {
+    return Container(
+      width: double.infinity,
+      margin: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8F7FF),
+        borderRadius: BorderRadius.circular(16.r),
+        boxShadow: [
+          BoxShadow(
+            color: _purple.withOpacity(0.12),
+            blurRadius: 12,
+            spreadRadius: 2,
+            offset: const Offset(0, 0), // chaaro taraf equal shadow
+          ),
+        ],
+      ),
+      child: _settingTile(
+        icon: Icons.favorite_border_rounded,
+        iconColor: _purple,
+        title: "Add to Favorites",
+        titleColor: _purple,
+        onTap: () => Utils().fluttertoast("Added to favorites"),
+      ),
+    );
+  }
   Widget _buildDangerSection(BuildContext context) {
     return _whiteCard(
       padding: EdgeInsets.zero,
       child: Column(
         children: [
-          _settingTile(
-            icon: Icons.favorite_border_rounded,
-            iconColor: _purple,
-            title: "Add to Favorites",
-            onTap: () => Utils().fluttertoast("Added to favorites"),
-          ),
-          _divider(),
           _settingTile(
             icon: Icons.delete_outline_rounded,
             iconColor: Colors.redAccent,
@@ -844,7 +862,7 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
               CommonDialog.ConfirmationDialog(
                 title: "Exit Group",
                 content:
-                "Are you sure you want to exit \"${chatController.groupName}\"?",
+                    "Are you sure you want to exit \"${chatController.groupName}\"?",
                 confirm: "Exit",
                 onConfirm: () {
                   Get.back();
@@ -878,14 +896,16 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
   Widget _whiteCard({required Widget child, EdgeInsets? padding}) {
     return Container(
       width: double.infinity,
+      margin: EdgeInsets.symmetric(vertical: 4.h, horizontal: 2.w),
       padding: padding ?? EdgeInsets.all(14.w),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
-            blurRadius: 8,
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 10,
+            spreadRadius: 1,
             offset: const Offset(0, 2),
           ),
         ],
@@ -908,12 +928,13 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
   }) {
     return InkWell(
       onTap: onTap,
+      borderRadius: BorderRadius.circular(16.r),
       child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
         child: Row(
           children: [
             Icon(icon, color: iconColor, size: 22.sp),
-            SizedBox(width: 12.w),
+            SizedBox(width: 14.w),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,

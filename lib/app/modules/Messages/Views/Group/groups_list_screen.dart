@@ -28,9 +28,26 @@ class _GroupsListScreenState extends State<GroupsListScreen> {
   final groupController = Get.find<GroupController>();
   final TextEditingController _searchController = TextEditingController();
   final RxString _searchQuery = "".obs;
+
+  final ScrollController _scrollController = ScrollController();
+  final RxBool _isSearchCollapsed = false.obs;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(() {
+      if (_scrollController.offset > 40 && !_isSearchCollapsed.value) {
+        _isSearchCollapsed.value = true;
+      } else if (_scrollController.offset <= 40 && _isSearchCollapsed.value) {
+        _isSearchCollapsed.value = false;
+      }
+    });
+  }
+
   @override
   void dispose() {
     _searchController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -38,12 +55,23 @@ class _GroupsListScreenState extends State<GroupsListScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F5FB),
+      // 🎯 Using AppBar exactly with the previous _buildHeader UI
+      appBar: _buildAppBar(),
       body: SafeArea(
         child: Column(
           children: [
-            _buildHeader(),
-            _buildSearchBar(),
-            SizedBox(height: 10.h),
+            // 🎯 Animated Container (AnimatedSize) for Search Bar
+            Obx(() => AnimatedSize(
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
+              alignment: Alignment.topCenter,
+              child: _isSearchCollapsed.value
+                  ? const SizedBox(width: double.infinity)
+                  : _buildSearchBar(),
+            )),
+
+            SizedBox(height: _isSearchCollapsed.value ? 5.h : 10.h),
+
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 20.w),
               child: Row(
@@ -99,8 +127,8 @@ class _GroupsListScreenState extends State<GroupsListScreen> {
                     await groupController.getGroupData();
                   },
                   child: ListView.separated(
-                    padding:
-                    EdgeInsets.symmetric(horizontal: 20.w, vertical: 5.h),
+                    controller: _scrollController, // 🎯 Attach controller here
+                    padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 5.h),
                     physics: const AlwaysScrollableScrollPhysics(
                         parent: BouncingScrollPhysics()),
                     itemCount: isLoading ? 5 : data.length,
@@ -120,68 +148,90 @@ class _GroupsListScreenState extends State<GroupsListScreen> {
     );
   }
 
-  List<GroupsResData> _filteredGroups() {
-    final all = groupController.groupData;
-    if (_searchQuery.value.trim().isEmpty) return all;
-    final q = _searchQuery.value.toLowerCase();
-    return all.where((g) {
-      final name = (g.groupName ?? "").toLowerCase();
-      final code = (g.groupCode ?? "").toLowerCase();
-      return name.contains(q) || code.contains(q);
-    }).toList();
-  }
-
-  Widget _buildHeader() {
-    return Padding(
-      padding: EdgeInsets.fromLTRB(20.w, 15.h, 20.w, 10.h),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  PreferredSizeWidget _buildAppBar() {
+    return AppBar(
+      backgroundColor: const Color(0xFFF6F5FB),
+      surfaceTintColor: const Color(0xFFF6F5FB),
+      elevation: 0,
+      automaticallyImplyLeading: false,
+      toolbarHeight: 75.h,
+      titleSpacing: 20.w,
+      title: Row(
         children: [
-          Row(
-            children: [
-              GestureDetector(
-                onTap: () => Get.back(),
-                child: Container(
-                  padding: EdgeInsets.all(9.r),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12.r),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.05),
-                        blurRadius: 5,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Icon(
-                    Icons.arrow_back,
-                    color: const Color(0xff5045B9),
-                    size: 20.sp,
-                  ),
-                ),
-              ),
-              SizedBox(width: 14.w),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  reausabletext(
-                    "All Groups",
-                    fontsize: 20.sp,
-                    fontfamily: FontFamily.interSemiBold,
-                    color: Colors.black87,
-                  ),
-                  reausabletext(
-                    "Stay connected with your teams",
-                    fontsize: 12.sp,
-                    fontfamily: FontFamily.interMedium,
-                    color: Colors.grey.shade600,
+          GestureDetector(
+            onTap: () => Get.back(),
+            child: Container(
+              padding: EdgeInsets.all(9.r),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12.r),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 5,
+                    offset: const Offset(0, 2),
                   ),
                 ],
               ),
+              child: Icon(
+                Icons.arrow_back,
+                color: const Color(0xff5045B9),
+                size: 20.sp,
+              ),
+            ),
+          ),
+          SizedBox(width: 14.w),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              reausabletext(
+                "All Groups",
+                fontsize: 20.sp,
+                fontfamily: FontFamily.interSemiBold,
+                color: Colors.black87,
+              ),
+              reausabletext(
+                "Stay connected with your teams",
+                fontsize: 12.sp,
+                fontfamily: FontFamily.interMedium,
+                color: Colors.grey.shade600,
+              ),
             ],
           ),
-          Stack(
+        ],
+      ),
+      actions: [
+        Obx(() => AnimatedSwitcher(
+          duration: const Duration(milliseconds: 300),
+          transitionBuilder: (Widget child, Animation<double> animation) {
+            return ScaleTransition(
+                scale: animation,
+                child: FadeTransition(opacity: animation, child: child));
+          },
+          child: _isSearchCollapsed.value
+              ? GestureDetector(
+            key: const ValueKey('search_icon'),
+            onTap: () {
+              _scrollController.animateTo(0,
+                  duration: const Duration(milliseconds: 400),
+                  curve: Curves.easeOut);
+            },
+            child: Padding(
+              padding: EdgeInsets.only(right: 12.w),
+              child: Icon(
+                Icons.search_rounded,
+                color: const Color(0xff5045B9),
+                size: 26.sp,
+              ),
+            ),
+          )
+              : const SizedBox.shrink(key: ValueKey('empty_search')),
+        )),
+
+        Padding(
+          padding: EdgeInsets.only(right: 20.w),
+          child: Stack(
             clipBehavior: Clip.none,
             children: [
               Icon(
@@ -203,8 +253,8 @@ class _GroupsListScreenState extends State<GroupsListScreen> {
               ),
             ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -267,6 +317,17 @@ class _GroupsListScreenState extends State<GroupsListScreen> {
     );
   }
 
+  List<GroupsResData> _filteredGroups() {
+    final all = groupController.groupData;
+    if (_searchQuery.value.trim().isEmpty) return all;
+    final q = _searchQuery.value.toLowerCase();
+    return all.where((g) {
+      final name = (g.groupName ?? "").toLowerCase();
+      final code = (g.groupCode ?? "").toLowerCase();
+      return name.contains(q) || code.contains(q);
+    }).toList();
+  }
+
   Widget _buildGroupCard(
       BuildContext context, GroupsResData? data, bool isLoading) {
     final bool isActive = data?.isActive ?? false;
@@ -278,12 +339,13 @@ class _GroupsListScreenState extends State<GroupsListScreen> {
         onTap: () {
           if (data == null) return;
           if (isActive) {
-            Get.toNamed(Routes.Memberscreen, arguments: {
+            Get.toNamed(Routes.groupChatScreen, arguments: {
               "groupId": data.id.toString(),
-              "groupName": data.groupName.toString(),
-              "groupCode": data.groupCode.toString(),
-              "isCreator": data.isCreator.toString(),
-              "isActive": data.isActive.toString(),
+              "groupName": data.groupName ?? "",
+              "groupImage": data.groupProfile ?? "",
+              "groupCode": data.groupCode ?? "",
+              "isCreator": data.isCreator?.toString() ?? "false",
+              "isActive": data.isActive?.toString() ?? "false",
             })?.then((value) {
               if (value == true) {
                 groupController.getGroupData();

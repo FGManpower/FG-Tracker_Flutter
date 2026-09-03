@@ -197,7 +197,6 @@ class _QrCodeBottomSheetState extends State<QrCodeBottomSheet>
                                       borderRadius: BorderRadius.circular(5.r),
                                     ),
                                     image: PrettyQrDecorationImage(
-                                      // Yaha aapka center logo hai
                                       image:
                                           AssetImage(Assets.icons.appIcon.path),
                                       padding: const EdgeInsets.all(5),
@@ -245,15 +244,6 @@ class _QrCodeBottomSheetState extends State<QrCodeBottomSheet>
                     icon: Icons.download_outlined,
                     title: "Download",
                     onTap: () => controller.downloadQrCode(context),
-                  ),
-                  SizedBox(width: 10.w),
-                  _buildActionButton(
-                    icon: Icons.refresh_outlined,
-                    title: "Refresh",
-                    onTap: () {
-                      // TODO: Add refresh group code logic here if required
-                      Utils().fluttertoast("Refreshing...");
-                    },
                   ),
                 ],
               ),

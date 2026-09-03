@@ -299,7 +299,7 @@ class GroupChatScreen extends GetView<GroupMessageController> {
               child: GestureDetector(
                 onTap: () {
                   Get.to(
-                        () => const GroupDetailsScreen(),
+                        () => const GroupProfileScreen(),
                     arguments: {
                       "groupCode": Get.arguments?["groupCode"],
                     },
