@@ -6,7 +6,7 @@ import 'package:fgtracker/app/modules/Group/controller/JoinGroup_Controller.dart
 import 'package:fgtracker/app/modules/Track/Controller/TrackController.dart';
 import 'package:fgtracker/app/modules/home/Controller/home_controller.dart';
 import 'package:fgtracker/app/modules/home/Home_Widget/bannerUi.dart';
-import 'package:fgtracker/app/modules/home/Views/StatsGrid.dart';
+import 'package:fgtracker/app/modules/home/Views/LiveStatus/StatsGrid.dart';
 import 'package:fgtracker/app/modules/home/Views/bottom_actions_bar.dart';
 import 'package:fgtracker/app/modules/home/Views/map_section.dart';
 import 'package:fgtracker/app/modules/home/Views/quick_actions_section.dart';
