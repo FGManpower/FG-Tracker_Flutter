@@ -69,8 +69,7 @@ class _StatCard extends StatelessWidget {
     required this.title,
     required this.value,
     required this.subtitle,
-    this.onTap,
-  });
+  }) : onTap = null;
 
   final IconData icon;
   final Color iconColor;
@@ -96,13 +95,13 @@ class _StatCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(15.r),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.04),
+                color: Colors.black.withValues(alpha: 0.04),
                 blurRadius: 9,
                 offset: const Offset(0, 3),
               ),
             ],
             border: Border.all(
-              color: Colors.grey.withOpacity(0.1),
+              color: Colors.grey.withValues(alpha: 0.1),
             ),
           ),
           child: Column(
@@ -111,7 +110,7 @@ class _StatCard extends StatelessWidget {
             children: [
               CircleAvatar(
                 radius: 16.r,
-                backgroundColor: iconColor.withOpacity(0.15),
+                backgroundColor: iconColor.withValues(alpha: 0.15),
                 child: Icon(
                   icon,
                   color: iconColor,

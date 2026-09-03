@@ -31,7 +31,7 @@ class MobileNumberView extends StatelessWidget {
           displayNumber = '••••••';
         }
       } else {
-        displayNumber = '$mobileNumber';
+        displayNumber = mobileNumber;
       }
 
       return Row(
@@ -42,7 +42,7 @@ class MobileNumberView extends StatelessWidget {
             displayNumber,
             style: TextStyle(
               fontSize: 12.sp,
-              color: Colors.black.withOpacity(0.6),
+              color: Colors.black.withValues(alpha: 0.6),
               fontFamily: FontFamily.interRegular,
             ),
           ),

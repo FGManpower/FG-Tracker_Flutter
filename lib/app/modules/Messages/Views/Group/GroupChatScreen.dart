@@ -89,7 +89,7 @@ class GroupChatScreen extends GetView<GroupMessageController> {
                                   borderRadius: BorderRadius.circular(18),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.black.withOpacity(0.10),
+                                      color: Colors.black.withValues(alpha: 0.10),
                                       blurRadius: 8,
                                       offset: const Offset(0, 2),
                                     ),
@@ -431,7 +431,7 @@ class GroupChatScreen extends GetView<GroupMessageController> {
           borderRadius: BorderRadius.circular(10.r),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
+              color: Colors.black.withValues(alpha: 0.04),
               blurRadius: 4,
               offset: const Offset(0, 1),
             ),

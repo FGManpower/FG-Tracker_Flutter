@@ -58,7 +58,7 @@ class FileServices {
       final file = File(video.path);
 
       return file;
-    } catch (e, s) {
+    } catch (e) {
       return null;
     }
   }

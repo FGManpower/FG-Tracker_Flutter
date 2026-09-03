@@ -237,7 +237,7 @@ class ChatScreen extends GetView<MessageController> {
                                     borderRadius: BorderRadius.circular(18),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: Colors.black.withOpacity(0.10),
+                                        color: Colors.black.withValues(alpha: 0.10),
                                         blurRadius: 8,
                                         offset: const Offset(0, 2),
                                       ),
@@ -464,7 +464,7 @@ class _VoiceMessagePlayerBubbleState extends State<VoiceMessagePlayerBubble>
     final activeColor =
     widget.isSender ? Colors.white : const Color(0xFF075E54);
     final inactiveColor =
-    widget.isSender ? Colors.white.withOpacity(0.4) : Colors.grey.shade400;
+    widget.isSender ? Colors.white.withValues(alpha: 0.4) : Colors.grey.shade400;
 
     final Color micStatusColor = widget.isListened
         ? Colors.blueAccent
@@ -528,7 +528,7 @@ class _VoiceMessagePlayerBubbleState extends State<VoiceMessagePlayerBubble>
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
               decoration: BoxDecoration(
                 color: widget.isSender
-                    ? Colors.white.withOpacity(0.2)
+                    ? Colors.white.withValues(alpha: 0.2)
                     : Colors.grey.shade200,
                 borderRadius: BorderRadius.circular(10),
               ),

@@ -134,7 +134,7 @@ class _CallContactsTabState extends State<CallContactsTab> {
                 reausabletext(
                   user.mobileNo ?? '',
                   fontsize: 11.sp,
-                  color: const Color(0xFF6B4DFF).withOpacity(0.7),
+                  color: const Color(0xFF6B4DFF).withValues(alpha: 0.7),
                 ),
               ],
             ),
@@ -156,7 +156,7 @@ class _CallContactsTabState extends State<CallContactsTab> {
 }
 
 class SkeletonContactRow extends StatelessWidget {
-  SkeletonContactRow();
+  const SkeletonContactRow({super.key});
 
   @override
   Widget build(BuildContext context) {

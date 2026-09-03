@@ -151,9 +151,9 @@ class NewlyGroupUi extends StatelessWidget {
                                                         value.toString(),
                                                   );
                                                 },
-                                                activeColor:
+                                                activeTrackColor:
                                                     const Color(0xff5045B9),
-                                                trackColor: Colors.black26,
+                                                inactiveTrackColor: Colors.black26,
                                               ),
                                             )
                                           : Icon(

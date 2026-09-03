@@ -105,7 +105,7 @@ class _CallScreenState extends State<CallScreen>
           color: Colors.white,
           borderRadius: BorderRadius.circular(14.r),
           border: Border.all(
-            color: const Color(0xFF6B4DFF).withOpacity(0.16),
+            color: const Color(0xFF6B4DFF).withValues(alpha: 0.16),
           ),
         ),
         child: Row(
@@ -163,7 +163,7 @@ class _CallScreenState extends State<CallScreen>
           borderRadius: BorderRadius.circular(15.r),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
+              color: Colors.black.withValues(alpha: 0.04),
               blurRadius: 8,
             ),
           ],
@@ -249,7 +249,7 @@ class _RoundIconButton extends StatelessWidget {
           borderRadius: BorderRadius.circular(12.r),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
+              color: Colors.black.withValues(alpha: 0.04),
               blurRadius: 8,
             ),
           ],
@@ -273,7 +273,7 @@ class _QuickCallActionButton extends StatelessWidget {
         borderRadius: BorderRadius.circular(18.r),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF4818F0).withOpacity(0.4),
+            color: const Color(0xFF4818F0).withValues(alpha: 0.4),
             blurRadius: 14,
             offset: const Offset(0, 6),
           ),

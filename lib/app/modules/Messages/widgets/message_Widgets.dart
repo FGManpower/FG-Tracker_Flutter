@@ -24,8 +24,8 @@ class CommonChatAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   final String? lastSeen;
 
-  CommonChatAppBar(
-      {Key? key,
+  const CommonChatAppBar(
+      {super.key,
         required this.profileImageUrl,
         required this.userName,
         required this.controller,
@@ -40,8 +40,7 @@ class CommonChatAppBar extends StatelessWidget implements PreferredSizeWidget {
         this.lastSeen,
         this.onDeleteGroup,
         this.onSearchTap,
-        this.isGroupChat = false})
-      : super(key: key);
+        this.isGroupChat = false});
 
   @override
   Size get preferredSize => Size.fromHeight(kToolbarHeight);

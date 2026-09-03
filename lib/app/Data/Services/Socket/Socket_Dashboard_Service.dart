@@ -113,7 +113,7 @@ class SocketDashboardService extends GetxService {
       'userLong': userLong,
       'radius': radius,
     };
-    log("=====requestLiveParam:${param}");
+    log("=====requestLiveParam:$param");
     _socket?.emit(
       'get-user-live-location',
       param,

@@ -34,7 +34,7 @@ class MediaLinksDocsScreen extends StatelessWidget {
         appBar: AppBar(
           backgroundColor: Colors.white,
           elevation: 1,
-          shadowColor: _purple.withOpacity(0.1),
+          shadowColor: _purple.withValues(alpha: 0.1),
           centerTitle: false,
           iconTheme: const IconThemeData(color: _purple),
           title: Text(
@@ -101,7 +101,7 @@ class MediaLinksDocsScreen extends StatelessWidget {
                                     isVideo
                                         ? Icons.videocam_rounded
                                         : Icons.image_rounded,
-                                    color: _purple.withOpacity(0.4),
+                                    color: _purple.withValues(alpha: 0.4),
                                     size: 28.sp,
                                   ),
                                 )
@@ -110,7 +110,7 @@ class MediaLinksDocsScreen extends StatelessWidget {
                                   isVideo
                                       ? Icons.videocam_rounded
                                       : Icons.image_rounded,
-                                  color: _purple.withOpacity(0.4),
+                                  color: _purple.withValues(alpha: 0.4),
                                   size: 28.sp,
                                 ),
                               if (isVideo)

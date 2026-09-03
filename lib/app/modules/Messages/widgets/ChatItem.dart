@@ -33,11 +33,11 @@ class ChatBubble extends StatelessWidget {
   final MessageController controller;
 
   const ChatBubble({
-    Key? key,
+    super.key,
     required this.message,
     required this.controller,
     required this.context,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -98,15 +98,15 @@ class ChatBubble extends StatelessWidget {
                   gradient: controller.highlightedMessageId.value == message.id
                       ? LinearGradient(
                     colors: [
-                      Colors.yellow.withOpacity(.35),
-                      Colors.yellow.withOpacity(.20),
+                      Colors.yellow.withValues(alpha: .35),
+                      Colors.yellow.withValues(alpha: .20),
                     ],
                   )
                       : bgColor,
                   borderRadius: borderRadius,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
+                      color: Colors.black.withValues(alpha: 0.05),
                       blurRadius: 4,
                       offset: const Offset(2, 2),
                     ),
@@ -312,7 +312,7 @@ class ChatBubble extends StatelessWidget {
               width: 240.w,
               padding: EdgeInsets.all(12.w),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(.08),
+                color: Colors.white.withValues(alpha: .08),
                 borderRadius: BorderRadius.circular(12.r),
               ),
               child: Row(
@@ -483,7 +483,7 @@ class ChatBubble extends StatelessWidget {
         padding: EdgeInsets.all(8.w),
         decoration: BoxDecoration(
           color:
-          isSentByMe ? Colors.white.withOpacity(.15) : Colors.grey.shade200,
+          isSentByMe ? Colors.white.withValues(alpha: .15) : Colors.grey.shade200,
           borderRadius: BorderRadius.circular(8.r),
           border: Border(
             left: BorderSide(
@@ -787,14 +787,14 @@ class GroupChatBubble extends StatelessWidget {
   final GroupMessageController controller;
 
   const GroupChatBubble({
-    Key? key,
+    super.key,
     required this.message,
     required this.controller,
     required this.context,
     this.isGroup = false,
     this.groupId,
     this.groupName,
-  }) : super(key: key);
+  });
 
   static const Color _purple = Color(0xFF5045B9);
   static const Color _myBubbleBg = Color(0xFFDCD6F5);
@@ -883,12 +883,12 @@ class GroupChatBubble extends StatelessWidget {
                   ),
                   decoration: BoxDecoration(
                     color: controller.highlightedMessageId.value == message.id
-                        ? Colors.yellow.withOpacity(.35)
+                        ? Colors.yellow.withValues(alpha: .35)
                         : bgColor,
                     borderRadius: borderRadius,
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.04),
+                        color: Colors.black.withValues(alpha: 0.04),
                         blurRadius: 4,
                         offset: const Offset(0, 2),
                       ),
@@ -1119,7 +1119,7 @@ class GroupChatBubble extends StatelessWidget {
         padding: EdgeInsets.all(8.w),
         decoration: BoxDecoration(
           color:
-          isSentByMe ? Colors.white.withOpacity(.5) : Colors.grey.shade100,
+          isSentByMe ? Colors.white.withValues(alpha: .5) : Colors.grey.shade100,
           borderRadius: BorderRadius.circular(10.r),
           border: Border(
             left: BorderSide(color: _purple, width: 3),
@@ -1272,7 +1272,7 @@ class GroupChatBubble extends StatelessWidget {
               padding: EdgeInsets.all(10.w),
               decoration: BoxDecoration(
                 color: isSentByMe
-                    ? Colors.white.withOpacity(0.6)
+                    ? Colors.white.withValues(alpha: 0.6)
                     : const Color(0xFFF3F1FB),
                 borderRadius: BorderRadius.circular(12.r),
               ),
@@ -1282,7 +1282,7 @@ class GroupChatBubble extends StatelessWidget {
                     width: 44.w,
                     height: 44.w,
                     decoration: BoxDecoration(
-                      color: _purple.withOpacity(0.12),
+                      color: _purple.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(10.r),
                     ),
                     child: Icon(icon, color: _purple, size: 24.sp),

@@ -23,7 +23,7 @@ class ViewFullImage extends StatelessWidget {
       body: Center(
         child: CachedNetworkImage(
           width: MediaQuery.sizeOf(context).width,
-          imageUrl: pimgurl == null ? MyAppTheme.notFoundImg : pimgurl,
+          imageUrl: pimgurl ?? MyAppTheme.notFoundImg,
           fit: BoxFit.cover,
           placeholder: (context, string) => const Center(
             child: CircularProgressIndicator(),

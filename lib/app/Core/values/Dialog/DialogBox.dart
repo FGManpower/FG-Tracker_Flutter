@@ -377,8 +377,8 @@ class DialogBox {
         borderRadius: BorderRadius.circular(50.r),
       ),
       tileColor: ToggleThemeData.darkPurple,
-      selectedTileColor: const Color(0xff5045B9).withOpacity(0.15),
-      hoverColor: const Color(0xff5045B9).withOpacity(0.1),
+      selectedTileColor: const Color(0xff5045B9).withValues(alpha: 0.15),
+      hoverColor: const Color(0xff5045B9).withValues(alpha: 0.1),
       leading: Padding(
         padding: EdgeInsets.only(left: 10.w),
         child: Icon(icon, color: Colors.white, size: 26.sp),
@@ -484,7 +484,7 @@ class DialogBox {
                   width: double.infinity,
                   padding: EdgeInsets.symmetric(vertical: 16.h),
                   decoration: BoxDecoration(
-                    color: const Color(0xffA8A3DC).withOpacity(0.16),
+                    color: const Color(0xffA8A3DC).withValues(alpha: 0.16),
                     borderRadius: BorderRadius.circular(50.r),
                   ),
                   child: Row(
@@ -628,7 +628,7 @@ class DialogBox {
                                             decoration: BoxDecoration(
                                               shape: BoxShape.circle,
                                               color: ToggleThemeData.darkPurple
-                                                  .withOpacity(0.12),
+                                                  .withValues(alpha: 0.12),
                                             ),
                                             child: Icon(
                                               Icons.call,
@@ -703,7 +703,7 @@ class DialogBox {
                                             decoration: BoxDecoration(
                                               shape: BoxShape.circle,
                                               color: ToggleThemeData.darkPurple
-                                                  .withOpacity(0.12),
+                                                  .withValues(alpha: 0.12),
                                             ),
                                             child: Icon(
                                               Icons.videocam_rounded,

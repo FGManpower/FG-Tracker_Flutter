@@ -172,7 +172,7 @@ class _ChatInputAreaState extends State<ChatInputArea> {
                   color: Colors.white,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.04),
+                      color: Colors.black.withValues(alpha: 0.04),
                       offset: const Offset(0, -2),
                       blurRadius: 10,
                     ),
@@ -608,7 +608,7 @@ class _ChatInputAreaState extends State<ChatInputArea> {
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(12.r),
                             child: Container(
-                              color: Colors.black.withOpacity(0.4),
+                              color: Colors.black.withValues(alpha: 0.4),
                               child: Center(
                                 child: SizedBox(
                                   width: 35.w,
@@ -628,7 +628,7 @@ class _ChatInputAreaState extends State<ChatInputArea> {
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(12.r),
                             child: Container(
-                              color: Colors.black.withOpacity(0.55),
+                              color: Colors.black.withValues(alpha: 0.55),
                               alignment: Alignment.center,
                               child: Text(
                                 "+$remainingCount",
@@ -721,13 +721,13 @@ class _ChatInputAreaState extends State<ChatInputArea> {
                       Positioned.fill(
                         child: Container(
                           decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.25),
+                            color: Colors.black.withValues(alpha: 0.25),
                             borderRadius: BorderRadius.circular(12.r),
                           ),
                           child: Center(
                             child: Icon(
                               Icons.play_circle_fill,
-                              color: Colors.white.withOpacity(0.85),
+                              color: Colors.white.withValues(alpha: 0.85),
                               size: 34.sp,
                             ),
                           ),
@@ -773,7 +773,7 @@ class _ChatInputAreaState extends State<ChatInputArea> {
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(12.r),
                             child: Container(
-                              color: Colors.black.withOpacity(0.55),
+                              color: Colors.black.withValues(alpha: 0.55),
                               child: Center(
                                 child: SizedBox(
                                   width: 45.w,
@@ -812,7 +812,7 @@ class _ChatInputAreaState extends State<ChatInputArea> {
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(12.r),
                             child: Container(
-                              color: Colors.black.withOpacity(0.55),
+                              color: Colors.black.withValues(alpha: 0.55),
                               alignment: Alignment.center,
                               child: Text(
                                 "+$remainingCount",
@@ -900,7 +900,7 @@ class _ChatInputAreaState extends State<ChatInputArea> {
                   width: 48.w,
                   height: 48.w,
                   decoration: BoxDecoration(
-                    color: _purple.withOpacity(0.12),
+                    color: _purple.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(10.r),
                   ),
                   child: Icon(
@@ -957,7 +957,7 @@ class _ChatInputAreaState extends State<ChatInputArea> {
             Positioned.fill(
               child: Container(
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.5),
+                  color: Colors.white.withValues(alpha: 0.5),
                   borderRadius: BorderRadius.circular(14.r),
                 ),
               ),

@@ -63,8 +63,8 @@ class VideoPlayerScreen extends GetView<VideoControllerX> {
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
                           colors: [
-                            Colors.black.withOpacity(0.8),
-                            Colors.black.withOpacity(0.4),
+                            Colors.black.withValues(alpha: 0.8),
+                            Colors.black.withValues(alpha: 0.4),
                             Colors.transparent,
                           ],
                         ),
@@ -117,7 +117,7 @@ class VideoPlayerScreen extends GetView<VideoControllerX> {
                                   height: 85.w,
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
-                                    color: Colors.white.withOpacity(0.2),
+                                    color: Colors.white.withValues(alpha: 0.2),
                                     border: Border.all(
                                       color: Colors.white30,
                                       width: 1.5,
@@ -155,7 +155,7 @@ class VideoPlayerScreen extends GetView<VideoControllerX> {
                           begin: Alignment.bottomCenter,
                           end: Alignment.topCenter,
                           colors: [
-                            Colors.black.withOpacity(0.8),
+                            Colors.black.withValues(alpha: 0.8),
                             Colors.transparent,
                           ],
                         ),
@@ -168,7 +168,7 @@ class VideoPlayerScreen extends GetView<VideoControllerX> {
                               trackHeight: 3.h,
                               thumbColor: Colors.white,
                               activeTrackColor: Colors.white,
-                              inactiveTrackColor: Colors.white.withOpacity(0.3),
+                              inactiveTrackColor: Colors.white.withValues(alpha: 0.3),
                               thumbShape: RoundSliderThumbShape(
                                 enabledThumbRadius: 6.r,
                               ),
@@ -202,7 +202,7 @@ class VideoPlayerScreen extends GetView<VideoControllerX> {
                                 Text(
                                   c.formatDuration(c.position.value),
                                   style: TextStyle(
-                                    color: Colors.white.withOpacity(0.9),
+                                    color: Colors.white.withValues(alpha: 0.9),
                                     fontSize: 12.sp,
                                     fontWeight: FontWeight.w500,
                                     fontFeatures: const [
@@ -213,7 +213,7 @@ class VideoPlayerScreen extends GetView<VideoControllerX> {
                                 Text(
                                   c.formatDuration(c.duration.value),
                                   style: TextStyle(
-                                    color: Colors.white.withOpacity(0.9),
+                                    color: Colors.white.withValues(alpha: 0.9),
                                     fontSize: 12.sp,
                                     fontWeight: FontWeight.w500,
                                     fontFeatures: const [
@@ -252,10 +252,10 @@ class VideoPlayerScreen extends GetView<VideoControllerX> {
             width: 42.w,
             height: 42.w,
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.12),
+              color: Colors.white.withValues(alpha: 0.12),
               shape: BoxShape.circle,
               border: Border.all(
-                color: Colors.white.withOpacity(0.15),
+                color: Colors.white.withValues(alpha: 0.15),
               ),
             ),
             child: Icon(icon, color: Colors.white, size: size.sp),
@@ -275,7 +275,7 @@ class VideoPlayerScreen extends GetView<VideoControllerX> {
         width: 55.w,
         height: 55.w,
         decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.4),
+          color: Colors.black.withValues(alpha: 0.4),
           shape: BoxShape.circle,
         ),
         child: Icon(icon, color: Colors.white, size: 26.sp),

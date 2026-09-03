@@ -88,7 +88,7 @@ class _GroupTile extends StatelessWidget {
               reausabletext(
                 "${group.memberCount ?? 0} Members",
                 fontsize: 11.sp,
-                color: const Color(0xFF6B4DFF).withOpacity(0.7),
+                color: const Color(0xFF6B4DFF).withValues(alpha: 0.7),
               ),
             ],
           ),

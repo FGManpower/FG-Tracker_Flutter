@@ -549,7 +549,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
           replySender: replyMessage.value?.senderName,
         );
       }
-    } catch (e, stack) {
+    } catch (e) {
     } finally {
       isUploadingVideo.value = false;
       clearReply();

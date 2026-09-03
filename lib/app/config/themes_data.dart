@@ -193,7 +193,7 @@ class ToggleThemeData {
     tabBarTheme: TabBarThemeData(
       labelColor: ToggleThemeData.white,
       unselectedLabelColor: Colors.grey,
-      overlayColor: MaterialStateProperty.all(Colors.transparent),
+      overlayColor: WidgetStateProperty.all(Colors.transparent),
     ),
     splashColor: Colors.transparent,
     highlightColor: Colors.transparent,

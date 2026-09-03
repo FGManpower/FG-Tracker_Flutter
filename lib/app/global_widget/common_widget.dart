@@ -793,7 +793,7 @@ class _WhatsAppVoicePlayerPreviewState
         borderRadius: BorderRadius.circular(24.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -940,7 +940,7 @@ class _VoiceMessagePlayerBubbleState extends State<VoiceMessagePlayerBubble>
     final activeColor =
     widget.isSender ? Colors.white : const Color(0xFF075E54);
     final inactiveColor = widget.isSender
-        ? Colors.white.withOpacity(0.4)
+        ? Colors.white.withValues(alpha: 0.4)
         : Colors.grey.shade300;
 
     return Container(
@@ -990,7 +990,7 @@ class _VoiceMessagePlayerBubbleState extends State<VoiceMessagePlayerBubble>
             onTap: _toggleSpeed,
             activeColor: activeColor,
             backgroundColor: widget.isSender
-                ? Colors.white.withOpacity(0.2)
+                ? Colors.white.withValues(alpha: 0.2)
                 : Colors.grey.shade200,
           ),
         ],

@@ -39,7 +39,7 @@ class CameraScreen extends StatelessWidget {
                           onTap: () => Get.back(),
                           child: CircleAvatar(
                             radius: 19.sp,
-                            backgroundColor: Colors.grey.withOpacity(0.8),
+                            backgroundColor: Colors.grey.withValues(alpha: 0.8),
                             child: Icon(Icons.close,
                                 color: Colors.white, size: 24.w),
                           ),
@@ -50,7 +50,7 @@ class CameraScreen extends StatelessWidget {
                               onTap: controller.toggleFlash,
                               child: CircleAvatar(
                                 radius: 19.sp,
-                                backgroundColor: Colors.grey.withOpacity(0.8),
+                                backgroundColor: Colors.grey.withValues(alpha: 0.8),
                                 child: Icon(
                                   controller.isFlashOn.value
                                       ? Icons.flash_on
@@ -65,7 +65,7 @@ class CameraScreen extends StatelessWidget {
                               onTap: controller.switchCamera,
                               child: CircleAvatar(
                                 radius: 19.sp,
-                                backgroundColor: Colors.grey.withOpacity(0.8),
+                                backgroundColor: Colors.grey.withValues(alpha: 0.8),
                                 child: Icon(Icons.flip_camera_ios_outlined,
                                     color: Colors.white, size: 24.w),
                               ),
@@ -197,7 +197,7 @@ class CameraScreen extends StatelessWidget {
                       padding:
                           EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
                       decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.75),
+                        color: Colors.black.withValues(alpha: 0.75),
                         borderRadius: BorderRadius.circular(30.r),
                       ),
                       child: Row(

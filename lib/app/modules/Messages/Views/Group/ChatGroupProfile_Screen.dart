@@ -180,7 +180,7 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
           borderRadius: BorderRadius.circular(12.r),
           boxShadow: [
             BoxShadow(
-              color: _purple.withOpacity(0.08), // Lavender shadow
+              color: _purple.withValues(alpha: 0.08), // Lavender shadow
               blurRadius: 6,
               offset: const Offset(0, 2),
             ),
@@ -319,7 +319,7 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
             borderRadius: BorderRadius.circular(14.r),
             boxShadow: [
               BoxShadow(
-                color: _purple.withOpacity(0.08), // Lavender shadow
+                color: _purple.withValues(alpha: 0.08), // Lavender shadow
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
@@ -490,7 +490,7 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
                   scale: 0.8,
                   child: Switch(
                     value: notificationsOn.value,
-                    activeColor: _purple,
+                    activeThumbColor: _purple,
                     onChanged: (v) => notificationsOn.value = v,
                   ),
                 ),
@@ -814,7 +814,7 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
-            color: _purple.withOpacity(0.12),
+            color: _purple.withValues(alpha: 0.12),
             blurRadius: 12,
             spreadRadius: 2,
             offset: const Offset(0, 0), // chaaro taraf equal shadow
@@ -903,7 +903,7 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 10,
             spreadRadius: 1,
             offset: const Offset(0, 2),

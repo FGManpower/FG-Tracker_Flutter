@@ -149,8 +149,8 @@ class _MapSectionState extends State<MapSection> {
           firstMember.longitude,
         ),
         radius: 2000,
-        fillColor: const Color(0xFF6B4DFF).withOpacity(0.12),
-        strokeColor: const Color(0xFF6B4DFF).withOpacity(0.50),
+        fillColor: const Color(0xFF6B4DFF).withValues(alpha: 0.12),
+        strokeColor: const Color(0xFF6B4DFF).withValues(alpha: 0.50),
         strokeWidth: 1,
       ),
     };
@@ -565,7 +565,7 @@ class _MapSectionState extends State<MapSection> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(10.r),
         border: Border.all(
-          color: Colors.grey.withOpacity(0.2),
+          color: Colors.grey.withValues(alpha: 0.2),
         ),
       ),
       child: Row(

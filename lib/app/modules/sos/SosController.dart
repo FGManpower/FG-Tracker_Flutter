@@ -148,13 +148,13 @@ class SosController extends GetxController {
               Container(
                 padding: EdgeInsets.all(16.w),
                 decoration: BoxDecoration(
-                  color: Colors.green.withOpacity(0.08),
+                  color: Colors.green.withValues(alpha: 0.08),
                   shape: BoxShape.circle,
                 ),
                 child: Container(
                   padding: EdgeInsets.all(12.w),
                   decoration: BoxDecoration(
-                    color: Colors.green.withOpacity(0.15),
+                    color: Colors.green.withValues(alpha: 0.15),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(Icons.check, size: 32.sp, color: Colors.green),
@@ -230,7 +230,7 @@ class SosController extends GetxController {
         Container(
           padding: EdgeInsets.all(8.w),
           decoration: BoxDecoration(
-            color: const Color(0xFF6B4DFF).withOpacity(0.1),
+            color: const Color(0xFF6B4DFF).withValues(alpha: 0.1),
             shape: BoxShape.circle,
           ),
           child: Icon(icon, size: 18.sp, color: const Color(0xFF6B4DFF)),

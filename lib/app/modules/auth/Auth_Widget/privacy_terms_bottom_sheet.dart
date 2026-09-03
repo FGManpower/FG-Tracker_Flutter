@@ -11,7 +11,7 @@ import 'package:get/get.dart';
 class PrivacyTermsBottomSheet extends StatefulWidget {
   final String userPhone;
 
-  const PrivacyTermsBottomSheet({Key? key, required this.userPhone}) : super(key: key);
+  const PrivacyTermsBottomSheet({super.key, required this.userPhone});
 
 
   static Future<bool> show(BuildContext context, String userPhone) async {
@@ -46,7 +46,7 @@ class _PrivacyTermsBottomSheetState extends State<PrivacyTermsBottomSheet> {
   final ScrollController _scrollController = ScrollController();
   final PrivacyTermsController termsController = Get.find();
   final AuthController authController = Get.find();
-  bool _showScrollToBottom = true;
+  final bool _showScrollToBottom = true;
   @override
   void initState() {
     super.initState();

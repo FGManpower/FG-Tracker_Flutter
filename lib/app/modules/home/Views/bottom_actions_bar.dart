@@ -3,12 +3,9 @@ import 'package:fgtracker/app/Core/values/Dialog/DialogBox.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
 import 'package:fgtracker/app/modules/Group/controller/JoinGroup_Controller.dart';
-import 'package:fgtracker/app/modules/Messages/Views/create_group_screen.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:get/get.dart';
 
 class BottomActionsBar extends StatelessWidget {
   const BottomActionsBar({

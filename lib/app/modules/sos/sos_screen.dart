@@ -24,7 +24,7 @@ class SosScreen extends GetView<SosController> {
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(12.r),
-              border: Border.all(color: Colors.grey.withOpacity(0.2)),
+              border: Border.all(color: Colors.grey.withValues(alpha: 0.2)),
             ),
             child: IconButton(
               icon: Icon(Icons.arrow_back, color: Colors.black87, size: 20.sp),
@@ -63,7 +63,7 @@ class SosScreen extends GetView<SosController> {
                   padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    border: Border.all(color: Colors.grey.withOpacity(0.2)),
+                    border: Border.all(color: Colors.grey.withValues(alpha: 0.2)),
                     borderRadius: BorderRadius.circular(20.r),
                   ),
                   child: Row(
@@ -96,13 +96,13 @@ class SosScreen extends GetView<SosController> {
               Container(
                 padding: EdgeInsets.all(20.w),
                 decoration: BoxDecoration(
-                  color: Colors.red.withOpacity(0.04),
+                  color: Colors.red.withValues(alpha: 0.04),
                   shape: BoxShape.circle,
                 ),
                 child: Container(
                   padding: EdgeInsets.all(16.w),
                   decoration: BoxDecoration(
-                    color: Colors.red.withOpacity(0.08),
+                    color: Colors.red.withValues(alpha: 0.08),
                     shape: BoxShape.circle,
                   ),
                   child: Container(
@@ -155,7 +155,7 @@ class SosScreen extends GetView<SosController> {
                         Container(
                           padding: EdgeInsets.all(7.w),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF6B4DFF).withOpacity(0.1),
+                            color: const Color(0xFF6B4DFF).withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(8.r),
                           ),
                           child: Icon(Icons.camera_alt,
@@ -196,7 +196,7 @@ class SosScreen extends GetView<SosController> {
                           color: const Color(0xFFF8F9FA),
                           borderRadius: BorderRadius.circular(10.r),
                           border:
-                          Border.all(color: Colors.grey.withOpacity(0.3)),
+                          Border.all(color: Colors.grey.withValues(alpha: 0.3)),
                         ),
                         child: Obx(() => controller.imagePath.value.isEmpty
                             ? Icon(Icons.camera_alt_outlined,
@@ -225,7 +225,7 @@ class SosScreen extends GetView<SosController> {
                         Container(
                           padding: EdgeInsets.all(7.w),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF6B4DFF).withOpacity(0.1),
+                            color: const Color(0xFF6B4DFF).withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(8.r),
                           ),
                           child: Icon(Icons.group,
@@ -289,7 +289,7 @@ class SosScreen extends GetView<SosController> {
                                 borderRadius: BorderRadius.circular(20.r),
                                 border: Border.all(
                                     color: const Color(0xFF6B4DFF)
-                                        .withOpacity(0.3)),
+                                        .withValues(alpha: 0.3)),
                               ),
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
@@ -347,7 +347,7 @@ class SosScreen extends GetView<SosController> {
                           color: const Color(0xFFF6F4FF),
                           borderRadius: BorderRadius.circular(30.r),
                           border: Border.all(
-                              color: const Color(0xFF6B4DFF).withOpacity(0.2)),
+                              color: const Color(0xFF6B4DFF).withValues(alpha: 0.2)),
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -453,7 +453,7 @@ class SosScreen extends GetView<SosController> {
           color: Colors.white,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 10,
               offset: const Offset(0, -3),
             ),
@@ -476,7 +476,7 @@ class SosScreen extends GetView<SosController> {
                     borderRadius: BorderRadius.circular(35.r),
                     boxShadow: [
                       BoxShadow(
-                          color: Colors.red.withOpacity(0.3),
+                          color: Colors.red.withValues(alpha: 0.3),
                           blurRadius: 8,
                           offset: const Offset(0, 3)),
                     ],
@@ -545,7 +545,7 @@ class SosScreen extends GetView<SosController> {
       borderRadius: BorderRadius.circular(14.r),
       boxShadow: [
         BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: Colors.black.withValues(alpha: 0.02),
             blurRadius: 8,
             spreadRadius: 1),
       ],
@@ -563,8 +563,8 @@ class SosScreen extends GetView<SosController> {
               padding: EdgeInsets.all(10.w),
               decoration: BoxDecoration(
                 color: isSelected
-                    ? color.withOpacity(0.12)
-                    : Colors.grey.withOpacity(0.06),
+                    ? color.withValues(alpha: 0.12)
+                    : Colors.grey.withValues(alpha: 0.06),
                 borderRadius: BorderRadius.circular(10.r),
                 border: Border.all(
                   color: isSelected ? color : Colors.transparent,

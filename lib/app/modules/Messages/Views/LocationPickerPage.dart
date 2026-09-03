@@ -79,7 +79,7 @@ class LocationPickerPage extends StatelessWidget {
             Row(
               children: [
                 CircleAvatar(
-                  backgroundColor: ToggleThemeData.Appcolor.withOpacity(.12),
+                  backgroundColor: ToggleThemeData.Appcolor.withValues(alpha: .12),
                   child: Icon(
                     Icons.location_on,
                     color: ToggleThemeData.Appcolor,

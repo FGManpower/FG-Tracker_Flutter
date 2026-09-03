@@ -32,14 +32,14 @@ class MyCustomPullToRefresh extends StatelessWidget {
 
 
   MyCustomPullToRefresh({
-    Key? key,
+    super.key,
     this.color,
     this.backgroundColor,
     required this.Indicatorekey,
     required this.child,
     this.onTapCallback,
     this.onTap2Callback,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -49,7 +49,6 @@ class MyCustomPullToRefresh extends StatelessWidget {
           ? ToggleThemeData.darkThemeBackground
           : ToggleThemeData.Appcolor,
       backgroundColor: Colors.white,
-      child: child,
       onRefresh: () {
         if (onTapCallback != null) onTapCallback!();
         if (onTap2Callback != null) onTap2Callback!();
@@ -58,6 +57,7 @@ class MyCustomPullToRefresh extends StatelessWidget {
       springAnimationDurationInMilliseconds:
           LiquidPullToRefresh_Indicatore.millisecond,
       showChildOpacityTransition: false,
+      child: child,
     );
   }
 }

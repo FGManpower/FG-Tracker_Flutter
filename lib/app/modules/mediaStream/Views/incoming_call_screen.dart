@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/values/utility.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';

@@ -55,7 +55,7 @@ class _VideoThumbnailWidgetState extends State<VideoThumbnailWidget> {
                     begin: Alignment.bottomCenter,
                     end: Alignment.center,
                     colors: [
-                      Colors.black.withOpacity(.75),
+                      Colors.black.withValues(alpha: .75),
                       Colors.transparent,
                     ],
                   ),

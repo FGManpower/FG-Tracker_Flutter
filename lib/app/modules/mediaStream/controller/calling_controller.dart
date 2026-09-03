@@ -401,7 +401,7 @@ class CallingController extends GetxController {
     if (CallSessionState.sessionId != null) {
       log("========CallerSideSessionId:${CallSessionState.sessionId}");
       callEnded(CallSessionState.sessionId.toString(),
-          type: "endCallMethodHittedFromController-Type:${type}");
+          type: "endCallMethodHittedFromController-Type:$type");
     }
 
     if (args["callType"] == "outGoing") {

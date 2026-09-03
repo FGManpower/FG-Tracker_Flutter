@@ -91,13 +91,13 @@ class IntroScreen extends StatelessWidget {
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: primaryPurple.withOpacity(0.22),
+                              color: primaryPurple.withValues(alpha: 0.22),
                               blurRadius: 24,
                               spreadRadius: 2,
                               offset: const Offset(0, 10),
                             ),
                             BoxShadow(
-                              color: const Color(0xFF6A53E1).withOpacity(0.10),
+                              color: const Color(0xFF6A53E1).withValues(alpha: 0.10),
                               blurRadius: 8,
                               spreadRadius: 0,
                               offset: const Offset(0, 2),
@@ -184,7 +184,7 @@ class IntroScreen extends StatelessWidget {
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
-            color: primaryColor.withOpacity(0.15),
+            color: primaryColor.withValues(alpha: 0.15),
             blurRadius: 15,
             offset: const Offset(0, 5),
           ),
@@ -203,7 +203,7 @@ class IntroScreen extends StatelessWidget {
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
-            color: primaryColor.withOpacity(0.4),
+            color: primaryColor.withValues(alpha: 0.4),
             blurRadius: 15,
             offset: const Offset(0, 5),
           ),

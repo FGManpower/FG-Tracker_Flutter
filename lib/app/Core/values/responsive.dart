@@ -39,8 +39,6 @@ import '../deep_Link/Context_Utility.dart';
 
 
 
-import 'package:flutter/material.dart';
-import '../deep_Link/Context_Utility.dart';
 
 class MediaQueryHelper {
   static const double _baseWidth = 375.0;
