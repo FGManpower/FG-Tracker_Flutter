@@ -115,7 +115,6 @@ class GroupChatList extends StatelessWidget {
       builder: (context, snapshot) {
         final messages = snapshot.data ?? [];
 
-        // 🟢 Check if messages list is empty
         if (messages.isEmpty) {
           return Center(
             child: Column(
