@@ -12,6 +12,7 @@ class Urls {
   static const String banner = '${ConstRes.aBaseUrl}banners';
   static const String getAllGroup = '${ConstRes.aBaseUrl}get-all-group';
   static const String recentCallHistory = '${ConstRes.aBaseUrl}history';
+  static const String allGroupMembers = '${ConstRes.aBaseUrl}all-group-members';
 
   ///------------------------ Params ------------------------///
   static const String apiKeyName = 'apikey';
