@@ -30,8 +30,8 @@ import '../modules/Track/Views/Search_Members.dart';
 import '../modules/Track/Views/TrackLocationScreen.dart';
 import '../modules/Walkie-talkie/WalkieTalkieScreen.dart';
 
-import '../modules/home/Bindings/SosBinding.dart';
-import '../modules/home/Views/sos_screen.dart';
+import '../modules/sos/SosBinding.dart';
+import '../modules/sos/sos_screen.dart';
 
 import '../modules/mediaStream/Views/incoming_call_screen.dart';
 part 'app_routes.dart';

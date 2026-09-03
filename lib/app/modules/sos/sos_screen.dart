@@ -1,53 +1,14 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
-import '../Controller/SosController.dart';
+import 'SosController.dart';
+import 'SosHowItWorksSheet.dart';
 
 class SosScreen extends GetView<SosController> {
   const SosScreen({super.key});
-
-  void _showImageSourceDialog(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.white,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
-      ),
-      builder: (ctx) => Padding(
-        padding: EdgeInsets.all(20.w),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              "Select Image Source",
-              style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 16.h),
-            ListTile(
-              leading: const Icon(Icons.camera_alt, color: Color(0xFF6B4DFF)),
-              title: const Text("Camera"),
-              onTap: () {
-                Navigator.pop(ctx);
-                controller.pickImage(ImageSource.camera);
-              },
-            ),
-            ListTile(
-              leading:
-              const Icon(Icons.photo_library, color: Color(0xFF6B4DFF)),
-              title: const Text("Gallery"),
-              onTap: () {
-                Navigator.pop(ctx);
-                controller.pickImage(ImageSource.gallery);
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -96,27 +57,30 @@ class SosScreen extends GetView<SosController> {
           Center(
             child: Padding(
               padding: EdgeInsets.only(right: 16.w),
-              child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  border: Border.all(color: Colors.grey.withOpacity(0.2)),
-                  borderRadius: BorderRadius.circular(20.r),
-                ),
-                child: Row(
-                  children: [
-                    Icon(Icons.info_outline,
-                        size: 14.sp, color: Colors.black87),
-                    SizedBox(width: 4.w),
-                    Text(
-                      "How it works",
-                      style: TextStyle(
-                        fontSize: 11.sp,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.black87,
+              child: GestureDetector(
+                onTap: () => SosHowItWorksSheet.show(context),
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    border: Border.all(color: Colors.grey.withOpacity(0.2)),
+                    borderRadius: BorderRadius.circular(20.r),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.info_outline,
+                          size: 14.sp, color: Colors.black87),
+                      SizedBox(width: 4.w),
+                      Text(
+                        "How it works",
+                        style: TextStyle(
+                          fontSize: 11.sp,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.black87,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -224,7 +188,7 @@ class SosScreen extends GetView<SosController> {
                     ),
                     SizedBox(height: 10.h),
                     GestureDetector(
-                      onTap: () => _showImageSourceDialog(context),
+                      onTap: () => controller.pickImageFromCamera(),
                       child: Container(
                         height: 75.h,
                         width: 75.w,
@@ -235,7 +199,7 @@ class SosScreen extends GetView<SosController> {
                           Border.all(color: Colors.grey.withOpacity(0.3)),
                         ),
                         child: Obx(() => controller.imagePath.value.isEmpty
-                            ? Icon(Icons.add,
+                            ? Icon(Icons.camera_alt_outlined,
                             size: 22.sp, color: const Color(0xFF6B4DFF))
                             : ClipRRect(
                           borderRadius: BorderRadius.circular(10.r),
@@ -424,15 +388,11 @@ class SosScreen extends GetView<SosController> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
-                        _buildReasonItem(
-                            "Medical", Icons.favorite, Colors.pink),
-                        _buildReasonItem(
-                            "Accident", Icons.car_crash, Colors.orange),
-                        _buildReasonItem("Safety", Icons.security, Colors.red),
-                        _buildReasonItem(
-                            "Threat", Icons.coronavirus, Colors.purple),
-                        _buildReasonItem(
-                            "Other", Icons.more_horiz, Colors.grey),
+                        _buildReasonItem("Medical", "assets/icons/medical.svg", Colors.pink),
+                        _buildReasonItem("Accident", "assets/icons/accident.svg", Colors.orange),
+                        _buildReasonItem("Safety", "assets/icons/safety.svg", Colors.red),
+                        _buildReasonItem("Threat", "assets/icons/threat.svg", Colors.purple),
+                        _buildReasonItem("Other", "assets/icons/other.svg", Colors.grey),
                       ],
                     ),
                   ],
@@ -482,7 +442,27 @@ class SosScreen extends GetView<SosController> {
                   ],
                 ),
               ),
-              SizedBox(height: 16.h),
+              SizedBox(height: 24.h),
+            ],
+          ),
+        ),
+      ),
+      bottomNavigationBar: Container(
+        padding: EdgeInsets.all(16.w),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, -3),
+            ),
+          ],
+        ),
+        child: SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
               GestureDetector(
                 onTap: () => controller.sendSosAlert(context),
                 child: Container(
@@ -536,7 +516,7 @@ class SosScreen extends GetView<SosController> {
                   ),
                 ),
               ),
-              SizedBox(height: 10.h),
+              SizedBox(height: 8.h),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -544,7 +524,7 @@ class SosScreen extends GetView<SosController> {
                       size: 11.sp, color: Colors.black54),
                   SizedBox(width: 5.w),
                   Text(
-                    "Your alert will be sent to nearby people and your family members.",
+                    "Your alert will be sent to nearby people and your family.",
                     style: TextStyle(
                       fontSize: 9.sp,
                       color: Colors.black54,
@@ -572,7 +552,7 @@ class SosScreen extends GetView<SosController> {
     );
   }
 
-  Widget _buildReasonItem(String label, IconData icon, Color color) {
+  Widget _buildReasonItem(String label, String svgAssetPath, Color color) {
     return Obx(() {
       bool isSelected = controller.selectedReason.value == label;
       return GestureDetector(
@@ -591,8 +571,15 @@ class SosScreen extends GetView<SosController> {
                   width: 1.2,
                 ),
               ),
-              child: Icon(icon,
-                  size: 18.sp, color: isSelected ? color : Colors.black54),
+              child: SvgPicture.asset(
+                svgAssetPath,
+                width: 18.sp,
+                height: 18.sp,
+                colorFilter: ColorFilter.mode(
+                  isSelected ? color : Colors.black54,
+                  BlendMode.srcIn,
+                ),
+              ),
             ),
             SizedBox(height: 4.h),
             Text(

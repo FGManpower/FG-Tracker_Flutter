@@ -8,7 +8,6 @@ class Assets {
 
   static const String darkMap = 'assets/map_theme/dark_map.json';
   static const String shorebird = 'shorebird.yaml';
-  static const String sosScreen = 'lib/app/modules/home/Views/sos_screen.dart';
   static const $AssetsAssetsGen assets = $AssetsAssetsGen();
   static const $AssetsLibGen lib = $AssetsLibGen();
 }
@@ -25,51 +24,82 @@ class $AssetsAssetsGen {
 class $AssetsImagesGen {
   const $AssetsImagesGen();
 
-  final AssetGenImage introductionn1 = const AssetGenImage('assets/images/Introductionn1.png');
-  final AssetGenImage introductionn2 = const AssetGenImage('assets/images/Introductionn2.png');
-  final AssetGenImage introductionn3 = const AssetGenImage('assets/images/Introductionn3.png');
-  final AssetGenImage qrCodeBg = const AssetGenImage('assets/images/QrCode_bg.png');
-  final AssetGenImage aboutUs = const AssetGenImage('assets/images/about_us.jpg');
-  final AssetGenImage appUpdate = const AssetGenImage('assets/images/appUpdate.png');
-  final AssetGenImage appIcon = const AssetGenImage('assets/images/app_icon.png');
+  final AssetGenImage introductionn1 = const AssetGenImage(
+      'assets/images/Introductionn1.png');
+  final AssetGenImage introductionn2 = const AssetGenImage(
+      'assets/images/Introductionn2.png');
+  final AssetGenImage introductionn3 = const AssetGenImage(
+      'assets/images/Introductionn3.png');
+  final AssetGenImage qrCodeBg = const AssetGenImage(
+      'assets/images/QrCode_bg.png');
+  final AssetGenImage aboutUs = const AssetGenImage(
+      'assets/images/about_us.jpg');
+  final AssetGenImage appUpdate = const AssetGenImage(
+      'assets/images/appUpdate.png');
+  final AssetGenImage appIcon = const AssetGenImage(
+      'assets/images/app_icon.png');
   final AssetGenImage audio = const AssetGenImage('assets/images/audio.png');
-  final AssetGenImage background = const AssetGenImage('assets/images/background.jpg');
-  final AssetGenImage emptyGroup = const AssetGenImage('assets/images/empty_group.png');
+  final AssetGenImage background = const AssetGenImage(
+      'assets/images/background.jpg');
+  final AssetGenImage bgImage = const AssetGenImage(
+      'assets/images/bg_image.png');
+  final AssetGenImage emptyGroup = const AssetGenImage(
+      'assets/images/empty_group.png');
   final AssetGenImage group = const AssetGenImage('assets/images/group.png');
-  final AssetGenImage groupBg = const AssetGenImage('assets/images/groupBg.png');
+  final AssetGenImage groupBg = const AssetGenImage(
+      'assets/images/groupBg.png');
   final AssetGenImage image1 = const AssetGenImage('assets/images/image1.png');
   final AssetGenImage image2 = const AssetGenImage('assets/images/image2.png');
   final AssetGenImage image3 = const AssetGenImage('assets/images/image3.png');
   final AssetGenImage img = const AssetGenImage('assets/images/img.png');
-  final AssetGenImage introduction1 = const AssetGenImage('assets/images/introduction1.png');
-  final AssetGenImage introduction2 = const AssetGenImage('assets/images/introduction2.png');
-  final AssetGenImage introduction3 = const AssetGenImage('assets/images/introduction3.png');
+  final AssetGenImage introduction1 = const AssetGenImage(
+      'assets/images/introduction1.png');
+  final AssetGenImage introduction2 = const AssetGenImage(
+      'assets/images/introduction2.png');
+  final AssetGenImage introduction3 = const AssetGenImage(
+      'assets/images/introduction3.png');
   final AssetGenImage kaaba = const AssetGenImage('assets/images/kaaba.png');
-  final AssetGenImage kaabaMarker = const AssetGenImage('assets/images/kaaba-marker.png');
-  final AssetGenImage loginIllustration = const AssetGenImage('assets/images/login_illustration.png');
-  final AssetGenImage lostInternets = const AssetGenImage('assets/images/lost_internets.png');
-  final AssetGenImage message = const AssetGenImage('assets/images/message.png');
-  final AssetGenImage notFount = const AssetGenImage('assets/images/not_fount.png');
-  final AssetGenImage otpLock = const AssetGenImage('assets/images/otpLock.png');
+  final AssetGenImage kaabaMarker = const AssetGenImage(
+      'assets/images/kaaba-marker.png');
+  final AssetGenImage lock3d = const AssetGenImage('assets/images/lock_3d.png');
+  final AssetGenImage loginIllustration = const AssetGenImage(
+      'assets/images/login_illustration.png');
+  final AssetGenImage lostInternets = const AssetGenImage(
+      'assets/images/lost_internets.png');
+  final AssetGenImage message = const AssetGenImage(
+      'assets/images/message.png');
+  final AssetGenImage notFount = const AssetGenImage(
+      'assets/images/not_fount.png');
+  final AssetGenImage otpLock = const AssetGenImage(
+      'assets/images/otpLock.png');
   final AssetGenImage play = const AssetGenImage('assets/images/play.png');
-  final AssetGenImage playstore = const AssetGenImage('assets/images/playstore.jpeg');
+  final AssetGenImage playstore = const AssetGenImage(
+      'assets/images/playstore.jpeg');
   final AssetGenImage qibla = const AssetGenImage('assets/images/qibla.png');
-  final AssetGenImage registerationBg = const AssetGenImage('assets/images/registeration_bg.png');
+  final AssetGenImage registerationBg = const AssetGenImage(
+      'assets/images/registeration_bg.png');
   final AssetGenImage safe = const AssetGenImage('assets/images/safe.jpg');
-  final AssetGenImage serverError = const AssetGenImage('assets/images/server_error.png');
-  final AssetGenImage splashBg = const AssetGenImage('assets/images/splash_bg.png');
-  final AssetGenImage userAvatar = const AssetGenImage('assets/images/user_avatar.jpg');
-  final AssetGenImage userVideo = const AssetGenImage('assets/images/user_video.jpg');
+  final AssetGenImage serverError = const AssetGenImage(
+      'assets/images/server_error.png');
+  final AssetGenImage splashBg = const AssetGenImage(
+      'assets/images/splash_bg.png');
+  final AssetGenImage userAvatar = const AssetGenImage(
+      'assets/images/user_avatar.jpg');
+  final AssetGenImage userVideo = const AssetGenImage(
+      'assets/images/user_video.jpg');
 }
 
 class $AssetsIconsGen {
   const $AssetsIconsGen();
 
-  final AssetGenImage realtimetrack = const AssetGenImage('assets/icons/Realtimetrack.png');
-  final AssetGenImage appIcon = const AssetGenImage('assets/icons/app_icon.png');
+  final AssetGenImage realtimetrack = const AssetGenImage(
+      'assets/icons/Realtimetrack.png');
+  final AssetGenImage appIcon = const AssetGenImage(
+      'assets/icons/app_icon.png');
   final AssetGenImage flag = const AssetGenImage('assets/icons/flag.png');
   final AssetGenImage secure = const AssetGenImage('assets/icons/secure.png');
-  final AssetGenImage walkieTalkie = const AssetGenImage('assets/icons/walkie-talkie.png');
+  final AssetGenImage walkieTalkie = const AssetGenImage(
+      'assets/icons/walkie-talkie.png');
 }
 
 class $AssetsSvgGen {
@@ -81,15 +111,20 @@ class $AssetsSvgGen {
   final SvgGenImage orders = const SvgGenImage('assets/svg/Orders.svg');
   final SvgGenImage about = const SvgGenImage('assets/svg/about.svg');
   final SvgGenImage android = const SvgGenImage('assets/svg/android.svg');
-  final SvgGenImage arrowDownLeft = const SvgGenImage('assets/svg/arrow_down_left.svg');
-  final SvgGenImage arrowDownRight = const SvgGenImage('assets/svg/arrow_down_right.svg');
-  final SvgGenImage arrowUpLeft = const SvgGenImage('assets/svg/arrow_up_left.svg');
-  final SvgGenImage arrowUpRight = const SvgGenImage('assets/svg/arrow_up_right.svg');
+  final SvgGenImage arrowDownLeft = const SvgGenImage(
+      'assets/svg/arrow_down_left.svg');
+  final SvgGenImage arrowDownRight = const SvgGenImage(
+      'assets/svg/arrow_down_right.svg');
+  final SvgGenImage arrowUpLeft = const SvgGenImage(
+      'assets/svg/arrow_up_left.svg');
+  final SvgGenImage arrowUpRight = const SvgGenImage(
+      'assets/svg/arrow_up_right.svg');
   final SvgGenImage calendar = const SvgGenImage('assets/svg/calendar.svg');
   final SvgGenImage calender = const SvgGenImage('assets/svg/calender.svg');
   final SvgGenImage call = const SvgGenImage('assets/svg/call.svg');
   final SvgGenImage compass = const SvgGenImage('assets/svg/compass.svg');
-  final SvgGenImage compassIcon = const SvgGenImage('assets/svg/compassIcon.svg');
+  final SvgGenImage compassIcon = const SvgGenImage(
+      'assets/svg/compassIcon.svg');
   final SvgGenImage dark = const SvgGenImage('assets/svg/dark.svg');
   final SvgGenImage darkMode = const SvgGenImage('assets/svg/darkMode.svg');
   final SvgGenImage delete = const SvgGenImage('assets/svg/delete.svg');
@@ -104,7 +139,8 @@ class $AssetsSvgGen {
   final SvgGenImage lock = const SvgGenImage('assets/svg/lock.svg');
   final SvgGenImage logout = const SvgGenImage('assets/svg/logout.svg');
   final SvgGenImage needle = const SvgGenImage('assets/svg/needle.svg');
-  final SvgGenImage notificatioempty = const SvgGenImage('assets/svg/notificatioempty.svg');
+  final SvgGenImage notificatioempty = const SvgGenImage(
+      'assets/svg/notificatioempty.svg');
   final SvgGenImage person = const SvgGenImage('assets/svg/person.svg');
   final SvgGenImage playStore = const SvgGenImage('assets/svg/playStore.svg');
   final SvgGenImage profile = const SvgGenImage('assets/svg/profile.svg');
@@ -238,40 +274,47 @@ class SvgGenImage {
 
   final String _assetName;
 
-SvgPicture svg({
-  Key? key,
-  bool matchTextDirection = false,
-  AssetBundle? bundle,
-  String? package,
-  double? width,
-  double? height,
-  BoxFit fit = BoxFit.contain,
-  AlignmentGeometry alignment = Alignment.center,
-  bool allowDrawingOutsideViewBox = false,
-  WidgetBuilder? placeholderBuilder,
-  String? semanticsLabel,
-  bool excludeFromSemantics = false,
-  SvgTheme? theme,
-  Clip clipBehavior = Clip.hardEdge,
-}) {
-  return SvgPicture.asset(
-    _assetName,
-    key: key,
-    matchTextDirection: matchTextDirection,
-    bundle: bundle,
-    package: package,
-    width: width,
-    height: height,
-    fit: fit,
-    alignment: alignment,
-    allowDrawingOutsideViewBox: allowDrawingOutsideViewBox,
-    placeholderBuilder: placeholderBuilder,
-    semanticsLabel: semanticsLabel,
-    excludeFromSemantics: excludeFromSemantics,
-    theme: theme,
-    clipBehavior: clipBehavior,
-  );
-}
+  SvgPicture svg({
+    Key? key,
+    bool matchTextDirection = false,
+    AssetBundle? bundle,
+    String? package,
+    double? width,
+    double? height,
+    BoxFit fit = BoxFit.contain,
+    AlignmentGeometry alignment = Alignment.center,
+    bool allowDrawingOutsideViewBox = false,
+    WidgetBuilder? placeholderBuilder,
+    String? semanticsLabel,
+    bool excludeFromSemantics = false,
+    SvgTheme? theme,
+    Clip clipBehavior = Clip.hardEdge,
+    Color? color,
+    BlendMode colorBlendMode = BlendMode.srcIn,
+    bool cacheColorFilter = false,
+  }) {
+    return SvgPicture.asset(
+      _assetName,
+      key: key,
+      matchTextDirection: matchTextDirection,
+      bundle: bundle,
+      package: package,
+      width: width,
+      height: height,
+      fit: fit,
+      alignment: alignment,
+      allowDrawingOutsideViewBox: allowDrawingOutsideViewBox,
+      placeholderBuilder: placeholderBuilder,
+      semanticsLabel: semanticsLabel,
+      excludeFromSemantics: excludeFromSemantics,
+      theme: theme,
+      color: color,
+      colorBlendMode: colorBlendMode,
+      clipBehavior: clipBehavior,
+      cacheColorFilter: cacheColorFilter,
+    );
+  }
+
   Widget custom({
     Key? key,
     required Widget Function(BuildContext context, String assetPath) builder,

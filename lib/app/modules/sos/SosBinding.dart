@@ -1,6 +1,6 @@
 import 'package:get/get.dart';
 
-import '../Controller/SosController.dart';
+import 'SosController.dart';
 
 class SosBinding extends Bindings {
   @override

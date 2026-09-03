@@ -1,4 +1,4 @@
-import 'package:fgtracker/app/Core/constant/BottomSheet/SosUserSheet.dart';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -7,6 +7,7 @@ import 'package:fgtracker/app/Model/user_profileList_res.dart';
 import 'package:fgtracker/app/Data/Services/contact_services.dart';
 import 'package:fgtracker/app/Data/Repositories/GroupRepo.dart';
 
+import 'SosUserSheet.dart';
 
 class SosController extends GetxController {
   final ContactService _contactService = ContactService();
@@ -64,8 +65,8 @@ class SosController extends GetxController {
     }
   }
 
-  Future<void> pickImage(ImageSource source) async {
-    final XFile? pickedFile = await _picker.pickImage(source: source);
+  Future<void> pickImageFromCamera() async {
+    final XFile? pickedFile = await _picker.pickImage(source: ImageSource.camera);
     if (pickedFile != null) {
       imagePath.value = pickedFile.path;
     }
