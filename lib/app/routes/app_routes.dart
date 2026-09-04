@@ -29,6 +29,8 @@ abstract class Routes {
   static const CreateGroup = _Paths.CreateGroup;
   static const WalkieGroupSelect = _Paths.WalkieGroupSelect;
   static const SOSScreen = _Paths.SOSScreen;
+  static const groupCallingScreen = _Paths.groupCallingScreen;
+  static const groupIncomingCallScreen = _Paths.groupIncomingCallScreen;
 
 
 
@@ -64,6 +66,7 @@ abstract class _Paths {
   static const CreateGroup = '/create-group';
   static const WalkieGroupSelect = '/walkie-group-select';
   static const SOSScreen = '/sos';
-
+  static const groupCallingScreen = '/groupCallingScreen';
+  static const groupIncomingCallScreen = '/groupIncomingCallScreen';
 
 }

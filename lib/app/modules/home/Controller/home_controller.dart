@@ -32,8 +32,6 @@ class HomeController extends GetxController {
 
   StreamSubscription<List<LiveLocationModel>>? _liveLocationSubscription;
 
-
-
   @override
   void onInit() {
     super.onInit();
@@ -92,16 +90,15 @@ class HomeController extends GetxController {
     }
   }
 
-
   void _listenLiveLocations() {
     _liveLocationSubscription?.cancel();
 
     _liveLocationSubscription =
         SocketDashboardService.instance.liveLocationStream.listen(
-              (locations) {
-            liveLocations.assignAll(locations);
-          },
-        );
+      (locations) {
+        liveLocations.assignAll(locations);
+      },
+    );
   }
 
   void requestLiveMembers({
@@ -109,6 +106,30 @@ class HomeController extends GetxController {
     required double longitude,
     double radius = 2,
   }) {
+    SocketDashboardService.instance.requestLiveLocation(
+      userLat: latitude,
+      userLong: longitude,
+      radius: radius,
+    );
+  }
+
+  void refreshLiveLocations() {
+    final LatLng? location = currentLocation.value;
+
+    if (location != null) {
+      requestLiveMembers(
+        latitude: location.latitude,
+        longitude: location.longitude,
+        radius: liveRadius.value,
+      );
+    }
+  }
+
+  void _sendLiveLocationRequest(
+    double latitude,
+    double longitude,
+    double radius,
+  ) {
     SocketDashboardService.instance.requestLiveLocation(
       userLat: latitude,
       userLong: longitude,
@@ -147,11 +168,21 @@ class HomeController extends GetxController {
       position.longitude,
     );
 
-    SocketDashboardService.instance.requestLiveLocation(
-      userLat: position.latitude,
-      userLong: position.longitude,
-      radius: liveRadius.value,
+    _sendLiveLocationRequest(
+      position.latitude,
+      position.longitude,
+      liveRadius.value,
     );
+
+    for (final delaySeconds in [1, 3, 6, 10]) {
+      Future.delayed(Duration(seconds: delaySeconds), () {
+        _sendLiveLocationRequest(
+          position.latitude,
+          position.longitude,
+          liveRadius.value,
+        );
+      });
+    }
 
     Geolocator.getPositionStream(
       locationSettings: const LocationSettings(
@@ -193,6 +224,4 @@ class HomeController extends GetxController {
 
     super.onClose();
   }
-
-
 }
