@@ -41,7 +41,7 @@ class _MapSectionState extends State<MapSection> {
 
     _locationWorker = ever<List<LiveLocationModel>>(
       controller.liveLocations,
-      (_) {
+          (_) {
         _loadMarkers();
       },
     );
@@ -117,8 +117,8 @@ class _MapSectionState extends State<MapSection> {
   }
 
   Set<Circle> _buildRadiusCircle(
-    List<LiveLocationModel> locations,
-  ) {
+      List<LiveLocationModel> locations,
+      ) {
     if (locations.isEmpty) {
       return <Circle>{};
     }
@@ -233,8 +233,8 @@ class _MapSectionState extends State<MapSection> {
   }
 
   void _showMemberDetails(
-    LiveLocationModel member,
-  ) {
+      LiveLocationModel member,
+      ) {
     Get.bottomSheet(
       Container(
         padding: EdgeInsets.all(20.w),
@@ -252,17 +252,17 @@ class _MapSectionState extends State<MapSection> {
                 backgroundColor: const Color(0xFFE8E8FF),
                 backgroundImage: member.profileImage.isNotEmpty
                     ? NetworkImage(
-                        getProfileImageUrl(
-                          member.profileImage,
-                        ),
-                      )
+                  getProfileImageUrl(
+                    member.profileImage,
+                  ),
+                )
                     : null,
                 child: member.profileImage.isEmpty
                     ? Icon(
-                        Icons.person,
-                        size: 32.sp,
-                        color: const Color(0xFF6B4DFF),
-                      )
+                  Icons.person,
+                  size: 32.sp,
+                  color: const Color(0xFF6B4DFF),
+                )
                     : null,
               ),
               SizedBox(width: 14.w),
@@ -325,9 +325,9 @@ class _MapSectionState extends State<MapSection> {
 
                 return LayoutBuilder(
                   builder: (
-                    BuildContext context,
-                    BoxConstraints constraints,
-                  ) {
+                      BuildContext context,
+                      BoxConstraints constraints,
+                      ) {
                     final double mapHeight = (constraints.maxWidth * 0.56)
                         .clamp(180.0, 270.0)
                         .toDouble();
@@ -344,76 +344,76 @@ class _MapSectionState extends State<MapSection> {
                       //     ? _loadingView()
                       //     :
                       Stack(
+                        children: [
+
+                          Obx(
+                                () => GoogleMap(
+                              initialCameraPosition: CameraPosition(
+                                target: initialPosition ?? LatLng(18.96945815314326, 72.83095699364974),
+                                zoom: 16,
+                              ),
+                              markers: _markers.value,
+                              circles: _circles.value,
+                              zoomControlsEnabled: false,
+                              myLocationButtonEnabled: false,
+                              myLocationEnabled: false,
+                              mapToolbarEnabled: false,
+                              compassEnabled: false,
+                              buildingsEnabled: true,
+                              mapType: MapType.normal,
+                              onMapCreated: (mapController) {
+                                _googleMapController = mapController;
+
+                                Future.delayed(
+                                  const Duration(
+                                    milliseconds: 500,
+                                  ),
+                                  _fitAllMembers,
+                                );
+                              },
+                            ),
+                          ),
+                          Positioned(
+                            top: 16.h,
+                            right: 12.w,
+                            child: Column(
                               children: [
-
-                                Obx(
-                                  () => GoogleMap(
-                                    initialCameraPosition: CameraPosition(
-                                      target: initialPosition ?? LatLng(18.96945815314326, 72.83095699364974),
-                                      zoom: 16,
-                                    ),
-                                    markers: _markers.value,
-                                    circles: _circles.value,
-                                    zoomControlsEnabled: false,
-                                    myLocationButtonEnabled: false,
-                                    myLocationEnabled: false,
-                                    mapToolbarEnabled: false,
-                                    compassEnabled: false,
-                                    buildingsEnabled: true,
-                                    mapType: MapType.normal,
-                                    onMapCreated: (mapController) {
-                                      _googleMapController = mapController;
-
-                                      Future.delayed(
-                                        const Duration(
-                                          milliseconds: 500,
-                                        ),
-                                        _fitAllMembers,
-                                      );
-                                    },
-                                  ),
+                                _mapButton(
+                                  icon: Icons.add,
+                                  onTap: () {
+                                    _googleMapController?.animateCamera(
+                                      CameraUpdate.zoomIn(),
+                                    );
+                                  },
                                 ),
-                                Positioned(
-                                  top: 16.h,
-                                  right: 12.w,
-                                  child: Column(
-                                    children: [
-                                      _mapButton(
-                                        icon: Icons.add,
-                                        onTap: () {
-                                          _googleMapController?.animateCamera(
-                                            CameraUpdate.zoomIn(),
-                                          );
-                                        },
-                                      ),
-                                      SizedBox(height: 5.h),
-                                      _mapButton(
-                                        icon: Icons.remove,
-                                        onTap: () {
-                                          _googleMapController?.animateCamera(
-                                            CameraUpdate.zoomOut(),
-                                          );
-                                        },
-                                      ),
-                                      SizedBox(height: 8.h),
-                                      _mapButton(
-                                        icon: Icons.my_location,
-                                        onTap: _fitAllMembers,
-                                      ),
-                                      SizedBox(height: 8.h),
-                                      _sosButton(),
-                                    ],
-                                  ),
+                                SizedBox(height: 5.h),
+                                _mapButton(
+                                  icon: Icons.remove,
+                                  onTap: () {
+                                    _googleMapController?.animateCamera(
+                                      CameraUpdate.zoomOut(),
+                                    );
+                                  },
                                 ),
-                                Positioned(
-                                  left: 12.w,
-                                  bottom: 12.h,
-                                  child: _membersCountView(
-                                    homeController,
-                                  ),
+                                SizedBox(height: 8.h),
+                                _mapButton(
+                                  icon: Icons.my_location,
+                                  onTap: _fitAllMembers,
                                 ),
+                                SizedBox(height: 8.h),
+                                _sosButton(),
                               ],
                             ),
+                          ),
+                          Positioned(
+                            left: 12.w,
+                            bottom: 12.h,
+                            child: _membersCountView(
+                              homeController,
+                            ),
+                          ),
+                        ],
+                      ),
                     );
                   },
                 );
@@ -470,25 +470,25 @@ class _MapSectionState extends State<MapSection> {
               itemBuilder: (context) => ["2", "4", "6", "8"]
                   .map(
                     (r) => PopupMenuItem<String>(
-                      value: r,
-                      height: 40.h,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            "$r km",
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w500,
-                              fontSize: 13,
-                            ),
-                          ),
-                          if (controller.selectedRadius.value == r)
-                            Icon(Icons.check,
-                                color: Color(0xFF5C4CFF), size: 16),
-                        ],
+                  value: r,
+                  height: 40.h,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        "$r km",
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w500,
+                          fontSize: 13,
+                        ),
                       ),
-                    ),
-                  )
+                      if (controller.selectedRadius.value == r)
+                        Icon(Icons.check,
+                            color: Color(0xFF5C4CFF), size: 16),
+                    ],
+                  ),
+                ),
+              )
                   .toList(),
               child: Container(
                 height: 35.h,
@@ -540,8 +540,8 @@ class _MapSectionState extends State<MapSection> {
   }
 
   Widget _membersCountView(
-    HomeController homeController,
-  ) {
+      HomeController homeController,
+      ) {
     final int onlineCount =
         homeController.liveLocations.where((member) => member.isOnline).length;
 

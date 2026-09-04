@@ -52,8 +52,8 @@ class HomeController extends GetxController {
     _groupCountSubscription?.cancel();
     _groupCountSubscription =
         SocketDashboardService.instance.groupCountStream.listen((data) {
-      groupCount.value = GroupCountDetail.fromJson(data);
-    });
+          groupCount.value = GroupCountDetail.fromJson(data);
+        });
   }
 
   void refreshGroupCount() {
