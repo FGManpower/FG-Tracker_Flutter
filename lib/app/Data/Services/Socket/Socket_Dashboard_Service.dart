@@ -105,7 +105,7 @@ class SocketDashboardService extends GetxService {
   void requestLiveLocation({
     required double userLat,
     required double userLong,
-    double radius = 2,
+    dynamic radius = 2,
   }) {
     var param = {
       'userId': Global.storageServices.get(PrefConst.userId),
@@ -113,7 +113,7 @@ class SocketDashboardService extends GetxService {
       'userLong': userLong,
       'radius': radius,
     };
-    log("=====requestLiveParam:$param");
+
     _socket?.emit(
       'get-user-live-location',
       param,

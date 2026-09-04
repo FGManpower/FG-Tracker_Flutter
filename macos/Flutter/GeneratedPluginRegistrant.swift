@@ -6,6 +6,7 @@ import FlutterMacOS
 import Foundation
 
 import app_links
+import app_settings
 import audio_session
 import cloud_firestore
 import emoji_picker_flutter
@@ -35,6 +36,7 @@ import wakelock_plus
 
 func RegisterGeneratedPlugins(registry: FlutterPluginRegistry) {
   AppLinksMacosPlugin.register(with: registry.registrar(forPlugin: "AppLinksMacosPlugin"))
+  AppSettingsPlugin.register(with: registry.registrar(forPlugin: "AppSettingsPlugin"))
   AudioSessionPlugin.register(with: registry.registrar(forPlugin: "AudioSessionPlugin"))
   FLTFirebaseFirestorePlugin.register(with: registry.registrar(forPlugin: "FLTFirebaseFirestorePlugin"))
   EmojiPickerFlutterPlugin.register(with: registry.registrar(forPlugin: "EmojiPickerFlutterPlugin"))
