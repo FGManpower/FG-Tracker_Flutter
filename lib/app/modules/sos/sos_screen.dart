@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'SosController.dart';
@@ -16,6 +15,7 @@ class SosScreen extends GetView<SosController> {
       backgroundColor: const Color(0xFFFAFAFA),
       appBar: AppBar(
         backgroundColor: const Color(0xFFFAFAFA),
+        scrolledUnderElevation: 0, // Scroll hone par color change ya elevation rokne ke liye
         elevation: 0,
         leading: Padding(
           padding: EdgeInsets.only(left: 12.w),
@@ -60,10 +60,12 @@ class SosScreen extends GetView<SosController> {
               child: GestureDetector(
                 onTap: () => SosHowItWorksSheet.show(context),
                 child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                  padding:
+                  EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    border: Border.all(color: Colors.grey.withValues(alpha: 0.2)),
+                    border:
+                    Border.all(color: Colors.grey.withValues(alpha: 0.2)),
                     borderRadius: BorderRadius.circular(20.r),
                   ),
                   child: Row(
@@ -155,7 +157,8 @@ class SosScreen extends GetView<SosController> {
                         Container(
                           padding: EdgeInsets.all(7.w),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF6B4DFF).withValues(alpha: 0.1),
+                            color:
+                            const Color(0xFF6B4DFF).withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(8.r),
                           ),
                           child: Icon(Icons.camera_alt,
@@ -195,8 +198,8 @@ class SosScreen extends GetView<SosController> {
                         decoration: BoxDecoration(
                           color: const Color(0xFFF8F9FA),
                           borderRadius: BorderRadius.circular(10.r),
-                          border:
-                          Border.all(color: Colors.grey.withValues(alpha: 0.3)),
+                          border: Border.all(
+                              color: Colors.grey.withValues(alpha: 0.3)),
                         ),
                         child: Obx(() => controller.imagePath.value.isEmpty
                             ? Icon(Icons.camera_alt_outlined,
@@ -225,7 +228,8 @@ class SosScreen extends GetView<SosController> {
                         Container(
                           padding: EdgeInsets.all(7.w),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF6B4DFF).withValues(alpha: 0.1),
+                            color:
+                            const Color(0xFF6B4DFF).withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(8.r),
                           ),
                           child: Icon(Icons.group,
@@ -347,7 +351,8 @@ class SosScreen extends GetView<SosController> {
                           color: const Color(0xFFF6F4FF),
                           borderRadius: BorderRadius.circular(30.r),
                           border: Border.all(
-                              color: const Color(0xFF6B4DFF).withValues(alpha: 0.2)),
+                              color: const Color(0xFF6B4DFF)
+                                  .withValues(alpha: 0.2)),
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -387,13 +392,9 @@ class SosScreen extends GetView<SosController> {
                     SizedBox(height: 10.h),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        _buildReasonItem("Medical", "assets/icons/medical.svg", Colors.pink),
-                        _buildReasonItem("Accident", "assets/icons/accident.svg", Colors.orange),
-                        _buildReasonItem("Safety", "assets/icons/safety.svg", Colors.red),
-                        _buildReasonItem("Threat", "assets/icons/threat.svg", Colors.purple),
-                        _buildReasonItem("Other", "assets/icons/other.svg", Colors.grey),
-                      ],
+                      children: controller.reasonList
+                          .map((reason) => _buildReasonItem(reason))
+                          .toList(),
                     ),
                   ],
                 ),
@@ -552,42 +553,56 @@ class SosScreen extends GetView<SosController> {
     );
   }
 
-  Widget _buildReasonItem(String label, String svgAssetPath, Color color) {
+  Widget _buildReasonItem(SosReasonItem reason) {
     return Obx(() {
-      bool isSelected = controller.selectedReason.value == label;
+      bool isSelected = controller.selectedReason.value == reason.key;
       return GestureDetector(
-        onTap: () => controller.selectReason(label),
+        onTap: () => controller.selectReason(reason.key),
         child: Column(
           children: [
-            Container(
-              padding: EdgeInsets.all(10.w),
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              width: 52.w,
+              height: 52.w,
+              padding: EdgeInsets.all(7.w),
               decoration: BoxDecoration(
-                color: isSelected
-                    ? color.withValues(alpha: 0.12)
-                    : Colors.grey.withValues(alpha: 0.06),
-                borderRadius: BorderRadius.circular(10.r),
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(14.r),
                 border: Border.all(
-                  color: isSelected ? color : Colors.transparent,
-                  width: 1.2,
+                  color: isSelected
+                      ? reason.activeColor
+                      : Colors.grey.withValues(alpha: 0.25),
+                  width: isSelected ? 1.8 : 1.0,
                 ),
+                boxShadow: [
+                  if (isSelected)
+                    BoxShadow(
+                      color: reason.activeColor.withValues(alpha: 0.22),
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
+                    )
+                  else
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.03),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                ],
               ),
-              child: SvgPicture.asset(
-                svgAssetPath,
-                width: 18.sp,
-                height: 18.sp,
-                colorFilter: ColorFilter.mode(
-                  isSelected ? color : Colors.black54,
-                  BlendMode.srcIn,
+              child: Center(
+                child: Image.asset(
+                  reason.asset.path,
+                  fit: BoxFit.contain,
                 ),
               ),
             ),
-            SizedBox(height: 4.h),
+            SizedBox(height: 6.h),
             Text(
-              label,
+              reason.label,
               style: TextStyle(
-                fontSize: 9.sp,
+                fontSize: 10.sp,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                color: isSelected ? color : Colors.black87,
+                color: isSelected ? reason.activeColor : Colors.black87,
               ),
             ),
           ],

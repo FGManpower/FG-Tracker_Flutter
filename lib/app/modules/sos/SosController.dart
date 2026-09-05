@@ -6,12 +6,60 @@ import 'package:image_picker/image_picker.dart';
 import 'package:fgtracker/app/Model/user_profileList_res.dart';
 import 'package:fgtracker/app/Data/Services/contact_services.dart';
 import 'package:fgtracker/app/Data/Repositories/GroupRepo.dart';
+import 'package:fgtracker/gen/assets.gen.dart';
 
 import 'SosUserSheet.dart';
+
+class SosReasonItem {
+  final String key;
+  final String label;
+  final AssetGenImage asset;
+  final Color activeColor;
+
+  const SosReasonItem({
+    required this.key,
+    required this.label,
+    required this.asset,
+    required this.activeColor,
+  });
+}
 
 class SosController extends GetxController {
   final ContactService _contactService = ContactService();
   final ImagePicker _picker = ImagePicker();
+
+  late final List<SosReasonItem> reasonList = [
+    SosReasonItem(
+      key: 'Medical',
+      label: 'Medical',
+      asset: Assets.images.sosMedical,
+      activeColor: const Color(0xFF5351DE),
+    ),
+    SosReasonItem(
+      key: 'Accident',
+      label: 'Accident',
+      asset: Assets.images.sosAccident,
+      activeColor: const Color(0xFFFF6D00),
+    ),
+    SosReasonItem(
+      key: 'Safety',
+      label: 'Safety',
+      asset: Assets.images.sosSafety,
+      activeColor: const Color(0xFFF12E43),
+    ),
+    SosReasonItem(
+      key: 'Threat',
+      label: 'Threat',
+      asset: Assets.images.sosThreat,
+      activeColor: const Color(0xFF5351DE),
+    ),
+    SosReasonItem(
+      key: 'Other',
+      label: 'Other',
+      asset: Assets.images.sosOther,
+      activeColor: const Color(0xFF676E95),
+    ),
+  ];
 
   var selectedReason = 'Medical'.obs;
   var imagePath = ''.obs;
