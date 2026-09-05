@@ -12,7 +12,7 @@ class LoginPage extends GetView<Login_Controller> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomInset: false,
+      resizeToAvoidBottomInset: true,
       body: Container(
         width: double.infinity,
         height: double.infinity,
@@ -23,150 +23,150 @@ class LoginPage extends GetView<Login_Controller> {
           ),
         ),
         child: SafeArea(
-          child: SingleChildScrollView(
-            physics: const ClampingScrollPhysics(),
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20.w),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(height: 15.h),
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 4.w),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          "Welcome\nBack! 👋",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 32.sp,
-                            fontWeight: FontWeight.bold,
-                            fontFamily: FontFamily.interBold,
-                            height: 1.15,
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                  child: IntrinsicHeight(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 20.w),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SizedBox(height: 20.h),
+                          Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 4.w),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                SizedBox(height: 14.h),
+                                // Container(
+                                //   width: 42.w,
+                                //   height: 3.5.h,
+                                //   decoration: BoxDecoration(
+                                //     color: const Color(0xFF5D47F1),
+                                //     borderRadius: BorderRadius.circular(2.r),
+                                //   ),
+                                // ),
+                                SizedBox(height: 12.h),
+                                // Text(
+                                //   "Great to see you again.\nLog in to access your account\nand explore our latest features.",
+                                //   style: TextStyle(
+                                //     color: Colors.white.withValues(alpha: 0.9),
+                                //     fontSize: 13.sp,
+                                //     fontFamily: FontFamily.interRegular,
+                                //     height: 1.4,
+                                //   ),
+                                // ),
+                              ],
+                            ),
                           ),
-                        ),
-                        SizedBox(height: 8.h),
-                        Container(
-                          width: 42.w,
-                          height: 3.5.h,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF5D47F1),
-                            borderRadius: BorderRadius.circular(2.r),
+                          SizedBox(height: 200.h),
+                          Stack(
+                            clipBehavior: Clip.none,
+                            alignment: Alignment.topCenter,
+                            children: [
+                              Container(
+                                margin: EdgeInsets.only(top: 40.h),
+                                padding: EdgeInsets.only(
+                                  left: 20.w,
+                                  right: 20.w,
+                                  top: 48.h,
+                                  bottom: 30.h,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(30.r),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: const Color(0xFF4B3FDD)
+                                          .withValues(alpha: 0.12),
+                                      blurRadius: 28,
+                                      spreadRadius: 1,
+                                      offset: const Offset(0, 10),
+                                    ),
+                                  ],
+                                ),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      "Log In",
+                                      style: TextStyle(
+                                        color: Colors.black,
+                                        fontSize: 24.sp,
+                                        fontWeight: FontWeight.bold,
+                                        fontFamily: FontFamily.interBold,
+                                      ),
+                                    ),
+                                    SizedBox(height: 3.h),
+                                    Text(
+                                      "to Continue",
+                                      style: TextStyle(
+                                        color: const Color(0xFF5D47F1),
+                                        fontSize: 16.sp,
+                                        fontWeight: FontWeight.w600,
+                                        fontFamily: FontFamily.interBold,
+                                      ),
+                                    ),
+                                    SizedBox(height: 28.h),
+                                    Form(
+                                      key: controller.loginKey,
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          _buildPhoneInputField(),
+                                          Obx(
+                                                () => controller
+                                                .mobileErrorText.value.isNotEmpty
+                                                ? Padding(
+                                              padding: EdgeInsets.only(
+                                                  left: 10.w, top: 8.h),
+                                              child: Text(
+                                                controller.mobileErrorText.value,
+                                                style: TextStyle(
+                                                  color: Colors.red,
+                                                  fontSize: 12.sp,
+                                                  fontFamily:
+                                                  FontFamily.interMedium,
+                                                ),
+                                              ),
+                                            )
+                                                : const SizedBox.shrink(),
+                                          ),
+                                          SizedBox(height: 28.h),
+                                          _buildGradientLoginButton(),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Positioned(
+                                top: 0,
+                                child: _HexagonBadge(
+                                  child: Icon(
+                                    Icons.person_outline_rounded,
+                                    size: 34.sp,
+                                    color: const Color(0xFF5D47F1),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
-                        SizedBox(height: 12.h),
-                        Text(
-                          "Great to see you again.\nLog in to access your account\nand explore our latest features.",
-                          style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.9),
-                            fontSize: 13.sp,
-                            fontFamily: FontFamily.interRegular,
-                            height: 1.4,
-                          ),
-                        ),
-                      ],
+                          const Spacer(),
+                          SizedBox(height: 30.h),
+                          _buildBottomSecurityBadge(),
+                          SizedBox(height: 20.h),
+                        ],
+                      ),
                     ),
                   ),
-                  SizedBox(height: 25.h),
-                  Stack(
-                    clipBehavior: Clip.none,
-                    alignment: Alignment.topCenter,
-                    children: [
-                      Container(
-                        margin: EdgeInsets.only(top: 40.h),
-                        padding: EdgeInsets.only(
-                          left: 20.w,
-                          right: 20.w,
-                          top: 48.h,
-                          bottom: 30.h,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(30.r),
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color(0xFF4B3FDD)
-                                  .withValues(alpha: 0.12),
-                              blurRadius: 28,
-                              spreadRadius: 1,
-                              offset: const Offset(0, 10),
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              "Log In",
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontSize: 24.sp,
-                                fontWeight: FontWeight.bold,
-                                fontFamily: FontFamily.interBold,
-                              ),
-                            ),
-                            SizedBox(height: 3.h),
-                            Text(
-                              "to Continue",
-                              style: TextStyle(
-                                color: const Color(0xFF5D47F1),
-                                fontSize: 16.sp,
-                                fontWeight: FontWeight.w600,
-                                fontFamily: FontFamily.interBold,
-                              ),
-                            ),
-                            SizedBox(height: 28.h),
-                            Form(
-                              key: controller.loginKey,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  _buildPhoneInputField(),
-                                  Obx(
-                                    () => controller
-                                            .mobileErrorText.value.isNotEmpty
-                                        ? Padding(
-                                            padding: EdgeInsets.only(
-                                                left: 10.w, top: 8.h),
-                                            child: Text(
-                                              controller.mobileErrorText.value,
-                                              style: TextStyle(
-                                                color: Colors.red,
-                                                fontSize: 12.sp,
-                                                fontFamily:
-                                                    FontFamily.interMedium,
-                                              ),
-                                            ),
-                                          )
-                                        : const SizedBox.shrink(),
-                                  ),
-                                  SizedBox(height: 28.h),
-                                  _buildGradientLoginButton(),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Positioned(
-                        top: 0,
-                        child: _HexagonBadge(
-                          child: Icon(
-                            Icons.person_outline_rounded,
-                            size: 34.sp,
-                            color: const Color(0xFF5D47F1),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 25.h),
-                  _buildBottomSecurityBadge(),
-                  SizedBox(height: 20.h),
-                ],
-              ),
-            ),
+                ),
+              );
+            },
           ),
         ),
       ),
@@ -175,7 +175,8 @@ class LoginPage extends GetView<Login_Controller> {
 
   Widget _buildPhoneInputField() {
     return Container(
-      padding: EdgeInsets.symmetric(vertical: 2.h, horizontal: 4.w),
+      height: 56.h,
+      padding: EdgeInsets.symmetric(horizontal: 4.w),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(30.r),
@@ -185,71 +186,74 @@ class LoginPage extends GetView<Login_Controller> {
         ),
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          CountryCodePicker(
-            onChanged: (country) {
-              controller.selectedDialCode = country.dialCode ?? '+91';
-            },
-            initialSelection: 'IN',
-            favorite: const ['+91', 'IN'],
-            showFlagDialog: true,
-            showFlagMain: true,
-            flagWidth: 20.sp,
-            textStyle: TextStyle(
-              fontSize: 14.sp,
-              color: Colors.black87,
-              fontWeight: FontWeight.w600,
-              fontFamily: FontFamily.interMedium,
+          SizedBox(
+            width: 105.w,
+            child: CountryCodePicker(
+              onChanged: (country) {
+                controller.selectedDialCode = country.dialCode ?? '+91';
+              },
+              initialSelection: 'IN',
+              favorite: const ['+91', 'IN'],
+              showFlagDialog: true,
+              showFlagMain: true,
+              flagWidth: 20.sp,
+              textStyle: TextStyle(
+                fontSize: 14.sp,
+                color: Colors.black87,
+                fontWeight: FontWeight.w600,
+                fontFamily: FontFamily.interMedium,
+              ),
+              padding: EdgeInsets.zero,
+              showCountryOnly: false,
+              showOnlyCountryWhenClosed: false,
+              alignLeft: false,
             ),
-            padding: EdgeInsets.symmetric(horizontal: 4.w),
-            showCountryOnly: false,
-            showOnlyCountryWhenClosed: false,
-            alignLeft: false,
           ),
           Container(
             height: 24.h,
             width: 1.w,
             color: const Color(0xFFDCD6FD),
           ),
-          SizedBox(width: 8.w),
-          Icon(
-            Icons.call_rounded,
-            color: const Color(0xFF5D47F1),
-            size: 19.sp,
-          ),
-          SizedBox(width: 8.w),
+          SizedBox(width: 12.w),
           Expanded(
-            child: TextFormField(
-              focusNode: controller.phoneFocusNode,
-              inputFormatters: [
-                FilteringTextInputFormatter.digitsOnly,
-              ],
-              style: TextStyle(
-                fontSize: 14.5.sp,
-                fontFamily: FontFamily.interMedium,
-                color: Colors.black,
-              ),
-              controller: controller.mobNoController,
-              keyboardType: TextInputType.phone,
-              textInputAction: TextInputAction.done,
-              maxLength: 15,
-              decoration: InputDecoration(
-                counterText: '',
-                border: InputBorder.none,
-                hintText: 'Enter Mobile Number',
-                hintStyle: TextStyle(
-                  fontSize: 13.5.sp,
-                  color: const Color(0xFF9E9EAF),
-                  fontFamily: FontFamily.interRegular,
+            child: Center(
+              child: TextFormField(
+                focusNode: controller.phoneFocusNode,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                ],
+                style: TextStyle(
+                  fontSize: 14.5.sp,
+                  fontFamily: FontFamily.interMedium,
+                  color: Colors.black,
                 ),
-                contentPadding: EdgeInsets.zero,
+                controller: controller.mobNoController,
+                keyboardType: TextInputType.phone,
+                textInputAction: TextInputAction.done,
+                maxLength: 15,
+                decoration: InputDecoration(
+                  counterText: '',
+                  border: InputBorder.none,
+                  enabledBorder: InputBorder.none,
+                  focusedBorder: InputBorder.none,
+                  hintText: 'Enter Mobile Number',
+                  hintStyle: TextStyle(
+                    fontSize: 13.5.sp,
+                    color: const Color(0xFF9E9EAF),
+                    fontFamily: FontFamily.interRegular,
+                  ),
+                  isDense: true,
+                  contentPadding: EdgeInsets.zero,
+                ),
+                onChanged: (_) {
+                  controller.mobileErrorText.value = '';
+                },
+                onFieldSubmitted: (_) {
+                  controller.phoneFocusNode.unfocus();
+                },
               ),
-              onChanged: (_) {
-                controller.mobileErrorText.value = '';
-              },
-              onFieldSubmitted: (_) {
-                controller.phoneFocusNode.unfocus();
-              },
             ),
           ),
         ],

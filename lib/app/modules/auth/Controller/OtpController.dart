@@ -1,5 +1,3 @@
-
-
 import 'dart:async';
 import 'dart:developer';
 import 'dart:io';
@@ -48,11 +46,11 @@ class OtpController extends GetxController {
       onCodeReceive: (code) => log(code),
       otpInteractor: otpInteractor,
     )..startListenUserConsent(
-        (code) {
-          final exp = RegExp(r'(\d{4})');
-          return exp.stringMatch(code ?? '') ?? '';
-        },
-      );
+          (code) {
+        final exp = RegExp(r'(\d{4})');
+        return exp.stringMatch(code ?? '') ?? '';
+      },
+    );
 
     mobileNumber.value = arguments?['mobNo'] ?? '';
   }
@@ -85,7 +83,7 @@ class OtpController extends GetxController {
     }
 
     firebaseNotificationServices().getDiviceToken().then(
-      (value) {
+          (value) {
         deviceId.value = value;
       },
     );

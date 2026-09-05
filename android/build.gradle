@@ -49,6 +49,12 @@ subprojects {
     project.evaluationDependsOn(":app")
 }
 
-tasks.register("clean", Delete) {
+tasks.register("clean", Delete) {allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
     delete rootProject.buildDir
 }
