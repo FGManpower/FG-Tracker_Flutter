@@ -7,6 +7,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
+import '../../Messages/Views/chatlist_screen.dart';
+
+
 class QuickActionsSection extends StatelessWidget {
   const QuickActionsSection({super.key});
 
@@ -36,7 +39,7 @@ class QuickActionsSection extends StatelessWidget {
             _QuickActionCard(
               "Audio/Video Call",
               Icons.call,
-              onTap: () => Get.to(() =>  CallScreen()),
+              onTap: () => Get.to(() => CallScreen()),
             ),
             _QuickActionCard(
               "Walkie Talkie",
@@ -48,21 +51,20 @@ class QuickActionsSection extends StatelessWidget {
               Icons.location_on,
               isComingSoon: false,
               onTap: () => Get.to(() => TrackingScreen()),
-            ),            _QuickActionCard(
+            ),
+            _QuickActionCard(
               "Chatting",
               Icons.message_outlined,
-              // onTap: () => Get.to(() => const VideoCallScreen()),
+              onTap: () => Get.to(() => const ChatListScreen()),
             ),
             _QuickActionCard(
               "Group Chat",
               Icons.groups,
-               onTap: () => Get.toNamed(Routes.GroupsList),
+              onTap: () => Get.toNamed(Routes.GroupsList),
             ),
-
             _QuickActionCard(
               "Safe Zone",
               Icons.verified_user_rounded,
-              // onTap: () => Get.toNamed(Routes.GroupsList),
             ),
           ],
         ),
@@ -73,11 +75,11 @@ class QuickActionsSection extends StatelessWidget {
 
 class _QuickActionCard extends StatelessWidget {
   const _QuickActionCard(
-    this.title,
-    this.icon, {
-    this.onTap,
-    this.isComingSoon = false,
-  });
+      this.title,
+      this.icon, {
+        this.onTap,
+        this.isComingSoon = false,
+      });
 
   final String title;
   final IconData icon;
@@ -99,41 +101,31 @@ class _QuickActionCard extends StatelessWidget {
               color: const Color(0xFF6B4DFF).withValues(alpha: 0.05),
             ),
           ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(16.r),
-            child: Stack(
-              children: [
-                Positioned.fill(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(icon, color: const Color(0xFF6B4DFF), size: 32.sp),
-                      SizedBox(height: 8.h),
-                      reausabletext(
-                        title,
-                        fontsize: 12.sp,
-                        fontfamily: FontFamily.interSemiBold,
-                        color: Colors.black87,
-                        align: TextAlign.center,
-                      ),
-                      SizedBox(height: 4.h),
-                      if (!isComingSoon)
-                        Container(
-                          width: 12.w,
-                          height: 2.h,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF6B4DFF),
-                            borderRadius: BorderRadius.circular(2.r),
-                          ),
-                        )
-                      else
-                        SizedBox(height: 14.h),
-                    ],
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, color: const Color(0xFF6B4DFF), size: 32.sp),
+              SizedBox(height: 8.h),
+              reausabletext(
+                title,
+                fontsize: 12.sp,
+                fontfamily: FontFamily.interSemiBold,
+                color: Colors.black87,
+                align: TextAlign.center,
+              ),
+              SizedBox(height: 4.h),
+              if (!isComingSoon)
+                Container(
+                  width: 12.w,
+                  height: 2.h,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF6B4DFF),
+                    borderRadius: BorderRadius.circular(2.r),
                   ),
-                ),
-
-              ],
-            ),
+                )
+              else
+                SizedBox(height: 14.h),
+            ],
           ),
         ),
       ),
