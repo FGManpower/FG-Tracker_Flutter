@@ -28,7 +28,8 @@ class HomeController extends GetxController {
 
   final Rx<LatLng?> currentLocation = Rx<LatLng?>(null);
 
-  final RxDouble liveRadius = 2.0.obs;
+
+  RxString selectedRadius = '2'.obs;
 
   StreamSubscription<List<LiveLocationModel>>? _liveLocationSubscription;
 
@@ -37,22 +38,22 @@ class HomeController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-
+    startLiveLocationSession();
     SocketDashboardService.instance.init();
 
     _listenGroupCount();
     _listenLiveLocations();
 
     fetchBanners();
-    startLiveLocationSession();
+
   }
 
   void _listenGroupCount() {
     _groupCountSubscription?.cancel();
     _groupCountSubscription =
         SocketDashboardService.instance.groupCountStream.listen((data) {
-      groupCount.value = GroupCountDetail.fromJson(data);
-    });
+          groupCount.value = GroupCountDetail.fromJson(data);
+        });
   }
 
   void refreshGroupCount() {
@@ -150,7 +151,7 @@ class HomeController extends GetxController {
     SocketDashboardService.instance.requestLiveLocation(
       userLat: position.latitude,
       userLong: position.longitude,
-      radius: liveRadius.value,
+      radius: selectedRadius.value,
     );
 
     Geolocator.getPositionStream(
@@ -167,13 +168,13 @@ class HomeController extends GetxController {
       SocketDashboardService.instance.requestLiveLocation(
         userLat: position.latitude,
         userLong: position.longitude,
-        radius: liveRadius.value,
+        radius: selectedRadius.value,
       );
     });
   }
 
-  void updateRadius(double radius) {
-    liveRadius.value = radius;
+  void updateRadius(dynamic radius) {
+    selectedRadius.value = radius.toString();
 
     final location = currentLocation.value;
 
@@ -181,7 +182,7 @@ class HomeController extends GetxController {
       SocketDashboardService.instance.requestLiveLocation(
         userLat: location.latitude,
         userLong: location.longitude,
-        radius: radius,
+        radius: radius.toString(),
       );
     }
   }

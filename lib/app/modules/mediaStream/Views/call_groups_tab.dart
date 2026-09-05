@@ -8,6 +8,9 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
+import '../../../Data/Services/group_call_service.dart';
+import '../../../routes/app_pages.dart';
+
 class CallGroupsTab extends StatelessWidget {
    CallGroupsTab({super.key});
 
@@ -75,34 +78,77 @@ class _GroupTile extends StatelessWidget {
         ),
         SizedBox(width: 12.w),
         Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              reausabletext(
-                group.groupName ?? "No Name Group",
-                fontsize: 14.sp,
-                fontfamily: FontFamily.interSemiBold,
-                color: Colors.black87,
-              ),
-              SizedBox(height: 3.h),
-              reausabletext(
-                "${group.memberCount ?? 0} Members",
-                fontsize: 11.sp,
-                color: const Color(0xFF6B4DFF).withValues(alpha: 0.7),
-              ),
-            ],
+          child: GestureDetector(
+            // TODO: Remove after backend group incoming call is integrated
+            onLongPress: () {
+              Get.toNamed(
+                Routes.groupIncomingCallScreen,
+                arguments: {
+                  "groupId": group.id.toString(),
+                  "groupName": group.groupName ?? "Unknown Group",
+                  "groupProfile": group.groupProfile,
+                  "callerName": "Samad",
+                  "activeMemberCount": 10,
+                  "totalMemberCount": group.memberCount ?? 25,
+                  "isVideo": false,
+                  "callId": "test-group-call",
+                },
+              );
+            },
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                reausabletext(
+                  group.groupName ?? "No Name Group",
+                  fontsize: 14.sp,
+                  fontfamily: FontFamily.interSemiBold,
+                  color: Colors.black87,
+                ),
+                SizedBox(height: 3.h),
+                reausabletext(
+                  "${group.memberCount ?? 0} Members",
+                  fontsize: 11.sp,
+                  color: const Color(0xFF6B4DFF).withValues(alpha: 0.7),
+                ),
+              ],
+            ),
           ),
         ),
         SizedBox(width: 8.w),
-         CallActionChip(icon: Icons.videocam_rounded),
+
+        CallActionChip(
+          icon: Icons.videocam_rounded,
+          onTap: () {
+            GroupCallService.instance.startGroupCall(
+              context,
+              groupId: group.id.toString(),
+              groupName: group.groupName ?? "",
+              groupProfile: group.groupProfile,
+              memberCount: group.memberCount,
+              isVideo: true,
+            );
+          },
+        ),
+
         SizedBox(width: 7.w),
-         CallActionChip(icon: Icons.call),
+
+        CallActionChip(
+          icon: Icons.call,
+          onTap: () {
+            GroupCallService.instance.startGroupCall(
+              context,
+              groupId: group.id.toString(),
+              groupName: group.groupName ?? "",
+              groupProfile: group.groupProfile,
+              memberCount: group.memberCount,
+              isVideo: false,
+            );
+          },
+        ),
       ],
     );
   }
 }
-
-
 
 class _GroupListSkeleton extends StatelessWidget {
   const _GroupListSkeleton();

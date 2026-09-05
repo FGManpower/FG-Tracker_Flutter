@@ -30,6 +30,10 @@ import '../modules/Track/Views/Search_Members.dart';
 import '../modules/Track/Views/TrackLocationScreen.dart';
 import '../modules/Walkie-talkie/WalkieTalkieScreen.dart';
 
+import '../modules/mediaStream/Bindings/group_call_binding.dart';
+import '../modules/mediaStream/Bindings/group_incoming_call_binding.dart';
+import '../modules/mediaStream/Views/group_calling_screen.dart';
+import '../modules/mediaStream/Views/group_incoming_call_screen.dart';
 import '../modules/sos/SosBinding.dart';
 import '../modules/sos/sos_screen.dart';
 
@@ -209,6 +213,22 @@ class AppPages {
     GetPage(
       name: Routes.WalkieGroupSelect,
       page: () => const WalkieGroupSelectScreen(),
+    ),
+
+
+    GetPage(
+      name: Routes.groupCallingScreen,
+      page: () => const GroupCallingScreen(),
+      binding: GroupCallBinding(),
+      transition: Transition.rightToLeft,
+      transitionDuration: const Duration(milliseconds: 500),
+    ),
+    GetPage(
+      name: Routes.groupIncomingCallScreen,
+      page: () => const GroupIncomingCallScreen(),
+      binding: GroupIncomingCallBinding(),
+      transition: Transition.downToUp,
+      transitionDuration: const Duration(milliseconds: 500),
     ),
   ];
 }
