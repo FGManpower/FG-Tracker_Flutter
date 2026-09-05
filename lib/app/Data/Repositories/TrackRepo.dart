@@ -3,9 +3,28 @@ import 'package:fgtracker/app/Core/constant/urls.dart';
 import 'package:fgtracker/app/Core/util/http/http_util.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Model/LocationDataRes.dart';
+import 'package:fgtracker/app/Model/UsersWithinRadiusRes.dart';
 import 'package:fgtracker/app/Model/member_live_status.dart';
 
 class TrackRepo {
+  static Future<UsersWithinRadiusRes> getUsersWithinRadius({
+    required dynamic userId,
+    required dynamic userLat,
+    required dynamic userLong,
+    required dynamic radius,
+  }) async {
+    var response = await HttpUtil().get(
+      "/users-within-radius",
+      data: {
+        "userId": userId,
+        "userLat": userLat,
+        "userLong": userLong,
+        "radius": radius,
+      },
+    );
+    return UsersWithinRadiusRes.fromJson(response);
+  }
+
   static Future<LocationDataRes> getUserLocationData(int groupId) async {
     var response =
         await HttpUtil().get("/getGrouplocationsData?groupId=$groupId");

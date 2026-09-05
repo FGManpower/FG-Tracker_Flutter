@@ -13,6 +13,7 @@ class Urls {
   static const String getAllGroup = '${ConstRes.aBaseUrl}get-all-group';
   static const String recentCallHistory = '${ConstRes.aBaseUrl}history';
   static const String allGroupMembers = '${ConstRes.aBaseUrl}all-group-members';
+  static const String usersWithinRadius = '${ConstRes.aBaseUrl}users-within-radius';
 
   ///------------------------ Params ------------------------///
   static const String apiKeyName = 'apikey';

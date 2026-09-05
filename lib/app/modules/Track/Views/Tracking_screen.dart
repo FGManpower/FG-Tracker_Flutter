@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../Controller/Track_controller.dart';
 import 'package:fgtracker/app/Model/MemberModel.dart';
+import 'package:fgtracker/app/Model/GroupRes.dart';
+import 'package:fgtracker/app/Core/constant/const_res.dart';
+import 'package:fgtracker/app/routes/app_pages.dart';
+import 'package:fgtracker/app/modules/home/Views/LiveStatus/components/online_member.dart';
 
 class TrackingScreen extends StatelessWidget {
   TrackingScreen({super.key});
@@ -25,11 +29,20 @@ class TrackingScreen extends StatelessWidget {
             children: [
               _buildHeader(),
               _buildCustomTabs(),
-              _buildSearchAndRadius(),
-              _buildStaticMapSection(),
-              _buildStatsCard(),
-              _buildLiveMembersList(),
-              _buildBottomShareButton(),
+              Obx(() {
+                if (controller.selectedTabIndex.value == 1) {
+                  return _buildGroupTabContent();
+                }
+                return Column(
+                  children: [
+                    _buildSearchAndRadius(),
+                    _buildStaticMapSection(),
+                    _buildStatsCard(),
+                    _buildLiveMembersList(),
+                    _buildBottomShareButton(),
+                  ],
+                );
+              }),
               const SizedBox(height: 24),
             ],
           ),
@@ -136,7 +149,7 @@ class TrackingScreen extends StatelessWidget {
             ),
             splashFactory: NoSplash.splashFactory,
             overlayColor: WidgetStateProperty.all(Colors.transparent),
-            onTap: (index) => controller.selectedTabIndex.value = index,
+            onTap: (index) => controller.selectTab(index),
             tabs: const [
               Tab(
                 child: Row(
@@ -152,9 +165,9 @@ class TrackingScreen extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.history, size: 15),
+                    Icon(Icons.groups_rounded, size: 16),
                     SizedBox(width: 6),
-                    Text("History"),
+                    Text("Group"),
                   ],
                 ),
               ),
@@ -180,9 +193,11 @@ class TrackingScreen extends StatelessWidget {
                 border: Border.all(color: Colors.grey.shade200),
               ),
               alignment: Alignment.center,
-              child: const TextField(
-                style: TextStyle(fontSize: 13),
-                decoration: InputDecoration(
+              child: TextField(
+                controller: controller.searchController,
+                onChanged: controller.onSearch,
+                style: const TextStyle(fontSize: 13),
+                decoration: const InputDecoration(
                   isDense: true,
                   prefixIcon: Icon(Icons.search, color: Colors.grey, size: 18),
                   prefixIconConstraints: BoxConstraints(minWidth: 40),
@@ -290,10 +305,10 @@ class TrackingScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(18),
         child: Stack(
           children: [
-            _buildMapAvatar(top: 36, left: 36, img: "11"),
-            _buildMapAvatar(top: 50, right: 54, img: "12"),
-            _buildMapAvatar(bottom: 64, left: 70, img: "5"),
-            _buildMapAvatar(bottom: 46, right: 80, img: "9"),
+            _buildMapAvatar(top: 36, left: 36, img: "11", memberIndex: 0),
+            _buildMapAvatar(top: 50, right: 54, img: "12", memberIndex: 1),
+            _buildMapAvatar(bottom: 64, left: 70, img: "5", memberIndex: 2),
+            _buildMapAvatar(bottom: 46, right: 80, img: "9", memberIndex: 3),
 
             Center(
               child: SizedBox(
@@ -440,11 +455,13 @@ class TrackingScreen extends StatelessWidget {
                   children: [
                     Icon(Icons.people, color: primaryColor, size: 15),
                     const SizedBox(width: 6),
-                    const Text(
-                      "8 Members Live",
-                      style: TextStyle(
-                        fontSize: 11.5,
-                        fontWeight: FontWeight.bold,
+                    Obx(
+                      () => Text(
+                        "${controller.liveNowCount.value > 0 ? controller.liveNowCount.value : controller.liveMembers.length} Members Live",
+                        style: const TextStyle(
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                     const SizedBox(width: 6),
@@ -471,41 +488,48 @@ class TrackingScreen extends StatelessWidget {
     double? left,
     double? right,
     required String img,
+    int? memberIndex,
   }) {
     return Positioned(
       top: top,
       bottom: bottom,
       left: left,
       right: right,
-      child: Stack(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(2),
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              shape: BoxShape.circle,
-            ),
-            child: CircleAvatar(
-              radius: 15,
-              backgroundImage:
-                  NetworkImage("https://i.pravatar.cc/150?img=$img"),
-            ),
-          ),
-          Positioned(
-            bottom: 0,
-            right: 0,
-            child: Container(
-              width: 9,
-              height: 9,
-              decoration: BoxDecoration(
-                color: Colors.green,
+      child: Obx(() {
+        String avatarUrl = "https://i.pravatar.cc/150?img=$img";
+        if (memberIndex != null &&
+            controller.liveMembers.length > memberIndex) {
+          avatarUrl = controller.liveMembers[memberIndex].avatarUrl;
+        }
+        return Stack(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(2),
+              decoration: const BoxDecoration(
+                color: Colors.white,
                 shape: BoxShape.circle,
-                border: Border.all(color: Colors.white, width: 1.5),
+              ),
+              child: CircleAvatar(
+                radius: 15,
+                backgroundImage: NetworkImage(avatarUrl),
               ),
             ),
-          ),
-        ],
-      ),
+            Positioned(
+              bottom: 0,
+              right: 0,
+              child: Container(
+                width: 9,
+                height: 9,
+                decoration: BoxDecoration(
+                  color: Colors.green,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white, width: 1.5),
+                ),
+              ),
+            ),
+          ],
+        );
+      }),
     );
   }
 
@@ -520,9 +544,24 @@ class TrackingScreen extends StatelessWidget {
       ),
       child: Row(
         children: [
-          _statItem(Icons.people, "Total Members", "18", primaryColor),
+          Obx(
+            () => _statItem(
+              Icons.people,
+              "Total Members",
+              "${controller.totalMembersCount.value > 0 ? controller.totalMembersCount.value : controller.allFetchedMembers.length}",
+              primaryColor,
+            ),
+          ),
           _divider(),
-          _statItem(Icons.circle, "Live Now", "8", Colors.green, iconSize: 8),
+          Obx(
+            () => _statItem(
+              Icons.circle,
+              "Live Now",
+              "${controller.liveNowCount.value > 0 ? controller.liveNowCount.value : controller.liveMembers.length}",
+              Colors.green,
+              iconSize: 8,
+            ),
+          ),
           _divider(),
           Obx(
             () => _statItem(
@@ -602,18 +641,38 @@ class TrackingScreen extends StatelessWidget {
                   color: textDark,
                 ),
               ),
-              Text(
-                "View All →",
-                style: TextStyle(
-                  color: primaryColor,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
+              GestureDetector(
+                onTap: () => Get.to(() => const OnlineMember()),
+                child: Text(
+                  "View All →",
+                  style: TextStyle(
+                    color: primaryColor,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 12),
           Obx(() {
+            if (controller.isLoading.value && controller.liveMembers.isEmpty) {
+              return const Padding(
+                padding: EdgeInsets.symmetric(vertical: 24),
+                child: Center(child: CircularProgressIndicator()),
+              );
+            }
+            if (controller.liveMembers.isEmpty) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 24),
+                child: Center(
+                  child: Text(
+                    "No members found within radius",
+                    style: TextStyle(color: textGrey, fontSize: 13),
+                  ),
+                ),
+              );
+            }
             return ListView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
@@ -797,6 +856,252 @@ class TrackingScreen extends StatelessWidget {
             child: Icon(Icons.arrow_forward, color: primaryColor, size: 18),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildGroupTabContent() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            height: 44,
+            decoration: BoxDecoration(
+              color: cardColor,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.grey.shade200),
+            ),
+            alignment: Alignment.center,
+            child: TextField(
+              controller: controller.searchController,
+              onChanged: controller.onSearch,
+              style: const TextStyle(fontSize: 13),
+              decoration: const InputDecoration(
+                isDense: true,
+                prefixIcon: Icon(Icons.search, color: Colors.grey, size: 18),
+                prefixIconConstraints: BoxConstraints(minWidth: 40),
+                hintText: "Search groups...",
+                hintStyle: TextStyle(color: Colors.grey, fontSize: 12.5),
+                border: InputBorder.none,
+                contentPadding: EdgeInsets.symmetric(vertical: 12),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                "Your Groups",
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                  color: textDark,
+                ),
+              ),
+              Obx(
+                () => Text(
+                  "${controller.filteredGroups.length} Groups",
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: primaryColor,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Obx(() {
+            if (controller.isGroupLoading.value &&
+                controller.filteredGroups.isEmpty) {
+              return const Padding(
+                padding: EdgeInsets.symmetric(vertical: 40),
+                child: Center(child: CircularProgressIndicator()),
+              );
+            }
+            if (controller.filteredGroups.isEmpty) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 40),
+                child: Center(
+                  child: Text(
+                    controller.groupError.isNotEmpty
+                        ? controller.groupError.value
+                        : "No groups found",
+                    style: TextStyle(color: textGrey, fontSize: 13),
+                  ),
+                ),
+              );
+            }
+            return ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: controller.filteredGroups.length,
+              itemBuilder: (context, index) {
+                return _groupCard(controller.filteredGroups[index]);
+              },
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
+  Widget _groupCard(GroupsResData group) {
+    final String? profileUrl =
+        group.groupProfile != null && group.groupProfile!.isNotEmpty
+            ? (group.groupProfile!.startsWith("http")
+                ? group.groupProfile!
+                : "${ConstRes.aImageBaseUrl}${group.groupProfile}")
+            : null;
+
+    return GestureDetector(
+      onTap: () {
+        Get.toNamed(
+          Routes.Memberscreen,
+          arguments: {
+            "groupId": group.id?.toString() ?? "",
+            "groupName": group.groupName ?? "",
+            "groupCode": group.groupCode ?? "",
+            "isCreator": group.isCreator?.toString() ?? "false",
+            "isActive": group.isActive?.toString() ?? "false",
+          },
+        )?.then((value) {
+          if (value == true) {
+            controller.fetchGroupData();
+          }
+        });
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 10),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: cardColor,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: Colors.grey.shade100),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.02),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: primaryColor.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+                image: profileUrl != null
+                    ? DecorationImage(
+                        image: NetworkImage(profileUrl),
+                        fit: BoxFit.cover,
+                      )
+                    : null,
+              ),
+              child: profileUrl == null
+                  ? Icon(Icons.groups_rounded, color: primaryColor, size: 22)
+                  : null,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          group.groupName ?? "Unnamed Group",
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: textDark,
+                          ),
+                        ),
+                      ),
+                      if (group.isCreator == true)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: primaryColor.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            "Admin",
+                            style: TextStyle(
+                              fontSize: 9.5,
+                              fontWeight: FontWeight.bold,
+                              color: primaryColor,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    (group.groupDesc != null && group.groupDesc!.isNotEmpty)
+                        ? group.groupDesc!
+                        : (group.groupCode != null
+                            ? "Code: ${group.groupCode}"
+                            : "No description"),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 11.5,
+                      color: textGrey,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 10),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEDEEFC),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.people, size: 11, color: primaryColor),
+                      const SizedBox(width: 3),
+                      Text(
+                        "${group.memberCount ?? 0}",
+                        style: TextStyle(
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.bold,
+                          color: primaryColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  size: 13,
+                  color: Colors.grey.shade400,
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
