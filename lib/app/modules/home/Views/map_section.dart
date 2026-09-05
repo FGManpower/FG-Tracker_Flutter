@@ -637,15 +637,22 @@ class _MapSectionState extends State<MapSection> {
         Get.toNamed(Routes.SOSScreen);
       },
       child: Container(
-        padding: EdgeInsets.all(9.w),
+        width: 44.w,
+        height: 44.h,
         decoration: const BoxDecoration(
           color: Colors.red,
           shape: BoxShape.circle,
         ),
-        child: Icon(
-          Icons.warning,
-          color: Colors.white,
-          size: 18.sp,
+        child: Center(
+          child: Text(
+            "SOS",
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 11.sp,
+              fontWeight: FontWeight.bold,
+              fontFamily: FontFamily.interBold,
+            ),
+          ),
         ),
       ),
     );

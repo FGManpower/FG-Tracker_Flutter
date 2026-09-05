@@ -70,6 +70,10 @@ class $AssetsImagesGen {
   /// File path: assets/images/audio.png
   AssetGenImage get audio => const AssetGenImage('assets/images/audio.png');
 
+  /// File path: assets/images/bg_image.png
+  AssetGenImage get bgImage =>
+      const AssetGenImage('assets/images/bg_image.png');
+
   /// File path: assets/images/background.jpg
   AssetGenImage get background =>
       const AssetGenImage('assets/images/background.jpg');
@@ -111,6 +115,10 @@ class $AssetsImagesGen {
 
   /// File path: assets/images/kaaba.png
   AssetGenImage get kaaba => const AssetGenImage('assets/images/kaaba.png');
+
+  /// File path: assets/images/lock_3d.png
+  AssetGenImage get lock3d =>
+      const AssetGenImage('assets/images/lock_3d.png');
 
   /// File path: assets/images/login_illustration.png
   AssetGenImage get loginIllustration =>
@@ -163,6 +171,26 @@ class $AssetsImagesGen {
   AssetGenImage get userVideo =>
       const AssetGenImage('assets/images/user_video.jpg');
 
+  /// File path: assets/images/sos_medical.png
+  AssetGenImage get sosMedical =>
+      const AssetGenImage('assets/images/sos_medical.png');
+
+  /// File path: assets/images/sos_accident.png
+  AssetGenImage get sosAccident =>
+      const AssetGenImage('assets/images/sos_accident.png');
+
+  /// File path: assets/images/sos_safety.png
+  AssetGenImage get sosSafety =>
+      const AssetGenImage('assets/images/sos_safety.png');
+
+  /// File path: assets/images/sos_threat.png
+  AssetGenImage get sosThreat =>
+      const AssetGenImage('assets/images/sos_threat.png');
+
+  /// File path: assets/images/sos_other.png
+  AssetGenImage get sosOther =>
+      const AssetGenImage('assets/images/sos_other.png');
+
   /// List of all assets
   List<AssetGenImage> get values => [
         introductionn1,
@@ -173,6 +201,7 @@ class $AssetsImagesGen {
         appUpdate,
         appIcon,
         audio,
+        bgImage,
         background,
         emptyGroup,
         group,
@@ -185,6 +214,7 @@ class $AssetsImagesGen {
         introduction3,
         kaabaMarker,
         kaaba,
+        lock3d,
         loginIllustration,
         lostInternets,
         message,
@@ -198,7 +228,12 @@ class $AssetsImagesGen {
         serverError,
         splashBg,
         userAvatar,
-        userVideo
+        userVideo,
+        sosMedical,
+        sosAccident,
+        sosSafety,
+        sosThreat,
+        sosOther
       ];
 }
 
