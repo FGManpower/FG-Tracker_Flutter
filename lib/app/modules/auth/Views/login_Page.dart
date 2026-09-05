@@ -18,160 +18,226 @@ class LoginPage extends GetView<Login_Controller> {
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: Assets.images.bgImage.provider(),
-            fit: BoxFit.cover,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFF7664F6),
+              Color(0xFF8F7EF8),
+              Color(0xFFD6CEFD),
+              Color(0xFFF3F1FE),
+            ],
+            stops: [0.0, 0.35, 0.72, 1.0],
           ),
         ),
-        child: SafeArea(
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final bool isKeyboardOpen =
-                  MediaQuery.of(context).viewInsets.bottom > 0;
-              return SingleChildScrollView(
-                physics: const ClampingScrollPhysics(),
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 24.w),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        if (!isKeyboardOpen) ...[
-                          // Push subtitle to sit right below "Welcome Back!" underline
-                          SizedBox(height: constraints.maxHeight * 0.30),
-                          _buildSubtitleText(),
-                          SizedBox(height: constraints.maxHeight * 0.06),
-                        ] else
-                          SizedBox(height: 16.h),
-                        // Login card with hexagon badge
-                        Stack(
-                          clipBehavior: Clip.none,
-                          alignment: Alignment.topCenter,
-                          children: [
-                            Container(
-                              margin: EdgeInsets.only(top: 40.h),
-                              padding: EdgeInsets.only(
-                                left: 20.w,
-                                right: 20.w,
-                                top: 48.h,
-                                bottom: 28.h,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(30.r),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: const Color(0xFF4B3FDD)
-                                        .withValues(alpha: 0.12),
-                                    blurRadius: 28,
-                                    spreadRadius: 1,
-                                    offset: const Offset(0, 10),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 500),
+            child: Stack(
+          children: [
+            Positioned(
+              // Moved the background icon down along with the increased top padding
+              top: 120.h,
+              right: -20.w,
+              child: SizedBox(
+                width: 190.w,
+                height: 190.h,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    Image.asset(
+                      Assets.images.loctionIcon.path,
+                      width: 170.w,
+                      height: 170.h,
+                      fit: BoxFit.contain,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            SafeArea(
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final bool isKeyboardOpen =
+                      MediaQuery.of(context).viewInsets.bottom > 0;
+                  return SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    child: ConstrainedBox(
+                      constraints:
+                          BoxConstraints(minHeight: constraints.maxHeight),
+                      child: IntrinsicHeight(
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 20.w),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Significantly increased top padding for a much cleaner layout shift
+                              SizedBox(height: 140.h),
+                              if (!isKeyboardOpen)
+                                Padding(
+                                  padding:
+                                      EdgeInsets.symmetric(horizontal: 4.w),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        "Welcome\nBack! 👋",
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 32.sp,
+                                          fontWeight: FontWeight.bold,
+                                          fontFamily: FontFamily.interBold,
+                                          height: 1.15,
+                                        ),
+                                      ),
+                                      SizedBox(height: 8.h),
+                                      Container(
+                                        width: 42.w,
+                                        height: 3.5.h,
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFF5D47F1),
+                                          borderRadius:
+                                              BorderRadius.circular(2.r),
+                                        ),
+                                      ),
+                                      SizedBox(height: 12.h),
+                                      SizedBox(
+                                        width: 220.w,
+                                        child: Text(
+                                          "Great to see you again.\nLog in to access your account\nand explore our latest features.",
+                                          style: TextStyle(
+                                            color: Colors.white
+                                                .withValues(alpha: 0.9),
+                                            fontSize: 13.sp,
+                                            fontFamily: FontFamily.interRegular,
+                                            height: 1.4,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                ],
-                              ),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
+                                ),
+                              const Spacer(),
+                              Stack(
+                                clipBehavior: Clip.none,
+                                alignment: Alignment.topCenter,
                                 children: [
-                                  Text(
-                                    "Log In",
-                                    style: TextStyle(
-                                      color: Colors.black,
-                                      fontSize: 24.sp,
-                                      fontWeight: FontWeight.bold,
-                                      fontFamily: FontFamily.interBold,
+                                  Container(
+                                    margin: EdgeInsets.only(top: 40.h),
+                                    padding: EdgeInsets.only(
+                                      left: 20.w,
+                                      right: 20.w,
+                                      top: 48.h,
+                                      bottom: 28.h,
                                     ),
-                                  ),
-                                  SizedBox(height: 3.h),
-                                  Text(
-                                    "to Continue",
-                                    style: TextStyle(
-                                      color: const Color(0xFF5D47F1),
-                                      fontSize: 16.sp,
-                                      fontWeight: FontWeight.w600,
-                                      fontFamily: FontFamily.interBold,
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(30.r),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: const Color(0xFF4B3FDD)
+                                              .withValues(alpha: 0.12),
+                                          blurRadius: 28,
+                                          spreadRadius: 1,
+                                          offset: const Offset(0, 10),
+                                        ),
+                                      ],
                                     ),
-                                  ),
-                                  SizedBox(height: 24.h),
-                                  Form(
-                                    key: controller.loginKey,
                                     child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
+                                      mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        _buildPhoneInputField(),
-                                        Obx(
-                                          () => controller.mobileErrorText.value
-                                                  .isNotEmpty
-                                              ? Padding(
-                                                  padding: EdgeInsets.only(
-                                                      left: 10.w, top: 8.h),
-                                                  child: Text(
-                                                    controller
-                                                        .mobileErrorText.value,
-                                                    style: TextStyle(
-                                                      color: Colors.red,
-                                                      fontSize: 12.sp,
-                                                      fontFamily: FontFamily
-                                                          .interMedium,
-                                                    ),
-                                                  ),
-                                                )
-                                              : const SizedBox.shrink(),
+                                        Text(
+                                          "Log In",
+                                          style: TextStyle(
+                                            color: Colors.black,
+                                            fontSize: 24.sp,
+                                            fontWeight: FontWeight.bold,
+                                            fontFamily: FontFamily.interBold,
+                                          ),
+                                        ),
+                                        SizedBox(height: 3.h),
+                                        Text(
+                                          "to Continue",
+                                          style: TextStyle(
+                                            color: const Color(0xFF5D47F1),
+                                            fontSize: 16.sp,
+                                            fontWeight: FontWeight.w600,
+                                            fontFamily: FontFamily.interBold,
+                                          ),
                                         ),
                                         SizedBox(height: 24.h),
-                                        AuthGradientButton(
-                                          label: "Log In to Continue",
-                                          onTap: () => controller.login(),
+                                        Form(
+                                          key: controller.loginKey,
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              _buildPhoneInputField(),
+                                              Obx(
+                                                () => controller.mobileErrorText
+                                                        .value.isNotEmpty
+                                                    ? Padding(
+                                                        padding:
+                                                            EdgeInsets.only(
+                                                                left: 10.w,
+                                                                top: 8.h),
+                                                        child: Text(
+                                                          controller
+                                                              .mobileErrorText
+                                                              .value,
+                                                          style: TextStyle(
+                                                            color: Colors.red,
+                                                            fontSize: 12.sp,
+                                                            fontFamily:
+                                                                FontFamily
+                                                                    .interMedium,
+                                                          ),
+                                                        ),
+                                                      )
+                                                    : const SizedBox.shrink(),
+                                              ),
+                                              SizedBox(height: 24.h),
+                                              AuthGradientButton(
+                                                label: "Log In to Continue",
+                                                onTap: () => controller.login(),
+                                              ),
+                                            ],
+                                          ),
                                         ),
                                       ],
                                     ),
                                   ),
+                                  Positioned(
+                                    top: 0,
+                                    child: HexagonBadge(
+                                      child: Icon(
+                                        Icons.person_outline_rounded,
+                                        size: 34.sp,
+                                        color: const Color(0xFF5D47F1),
+                                      ),
+                                    ),
+                                  ),
                                 ],
                               ),
-                            ),
-                            Positioned(
-                              top: 0,
-                              child: HexagonBadge(
-                                child: Icon(
-                                  Icons.person_outline_rounded,
-                                  size: 34.sp,
-                                  color: const Color(0xFF5D47F1),
-                                ),
-                              ),
-                            ),
-                          ],
+                              SizedBox(height: 24.h),
+                              if (!isKeyboardOpen) _buildBottomSecurityBadge(),
+                              SizedBox(height: 30.h),
+                            ],
+                          ),
                         ),
-                        SizedBox(height: 24.h),
-                        _buildBottomSecurityBadge(),
-                        SizedBox(height: 24.h),
-                      ],
+                      ),
                     ),
-                  ),
-                ),
-              );
-            },
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildSubtitleText() {
-    return Padding(
-      padding: EdgeInsets.only(left: 4.w, top: 8.h),
-      child: Text(
-          "Great to see you again.\nLog in to access your account\nand explore our latest features.",
-          style: TextStyle(
-            color: Colors.white.withValues(alpha: 0.85),
-            fontSize: 13.sp,
-            fontWeight: FontWeight.w400,
-            fontFamily: FontFamily.interRegular,
-            height: 1.5,
-          ),
-          ),
     );
   }
 
@@ -323,7 +389,8 @@ class LoginPage extends GetView<Login_Controller> {
         Positioned(
           right: 4.w,
           top: -22.h,
-          child: Assets.images.lock3d.image(
+          child: Image.asset(
+            Assets.images.lock3d.path,
             height: 64.h,
             width: 64.w,
             fit: BoxFit.contain,

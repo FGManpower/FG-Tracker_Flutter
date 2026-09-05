@@ -191,6 +191,14 @@ class $AssetsImagesGen {
   AssetGenImage get sosOther =>
       const AssetGenImage('assets/images/sos_other.png');
 
+  /// File path: assets/images/loction_icon.png
+  AssetGenImage get loctionIcon =>
+      const AssetGenImage('assets/images/loction_icon.png');
+
+  /// File path: assets/images/shelid_icon.png
+  AssetGenImage get shelidIcon =>
+      const AssetGenImage('assets/images/shelid_icon.png');
+
   /// List of all assets
   List<AssetGenImage> get values => [
         introductionn1,
@@ -233,7 +241,9 @@ class $AssetsImagesGen {
         sosAccident,
         sosSafety,
         sosThreat,
-        sosOther
+        sosOther,
+        loctionIcon,
+        shelidIcon
       ];
 }
 

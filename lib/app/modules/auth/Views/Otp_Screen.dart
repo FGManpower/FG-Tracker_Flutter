@@ -40,10 +40,13 @@ class OTPScreen extends GetView<OtpController> {
             stops: [0.0, 0.35, 0.72, 1.0],
           ),
         ),
-        child: Stack(
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 500),
+            child: Stack(
           children: [
             Positioned(
-              top: 20.h,
+              top: 120.h,
               right: -20.w,
               child: SizedBox(
                 width: 190.w,
@@ -52,7 +55,7 @@ class OTPScreen extends GetView<OtpController> {
                   alignment: Alignment.center,
                   children: [
                     Image.asset(
-                      Assets.images.lock3d.path,
+                      Assets.images.shelidIcon.path,
                       width: 170.w,
                       height: 170.h,
                       fit: BoxFit.contain,
@@ -75,7 +78,7 @@ class OTPScreen extends GetView<OtpController> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              SizedBox(height: 15.h),
+                              SizedBox(height: 140.h),
                               Padding(
                                 padding: EdgeInsets.symmetric(horizontal: 4.w),
                                 child: Column(
@@ -118,7 +121,7 @@ class OTPScreen extends GetView<OtpController> {
                                   ],
                                 ),
                               ),
-                              SizedBox(height: 25.h),
+                              const Spacer(),
                               Stack(
                                 clipBehavior: Clip.none,
                                 alignment: Alignment.topCenter,
@@ -343,7 +346,6 @@ class OTPScreen extends GetView<OtpController> {
                                   ),
                                 ],
                               ),
-                              const Spacer(),
                               SizedBox(height: 30.h),
                             ],
                           ),
@@ -355,6 +357,8 @@ class OTPScreen extends GetView<OtpController> {
               ),
             ),
           ],
+        ),
+          ),
         ),
       ),
     );
