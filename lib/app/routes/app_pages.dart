@@ -32,8 +32,8 @@ import '../modules/Walkie-talkie/WalkieTalkieScreen.dart';
 
 import '../modules/mediaStream/Bindings/group_call_binding.dart';
 import '../modules/mediaStream/Bindings/group_incoming_call_binding.dart';
-import '../modules/mediaStream/Views/group_calling_screen.dart';
-import '../modules/mediaStream/Views/group_incoming_call_screen.dart';
+import '../modules/mediaStream/Views/Group/group_calling_screen.dart';
+import '../modules/mediaStream/Views/Group/group_incoming_call_screen.dart';
 import '../modules/sos/SosBinding.dart';
 import '../modules/sos/sos_screen.dart';
 
