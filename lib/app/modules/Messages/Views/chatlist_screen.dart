@@ -50,7 +50,7 @@ class ChatListScreen extends StatelessWidget {
                 reausabletext(
                   "Stay connected with your team",
                   fontsize: 11.sp,
-                  fontweight: FontWeight(400),
+                  fontweight: FontWeight(500),
                   color: Colors.grey.shade700,
                 ),
               ],
@@ -66,7 +66,7 @@ class ChatListScreen extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 42.w,
+        width: 40.w,
         height: 42.w,
         decoration: BoxDecoration(
           color: Colors.white,
@@ -99,6 +99,7 @@ class _AllChatsBody extends StatelessWidget {
       "unreadCount": 1,
       "statusColor": Colors.green,
       "isGroup": false,
+      "image": "https://i.pravatar.cc/150?img=5",
     },
     {
       "name": "Construction Team",
@@ -108,6 +109,7 @@ class _AllChatsBody extends StatelessWidget {
       "unreadCount": 0,
       "statusColor": null,
       "isGroup": true,
+      "image": null,
     },
     {
       "name": "Rohit Verma",
@@ -117,6 +119,7 @@ class _AllChatsBody extends StatelessWidget {
       "unreadCount": 0,
       "statusColor": Colors.grey,
       "isGroup": false,
+      "image": "https://i.pravatar.cc/150?img=12",
     },
     {
       "name": "Neha Verma",
@@ -126,6 +129,7 @@ class _AllChatsBody extends StatelessWidget {
       "unreadCount": 2,
       "statusColor": Colors.orange,
       "isGroup": false,
+      "image": "https://i.pravatar.cc/150?img=9",
     },
     {
       "name": "Pooja Mehta",
@@ -135,6 +139,7 @@ class _AllChatsBody extends StatelessWidget {
       "unreadCount": 3,
       "statusColor": Colors.green,
       "isGroup": false,
+      "image": "https://i.pravatar.cc/150?img=10",
     },
     {
       "name": "Event Crew",
@@ -144,6 +149,7 @@ class _AllChatsBody extends StatelessWidget {
       "unreadCount": 3,
       "statusColor": null,
       "isGroup": true,
+      "image": null,
     },
   ];
 
@@ -167,6 +173,7 @@ class _AllChatsBody extends StatelessWidget {
             unreadCount: 2,
             statusColor: Colors.green,
             isPinned: true,
+            image: "https://i.pravatar.cc/150?img=3",
           ),
           SizedBox(height: 10.h),
           _sectionTitle("All Chats", showDropdown: true),
@@ -206,6 +213,7 @@ class _AllChatsBody extends StatelessWidget {
                   unreadCount: chat['unreadCount'],
                   statusColor: chat['statusColor'],
                   isGroup: chat['isGroup'],
+                  image: chat['image'],
                 );
               },
             ),
@@ -217,21 +225,39 @@ class _AllChatsBody extends StatelessWidget {
   }
 
   Widget _sectionTitle(
-    String title, {
-    bool showViewAll = false,
-    int? badgeCount,
-    bool showDropdown = false,
-  }) {
+      String title, {
+        bool showViewAll = false,
+        int? badgeCount,
+        bool showDropdown = false,
+      }) {
+    final bool isPinned = title == "Pinned Chats 📌";
+
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+      padding: EdgeInsets.symmetric(
+        horizontal: 16.w,
+        vertical: 8.h,
+      ),
       child: Row(
         children: [
           reausabletext(
-            title,
+            isPinned ? "Pinned Chats" : title,
             fontsize: 13.sp,
             fontfamily: FontFamily.interBold,
             color: Colors.black87,
           ),
+
+          if (isPinned) ...[
+            SizedBox(width: 5.w),
+            Transform.rotate(
+              angle: 0.5,
+              child: Icon(
+                Icons.push_pin_rounded,
+                size: 16.sp,
+                color: const Color(0xFF6B4DFF),
+              ),
+            ),
+          ],
+
           if (badgeCount != null) ...[
             SizedBox(width: 8.w),
             Container(
@@ -249,13 +275,16 @@ class _AllChatsBody extends StatelessWidget {
               ),
             ),
           ],
+
           const Spacer(),
+
           if (showViewAll)
             reausabletext(
               "View All >",
               fontsize: 12.sp,
               color: const Color(0xFF6B4DFF),
             ),
+
           if (showDropdown)
             Icon(
               Icons.keyboard_arrow_down,
@@ -276,45 +305,57 @@ class _AllChatsBody extends StatelessWidget {
         children: [
           _myStatus(context),
           SizedBox(width: 16.w),
-          _statusItem("Priya", "Online", Colors.green),
-          _statusItem("Rohit", "Away", Colors.orange),
-          _statusItem("Imran", "Offline", Colors.grey),
+          _statusItem("Priya", "Online", Colors.green, "https://i.pravatar.cc/150?img=5"),
+          _statusItem("Rohit", "Away", Colors.orange, "https://i.pravatar.cc/150?img=12"),
+          _statusItem("Imran", "Offline", Colors.grey, "https://i.pravatar.cc/150?img=11"),
+          _statusItem("Neha", "Do Not Disturb", Colors.red, "https://i.pravatar.cc/150?img=9"),
+          _statusItem("Pooja", "Online", Colors.green, "https://i.pravatar.cc/150?img=10"),
         ],
       ),
     );
   }
 
   Widget _myStatus(BuildContext context) {
-    return GestureDetector(
-      onTapDown: (details) {
-        CustomDropdownMenu.show(
-          context: context,
-          position: Offset(
-            details.globalPosition.dx,
-            details.globalPosition.dy + 10,
-          ),
-          width: 200,
-          items: [
-            DropdownMenuItemData(
-              icon: Icons.add_photo_alternate_outlined,
-              title: "Add to My Status",
-              onTap: () {},
-            ),
-            DropdownMenuItemData(
-              icon: Icons.lock_outline,
-              title: "Status Privacy",
-              onTap: () {},
-            ),
-          ],
-        );
-      },
-      child: Column(
-        children: [
-          Stack(
+    final GlobalKey avatarKey = GlobalKey();
+
+    return Column(
+      children: [
+        GestureDetector(
+          key: avatarKey,
+          onTap: () {
+            final RenderBox? box =
+            avatarKey.currentContext?.findRenderObject() as RenderBox?;
+            if (box == null) return;
+
+            final Offset pos = box.localToGlobal(Offset.zero);
+            final Size size = box.size;
+
+            CustomDropdownMenu.show(
+              context: context,
+              position: Offset(
+                pos.dx - 8,
+                pos.dy + size.height - 19,
+              ),
+              width: 190,
+              items: [
+                DropdownMenuItemData(
+                  icon: Icons.history_toggle_off_rounded,
+                  title: "Add to My Status",
+                  onTap: () {},
+                ),
+                DropdownMenuItemData(
+                  icon: Icons.lock_outline_rounded,
+                  title: "Status Privacy",
+                  onTap: () {},
+                ),
+              ],
+            );
+          },
+          child: Stack(
             children: [
               Container(
-                width: 60.w,
-                height: 60.w,
+                width: 62.w,
+                height: 62.w,
                 padding: EdgeInsets.all(3.w),
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
@@ -322,7 +363,8 @@ class _AllChatsBody extends StatelessWidget {
                 ),
                 child: CircleAvatar(
                   backgroundColor: Colors.grey.shade300,
-                  child: Icon(Icons.person, color: Colors.white, size: 30.sp),
+                  backgroundImage:
+                  const NetworkImage("https://i.pravatar.cc/150?img=3"),
                 ),
               ),
               Positioned(
@@ -340,18 +382,18 @@ class _AllChatsBody extends StatelessWidget {
               ),
             ],
           ),
-          SizedBox(height: 6.h),
-          reausabletext(
-            "My Status",
-            fontsize: 12.sp,
-            fontfamily: FontFamily.interSemiBold,
-          ),
-        ],
-      ),
+        ),
+        SizedBox(height: 6.h),
+        reausabletext(
+          "My Status",
+          fontsize: 12.sp,
+          fontfamily: FontFamily.interSemiBold,
+        ),
+      ],
     );
   }
-
-  Widget _statusItem(String name, String subStatus, Color ringColor) {
+  Widget _statusItem(
+      String name, String subStatus, Color ringColor, String imageUrl) {
     return Padding(
       padding: EdgeInsets.only(right: 16.w),
       child: Column(
@@ -368,7 +410,7 @@ class _AllChatsBody extends StatelessWidget {
                 ),
                 child: CircleAvatar(
                   backgroundColor: Colors.grey.shade300,
-                  child: Icon(Icons.person, color: Colors.white, size: 30.sp),
+                  backgroundImage: NetworkImage(imageUrl),
                 ),
               ),
               Positioned(
@@ -408,6 +450,7 @@ class _AllChatsBody extends StatelessWidget {
     Color? statusColor,
     bool isGroup = false,
     bool isPinned = false,
+    String? image,
   }) {
     Offset tapPos = Offset.zero;
 
@@ -437,6 +480,7 @@ class _AllChatsBody extends StatelessWidget {
           statusColor: statusColor,
           isGroup: isGroup,
           isPinned: isPinned,
+          image: image,
         ),
       ),
     );
@@ -451,6 +495,7 @@ class _AllChatsBody extends StatelessWidget {
     int unreadCount = 0,
     Color? statusColor,
     bool isGroup = false,
+    String? image,
   }) {
     Offset tapPos = Offset.zero;
 
@@ -468,6 +513,7 @@ class _AllChatsBody extends StatelessWidget {
           unreadCount: unreadCount,
           statusColor: statusColor,
           isGroup: isGroup,
+          image: image,
         ),
       ),
     );
@@ -482,6 +528,7 @@ class _AllChatsBody extends StatelessWidget {
     Color? statusColor,
     bool isGroup = false,
     bool isPinned = false,
+    String? image,
   }) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -490,17 +537,23 @@ class _AllChatsBody extends StatelessWidget {
           clipBehavior: Clip.none,
           children: [
             CircleAvatar(
-              radius: 24.r,
+              radius: 28.r,
               backgroundColor: isGroup
                   ? (name == "Event Crew"
-                      ? const Color(0xFFFF6B8A)
-                      : const Color(0xFF6B4DFF))
+                  ? const Color(0xFFFF6B8A)
+                  : const Color(0xFF6B4DFF))
                   : Colors.grey.shade300,
-              child: Icon(
-                isGroup ? Icons.groups : Icons.person,
+              backgroundImage:
+              (!isGroup && image != null) ? NetworkImage(image) : null,
+              child: isGroup
+                  ? Icon(
+                Icons.groups,
                 color: Colors.white,
-                size: isGroup ? 26.sp : 28.sp,
-              ),
+                size: 26.sp,
+              )
+                  : (image == null
+                  ? Icon(Icons.person, color: Colors.white, size: 28.sp)
+                  : null),
             ),
             if (statusColor != null)
               Positioned(
@@ -538,13 +591,14 @@ class _AllChatsBody extends StatelessWidget {
               reausabletext(
                 role,
                 fontsize: 11.sp,
-                color: const Color(0xFF6B4DFF),
+                fontweight: FontWeight(500),
+                color: Colors.grey.shade700,
                 maxline: 1,
               ),
               SizedBox(height: 3.h),
               reausabletext(
                 msg,
-                fontsize: 12.sp,
+                fontsize: 11.sp,
                 color: Colors.grey.shade600,
                 maxline: 1,
               ),
@@ -567,7 +621,7 @@ class _AllChatsBody extends StatelessWidget {
                     reausabletext(
                       time,
                       fontsize: 11.sp,
-                      color: Colors.grey.shade500,
+                      color: Colors.grey.shade700,
                       maxline: 1,
                     ),
                     SizedBox(height: 7.h),

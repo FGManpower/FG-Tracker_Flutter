@@ -118,7 +118,7 @@ class _DropdownItem extends StatelessWidget {
             Text(
               item.title,
               style: TextStyle(
-                fontSize: 13.sp,
+                fontSize: 12.sp,
                 color: item.isDestructive ? Colors.red : Colors.black87,
                 fontFamily: FontFamily.interSemiBold,
               ),

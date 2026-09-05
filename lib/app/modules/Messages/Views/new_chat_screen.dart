@@ -8,11 +8,13 @@ class _ContactItem {
   final String name;
   final String role;
   final bool isInvite;
+  final String? image;
 
   const _ContactItem({
     required this.name,
     required this.role,
     required this.isInvite,
+    this.image,
   });
 }
 
@@ -32,23 +34,63 @@ class _NewChatScreenState extends State<NewChatScreen> {
 
   final List<_ContactItem> _directContacts = const [
     _ContactItem(
-        name: "Samad", role: "FG Manpower Development", isInvite: false),
+        name: "Samad",
+        role: "FG Manpower Development",
+        isInvite: false,
+        image: "https://i.pravatar.cc/150?img=3"),
     _ContactItem(
-        name: "Riya Sharma", role: "Event Management Team", isInvite: false),
+        name: "Riya Sharma",
+        role: "Event Management Team",
+        isInvite: false,
+        image: "https://i.pravatar.cc/150?img=5"),
     _ContactItem(
-        name: "Neha Verma", role: "Construction Site Team", isInvite: false),
+        name: "Neha Verma",
+        role: "Construction Site Team",
+        isInvite: false,
+        image: "https://i.pravatar.cc/150?img=9"),
     _ContactItem(
         name: "Arjun Patel",
         role: "Logistics & Delivery Team",
-        isInvite: false),
+        isInvite: false,
+        image: "https://i.pravatar.cc/150?img=12"),
   ];
 
   final List<_ContactItem> _inviteContacts = const [
-    _ContactItem(name: "Pooja Mehta", role: "Accounts Team", isInvite: true),
     _ContactItem(
-        name: "Rahul Chauhan", role: "Site Supervisor", isInvite: true),
-    _ContactItem(name: "Mohit Kumar", role: "Field Operations", isInvite: true),
-    _ContactItem(name: "Sandeep Yadav", role: "Warehouse Team", isInvite: true),
+        name: "Pooja Mehta",
+        role: "Accounts Team",
+        isInvite: true,
+        image: "https://i.pravatar.cc/150?img=10"),
+    _ContactItem(
+        name: "Rahul Chauhan",
+        role: "Site Supervisor",
+        isInvite: true,
+        image: "https://i.pravatar.cc/150?img=11"),
+    _ContactItem(
+        name: "Mohit Kumar",
+        role: "Field Operations",
+        isInvite: true,
+        image: "https://i.pravatar.cc/150?img=13"),
+    _ContactItem(
+        name: "Sandeep Yadav",
+        role: "Warehouse Team",
+        isInvite: true,
+        image: "https://i.pravatar.cc/150?img=14"),
+    _ContactItem(
+        name: "Rahul Chauhan",
+        role: "Site Supervisor",
+        isInvite: true,
+        image: "https://i.pravatar.cc/150?img=11"),
+    _ContactItem(
+        name: "Mohit Kumar",
+        role: "Field Operations",
+        isInvite: true,
+        image: "https://i.pravatar.cc/150?img=13"),
+    _ContactItem(
+        name: "Sandeep Yadav",
+        role: "Warehouse Team",
+        isInvite: true,
+        image: "https://i.pravatar.cc/150?img=14"),
   ];
 
   List<_ContactItem> get _filteredDirect {
@@ -186,9 +228,13 @@ class _NewChatScreenState extends State<NewChatScreen> {
       child: Row(
         children: [
           CircleAvatar(
-            radius: 22.r,
+            radius: 25.r,
             backgroundColor: Colors.grey.shade300,
-            child: Icon(Icons.person, color: Colors.white, size: 28.sp),
+            backgroundImage:
+            item.image != null ? NetworkImage(item.image!) : null,
+            child: item.image == null
+                ? Icon(Icons.person, color: Colors.white, size: 28.sp)
+                : null,
           ),
           SizedBox(width: 12.w),
           Expanded(
@@ -204,7 +250,8 @@ class _NewChatScreenState extends State<NewChatScreen> {
                 reausabletext(
                   item.role,
                   fontsize: 11.sp,
-                  color: const Color(0xFF6B4DFF),
+                  fontweight: FontWeight(500),
+                  color:  Colors.grey.shade600,
                 ),
               ],
             ),
@@ -251,9 +298,9 @@ class _NewChatScreenState extends State<NewChatScreen> {
       title: Row(
         children: [
           GestureDetector(
-            onTap: () => Get.back(),
+              onTap: () => Get.back(),
               child: Container(
-                width: 42.w,
+                width: 40.w,
                 height: 42.w,
                 decoration: BoxDecoration(
                   color: Colors.white,
@@ -270,7 +317,7 @@ class _NewChatScreenState extends State<NewChatScreen> {
                   child: Icon(
                     Icons.arrow_back,
                     size: 20.sp,
-                    color: const Color(0xFF6B4DFF),
+
                   ),
                 ),
               )
@@ -337,9 +384,9 @@ class _NewChatScreenState extends State<NewChatScreen> {
 
   Widget _buildSearchBar() {
     return Padding(
-      padding: EdgeInsets.only(left: 16.w, right: 16.w, top: 10.h),
+      padding: EdgeInsets.only(left: 18.w, right: 19.w, top: 10.h),
       child: Container(
-        height: 48.h,
+        height: 46.h,
         padding: EdgeInsets.symmetric(horizontal: 14.w),
         decoration: BoxDecoration(
           color: Colors.white,
@@ -354,7 +401,7 @@ class _NewChatScreenState extends State<NewChatScreen> {
         ),
         child: Row(
           children: [
-            Icon(Icons.search, size: 22.sp, color: const Color(0xFF6B4DFF)),
+            Icon(Icons.search, size: 25.sp, color:  Colors.grey),
             SizedBox(width: 12.w),
             Expanded(
               child: TextField(
@@ -368,7 +415,7 @@ class _NewChatScreenState extends State<NewChatScreen> {
                 decoration: InputDecoration(
                   hintText: "Search by name...",
                   hintStyle: TextStyle(
-                    fontSize: 13.sp,
+                    fontSize: 11.sp,
                     color: Colors.grey.shade600,
                     fontFamily: FontFamily.interRegular,
                   ),
