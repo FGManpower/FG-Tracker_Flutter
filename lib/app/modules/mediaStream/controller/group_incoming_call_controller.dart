@@ -1,13 +1,11 @@
+import 'package:fgtracker/app/Data/Services/Socket/Socket_Group_Calling.dart';
 import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'package:get/get.dart';
 import '../../../../gen/assets.gen.dart';
-import '../../../Core/constant/pref_res.dart';
-import '../../../Core/values/global.dart';
-import '../../../Data/Services/Socket/Socket_SignallingService.dart';
+import '../../../Data/Services/group_call_service.dart'; // IMPORTANT
 import '../../../routes/app_pages.dart';
 
 class GroupIncomingCallController extends GetxController {
-  final socket = SignallingService.instance.socket;
   final args = Get.arguments;
 
   late String groupId;
@@ -31,10 +29,9 @@ class GroupIncomingCallController extends GetxController {
     activeMemberCount = args["activeMemberCount"] ?? 1;
     totalMemberCount = args["totalMemberCount"] ?? 0;
     isVideo = args["isVideo"] == true;
-    callId = args["callId"];
+    callId = args["callId"]?.toString();
 
     _playRingtone();
-    _listenForSocketEvents();
   }
 
   void _playRingtone() {
@@ -50,15 +47,10 @@ class GroupIncomingCallController extends GetxController {
     FlutterRingtonePlayer().stop();
   }
 
-  void _listenForSocketEvents() {
-    // TODO: Add listeners for group call ended/cancelled.
-  }
-
   void joinCall() {
     _stopRingtone();
 
-    // TODO: Emit group call accept/join event to backend socket
-
+    // Controller handles emitting join_group_call inside onInit
     Get.offNamed(
       Routes.groupCallingScreen,
       arguments: {
@@ -68,14 +60,16 @@ class GroupIncomingCallController extends GetxController {
         "isVideo": isVideo,
         "memberCount": totalMemberCount,
         "callId": callId,
-        "callType": "incoming",
+        "callType": "incoming", // Important!
       },
     );
   }
 
   void declineCall() {
     _stopRingtone();
-    // TODO: Emit group call reject event to backend socket
+    if (callId != null) {
+      Socket_GroupCallService.instance.rejectGroupCall(callId!, groupId);
+    }
     Get.back();
   }
 

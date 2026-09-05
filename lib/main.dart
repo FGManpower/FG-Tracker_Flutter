@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:connectycube_flutter_call_kit/connectycube_flutter_call_kit.dart';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
+import 'package:fgtracker/app/Data/Services/Socket/Socket_Group_Calling.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Walkie-Talkie-Service.dart';
 
 import 'package:flutter/material.dart';
@@ -168,6 +169,9 @@ Future<void> main() async {
       selfCallerID: userId,
     );
     groupWalkieInitialize(userId);
+  }
+  if (userId != null) {
+    Socket_GroupCallService.instance.init(userId);
   }
 
   runApp(const MyApp());

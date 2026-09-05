@@ -23,29 +23,36 @@ class TrackingScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: bgColor,
       body: SafeArea(
-        child: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
-          child: Column(
-            children: [
-              _buildHeader(),
-              _buildCustomTabs(),
-              Obx(() {
-                if (controller.selectedTabIndex.value == 1) {
-                  return _buildGroupTabContent();
-                }
-                return Column(
-                  children: [
-                    _buildSearchAndRadius(),
-                    _buildStaticMapSection(),
-                    _buildStatsCard(),
-                    _buildLiveMembersList(),
-                    _buildBottomShareButton(),
-                  ],
-                );
-              }),
-              const SizedBox(height: 24),
-            ],
-          ),
+        child: Column(
+          children: [
+         Column(
+           children: [
+             _buildHeader(),
+             _buildCustomTabs(),
+           ],
+         ),
+           Obx(() {
+             if (controller.selectedTabIndex.value == 1) {
+               return Expanded(child: _buildGroupTabContent());
+             }
+             return Expanded(
+           
+               child: SingleChildScrollView(
+                 child: Column(
+                   children: [
+                     _buildSearchAndRadius(),
+                     _buildStaticMapSection(),
+                     _buildStatsCard(),
+                     _buildLiveMembersList(),
+                     _buildBottomShareButton(),
+                   ],
+                 ),
+               ),
+             );
+           }),
+
+
+          ],
         ),
       ),
     );

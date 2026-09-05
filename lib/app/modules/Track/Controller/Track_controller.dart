@@ -40,52 +40,13 @@ class TrackController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    fetchMockData();
+
     fetchLiveMembers();
     fetchGroupData();
     getCurrentLocationAndFetchUsers();
   }
 
-  void fetchMockData() {
-    final mockList = [
-      MemberModel(
-        name: "Samad",
-        team: "FG Manpower Team",
-        location: "Ghatkopar, Mumbai",
-        distance: "0.3",
-        battery: 80,
-        avatarUrl: "https://i.pravatar.cc/150?img=11",
-      ),
-      MemberModel(
-        name: "Riya Sharma",
-        team: "Event Management Team",
-        location: "Ghatkopar, Mumbai",
-        distance: "0.8",
-        battery: 70,
-        avatarUrl: "https://i.pravatar.cc/150?img=5",
-      ),
-      MemberModel(
-        name: "Neha Verma",
-        team: "Construction Site Team",
-        location: "Vikhroli, Mumbai",
-        distance: "1.2",
-        battery: 65,
-        avatarUrl: "https://i.pravatar.cc/150?img=9",
-      ),
-      MemberModel(
-        name: "Arjun Patel",
-        team: "Logistics & Delivery Team",
-        location: "Powai, Mumbai",
-        distance: "1.9",
-        battery: 55,
-        avatarUrl: "https://i.pravatar.cc/150?img=12",
-      ),
-    ];
-    liveMembers.value = mockList;
-    allFetchedMembers.value = mockList;
-    liveNowCount.value = mockList.length;
-    totalMembersCount.value = 18;
-  }
+
 
   Future<void> fetchGroupData() async {
     try {

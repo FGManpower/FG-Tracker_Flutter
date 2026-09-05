@@ -135,7 +135,9 @@ class GroupCallingScreen extends GetView<GroupCallingController> {
             child: IconButton(
               padding: EdgeInsets.zero,
               icon: const Icon(Icons.people_outline, color: Colors.white, size: 28),
-              onPressed: controller.openParticipantsSheet,
+              onPressed: () {
+                // controller.openParticipantsSheet():
+              },
             ),
           ),
         ],

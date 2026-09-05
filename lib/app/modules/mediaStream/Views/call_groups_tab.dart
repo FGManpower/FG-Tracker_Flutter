@@ -1,3 +1,5 @@
+import 'package:fgtracker/app/Core/constant/pref_res.dart';
+import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Model/GroupRes.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/modules/mediaStream/Widget/call_widget.dart';
@@ -54,6 +56,43 @@ class CallGroupsTab extends StatelessWidget {
   }
 }
 
+
+
+Future<void> _initiateGroupCall({
+  required dynamic group, // Replace 'dynamic' with your Group model type
+  required bool isVideo,
+}) async {
+  try {
+    // Get current user info
+    final myName = Global.storageServices.get(PrefConst.userName)?.toString() ?? "Me";
+    final myImage = Global.storageServices.get(PrefConst.profileImage)?.toString() ?? "";
+
+    // 1. Navigate immediately to the calling screen with outgoing state
+    Get.toNamed(
+      Routes.groupCallingScreen,
+      arguments: {
+        "groupId": group.id.toString(),
+        "groupName": group.groupName ?? "Unknown Group",
+        "groupProfile": group.groupProfile,
+        "isVideo": isVideo,
+        "memberCount": group.memberCount ?? 0,
+        "callType": "outgoing",
+      },
+    );
+
+    // 2. Trigger the socket call - the calling controller will handle the rest
+    // (The controller already calls startGroupCall in its onInit for outgoing calls)
+  } catch (e) {
+    debugPrint("Error initiating group call: $e");
+    Get.snackbar(
+      "Error",
+      "Could not start group call. Please try again.",
+      snackPosition: SnackPosition.BOTTOM,
+      backgroundColor: Colors.red,
+      colorText: Colors.white,
+    );
+  }
+}
 class _GroupTile extends StatelessWidget {
   const _GroupTile({required this.group});
 
@@ -78,72 +117,44 @@ class _GroupTile extends StatelessWidget {
         ),
         SizedBox(width: 12.w),
         Expanded(
-          child: GestureDetector(
-            // TODO: Remove after backend group incoming call is integrated
-            onLongPress: () {
-              Get.toNamed(
-                Routes.groupIncomingCallScreen,
-                arguments: {
-                  "groupId": group.id.toString(),
-                  "groupName": group.groupName ?? "Unknown Group",
-                  "groupProfile": group.groupProfile,
-                  "callerName": "Samad",
-                  "activeMemberCount": 10,
-                  "totalMemberCount": group.memberCount ?? 25,
-                  "isVideo": false,
-                  "callId": "test-group-call",
-                },
-              );
-            },
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                reausabletext(
-                  group.groupName ?? "No Name Group",
-                  fontsize: 14.sp,
-                  fontfamily: FontFamily.interSemiBold,
-                  color: Colors.black87,
-                ),
-                SizedBox(height: 3.h),
-                reausabletext(
-                  "${group.memberCount ?? 0} Members",
-                  fontsize: 11.sp,
-                  color: const Color(0xFF6B4DFF).withValues(alpha: 0.7),
-                ),
-              ],
-            ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              reausabletext(
+                group.groupName ?? "No Name Group",
+                fontsize: 14.sp,
+                fontfamily: FontFamily.interSemiBold,
+                color: Colors.black87,
+              ),
+              SizedBox(height: 3.h),
+              reausabletext(
+                "${group.memberCount ?? 0} Members",
+                fontsize: 11.sp,
+                color: const Color(0xFF6B4DFF).withValues(alpha: 0.7),
+              ),
+            ],
           ),
         ),
         SizedBox(width: 8.w),
 
+        // Video Call
         CallActionChip(
           icon: Icons.videocam_rounded,
-          onTap: () {
-            GroupCallService.instance.startGroupCall(
-              context,
-              groupId: group.id.toString(),
-              groupName: group.groupName ?? "",
-              groupProfile: group.groupProfile,
-              memberCount: group.memberCount,
-              isVideo: true,
-            );
-          },
+          onTap: () => _initiateGroupCall(
+            group: group,
+            isVideo: true,
+          ),
         ),
 
         SizedBox(width: 7.w),
 
+        // Audio Call
         CallActionChip(
           icon: Icons.call,
-          onTap: () {
-            GroupCallService.instance.startGroupCall(
-              context,
-              groupId: group.id.toString(),
-              groupName: group.groupName ?? "",
-              groupProfile: group.groupProfile,
-              memberCount: group.memberCount,
-              isVideo: false,
-            );
-          },
+          onTap: () => _initiateGroupCall(
+            group: group,
+            isVideo: false,
+          ),
         ),
       ],
     );

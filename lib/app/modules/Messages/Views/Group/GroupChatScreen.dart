@@ -3,7 +3,6 @@ import 'package:fgtracker/app/Core/values/Dialog/DialogBox.dart';
 import 'package:fgtracker/app/Core/values/utility.dart';
 import 'package:fgtracker/app/Model/ContactMessage.dart';
 import 'package:fgtracker/app/Model/LocationMessage.dart';
-import 'package:fgtracker/app/config/themes_data.dart';
 import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
 import 'package:fgtracker/app/modules/Messages/Views/Group/ChatGroupProfile_Screen.dart';
 import 'package:fgtracker/app/modules/Messages/widgets/ChatInputArea.dart';
@@ -15,9 +14,7 @@ import '../../../../Core/constant/const_res.dart';
 
 import 'package:get/get.dart';
 
-import '../../../../global_widget/common_widget.dart';
 import '../../Controller/GroupChatController.dart';
-import '../../widgets/message_Widgets.dart';
 import '../ContactPickerPage.dart';
 import '../LocationPickerPage.dart';
 
