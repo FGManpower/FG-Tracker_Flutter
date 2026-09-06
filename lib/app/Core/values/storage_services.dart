@@ -28,6 +28,14 @@ class StorageServices {
     return await _prefs.setString(key, value);
   }
 
+  Future<bool> setDouble(String key, double value) async {
+    return await _prefs.setDouble(key, value);
+  }
+
+  double? getDouble(String key) {
+    return _prefs.getDouble(key);
+  }
+
   Future<bool> remove(String key) {
     return _prefs.remove(key);
   }
