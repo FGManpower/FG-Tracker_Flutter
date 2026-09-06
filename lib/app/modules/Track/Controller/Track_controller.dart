@@ -268,6 +268,7 @@ class TrackController extends GetxController {
     updateMapMarkersAndCircle();
   }
 
+
   Future<void> fetchGroupData() async {
     try {
       isGroupLoading.value = true;

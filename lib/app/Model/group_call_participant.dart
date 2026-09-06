@@ -25,6 +25,8 @@ class GroupCallParticipant {
     bool videoOn = true,
     bool speaking = false,
     bool connected = false,
+    this.renderer,
+    this.stream,
   })  : isMuted = muted.obs,
         isVideoOn = videoOn.obs,
         isSpeaking = speaking.obs,

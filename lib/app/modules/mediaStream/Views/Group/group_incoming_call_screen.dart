@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import '../../../../gen/fonts.gen.dart';
-import '../../../global_widget/common_widget.dart';
-import '../Controller/group_incoming_call_controller.dart';
+import '../../../../../gen/fonts.gen.dart';
+import '../../../../global_widget/common_widget.dart';
+import '../../Controller/group_incoming_call_controller.dart';
 
 class GroupIncomingCallScreen extends GetView<GroupIncomingCallController> {
   const GroupIncomingCallScreen({super.key});

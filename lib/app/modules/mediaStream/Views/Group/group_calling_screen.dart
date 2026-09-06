@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import '../../../../gen/fonts.gen.dart';
-import '../Controller/group_calling_controller.dart';
-import '../Widget/group_call_controls.dart';
-import '../Widget/group_participant_grid.dart';
+import '../../../../../gen/fonts.gen.dart';
+import '../../Controller/group_calling_controller.dart';
+import '../../Widget/group_call_controls.dart';
+import '../../Widget/group_participant_grid.dart';
 
 class GroupCallingScreen extends GetView<GroupCallingController> {
   const GroupCallingScreen({super.key});
@@ -135,7 +135,9 @@ class GroupCallingScreen extends GetView<GroupCallingController> {
             child: IconButton(
               padding: EdgeInsets.zero,
               icon: const Icon(Icons.people_outline, color: Colors.white, size: 28),
-              onPressed: controller.openParticipantsSheet,
+              onPressed: () {
+                // controller.openParticipantsSheet():
+              },
             ),
           ),
         ],
