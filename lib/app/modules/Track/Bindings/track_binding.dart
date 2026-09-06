@@ -3,6 +3,7 @@ import 'package:fgtracker/app/modules/Track/Controller/TrackController.dart';
 import 'package:get/get.dart';
 
 import '../Controller/SearchController.dart';
+import '../Controller/Track_controller.dart';
 
 
 
@@ -20,6 +21,15 @@ class LocationTracking_Binding extends Bindings {
   void dependencies() {
     Get.lazyPut<TrackingController>(
           () => TrackingController(),
+    );
+  }
+}
+
+class TrackingBinding extends Bindings {
+  @override
+  void dependencies() {
+    Get.lazyPut<TrackController>(
+          () => TrackController(),
     );
   }
 }

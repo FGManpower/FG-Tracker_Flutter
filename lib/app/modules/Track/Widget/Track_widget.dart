@@ -7,23 +7,28 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 Future<BitmapDescriptor> getCustomIcon(
-    String imageUrl, dynamic isOnline) async {
-  return MarkerWidget(imageUrl: imageUrl, isOnline: isOnline)
+    String imageUrl, dynamic isOnline, {bool isMe = false}) async {
+  return MarkerWidget(imageUrl: imageUrl, isOnline: isOnline, isMe: isMe)
       .toBitmapDescriptor(
     logicalSize: Size(100.w, 120.h),
     imageSize: Size(200.w, 240.h),
   );
 }
+
 class MarkerWidget extends StatelessWidget {
   final String imageUrl;
   final dynamic isOnline;
+  final bool isMe;
 
-  const MarkerWidget(
-      {super.key, required this.imageUrl, required this.isOnline});
+  const MarkerWidget({
+    super.key,
+    required this.imageUrl,
+    required this.isOnline,
+    this.isMe = false,
+  });
 
   Color get randomColor {
-    final Random random =
-        Random(imageUrl.hashCode);
+    final Random random = Random(imageUrl.hashCode);
     return Color.fromARGB(
       255,
       random.nextInt(256),
@@ -31,8 +36,21 @@ class MarkerWidget extends StatelessWidget {
       random.nextInt(256),
     );
   }
+
   @override
   Widget build(BuildContext context) {
+    final String fullUrl = imageUrl.isEmpty
+        ? ""
+        : (imageUrl.startsWith("http")
+            ? imageUrl
+            : ConstRes.aImageBaseUrl + imageUrl);
+
+    final Color pinColor =
+        isMe ? const Color(0xFF5C4CFF) : ToggleThemeData.Appcolor;
+    final Color borderColor = isMe
+        ? const Color(0xFF5C4CFF)
+        : (isOnline == true ? Colors.green : Colors.red);
+
     return Container(
       width: 100.w,
       height: 120.h,
@@ -45,15 +63,13 @@ class MarkerWidget extends StatelessWidget {
             child: Icon(
               Icons.location_pin,
               size: 100.sp,
-              color: ToggleThemeData.Appcolor,
+              color: pinColor,
             ),
           ),
-
           Positioned(
             top: 35.h,
             child: Stack(
               children: [
-
                 Container(
                   width: 52.w,
                   height: 52.w,
@@ -61,34 +77,63 @@ class MarkerWidget extends StatelessWidget {
                     shape: BoxShape.circle,
                     color: Colors.white,
                     border: Border.all(
-                      color: isOnline == true ? Colors.green : Colors.red,
-                      width: 2,
+                      color: borderColor,
+                      width: 2.5,
                     ),
                   ),
                   child: ClipOval(
-                    child: Image.network(
-                      ConstRes.aImageBaseUrl + imageUrl,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        debugPrint("❌ Image load error: ${ConstRes.aImageBaseUrl + imageUrl}");
-                        return Icon(Icons.person, size: 30.sp);
-                      },
-                    ),
+                    child: fullUrl.isNotEmpty
+                        ? Image.network(
+                            fullUrl,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              debugPrint("❌ Image load error: $fullUrl");
+                              return Icon(
+                                isMe ? Icons.person_pin : Icons.person,
+                                size: 30.sp,
+                                color: isMe
+                                    ? const Color(0xFF5C4CFF)
+                                    : Colors.grey,
+                              );
+                            },
+                          )
+                        : Icon(
+                            isMe ? Icons.person_pin : Icons.person,
+                            size: 30.sp,
+                            color:
+                                isMe ? const Color(0xFF5C4CFF) : Colors.grey,
+                          ),
                   ),
-
                 ),
-
                 Positioned(
                   right: 0,
                   top: 0,
                   child: Container(
-                    width: 12.w,
-                    height: 12.w,
+                    padding: isMe
+                        ? const EdgeInsets.symmetric(
+                            horizontal: 4, vertical: 1)
+                        : EdgeInsets.zero,
+                    width: isMe ? null : 12.w,
+                    height: isMe ? null : 12.w,
                     decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: isOnline ? Colors.green : Colors.red,
-                      border: Border.all(color: Colors.white, width: 2),
+                      shape: isMe ? BoxShape.rectangle : BoxShape.circle,
+                      borderRadius:
+                          isMe ? BorderRadius.circular(6) : null,
+                      color: isMe
+                          ? const Color(0xFF5C4CFF)
+                          : (isOnline == true ? Colors.green : Colors.red),
+                      border: Border.all(color: Colors.white, width: 1.5),
                     ),
+                    child: isMe
+                        ? const Text(
+                            "YOU",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 7,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          )
+                        : null,
                   ),
                 ),
               ],

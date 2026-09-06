@@ -1,5 +1,6 @@
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Model/MemberModel.dart';
+import 'package:geolocator/geolocator.dart';
 
 class UsersWithinRadiusRes {
   bool? status;
@@ -9,24 +10,45 @@ class UsersWithinRadiusRes {
   UsersWithinRadiusRes({this.status, this.message, this.data});
 
   UsersWithinRadiusRes.fromJson(Map<String, dynamic> json) {
-    status = json['status'] as bool?;
+    final s = json['status'] ?? json['success'];
+    status = s == true || s == 1 || s == 'true' || s == '1';
     message = json['message']?.toString();
-    if (json['data'] != null) {
-      data = <UsersWithinRadiusData>[];
-      if (json['data'] is List) {
-        json['data'].forEach((v) {
+
+    // Check all potential keys for the members list
+    dynamic listData = json['data'];
+    if (listData == null || (listData is List && listData.isEmpty)) {
+      listData = json['locations'] ?? json['memberData'] ?? json['users'] ?? json['members'];
+    }
+
+    data = <UsersWithinRadiusData>[];
+
+    if (listData is List) {
+      for (var v in listData) {
+        if (v is Map<String, dynamic>) {
           data!.add(UsersWithinRadiusData.fromJson(v));
-        });
-      } else if (json['data'] is Map && json['data']['users'] != null) {
-        json['data']['users'].forEach((v) {
-          data!.add(UsersWithinRadiusData.fromJson(v));
-        });
+        } else if (v is Map) {
+          data!.add(UsersWithinRadiusData.fromJson(Map<String, dynamic>.from(v)));
+        }
       }
-    } else if (json['users'] != null && json['users'] is List) {
-      data = <UsersWithinRadiusData>[];
-      json['users'].forEach((v) {
-        data!.add(UsersWithinRadiusData.fromJson(v));
-      });
+    } else if (listData is Map) {
+      final mapData = listData;
+      final innerList = mapData['users'] ??
+          mapData['locations'] ??
+          mapData['members'] ??
+          mapData['data'] ??
+          mapData['memberData'];
+      if (innerList is List) {
+        for (var v in innerList) {
+          if (v is Map) {
+            data!.add(UsersWithinRadiusData.fromJson(Map<String, dynamic>.from(v)));
+          }
+        }
+      }
+    }
+
+    // If data is present, consider status true even if omitted by backend
+    if (data != null && data!.isNotEmpty && status != false) {
+      status = true;
     }
   }
 
@@ -46,14 +68,14 @@ class UsersWithinRadiusData {
   String? name;
   String? mobileNo;
   String? profileImage;
-  dynamic latitude;
-  dynamic longitude;
+  double? latitude;
+  double? longitude;
   dynamic distance;
   dynamic battery;
   String? team;
   String? location;
   String? lastSeen;
-  dynamic isOnline;
+  bool isOnline = false;
 
   UsersWithinRadiusData({
     this.userId,
@@ -67,22 +89,85 @@ class UsersWithinRadiusData {
     this.team,
     this.location,
     this.lastSeen,
-    this.isOnline,
+    this.isOnline = false,
   });
 
+  static double? _parseDouble(dynamic val) {
+    if (val == null) return null;
+    if (val is num) return val.toDouble();
+    return double.tryParse(val.toString());
+  }
+
   UsersWithinRadiusData.fromJson(Map<String, dynamic> json) {
-    userId = json['userId'] ?? json['UserId'] ?? json['id'];
-    name = (json['name'] ?? json['Name'] ?? json['fullname'] ?? json['fullName'])?.toString();
-    mobileNo = (json['mobileNo'] ?? json['MobileNo'])?.toString();
-    profileImage = (json['profileImage'] ?? json['ProfileImage'])?.toString();
-    latitude = json['latitude'] ?? json['userLat'] ?? json['lat'];
-    longitude = json['longitude'] ?? json['userLong'] ?? json['long'];
+    userId = json['userId'] ?? json['UserId'] ?? json['id'] ?? json['user_id'];
+
+    // Resolve name
+    String? resolvedName =
+        (json['name'] ?? json['Name'] ?? json['fullname'] ?? json['fullName'])
+            ?.toString();
+    if (resolvedName == null || resolvedName.trim().isEmpty) {
+      final fn =
+          (json['firstName'] ?? json['first_name'] ?? '')?.toString().trim() ??
+              '';
+      final ln =
+          (json['lastName'] ?? json['last_name'] ?? '')?.toString().trim() ??
+              '';
+      final combined = '$fn $ln'.trim();
+      if (combined.isNotEmpty) {
+        resolvedName = combined;
+      }
+    }
+    name = resolvedName;
+
+    mobileNo =
+        (json['mobileNo'] ?? json['MobileNo'] ?? json['mobile'])?.toString();
+    profileImage = (json['profileImage'] ??
+            json['ProfileImage'] ??
+            json['image'] ??
+            json['profile_image'])
+        ?.toString();
+
+    // Support nested location object or flat coordinates
+    if (json['location'] is Map) {
+      final locMap = json['location'] as Map;
+      latitude = _parseDouble(
+          locMap['lat'] ?? locMap['latitude'] ?? locMap['userLat']);
+      longitude = _parseDouble(locMap['lon'] ??
+          locMap['lng'] ??
+          locMap['longitude'] ??
+          locMap['userLong']);
+      location = (locMap['address'] ?? locMap['name'])?.toString();
+    } else {
+      latitude = _parseDouble(
+          json['latitude'] ?? json['userLat'] ?? json['lat']);
+      longitude = _parseDouble(json['longitude'] ??
+          json['userLong'] ??
+          json['long'] ??
+          json['lng'] ??
+          json['lon']);
+      location = (json['location'] ?? json['address'])?.toString();
+    }
+
     distance = json['distance'];
     battery = json['battery'];
-    team = (json['team'] ?? json['teamName'] ?? json['groupName'])?.toString();
-    location = (json['location'] ?? json['address'])?.toString();
+    team = (json['team'] ??
+            json['teamName'] ??
+            json['groupName'] ??
+            json['group_name'] ??
+            json['team_name'])
+        ?.toString();
     lastSeen = json['lastSeen']?.toString();
-    isOnline = json['isOnline'] ?? json['online'];
+
+    final onlineVal = json['isOnline'] ?? json['online'] ?? json['is_online'];
+    if (onlineVal is bool) {
+      isOnline = onlineVal;
+    } else if (onlineVal is num) {
+      isOnline = onlineVal == 1;
+    } else if (onlineVal is String) {
+      isOnline = onlineVal.toLowerCase() == 'true' || onlineVal == '1';
+    } else {
+      isOnline = false;
+    }
   }
 
   Map<String, dynamic> toJson() {
@@ -102,10 +187,33 @@ class UsersWithinRadiusData {
     return data;
   }
 
-  MemberModel toMemberModel() {
+  MemberModel toMemberModel({double? currentUserLat, double? currentUserLong}) {
     String formattedDistance = "0.0";
-    if (distance != null) {
-      double? d = double.tryParse(distance.toString());
+
+    // If both current user coordinates and member coordinates are available, calculate exact geodesic distance
+    if (currentUserLat != null &&
+        currentUserLong != null &&
+        currentUserLat != 0.0 &&
+        currentUserLong != 0.0 &&
+        latitude != null &&
+        longitude != null &&
+        latitude != 0.0 &&
+        longitude != 0.0) {
+      try {
+        final meters = Geolocator.distanceBetween(
+          currentUserLat,
+          currentUserLong,
+          latitude!,
+          longitude!,
+        );
+        final km = meters / 1000.0;
+        formattedDistance = km.toStringAsFixed(1);
+      } catch (_) {
+        formattedDistance = "0.0";
+      }
+    } else if (distance != null) {
+      double? d =
+          double.tryParse(distance.toString().replaceAll(RegExp(r'[^\d.]'), ''));
       if (d != null) {
         formattedDistance = d.toStringAsFixed(1);
       } else {
@@ -129,8 +237,12 @@ class UsersWithinRadiusData {
 
     return MemberModel(
       name: (name != null && name!.isNotEmpty) ? name! : "User ${userId ?? ''}",
-      team: (team != null && team!.isNotEmpty) ? team! : "FG Manpower Team",
-      location: (location != null && location!.isNotEmpty) ? location! : "Nearby",
+      team: (team != null && team!.isNotEmpty) ? team! : "FG Team",
+      location: (location != null && location!.isNotEmpty)
+          ? location!
+          : (latitude != null && longitude != null && latitude != 0.0
+              ? "${latitude!.toStringAsFixed(2)}, ${longitude!.toStringAsFixed(2)}"
+              : "Active now"),
       distance: formattedDistance,
       battery: parsedBattery,
       avatarUrl: avatar,

@@ -1,11 +1,13 @@
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../Controller/Track_controller.dart';
 import 'package:fgtracker/app/Model/MemberModel.dart';
 import 'package:fgtracker/app/Model/GroupRes.dart';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
-import 'package:fgtracker/app/modules/home/Views/LiveStatus/components/online_member.dart';
 
 class TrackingScreen extends StatelessWidget {
   TrackingScreen({super.key});
@@ -36,7 +38,7 @@ class TrackingScreen extends StatelessWidget {
                 return Column(
                   children: [
                     _buildSearchAndRadius(),
-                    _buildStaticMapSection(),
+                    _buildMapSection(),
                     _buildStatsCard(),
                     _buildLiveMembersList(),
                     _buildBottomShareButton(),
@@ -53,7 +55,7 @@ class TrackingScreen extends StatelessWidget {
 
   Widget _buildHeader() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
       child: Row(
         children: [
           _iconButton(
@@ -73,21 +75,76 @@ class TrackingScreen extends StatelessWidget {
                     color: textDark,
                   ),
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  "Live location tracking",
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: primaryColor.withValues(alpha: 0.85),
-                    fontWeight: FontWeight.w500,
+                const SizedBox(height: 3),
+                Obx(
+                  () => Row(
+                    children: [
+                      // Group Name chip
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 7,
+                          vertical: 2.5,
+                        ),
+                        decoration: BoxDecoration(
+                          color: primaryColor.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.groups_rounded,
+                                size: 12, color: primaryColor),
+                            const SizedBox(width: 4),
+                            ConstrainedBox(
+                              constraints: const BoxConstraints(maxWidth: 100),
+                              child: Text(
+                                controller.selectedGroupName.value,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: primaryColor,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      // Location Name chip
+                      Expanded(
+                        child: Row(
+                          children: [
+                            const Icon(Icons.location_on,
+                                size: 12, color: Colors.redAccent),
+                            const SizedBox(width: 2),
+                            Expanded(
+                              child: Text(
+                                controller.currentLocationName.value,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: textGrey,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
           ),
           _iconButton(
-            icon: Icons.help_outline,
-            onTap: () {},
+            icon: Icons.refresh,
+            onTap: () {
+              controller.getCurrentLocationAndFetchUsers();
+            },
           ),
         ],
       ),
@@ -104,7 +161,7 @@ class TrackingScreen extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.03),
+              color: Colors.black.withOpacity(0.03),
               blurRadius: 10,
               offset: const Offset(0, 2),
             ),
@@ -126,7 +183,7 @@ class TrackingScreen extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.02),
+              color: Colors.black.withOpacity(0.02),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -281,21 +338,16 @@ class TrackingScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStaticMapSection() {
+  Widget _buildMapSection() {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
-      height: 250,
+      height: 260,
       decoration: BoxDecoration(
         color: const Color(0xFFE8EAED),
         borderRadius: BorderRadius.circular(18),
-        image: const DecorationImage(
-          image: NetworkImage("https://i.stack.imgur.com/HILmr.png"),
-          fit: BoxFit.cover,
-          opacity: 0.55,
-        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Colors.black.withOpacity(0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -305,77 +357,168 @@ class TrackingScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(18),
         child: Stack(
           children: [
-            _buildMapAvatar(top: 36, left: 36, img: "11", memberIndex: 0),
-            _buildMapAvatar(top: 50, right: 54, img: "12", memberIndex: 1),
-            _buildMapAvatar(bottom: 64, left: 70, img: "5", memberIndex: 2),
-            _buildMapAvatar(bottom: 46, right: 80, img: "9", memberIndex: 3),
+            // Live Interactive Google Map
+            Obx(() {
+              final lat = controller.currentLat.value != 0.0
+                  ? controller.currentLat.value
+                  : 19.0760;
+              final lng = controller.currentLong.value != 0.0
+                  ? controller.currentLong.value
+                  : 72.8777;
 
-            Center(
-              child: SizedBox(
-                width: 160,
-                height: 160,
-                child: Stack(
-                  alignment: Alignment.center,
+              return GoogleMap(
+                initialCameraPosition: CameraPosition(
+                  target: LatLng(lat, lng),
+                  zoom: 16.0,
+                ),
+                markers: controller.markers.value,
+                circles: controller.circles.value,
+                zoomControlsEnabled: false,
+                myLocationButtonEnabled: false,
+                myLocationEnabled: true,
+                mapToolbarEnabled: false,
+                compassEnabled: false,
+                buildingsEnabled: true,
+                mapType: MapType.normal,
+                gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>{
+                  Factory<OneSequenceGestureRecognizer>(
+                    () => EagerGestureRecognizer(),
+                  ),
+                },
+                onMapCreated: controller.onMapCreated,
+              );
+            }),
+
+            // Top-left chip: Group Name & Location Name
+            Positioned(
+              top: 10,
+              left: 10,
+              child: Obx(
+                () => Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.92),
+                    borderRadius: BorderRadius.circular(10),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Colors.black12,
+                        blurRadius: 4,
+                        offset: Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.groups_rounded, color: primaryColor, size: 14),
+                      const SizedBox(width: 4),
+                      ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 110),
+                        child: Text(
+                          controller.selectedGroupName.value,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                            color: textDark,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Container(
+                        height: 12,
+                        width: 1,
+                        color: Colors.grey.shade300,
+                      ),
+                      const SizedBox(width: 6),
+                      const Icon(
+                        Icons.location_on,
+                        color: Colors.redAccent,
+                        size: 13,
+                      ),
+                      const SizedBox(width: 2),
+                      ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 120),
+                        child: Text(
+                          controller.currentLocationName.value,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.w600,
+                            color: textGrey,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+            // Bottom-left badge: Live Members and Radius
+            Positioned(
+              left: 10,
+              bottom: 10,
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.92),
+                  borderRadius: BorderRadius.circular(8),
+                  boxShadow: const [
+                    BoxShadow(color: Colors.black12, blurRadius: 4),
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Container(
-                      width: 160,
-                      height: 160,
-                      decoration: BoxDecoration(
+                      width: 8,
+                      height: 8,
+                      decoration: const BoxDecoration(
+                        color: Colors.green,
                         shape: BoxShape.circle,
-                        color: primaryColor.withValues(alpha: 0.14),
-                        border: Border.all(
-                          color: primaryColor.withValues(alpha: 0.22),
-                          width: 1.5,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Obx(
+                      () => Text(
+                        "${controller.liveNowCount.value} Members Live",
+                        style: const TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
-                    Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 5,
-                          ),
-                          decoration: BoxDecoration(
-                            color: primaryColor,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: const Text(
-                            "You",
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
+                    const SizedBox(width: 6),
+                    Container(
+                      height: 12,
+                      width: 1,
+                      color: Colors.grey.shade300,
+                    ),
+                    const SizedBox(width: 6),
+                    Obx(
+                      () => Text(
+                        "${controller.selectedRadius.value} km radius",
+                        style: TextStyle(
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.w600,
+                          color: primaryColor,
                         ),
-                        const SizedBox(height: 4),
-                        Container(
-                          width: 16,
-                          height: 16,
-                          decoration: BoxDecoration(
-                            color: primaryColor,
-                            shape: BoxShape.circle,
-                            border: Border.all(color: Colors.white, width: 2.5),
-                            boxShadow: [
-                              BoxShadow(
-                                color: primaryColor.withValues(alpha: 0.45),
-                                blurRadius: 8,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
                   ],
                 ),
               ),
             ),
 
+            // Map Control Buttons (Zoom in, Zoom out, Recenter)
             Positioned(
               right: 10,
-              bottom: 56,
+              bottom: 10,
               child: Column(
                 children: [
                   Container(
@@ -395,7 +538,7 @@ class TrackingScreen extends StatelessWidget {
                           child: IconButton(
                             padding: EdgeInsets.zero,
                             icon: const Icon(Icons.add, size: 16),
-                            onPressed: () {},
+                            onPressed: controller.zoomIn,
                           ),
                         ),
                         Divider(
@@ -409,13 +552,14 @@ class TrackingScreen extends StatelessWidget {
                           child: IconButton(
                             padding: EdgeInsets.zero,
                             icon: const Icon(Icons.remove, size: 16),
-                            onPressed: () {},
+                            onPressed: controller.zoomOut,
                           ),
                         ),
                       ],
                     ),
                   ),
                   const SizedBox(height: 8),
+                  // My Location Button (re-centers camera right on user)
                   Container(
                     width: 32,
                     height: 32,
@@ -428,108 +572,38 @@ class TrackingScreen extends StatelessWidget {
                     ),
                     child: IconButton(
                       padding: EdgeInsets.zero,
-                      icon: const Icon(Icons.my_location, size: 15),
-                      onPressed: () {},
+                      tooltip: "My Location",
+                      icon: Icon(Icons.my_location,
+                          size: 16, color: primaryColor),
+                      onPressed: () => controller.recenterMap(zoom: 16.0),
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  // Fit All Members Button (zooms out to show all members)
+                  Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8),
+                      boxShadow: const [
+                        BoxShadow(color: Colors.black12, blurRadius: 4),
+                      ],
+                    ),
+                    child: IconButton(
+                      padding: EdgeInsets.zero,
+                      tooltip: "All Members",
+                      icon: const Icon(Icons.zoom_out_map,
+                          size: 16, color: Colors.black87),
+                      onPressed: controller.fitAllMembers,
                     ),
                   ),
                 ],
               ),
             ),
-
-            // Live badge
-            Positioned(
-              left: 10,
-              bottom: 10,
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(8),
-                  boxShadow: const [
-                    BoxShadow(color: Colors.black12, blurRadius: 4),
-                  ],
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.people, color: primaryColor, size: 15),
-                    const SizedBox(width: 6),
-                    Obx(
-                      () => Text(
-                        "${controller.liveNowCount.value > 0 ? controller.liveNowCount.value : controller.liveMembers.length} Members Live",
-                        style: const TextStyle(
-                          fontSize: 11.5,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    Container(
-                      height: 12,
-                      width: 1,
-                      color: Colors.grey.shade300,
-                    ),
-                    const SizedBox(width: 6),
-                    Icon(Icons.bar_chart, color: primaryColor, size: 15),
-                  ],
-                ),
-              ),
-            ),
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildMapAvatar({
-    double? top,
-    double? bottom,
-    double? left,
-    double? right,
-    required String img,
-    int? memberIndex,
-  }) {
-    return Positioned(
-      top: top,
-      bottom: bottom,
-      left: left,
-      right: right,
-      child: Obx(() {
-        String avatarUrl = "https://i.pravatar.cc/150?img=$img";
-        if (memberIndex != null &&
-            controller.liveMembers.length > memberIndex) {
-          avatarUrl = controller.liveMembers[memberIndex].avatarUrl;
-        }
-        return Stack(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(2),
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.circle,
-              ),
-              child: CircleAvatar(
-                radius: 15,
-                backgroundImage: NetworkImage(avatarUrl),
-              ),
-            ),
-            Positioned(
-              bottom: 0,
-              right: 0,
-              child: Container(
-                width: 9,
-                height: 9,
-                decoration: BoxDecoration(
-                  color: Colors.green,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white, width: 1.5),
-                ),
-              ),
-            ),
-          ],
-        );
-      }),
     );
   }
 
@@ -544,11 +618,12 @@ class TrackingScreen extends StatelessWidget {
       ),
       child: Row(
         children: [
+          // Requirement 2 & 8: Group Name shown instead of Total Members
           Obx(
             () => _statItem(
-              Icons.people,
-              "Total Members",
-              "${controller.totalMembersCount.value > 0 ? controller.totalMembersCount.value : controller.allFetchedMembers.length}",
+              Icons.groups_rounded,
+              "Group",
+              controller.selectedGroupName.value,
               primaryColor,
             ),
           ),
@@ -557,7 +632,7 @@ class TrackingScreen extends StatelessWidget {
             () => _statItem(
               Icons.circle,
               "Live Now",
-              "${controller.liveNowCount.value > 0 ? controller.liveNowCount.value : controller.liveMembers.length}",
+              "${controller.liveNowCount.value}",
               Colors.green,
               iconSize: 8,
             ),
@@ -611,7 +686,7 @@ class TrackingScreen extends StatelessWidget {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
-              fontSize: 18,
+              fontSize: 15,
               fontWeight: FontWeight.bold,
               color: textDark,
             ),
@@ -630,6 +705,7 @@ class TrackingScreen extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
       child: Column(
         children: [
+          // Requirement 7: View All button removed
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -641,14 +717,13 @@ class TrackingScreen extends StatelessWidget {
                   color: textDark,
                 ),
               ),
-              GestureDetector(
-                onTap: () => Get.to(() => const OnlineMember()),
-                child: Text(
-                  "View All →",
+              Obx(
+                () => Text(
+                  "${controller.liveMembers.length} nearby",
                   style: TextStyle(
-                    color: primaryColor,
+                    color: textGrey,
                     fontSize: 12,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ),
@@ -735,6 +810,7 @@ class TrackingScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 1),
+                // Requirement 2: Show Group Name
                 Text(
                   member.team,
                   maxLines: 1,
@@ -746,16 +822,18 @@ class TrackingScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 3),
+                // Requirement 3: Show Location Name
                 Row(
                   children: [
-                    Icon(Icons.location_on, color: primaryColor, size: 11),
+                    const Icon(Icons.location_on,
+                        color: Colors.redAccent, size: 11),
                     const SizedBox(width: 2),
                     Expanded(
                       child: Text(
                         member.location,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(color: primaryColor, fontSize: 10),
+                        style: TextStyle(color: textGrey, fontSize: 10),
                       ),
                     ),
                   ],
@@ -764,12 +842,19 @@ class TrackingScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 6),
+          // Requirement 5: Accurately calculated KM Distance
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                "${member.distance} km away",
-                style: TextStyle(color: primaryColor, fontSize: 10),
+                member.distance.contains('km') || member.distance.contains('m')
+                    ? "${member.distance} away"
+                    : "${member.distance} km away",
+                style: TextStyle(
+                  color: primaryColor,
+                  fontSize: 10.5,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 4),
               Row(
@@ -840,7 +925,7 @@ class TrackingScreen extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    color: primaryColor.withValues(alpha: 0.7),
+                    color: primaryColor.withOpacity(0.7),
                     fontSize: 11,
                   ),
                 ),
@@ -957,8 +1042,12 @@ class TrackingScreen extends StatelessWidget {
                 : "${ConstRes.aImageBaseUrl}${group.groupProfile}")
             : null;
 
+    final isSelected =
+        controller.selectedGroupId.value == group.id?.toString();
+
     return GestureDetector(
       onTap: () {
+        controller.selectGroup(group);
         Get.toNamed(
           Routes.Memberscreen,
           arguments: {
@@ -980,10 +1069,13 @@ class TrackingScreen extends StatelessWidget {
         decoration: BoxDecoration(
           color: cardColor,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: Colors.grey.shade100),
+          border: Border.all(
+            color: isSelected ? primaryColor : Colors.grey.shade100,
+            width: isSelected ? 1.5 : 1,
+          ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.02),
+              color: Colors.black.withOpacity(0.02),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -995,7 +1087,7 @@ class TrackingScreen extends StatelessWidget {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: primaryColor.withValues(alpha: 0.1),
+                color: primaryColor.withOpacity(0.1),
                 shape: BoxShape.circle,
                 image: profileUrl != null
                     ? DecorationImage(
@@ -1034,7 +1126,7 @@ class TrackingScreen extends StatelessWidget {
                             vertical: 2,
                           ),
                           decoration: BoxDecoration(
-                            color: primaryColor.withValues(alpha: 0.1),
+                            color: primaryColor.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Text(
