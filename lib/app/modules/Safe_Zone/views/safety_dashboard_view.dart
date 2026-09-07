@@ -1,6 +1,6 @@
 import 'package:fgtracker/app/modules/Safe_Zone/views/safe_route_view.dart';
 import 'package:fgtracker/app/modules/Safe_Zone/views/safe_zone_view.dart';
-import 'package:fgtracker/gen/assets.gen.dart'; // FlutterGen
+import 'package:fgtracker/gen/assets.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -13,6 +13,12 @@ class SafetyDashboardView extends StatelessWidget {
   final Color _textColorGrey = const Color(0xFF7A7A8C);
   final Color _primaryColor = const Color(0xFF6B4DFF);
 
+  final Color _featureIconBg = const Color(0xFFF3F0FF);
+  final Color _safeNowIconBg = const Color(0xFFE3F6EA);
+  final Color _alertIconBg = const Color(0xFFFCE9E9);
+  final Color _zoneAlertIconBg = const Color(0xFFFCE6E6);
+  final Color _routeAlertIconBg = const Color(0xFFFDF0E1);
+
   List<BoxShadow> get _cardShadow => [
         BoxShadow(
           color: const Color(0xFF6B4DFF).withOpacity(0.04),
@@ -21,6 +27,29 @@ class SafetyDashboardView extends StatelessWidget {
           offset: const Offset(0, 6),
         )
       ];
+
+  Widget _circleIconBg(
+    Widget child, {
+    required Color bgColor,
+    double size = 56,
+  }) {
+    return Container(
+      width: size.w,
+      height: size.w,
+      decoration: BoxDecoration(
+        color: bgColor,
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Center(child: child),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,41 +64,41 @@ class SafetyDashboardView extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildTopBanner(),
-            SizedBox(height: 24.h),
+            SizedBox(height: 18.h),
             _buildSectionTitle("Choose a Safety Feature"),
-            SizedBox(height: 16.h),
+            SizedBox(height: 13.h),
             _buildFeatureCard(
               title: "Safe Zone",
               tag: "Area Protection",
               desc:
                   "Define a safe geographic area for your team. Get instant alerts if someone steps outside the safe zone.",
               image: Assets.icons.safeZone.image(
-                height: 58.w,
-                width: 58.w,
+                height: 40.w,
+                width: 40.w,
                 fit: BoxFit.contain,
               ),
               onTap: () => Get.to(() => const SafeZoneView()),
             ),
-            SizedBox(height: 16.h),
+            SizedBox(height: 13.h),
             _buildFeatureCard(
               title: "Safe Route",
               tag: "Route Protection",
               desc:
                   "Set predefined routes for your team members. Get alerts if someone deviates from the safe route.",
               image: Assets.icons.safeRoute.image(
-                height: 58.w,
-                width: 58.w,
+                height: 40.w,
+                width: 40.w,
                 fit: BoxFit.contain,
               ),
               onTap: () => Get.to(() => const SafeRouteView()),
             ),
-            SizedBox(height: 28.h),
+            SizedBox(height: 20.h),
             _buildSectionTitle("Quick Overview"),
-            SizedBox(height: 16.h),
+            SizedBox(height: 13.h),
             _buildQuickOverviewCard(controller),
-            SizedBox(height: 28.h),
+            SizedBox(height: 22.h),
             _buildSectionTitle("Recent Alerts"),
-            SizedBox(height: 16.h),
+            SizedBox(height: 13.h),
             _buildRecentAlertsList(controller),
             SizedBox(height: 28.h),
             _buildNeedHelpCard(),
@@ -173,22 +202,33 @@ class SafetyDashboardView extends StatelessWidget {
   Widget _buildTopBanner() {
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.all(20.w),
+      padding: EdgeInsets.symmetric(
+        horizontal: 16.w,
+        vertical: 0,
+      ),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(14.r),
         boxShadow: _cardShadow,
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Assets.icons.yourSafetyOurPrioty.image(
-            height: 80.w,
-            width: 80.w,
-            fit: BoxFit.contain,
+          SizedBox(
+            width: 150.w,
+            height: 150.w,
+            child: Assets.icons.yourSafetyOurPrioty.image(
+              width: 150.w,
+              height: 150.w,
+              fit: BoxFit.contain,
+            ),
           ),
-          SizedBox(width: 16.w),
+
+          SizedBox(width: 10.w),
+
           Expanded(
             child: Column(
+              mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
@@ -213,12 +253,11 @@ class SafetyDashboardView extends StatelessWidget {
                 ),
               ],
             ),
-          )
+          ),
         ],
       ),
     );
   }
-
   Widget _buildSectionTitle(String title) {
     return Text(
       title,
@@ -250,7 +289,7 @@ class SafetyDashboardView extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            image,
+            _circleIconBg(image, bgColor: _featureIconBg, size: 58),
             SizedBox(width: 12.w),
             Expanded(
               child: Column(
@@ -329,9 +368,14 @@ class SafetyDashboardView extends StatelessWidget {
     );
   }
 
-  Widget _buildQuickOverviewCard(SafetyDashboardController controller) {
+  Widget _buildQuickOverviewCard(
+    SafetyDashboardController controller,
+  ) {
     return Container(
-      padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 12.w),
+      padding: EdgeInsets.symmetric(
+        vertical: 12.h,
+        horizontal: 12.w,
+      ),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(14.r),
@@ -344,15 +388,20 @@ class SafetyDashboardView extends StatelessWidget {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Assets.icons.secure.image(
-                    height: 40.w,
-                    width: 40.w,
-                    fit: BoxFit.contain,
+                  _circleIconBg(
+                    Icon(
+                      Icons.verified_user_rounded,
+                      color: const Color(0xFF00B960),
+                      size: 30.sp,
+                    ),
+                    bgColor: _safeNowIconBg,
+                    size: 52,
                   ),
                   SizedBox(width: 10.w),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         Obx(
                           () => Text(
@@ -386,7 +435,7 @@ class SafetyDashboardView extends StatelessWidget {
                         ),
                       ],
                     ),
-                  )
+                  ),
                 ],
               ),
             ),
@@ -401,15 +450,20 @@ class SafetyDashboardView extends StatelessWidget {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Assets.icons.alart.image(
-                    height: 40.w,
-                    width: 40.w,
-                    fit: BoxFit.contain,
+                  _circleIconBg(
+                    Icon(
+                      Icons.warning_rounded,
+                      color: const Color(0xFFFF3B30),
+                      size: 30.sp,
+                    ),
+                    bgColor: _alertIconBg,
+                    size: 52,
                   ),
                   SizedBox(width: 10.w),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         Obx(
                           () => Text(
@@ -445,7 +499,7 @@ class SafetyDashboardView extends StatelessWidget {
                         ),
                       ],
                     ),
-                  )
+                  ),
                 ],
               ),
             ),
@@ -482,17 +536,21 @@ class SafetyDashboardView extends StatelessWidget {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  isZone
-                      ? Assets.icons.safeZoneAlart.image(
-                          height: 44.w,
-                          width: 44.w,
-                          fit: BoxFit.contain,
-                        )
-                      : Assets.icons.safeRoute.image(
-                          height: 44.w,
-                          width: 44.w,
-                          fit: BoxFit.contain,
-                        ),
+                  _circleIconBg(
+                    isZone
+                        ? Assets.icons.safeZoneAlart.image(
+                            height: 34.w,
+                            width: 34.w,
+                            fit: BoxFit.contain,
+                          )
+                        : Assets.icons.safeRoute.image(
+                            height: 34.w,
+                            width: 34.w,
+                            fit: BoxFit.contain,
+                          ),
+                    bgColor: isZone ? _zoneAlertIconBg : _routeAlertIconBg,
+                    size: 44,
+                  ),
                   SizedBox(width: 12.w),
                   Expanded(
                     child: Column(
