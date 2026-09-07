@@ -51,7 +51,7 @@ class $AssetsImagesGen {
   final AssetGenImage image1 = const AssetGenImage('assets/images/image1.png');
   final AssetGenImage image2 = const AssetGenImage('assets/images/image2.png');
   final AssetGenImage image3 = const AssetGenImage('assets/images/image3.png');
-  final AssetGenImage img = const AssetGenImage('assets/images/img.png');
+  final AssetGenImage img = const AssetGenImage('assets/images/safe route.png');
   final AssetGenImage introduction1 = const AssetGenImage(
       'assets/images/introduction1.png');
   final AssetGenImage introduction2 = const AssetGenImage(

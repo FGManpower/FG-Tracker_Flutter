@@ -8,6 +8,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 import '../../Messages/Views/chatlist_screen.dart';
+import '../../Safe_Zone/views/safety_dashboard_view.dart';
 
 
 class QuickActionsSection extends StatelessWidget {
@@ -65,6 +66,7 @@ class QuickActionsSection extends StatelessWidget {
             _QuickActionCard(
               "Safe Zone",
               Icons.verified_user_rounded,
+              onTap: () => Get.to(() => const SafetyDashboardView()),
             ),
           ],
         ),

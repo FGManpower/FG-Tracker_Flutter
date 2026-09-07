@@ -11,6 +11,13 @@
 
 import 'package:flutter/widgets.dart';
 
+class $LibGen {
+  const $LibGen();
+
+  /// Directory path: lib/app
+  $LibAppGen get app => const $LibAppGen();
+}
+
 class $AssetsIconsGen {
   const $AssetsIconsGen();
 
@@ -18,11 +25,26 @@ class $AssetsIconsGen {
   AssetGenImage get realtimetrack =>
       const AssetGenImage('assets/icons/Realtimetrack.png');
 
+  /// File path: assets/icons/alart.png
+  AssetGenImage get alart => const AssetGenImage('assets/icons/alart.png');
+
   /// File path: assets/icons/app_icon.png
   AssetGenImage get appIcon => const AssetGenImage('assets/icons/app_icon.png');
 
   /// File path: assets/icons/flag.png
   AssetGenImage get flag => const AssetGenImage('assets/icons/flag.png');
+
+  /// File path: assets/icons/safe route.png
+  AssetGenImage get safeRoute =>
+      const AssetGenImage('assets/icons/safe route.png');
+
+  /// File path: assets/icons/safe zone alart.png
+  AssetGenImage get safeZoneAlart =>
+      const AssetGenImage('assets/icons/safe zone alart.png');
+
+  /// File path: assets/icons/safe zone.png
+  AssetGenImage get safeZone =>
+      const AssetGenImage('assets/icons/safe zone.png');
 
   /// File path: assets/icons/secure.png
   AssetGenImage get secure => const AssetGenImage('assets/icons/secure.png');
@@ -31,9 +53,23 @@ class $AssetsIconsGen {
   AssetGenImage get walkieTalkie =>
       const AssetGenImage('assets/icons/walkie-talkie.png');
 
+  /// File path: assets/icons/your safety our prioty.png
+  AssetGenImage get yourSafetyOurPrioty =>
+      const AssetGenImage('assets/icons/your safety our prioty.png');
+
   /// List of all assets
-  List<AssetGenImage> get values =>
-      [realtimetrack, appIcon, flag, secure, walkieTalkie];
+  List<AssetGenImage> get values => [
+        realtimetrack,
+        alart,
+        appIcon,
+        flag,
+        safeRoute,
+        safeZoneAlart,
+        safeZone,
+        secure,
+        walkieTalkie,
+        yourSafetyOurPrioty
+      ];
 }
 
 class $AssetsImagesGen {
@@ -70,13 +106,13 @@ class $AssetsImagesGen {
   /// File path: assets/images/audio.png
   AssetGenImage get audio => const AssetGenImage('assets/images/audio.png');
 
-  /// File path: assets/images/bg_image.png
-  AssetGenImage get bgImage =>
-      const AssetGenImage('assets/images/bg_image.png');
-
   /// File path: assets/images/background.jpg
   AssetGenImage get background =>
       const AssetGenImage('assets/images/background.jpg');
+
+  /// File path: assets/images/bg_image.png
+  AssetGenImage get bgImage =>
+      const AssetGenImage('assets/images/bg_image.png');
 
   /// File path: assets/images/empty_group.png
   AssetGenImage get emptyGroup =>
@@ -96,6 +132,9 @@ class $AssetsImagesGen {
 
   /// File path: assets/images/image3.png
   AssetGenImage get image3 => const AssetGenImage('assets/images/image3.png');
+
+  /// File path: assets/images/img.png
+  AssetGenImage get img => const AssetGenImage('assets/images/img.png');
 
   /// File path: assets/images/introduction1.png
   AssetGenImage get introduction1 =>
@@ -117,8 +156,11 @@ class $AssetsImagesGen {
   AssetGenImage get kaaba => const AssetGenImage('assets/images/kaaba.png');
 
   /// File path: assets/images/lock_3d.png
-  AssetGenImage get lock3d =>
-      const AssetGenImage('assets/images/lock_3d.png');
+  AssetGenImage get lock3d => const AssetGenImage('assets/images/lock_3d.png');
+
+  /// File path: assets/images/loction_icon.png
+  AssetGenImage get loctionIcon =>
+      const AssetGenImage('assets/images/loction_icon.png');
 
   /// File path: assets/images/login_illustration.png
   AssetGenImage get loginIllustration =>
@@ -159,6 +201,30 @@ class $AssetsImagesGen {
   AssetGenImage get serverError =>
       const AssetGenImage('assets/images/server_error.png');
 
+  /// File path: assets/images/shelid_icon.png
+  AssetGenImage get shelidIcon =>
+      const AssetGenImage('assets/images/shelid_icon.png');
+
+  /// File path: assets/images/sos_accident.png
+  AssetGenImage get sosAccident =>
+      const AssetGenImage('assets/images/sos_accident.png');
+
+  /// File path: assets/images/sos_medical.png
+  AssetGenImage get sosMedical =>
+      const AssetGenImage('assets/images/sos_medical.png');
+
+  /// File path: assets/images/sos_other.png
+  AssetGenImage get sosOther =>
+      const AssetGenImage('assets/images/sos_other.png');
+
+  /// File path: assets/images/sos_safety.png
+  AssetGenImage get sosSafety =>
+      const AssetGenImage('assets/images/sos_safety.png');
+
+  /// File path: assets/images/sos_threat.png
+  AssetGenImage get sosThreat =>
+      const AssetGenImage('assets/images/sos_threat.png');
+
   /// File path: assets/images/splash_bg.png
   AssetGenImage get splashBg =>
       const AssetGenImage('assets/images/splash_bg.png');
@@ -171,34 +237,6 @@ class $AssetsImagesGen {
   AssetGenImage get userVideo =>
       const AssetGenImage('assets/images/user_video.jpg');
 
-  /// File path: assets/images/sos_medical.png
-  AssetGenImage get sosMedical =>
-      const AssetGenImage('assets/images/sos_medical.png');
-
-  /// File path: assets/images/sos_accident.png
-  AssetGenImage get sosAccident =>
-      const AssetGenImage('assets/images/sos_accident.png');
-
-  /// File path: assets/images/sos_safety.png
-  AssetGenImage get sosSafety =>
-      const AssetGenImage('assets/images/sos_safety.png');
-
-  /// File path: assets/images/sos_threat.png
-  AssetGenImage get sosThreat =>
-      const AssetGenImage('assets/images/sos_threat.png');
-
-  /// File path: assets/images/sos_other.png
-  AssetGenImage get sosOther =>
-      const AssetGenImage('assets/images/sos_other.png');
-
-  /// File path: assets/images/loction_icon.png
-  AssetGenImage get loctionIcon =>
-      const AssetGenImage('assets/images/loction_icon.png');
-
-  /// File path: assets/images/shelid_icon.png
-  AssetGenImage get shelidIcon =>
-      const AssetGenImage('assets/images/shelid_icon.png');
-
   /// List of all assets
   List<AssetGenImage> get values => [
         introductionn1,
@@ -209,20 +247,22 @@ class $AssetsImagesGen {
         appUpdate,
         appIcon,
         audio,
-        bgImage,
         background,
+        bgImage,
         emptyGroup,
         group,
         groupBg,
         image1,
         image2,
         image3,
+        img,
         introduction1,
         introduction2,
         introduction3,
         kaabaMarker,
         kaaba,
         lock3d,
+        loctionIcon,
         loginIllustration,
         lostInternets,
         message,
@@ -234,16 +274,15 @@ class $AssetsImagesGen {
         registerationBg,
         safe,
         serverError,
-        splashBg,
-        userAvatar,
-        userVideo,
-        sosMedical,
+        shelidIcon,
         sosAccident,
+        sosMedical,
+        sosOther,
         sosSafety,
         sosThreat,
-        sosOther,
-        loctionIcon,
-        shelidIcon
+        splashBg,
+        userAvatar,
+        userVideo
       ];
 }
 
@@ -445,12 +484,33 @@ class $AssetsSvgGen {
       ];
 }
 
+class $LibAppGen {
+  const $LibAppGen();
+
+  /// Directory path: lib/app/routes
+  $LibAppRoutesGen get routes => const $LibAppRoutesGen();
+}
+
+class $LibAppRoutesGen {
+  const $LibAppRoutesGen();
+
+  /// File path: lib/app/routes/app_pages.dart
+  String get appPages => 'lib/app/routes/app_pages.dart';
+
+  /// File path: lib/app/routes/app_routes.dart
+  String get appRoutes => 'lib/app/routes/app_routes.dart';
+
+  /// List of all assets
+  List<String> get values => [appPages, appRoutes];
+}
+
 abstract final class Assets {
   static const $AssetsIconsGen icons = $AssetsIconsGen();
   static const $AssetsImagesGen images = $AssetsImagesGen();
   static const $AssetsMapThemeGen mapTheme = $AssetsMapThemeGen();
   static const $AssetsMusicGen music = $AssetsMusicGen();
   static const $AssetsSvgGen svg = $AssetsSvgGen();
+  static const $LibGen lib = $LibGen();
   static const String shorebird = 'shorebird.yaml';
 
   /// List of all assets
