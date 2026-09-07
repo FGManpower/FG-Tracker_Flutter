@@ -27,33 +27,30 @@ class TrackingScreen extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
-         Column(
-           children: [
-             _buildHeader(),
-             _buildCustomTabs(),
-           ],
-         ),
-           Obx(() {
-             if (controller.selectedTabIndex.value == 1) {
-               return Expanded(child: _buildGroupTabContent());
-             }
-             return Expanded(
-           
-               child: SingleChildScrollView(
-                 child: Column(
-                   children: [
-                     _buildSearchAndRadius(),
-                     _buildStaticMapSection(),
-                     _buildStatsCard(),
-                     _buildLiveMembersList(),
-                     _buildBottomShareButton(),
-                   ],
-                 ),
-               ),
-             );
-           }),
-
-
+            Column(
+              children: [
+                _buildHeader(),
+                _buildCustomTabs(),
+              ],
+            ),
+            Obx(() {
+              if (controller.selectedTabIndex.value == 1) {
+                return Expanded(child: _buildGroupTabContent());
+              }
+              return Expanded(
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      _buildSearchAndRadius(),
+                      _buildMapSection(),
+                      _buildStatsCard(),
+                      _buildLiveMembersList(),
+                      _buildBottomShareButton(),
+                    ],
+                  ),
+                ),
+              );
+            }),
           ],
         ),
       ),
@@ -1049,8 +1046,7 @@ class TrackingScreen extends StatelessWidget {
                 : "${ConstRes.aImageBaseUrl}${group.groupProfile}")
             : null;
 
-    final isSelected =
-        controller.selectedGroupId.value == group.id?.toString();
+    final isSelected = controller.selectedGroupId.value == group.id?.toString();
 
     return GestureDetector(
       onTap: () {
