@@ -2,7 +2,6 @@ import 'package:fgtracker/app/Data/Services/Socket/Socket_Group_Calling.dart';
 import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'package:get/get.dart';
 import '../../../../gen/assets.gen.dart';
-import '../../../Data/Services/group_call_service.dart'; // IMPORTANT
 import '../../../routes/app_pages.dart';
 
 class GroupIncomingCallController extends GetxController {
@@ -35,22 +34,31 @@ class GroupIncomingCallController extends GetxController {
   }
 
   void _playRingtone() {
-    FlutterRingtonePlayer().play(
-      asAlarm: false,
-      fromAsset: Assets.music.incomingCall,
-      looping: true,
-      volume: 1.0,
-    );
+    try {
+      FlutterRingtonePlayer().play(
+        asAlarm: false,
+        fromAsset: Assets.music.incomingCall,
+        looping: true,
+        volume: 1.0,
+      );
+    } catch (e) {
+      FlutterRingtonePlayer().playRingtone(
+        asAlarm: false,
+        looping: true,
+        volume: 1.0,
+      );
+    }
   }
 
   void _stopRingtone() {
-    FlutterRingtonePlayer().stop();
+    try {
+      FlutterRingtonePlayer().stop();
+    } catch (_) {}
   }
 
   void joinCall() {
     _stopRingtone();
 
-    // Controller handles emitting join_group_call inside onInit
     Get.offNamed(
       Routes.groupCallingScreen,
       arguments: {
@@ -60,7 +68,7 @@ class GroupIncomingCallController extends GetxController {
         "isVideo": isVideo,
         "memberCount": totalMemberCount,
         "callId": callId,
-        "callType": "incoming", // Important!
+        "callType": "incoming",
       },
     );
   }

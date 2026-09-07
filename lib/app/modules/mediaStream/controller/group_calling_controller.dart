@@ -7,11 +7,9 @@ import 'package:get/get.dart' hide navigator;
 import 'package:wakelock_plus/wakelock_plus.dart';
 import 'package:proximity_screen_lock/proximity_screen_lock.dart';
 
-// Replace with your actual project imports
 import 'package:fgtracker/gen/assets.gen.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
-import 'package:fgtracker/app/Core/values/utility.dart';
 import 'package:fgtracker/app/Model/group_call_participant.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Group_Calling.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
@@ -49,10 +47,12 @@ class GroupCallingController extends GetxController {
     _initData();
     WakelockPlus.enable();
 
+    // Map service listeners
     Socket_GroupCallService.instance.onParticipantsUpdated = _syncParticipants;
     Socket_GroupCallService.instance.onParticipantJoined = _onParticipantJoined;
     Socket_GroupCallService.instance.onParticipantLeft = _onParticipantLeft;
     Socket_GroupCallService.instance.onCallEnded = _onRemoteCallEnded;
+    Socket_GroupCallService.instance.onParticipantRejected = _onParticipantRejected;
 
     _setupLocalMedia().then((_) {
       if (callType == "outgoing") {
@@ -67,10 +67,10 @@ class GroupCallingController extends GetxController {
           onResponse: (success, generatedCallId, errorMessage) {
             if (success) {
               callId = generatedCallId;
-              _log('Outgoing call registered. ID: $callId');
+              _log('Call successfully initialized. CallID: $callId');
             } else {
               _stopSound();
-              Utils().fluttertoast( errorMessage ?? "Unable to initialize group call");
+              Utils().fluttertoast(errorMessage ?? "Unable to initialize group call");
               Get.back();
             }
           },
@@ -80,15 +80,16 @@ class GroupCallingController extends GetxController {
         if (callId != null) {
           Socket_GroupCallService.instance.joinGroupCall(callId!, groupId, (success) {
             if (!success) {
-              Utils().fluttertoast( "Failed to connect to the call session");
+              _stopSound();
+              Utils().fluttertoast("Failed to connect to the call session");
               Get.back();
             }
           });
         }
       }
     }).catchError((e) {
-      _log('Error setting up local media constraints: $e');
-      Utils().fluttertoast( "Camera or Mic permissions are required");
+      _log('Local media setup error: $e');
+      Utils().fluttertoast("Camera or Mic permissions are required");
       Get.back();
     });
   }
@@ -138,6 +139,7 @@ class GroupCallingController extends GetxController {
   }
 
   void _onParticipantJoined(String userId) {
+    _log('Participant detected in call: $userId');
     if (callStatus.value != "Connected") {
       _stopSound();
       callStatus.value = "Connected";
@@ -147,11 +149,12 @@ class GroupCallingController extends GetxController {
   }
 
   void _onParticipantLeft(String userId) {
-    activeParticipants.removeWhere((p) => p.userId == userId);
-    activeParticipants.refresh();
+    _log('Participant left: $userId');
+    _syncParticipants();
+  }
 
-    // If you are the only one remaining in an outgoing/incoming call, don't auto-disconnect
-    // unless all remote peers disconnect and you wish to clean up.
+  void _onParticipantRejected(String userId) {
+    Utils().fluttertoast("User $userId rejected the call");
   }
 
   void _onRemoteCallEnded() {
@@ -289,6 +292,7 @@ class GroupCallingController extends GetxController {
     Socket_GroupCallService.instance.onParticipantJoined = null;
     Socket_GroupCallService.instance.onParticipantLeft = null;
     Socket_GroupCallService.instance.onCallEnded = null;
+    Socket_GroupCallService.instance.onParticipantRejected = null;
 
     try {
       localRenderer.srcObject = null;
