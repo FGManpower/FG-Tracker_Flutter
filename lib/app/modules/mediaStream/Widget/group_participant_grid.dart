@@ -121,7 +121,7 @@ class GroupParticipantGrid extends StatelessWidget {
                     borderRadius: BorderRadius.circular(8.r),
                   ),
                   child: reausabletext(
-                    participant.isLocal ? "${participant.name} (You)" : participant.name,
+                    participant.isLocal ? "${participant.name} (You)" : participant.name.toString(),
                     fontsize: 13,
                     fontfamily: FontFamily.interSemiBold,
                     color: Colors.white,

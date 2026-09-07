@@ -9,51 +9,38 @@ import 'package:fgtracker/app/Model/live_location_model.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-
 import '../../../Model/banner_model.dart';
 
 class HomeController extends GetxController {
   RxBool ProfileData_loading = false.obs;
   RxString Respone_Error = ''.obs;
-
   Rx<UserData> userData = UserData().obs;
   Rx<GroupCountDetail> groupCount = GroupCountDetail().obs;
   StreamSubscription<dynamic>? _groupCountSubscription;
-
   RxList<BannerData> bannerList = <BannerData>[].obs;
   RxString BannerResponeMessage = ''.obs;
   RxBool isLoadingBanners = false.obs;
-
   final RxList<LiveLocationModel> liveLocations = <LiveLocationModel>[].obs;
-
   final Rx<LatLng?> currentLocation = Rx<LatLng?>(null);
-
-
   RxString selectedRadius = '2'.obs;
-
   StreamSubscription<List<LiveLocationModel>>? _liveLocationSubscription;
-
-
 
   @override
   void onInit() {
     super.onInit();
     startLiveLocationSession();
     SocketDashboardService.instance.init();
-
     _listenGroupCount();
     _listenLiveLocations();
-
     fetchBanners();
-
   }
 
   void _listenGroupCount() {
     _groupCountSubscription?.cancel();
     _groupCountSubscription =
         SocketDashboardService.instance.groupCountStream.listen((data) {
-          groupCount.value = GroupCountDetail.fromJson(data);
-        });
+      groupCount.value = GroupCountDetail.fromJson(data);
+    });
   }
 
   void refreshGroupCount() {
@@ -93,16 +80,15 @@ class HomeController extends GetxController {
     }
   }
 
-
   void _listenLiveLocations() {
     _liveLocationSubscription?.cancel();
 
     _liveLocationSubscription =
         SocketDashboardService.instance.liveLocationStream.listen(
-              (locations) {
-            liveLocations.assignAll(locations);
-          },
-        );
+      (locations) {
+        liveLocations.assignAll(locations);
+      },
+    );
   }
 
   void requestLiveMembers({
@@ -194,6 +180,4 @@ class HomeController extends GetxController {
 
     super.onClose();
   }
-
-
 }

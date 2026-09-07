@@ -11,25 +11,38 @@ class GroupIncomingCallController extends GetxController {
   late String groupName;
   late String callerName;
   String? groupProfile;
+  String? callerProfileImage;
   late int activeMemberCount;
   late int totalMemberCount;
   late bool isVideo;
   String? callId;
-
+  String? callerId;
   RxBool isMuted = false.obs;
 
   @override
   void onInit() {
     super.onInit();
+
     groupId = args["groupId"]?.toString() ?? "";
     groupName = args["groupName"]?.toString() ?? "Unknown Group";
-    callerName = args["callerName"]?.toString() ?? "Unknown User";
-    groupProfile = args["groupProfile"];
+    callerName =
+        (args["callerName"] ?? args["name"] ?? "Unknown User").toString();
+    groupProfile = args["groupProfile"]?.toString();
+    callerProfileImage =
+        (args["callerProfileImage"] ?? args["profileImage"] ?? groupProfile)
+            ?.toString();
     activeMemberCount = args["activeMemberCount"] ?? 1;
     totalMemberCount = args["totalMemberCount"] ?? 0;
     isVideo = args["isVideo"] == true;
     callId = args["callId"]?.toString();
-
+    callerId = args["callerId"]?.toString();
+    if (callerId != null && callerId!.isNotEmpty) {
+      Socket_GroupCallService.instance.participantMeta[callerId!] = {
+        "name": callerName,
+        "profileImage": callerProfileImage ?? "",
+        "isMuted": false,
+      };
+    }
     _playRingtone();
   }
 
@@ -41,12 +54,14 @@ class GroupIncomingCallController extends GetxController {
         looping: true,
         volume: 1.0,
       );
-    } catch (e) {
-      FlutterRingtonePlayer().playRingtone(
-        asAlarm: false,
-        looping: true,
-        volume: 1.0,
-      );
+    } catch (_) {
+      try {
+        FlutterRingtonePlayer().playRingtone(
+          asAlarm: false,
+          looping: true,
+          volume: 1.0,
+        );
+      } catch (_) {}
     }
   }
 
@@ -64,7 +79,10 @@ class GroupIncomingCallController extends GetxController {
       arguments: {
         "groupId": groupId,
         "groupName": groupName,
-        "groupProfile": groupProfile,
+        "groupProfile": groupProfile ?? callerProfileImage,
+        "callerId": callerId,
+        "callerName": callerName,
+        "callerProfileImage": callerProfileImage,
         "isVideo": isVideo,
         "memberCount": totalMemberCount,
         "callId": callId,

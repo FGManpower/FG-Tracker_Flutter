@@ -37,9 +37,7 @@ class GroupCallingController extends GetxController {
   RxList<GroupCallParticipant> activeParticipants = <GroupCallParticipant>[].obs;
   RTCVideoRenderer localRenderer = RTCVideoRenderer();
 
-  void _log(String message) {
-    log('🎛[GroupCallingController] $message');
-  }
+  void _log(String message) => log('🎛[GroupCallingController] $message');
 
   @override
   void onInit() {
@@ -47,30 +45,34 @@ class GroupCallingController extends GetxController {
     _initData();
     WakelockPlus.enable();
 
-    // Map service listeners
-    Socket_GroupCallService.instance.onParticipantsUpdated = _syncParticipants;
-    Socket_GroupCallService.instance.onParticipantJoined = _onParticipantJoined;
-    Socket_GroupCallService.instance.onParticipantLeft = _onParticipantLeft;
-    Socket_GroupCallService.instance.onCallEnded = _onRemoteCallEnded;
-    Socket_GroupCallService.instance.onParticipantRejected = _onParticipantRejected;
+    final svc = Socket_GroupCallService.instance;
+    svc.onParticipantsUpdated = _syncParticipants;
+    svc.onParticipantJoined = _onParticipantJoined;
+    svc.onParticipantLeft = _onParticipantLeft;
+    svc.onCallEnded = _onRemoteCallEnded;
+    svc.onParticipantRejected = _onParticipantRejected;
+    svc.onParticipantMuteChanged = _onParticipantMuteChanged;
 
     _setupLocalMedia().then((_) {
       if (callType == "outgoing") {
         _playSound();
         final myName = Global.storageServices.get(PrefConst.userName) ?? "User";
+        final myImage =
+            Global.storageServices.get(PrefConst.profileImage)?.toString() ?? "";
 
-        Socket_GroupCallService.instance.startGroupCall(
+        svc.startGroupCall(
           groupId: groupId,
           isVideo: isVideo,
           callerName: myName.toString(),
-          callerProfileImage: "",
+          callerProfileImage: myImage,
           onResponse: (success, generatedCallId, errorMessage) {
             if (success) {
               callId = generatedCallId;
-              _log('Call successfully initialized. CallID: $callId');
+              _log('Call started. callId=$callId');
             } else {
               _stopSound();
-              Utils().fluttertoast(errorMessage ?? "Unable to initialize group call");
+              Utils().fluttertoast(
+                  errorMessage ?? "Unable to initialize group call");
               Get.back();
             }
           },
@@ -78,17 +80,19 @@ class GroupCallingController extends GetxController {
       } else {
         callStatus.value = "Connecting...";
         if (callId != null) {
-          Socket_GroupCallService.instance.joinGroupCall(callId!, groupId, (success) {
+          svc.joinGroupCall(callId!, groupId, (success) {
             if (!success) {
               _stopSound();
               Utils().fluttertoast("Failed to connect to the call session");
               Get.back();
+            } else {
+              _syncParticipants();
             }
           });
         }
       }
     }).catchError((e) {
-      _log('Local media setup error: $e');
+      _log('Local media error: $e');
       Utils().fluttertoast("Camera or Mic permissions are required");
       Get.back();
     });
@@ -99,11 +103,42 @@ class GroupCallingController extends GetxController {
     groupName = args["groupName"]?.toString() ?? "Group Call";
     groupProfile = args["groupProfile"]?.toString();
     isVideo = args["isVideo"] == true;
-    totalMemberCount = args["memberCount"] ?? 0;
+    totalMemberCount = args["memberCount"] ?? args["totalMemberCount"] ?? 0;
     callType = args["callType"]?.toString() ?? "outgoing";
     callId = args["callId"]?.toString();
-
     isVideoOn.value = isVideo;
+
+    // 1. If caller details passed in args, cache them
+    final callerId = args["callerId"]?.toString();
+    final callerName = args["callerName"]?.toString();
+    final callerImage =
+    (args["callerProfileImage"] ?? args["groupProfile"])?.toString();
+    if (callerId != null && callerId.isNotEmpty) {
+      Socket_GroupCallService.instance.participantMeta[callerId] = {
+        "name": callerName ?? "Someone",
+        "profileImage": callerImage ?? "",
+        "isMuted": false,
+      };
+    }
+
+    // 2. Pre-cache any group members passed in Get.arguments (e.g. from Group Chat screen)
+    final membersArg = args["groupMembers"] ?? args["members"] ?? args["participants"];
+    if (membersArg is List) {
+      for (final m in membersArg) {
+        if (m is Map) {
+          final uid = (m["userId"] ?? m["UserId"] ?? m["id"])?.toString();
+          final uName = (m["name"] ?? m["Name"] ?? m["userName"])?.toString();
+          final uImg = (m["profileImage"] ?? m["ProfileImage"] ?? m["userProfileImage"] ?? m["image"])?.toString();
+          if (uid != null && uid.isNotEmpty) {
+            Socket_GroupCallService.instance.participantMeta[uid] = {
+              "name": uName ?? "User $uid",
+              "profileImage": uImg ?? "",
+              "isMuted": false,
+            };
+          }
+        }
+      }
+    }
   }
 
   Future<void> _setupLocalMedia() async {
@@ -126,10 +161,13 @@ class GroupCallingController extends GetxController {
 
     final myUserId = Global.storageServices.get(PrefConst.userId).toString();
     final myName = Global.storageServices.get(PrefConst.userName) ?? "You";
+    final myImage =
+    Global.storageServices.get(PrefConst.profileImage)?.toString();
 
     activeParticipants.add(GroupCallParticipant(
       userId: myUserId,
       name: myName.toString(),
+      profileImage: myImage,
       isLocal: true,
       videoOn: isVideo,
       connected: true,
@@ -139,7 +177,7 @@ class GroupCallingController extends GetxController {
   }
 
   void _onParticipantJoined(String userId) {
-    _log('Participant detected in call: $userId');
+    _log('joined: $userId');
     if (callStatus.value != "Connected") {
       _stopSound();
       callStatus.value = "Connected";
@@ -149,12 +187,25 @@ class GroupCallingController extends GetxController {
   }
 
   void _onParticipantLeft(String userId) {
-    _log('Participant left: $userId');
-    _syncParticipants();
+    _log('left: $userId');
+    activeParticipants.removeWhere((p) => p.userId == userId);
+    activeParticipants.refresh();
   }
 
   void _onParticipantRejected(String userId) {
-    Utils().fluttertoast("User $userId rejected the call");
+    final name = Socket_GroupCallService.instance.getParticipantName(userId);
+    Utils().fluttertoast("$name rejected the call");
+  }
+
+  void _onParticipantMuteChanged(String userId, bool isMuted) {
+    _log('mute changed user=$userId muted=$isMuted');
+    final p = activeParticipants.firstWhereOrNull((e) => e.userId == userId);
+    if (p != null) {
+      p.isMuted.value = isMuted;
+      activeParticipants.refresh();
+    } else {
+      _syncParticipants();
+    }
   }
 
   void _onRemoteCallEnded() {
@@ -166,34 +217,49 @@ class GroupCallingController extends GetxController {
   }
 
   void _syncParticipants() {
+    final svc = Socket_GroupCallService.instance;
     final local = activeParticipants.firstWhereOrNull((p) => p.isLocal);
     final remoteList = <GroupCallParticipant>[];
 
-    Socket_GroupCallService.instance.remoteRenderers.forEach((userId, renderer) {
-      final existing = activeParticipants.firstWhereOrNull((p) => p.userId == userId);
+    svc.remoteRenderers.forEach((userId, renderer) {
+      final existing =
+      activeParticipants.firstWhereOrNull((p) => p.userId == userId);
+
+      final name = svc.getParticipantName(userId);
+      final image = svc.getParticipantProfileImage(userId);
+      final muted = svc.getParticipantMuted(userId);
+
       if (existing != null && !existing.isLocal) {
+        existing.name = name;
+        existing.profileImage = image;
         existing.renderer = renderer;
         existing.stream = renderer.srcObject;
-        existing.isVideoOn.value = renderer.srcObject?.getVideoTracks().any((t) => t.enabled) ?? false;
+        existing.isMuted.value = muted;
+        existing.isVideoOn.value =
+            renderer.srcObject?.getVideoTracks().any((t) => t.enabled) ?? false;
         existing.isConnected.value = true;
         remoteList.add(existing);
       } else {
         remoteList.add(GroupCallParticipant(
           userId: userId,
-          name: "User $userId",
+          name: name, // ✅ Displays Real Name if known, or fallback
+          profileImage: image,
           isLocal: false,
           videoOn: renderer.srcObject?.getVideoTracks().isNotEmpty ?? false,
           connected: true,
           renderer: renderer,
           stream: renderer.srcObject,
-        ));
+        )..isMuted.value = muted);
       }
     });
 
-    activeParticipants.clear();
-    if (local != null) activeParticipants.add(local);
-    activeParticipants.addAll(remoteList);
-    activeParticipants.refresh();
+    activeParticipants
+      ..clear()
+      ..addAll([
+        if (local != null) local,
+        ...remoteList,
+      ])
+      ..refresh();
 
     if (remoteList.isNotEmpty && callStatus.value != "Connected") {
       _stopSound();
@@ -204,21 +270,34 @@ class GroupCallingController extends GetxController {
 
   void toggleMic() {
     isAudioOn.value = !isAudioOn.value;
-    Socket_GroupCallService.instance.localStream?.getAudioTracks().forEach((t) => t.enabled = isAudioOn.value);
-    activeParticipants.firstWhereOrNull((p) => p.isLocal)?.isMuted.value = !isAudioOn.value;
+    final muted = !isAudioOn.value;
+
+    Socket_GroupCallService.instance.localStream
+        ?.getAudioTracks()
+        .forEach((t) => t.enabled = isAudioOn.value);
+
+    activeParticipants.firstWhereOrNull((p) => p.isLocal)?.isMuted.value =
+        muted;
+
+    Socket_GroupCallService.instance.emitMute(isMuted: muted);
   }
 
   void toggleCamera() {
     if (!isVideo) return;
     isVideoOn.value = !isVideoOn.value;
-    Socket_GroupCallService.instance.localStream?.getVideoTracks().forEach((t) => t.enabled = isVideoOn.value);
-    activeParticipants.firstWhereOrNull((p) => p.isLocal)?.isVideoOn.value = isVideoOn.value;
+    Socket_GroupCallService.instance.localStream
+        ?.getVideoTracks()
+        .forEach((t) => t.enabled = isVideoOn.value);
+    activeParticipants.firstWhereOrNull((p) => p.isLocal)?.isVideoOn.value =
+        isVideoOn.value;
   }
 
   void switchCamera() {
     if (!isVideo) return;
     isFrontCamera.value = !isFrontCamera.value;
-    Socket_GroupCallService.instance.localStream?.getVideoTracks().forEach((t) => t.switchCamera());
+    Socket_GroupCallService.instance.localStream
+        ?.getVideoTracks()
+        .forEach((t) => t.switchCamera());
   }
 
   Future<void> toggleSpeaker() async {
@@ -253,9 +332,9 @@ class GroupCallingController extends GetxController {
   }
 
   String get formattedDuration {
-    final minutes = (callDurationSeconds.value ~/ 60).toString().padLeft(2, '0');
-    final seconds = (callDurationSeconds.value % 60).toString().padLeft(2, '0');
-    return "$minutes:$seconds";
+    final m = (callDurationSeconds.value ~/ 60).toString().padLeft(2, '0');
+    final s = (callDurationSeconds.value % 60).toString().padLeft(2, '0');
+    return "$m:$s";
   }
 
   void _playSound() {
@@ -288,11 +367,13 @@ class GroupCallingController extends GetxController {
     _clearTimers();
     _stopSound();
 
-    Socket_GroupCallService.instance.onParticipantsUpdated = null;
-    Socket_GroupCallService.instance.onParticipantJoined = null;
-    Socket_GroupCallService.instance.onParticipantLeft = null;
-    Socket_GroupCallService.instance.onCallEnded = null;
-    Socket_GroupCallService.instance.onParticipantRejected = null;
+    final svc = Socket_GroupCallService.instance;
+    svc.onParticipantsUpdated = null;
+    svc.onParticipantJoined = null;
+    svc.onParticipantLeft = null;
+    svc.onCallEnded = null;
+    svc.onParticipantRejected = null;
+    svc.onParticipantMuteChanged = null;
 
     try {
       localRenderer.srcObject = null;

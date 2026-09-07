@@ -3,8 +3,8 @@ import 'package:get/get.dart';
 
 class GroupCallParticipant {
   final String userId;
-  final String name;
-  final String? profileImage;
+   String? name;
+   String? profileImage;
 
   final bool isLocal;
 

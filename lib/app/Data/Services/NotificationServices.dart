@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:math';
-
 import 'package:connectycube_flutter_call_kit/connectycube_flutter_call_kit.dart';
 import 'package:fgtracker/app/Core/global/launchedFromCall.dart';
 import 'package:fgtracker/app/Core/util/callkit_service.dart';
@@ -15,9 +14,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
-
 import 'dart:io';
-
 import 'CallStateTracker.dart';
 
 class firebaseNotificationServices {
@@ -52,8 +49,7 @@ class firebaseNotificationServices {
           const RawResourceAndroidNotificationSound('recieve_notification.mp3'),
     );
 
-    AndroidNotificationDetails androidNotificationDetails =
-        AndroidNotificationDetails(
+    AndroidNotificationDetails androidNotificationDetails = AndroidNotificationDetails(
             channel.id.toString(), channel.name.toString(),
             channelDescription: "you Channel Description",
             importance: Importance.high,
@@ -141,7 +137,7 @@ class firebaseNotificationServices {
           ContextUtility.navigatorkey.currentState?.overlay?.context;
 
       if (context == null) {
-        debugPrint("⚠️ Context not ready, skipping UI actions");
+        debugPrint("Context not ready, skipping UI actions");
         return;
       }
 
@@ -163,12 +159,13 @@ class firebaseNotificationServices {
 
   static Future<String> getDeviceTokenToSendNotification() async {
     fcmToken = (await FirebaseMessaging.instance.getToken()).toString();
-
     return fcmToken;
   }
 
   Future<void> handleMessage(BuildContext context, RemoteMessage message,
       {String? type}) async {
+
+    print("Notification-MessageData:${message.data}");
     if (type == "recienvedmessage") {
       if (message.data['screen_name'] == "MemberPage") {
         Get.toNamed(Routes.Memberscreen, arguments: {
