@@ -1,6 +1,7 @@
 
 
 import 'const_res.dart';
+export 'const_res.dart';
 
 class Urls {
   ///------------------------ Urls ------------------------///
@@ -14,6 +15,7 @@ class Urls {
   static const String recentCallHistory = '${ConstRes.aBaseUrl}history';
   static const String allGroupMembers = '${ConstRes.aBaseUrl}all-group-members';
   static const String usersWithinRadius = '${ConstRes.aBaseUrl}users-within-radius';
+  static const String userWithinRadiusFallback = '${ConstRes.aBaseUrl}user-within-radius';
 
   ///------------------------ Params ------------------------///
   static const String apiKeyName = 'apikey';

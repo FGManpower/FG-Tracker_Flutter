@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/constant/urls.dart';
 import 'package:fgtracker/app/Core/util/http/http_util.dart';
@@ -15,18 +16,38 @@ class TrackRepo {
     required dynamic userLong,
     required dynamic radius,
   }) async {
+    final queryParams = {
+      "userId": userId,
+      "userLat": userLat,
+      "userLong": userLong,
+      "lat": userLat,
+      "long": userLong,
+      "radius": radius,
+    };
+
+    dynamic response;
     try {
-      debugPrint("📍 [TrackRepo] GET ${Urls.usersWithinRadius} - params: userId: $userId, userLat: $userLat, userLong: $userLong, radius: $radius");
-      var response = await HttpUtil().get(
+      debugPrint("📍 [TrackRepo] GET ${Urls.usersWithinRadius} - params: $queryParams");
+      response = await HttpUtil().get(
         Urls.usersWithinRadius,
-        data: {
-          "userId": userId,
-          "userLat": userLat,
-          "userLong": userLong,
-          "radius": radius,
-        },
+        data: queryParams,
       );
       debugPrint("📍 [TrackRepo] Response from /users-within-radius: $response");
+    } catch (e) {
+      debugPrint("⚠️ Primary ${Urls.usersWithinRadius} failed: $e, trying /user-within-radius fallback");
+      try {
+        response = await HttpUtil().get(
+          Urls.userWithinRadiusFallback,
+          data: queryParams,
+        );
+        debugPrint("📍 [TrackRepo] Response from /user-within-radius: $response");
+      } catch (e2) {
+        debugPrint("❌ [TrackRepo] Error in getUsersWithinRadius: $e2");
+        return UsersWithinRadiusRes(status: false, message: e2.toString(), data: []);
+      }
+    }
+
+    try {
       if (response is Map<String, dynamic>) {
         return UsersWithinRadiusRes.fromJson(response);
       } else if (response is Map) {
@@ -35,9 +56,9 @@ class TrackRepo {
         return UsersWithinRadiusRes.fromJson({"status": true, "data": response});
       }
       return UsersWithinRadiusRes.fromJson({});
-    } catch (e) {
-      debugPrint("❌ [TrackRepo] Error in getUsersWithinRadius: $e");
-      return UsersWithinRadiusRes(status: false, message: e.toString(), data: []);
+    } catch (parseErr) {
+      debugPrint("❌ [TrackRepo] JSON parse error in getUsersWithinRadius: $parseErr");
+      return UsersWithinRadiusRes(status: false, message: parseErr.toString(), data: []);
     }
   }
 

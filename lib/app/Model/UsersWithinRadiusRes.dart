@@ -1,5 +1,6 @@
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Model/MemberModel.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 
 class UsersWithinRadiusRes {
@@ -136,7 +137,7 @@ class UsersWithinRadiusData {
           locMap['lng'] ??
           locMap['longitude'] ??
           locMap['userLong']);
-      location = (locMap['address'] ?? locMap['name'])?.toString();
+      location = (locMap['address'] ?? locMap['name'] ?? locMap['location'])?.toString();
     } else {
       latitude = _parseDouble(
           json['latitude'] ?? json['userLat'] ?? json['lat']);
@@ -146,6 +147,23 @@ class UsersWithinRadiusData {
           json['lng'] ??
           json['lon']);
       location = (json['location'] ?? json['address'])?.toString();
+    }
+
+    final areaVal = (json['area'] ??
+            json['subLocality'] ??
+            (json['location'] is Map ? json['location']['area'] : null))
+        ?.toString();
+    final cityVal = (json['city'] ??
+            json['locality'] ??
+            (json['location'] is Map ? json['location']['city'] : null))
+        ?.toString();
+    if (areaVal != null &&
+        cityVal != null &&
+        areaVal.isNotEmpty &&
+        cityVal.isNotEmpty) {
+      location = areaVal.toLowerCase() == cityVal.toLowerCase()
+          ? cityVal
+          : "$areaVal, $cityVal";
     }
 
     distance = json['distance'];
@@ -187,7 +205,68 @@ class UsersWithinRadiusData {
     return data;
   }
 
-  MemberModel toMemberModel({double? currentUserLat, double? currentUserLong}) {
+  static final Map<String, String> addressCache = {};
+
+  Future<String> resolveAddressFromCoordinates() async {
+    if (latitude == null ||
+        longitude == null ||
+        (latitude == 0.0 && longitude == 0.0)) {
+      return location ?? "";
+    }
+    final cacheKey =
+        "${latitude!.toStringAsFixed(4)},${longitude!.toStringAsFixed(4)}";
+    if (addressCache.containsKey(cacheKey)) {
+      location = addressCache[cacheKey]!;
+      return location!;
+    }
+    try {
+      final placemarks = await placemarkFromCoordinates(latitude!, longitude!);
+      if (placemarks.isNotEmpty) {
+        final place = placemarks.first;
+        String area = place.subLocality?.trim() ?? '';
+        if (area.isEmpty) {
+          area = place.locality?.trim() ?? '';
+        }
+        if (area.isEmpty) {
+          area = place.subAdministrativeArea?.trim() ?? '';
+        }
+
+        String city = place.locality?.trim() ?? '';
+        if (city.isEmpty) {
+          city = place.subAdministrativeArea?.trim() ?? '';
+        }
+        if (city.isEmpty) {
+          city = place.administrativeArea?.trim() ?? '';
+        }
+
+        String formatted = '';
+        if (area.isNotEmpty && city.isNotEmpty) {
+          formatted = area.toLowerCase() == city.toLowerCase()
+              ? city
+              : "$area, $city";
+        } else if (area.isNotEmpty) {
+          formatted = area;
+        } else if (city.isNotEmpty) {
+          formatted = city;
+        } else {
+          formatted = place.name?.trim() ?? "";
+        }
+
+        if (formatted.isNotEmpty) {
+          addressCache[cacheKey] = formatted;
+          location = formatted;
+          return formatted;
+        }
+      }
+    } catch (_) {}
+    return location ?? "";
+  }
+
+  MemberModel toMemberModel({
+    double? currentUserLat,
+    double? currentUserLong,
+    String? fallbackTeam,
+  }) {
     String formattedDistance = "0.0";
 
     // If both current user coordinates and member coordinates are available, calculate exact geodesic distance
@@ -221,28 +300,61 @@ class UsersWithinRadiusData {
       }
     }
 
-    int parsedBattery = 80;
+    int? parsedBattery;
     if (battery != null) {
-      parsedBattery = int.tryParse(battery.toString()) ?? 80;
+      parsedBattery =
+          int.tryParse(battery.toString().replaceAll(RegExp(r'[^\d]'), ''));
     }
 
-    String avatar = "https://i.pravatar.cc/150?img=11";
-    if (profileImage != null && profileImage!.isNotEmpty) {
+    String avatar = "";
+    if (profileImage != null &&
+        profileImage!.trim().isNotEmpty &&
+        profileImage != "null") {
       if (profileImage!.startsWith("http")) {
-        avatar = profileImage!;
+        avatar = profileImage!.trim();
       } else {
-        avatar = "${ConstRes.aImageBaseUrl}$profileImage";
+        avatar = "${ConstRes.aImageBaseUrl}${profileImage!.trim()}";
+      }
+    }
+
+    // Resolve address from cache if location is not formatted or raw coordinates
+    String resolvedLocation = (location != null &&
+            location!.trim().isNotEmpty &&
+            !location!.contains("Lat:") &&
+            !location!.contains("Active now") &&
+            !RegExp(r'^\d+\.\d+,\s*\d+\.\d+$').hasMatch(location!))
+        ? location!.trim()
+        : "";
+
+    if (resolvedLocation.isEmpty &&
+        latitude != null &&
+        longitude != null &&
+        latitude != 0.0 &&
+        longitude != 0.0) {
+      final cacheKey =
+          "${latitude!.toStringAsFixed(4)},${longitude!.toStringAsFixed(4)}";
+      if (addressCache.containsKey(cacheKey)) {
+        resolvedLocation = addressCache[cacheKey]!;
+        location = resolvedLocation;
       }
     }
 
     return MemberModel(
-      name: (name != null && name!.isNotEmpty) ? name! : "User ${userId ?? ''}",
-      team: (team != null && team!.isNotEmpty) ? team! : "FG Team",
-      location: (location != null && location!.isNotEmpty)
-          ? location!
-          : (latitude != null && longitude != null && latitude != 0.0
-              ? "${latitude!.toStringAsFixed(2)}, ${longitude!.toStringAsFixed(2)}"
-              : "Active now"),
+      userId: userId,
+      latitude: latitude,
+      longitude: longitude,
+      isOnline: isOnline,
+      name: (name != null && name!.trim().isNotEmpty)
+          ? name!.trim()
+          : (mobileNo != null && mobileNo!.trim().isNotEmpty
+              ? mobileNo!.trim()
+              : "User ${userId ?? ''}"),
+      team: (team != null &&
+              team!.trim().isNotEmpty &&
+              !team!.toLowerCase().contains("test"))
+          ? team!.trim()
+          : (fallbackTeam ?? ""),
+      location: resolvedLocation.isNotEmpty ? resolvedLocation : "Locating...",
       distance: formattedDistance,
       battery: parsedBattery,
       avatarUrl: avatar,

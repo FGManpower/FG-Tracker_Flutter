@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:fgtracker/app/Core/values/colors.dart';
 import 'package:fgtracker/app/config/themes_data.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:flutter/material.dart';
@@ -42,7 +43,7 @@ AppBar buildTrackAppBar(
       groupName,
       fontsize: 20,
       widths: 200,
-      color: Colors.white,
+      color: AppColors.white,
       fontweight: FontWeight.bold,
     ),
     actions: [
@@ -55,7 +56,7 @@ AppBar buildTrackAppBar(
       SizedBox(width: 15.w),
       PopupMenuButton<String>(
         onSelected: (value) {},
-        color: Colors.white,
+        color: AppColors.white,
         elevation: 5,
         offset: const Offset(0, 48),
         shape: RoundedRectangleBorder(
@@ -63,7 +64,7 @@ AppBar buildTrackAppBar(
         ),
         icon: Icon(
           Icons.more_vert,
-          color: Colors.white,
+          color: AppColors.white,
           size: 26.sp,
         ),
         itemBuilder: (context) => [
@@ -133,7 +134,7 @@ PopupMenuItem<String> popupItem({
           text,
           style: TextStyle(
             fontSize: 15.sp,
-            color: Colors.black87,
+            color: AppColors.primaryText,
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -150,7 +151,7 @@ PopupMenuEntry<String> dividerMenuItem() {
     child: Container(
       height: 1,
       margin: EdgeInsets.symmetric(horizontal: 0),
-      color: Colors.black.withValues(alpha: 0.15),
+      color: AppColors.textbordercolor,
     ),
   );
 }

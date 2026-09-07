@@ -263,8 +263,8 @@ class TrackingController extends GetxController {
       Get.snackbar(
         "User Not Found",
         "No user with id '$userId' found.",
-        backgroundColor: Colors.redAccent,
-        colorText: Colors.white,
+        backgroundColor: AppColors.darkRed,
+        colorText: AppColors.white,
       );
     }
   }
@@ -303,7 +303,7 @@ class TrackingController extends GetxController {
       Container(
         padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 20.h),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.white,
           borderRadius: BorderRadius.vertical(
             top: Radius.circular(28.r),
           ),
@@ -315,7 +315,7 @@ class TrackingController extends GetxController {
               width: 42.w,
               height: 5.h,
               decoration: BoxDecoration(
-                color: Colors.grey.shade300,
+                color: AppColors.textbordercolor,
                 borderRadius: BorderRadius.circular(100.r),
               ),
             ),
@@ -325,7 +325,7 @@ class TrackingController extends GetxController {
               style: TextStyle(
                 fontSize: 20.sp,
                 fontWeight: FontWeight.w700,
-                color: Colors.black,
+                color: AppColors.primaryText,
               ),
             ),
             SizedBox(height: 24.h),
@@ -351,8 +351,8 @@ class TrackingController extends GetxController {
                     ),
                     decoration: BoxDecoration(
                       color: isSelected
-                          ? const Color(0xffF3EEFF)
-                          : const Color(0xffF7F7F7),
+                          ? AppColors.blue.withOpacity(0.15)
+                          : AppColors.primarySecondaryBackground,
                       borderRadius: BorderRadius.circular(22.r),
                       border: Border.all(
                         color: isSelected
@@ -370,11 +370,11 @@ class TrackingController extends GetxController {
                             shape: BoxShape.circle,
                             color: isSelected
                                 ? AppColors.primaryDarkblue
-                                : Colors.white,
+                                : AppColors.white,
                           ),
                           child: Icon(
                             theme['icon'] as IconData,
-                            color: isSelected ? Colors.white : Colors.black87,
+                            color: isSelected ? AppColors.white : AppColors.primaryText,
                             size: 24.sp,
                           ),
                         ),
@@ -385,7 +385,7 @@ class TrackingController extends GetxController {
                             style: TextStyle(
                               fontSize: 18.sp,
                               fontWeight: FontWeight.w600,
-                              color: Colors.black87,
+                              color: AppColors.primaryText,
                             ),
                           ),
                         ),
@@ -393,14 +393,14 @@ class TrackingController extends GetxController {
                           Container(
                             width: 30.w,
                             height: 30.w,
-                            decoration: BoxDecoration(
+                            decoration: const BoxDecoration(
                               shape: BoxShape.circle,
                               color: AppColors.primaryDarkblue,
                             ),
-                            child: Icon(
+                            child: const Icon(
                               Icons.check,
-                              color: Colors.white,
-                              size: 20.sp,
+                              color: AppColors.white,
+                              size: 20,
                             ),
                           ),
                       ],
@@ -640,7 +640,7 @@ class TrackingController extends GetxController {
       Container(
         padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
         decoration: const BoxDecoration(
-          color: Colors.white,
+          color: AppColors.white,
           borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
         ),
         child: Column(
@@ -650,17 +650,17 @@ class TrackingController extends GetxController {
               width: 42,
               height: 5,
               decoration: BoxDecoration(
-                color: Colors.grey.shade300,
+                color: AppColors.textbordercolor,
                 borderRadius: BorderRadius.circular(100),
               ),
             ),
             const SizedBox(height: 16),
-            Text(
-              '${users.length} Members',
-              style: const TextStyle(
+            const Text(
+              'Members',
+              style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
-                color: Colors.black,
+                color: AppColors.primaryText,
               ),
             ),
             const SizedBox(height: 12),
@@ -689,27 +689,27 @@ class TrackingController extends GetxController {
 
                   return ListTile(
                     contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 8,
+                       horizontal: 8,
                       vertical: 4,
                     ),
                     leading: Stack(
                       children: [
                         ColorFiltered(
                           colorFilter: ColorFilter.mode(
-                            isGhostMode ? Colors.grey : Colors.transparent,
+                            isGhostMode ? AppColors.grey : Colors.transparent,
                             isGhostMode ? BlendMode.saturation : BlendMode.dst,
                           ),
                           child: CircleAvatar(
                             radius: 24,
                             backgroundColor: isGhostMode
-                                ? Colors.grey.shade300
-                                : Colors.grey.shade200,
+                                ? AppColors.textbordercolor
+                                : AppColors.appGreybackgroundcolor,
                             backgroundImage: imageUrl.isNotEmpty
                                 ? NetworkImage(
                                     ConstRes.aImageBaseUrl + imageUrl)
                                 : null,
                             child: imageUrl.isEmpty
-                                ? const Icon(Icons.person, color: Colors.grey)
+                                ? const Icon(Icons.person, color: AppColors.grey)
                                 : null,
                           ),
                         ),
@@ -721,10 +721,10 @@ class TrackingController extends GetxController {
                             height: 12,
                             decoration: BoxDecoration(
                               color: isGhostMode
-                                  ? Colors.grey
-                                  : (isOnline ? Colors.green : Colors.red),
+                                  ? AppColors.grey
+                                  : (isOnline ? AppColors.primaryElementStatus : AppColors.darkRed),
                               shape: BoxShape.circle,
-                              border: Border.all(color: Colors.white, width: 2),
+                              border: Border.all(color: AppColors.white, width: 2),
                             ),
                           ),
                         ),
@@ -738,7 +738,7 @@ class TrackingController extends GetxController {
                             style: TextStyle(
                               fontWeight: FontWeight.w600,
                               fontSize: 15,
-                              color: isGhostMode ? Colors.grey : Colors.black,
+                              color: isGhostMode ? AppColors.grey : AppColors.primaryText,
                             ),
                           ),
                         ),
@@ -749,13 +749,13 @@ class TrackingController extends GetxController {
                               vertical: 3,
                             ),
                             decoration: BoxDecoration(
-                              color: Colors.grey.shade400,
+                              color: AppColors.primarySecondaryElementText,
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: const Text(
                               "👻 Ghost",
                               style: TextStyle(
-                                color: Colors.white,
+                                color: AppColors.white,
                                 fontSize: 10,
                                 fontWeight: FontWeight.w600,
                               ),
@@ -775,8 +775,8 @@ class TrackingController extends GetxController {
                                   : "Offline",
                       style: TextStyle(
                         color: isGhostMode
-                            ? Colors.grey
-                            : (isOnline ? Colors.green : Colors.grey),
+                            ? AppColors.grey
+                            : (isOnline ? AppColors.primaryElementStatus : AppColors.grey),
                         fontSize: 12,
                       ),
                     ),

@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
+import 'package:fgtracker/app/Core/values/colors.dart';
 import 'package:fgtracker/app/config/themes_data.dart';
 import 'package:fgtracker/app/modules/Track/Widget/ToBitDescription.dart';
 import 'package:flutter/material.dart';
@@ -46,10 +47,10 @@ class MarkerWidget extends StatelessWidget {
             : ConstRes.aImageBaseUrl + imageUrl);
 
     final Color pinColor =
-        isMe ? const Color(0xFF5C4CFF) : ToggleThemeData.Appcolor;
+        isMe ? AppColors.darkBlue : ToggleThemeData.Appcolor;
     final Color borderColor = isMe
-        ? const Color(0xFF5C4CFF)
-        : (isOnline == true ? Colors.green : Colors.red);
+        ? AppColors.darkBlue
+        : (isOnline == true ? AppColors.primaryElementStatus : AppColors.darkRed);
 
     return Container(
       width: 100.w,
@@ -75,7 +76,7 @@ class MarkerWidget extends StatelessWidget {
                   height: 52.w,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: Colors.white,
+                    color: AppColors.white,
                     border: Border.all(
                       color: borderColor,
                       width: 2.5,
@@ -92,8 +93,8 @@ class MarkerWidget extends StatelessWidget {
                                 isMe ? Icons.person_pin : Icons.person,
                                 size: 30.sp,
                                 color: isMe
-                                    ? const Color(0xFF5C4CFF)
-                                    : Colors.grey,
+                                    ? AppColors.darkBlue
+                                    : AppColors.grey,
                               );
                             },
                           )
@@ -101,7 +102,7 @@ class MarkerWidget extends StatelessWidget {
                             isMe ? Icons.person_pin : Icons.person,
                             size: 30.sp,
                             color:
-                                isMe ? const Color(0xFF5C4CFF) : Colors.grey,
+                                isMe ? AppColors.darkBlue : AppColors.grey,
                           ),
                   ),
                 ),
@@ -120,15 +121,15 @@ class MarkerWidget extends StatelessWidget {
                       borderRadius:
                           isMe ? BorderRadius.circular(6) : null,
                       color: isMe
-                          ? const Color(0xFF5C4CFF)
-                          : (isOnline == true ? Colors.green : Colors.red),
-                      border: Border.all(color: Colors.white, width: 1.5),
+                          ? AppColors.darkBlue
+                          : (isOnline == true ? AppColors.primaryElementStatus : AppColors.darkRed),
+                      border: Border.all(color: AppColors.white, width: 1.5),
                     ),
                     child: isMe
                         ? const Text(
                             "YOU",
                             style: TextStyle(
-                              color: Colors.white,
+                              color: AppColors.white,
                               fontSize: 7,
                               fontWeight: FontWeight.bold,
                             ),
