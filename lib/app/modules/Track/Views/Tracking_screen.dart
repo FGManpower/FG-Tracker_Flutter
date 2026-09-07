@@ -43,7 +43,7 @@ class TrackingScreen extends StatelessWidget {
                  child: Column(
                    children: [
                      _buildSearchAndRadius(),
-                     _buildStaticMapSection(),
+                     // _buildStaticMapSection(),
                      _buildStatsCard(),
                      _buildLiveMembersList(),
                      _buildBottomShareButton(),
