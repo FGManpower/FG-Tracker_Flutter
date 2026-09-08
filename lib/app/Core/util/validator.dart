@@ -9,13 +9,27 @@ class Validator {
         r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+";
     RegExp regExp = RegExp(patttern);
     value = value?.trim();
-    if (value == null) {
+    if (value == null || value.isEmpty) {
       return "Email address cannot be empty";
     } else if (!regExp.hasMatch(value)) {
       return AppText.plsEntrValidEmail;
     } else {
       return null;
     }
+  }
+
+  static String? validateOptionalEmail(String? value) {
+    value = value?.trim();
+    if (value == null || value.isEmpty) {
+      return null;
+    }
+    String patttern =
+        r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+";
+    RegExp regExp = RegExp(patttern);
+    if (!regExp.hasMatch(value)) {
+      return AppText.plsEntrValidEmail;
+    }
+    return null;
   }
 
   static String? validate({String? value, title}) {

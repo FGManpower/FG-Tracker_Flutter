@@ -29,9 +29,11 @@ class _LocationTrackingPageState extends State<LocationTrackingPage> {
     super.initState();
 
     final args = Get.arguments ?? {};
-    groupId = args['groupId'];
-    groupName = args['groupName'] ?? "Group";
-    final String? targetUserId = args['targetUserId'];
+    groupId = args['groupId'] is int
+        ? (args['groupId'] as int)
+        : (int.tryParse(args['groupId']?.toString() ?? '0') ?? 0);
+    groupName = args['groupName']?.toString() ?? "Group";
+    final String? targetUserId = args['targetUserId']?.toString();
 
     _clusterManagers = {
       ClusterManager(
