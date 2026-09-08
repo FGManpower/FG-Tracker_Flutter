@@ -2,7 +2,6 @@ import 'package:fgtracker/app/Data/Services/Socket/Socket_Group_Calling.dart';
 import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'package:get/get.dart';
 import '../../../../gen/assets.gen.dart';
-import '../../../Data/Services/group_call_service.dart'; // IMPORTANT
 import '../../../routes/app_pages.dart';
 
 class GroupIncomingCallController extends GetxController {
@@ -12,55 +11,82 @@ class GroupIncomingCallController extends GetxController {
   late String groupName;
   late String callerName;
   String? groupProfile;
+  String? callerProfileImage;
   late int activeMemberCount;
   late int totalMemberCount;
   late bool isVideo;
   String? callId;
-
+  String? callerId;
   RxBool isMuted = false.obs;
 
   @override
   void onInit() {
     super.onInit();
+
     groupId = args["groupId"]?.toString() ?? "";
     groupName = args["groupName"]?.toString() ?? "Unknown Group";
-    callerName = args["callerName"]?.toString() ?? "Unknown User";
-    groupProfile = args["groupProfile"];
+    callerName =
+        (args["callerName"] ?? args["name"] ?? "Unknown User").toString();
+    groupProfile = args["groupProfile"]?.toString();
+    callerProfileImage =
+        (args["callerProfileImage"] ?? args["profileImage"] ?? groupProfile)
+            ?.toString();
     activeMemberCount = args["activeMemberCount"] ?? 1;
     totalMemberCount = args["totalMemberCount"] ?? 0;
     isVideo = args["isVideo"] == true;
     callId = args["callId"]?.toString();
-
+    callerId = args["callerId"]?.toString();
+    if (callerId != null && callerId!.isNotEmpty) {
+      Socket_GroupCallService.instance.participantMeta[callerId!] = {
+        "name": callerName,
+        "profileImage": callerProfileImage ?? "",
+        "isMuted": false,
+      };
+    }
     _playRingtone();
   }
 
   void _playRingtone() {
-    FlutterRingtonePlayer().play(
-      asAlarm: false,
-      fromAsset: Assets.music.incomingCall,
-      looping: true,
-      volume: 1.0,
-    );
+    try {
+      FlutterRingtonePlayer().play(
+        asAlarm: false,
+        fromAsset: Assets.music.incomingCall,
+        looping: true,
+        volume: 1.0,
+      );
+    } catch (_) {
+      try {
+        FlutterRingtonePlayer().playRingtone(
+          asAlarm: false,
+          looping: true,
+          volume: 1.0,
+        );
+      } catch (_) {}
+    }
   }
 
   void _stopRingtone() {
-    FlutterRingtonePlayer().stop();
+    try {
+      FlutterRingtonePlayer().stop();
+    } catch (_) {}
   }
 
   void joinCall() {
     _stopRingtone();
 
-    // Controller handles emitting join_group_call inside onInit
     Get.offNamed(
       Routes.groupCallingScreen,
       arguments: {
         "groupId": groupId,
         "groupName": groupName,
-        "groupProfile": groupProfile,
+        "groupProfile": groupProfile ?? callerProfileImage,
+        "callerId": callerId,
+        "callerName": callerName,
+        "callerProfileImage": callerProfileImage,
         "isVideo": isVideo,
         "memberCount": totalMemberCount,
         "callId": callId,
-        "callType": "incoming", // Important!
+        "callType": "incoming",
       },
     );
   }

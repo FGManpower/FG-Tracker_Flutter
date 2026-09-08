@@ -52,9 +52,9 @@ class SignallingService {
       callEnded(data['sessionId'].toString());
     });
 
-    // socket?.onAny((event, dynamic data) {
-    //   print("Event: $event, Data: $data");
-    // });
+    socket?.onAny((event, dynamic data) {
+      print("Event: $event, Data: $data");
+    });
 
     socket?.on('cancelMissedCallTimer', (data) {
       print("Cancel missed call timer received");
