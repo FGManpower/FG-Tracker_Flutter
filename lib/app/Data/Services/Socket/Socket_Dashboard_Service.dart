@@ -28,6 +28,8 @@ class SocketDashboardService extends GetxService {
 
   Stream<dynamic> get groupCountStream => _groupCountController.stream;
 
+  bool get isConnected => _socket?.connected ?? false;
+
 
   void init() {
     if (_socket != null) return;

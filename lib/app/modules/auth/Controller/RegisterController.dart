@@ -39,6 +39,8 @@ class RegistrationController extends GetxController {
       userData.name == null ? "" : userData.name.toString();
       phoneController.text =
       userData.mobileNo == null ? "" : userData.mobileNo.toString();
+      emailController.text =
+      userData.email == null ? "" : userData.email.toString();
       gender.value = userData.gender.toString() == ""
           ? "others"
           : userData.gender.toString();

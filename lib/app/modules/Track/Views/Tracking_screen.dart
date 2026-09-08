@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -5,6 +6,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../Controller/Track_controller.dart';
+import 'package:fgtracker/app/Core/values/colors.dart';
 import 'package:fgtracker/app/Model/MemberModel.dart';
 import 'package:fgtracker/app/Model/GroupRes.dart';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
@@ -17,21 +19,10 @@ class TrackingScreen extends StatelessWidget {
 
   final TrackController controller = Get.put(TrackController());
 
-  final Color primaryColor = const Color(0xFF4338CA);
-  final Color primaryLight = const Color(0xFFEEF2FF);
-  final Color bgColor = const Color(0xFFF7F8FE);
-  final Color cardColor = Colors.white;
-  final Color textDark = const Color(0xFF1E2046);
-  final Color textGrey = const Color(0xFF6B7280);
-  final Color textLight = const Color(0xFF9CA3AF);
-  final Color borderColor = const Color(0xFFECEFF8);
-  final Color greenStatus = const Color(0xFF22C55E);
-  final Color greenLight = const Color(0xFFECFDF5);
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: bgColor,
+      backgroundColor: AppColors.primarySecondaryBackground,
       body: Stack(
         children: [
           // Subtle decorative lavender-blue glow at top right matching reference design
@@ -109,7 +100,7 @@ class TrackingScreen extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 22.sp,
                     fontWeight: FontWeight.w800,
-                    color: textDark,
+                    color: AppColors.primaryText,
                     letterSpacing: -0.3,
                   ),
                 ),
@@ -119,7 +110,7 @@ class TrackingScreen extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 12.5.sp,
                     fontWeight: FontWeight.w400,
-                    color: textGrey,
+                    color: AppColors.primarySecondaryElementText,
                   ),
                 ),
               ],
@@ -174,7 +165,7 @@ class TrackingScreen extends StatelessWidget {
                       ),
                       child: Icon(
                         Icons.help_outline_rounded,
-                        color: textDark,
+                        color: AppColors.primaryText,
                         size: 20.sp,
                       ),
                     ),
@@ -210,7 +201,7 @@ class TrackingScreen extends StatelessWidget {
                                 style: TextStyle(
                                   fontSize: 16.sp,
                                   fontWeight: FontWeight.w800,
-                                  color: textDark,
+                                  color: AppColors.primaryText,
                                 ),
                               ),
                               GestureDetector(
@@ -219,7 +210,7 @@ class TrackingScreen extends StatelessWidget {
                                   padding: EdgeInsets.all(2.r),
                                   child: Icon(
                                     Icons.close_rounded,
-                                    color: primaryColor,
+                                    color: AppColors.primaryElement,
                                     size: 20.sp,
                                   ),
                                 ),
@@ -288,10 +279,10 @@ class TrackingScreen extends StatelessWidget {
           width: 38.w,
           height: 38.w,
           decoration: BoxDecoration(
-            color: primaryLight,
+            color: AppColors.primaryElementLight,
             shape: BoxShape.circle,
           ),
-          child: Icon(icon, color: primaryColor, size: 18.sp),
+          child: Icon(icon, color: AppColors.primaryElement, size: 18.sp),
         ),
         SizedBox(width: 10.w),
         Expanded(
@@ -303,7 +294,7 @@ class TrackingScreen extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 13.sp,
                   fontWeight: FontWeight.w700,
-                  color: textDark,
+                  color: AppColors.primaryText,
                 ),
               ),
               SizedBox(height: 2.h),
@@ -312,7 +303,7 @@ class TrackingScreen extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 10.5.sp,
                   fontWeight: FontWeight.w400,
-                  color: textGrey,
+                  color: AppColors.primarySecondaryElementText,
                   height: 1.25,
                 ),
               ),
@@ -330,9 +321,9 @@ class TrackingScreen extends StatelessWidget {
         width: 42.w,
         height: 42.w,
         decoration: BoxDecoration(
-          color: cardColor,
+          color: AppColors.primaryBackground,
           borderRadius: BorderRadius.circular(12.r),
-          border: Border.all(color: borderColor),
+          border: Border.all(color: AppColors.textbordercolor),
           boxShadow: [
             BoxShadow(
               color: const Color(0xFF1E2046).withOpacity(0.04),
@@ -341,12 +332,13 @@ class TrackingScreen extends StatelessWidget {
             ),
           ],
         ),
-        child: Icon(icon, color: textDark, size: 20.sp),
+        child: Icon(icon, color: AppColors.primaryText, size: 20.sp),
       ),
     );
   }
 
   // --- CUSTOM TABS: Live Tracking | Group ---
+// --- CUSTOM TABS: Live Tracking | Group ---
   Widget _buildCustomTabs() {
     return Obx(() {
       final isLive = controller.selectedTabIndex.value == 0;
@@ -354,7 +346,7 @@ class TrackingScreen extends StatelessWidget {
         margin: EdgeInsets.symmetric(horizontal: 16.w),
         height: 48.h,
         decoration: BoxDecoration(
-          color: cardColor,
+          color: AppColors.primaryBackground,
           borderRadius: BorderRadius.circular(14.r),
           boxShadow: [
             BoxShadow(
@@ -374,7 +366,8 @@ class TrackingScreen extends StatelessWidget {
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
                   decoration: BoxDecoration(
-                    color: isLive ? primaryColor : Colors.transparent,
+                    color:
+                        isLive ? AppColors.primaryElement : Colors.transparent,
                     borderRadius: BorderRadius.circular(10.r),
                   ),
                   alignment: Alignment.center,
@@ -384,7 +377,7 @@ class TrackingScreen extends StatelessWidget {
                       Icon(
                         Icons.sensors_rounded,
                         size: 17.sp,
-                        color: isLive ? Colors.white : textDark,
+                        color: isLive ? Colors.white : AppColors.primarySecondaryElementText,
                       ),
                       SizedBox(width: 6.w),
                       Text(
@@ -392,7 +385,8 @@ class TrackingScreen extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 13.sp,
                           fontWeight: FontWeight.w700,
-                          color: isLive ? Colors.white : textDark,
+                          color:
+                              isLive ? Colors.white : AppColors.primarySecondaryElementText,
                         ),
                       ),
                     ],
@@ -407,7 +401,9 @@ class TrackingScreen extends StatelessWidget {
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
                   decoration: BoxDecoration(
-                    color: !isLive ? primaryColor : Colors.transparent,
+                    color: !isLive
+                        ? AppColors.primaryElement
+                        : Colors.transparent,
                     borderRadius: BorderRadius.circular(10.r),
                   ),
                   alignment: Alignment.center,
@@ -417,7 +413,7 @@ class TrackingScreen extends StatelessWidget {
                       Icon(
                         Icons.groups_rounded,
                         size: 19.sp,
-                        color: !isLive ? Colors.white : textDark,
+                        color: !isLive ? Colors.white : AppColors.primarySecondaryElementText,
                       ),
                       SizedBox(width: 6.w),
                       Text(
@@ -425,7 +421,8 @@ class TrackingScreen extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 13.sp,
                           fontWeight: FontWeight.w700,
-                          color: !isLive ? Colors.white : textDark,
+                          color:
+                              !isLive ? Colors.white : AppColors.primarySecondaryElementText,
                         ),
                       ),
                     ],
@@ -450,25 +447,27 @@ class TrackingScreen extends StatelessWidget {
             child: Container(
               height: 44.h,
               decoration: BoxDecoration(
-                color: cardColor,
+                color: AppColors.primaryBackground,
                 borderRadius: BorderRadius.circular(12.r),
-                border: Border.all(color: borderColor),
+                border: Border.all(color: AppColors.textbordercolor),
               ),
               alignment: Alignment.center,
               child: TextField(
                 controller: controller.searchController,
                 onChanged: controller.onSearch,
-                style: TextStyle(fontSize: 13.sp, color: textDark),
+                style:
+                    TextStyle(fontSize: 13.sp, color: AppColors.primaryText),
                 decoration: InputDecoration(
                   isDense: true,
                   prefixIcon: Icon(
                     Icons.search_rounded,
-                    color: primaryColor,
+                    color: AppColors.primaryElement,
                     size: 20.sp,
                   ),
                   prefixIconConstraints: BoxConstraints(minWidth: 38.w),
                   hintText: "Search by name or group...",
-                  hintStyle: TextStyle(color: textLight, fontSize: 12.sp),
+                  hintStyle: TextStyle(
+                      color: AppColors.primaryThreeElementText, fontSize: 12.sp),
                   border: InputBorder.none,
                   contentPadding: EdgeInsets.symmetric(vertical: 10.h),
                 ),
@@ -502,13 +501,14 @@ class TrackingScreen extends StatelessWidget {
                                   : FontWeight.w500,
                               fontSize: 13.sp,
                               color: controller.selectedRadius.value == r
-                                  ? primaryColor
-                                  : textDark,
+                                  ? AppColors.primaryElement
+                                  : AppColors.primaryText,
                             ),
                           ),
                           if (controller.selectedRadius.value == r)
                             Icon(Icons.check_rounded,
-                                color: primaryColor, size: 16.sp),
+                                color: AppColors.primaryElement,
+                                size: 16.sp),
                         ],
                       ),
                     ),
@@ -518,29 +518,29 @@ class TrackingScreen extends StatelessWidget {
                 height: 44.h,
                 padding: EdgeInsets.symmetric(horizontal: 10.w),
                 decoration: BoxDecoration(
-                  color: cardColor,
+                  color: AppColors.primaryBackground,
                   borderRadius: BorderRadius.circular(12.r),
-                  border: Border.all(color: borderColor),
+                  border: Border.all(color: AppColors.textbordercolor),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(Icons.gps_fixed_rounded,
-                        color: primaryColor, size: 14.sp),
+                        color: AppColors.primaryElement, size: 14.sp),
                     SizedBox(width: 5.w),
                     Text(
                       "Radius: ${controller.selectedRadius.value} km",
                       style: TextStyle(
                         fontWeight: FontWeight.w700,
                         fontSize: 11.5.sp,
-                        color: textDark,
+                        color: AppColors.primaryText,
                       ),
                     ),
                     SizedBox(width: 3.w),
                     Icon(
                       Icons.keyboard_arrow_down_rounded,
                       size: 18.sp,
-                      color: textDark,
+                      color: AppColors.primaryText,
                     ),
                   ],
                 ),
@@ -629,7 +629,7 @@ class TrackingScreen extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(Icons.groups_rounded,
-                          size: 16.sp, color: primaryColor),
+                          size: 16.sp, color: AppColors.primaryElement),
                       SizedBox(width: 5.w),
                       Obx(
                         () => Text(
@@ -637,13 +637,13 @@ class TrackingScreen extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 11.5.sp,
                             fontWeight: FontWeight.w800,
-                            color: textDark,
+                            color: AppColors.primaryText,
                           ),
                         ),
                       ),
                       SizedBox(width: 3.w),
                       Icon(Icons.chevron_right_rounded,
-                          size: 17.sp, color: primaryColor),
+                          size: 17.sp, color: AppColors.primaryElement),
                     ],
                   ),
                 ),
@@ -678,7 +678,7 @@ class TrackingScreen extends StatelessWidget {
                           child: IconButton(
                             padding: EdgeInsets.zero,
                             icon: Icon(Icons.add_rounded,
-                                size: 18.sp, color: textDark),
+                                size: 18.sp, color: AppColors.primaryText),
                             onPressed: controller.zoomIn,
                           ),
                         ),
@@ -693,7 +693,7 @@ class TrackingScreen extends StatelessWidget {
                           child: IconButton(
                             padding: EdgeInsets.zero,
                             icon: Icon(Icons.remove_rounded,
-                                size: 18.sp, color: textDark),
+                                size: 18.sp, color: AppColors.primaryText),
                             onPressed: controller.zoomOut,
                           ),
                         ),
@@ -720,7 +720,7 @@ class TrackingScreen extends StatelessWidget {
                       padding: EdgeInsets.zero,
                       tooltip: "My Location",
                       icon: Icon(Icons.gps_fixed_rounded,
-                          size: 16.sp, color: textDark),
+                          size: 16.sp, color: AppColors.primaryText),
                       onPressed: () => controller.recenterMap(zoom: 16.0),
                     ),
                   ),
@@ -741,164 +741,241 @@ class TrackingScreen extends StatelessWidget {
         children: [
           // Card 1: Live Now
           Expanded(
-            child: Container(
-              padding: EdgeInsets.all(12.w),
-              decoration: BoxDecoration(
-                color: cardColor,
-                borderRadius: BorderRadius.circular(16.r),
-                border: Border.all(color: borderColor),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF1E2046).withOpacity(0.02),
-                    blurRadius: 8.r,
-                    offset: Offset(0, 2.h),
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
+            child: GestureDetector(
+              onTap: controller.fitAllMembers,
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryBackground,
+                  borderRadius: BorderRadius.circular(16.r),
+                  border:
+                      Border.all(color: AppColors.textbordercolor, width: 1.w),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF1E2046).withOpacity(0.03),
+                      blurRadius: 10.r,
+                      offset: Offset(0, 3.h),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Container(
-                            width: 8.w,
-                            height: 8.w,
-                            decoration: BoxDecoration(
-                              color: greenStatus,
-                              shape: BoxShape.circle,
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                width: 9.w,
+                                height: 9.w,
+                                decoration: const BoxDecoration(
+                                  color: Color(0xFF34D399),
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                              SizedBox(width: 6.w),
+                              Text(
+                                "Live Now",
+                                style: TextStyle(
+                                  fontSize: 12.5.sp,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.primaryText,
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 6.h),
+                          Obx(
+                            () => Text(
+                              "${controller.liveNowCount.value}",
+                              style: TextStyle(
+                                fontSize: 22.sp,
+                                fontWeight: FontWeight.w800,
+                                color: AppColors.primaryText,
+                                height: 1.15,
+                              ),
                             ),
                           ),
-                          SizedBox(width: 5.w),
+                          SizedBox(height: 2.h),
                           Text(
-                            "Live Now",
+                            "Members currently live",
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                              fontSize: 11.5.sp,
-                              fontWeight: FontWeight.w500,
-                              color: textGrey,
+                              fontSize: 10.5.sp,
+                              fontWeight: FontWeight.w400,
+                              color: AppColors.primarySecondaryElementText,
                             ),
                           ),
                         ],
                       ),
-                      Container(
-                        width: 34.w,
-                        height: 34.w,
-                        decoration: BoxDecoration(
-                          color: greenLight,
-                          shape: BoxShape.circle,
-                        ),
+                    ),
+                    SizedBox(width: 6.w),
+                    Container(
+                      width: 44.w,
+                      height: 44.w,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFE8FDF2),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Center(
                         child: Icon(
                           Icons.groups_rounded,
                           color: const Color(0xFF10B981),
-                          size: 18.sp,
+                          size: 24.sp,
                         ),
                       ),
-                    ],
-                  ),
-                  SizedBox(height: 3.h),
-                  Obx(
-                    () => Text(
-                      "${controller.liveNowCount.value}",
-                      style: TextStyle(
-                        fontSize: 21.sp,
-                        fontWeight: FontWeight.w800,
-                        color: textDark,
-                      ),
                     ),
-                  ),
-                  SizedBox(height: 2.h),
-                  Text(
-                    "Members currently live",
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 10.sp,
-                      fontWeight: FontWeight.w400,
-                      color: textLight,
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
           SizedBox(width: 10.w),
           // Card 2: Tracking Radius
           Expanded(
-            child: Container(
-              padding: EdgeInsets.all(12.w),
-              decoration: BoxDecoration(
-                color: cardColor,
-                borderRadius: BorderRadius.circular(16.r),
-                border: Border.all(color: borderColor),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF1E2046).withOpacity(0.02),
-                    blurRadius: 8.r,
-                    offset: Offset(0, 2.h),
-                  ),
-                ],
+            child: PopupMenuButton<String>(
+              padding: EdgeInsets.zero,
+              tooltip: "",
+              offset: Offset(0, 48.h),
+              color: Colors.white,
+              elevation: 4,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12.r),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
+              onSelected: (value) => controller.updateRadius(value),
+              itemBuilder: (context) => ["2", "4", "6", "8"]
+                  .map(
+                    (r) => PopupMenuItem<String>(
+                      value: r,
+                      height: 38.h,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Icon(Icons.gps_fixed_rounded,
-                              size: 13.sp, color: primaryColor),
-                          SizedBox(width: 4.w),
                           Text(
-                            "Tracking Radius",
+                            "$r km",
                             style: TextStyle(
-                              fontSize: 11.5.sp,
-                              fontWeight: FontWeight.w500,
-                              color: textGrey,
+                              fontWeight: controller.selectedRadius.value == r
+                                  ? FontWeight.w700
+                                  : FontWeight.w500,
+                              fontSize: 13.sp,
+                              color: controller.selectedRadius.value == r
+                                  ? AppColors.primaryElement
+                                  : AppColors.primaryText,
+                            ),
+                          ),
+                          if (controller.selectedRadius.value == r)
+                            Icon(Icons.check_rounded,
+                                color: AppColors.primaryElement,
+                                size: 16.sp),
+                        ],
+                      ),
+                    ),
+                  )
+                  .toList(),
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryBackground,
+                  borderRadius: BorderRadius.circular(16.r),
+                  border:
+                      Border.all(color: AppColors.textbordercolor, width: 1.w),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF1E2046).withOpacity(0.03),
+                      blurRadius: 10.r,
+                      offset: Offset(0, 3.h),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.gps_fixed_rounded,
+                                size: 14.sp,
+                                color: AppColors.primaryElement,
+                              ),
+                              SizedBox(width: 5.w),
+                              Flexible(
+                                child: Text(
+                                  "Tracking Radius",
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontSize: 12.sp,
+                                    fontWeight: FontWeight.w700,
+                                    color: AppColors.primaryText,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 6.h),
+                          Obx(
+                            () => Text(
+                              "${controller.selectedRadius.value} km",
+                              style: TextStyle(
+                                fontSize: 20.sp,
+                                fontWeight: FontWeight.w800,
+                                color: AppColors.primaryText,
+                                height: 1.15,
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: 2.h),
+                          Text(
+                            "Current search radius",
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 10.5.sp,
+                              fontWeight: FontWeight.w400,
+                              color: AppColors.primarySecondaryElementText,
                             ),
                           ),
                         ],
                       ),
-                      Container(
-                        width: 34.w,
-                        height: 34.w,
-                        decoration: BoxDecoration(
-                          color: primaryLight,
-                          shape: BoxShape.circle,
+                    ),
+                    SizedBox(width: 6.w),
+                    SizedBox(
+                      width: 44.w,
+                      height: 44.w,
+                      child: CustomPaint(
+                        painter: const DashedCirclePainter(
+                          color: Color(0xFFA5B4FC),
+                          strokeWidth: 1.3,
+                          dashes: 20,
+                          gapRatio: 0.45,
                         ),
-                        child: Icon(
-                          Icons.location_on_rounded,
-                          color: primaryColor,
-                          size: 18.sp,
+                        child: Container(
+                          margin: EdgeInsets.all(2.w),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: AppColors.primaryElementLight,
+                          ),
+                          child: Center(
+                            child: Icon(
+                              Icons.location_on_rounded,
+                              color: AppColors.primaryElement,
+                              size: 21.sp,
+                            ),
+                          ),
                         ),
                       ),
-                    ],
-                  ),
-                  SizedBox(height: 3.h),
-                  Obx(
-                    () => Text(
-                      "${controller.selectedRadius.value} km",
-                      style: TextStyle(
-                        fontSize: 19.sp,
-                        fontWeight: FontWeight.w800,
-                        color: textDark,
-                      ),
                     ),
-                  ),
-                  SizedBox(height: 2.h),
-                  Text(
-                    "Current search radius",
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 10.sp,
-                      fontWeight: FontWeight.w400,
-                      color: textLight,
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
@@ -922,7 +999,7 @@ class TrackingScreen extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 16.sp,
                   fontWeight: FontWeight.w800,
-                  color: textDark,
+                  color: AppColors.primaryText,
                 ),
               ),
               GestureDetector(
@@ -958,14 +1035,14 @@ class TrackingScreen extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 12.5.sp,
                         fontWeight: FontWeight.w700,
-                        color: primaryColor,
+                        color: AppColors.primaryElement,
                       ),
                     ),
                     SizedBox(width: 4.w),
                     Icon(
                       Icons.arrow_forward_rounded,
                       size: 14.sp,
-                      color: primaryColor,
+                      color: AppColors.primaryElement,
                     ),
                   ],
                 ),
@@ -1018,13 +1095,14 @@ class TrackingScreen extends StatelessWidget {
                   child: Column(
                     children: [
                       Icon(Icons.person_off_rounded,
-                          color: textLight, size: 36.sp),
+                          color: AppColors.primaryThreeElementText, size: 36.sp),
                       SizedBox(height: 8.h),
                       Text(
                         controller.searchController.text.trim().isNotEmpty
                             ? "No members match '${controller.searchController.text}'"
                             : "No members found within ${controller.selectedRadius.value} km",
-                        style: TextStyle(color: textGrey, fontSize: 13.sp),
+                        style: TextStyle(
+                            color: AppColors.primarySecondaryElementText, fontSize: 13.sp),
                       ),
                       SizedBox(height: 10.h),
                       GestureDetector(
@@ -1033,13 +1111,13 @@ class TrackingScreen extends StatelessWidget {
                           padding: EdgeInsets.symmetric(
                               horizontal: 14.w, vertical: 6.h),
                           decoration: BoxDecoration(
-                            color: primaryLight,
+                            color: AppColors.primaryElementLight,
                             borderRadius: BorderRadius.circular(10.r),
                           ),
                           child: Text(
                             "Tap to Refresh",
                             style: TextStyle(
-                              color: primaryColor,
+                              color: AppColors.primaryElement,
                               fontSize: 12.sp,
                               fontWeight: FontWeight.w700,
                             ),
@@ -1075,9 +1153,9 @@ class TrackingScreen extends StatelessWidget {
       margin: EdgeInsets.only(bottom: 10.h),
       padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
       decoration: BoxDecoration(
-        color: cardColor,
+        color: AppColors.primaryBackground,
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: borderColor),
+        border: Border.all(color: AppColors.textbordercolor),
         boxShadow: [
           BoxShadow(
             color: const Color(0xFF1E2046).withOpacity(0.02),
@@ -1110,7 +1188,7 @@ class TrackingScreen extends StatelessWidget {
                   width: 10.w,
                   height: 10.w,
                   decoration: BoxDecoration(
-                    color: greenStatus,
+                    color: AppColors.primaryElementStatus,
                     shape: BoxShape.circle,
                     border: Border.all(color: Colors.white, width: 2.w),
                   ),
@@ -1131,7 +1209,7 @@ class TrackingScreen extends StatelessWidget {
                   style: TextStyle(
                     fontWeight: FontWeight.w800,
                     fontSize: 13.5.sp,
-                    color: textDark,
+                    color: AppColors.primaryText,
                   ),
                 ),
                 if (member.team.isNotEmpty) ...[
@@ -1141,7 +1219,7 @@ class TrackingScreen extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      color: textGrey,
+                      color: AppColors.primarySecondaryElementText,
                       fontSize: 11.sp,
                       fontWeight: FontWeight.w500,
                     ),
@@ -1151,7 +1229,7 @@ class TrackingScreen extends StatelessWidget {
                 Row(
                   children: [
                     Icon(Icons.location_on_rounded,
-                        color: primaryColor, size: 12.sp),
+                        color: AppColors.primaryElement, size: 12.sp),
                     SizedBox(width: 2.w),
                     Expanded(
                       child: Text(
@@ -1161,7 +1239,7 @@ class TrackingScreen extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                          color: textGrey,
+                          color: AppColors.primarySecondaryElementText,
                           fontSize: 10.5.sp,
                           fontWeight: FontWeight.w500,
                         ),
@@ -1196,7 +1274,7 @@ class TrackingScreen extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(Icons.battery_5_bar_rounded,
-                        color: primaryColor, size: 13.sp),
+                        color: AppColors.primaryElement, size: 13.sp),
                     SizedBox(width: 2.w),
                     Text(
                       "${member.battery}%",
@@ -1247,7 +1325,7 @@ class TrackingScreen extends StatelessWidget {
               child: Transform.rotate(
                 angle: -0.4,
                 child: Icon(Icons.near_me_rounded,
-                    color: primaryColor, size: 15.sp),
+                    color: AppColors.primaryElement, size: 15.sp),
               ),
             ),
           ),
@@ -1270,18 +1348,18 @@ class TrackingScreen extends StatelessWidget {
     return Container(
       width: 42.w,
       height: 42.w,
-      color: primaryLight,
+      color: AppColors.primaryElementLight,
       alignment: Alignment.center,
       child: initial.isNotEmpty
           ? Text(
               initial,
               style: TextStyle(
-                color: primaryColor,
+                color: AppColors.primaryElement,
                 fontWeight: FontWeight.w700,
                 fontSize: 16.sp,
               ),
             )
-          : Icon(Icons.person, color: primaryColor, size: 22.sp),
+          : Icon(Icons.person, color: AppColors.primaryElement, size: 22.sp),
     );
   }
 
@@ -1301,7 +1379,7 @@ class TrackingScreen extends StatelessWidget {
             width: 42.w,
             height: 42.w,
             decoration: BoxDecoration(
-              color: primaryColor,
+              color: AppColors.primaryElement,
               shape: BoxShape.circle,
             ),
             child: Icon(Icons.groups_rounded, color: Colors.white, size: 21.sp),
@@ -1315,7 +1393,7 @@ class TrackingScreen extends StatelessWidget {
                   "Share Live Location",
                   style: TextStyle(
                     fontWeight: FontWeight.w800,
-                    color: textDark,
+                    color: AppColors.primaryText,
                     fontSize: 14.sp,
                   ),
                 ),
@@ -1325,7 +1403,7 @@ class TrackingScreen extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    color: textGrey,
+                    color: AppColors.primarySecondaryElementText,
                     fontSize: 11.sp,
                   ),
                 ),
@@ -1347,7 +1425,7 @@ class TrackingScreen extends StatelessWidget {
               ],
             ),
             child: Icon(Icons.arrow_forward_rounded,
-                color: primaryColor, size: 19.sp),
+                color: AppColors.primaryElement, size: 19.sp),
           ),
         ],
       ),
@@ -1364,22 +1442,23 @@ class TrackingScreen extends StatelessWidget {
           Container(
             height: 44.h,
             decoration: BoxDecoration(
-              color: cardColor,
+              color: AppColors.primaryBackground,
               borderRadius: BorderRadius.circular(12.r),
-              border: Border.all(color: borderColor),
+              border: Border.all(color: AppColors.textbordercolor),
             ),
             alignment: Alignment.center,
             child: TextField(
               controller: controller.searchController,
               onChanged: controller.onSearch,
-              style: TextStyle(fontSize: 13.sp, color: textDark),
+              style: TextStyle(fontSize: 13.sp, color: AppColors.primaryText),
               decoration: InputDecoration(
                 isDense: true,
                 prefixIcon: Icon(Icons.search_rounded,
-                    color: primaryColor, size: 20.sp),
+                    color: AppColors.primaryElement, size: 20.sp),
                 prefixIconConstraints: BoxConstraints(minWidth: 38.w),
                 hintText: "Search groups...",
-                hintStyle: TextStyle(color: textLight, fontSize: 12.sp),
+                hintStyle:
+                    TextStyle(color: AppColors.primaryThreeElementText, fontSize: 12.sp),
                 border: InputBorder.none,
                 contentPadding: EdgeInsets.symmetric(vertical: 10.h),
               ),
@@ -1394,7 +1473,7 @@ class TrackingScreen extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 15.sp,
                   fontWeight: FontWeight.w800,
-                  color: textDark,
+                  color: AppColors.primaryText,
                 ),
               ),
               Obx(
@@ -1405,7 +1484,7 @@ class TrackingScreen extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 12.sp,
                       fontWeight: FontWeight.w700,
-                      color: primaryColor,
+                      color: AppColors.primaryElement,
                     ),
                   ),
                 ),
@@ -1418,7 +1497,7 @@ class TrackingScreen extends StatelessWidget {
               onRefresh: () async {
                 await controller.fetchGroupData();
               },
-              color: primaryColor,
+              color: AppColors.primaryElement,
               child: Obx(() {
                 final bool isGroupLoading = controller.isGroupLoading.value;
 
@@ -1448,7 +1527,8 @@ class TrackingScreen extends StatelessWidget {
                       controller.groupError.isNotEmpty
                           ? controller.groupError.value
                           : "No groups found",
-                      style: TextStyle(color: textLight, fontSize: 13.sp),
+                      style: TextStyle(
+                          color: AppColors.primaryThreeElementText, fontSize: 13.sp),
                     ),
                   );
                 }
@@ -1481,19 +1561,17 @@ class TrackingScreen extends StatelessWidget {
                 : "${ConstRes.aImageBaseUrl}${group.groupProfile}")
             : null;
 
-    final isSelected = controller.selectedGroupId.value == group.id?.toString();
-
     return GestureDetector(
       onTap: () {
         controller.selectGroup(group);
+        final int gId = group.id is int
+            ? (group.id as int)
+            : (int.tryParse(group.id?.toString() ?? '0') ?? 0);
         Get.toNamed(
-          Routes.Memberscreen,
+          Routes.LocationTracking,
           arguments: {
-            "groupId": group.id?.toString() ?? "",
-            "groupName": group.groupName ?? "",
-            "groupCode": group.groupCode ?? "",
-            "isCreator": group.isCreator?.toString() ?? "false",
-            "isActive": group.isActive?.toString() ?? "false",
+            "groupId": gId,
+            "groupName": group.groupName ?? "Group",
           },
         )?.then((value) {
           if (value == true) {
@@ -1505,11 +1583,11 @@ class TrackingScreen extends StatelessWidget {
         margin: EdgeInsets.only(bottom: 10.h),
         padding: EdgeInsets.all(12.w),
         decoration: BoxDecoration(
-          color: cardColor,
+          color: AppColors.primaryBackground,
           borderRadius: BorderRadius.circular(14.r),
           border: Border.all(
-            color: isSelected ? primaryColor : borderColor,
-            width: isSelected ? 1.5.w : 1.w,
+            color: AppColors.textbordercolor,
+            width: 1.w,
           ),
           boxShadow: [
             BoxShadow(
@@ -1525,7 +1603,7 @@ class TrackingScreen extends StatelessWidget {
               width: 42.w,
               height: 42.w,
               decoration: BoxDecoration(
-                color: primaryLight,
+                color: AppColors.primaryElementLight,
                 shape: BoxShape.circle,
                 image: profileUrl != null
                     ? DecorationImage(
@@ -1535,7 +1613,8 @@ class TrackingScreen extends StatelessWidget {
                     : null,
               ),
               child: profileUrl == null
-                  ? Icon(Icons.groups_rounded, color: primaryColor, size: 21.sp)
+                  ? Icon(Icons.groups_rounded,
+                      color: AppColors.primaryElement, size: 21.sp)
                   : null,
             ),
             SizedBox(width: 12.w),
@@ -1553,7 +1632,7 @@ class TrackingScreen extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 13.5.sp,
                             fontWeight: FontWeight.w800,
-                            color: textDark,
+                            color: AppColors.primaryText,
                           ),
                         ),
                       ),
@@ -1564,7 +1643,7 @@ class TrackingScreen extends StatelessWidget {
                             vertical: 2.h,
                           ),
                           decoration: BoxDecoration(
-                            color: primaryLight,
+                            color: AppColors.primaryElementLight,
                             borderRadius: BorderRadius.circular(6.r),
                           ),
                           child: Text(
@@ -1572,7 +1651,7 @@ class TrackingScreen extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 9.5.sp,
                               fontWeight: FontWeight.w700,
-                              color: primaryColor,
+                              color: AppColors.primaryElement,
                             ),
                           ),
                         ),
@@ -1589,7 +1668,7 @@ class TrackingScreen extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       fontSize: 11.sp,
-                      color: textGrey,
+                      color: AppColors.primarySecondaryElementText,
                     ),
                   ),
                 ],
@@ -1599,33 +1678,53 @@ class TrackingScreen extends StatelessWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
-                  decoration: BoxDecoration(
-                    color: primaryLight,
-                    borderRadius: BorderRadius.circular(10.r),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.people, size: 11.sp, color: primaryColor),
-                      SizedBox(width: 3.w),
-                      Text(
-                        "${group.memberCount ?? 0}",
-                        style: TextStyle(
-                          fontSize: 10.sp,
-                          fontWeight: FontWeight.w700,
-                          color: primaryColor,
+                GestureDetector(
+                  onTap: () {
+                    Get.toNamed(
+                      Routes.Memberscreen,
+                      arguments: {
+                        "groupId": group.id?.toString() ?? "",
+                        "groupName": group.groupName ?? "",
+                        "groupCode": group.groupCode ?? "",
+                        "isCreator": group.isCreator?.toString() ?? "false",
+                        "isActive": group.isActive?.toString() ?? "false",
+                      },
+                    )?.then((value) {
+                      if (value == true) {
+                        controller.fetchGroupData();
+                      }
+                    });
+                  },
+                  child: Container(
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryElementLight,
+                      borderRadius: BorderRadius.circular(10.r),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.people,
+                            size: 11.sp, color: AppColors.primaryElement),
+                        SizedBox(width: 3.w),
+                        Text(
+                          "${group.memberCount ?? 0}",
+                          style: TextStyle(
+                            fontSize: 10.sp,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.primaryElement,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
                 SizedBox(height: 4.h),
                 Icon(
                   Icons.arrow_forward_ios_rounded,
                   size: 13.sp,
-                  color: textLight,
+                  color: AppColors.primaryThreeElementText,
                 ),
               ],
             ),
@@ -1634,4 +1733,51 @@ class TrackingScreen extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Custom painter to draw a stylish dashed circular border matching the tracking radius visual
+class DashedCirclePainter extends CustomPainter {
+  final Color color;
+  final double strokeWidth;
+  final int dashes;
+  final double gapRatio;
+
+  const DashedCirclePainter({
+    this.color = const Color(0xFFA5B4FC),
+    this.strokeWidth = 1.3,
+    this.dashes = 20,
+    this.gapRatio = 0.45,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final Paint paint = Paint()
+      ..color = color
+      ..strokeWidth = strokeWidth
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+
+    final double radius = (size.width - strokeWidth) / 2;
+    final Offset center = Offset(size.width / 2, size.height / 2);
+    final double sweep = (2 * math.pi) / dashes;
+    final double dashSweep = sweep * (1 - gapRatio);
+
+    for (int i = 0; i < dashes; i++) {
+      final double startAngle = i * sweep;
+      canvas.drawArc(
+        Rect.fromCircle(center: center, radius: radius),
+        startAngle,
+        dashSweep,
+        false,
+        paint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant DashedCirclePainter oldDelegate) =>
+      oldDelegate.color != color ||
+      oldDelegate.strokeWidth != strokeWidth ||
+      oldDelegate.dashes != dashes ||
+      oldDelegate.gapRatio != gapRatio;
 }

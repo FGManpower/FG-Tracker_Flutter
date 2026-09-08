@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:location/location.dart';
 
+import 'package:fgtracker/app/modules/Track/Controller/Track_controller.dart';
 import '../../../Core/values/Context_Utility.dart';
 import 'TrackController.dart';
 
@@ -90,9 +91,9 @@ class LocationService extends GetxService {
 
 
 
-  void _listenToLocationUpdates( String userId) {
+  void _listenToLocationUpdates(String userId) {
     _positionStream?.cancel();
-    _positionStream = _location.onLocationChanged.listen((location) {
+    _positionStream = _location.onLocationChanged.listen((location) async {
       currentPosition = location;
 
       if (!TrackingController.instance.isLocationSharing.value) {
@@ -100,13 +101,40 @@ class LocationService extends GetxService {
         return;
       }
 
+      final lat = currentPosition?.latitude;
+      final lng = currentPosition?.longitude;
+
+      if (lat == null || lng == null) return;
+
+      String? address;
+      String? area;
+      String? city;
+
+      // 1. Pull from TrackController if already resolved
+      if (Get.isRegistered<TrackController>()) {
+        final trackCtrl = Get.find<TrackController>();
+        if (trackCtrl.currentLocationName.value != "Locating..." &&
+            trackCtrl.currentLocationName.value != "Current Location") {
+          address = trackCtrl.currentLocationName.value;
+        }
+        if (trackCtrl.currentArea.value.isNotEmpty) {
+          area = trackCtrl.currentArea.value;
+        }
+        if (trackCtrl.currentCity.value.isNotEmpty) {
+          city = trackCtrl.currentCity.value;
+        }
+      }
+
+
       socketService.emitLocation(
         userId,
-        currentPosition!.latitude,
-        currentPosition!.longitude,
+        lat,
+        lng,
+        address: address,
+        area: area,
+        city: city,
       );
     });
-
   }
 
   @override

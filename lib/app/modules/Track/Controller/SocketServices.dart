@@ -69,10 +69,9 @@ class SocketService extends GetxService {
       return;
     }
 
-    for (String groupId in connectedGroupIds) {
+    if (connectedGroupIds.isEmpty) {
       final payload = {
         "userId": userId,
-        "groupId": groupId,
         "lat": lat,
         "lng": lng,
         "latitude": lat,
@@ -83,7 +82,24 @@ class SocketService extends GetxService {
         if (city != null && city.isNotEmpty) "city": city,
       };
       _socket?.emit("send-location", payload);
-      log("📡 [SocketService] Emitted send-location to group $groupId: $payload");
+      log("📡 [SocketService] Emitted send-location (broadcast): $payload");
+    } else {
+      for (String groupId in connectedGroupIds) {
+        final payload = {
+          "userId": userId,
+          "groupId": groupId,
+          "lat": lat,
+          "lng": lng,
+          "latitude": lat,
+          "longitude": lng,
+          if (address != null && address.isNotEmpty) "address": address,
+          if (address != null && address.isNotEmpty) "location": address,
+          if (area != null && area.isNotEmpty) "area": area,
+          if (city != null && city.isNotEmpty) "city": city,
+        };
+        _socket?.emit("send-location", payload);
+        log("📡 [SocketService] Emitted send-location to group $groupId: $payload");
+      }
     }
   }
 

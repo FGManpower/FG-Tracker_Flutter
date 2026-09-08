@@ -1,33 +1,56 @@
 import 'dart:developer';
+import 'dart:io';
 
+import 'package:dio/dio.dart' as dio;
 import 'package:fgtracker/app/Core/constant/const_res.dart';
+import 'package:fgtracker/app/Core/constant/pref_res.dart';
+import 'package:fgtracker/app/Core/constant/urls.dart';
 import 'package:fgtracker/app/Core/theme/AppText.dart';
 import 'package:fgtracker/app/Core/theme/appTheme.dart';
+import 'package:fgtracker/app/Core/util/http/http_util.dart';
 import 'package:fgtracker/app/Core/values/Context_Utility.dart';
 import 'package:fgtracker/app/Core/values/Dialog/Common_dialog.dart';
+import 'package:fgtracker/app/Core/values/Utils.dart';
+import 'package:fgtracker/app/Core/values/bottomSheet.dart';
+import 'package:fgtracker/app/Core/values/global.dart';
+import 'package:fgtracker/app/Core/values/loading.dart';
 import 'package:fgtracker/app/Core/values/utility.dart';
+import 'package:fgtracker/app/Data/Services/Socket/Socket_Dashboard_Service.dart';
+import 'package:fgtracker/app/Data/Services/Tracking.dart';
+import 'package:fgtracker/app/Model/CommonRes.dart';
+import 'package:fgtracker/app/Model/ProfileRes.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/modules/auth/Controller/logout_controller.dart';
+import 'package:fgtracker/app/modules/home/Controller/LiveStatus_controller.dart';
 import 'package:fgtracker/app/modules/home/Controller/home_controller.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:fgtracker/gen/assets.gen.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide FormData, MultipartFile;
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:http_parser/http_parser.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class Sidemenu extends StatelessWidget {
   final controller = Get.put(HomeController());
   final GlobalKey<ScaffoldState> scaffoldKey;
+  final RxString localPickedImage = ''.obs;
 
   Sidemenu({super.key, required this.scaffoldKey});
 
   @override
   Widget build(BuildContext context) {
+    // Refresh backend profile data on opening drawer to get fresh status
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (controller.userData.value.userId == null) {
+        controller.getProfileData();
+      }
+    });
+
     return Drawer(
-      width: 310.w,
+      width: 280.w,
       backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.only(
@@ -40,6 +63,7 @@ class Sidemenu extends StatelessWidget {
           _buildHeader(context),
           Expanded(
             child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
               child: Column(
                 children: [
                   _buildMenuItems(context),
@@ -55,90 +79,387 @@ class Sidemenu extends StatelessWidget {
   }
 
   Widget _buildHeader(BuildContext context) {
-    return Stack(
-      children: [
-        ClipPath(
-          clipper: _WaveHeaderClipper(),
-          child: Container(
-            height: 230.h,
-            width: double.infinity,
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Color(0xFF5A3FFF), Color(0xFF7F63FF)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
+    return Obx(() {
+      final user = controller.userData.value;
+      // Track liveLocations to reactively re-evaluate online status on socket updates
+      final _ = controller.liveLocations.length;
+      final bool isOnline = _isUserOnline(user);
+      return Stack(
+        children: [
+          // Background Curved Header
+          ClipPath(
+            clipper: _WaveHeaderClipper(),
+            child: Container(
+              height: 225.h,
+              width: double.infinity,
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Color(0xFF5D47F1),
+                    Color(0xFF755EF7),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
               ),
             ),
           ),
-        ),
-        Padding(
-          padding: EdgeInsets.only(top: 60.h, left: 20.w, right: 15.w),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Stack(
-                alignment: Alignment.bottomRight,
-                children: [
-                  Container(
-                    padding: EdgeInsets.all(3.w),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 2.w),
-                    ),
-                    child: CircleAvatar(
-                      radius: 40.r,
-                      backgroundColor: Colors.white.withValues(alpha: 0.3),
-                      backgroundImage: NetworkImage(
-                        Utility.isNotNullEmptyOrFalse(
-                                controller.userData.value.profileImage)
-                            ? "${ConstRes.aImageBaseUrl}${controller.userData.value.profileImage}"
-                            : MyAppTheme.ProfilenotFoundImg,
+
+          // Decorative Glow Circle
+          Positioned(
+            right: -25.w,
+            top: 70.h,
+            child: Container(
+              width: 110.w,
+              height: 110.w,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withValues(alpha: 0.06),
+              ),
+            ),
+          ),
+
+          // Decorative Dot Matrix in top right
+          Positioned(
+            top: 36.h,
+            right: 14.w,
+            child: _buildDecorativeDots(),
+          ),
+
+          // User Profile Info
+          Padding(
+            padding: EdgeInsets.only(top: 54.h, left: 14.w, right: 12.w),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // Avatar with Camera Badge
+                Stack(
+                  alignment: Alignment.bottomRight,
+                  children: [
+                    GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: () {
+                        Navigator.pop(context);
+                        Get.toNamed(Routes.Register, arguments: {
+                          "type": "Update",
+                          'userData': user,
+                        });
+                      },
+                      child: Container(
+                        padding: EdgeInsets.all(2.5.w),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 2.5.w),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.12),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: CircleAvatar(
+                          radius: 40.r,
+                          backgroundColor: const Color(0xFFEDE9FE),
+                          child: ClipOval(
+                            child: Obx(
+                              () => _buildAvatarImage(40.r, user.profileImage),
+                            ),
+                          ),
+                        ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-              SizedBox(width: 15.w),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SizedBox(height: 20.h),
-                    reausabletext(
-                      controller.userData.value.name ?? "User Name",
-                      fontsize: 18.sp,
-                      fontfamily: FontFamily.interBold,
-                      color: Colors.white,
-                      maxline: 1,
-                      textoverflow: TextOverflow.ellipsis,
-                    ),
-                    SizedBox(height: 2.h),
-                    reausabletext(
-                      controller.userData.value.mobileNo ?? "",
-                      fontsize: 14.sp,
-                      fontfamily: FontFamily.interRegular,
-                      color: Colors.white70,
-                      maxline: 1,
-                      textoverflow: TextOverflow.ellipsis,
+                    Positioned(
+                      right: 1.w,
+                      bottom: 1.h,
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: () => _pickProfileImage(context),
+                        child: Container(
+                          padding: EdgeInsets.all(2.5.w),
+                          decoration: const BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                          ),
+                          child: CircleAvatar(
+                            radius: 13.5.r,
+                            backgroundColor: const Color(0xFF5D47F1),
+                            child: Icon(
+                              Icons.camera_alt_rounded,
+                              color: Colors.white,
+                              size: 14.sp,
+                            ),
+                          ),
+                        ),
+                      ),
                     ),
                   ],
                 ),
-              ),
-            ],
+                SizedBox(width: 14.w),
+
+                // Name, Phone, and Online Status
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        Utility.isNotNullEmptyOrFalse(user.name)
+                            ? user.name.toString()
+                            : "divesh shinde",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 18.sp,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: FontFamily.interBold,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      SizedBox(height: 3.h),
+                      Text(
+                        Utility.isNotNullEmptyOrFalse(user.mobileNo)
+                            ? user.mobileNo.toString()
+                            : "",
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.85),
+                          fontSize: 13.5.sp,
+                          fontFamily: FontFamily.interRegular,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      SizedBox(height: 6.h),
+                      Row(
+                        children: [
+                          Container(
+                            width: 8.w,
+                            height: 8.w,
+                            decoration: BoxDecoration(
+                              color: isOnline
+                                  ? const Color(0xFF00D26A)
+                                  : const Color(0xFF9E9E9E),
+                              shape: BoxShape.circle,
+                              boxShadow: isOnline
+                                  ? [
+                                      BoxShadow(
+                                        color: const Color(0xFF00D26A)
+                                            .withValues(alpha: 0.6),
+                                        blurRadius: 6,
+                                        spreadRadius: 1,
+                                      ),
+                                    ]
+                                  : null,
+                            ),
+                          ),
+                          SizedBox(width: 6.w),
+                          Text(
+                            isOnline ? "Online" : "Offline",
+                            style: TextStyle(
+                              color: isOnline
+                                  ? Colors.white.withValues(alpha: 0.95)
+                                  : Colors.white.withValues(alpha: 0.70),
+                              fontSize: 12.5.sp,
+                              fontFamily: FontFamily.interMedium,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-      ],
+        ],
+      );
+    });
+  }
+
+  bool _isUserOnline(UserData user) {
+    // 1. Check UserData model from backend (/getProfile)
+    if (user.isOnline != null) {
+      if (user.isOnline is bool) return user.isOnline as bool;
+      if (user.isOnline is num) return user.isOnline == 1;
+      final s = user.isOnline.toString().toLowerCase().trim();
+      if (s == '1' || s == 'true' || s == 'online') return true;
+      if (s == '0' || s == 'false' || s == 'offline') return false;
+    }
+
+    // 2. Check lastSeen from backend UserData
+    if (user.lastSeen != null && user.lastSeen!.isNotEmpty) {
+      try {
+        final dt = DateTime.parse(user.lastSeen!);
+        if (Tracking().getTimeAgo(dt).toLowerCase() == "just now") {
+          return true;
+        }
+      } catch (_) {}
+    }
+
+    // 3. Check if user is present in liveLocations from backend/socket
+    final myId = user.userId ??
+        int.tryParse(
+            Global.storageServices.get(PrefConst.userId)?.toString() ?? '');
+    if (myId != null) {
+      final member = controller.liveLocations.firstWhereOrNull(
+        (m) => m.userId == myId,
+      );
+      if (member != null) {
+        return member.isOnline;
+      }
+
+      // 4. Check LivesStatusController if loaded
+      if (Get.isRegistered<LivesStatusController>()) {
+        final groupMember = LivesStatusController.instance.memberData
+            .firstWhereOrNull((m) => m.userId == myId);
+        if (groupMember != null) {
+          return groupMember.isOnline == 1;
+        }
+      }
+    }
+
+    // 5. Fallback to socket connection status
+    return SocketDashboardService.instance.isConnected;
+  }
+
+  void _pickProfileImage(BuildContext context) {
+    ModalImage bottomNavbar = ModalImage(
+      isImageCroppable: true,
+      onImageSelect: (path) async {
+        if (Utility.isNotNullEmptyOrFalse(path)) {
+          Navigator.pop(context); // Close "Choose an Option" bottom sheet
+          localPickedImage.value = path;
+          await _uploadProfileImage(context, path);
+        }
+      },
+    );
+    bottomNavbar.mainBottomSheet(context);
+  }
+
+  Future<void> _uploadProfileImage(BuildContext context, String path) async {
+    try {
+      Loading().showloading();
+      final user = controller.userData.value;
+      final Map<String, dynamic> formMap = {
+        'Name': Utility.isNotNullEmptyOrFalse(user.name) ? user.name : 'User',
+        'Gender':
+            Utility.isNotNullEmptyOrFalse(user.gender) ? user.gender : 'Male',
+      };
+      if (Utility.isNotNullEmptyOrFalse(user.email)) {
+        formMap['Email'] = user.email;
+      }
+      formMap['ProfileImage'] = await dio.MultipartFile.fromFile(
+        path,
+        filename: path.split(Platform.isWindows ? r'\' : '/').last,
+        contentType: MediaType('image', 'jpeg'),
+      );
+
+      final dio.FormData data = dio.FormData.fromMap(formMap);
+      final response = await HttpUtil().Authpost(
+        Urls.updateProfile,
+        formdata: data,
+        type: "formdata",
+      );
+
+      Loading().dismissloading();
+      final commonResponse = CommonResponse.fromJson(response);
+      if (commonResponse.status == true) {
+        await controller.getProfileData();
+        if (controller.userData.value.profileImage != null) {
+          Global.storageServices.setString(
+            PrefConst.profileImage,
+            controller.userData.value.profileImage!,
+          );
+        }
+        Utils().fluttertoast(
+          commonResponse.message ?? "Profile image updated successfully",
+        );
+      } else {
+        localPickedImage.value = '';
+        CommonDialog.errorMessage(
+          commonResponse.message ?? "Failed to update profile image",
+        );
+      }
+    } catch (e) {
+      Loading().dismissloading();
+      localPickedImage.value = '';
+      CommonDialog.errorMessage(e.toString());
+    }
+  }
+
+  Widget _buildAvatarImage(double radius, String? profileImage) {
+    if (localPickedImage.isNotEmpty &&
+        File(localPickedImage.value).existsSync()) {
+      return Image.file(
+        File(localPickedImage.value),
+        width: radius * 2,
+        height: radius * 2,
+        fit: BoxFit.cover,
+      );
+    }
+    if (Utility.isNotNullEmptyOrFalse(profileImage)) {
+      return Image.network(
+        "${ConstRes.aImageBaseUrl}$profileImage",
+        width: radius * 2,
+        height: radius * 2,
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) => _defaultAvatar(radius),
+      );
+    }
+    return _defaultAvatar(radius);
+  }
+
+  Widget _defaultAvatar(double radius) {
+    final file = File(r"c:\projects\assets\images\user_avatar.jpg");
+    if (file.existsSync()) {
+      return Image.file(
+        file,
+        width: radius * 2,
+        height: radius * 2,
+        fit: BoxFit.cover,
+      );
+    }
+    return Icon(
+      Icons.person,
+      size: radius * 1.1,
+      color: const Color(0xFF5D47F1),
+    );
+  }
+
+  Widget _buildDecorativeDots() {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: List.generate(4, (row) {
+        return Padding(
+          padding: EdgeInsets.only(bottom: 4.h),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: List.generate(6, (col) {
+              return Container(
+                margin: EdgeInsets.symmetric(horizontal: 2.5.w),
+                width: 3.5.w,
+                height: 3.5.w,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.22),
+                  shape: BoxShape.circle,
+                ),
+              );
+            }),
+          ),
+        );
+      }),
     );
   }
 
   Widget _buildMenuItems(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 15.w),
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildDrawerItem(
-            icon: Icons.person_outline,
+            icon: Icons.person_rounded,
             title: AppText.editProfile.tr,
             subtitle: "Update your information",
             onTap: () {
@@ -149,9 +470,9 @@ class Sidemenu extends StatelessWidget {
               });
             },
           ),
-          _divider(),
+          _buildDivider(),
           _buildDrawerItem(
-            icon: Icons.info_outline,
+            icon: Icons.info_rounded,
             title: AppText.aboutUs.tr,
             subtitle: "Know more about us",
             onTap: () {
@@ -159,9 +480,9 @@ class Sidemenu extends StatelessWidget {
               Get.toNamed(Routes.AboutUs);
             },
           ),
-          _divider(),
+          _buildDivider(),
           _buildDrawerItem(
-            icon: Icons.privacy_tip_outlined,
+            icon: Icons.verified_user_rounded,
             title: "Privacy Policy",
             subtitle: "View our privacy policy",
             onTap: () async {
@@ -178,18 +499,18 @@ class Sidemenu extends StatelessWidget {
               }
             },
           ),
-          _divider(),
+          _buildDivider(),
           _buildDrawerItem(
-            icon: Icons.headset_mic_outlined,
+            icon: Icons.headset_mic_rounded,
             title: "Help & Support",
             subtitle: "Get help and support",
             onTap: () {
               Navigator.pop(context);
             },
           ),
-          _divider(),
+          _buildDivider(),
           _buildDrawerItem(
-            icon: Icons.logout_outlined,
+            icon: Icons.logout_rounded,
             title: AppText.logOut.tr,
             subtitle: "Sign out from the app",
             onTap: () {
@@ -215,13 +536,24 @@ class Sidemenu extends StatelessWidget {
     );
   }
 
+  Widget _buildDivider() {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 8.w),
+      child: const Divider(
+        color: Color(0xFFF0ECFC),
+        height: 1,
+        thickness: 1,
+      ),
+    );
+  }
+
   Widget _buildBottomAppCard() {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 20.w, vertical: 20.h),
-      padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 15.h),
+      margin: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 14.h),
       decoration: BoxDecoration(
-        color: const Color(0xFFF4F2FF),
-        borderRadius: BorderRadius.circular(20.r),
+        color: const Color(0xFFF6F4FE),
+        borderRadius: BorderRadius.circular(22.r),
       ),
       child: Row(
         children: [
@@ -232,34 +564,42 @@ class Sidemenu extends StatelessWidget {
               color: Colors.white,
               boxShadow: [
                 BoxShadow(
-                    color: const Color(0xFF6B4DFF).withValues(alpha: 0.2),
-                    blurRadius: 10)
+                  color: const Color(0xFF5D47F1).withValues(alpha: 0.15),
+                  blurRadius: 10,
+                  offset: const Offset(0, 3),
+                ),
               ],
             ),
             child: CircleAvatar(
-              radius: 30.r,
-              backgroundColor: const Color(0xFF6B4DFF),
+              radius: 28.r,
+              backgroundColor: const Color(0xFF5D47F1),
               backgroundImage: AssetImage(Assets.icons.appIcon.path),
             ),
           ),
-          SizedBox(width: 15.w),
+          SizedBox(width: 14.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                reausabletext(
+                Text(
                   "FG Tracker",
-                  fontsize: 16.sp,
-                  fontfamily: FontFamily.interBold,
-                  color: const Color(0xFF1F1F39),
+                  style: TextStyle(
+                    fontSize: 16.sp,
+                    fontFamily: FontFamily.interBold,
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF1E202B),
+                  ),
                 ),
-                SizedBox(height: 2.h),
-                reausabletext(
+                SizedBox(height: 3.h),
+                Text(
                   "Stay connected,\nStay together.",
-                  fontsize: 12.sp,
-                  fontfamily: FontFamily.interRegular,
-                  color: Colors.grey,
-                  maxline: 2,
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    fontFamily: FontFamily.interRegular,
+                    color: const Color(0xFF7A7F93),
+                    height: 1.35,
+                  ),
+                  maxLines: 2,
                 ),
               ],
             ),
@@ -275,12 +615,15 @@ class Sidemenu extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          reausabletext(
+          Text(
             "Follow us on",
-            fontsize: 11.sp,
-            color: Colors.grey,
+            style: TextStyle(
+              fontSize: 11.5.sp,
+              fontFamily: FontFamily.interMedium,
+              color: const Color(0xFF8C8E9D),
+            ),
           ),
-          SizedBox(height: 8.h),
+          SizedBox(height: 10.h),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -294,7 +637,15 @@ class Sidemenu extends StatelessWidget {
               _buildCustomSocialIcon(Assets.svg.youtube, AppText.youtubeUrl),
             ],
           ),
-          SizedBox(height: 8.h),
+          SizedBox(height: 12.h),
+          Text(
+            "v 1.0.0",
+            style: TextStyle(
+              fontSize: 12.sp,
+              fontFamily: FontFamily.interRegular,
+              color: const Color(0xFF8C8E9D),
+            ),
+          ),
         ],
       ),
     );
@@ -310,53 +661,52 @@ class Sidemenu extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(15.r),
       child: Padding(
-        padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 10.w),
+        padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 8.w),
         child: Row(
           children: [
             Container(
-              padding: EdgeInsets.all(12.w),
+              width: 44.w,
+              height: 44.w,
               decoration: BoxDecoration(
-                color: const Color(0xFFF4F2FF),
-                borderRadius: BorderRadius.circular(15.r),
+                color: const Color(0xFFEDE9FE),
+                borderRadius: BorderRadius.circular(14.r),
               ),
-              child: Icon(icon, color: const Color(0xFF6B4DFF), size: 22.sp),
+              child: Icon(icon, color: const Color(0xFF5D47F1), size: 22.sp),
             ),
-            SizedBox(width: 15.w),
+            SizedBox(width: 14.w),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  reausabletext(
+                  Text(
                     title,
-                    fontsize: 15.sp,
-                    fontfamily: FontFamily.interBold,
-                    color: const Color(0xFF1F1F39),
+                    style: TextStyle(
+                      fontSize: 15.sp,
+                      fontFamily: FontFamily.interBold,
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF1E202B),
+                    ),
                   ),
                   SizedBox(height: 3.h),
-                  reausabletext(
+                  Text(
                     subtitle,
-                    fontsize: 12.sp,
-                    fontfamily: FontFamily.interRegular,
-                    color: Colors.grey,
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      fontFamily: FontFamily.interRegular,
+                      color: const Color(0xFF7A7F93),
+                    ),
                   ),
                 ],
               ),
             ),
-            Icon(Icons.chevron_right,
-                color: const Color(0xFF6B4DFF), size: 24.sp),
+            Icon(
+              Icons.chevron_right_rounded,
+              color: const Color(0xFF7E69F7),
+              size: 24.sp,
+            ),
           ],
         ),
       ),
-    );
-  }
-
-  Widget _divider() {
-    return Divider(
-      color: Colors.grey.withValues(alpha: 0.15),
-      thickness: 1,
-      height: 10.h,
-      indent: 15.w,
-      endIndent: 15.w,
     );
   }
 
@@ -372,19 +722,21 @@ class Sidemenu extends StatelessWidget {
           log(e.toString());
         }
       },
-      borderRadius: BorderRadius.circular(50),
+      borderRadius: BorderRadius.circular(12.r),
       child: Container(
+        width: 40.w,
+        height: 40.w,
         padding: EdgeInsets.all(10.w),
-        decoration: const BoxDecoration(
-          color: Color(0xFFF4F2FF),
-          shape: BoxShape.circle,
+        decoration: BoxDecoration(
+          color: const Color(0xFFEDE9FE),
+          borderRadius: BorderRadius.circular(12.r),
         ),
         child: SvgPicture.asset(
           iconPath,
-          width: 20.w,
-          height: 20.w,
+          width: 18.w,
+          height: 18.w,
           colorFilter:
-              const ColorFilter.mode(Color(0xFF6B4DFF), BlendMode.srcIn),
+              const ColorFilter.mode(Color(0xFF5D47F1), BlendMode.srcIn),
         ),
       ),
     );
@@ -394,26 +746,25 @@ class Sidemenu extends StatelessWidget {
 class _WaveHeaderClipper extends CustomClipper<Path> {
   @override
   Path getClip(Size size) {
-    var path = Path();
+    final path = Path();
+    path.lineTo(0, size.height - 25);
 
-    path.lineTo(0, size.height - 40);
+    final firstControl = Offset(size.width * 0.40, size.height + 15);
+    final midPoint = Offset(size.width * 0.65, size.height - 20);
+    path.quadraticBezierTo(
+        firstControl.dx, firstControl.dy, midPoint.dx, midPoint.dy);
 
-    var firstControlPoint = Offset(size.width * 0.35, size.height + 20);
-    var firstEndPoint = Offset(size.width * 0.65, size.height - 40);
-    path.quadraticBezierTo(firstControlPoint.dx, firstControlPoint.dy,
-        firstEndPoint.dx, firstEndPoint.dy);
-
-    var secondControlPoint = Offset(size.width * 0.85, size.height - 85);
-    var secondEndPoint = Offset(size.width, size.height - 60);
-    path.quadraticBezierTo(secondControlPoint.dx, secondControlPoint.dy,
-        secondEndPoint.dx, secondEndPoint.dy);
+    final secondControl = Offset(size.width * 0.85, size.height - 55);
+    final endPoint = Offset(size.width, size.height - 50);
+    path.quadraticBezierTo(
+        secondControl.dx, secondControl.dy, endPoint.dx, endPoint.dy);
 
     path.lineTo(size.width, 0);
     path.close();
-
     return path;
   }
 
   @override
   bool shouldReclip(CustomClipper<Path> oldClipper) => false;
 }
+

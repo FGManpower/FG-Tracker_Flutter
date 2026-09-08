@@ -48,7 +48,10 @@ class Loading {
 
 
   dismissloading({BuildContext? context}) {
-    Navigator.pop(context ?? ContextUtility.context!);
+    final ctx = context ?? ContextUtility.context;
+    if (ctx != null && Navigator.canPop(ctx)) {
+      Navigator.pop(ctx);
+    }
   }
 }
 

@@ -1,7 +1,3 @@
-
-
-
-
 import 'package:flutter/material.dart';
 
 class AppColors {
@@ -12,7 +8,6 @@ class AppColors {
   static const Color textcolor = Color(0xff867373);
 
   static const Color primaryGrey = Colors.grey;
-
 
   /// grey background
   static const Color primarySecondaryBackground =
@@ -42,19 +37,35 @@ class AppColors {
 
   static const Color primaryElementBg = Color.fromARGB(255, 238, 121, 99);
 
+  static const Color selectedtabcolor = Colors.white;
+  static const Color selectedtabbgcolor = Colors.indigo;
 
-  static const Color selectedtabcolor =  Colors.white;
-  static const Color selectedtabbgcolor =  Colors.indigo;
+  static const Color textbordercolor = Color(0xffDEDEDE);
+  static const Color blue = Color(0xffA4A3FF);
+  static const Color grey = Colors.grey;
+  static const Color darkBlue = Color(0xff6C78FF);
+  static const Color darkRed = Color(0xffD2042D);
+  static const Color white = Colors.white;
+  static const Color backgroundcolor = Color(0xffFFFFFF);
+  static const Color appGreybackgroundcolor = Color(0xffDEDEDE);
 
-  static const Color textbordercolor=Color(0xffDEDEDE);
-  static const Color blue=Color(0xffA4A3FF);
-  static const Color grey=Colors.grey;
-  static const Color darkBlue=Color(0xff6C78FF );
-  static const Color darkRed=Color(0xffD2042D);
-  static const Color white=Colors.white;
-  static const Color backgroundcolor= Color(0xffFFFFFF);
-  static const Color appGreybackgroundcolor= Color(0xffDEDEDE);
+  static const Color SmookeyWhite = Color(0xffF1F1F1);
 
-  static const Color SmookeyWhite=Color(0xffF1F1F1);
+  static const Color primaryElementLight = Color(0xFFEEF2FF);
+  static const Color greenLight = Color(0xFFE8FDF2);
 
+  /// Auth screen background gradient
+  static const List<Color> authGradientColors = [
+    Color(0xFF7664F6),
+    Color(0xFF8F7EF8),
+    Color(0xFFD6CEFD),
+    Color(0xFFF3F1FE),
+  ];
+
+  static const LinearGradient authGradient = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: authGradientColors,
+    stops: [0.0, 0.35, 0.72, 1.0],
+  );
 }

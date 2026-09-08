@@ -61,6 +61,9 @@ class AuthRepo {
       'Name': controller.nameController.text,
       'Gender': controller.gender,
     };
+    if (controller.emailController.text.isNotEmpty) {
+      formMap['Email'] = controller.emailController.text;
+    }
 
     if (Utility.isNotNullEmptyOrFalse(controller.selectedImage.value)) {
       formMap['ProfileImage'] = await MultipartFile.fromFile(

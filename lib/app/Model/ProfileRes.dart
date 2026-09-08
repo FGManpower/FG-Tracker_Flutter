@@ -29,6 +29,8 @@ class UserData {
   String? email;
   String? mobileNo;
   String? gender;
+  dynamic isOnline;
+  String? lastSeen;
 
   UserData(
       {this.userId,
@@ -36,15 +38,22 @@ class UserData {
       this.name,
       this.email,
       this.mobileNo,
-      this.gender});
+      this.gender,
+      this.isOnline,
+      this.lastSeen});
 
   UserData.fromJson(Map<String, dynamic> json) {
-    userId = json['UserId'];
-    profileImage = json['ProfileImage'];
-    name = json['Name'];
-    email = json['Email'];
-    mobileNo = json['MobileNo'];
-    gender = json['Gender'];
+    userId = json['UserId'] ?? json['userId'];
+    profileImage = json['ProfileImage'] ?? json['profileImage'];
+    name = json['Name'] ?? json['name'];
+    email = json['Email'] ?? json['email'];
+    mobileNo = json['MobileNo'] ?? json['mobileNo'];
+    gender = json['Gender'] ?? json['gender'];
+    isOnline = json['isOnline'] ??
+        json['is_online'] ??
+        json['online'] ??
+        json['status'];
+    lastSeen = json['lastSeen'] ?? json['last_seen'] ?? json['LastSeen'];
   }
 
   Map<String, dynamic> toJson() {
@@ -55,6 +64,8 @@ class UserData {
     data['Email'] = email;
     data['MobileNo'] = mobileNo;
     data['Gender'] = gender;
+    data['isOnline'] = isOnline;
+    data['lastSeen'] = lastSeen;
     return data;
   }
 }

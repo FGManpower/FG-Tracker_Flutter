@@ -1,3 +1,4 @@
+import 'package:fgtracker/app/Core/values/colors.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -58,15 +59,15 @@ class AuthGradientButton extends StatelessWidget {
           borderRadius: BorderRadius.circular(30.r),
           gradient: const LinearGradient(
             colors: [
-              Color(0xFF6E56F8),
-              Color(0xFF533EF0),
+              AppColors.primaryDarkblue,
+              AppColors.primaryElement,
             ],
             begin: Alignment.centerLeft,
             end: Alignment.centerRight,
           ),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF533EF0).withValues(alpha: 0.38),
+              color: AppColors.primaryElement.withValues(alpha: 0.38),
               blurRadius: 18,
               offset: const Offset(0, 8),
             ),
@@ -78,7 +79,7 @@ class AuthGradientButton extends StatelessWidget {
             Text(
               label,
               style: TextStyle(
-                color: Colors.white,
+                color: AppColors.white,
                 fontSize: 15.sp,
                 fontWeight: FontWeight.w600,
                 fontFamily: FontFamily.interBold,
@@ -88,7 +89,7 @@ class AuthGradientButton extends StatelessWidget {
               right: 20.w,
               child: Icon(
                 Icons.arrow_forward_rounded,
-                color: Colors.white,
+                color: AppColors.white,
                 size: 20.sp,
               ),
             ),
@@ -151,12 +152,12 @@ class _HexagonHaloPainter extends CustomPainter {
     final path = _buildRoundedHexagonPath(size, 14);
 
     final shadowPaint = Paint()
-      ..color = const Color(0xFF5D47F1).withValues(alpha: 0.18)
+      ..color = AppColors.primaryElement.withValues(alpha: 0.18)
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 12);
     canvas.drawPath(path.shift(const Offset(0, 5)), shadowPaint);
 
     final auraPaint = Paint()
-      ..color = const Color(0xFFF0ECFD)
+      ..color = AppColors.primaryElementLight
       ..style = PaintingStyle.fill;
     canvas.drawPath(path, auraPaint);
   }
@@ -171,12 +172,12 @@ class _HexagonCardPainter extends CustomPainter {
     final path = _buildRoundedHexagonPath(size, 11);
 
     final fillPaint = Paint()
-      ..color = Colors.white
+      ..color = AppColors.white
       ..style = PaintingStyle.fill;
     canvas.drawPath(path, fillPaint);
 
     final borderPaint = Paint()
-      ..color = const Color(0xFFE8E2FD)
+      ..color = AppColors.primaryElementLight
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.5;
     canvas.drawPath(path, borderPaint);

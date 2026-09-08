@@ -18,10 +18,25 @@ import 'package:fgtracker/app/modules/Track/Controller/SocketServices.dart';
 import 'package:fgtracker/app/modules/Track/Widget/Track_widget.dart';
 import 'package:fgtracker/app/modules/home/Controller/home_controller.dart';
 import 'package:flutter/material.dart';
-import 'package:geocoding/geocoding.dart';
+import 'package:geocoding/geocoding.dart' hide Location;
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+
+class GeocodedAddressResult {
+  final String address;
+  final String area;
+  final String city;
+
+  const GeocodedAddressResult({
+    this.address = '',
+    this.area = '',
+    this.city = '',
+  });
+
+  bool get isEmpty => address.isEmpty && area.isEmpty && city.isEmpty;
+  bool get isNotEmpty => !isEmpty;
+}
 
 class TrackController extends GetxController {
   RxString selectedRadius = '2'.obs;
@@ -50,6 +65,8 @@ class TrackController extends GetxController {
 
   // Location & Group Name Observables
   RxString currentLocationName = "Locating...".obs;
+  RxString currentArea = "".obs;
+  RxString currentCity = "".obs;
   RxString selectedGroupName = "FG Manpower".obs;
   RxString selectedGroupId = "".obs;
 
@@ -59,6 +76,7 @@ class TrackController extends GetxController {
   final RxSet<Circle> circles = <Circle>{}.obs;
   final Map<String, BitmapDescriptor> _markerIconCache = {};
   final Map<String, String> _addressCache = {};
+  final Map<String, GeocodedAddressResult> _detailedAddressCache = {};
 
   StreamSubscription<List<LiveLocationModel>>? _socketLiveLocationSubscription;
   StreamSubscription<Position>? _positionStreamSubscription;
@@ -202,7 +220,22 @@ class TrackController extends GetxController {
             item['userLong']?.toString() ??
             '');
 
-        final String? addr = (item['address'] ?? item['location'])?.toString();
+        String? addr = (item['address'] ?? item['location'])?.toString();
+        final String? itemArea = (item['area'] ?? item['subLocality'])?.toString();
+        final String? itemCity = (item['city'] ?? item['locality'])?.toString();
+
+        if ((addr == null || addr.isEmpty) &&
+            (itemArea != null || itemCity != null)) {
+          if (itemArea != null && itemCity != null && itemArea.isNotEmpty && itemCity.isNotEmpty) {
+            addr = itemArea.toLowerCase() == itemCity.toLowerCase()
+                ? itemCity
+                : "$itemArea, $itemCity";
+          } else if (itemArea != null && itemArea.isNotEmpty) {
+            addr = itemArea;
+          } else if (itemCity != null && itemCity.isNotEmpty) {
+            addr = itemCity;
+          }
+        }
 
         if (userId != null &&
             lat != null &&
@@ -249,6 +282,19 @@ class TrackController extends GetxController {
     for (var su in socketUsers) {
       if (su.latitude == 0.0 || su.longitude == 0.0) continue;
 
+      String? suAddress = su.address;
+      if (suAddress == null || suAddress.isEmpty) {
+        if (su.area != null && su.city != null && su.area!.isNotEmpty && su.city!.isNotEmpty) {
+          suAddress = su.area!.toLowerCase() == su.city!.toLowerCase()
+              ? su.city
+              : "${su.area}, ${su.city}";
+        } else if (su.area != null && su.area!.isNotEmpty) {
+          suAddress = su.area;
+        } else if (su.city != null && su.city!.isNotEmpty) {
+          suAddress = su.city;
+        }
+      }
+
       final existingIndex = radiusUsers
           .indexWhere((u) => u.userId.toString() == su.userId.toString());
       if (existingIndex >= 0) {
@@ -265,8 +311,8 @@ class TrackController extends GetxController {
         if (su.profileImage.isNotEmpty) {
           prev.profileImage = su.profileImage;
         }
-        if (su.address != null && su.address!.isNotEmpty) {
-          prev.location = su.address;
+        if (suAddress != null && suAddress.isNotEmpty) {
+          prev.location = suAddress;
         }
         _resolveAddressForUser(prev);
       } else {
@@ -278,7 +324,7 @@ class TrackController extends GetxController {
           longitude: su.longitude,
           isOnline: su.isOnline,
           team: selectedGroupName.value,
-          location: su.address,
+          location: suAddress,
         );
         radiusUsers.add(newUser);
         _resolveAddressForUser(newUser);
@@ -370,21 +416,27 @@ class TrackController extends GetxController {
     getUsersWithinRadius();
   }
 
-  Future<String> getCityAreaAddress(double lat, double lng) async {
-    if (lat == 0.0 && lng == 0.0) return "";
+  Future<GeocodedAddressResult> getDetailedCityAreaAddress(
+      double lat, double lng) async {
+    if (lat == 0.0 && lng == 0.0) return const GeocodedAddressResult();
 
     final cacheKey = "${lat.toStringAsFixed(3)},${lng.toStringAsFixed(3)}";
-    if (_addressCache.containsKey(cacheKey)) {
-      return _addressCache[cacheKey]!;
+    if (_detailedAddressCache.containsKey(cacheKey)) {
+      return _detailedAddressCache[cacheKey]!;
     }
 
+    String area = '';
+    String city = '';
+    String formattedAddress = '';
+
+    // 1. Native Geocoding via placemarkFromCoordinates
     try {
       final placemarks = await placemarkFromCoordinates(lat, lng);
       if (placemarks.isNotEmpty) {
         final place = placemarks.first;
 
         // 1. Extract Area: subLocality -> thoroughfare -> subAdministrativeArea
-        String area = place.subLocality?.trim() ?? '';
+        area = place.subLocality?.trim() ?? '';
         if (area.isEmpty) {
           area = place.thoroughfare?.trim() ?? '';
         }
@@ -393,7 +445,7 @@ class TrackController extends GetxController {
         }
 
         // 2. Extract City: locality -> subAdministrativeArea -> administrativeArea
-        String city = place.locality?.trim() ?? '';
+        city = place.locality?.trim() ?? '';
         if (city.isEmpty) {
           city = place.subAdministrativeArea?.trim() ?? '';
         }
@@ -401,7 +453,6 @@ class TrackController extends GetxController {
           city = place.administrativeArea?.trim() ?? '';
         }
 
-        String formattedAddress = '';
         if (area.isNotEmpty && city.isNotEmpty) {
           if (area.toLowerCase() == city.toLowerCase()) {
             formattedAddress = city;
@@ -417,88 +468,102 @@ class TrackController extends GetxController {
         } else {
           formattedAddress = place.name?.trim() ?? "";
         }
-
-        if (formattedAddress.isNotEmpty) {
-          _addressCache[cacheKey] = formattedAddress;
-          return formattedAddress;
-        }
       }
     } catch (e) {
       debugPrint("❌ Native geocoding error for ($lat, $lng): $e");
     }
 
-    // Fallback: Google Geocoding API if native geocoding is unavailable or returns empty
-    try {
-      final dio = Dio();
-      final response = await dio.get(
-        "https://maps.googleapis.com/maps/api/geocode/json",
-        queryParameters: {
-          "latlng": "$lat,$lng",
-          "key": ConstRes.gMapApiKey,
-        },
-      );
-      if (response.data != null &&
-          response.data['results'] is List &&
-          (response.data['results'] as List).isNotEmpty) {
-        final result = response.data['results'][0];
-        final components = result['address_components'] as List?;
-        String area = '';
-        String city = '';
-        if (components != null) {
-          for (var comp in components) {
-            final types = (comp['types'] as List?)
-                    ?.map((e) => e.toString())
-                    .toList() ??
-                [];
-            if (types.contains('sublocality') ||
-                types.contains('sublocality_level_1') ||
-                types.contains('neighborhood')) {
-              area = comp['long_name']?.toString() ?? '';
-            }
-            if (types.contains('locality')) {
-              city = comp['long_name']?.toString() ?? '';
-            }
-            if (city.isEmpty && types.contains('administrative_area_level_2')) {
-              city = comp['long_name']?.toString() ?? '';
+    // 2. Fallback: Google Geocoding API if native geocoding is empty or unavailable
+    if (area.isEmpty && city.isEmpty && formattedAddress.isEmpty) {
+      try {
+        final dio = Dio();
+        final response = await dio.get(
+          "https://maps.googleapis.com/maps/api/geocode/json",
+          queryParameters: {
+            "latlng": "$lat,$lng",
+            "key": ConstRes.gMapApiKey,
+          },
+        );
+        if (response.data != null &&
+            response.data['results'] is List &&
+            (response.data['results'] as List).isNotEmpty) {
+          final result = response.data['results'][0];
+          final components = result['address_components'] as List?;
+          if (components != null) {
+            for (var comp in components) {
+              final types = (comp['types'] as List?)
+                      ?.map((e) => e.toString())
+                      .toList() ??
+                  [];
+              if (types.contains('sublocality') ||
+                  types.contains('sublocality_level_1') ||
+                  types.contains('neighborhood')) {
+                area = comp['long_name']?.toString() ?? '';
+              }
+              if (types.contains('locality')) {
+                city = comp['long_name']?.toString() ?? '';
+              }
+              if (city.isEmpty &&
+                  types.contains('administrative_area_level_2')) {
+                city = comp['long_name']?.toString() ?? '';
+              }
             }
           }
+          if (area.isNotEmpty && city.isNotEmpty) {
+            formattedAddress = area.toLowerCase() == city.toLowerCase()
+                ? city
+                : "$area, $city";
+          } else if (area.isNotEmpty) {
+            formattedAddress = area;
+          } else if (city.isNotEmpty) {
+            formattedAddress = city;
+          } else {
+            formattedAddress = result['formatted_address']?.toString() ?? '';
+          }
         }
-        String formatted = '';
-        if (area.isNotEmpty && city.isNotEmpty) {
-          formatted = area.toLowerCase() == city.toLowerCase()
-              ? city
-              : "$area, $city";
-        } else if (area.isNotEmpty) {
-          formatted = area;
-        } else if (city.isNotEmpty) {
-          formatted = city;
-        }
-        if (formatted.isNotEmpty) {
-          _addressCache[cacheKey] = formatted;
-          return formatted;
-        }
+      } catch (apiErr) {
+        debugPrint("❌ Google geocode fallback error: $apiErr");
       }
-    } catch (apiErr) {
-      debugPrint("❌ Google geocode fallback error: $apiErr");
     }
 
-    return "";
+    final result = GeocodedAddressResult(
+      address: formattedAddress,
+      area: area,
+      city: city,
+    );
+
+    if (result.isNotEmpty) {
+      _detailedAddressCache[cacheKey] = result;
+      _addressCache[cacheKey] = result.address;
+    }
+
+    return result;
   }
 
-  Future<void> reverseGeocodeLocation(double lat, double lng) async {
+  Future<String> getCityAreaAddress(double lat, double lng) async {
+    final result = await getDetailedCityAreaAddress(lat, lng);
+    return result.address;
+  }
+
+  Future<GeocodedAddressResult> reverseGeocodeLocation(
+      double lat, double lng) async {
     try {
-      final address = await getCityAreaAddress(lat, lng);
-      if (address.isNotEmpty) {
-        currentLocationName.value = address;
+      final res = await getDetailedCityAreaAddress(lat, lng);
+      if (res.address.isNotEmpty) {
+        currentLocationName.value = res.address;
       } else if (currentLocationName.value.isEmpty ||
           currentLocationName.value == "Locating...") {
         currentLocationName.value = "Current Location";
       }
+      if (res.area.isNotEmpty) currentArea.value = res.area;
+      if (res.city.isNotEmpty) currentCity.value = res.city;
+      return res;
     } catch (_) {
       if (currentLocationName.value.isEmpty ||
           currentLocationName.value == "Locating...") {
         currentLocationName.value = "Current Location";
       }
+      return const GeocodedAddressResult();
     }
   }
 
@@ -548,17 +613,40 @@ class TrackController extends GetxController {
       Global.storageServices.setDouble('user_last_lng', lng);
     } catch (_) {}
 
-    // Reverse geocode to extract clean "Area, City" address
-    reverseGeocodeLocation(lat, lng).then((_) {
+    // Reverse geocode to extract clean "Area, City" address and emit to sockets
+    reverseGeocodeLocation(lat, lng).then((geocoded) {
       final uid = Global.storageServices.get(PrefConst.userId)?.toString();
       if (uid != null && uid.isNotEmpty) {
+        final addr = geocoded.address.isNotEmpty
+            ? geocoded.address
+            : (currentLocationName.value != "Locating..."
+                ? currentLocationName.value
+                : null);
+        final area = geocoded.area.isNotEmpty
+            ? geocoded.area
+            : (currentArea.value.isNotEmpty ? currentArea.value : null);
+        final city = geocoded.city.isNotEmpty
+            ? geocoded.city
+            : (currentCity.value.isNotEmpty ? currentCity.value : null);
+
+        // 1. Emit to location socket with address, area, and city
         SocketService.instance.emitLocation(
           uid,
           lat,
           lng,
-          address: currentLocationName.value != "Locating..."
-              ? currentLocationName.value
-              : null,
+          address: addr,
+          area: area,
+          city: city,
+        );
+
+        // 2. Request live locations from dashboard socket with address, area, and city
+        SocketDashboardService.instance.requestLiveLocation(
+          userLat: lat,
+          userLong: lng,
+          radius: selectedRadius.value,
+          address: addr,
+          area: area,
+          city: city,
         );
       }
     });
@@ -572,6 +660,8 @@ class TrackController extends GetxController {
         address: currentLocationName.value != "Locating..."
             ? currentLocationName.value
             : null,
+        area: currentArea.value.isNotEmpty ? currentArea.value : null,
+        city: currentCity.value.isNotEmpty ? currentCity.value : null,
       );
     }
 
@@ -653,12 +743,18 @@ class TrackController extends GetxController {
             currentLocationName.value.isNotEmpty
         ? currentLocationName.value
         : null;
+    final String? area =
+        currentArea.value.isNotEmpty ? currentArea.value : null;
+    final String? city =
+        currentCity.value.isNotEmpty ? currentCity.value : null;
 
     SocketDashboardService.instance.requestLiveLocation(
       userLat: lat,
       userLong: long,
       radius: selectedRadius.value,
       address: currentAddr,
+      area: area,
+      city: city,
     );
 
     // Also send a delayed backup request after socket handshake finishes
@@ -668,6 +764,8 @@ class TrackController extends GetxController {
         userLong: long,
         radius: selectedRadius.value,
         address: currentAddr,
+        area: area,
+        city: city,
       );
     });
   }
@@ -765,11 +863,23 @@ class TrackController extends GetxController {
     final double lat = currentLat.value != 0.0 ? currentLat.value : 19.0760;
     final double long = currentLong.value != 0.0 ? currentLong.value : 72.8777;
 
-    // Trigger Socket Live Location request on radius change
+    final String? currentAddr = currentLocationName.value != "Locating..." &&
+            currentLocationName.value.isNotEmpty
+        ? currentLocationName.value
+        : null;
+    final String? area =
+        currentArea.value.isNotEmpty ? currentArea.value : null;
+    final String? city =
+        currentCity.value.isNotEmpty ? currentCity.value : null;
+
+    // Trigger Socket Live Location request on radius change with address, area, and city
     SocketDashboardService.instance.requestLiveLocation(
       userLat: lat,
       userLong: long,
       radius: value,
+      address: currentAddr,
+      area: area,
+      city: city,
     );
 
     if (SocketService.instance.isSocketConnected) {
@@ -779,6 +889,9 @@ class TrackController extends GetxController {
           "lat": lat,
           "long": long,
           "radius": value,
+          if (currentAddr != null) "address": currentAddr,
+          if (area != null) "area": area,
+          if (city != null) "city": city,
         });
       } catch (_) {}
     }
@@ -819,7 +932,7 @@ class TrackController extends GetxController {
 
     BitmapDescriptor userIcon =
         BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueViolet);
-    final cacheKey = "me_${myProfileImg}_custom";
+    final cacheKey = "me_${myProfileImg}_custom_sm";
     if (_markerIconCache.containsKey(cacheKey)) {
       userIcon = _markerIconCache[cacheKey]!;
     } else {
@@ -852,7 +965,7 @@ class TrackController extends GetxController {
           u.longitude != null &&
           u.latitude != 0.0 &&
           u.longitude != 0.0) {
-        final cacheKey = "${u.userId}_${u.profileImage}_${u.isOnline}";
+        final cacheKey = "${u.userId}_${u.profileImage}_${u.isOnline}_sm";
         BitmapDescriptor customIcon;
 
         if (_markerIconCache.containsKey(cacheKey)) {

@@ -38,8 +38,12 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    checkAndRequestPermissions(context);
-    notificationServices.setupInteractMessage(context);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        checkAndRequestPermissions(context);
+        notificationServices.setupInteractMessage(context);
+      }
+    });
     notificationServices.askPermission();
     firebaseNotificationServices().getDiviceToken().then(
       (value) {

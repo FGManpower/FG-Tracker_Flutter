@@ -33,6 +33,7 @@ class OtpController extends GetxController {
   var showOtpSentText = false.obs;
   final otpErrorText = ''.obs;
   late FocusNode phoneFocusNode;
+  bool _isVerifying = false;
 
   Map<String, dynamic>? arguments = Get.arguments;
 
@@ -42,16 +43,25 @@ class OtpController extends GetxController {
 
     registerPushTokens();
 
-    otpController = OTPTextEditController(
-      codeLength: 4,
-      onCodeReceive: (code) => log(code),
-      otpInteractor: otpInteractor,
-    )..startListenUserConsent(
-        (code) {
+    try {
+      otpController = OTPTextEditController(
+        codeLength: 4,
+        onCodeReceive: (code) {
+          log("OTP AutoFill received code: $code");
+          if (code.length == 4) {
+            veriefyOtp();
+          }
+        },
+        otpInteractor: otpInteractor,
+      )..startListenUserConsent(
+            (code) {
           final exp = RegExp(r'(\d{4})');
           return exp.stringMatch(code ?? '') ?? '';
         },
       );
+    } catch (e) {
+      log("OTP autofill initialization error: $e");
+    }
 
     mobileNumber.value = arguments?['mobNo'] ?? '';
   }
@@ -131,11 +141,18 @@ class OtpController extends GetxController {
   @override
   void onClose() {
     _timer?.cancel();
+    try {
+      if (otpController is OTPTextEditController) {
+        (otpController as OTPTextEditController).stopListen();
+      }
+    } catch (_) {}
     super.onClose();
   }
 
   Future<void> veriefyOtp() async {
+    if (_isVerifying) return;
     if (!validateOtp()) return;
+    _isVerifying = true;
     try {
       Loading().showloading();
       dynamic param = {
@@ -185,8 +202,10 @@ class OtpController extends GetxController {
           result.data!.userId.toString(),
         );
         if (result.data?.isNewUser == true) {
-          Get.toNamed(Routes.Register, arguments: {
-            "mobNo": arguments?['mobNo'],
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            Get.toNamed(Routes.Register, arguments: {
+              "mobNo": arguments?['mobNo'],
+            });
           });
         } else {
           Global.storageServices.setString(
@@ -202,15 +221,25 @@ class OtpController extends GetxController {
             PrefConst.isRegistered,
             "true",
           );
-          Get.offAllNamed(Routes.Home_Screen);
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            Get.offAllNamed(Routes.Home_Screen);
+          });
         }
       } else {
         Loading().dismissloading();
+        otpController.clear();
+        otpErrorText.value = result.message ?? "Invalid OTP code";
         CommonDialog.errorMessage(result.message);
+        focusNode.requestFocus();
       }
     } catch (e) {
       Loading().dismissloading();
+      otpController.clear();
+      otpErrorText.value = e.toString();
       CommonDialog.errorMessage(e.toString());
+      focusNode.requestFocus();
+    } finally {
+      _isVerifying = false;
     }
   }
 }
