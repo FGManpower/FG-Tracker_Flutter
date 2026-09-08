@@ -254,6 +254,26 @@ class firebaseNotificationServices {
           CallSessionState.sessionId = callData['callId'].toString();
         }
       }
+      if (Platform.isAndroid) {
+        if (message.data['screen_name'] == "incomingGroupCall" &&
+            Platform.isAndroid) {
+          final callData = jsonDecode(message.data['callData']);
+
+          final Map<String, String> userInfo = callData.map<String, String>(
+              (key, value) => MapEntry(key.toString(), value.toString()));
+          await ConnectycubeFlutterCallKit.showCallNotification(
+            CallEvent(
+              sessionId: callIdToUuid(callData['callId'].toString()),
+              callerName: callData['callerName'],
+              callType: callData['isVideo'] == true ? 1 : 0,
+              opponentsIds: {int.parse(callData['callerId'])},
+              callerId: int.parse(callData['callerId']),
+              userInfo: userInfo,
+            ),
+          );
+          CallSessionState.sessionId = callData['callId'].toString();
+        }
+      }
 
       if (message.data['screen_name'] == "missedCall") {
         final callData = jsonDecode(message.data['callData']);

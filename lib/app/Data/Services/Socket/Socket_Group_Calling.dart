@@ -80,7 +80,7 @@ class Socket_GroupCallService {
   String getParticipantName(String userId) {
     final name = participantMeta[userId]?['name']?.toString();
     if (name != null && name.isNotEmpty) return name;
-    return 'User $userId';
+    return 'User $name';
   }
 
   String? getParticipantProfileImage(String userId) {
@@ -136,7 +136,7 @@ class Socket_GroupCallService {
     });
 
     socket?.onAny((event, dynamic data) {
-      _log('📡 Event: $event | Data: $data');
+      _log('📡 GroupSocketAllEvent: $event | Data: $data');
     });
   }
 

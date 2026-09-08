@@ -25,6 +25,10 @@ class $AssetsIconsGen {
   AssetGenImage get realtimetrack =>
       const AssetGenImage('assets/icons/Realtimetrack.png');
 
+  /// File path: assets/icons/Single safe route.png
+  AssetGenImage get singleSafeRoute =>
+      const AssetGenImage('assets/icons/Single safe route.png');
+
   /// File path: assets/icons/alart.png
   AssetGenImage get alart => const AssetGenImage('assets/icons/alart.png');
 
@@ -49,6 +53,10 @@ class $AssetsIconsGen {
   /// File path: assets/icons/secure.png
   AssetGenImage get secure => const AssetGenImage('assets/icons/secure.png');
 
+  /// File path: assets/icons/single safe zone.png
+  AssetGenImage get singleSafeZone =>
+      const AssetGenImage('assets/icons/single safe zone.png');
+
   /// File path: assets/icons/walkie-talkie.png
   AssetGenImage get walkieTalkie =>
       const AssetGenImage('assets/icons/walkie-talkie.png');
@@ -60,6 +68,7 @@ class $AssetsIconsGen {
   /// List of all assets
   List<AssetGenImage> get values => [
         realtimetrack,
+        singleSafeRoute,
         alart,
         appIcon,
         flag,
@@ -67,6 +76,7 @@ class $AssetsIconsGen {
         safeZoneAlart,
         safeZone,
         secure,
+        singleSafeZone,
         walkieTalkie,
         yourSafetyOurPrioty
       ];
