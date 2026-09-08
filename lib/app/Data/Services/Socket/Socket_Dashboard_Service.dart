@@ -58,14 +58,30 @@ class SocketDashboardService extends GetxService {
 
     _socket!.on('user-live-location', (response) {
       try {
-        final List<dynamic> data;
+        log('📡 [DashboardSocket] user-live-location received: $response');
+        List<dynamic> data = [];
 
-        if (response is Map && response['data'] is List) {
-          data = response['data'];
+        if (response is Map) {
+          if (response['data'] is List) {
+            data = response['data'];
+          } else if (response['locations'] is List) {
+            data = response['locations'];
+          } else if (response['users'] is List) {
+            data = response['users'];
+          } else if (response['members'] is List) {
+            data = response['members'];
+          } else if (response['data'] is Map) {
+            final inner = response['data'];
+            if (inner['locations'] is List) {
+              data = inner['locations'];
+            } else if (inner['users'] is List) {
+              data = inner['users'];
+            } else if (inner['members'] is List) {
+              data = inner['members'];
+            }
+          }
         } else if (response is List) {
           data = response;
-        } else {
-          data = [];
         }
 
         final locations = data
@@ -81,6 +97,8 @@ class SocketDashboardService extends GetxService {
               item.longitude != 0,
         )
             .toList();
+
+        log('📡 [DashboardSocket] Successfully parsed ${locations.length} live members');
 
         if (!_liveLocationController.isClosed) {
           _liveLocationController.add(locations);
@@ -106,14 +124,21 @@ class SocketDashboardService extends GetxService {
     required double userLat,
     required double userLong,
     dynamic radius = 2,
+    String? address,
+    String? area,
+    String? city,
   }) {
     var param = {
       'userId': Global.storageServices.get(PrefConst.userId),
       'userLat': userLat,
       'userLong': userLong,
       'radius': radius,
+      if (address != null && address.isNotEmpty) 'address': address,
+      if (area != null && area.isNotEmpty) 'area': area,
+      if (city != null && city.isNotEmpty) 'city': city,
     };
 
+    log('📡 [DashboardSocket] Emitting get-user-live-location: $param');
     _socket?.emit(
       'get-user-live-location',
       param,

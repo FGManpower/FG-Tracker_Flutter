@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import '../../../../gen/fonts.gen.dart';
 import '../../../Core/constant/const_res.dart';
 import '../../../Core/theme/AppText.dart';
+import '../../../Core/values/colors.dart';
 import '../../../Data/Services/Tracking.dart';
 import '../../../Model/MemberDataRes.dart';
 import '../../../config/themes_data.dart';
@@ -35,7 +36,7 @@ class SearchMembers extends GetView<SearchMemberController> {
               ),
               child: Center(
                 child: Icon(Icons.arrow_back_outlined,
-                    color: Colors.white, size: 24.sp),
+                    color: AppColors.white, size: 24.sp),
               ),
             ),
           ),
@@ -43,7 +44,7 @@ class SearchMembers extends GetView<SearchMemberController> {
             padding: EdgeInsets.only(right: 10.w),
             child: Container(
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: AppColors.white,
                 borderRadius: BorderRadius.circular(50.r),
               ),
               child: TextField(
@@ -66,7 +67,7 @@ class SearchMembers extends GetView<SearchMemberController> {
                               child: CircleAvatar(
                                 backgroundColor: ToggleThemeData.darkPurple,
                                 child: Icon(Icons.close,
-                                    color: Colors.white, size: 18.sp),
+                                    color: AppColors.white, size: 18.sp),
                               ),
                             ),
                           )
@@ -76,7 +77,7 @@ class SearchMembers extends GetView<SearchMemberController> {
           ),
         ),
         body: Container(
-          color: Colors.white,
+          color: AppColors.white,
           child: controller.filteredMembers.isEmpty
               ? Center(
                   child: Text("No members found",
@@ -93,24 +94,33 @@ class SearchMembers extends GetView<SearchMemberController> {
       itemCount: controller.filteredMembers.length,
       itemBuilder: (context, index) {
         final data = controller.filteredMembers[index];
-        bool isOnline = false;
+        bool isOnline = data.isOnline == true;
+        String timeAgoText = isOnline ? "Online" : "Offline";
 
         if (data.lastSeen != null && data.lastSeen!.isNotEmpty) {
           try {
-            isOnline = Tracking()
-                    .getTimeAgo(DateTime.parse(data.lastSeen!))
-                    .toLowerCase() ==
-                "just now";
-          } catch (_) {
-            isOnline = false;
-          }
+            final ago = Tracking().getTimeAgo(DateTime.parse(data.lastSeen!));
+            if (ago.toLowerCase() == "just now") {
+              isOnline = true;
+              timeAgoText = "Online";
+            } else if (!isOnline) {
+              timeAgoText = ago;
+            }
+          } catch (_) {}
         }
+
+        final String? imgUrl = data.profileImage != null && data.profileImage!.isNotEmpty
+            ? (data.profileImage!.startsWith("http")
+                ? data.profileImage!
+                : "${ConstRes.aImageBaseUrl}${data.profileImage}")
+            : null;
+
         return GestureDetector(
           onTap: () {
             Navigator.pop(context, data.userId.toString());
           },
           child: Container(
-            color: Colors.white,
+            color: AppColors.white,
             padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
             child: Row(
               children: [
@@ -119,9 +129,11 @@ class SearchMembers extends GetView<SearchMemberController> {
                   children: [
                     CircleAvatar(
                       radius: 30.r,
-                      backgroundImage: NetworkImage(
-                          "${ConstRes.aImageBaseUrl}${data.profileImage ?? ""}"),
-                      backgroundColor: Colors.grey.shade200,
+                      backgroundImage: imgUrl != null ? NetworkImage(imgUrl) : null,
+                      backgroundColor: AppColors.appGreybackgroundcolor,
+                      child: imgUrl == null
+                          ? Icon(Icons.person, color: AppColors.primaryElement, size: 28.sp)
+                          : null,
                     ),
                     Positioned(
                       right: 4.w,
@@ -129,9 +141,9 @@ class SearchMembers extends GetView<SearchMemberController> {
                         height: 12.w,
                         width: 12.w,
                         decoration: BoxDecoration(
-                          color: isOnline ? Colors.green : Colors.red,
+                          color: isOnline ? AppColors.primaryElementStatus : AppColors.darkRed,
                           shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white, width: 1.5.w),
+                          border: Border.all(color: AppColors.white, width: 1.5.w),
                         ),
                       ),
                     ),
@@ -153,19 +165,12 @@ class SearchMembers extends GetView<SearchMemberController> {
                             ),
                             SizedBox(height: 4.h),
                             reausabletext(
-                              isOnline
-                                  ? "Online"
-                                  : data.lastSeen != null &&
-                                          data.lastSeen!.isNotEmpty
-                                      ? Tracking().getTimeAgo(
-                                          DateTime.parse(data.lastSeen!),
-                                        )
-                                      : "Offline",
+                              timeAgoText,
                               fontsize: 10,
                               fontfamily: FontFamily.interMedium,
                               color: isOnline
-                                  ? Colors.green
-                                  : Colors.grey.shade600,
+                                  ? AppColors.primaryElementStatus
+                                  : AppColors.primarySecondaryElementText,
                             ),
                           ],
                         ),

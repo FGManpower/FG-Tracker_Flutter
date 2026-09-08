@@ -91,6 +91,7 @@ class BannerUi extends StatelessWidget {
                   borderRadius: BorderRadius.circular(16.r),
                   child: Stack(
                     children: [
+                      // Background Image
                       Positioned.fill(
                         child: Image.network(
                           Utility.isNullEmptyOrFalse(banner.imageUrl)
@@ -118,43 +119,44 @@ class BannerUi extends StatelessWidget {
                         ),
                       ),
 
-                      // Positioned(
-                      //   left: 16.w,
-                      //   top: 16.h,
-                      //   bottom: 16.h,
-                      //   right: MediaQuery.of(context).size.width * 0.4, // Right side image ke liye space chhoda hai
-                      //   child: Column(
-                      //     crossAxisAlignment: CrossAxisAlignment.start,
-                      //     mainAxisAlignment: MainAxisAlignment.center,
-                      //     children: [
-                      //       if (!Utility.isNullEmptyOrFalse(banner.title)) ...[
-                      //         Text(
-                      //           banner.title.toString(),
-                      //           style: TextStyle(
-                      //             fontSize: 16.sp,
-                      //             fontWeight: FontWeight.bold,
-                      //             color: Colors.black87,
-                      //           ),
-                      //           maxLines: 2,
-                      //           overflow: TextOverflow.ellipsis,
-                      //         ),
-                      //         SizedBox(height: 6.h),
-                      //       ],
-                      //       if (!Utility.isNullEmptyOrFalse(banner.description)) ...[
-                      //         Text(
-                      //           banner.description.toString(),
-                      //           style: TextStyle(
-                      //             fontSize: 10.sp,
-                      //             color: Colors.black54,
-                      //             height: 1.2,
-                      //           ),
-                      //           maxLines: 3,
-                      //           overflow: TextOverflow.ellipsis,
-                      //         ),
-                      //       ],
-                      //     ],
-                      //   ),
-                      // ),
+                      if (index == 1)
+                        Positioned(
+                          left: 16.w,
+                          top: 16.h,
+                          bottom: 16.h,
+                          right: MediaQuery.of(context).size.width * 0.4,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              if (!Utility.isNullEmptyOrFalse(banner.title)) ...[
+                                Text(
+                                  banner.title.toString(),
+                                  style: TextStyle(
+                                    fontSize: 16.sp,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black87,
+                                  ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                SizedBox(height: 6.h),
+                              ],
+                              if (!Utility.isNullEmptyOrFalse(banner.description)) ...[
+                                Text(
+                                  banner.description.toString(),
+                                  style: TextStyle(
+                                    fontSize: 10.sp,
+                                    color: Colors.black54,
+                                    height: 1.2,
+                                  ),
+                                  maxLines: 3,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
                     ],
                   ),
                 ),

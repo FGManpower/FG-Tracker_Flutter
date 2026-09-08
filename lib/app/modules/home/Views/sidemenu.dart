@@ -271,7 +271,7 @@ class Sidemenu extends StatelessWidget {
 
   Widget _buildFooterSection() {
     return Padding(
-      padding: EdgeInsets.only(bottom: 16.h, top: 4.h), // pehle 30.h tha
+      padding: EdgeInsets.only(bottom: 16.h, top: 4.h),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [

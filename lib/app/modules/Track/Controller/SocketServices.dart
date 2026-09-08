@@ -60,7 +60,8 @@ class SocketService extends GetxService {
     connectedGroupIds.remove(groupId);
   }
 
-  void emitLocation(String userId, dynamic lat, dynamic lng) {
+  void emitLocation(String userId, dynamic lat, dynamic lng,
+      {String? address, String? area, String? city}) {
     if (!isSocketConnected) return;
 
     if (userId.isEmpty || lat == null || lng == null) {
@@ -69,27 +70,37 @@ class SocketService extends GetxService {
     }
 
     for (String groupId in connectedGroupIds) {
-
-      _socket?.emit("send-location", {
+      final payload = {
         "userId": userId,
         "groupId": groupId,
         "lat": lat,
         "lng": lng,
-      });
+        "latitude": lat,
+        "longitude": lng,
+        if (address != null && address.isNotEmpty) "address": address,
+        if (address != null && address.isNotEmpty) "location": address,
+        if (area != null && area.isNotEmpty) "area": area,
+        if (city != null && city.isNotEmpty) "city": city,
+      };
+      _socket?.emit("send-location", payload);
+      log("📡 [SocketService] Emitted send-location to group $groupId: $payload");
     }
   }
 
-  void onGroupLocationUpdate( Function(dynamic) callback) {
+  void onGroupLocationUpdate(Function(dynamic) callback) {
     _socket?.on("group-location-update", (data) {
+      log("📡 [SocketService] group-location-update received: $data");
       if (data is List) {
         for (var item in data) {
-          if (item["userId"].toString() != Global.storageServices.get(PrefConst.userId)
-            ) {
+          if (item is Map &&
+              item["userId"].toString() !=
+                  Global.storageServices.get(PrefConst.userId).toString()) {
             callback(item);
           }
         }
       } else if (data is Map) {
-        if (data["userId"].toString() != Global.storageServices.get(PrefConst.userId)) {
+        if (data["userId"].toString() !=
+            Global.storageServices.get(PrefConst.userId).toString()) {
           callback(data);
         }
       }
