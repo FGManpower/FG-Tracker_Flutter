@@ -17,9 +17,9 @@ class OTPScreen extends GetView<OtpController> {
 
   @override
   Widget build(BuildContext context) {
-    final args = Get.arguments as Map<String, dynamic>?;
-    final String mobileNumber = args?["mobNo"] ?? "";
-    final String countryCode = args?["countryCode"] ?? "+91";
+    final Map? args = Get.arguments is Map ? (Get.arguments as Map) : null;
+    final String mobileNumber = args?["mobNo"]?.toString() ?? "";
+    final String countryCode = args?["countryCode"]?.toString() ?? "+91";
     final String formattedMobile = countryCode.isNotEmpty
         ? (countryCode.startsWith('+')
             ? "$countryCode $mobileNumber"
