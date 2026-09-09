@@ -9,6 +9,7 @@ import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Data/Repositories/Auth_repo.dart';
 import 'package:fgtracker/app/Data/Services/NotificationServices.dart';
+import 'package:fgtracker/app/Data/Services/Socket/Socket_Group_Calling.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Walkie-Talkie-Service.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:flutter/cupertino.dart';
@@ -93,7 +94,7 @@ class OtpController extends GetxController {
     }
 
     firebaseNotificationServices().getDiviceToken().then(
-          (value) {
+      (value) {
         deviceId.value = value;
       },
     );
@@ -168,17 +169,25 @@ class OtpController extends GetxController {
         Loading().dismissloading();
 
         try {
-          SignallingService.instance.init(
-            websocketUrl: ConstRes.socketUrl,
-            selfCallerID: result.data!.userId.toString(),
-          );
-
+          if (result.data!.userId != null) {}
           if (result.data!.userId != null) {
+            SignallingService.instance.init(
+              websocketUrl: ConstRes.socketUrl,
+              selfCallerID: result.data!.userId.toString(),
+            );
+
             GroupWalkieService.instance.init(
               websocketUrl: ConstRes.socketUrl,
               selfUserId: result.data!.userId.toString(),
             );
 
+            GroupWalkieService.instance.init(
+              websocketUrl: ConstRes.socketUrl,
+              selfUserId: result.data!.userId.toString(),
+            );
+
+            Socket_GroupCallService.instance
+                .init(result.data!.userId.toString());
           }
         } catch (e) {
           log("login_SocketException====$e");

@@ -5,9 +5,9 @@ import 'dart:io';
 import 'package:connectycube_flutter_call_kit/connectycube_flutter_call_kit.dart';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
+import 'package:fgtracker/app/Core/util/group_callkit_service.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Group_Calling.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Walkie-Talkie-Service.dart';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -72,7 +72,44 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     } catch (e) {
       log("showCallNotification error: $e");
     }
-  } else if (message.data['screen_name'] == "missedCall") {
+  }
+
+
+  if (message.data['screen_name'] == "incomingGroupCall") {
+    if (Platform.isIOS) {
+      // await RemoteLoggerTest.log("FCM_BG_HANDLER", "iOS detected in FCM background handler: ${message.data}");
+      return;
+    }
+    final callData = jsonDecode(message.data['callData']);
+    final originalCallId = callData['callId'].toString();
+
+    final Map<String, String> userInfo = {
+      "callId": originalCallId,
+      "callerId": callData['callerId'].toString(),
+      "receiverId": callData['receiverId'].toString(),
+      "isVideo": callData['isVideo'].toString(),
+      "callerName": callData['callerName'].toString(),
+      "callerProfileImage": callData['callerProfileImage'].toString(),
+      "notificationId": callData['notificationId']?.toString() ?? "",
+    };
+
+    try {
+      await ConnectycubeFlutterCallKit.showCallNotification(
+        CallEvent(
+          sessionId: callIdToUuid(originalCallId),
+          callerName: callData['callerName'],
+          callType: callData['isVideo'] == true ? 1 : 0,
+          opponentsIds: {int.parse(callData['callerId'])},
+          callerId: int.parse(callData['callerId']),
+          userInfo: userInfo,
+        ),
+      );
+    } catch (e) {
+      log("showCallNotification error: $e");
+    }
+  }
+
+  else if (message.data['screen_name'] == "missedCall") {
     final callData = jsonDecode(message.data['callData']);
     final sessionId = callData['session_id'].toString();
     callEnded(sessionId);
@@ -140,6 +177,7 @@ Future<void> onCallRejectedWhenTerminated(CallEvent event) async {
 @pragma('vm:entry-point')
 void onCallEventBackground() {
   CallKitService.instance.init();
+  GroupCallKitService.instance.init();
 }
 
 Future<void> main() async {
@@ -152,6 +190,7 @@ Future<void> main() async {
       onCallRejectedWhenTerminated;
   await firebaseNotificationServices().initialized();
   CallKitService.instance.init();
+  GroupCallKitService.instance.init();
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(statusBarColor: Colors.transparent),
   );
@@ -199,6 +238,7 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
     CallKitService.instance.init();
+    GroupCallKitService.instance.init();
   }
 
   @override

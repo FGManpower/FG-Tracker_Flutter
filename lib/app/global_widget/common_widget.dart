@@ -258,6 +258,7 @@ Widget reausablebuttons(
   );
 }
 
+// In your existing reusable widgets file — replace reausablebutton with this:
 Widget reausablebutton(
     {void Function()? ontap,
       String? title,
@@ -271,7 +272,9 @@ Widget reausablebutton(
       Color backgroundColor = ToggleThemeData.darkPurple,
       IconData? icon,
       double iconSize = 20,
-      Color iconColor = Colors.white}) {
+      Color iconColor = Colors.white,
+      IconData? trailingIcon,
+      double trailingIconSize = 20}) {
   return GestureDetector(
     onTap: enable == false ? null : ontap,
     child: Container(
@@ -282,8 +285,11 @@ Widget reausablebutton(
             color: backgroundColor),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisAlignment: trailingIcon != null
+              ? MainAxisAlignment.spaceBetween
+              : MainAxisAlignment.center,
           children: [
+            if (trailingIcon != null) SizedBox(width: 24.w),
             icon == null
                 ? const SizedBox()
                 : Padding(
@@ -291,15 +297,20 @@ Widget reausablebutton(
               child: reausableIcon(
                   icon: icon, size: iconSize, color: iconColor),
             ),
-            Center(
-              child: Text(
-                "$title",
-                style: TextStyle(
-                    fontSize: fontSize.sp,
-                    fontFamily: FontFamily.interSemiBold,
-                    color: textcolor),
-              ),
+            reausabletext(
+              "$title",
+              fontsize: fontSize.toDouble(),
+              fontfamily: FontFamily.interSemiBold,
+              color: textcolor,
             ),
+            if (trailingIcon != null)
+              Padding(
+                padding: EdgeInsets.only(right: 8.w),
+                child: reausableIcon(
+                    icon: trailingIcon,
+                    size: trailingIconSize,
+                    color: iconColor),
+              ),
           ],
         )),
   );
