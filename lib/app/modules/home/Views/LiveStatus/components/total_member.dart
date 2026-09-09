@@ -320,7 +320,7 @@ class _TotalMemberState extends State<TotalMember> {
   Widget _buildStaticMemberList() {
     final List<Map<String, String>> staticMembers = [
       {"name": "Samad", "team": "FG Manpower Development", "status": "Active", "joined": "12 Jan 2024"},
-      {"name": "Priya Sharma", "team": "Event Management Team", "status": "Active", "joined": "08 Feb 2024"},
+      {"name": "Riya Sharma", "team": "Event Management Team", "status": "Active", "joined": "08 Feb 2024"},
       {"name": "Imran Khan", "team": "Construction Team", "status": "Active", "joined": "15 Jan 2024"},
       {"name": "Neha Verma", "team": "Site Operations Team", "status": "Inactive", "joined": "22 Mar 2024"},
       {"name": "Rohit Verma", "team": "HR Department", "status": "Active", "joined": "05 Jan 2024"},
