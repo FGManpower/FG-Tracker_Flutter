@@ -1,4 +1,6 @@
 import 'package:fgtracker/app/Core/constant/const_res.dart';
+import 'package:fgtracker/app/Core/constant/pref_res.dart';
+import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Core/values/utility.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
@@ -48,7 +50,9 @@ Widget headerUi(HomeController controller) {
               onPressed: () {
                 Get.toNamed(Routes.Register, arguments: {
                   "type": "Update",
-                  'userData': controller.userData.value
+                  'userData': controller.userData.value,
+                  'email': controller.userData.value.email ?? Global.storageServices.get(PrefConst.userEmail)?.toString() ?? "",
+                  'mobNo': controller.userData.value.mobileNo ?? Global.storageServices.get(PrefConst.userPhone)?.toString() ?? "",
                 });
               },
             ),

@@ -143,6 +143,8 @@ class Sidemenu extends StatelessWidget {
                         Get.toNamed(Routes.Register, arguments: {
                           "type": "Update",
                           'userData': user,
+                          'email': user.email ?? Global.storageServices.get(PrefConst.userEmail)?.toString() ?? "",
+                          'mobNo': user.mobileNo ?? Global.storageServices.get(PrefConst.userPhone)?.toString() ?? "",
                         });
                       },
                       child: Container(
@@ -348,6 +350,13 @@ class Sidemenu extends StatelessWidget {
       };
       if (Utility.isNotNullEmptyOrFalse(user.email)) {
         formMap['Email'] = user.email;
+        formMap['email'] = user.email;
+      } else {
+        final savedEmail = Global.storageServices.get(PrefConst.userEmail)?.toString();
+        if (Utility.isNotNullEmptyOrFalse(savedEmail)) {
+          formMap['Email'] = savedEmail;
+          formMap['email'] = savedEmail;
+        }
       }
       formMap['ProfileImage'] = await dio.MultipartFile.fromFile(
         path,
@@ -466,7 +475,9 @@ class Sidemenu extends StatelessWidget {
               Navigator.pop(context);
               Get.toNamed(Routes.Register, arguments: {
                 "type": "Update",
-                'userData': controller.userData.value
+                'userData': controller.userData.value,
+                'email': controller.userData.value.email ?? Global.storageServices.get(PrefConst.userEmail)?.toString() ?? "",
+                'mobNo': controller.userData.value.mobileNo ?? Global.storageServices.get(PrefConst.userPhone)?.toString() ?? "",
               });
             },
           ),

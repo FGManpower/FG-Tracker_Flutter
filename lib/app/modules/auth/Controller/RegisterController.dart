@@ -27,26 +27,105 @@ class RegistrationController extends GetxController {
   final emailController = TextEditingController();
 
   UserData userData = UserData();
-  Map<String, dynamic>? arguments = Get.arguments;
+  Map<String, dynamic>? get arguments =>
+      Get.arguments is Map ? (Get.arguments as Map).cast<String, dynamic>() : _arguments;
+  Map<String, dynamic>? _arguments;
 
   @override
   void onInit() {
     super.onInit();
+    _arguments = Get.arguments is Map ? (Get.arguments as Map).cast<String, dynamic>() : null;
+    initFields();
+  }
 
-    if (arguments?['type'] == "Update") {
-      userData = arguments?['userData'];
-      nameController.text =
-      userData.name == null ? "" : userData.name.toString();
-      phoneController.text =
-      userData.mobileNo == null ? "" : userData.mobileNo.toString();
-      emailController.text =
-      userData.email == null ? "" : userData.email.toString();
-      gender.value = userData.gender.toString() == ""
-          ? "others"
-          : userData.gender.toString();
-    } else {
-      phoneController.text = arguments?['mobNo'] ?? '';
+  @override
+  void onReady() {
+    super.onReady();
+    final args = arguments;
+    if (args?['type'] == "Update" || (Get.arguments is Map && (Get.arguments as Map)['type'] == "Update")) {
+      _fetchLatestProfileForEdit();
     }
+  }
+
+  void initFields() {
+    final args = arguments;
+    final bool isUpdate = args?['type'] == "Update" ||
+        (Get.arguments is Map && (Get.arguments as Map)['type'] == "Update");
+
+    if (isUpdate) {
+      if (args?['userData'] is UserData) {
+        userData = args!['userData'];
+      } else if (Get.arguments is Map && (Get.arguments as Map)['userData'] is UserData) {
+        userData = (Get.arguments as Map)['userData'];
+      }
+
+      // 1. Full Name (Pre-filled from backend UserData, then storage)
+      final name = (userData.name != null && userData.name!.isNotEmpty)
+          ? userData.name!
+          : (Global.storageServices.get(PrefConst.userName)?.toString() ?? "");
+      if (name.isNotEmpty) nameController.text = name;
+
+      // 2. Phone Number (Pre-filled from backend UserData, then storage, then args)
+      final phone = (userData.mobileNo != null && userData.mobileNo!.isNotEmpty)
+          ? userData.mobileNo!
+          : (Global.storageServices.get(PrefConst.userPhone)?.toString() ??
+              args?['mobNo']?.toString() ??
+              "");
+      if (phone.isNotEmpty) phoneController.text = phone;
+
+      // 3. Email Address (Pre-filled directly from backend UserData, storage, or args)
+      final email = (userData.email != null && userData.email!.isNotEmpty)
+          ? userData.email!
+          : (Global.storageServices.get(PrefConst.userEmail)?.toString() ??
+              args?['email']?.toString() ??
+              "");
+      if (email.isNotEmpty) emailController.text = email;
+
+      // 4. Gender
+      if (userData.gender != null && userData.gender.toString().isNotEmpty) {
+        gender.value = userData.gender.toString();
+      } else {
+        gender.value = "male";
+      }
+
+      // Always fetch fresh backend profile directly via /getProfile API
+      _fetchLatestProfileForEdit();
+    } else {
+      // Registration Mode
+      final phone = args?['mobNo']?.toString() ??
+          Global.storageServices.get(PrefConst.userPhone)?.toString() ??
+          '';
+      if (phone.isNotEmpty) phoneController.text = phone;
+
+      final savedEmail = Global.storageServices.get(PrefConst.userEmail)?.toString() ?? '';
+      if (savedEmail.isNotEmpty && emailController.text.isEmpty) {
+        emailController.text = savedEmail;
+      }
+    }
+  }
+
+  Future<void> _fetchLatestProfileForEdit() async {
+    try {
+      var res = await ProfileRepo.getProfileData();
+      if (res.status == true && res.data != null) {
+        userData = res.data!;
+        if (res.data!.email != null && res.data!.email!.isNotEmpty) {
+          emailController.text = res.data!.email!;
+          Global.storageServices.setString(PrefConst.userEmail, res.data!.email!);
+        }
+        if (res.data!.name != null && res.data!.name!.isNotEmpty) {
+          nameController.text = res.data!.name!;
+          Global.storageServices.setString(PrefConst.userName, res.data!.name!);
+        }
+        if (res.data!.mobileNo != null && res.data!.mobileNo!.isNotEmpty) {
+          phoneController.text = res.data!.mobileNo!;
+          Global.storageServices.setString(PrefConst.userPhone, res.data!.mobileNo!);
+        }
+        if (res.data!.gender != null && res.data!.gender.toString().isNotEmpty) {
+          gender.value = res.data!.gender.toString();
+        }
+      }
+    } catch (_) {}
   }
 
   @override
@@ -87,6 +166,18 @@ class RegistrationController extends GetxController {
         var result = await AuthRepo.Register(controller);
         if (result.status == true) {
           Global.storageServices.setString(PrefConst.isRegistered, "true");
+          if (controller.emailController.text.trim().isNotEmpty) {
+            Global.storageServices.setString(
+              PrefConst.userEmail,
+              controller.emailController.text.trim(),
+            );
+          }
+          if (controller.phoneController.text.trim().isNotEmpty) {
+            Global.storageServices.setString(
+              PrefConst.userPhone,
+              controller.phoneController.text.trim(),
+            );
+          }
           _fetchAndSaveProfile(result.message.toString());
         } else {
           Loading().dismissloading();
@@ -105,6 +196,18 @@ class RegistrationController extends GetxController {
         Loading().showloading();
         var result = await AuthRepo.updateProfile(controller);
         if (result.status == true) {
+          if (controller.emailController.text.trim().isNotEmpty) {
+            Global.storageServices.setString(
+              PrefConst.userEmail,
+              controller.emailController.text.trim(),
+            );
+          }
+          if (controller.phoneController.text.trim().isNotEmpty) {
+            Global.storageServices.setString(
+              PrefConst.userPhone,
+              controller.phoneController.text.trim(),
+            );
+          }
           _fetchAndSaveProfile(result.message.toString());
         } else {
           Loading().dismissloading();
@@ -130,6 +233,18 @@ class RegistrationController extends GetxController {
           PrefConst.profileImage,
           profileData.data!.profileImage ?? "Unknown",
         );
+        if (profileData.data?.email != null && profileData.data!.email!.isNotEmpty) {
+          Global.storageServices.setString(
+            PrefConst.userEmail,
+            profileData.data!.email!,
+          );
+        }
+        if (profileData.data?.mobileNo != null && profileData.data!.mobileNo!.isNotEmpty) {
+          Global.storageServices.setString(
+            PrefConst.userPhone,
+            profileData.data!.mobileNo!,
+          );
+        }
 
         Utils().fluttertoast(successMessage);
         Get.offAllNamed(Routes.Home_Screen);

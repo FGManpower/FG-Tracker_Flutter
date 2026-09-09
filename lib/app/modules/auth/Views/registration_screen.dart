@@ -1,7 +1,10 @@
 import 'dart:io';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
+import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/theme/AppText.dart';
+import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Core/values/utility.dart';
+import 'package:fgtracker/app/Model/ProfileRes.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
@@ -16,7 +19,55 @@ class RegistrationScreen extends GetView<RegistrationController> {
 
   @override
   Widget build(BuildContext context) {
-    bool isUpdate = controller.arguments?['type'] == "Update";
+    bool isUpdate = controller.arguments?['type'] == "Update" ||
+        (Get.arguments is Map && (Get.arguments as Map)['type'] == "Update");
+
+    // Ensure pre-filled email, phone and name are populated when opening Edit Profile
+    if (isUpdate) {
+      if (Get.arguments is Map && (Get.arguments as Map)['userData'] is UserData) {
+        final u = (Get.arguments as Map)['userData'] as UserData;
+        if (controller.userData.userId == null) {
+          controller.userData = u;
+        }
+        if (u.email != null && u.email!.isNotEmpty && controller.emailController.text.isEmpty) {
+          controller.emailController.text = u.email!;
+        }
+        if (u.name != null && u.name!.isNotEmpty && controller.nameController.text.isEmpty) {
+          controller.nameController.text = u.name!;
+        }
+        if (u.mobileNo != null && u.mobileNo!.isNotEmpty && controller.phoneController.text.isEmpty) {
+          controller.phoneController.text = u.mobileNo!;
+        }
+      }
+      if (controller.emailController.text.isEmpty) {
+        final savedEmail = (controller.userData.email != null && controller.userData.email!.isNotEmpty)
+            ? controller.userData.email!
+            : (Global.storageServices.get(PrefConst.userEmail)?.toString() ??
+               (Get.arguments is Map ? (Get.arguments as Map)['email']?.toString() : null) ??
+               "");
+        if (savedEmail.isNotEmpty) {
+          controller.emailController.text = savedEmail;
+        }
+      }
+      if (controller.phoneController.text.isEmpty) {
+        final savedPhone = (controller.userData.mobileNo != null && controller.userData.mobileNo!.isNotEmpty)
+            ? controller.userData.mobileNo!
+            : (Global.storageServices.get(PrefConst.userPhone)?.toString() ??
+               (Get.arguments is Map ? (Get.arguments as Map)['mobNo']?.toString() : null) ??
+               "");
+        if (savedPhone.isNotEmpty) {
+          controller.phoneController.text = savedPhone;
+        }
+      }
+      if (controller.nameController.text.isEmpty) {
+        final savedName = (controller.userData.name != null && controller.userData.name!.isNotEmpty)
+            ? controller.userData.name!
+            : (Global.storageServices.get(PrefConst.userName)?.toString() ?? "");
+        if (savedName.isNotEmpty) {
+          controller.nameController.text = savedName;
+        }
+      }
+    }
 
     // Set default gender to "male" for new registrations to match UI mockup
     if (!isUpdate && controller.gender.value.isEmpty) {

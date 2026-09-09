@@ -31,38 +31,58 @@ class AuthRepo {
 
   static Future<CommonResponse> Register(
       RegistrationController controller) async {
+    final Map<String, dynamic> formMap = {
+      'Name': controller.nameController.text.trim(),
+      'MobileNo': controller.phoneController.text.trim(),
+      'Gender': controller.gender.value.isNotEmpty ? controller.gender.value : 'male',
+    };
 
-    FormData data = FormData.fromMap({
-      'Name': controller.nameController.text,
-      'MobileNo': controller.phoneController.text,
+    if (controller.emailController.text.trim().isNotEmpty) {
+      final emailVal = controller.emailController.text.trim();
+      formMap['Email'] = emailVal;
+      formMap['email'] = emailVal;
+      formMap['email_id'] = emailVal;
+      formMap['EmailId'] = emailVal;
+      formMap['userEmail'] = emailVal;
+      formMap['UserEmail'] = emailVal;
+    }
 
-      'Gender': controller.gender,
-      "ProfileImage":
-          Utility.isNotNullEmptyOrFalse(controller.selectedImage.value)
-              ? await MultipartFile.fromFile(
-                  controller.selectedImage.value.toString(),
-                  filename: controller.selectedImage.value.toString(),
-                  contentType: MediaType(
-                    'image',
-                    'jpeg',
-                  ))
-              : "",
-    });
+    if (Utility.isNotNullEmptyOrFalse(controller.selectedImage.value)) {
+      formMap['ProfileImage'] = await MultipartFile.fromFile(
+        controller.selectedImage.value.toString(),
+        filename: controller.selectedImage.value.toString().split('/').last,
+        contentType: MediaType('image', 'jpeg'),
+      );
+    }
+
+    FormData data = FormData.fromMap(formMap);
     var response =
         await HttpUtil().Authpost(Urls.updateProfile, formdata: data, type: "formdata");
     return CommonResponse.fromJson(response);
   }
 
-
-
   static Future<CommonResponse> updateProfile(
       RegistrationController controller) async {
     final Map<String, dynamic> formMap = {
-      'Name': controller.nameController.text,
-      'Gender': controller.gender,
+      'Name': controller.nameController.text.trim(),
+      'name': controller.nameController.text.trim(),
+      'Gender': controller.gender.value.isNotEmpty ? controller.gender.value : 'male',
+      'gender': controller.gender.value.isNotEmpty ? controller.gender.value : 'male',
     };
-    if (controller.emailController.text.isNotEmpty) {
-      formMap['Email'] = controller.emailController.text;
+
+    if (controller.phoneController.text.trim().isNotEmpty) {
+      formMap['MobileNo'] = controller.phoneController.text.trim();
+      formMap['mobileNo'] = controller.phoneController.text.trim();
+    }
+
+    if (controller.emailController.text.trim().isNotEmpty) {
+      final emailVal = controller.emailController.text.trim();
+      formMap['Email'] = emailVal;
+      formMap['email'] = emailVal;
+      formMap['email_id'] = emailVal;
+      formMap['EmailId'] = emailVal;
+      formMap['userEmail'] = emailVal;
+      formMap['UserEmail'] = emailVal;
     }
 
     if (Utility.isNotNullEmptyOrFalse(controller.selectedImage.value)) {
