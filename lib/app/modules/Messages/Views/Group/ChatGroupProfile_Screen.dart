@@ -58,22 +58,18 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
 
   bool _isOnline(LocationData m) {
     if (m.locationSharing == false) return false;
-    if (m.isOnline == true) return true;
-    if (m.lastSeen == null || m.lastSeen.toString().isEmpty) return false;
-    final parsed = DateTime.tryParse(m.lastSeen.toString());
-    if (parsed == null) return false;
-    try {
-      return Tracking().getTimeAgo(parsed).toLowerCase() == "just now";
-    } catch (_) {
-      return false;
-    }
+    return Tracking().isOnline(
+      rawIsOnline: m.isOnline,
+      lastSeen: m.lastSeen,
+      thresholdMinutes: 5,
+    );
   }
 
   String _statusText(LocationData m) {
     if (m.locationSharing == false) return "Ghost Mode";
     if (_isOnline(m)) return "Online";
     if (m.lastSeen == null || m.lastSeen.toString().isEmpty) return "Offline";
-    final parsed = DateTime.tryParse(m.lastSeen.toString());
+    final parsed = Tracking.parseDateTime(m.lastSeen);
     if (parsed == null) return "Offline";
     try {
       return Tracking().getTimeAgo(parsed);

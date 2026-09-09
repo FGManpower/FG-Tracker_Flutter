@@ -435,9 +435,11 @@ class TrackingController extends GetxController {
     final groupId = data.groupId.toString();
     final profileImageUrl = data.profileImage?.toString() ?? '';
 
-    final bool isOnline = data.lastSeen != null &&
-        Tracking().getTimeAgo(DateTime.parse(data.lastSeen!)).toLowerCase() ==
-            "just now";
+    final bool isOnline = Tracking().isOnline(
+      rawIsOnline: data.isOnline,
+      lastSeen: data.lastSeen,
+      thresholdMinutes: 5,
+    );
 
     final groupList = groupWiseUserData[groupId] ?? [];
 
@@ -574,6 +576,12 @@ class TrackingController extends GetxController {
         print("===========================");
         if (data["groupId"].toString() == groupId) {
           final location = LocationData.fromJson(data);
+          if (location.lastSeen == null || location.lastSeen.toString().isEmpty) {
+            location.lastSeen = DateTime.now().toIso8601String();
+          }
+          if (location.isOnline == null) {
+            location.isOnline = true;
+          }
           updateGroupMarker(location);
         }
       },
@@ -674,18 +682,11 @@ class TrackingController extends GetxController {
                   final user = users[index];
                   final imageUrl = user.profileImage?.toString() ?? '';
                   final bool isGhostMode = user.locationSharing == false;
-                  bool isOnline = false;
-
-                  if (user.lastSeen != null && user.lastSeen!.isNotEmpty) {
-                    try {
-                      isOnline = Tracking()
-                              .getTimeAgo(DateTime.parse(user.lastSeen!))
-                              .toLowerCase() ==
-                          "just now";
-                    } catch (_) {
-                      isOnline = false;
-                    }
-                  }
+                  final bool isOnline = Tracking().isOnline(
+                    rawIsOnline: user.isOnline,
+                    lastSeen: user.lastSeen,
+                    thresholdMinutes: 5,
+                  );
 
                   return ListTile(
                     contentPadding: const EdgeInsets.symmetric(
@@ -768,9 +769,10 @@ class TrackingController extends GetxController {
                           ? "Ghost Mode Enabled"
                           : isOnline
                               ? "Online"
-                              : user.lastSeen != null
+                              : user.lastSeen != null && user.lastSeen.toString().isNotEmpty
                                   ? Tracking().getTimeAgo(
-                                      DateTime.parse(user.lastSeen!),
+                                      Tracking.parseDateTime(user.lastSeen) ??
+                                          DateTime.now(),
                                     )
                                   : "Offline",
                       style: TextStyle(

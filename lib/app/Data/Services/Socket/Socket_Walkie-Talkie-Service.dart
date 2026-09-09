@@ -3,8 +3,10 @@ import 'dart:developer';
 import 'dart:io';
 
 import 'package:audio_session/audio_session.dart';
+import 'package:fgtracker/app/Core/constant/notification_holder.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Controller/walkieController.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Views/walkie_invite_dialog.dart';
+import 'package:fgtracker/app/modules/Walkie-talkie/WalkieTalkieScreen.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:get/get.dart' hide navigator;
@@ -251,7 +253,7 @@ class GroupWalkieService {
       socket?.off(e);
     }
 
-    socket?.on('walkie_invite', (data) {
+    socket?.on('walkie_invite', (data) async {
       if (_isDisposed || data == null) return;
       final groupId = data['groupId']?.toString() ?? '';
       final groupName = data['groupName']?.toString() ?? 'Group';
@@ -259,14 +261,22 @@ class GroupWalkieService {
       final speakerImage = data['speakerImage']?.toString() ?? '';
 
       if (groupId.isEmpty) return;
-      if (_currentGroupId == groupId) return;
-      if (Get.currentRoute == Routes.groupWalkieScreen) return;
+      if (_currentGroupId == groupId && WalkieLaunchTracker.fromWalkieCall) return;
 
-      WalkieInviteDialog.show(
-        groupId: groupId,
-        groupName: groupName,
-        speakerName: speakerName,
-        speakerImage: speakerImage,
+      if (_currentGroupId != null) {
+        await leaveGroup();
+      }
+
+      Get.to(
+        () => const GroupWalkieScreen(),
+        routeName: Routes.groupWalkieScreen,
+        arguments: {
+          "groupId": groupId,
+          "groupName": groupName,
+          "speakerName": speakerName,
+          "speakerImage": speakerImage,
+          "autoOpened": true,
+        },
       );
     });
 

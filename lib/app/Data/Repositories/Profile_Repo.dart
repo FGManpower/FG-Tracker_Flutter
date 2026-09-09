@@ -8,14 +8,19 @@ class ProfileRepo {
     var response = await HttpUtil().get("/getProfile");
     ProfileRes profileRes = ProfileRes.fromJson(response);
     if (profileRes.status == true && profileRes.data != null) {
-      if (profileRes.data!.email != null && profileRes.data!.email!.isNotEmpty) {
-        Global.storageServices.setString(PrefConst.userEmail, profileRes.data!.email!);
+      if (profileRes.data!.email != null &&
+          profileRes.data!.email!.isNotEmpty) {
+        Global.storageServices
+            .setString(PrefConst.userEmail, profileRes.data!.email!);
       }
       if (profileRes.data!.name != null && profileRes.data!.name!.isNotEmpty) {
-        Global.storageServices.setString(PrefConst.userName, profileRes.data!.name!);
+        Global.storageServices
+            .setString(PrefConst.userName, profileRes.data!.name!);
       }
-      if (profileRes.data!.mobileNo != null && profileRes.data!.mobileNo!.isNotEmpty) {
-        Global.storageServices.setString(PrefConst.userPhone, profileRes.data!.mobileNo!);
+      if (profileRes.data!.mobileNo != null &&
+          profileRes.data!.mobileNo!.isNotEmpty) {
+        Global.storageServices
+            .setString(PrefConst.userPhone, profileRes.data!.mobileNo!);
       }
     }
     return profileRes;

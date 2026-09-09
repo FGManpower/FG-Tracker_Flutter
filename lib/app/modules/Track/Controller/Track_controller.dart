@@ -12,10 +12,12 @@ import 'package:fgtracker/app/Model/LocationDataRes.dart';
 import 'package:fgtracker/app/Model/MemberModel.dart';
 import 'package:fgtracker/app/Model/UsersWithinRadiusRes.dart';
 import 'package:fgtracker/app/Model/live_location_model.dart';
+import 'package:fgtracker/app/Model/group_count_detail.dart';
 import 'package:fgtracker/app/Model/member_live_status.dart';
 import 'package:fgtracker/app/modules/Track/Controller/LocationService.dart';
 import 'package:fgtracker/app/modules/Track/Controller/SocketServices.dart';
 import 'package:fgtracker/app/modules/Track/Widget/Track_widget.dart';
+import 'package:fgtracker/app/Data/Services/Tracking.dart';
 import 'package:fgtracker/app/modules/home/Controller/home_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart' hide Location;
@@ -80,6 +82,7 @@ class TrackController extends GetxController {
 
   StreamSubscription<List<LiveLocationModel>>? _socketLiveLocationSubscription;
   StreamSubscription<Position>? _positionStreamSubscription;
+  StreamSubscription<dynamic>? _groupCountSubscription;
 
   @override
   void onInit() {
@@ -106,8 +109,9 @@ class TrackController extends GetxController {
     // 4. Initialize both sockets
     _initSockets();
 
-    // 5. Fetch group list for Group tab, and fetch users strictly from /users-within-radius
+    // 5. Fetch group list for Group tab, total members from API, and fetch users strictly from /users-within-radius
     fetchGroupData();
+    fetchTotalMembers();
     getCurrentLocationAndFetchUsers();
     _startPositionListening();
   }
@@ -117,6 +121,10 @@ class TrackController extends GetxController {
     try {
       if (Get.isRegistered<HomeController>()) {
         final home = Get.find<HomeController>();
+
+        if (home.groupCount.value.totalMembers > 0) {
+          totalMembersCount.value = home.groupCount.value.totalMembers;
+        }
 
         if (home.currentLocation.value != null) {
           currentLat.value = home.currentLocation.value!.latitude;
@@ -181,6 +189,7 @@ class TrackController extends GetxController {
     // Dashboard socket
     SocketDashboardService.instance.init();
     _listenToSocketLiveLocations();
+    _listenToGroupCounts();
 
     // Location socket
     try {
@@ -192,6 +201,63 @@ class TrackController extends GetxController {
     } catch (e) {
       debugPrint("❌ SocketService init error: $e");
     }
+  }
+
+  void _listenToGroupCounts() {
+    _groupCountSubscription?.cancel();
+    _groupCountSubscription =
+        SocketDashboardService.instance.groupCountStream.listen((data) {
+      if (data != null) {
+        try {
+          final counts = GroupCountDetail.fromJson(data);
+          if (counts.totalMembers > 0) {
+            totalMembersCount.value = counts.totalMembers;
+          }
+        } catch (_) {}
+      }
+    });
+    SocketDashboardService.instance.requestGroupCount();
+  }
+
+  Future<void> fetchTotalMembers() async {
+    try {
+      final res = await TrackRepo.getGroupMember(page: '1', filter: 'all');
+      if (res.status == true &&
+          res.pagination?.totalRecords != null &&
+          res.pagination!.totalRecords! > 0) {
+        totalMembersCount.value = res.pagination!.totalRecords!;
+        return;
+      }
+    } catch (e) {
+      debugPrint("Could not fetch total members count from API: $e");
+    }
+
+    try {
+      final userRes = await GroupRepo.getAllUserData();
+      if (userRes.status == true &&
+          userRes.userData != null &&
+          userRes.userData!.isNotEmpty) {
+        totalMembersCount.value = userRes.userData!.length;
+        return;
+      }
+    } catch (e) {
+      debugPrint("Could not fetch total members from getAllUserData: $e");
+    }
+
+    if (selectedGroupId.value.isNotEmpty) {
+      await fetchMembersForSelectedGroup(selectedGroupId.value);
+    }
+  }
+
+  Future<void> fetchMembersForSelectedGroup(String groupId) async {
+    try {
+      final memberRes = await GroupRepo.getMemberData(groupId);
+      if (memberRes.status == true &&
+          memberRes.memberData != null &&
+          memberRes.memberData!.isNotEmpty) {
+        totalMembersCount.value = memberRes.memberData!.length;
+      }
+    } catch (_) {}
   }
 
   void _listenToSocketLiveLocations() {
@@ -242,6 +308,7 @@ class TrackController extends GetxController {
             lng != null &&
             lat != 0.0 &&
             lng != 0.0) {
+          final nowIso = DateTime.now().toIso8601String();
           final existingIdx = radiusUsers.indexWhere(
               (u) => u.userId.toString() == userId.toString());
           if (existingIdx >= 0) {
@@ -252,6 +319,7 @@ class TrackController extends GetxController {
             prev.latitude = lat;
             prev.longitude = lng;
             prev.isOnline = true;
+            prev.lastSeen = nowIso;
             if (item['name'] != null && item['name'].toString().isNotEmpty) {
               prev.name = item['name'].toString();
             }
@@ -266,6 +334,7 @@ class TrackController extends GetxController {
               latitude: lat,
               longitude: lng,
               isOnline: true,
+              lastSeen: nowIso,
               team: selectedGroupName.value,
               location: addr,
             );
@@ -279,6 +348,7 @@ class TrackController extends GetxController {
   }
 
   void _mergeSocketLocations(List<LiveLocationModel> socketUsers) {
+    final nowIso = DateTime.now().toIso8601String();
     for (var su in socketUsers) {
       if (su.latitude == 0.0 || su.longitude == 0.0) continue;
 
@@ -304,7 +374,8 @@ class TrackController extends GetxController {
             (prev.longitude != null && (prev.longitude! - su.longitude).abs() > 0.0001);
         prev.latitude = su.latitude;
         prev.longitude = su.longitude;
-        prev.isOnline = su.isOnline;
+        prev.isOnline = true;
+        prev.lastSeen = nowIso;
         if (su.fullName.isNotEmpty && su.fullName != "Member") {
           prev.name = su.fullName;
         }
@@ -322,7 +393,8 @@ class TrackController extends GetxController {
           profileImage: su.profileImage,
           latitude: su.latitude,
           longitude: su.longitude,
-          isOnline: su.isOnline,
+          isOnline: true,
+          lastSeen: nowIso,
           team: selectedGroupName.value,
           location: suAddress,
         );
@@ -343,7 +415,11 @@ class TrackController extends GetxController {
         .toList();
 
     allFetchedMembers.value = mapped;
-    liveNowCount.value = mapped.length;
+    final onlineCount = mapped.where((m) => m.isOnline).length;
+    liveNowCount.value = onlineCount > 0 ? onlineCount : mapped.length;
+    if (totalMembersCount.value < liveNowCount.value) {
+      totalMembersCount.value = liveNowCount.value;
+    }
     if (searchController.text.trim().isEmpty) {
       liveMembers.value = mapped;
     } else {
@@ -379,10 +455,17 @@ class TrackController extends GetxController {
           selectedGroupName.value = "FG Manpower";
         }
 
+        int sumMembers = 0;
         for (var g in groupList) {
+          if (g.memberCount != null && g.memberCount! > 0) {
+            sumMembers += g.memberCount!;
+          }
           if (g.id != null) {
             _joinGroupSocket(g.id!.toString());
           }
+        }
+        if (totalMembersCount.value == 0 && sumMembers > 0) {
+          totalMembersCount.value = sumMembers;
         }
       } else {
         groupError.value = result.message ?? "Failed to load groups";
@@ -410,8 +493,12 @@ class TrackController extends GetxController {
         ? group.groupName!
         : "FG Manpower";
     selectedGroupId.value = group.id?.toString() ?? "";
+    if (group.memberCount != null && group.memberCount! > 0) {
+      totalMembersCount.value = group.memberCount!;
+    }
     if (group.id != null) {
       _joinGroupSocket(group.id!.toString());
+      fetchMembersForSelectedGroup(group.id!.toString());
     }
     getUsersWithinRadius();
   }
@@ -568,6 +655,19 @@ class TrackController extends GetxController {
   }
 
   Future<void> _resolveAddressForUser(UsersWithinRadiusData user) async {
+    if (user.location != null &&
+        user.location!.trim().isNotEmpty &&
+        user.location != "Locating..." &&
+        user.location != "Location" &&
+        user.location != "Location unavailable" &&
+        user.location != "Active now" &&
+        !RegExp(r'^\d+\.\d+,\s*\d+\.\d+$').hasMatch(user.location!)) {
+      final cacheKey =
+          "${user.latitude?.toStringAsFixed(4)},${user.longitude?.toStringAsFixed(4)}";
+      UsersWithinRadiusData.addressCache[cacheKey] = user.location!;
+      return;
+    }
+
     if (user.latitude == null || user.longitude == null) return;
     if (user.latitude == 0.0 && user.longitude == 0.0) return;
 
@@ -792,14 +892,55 @@ class TrackController extends GetxController {
       );
 
       if (result.status == true && result.data != null) {
+        if (result.totalMembers != null && result.totalMembers! > 0) {
+          totalMembersCount.value = result.totalMembers!;
+        }
+
         debugPrint(
             "📍 Loaded ${result.data!.length} users strictly from /users-within-radius");
-        radiusUsers.assignAll(result.data!);
+
+        final Map<String, UsersWithinRadiusData> existingMap = {
+          for (var u in radiusUsers) u.userId.toString(): u
+        };
+
+        for (var apiUser in result.data!) {
+          final key = apiUser.userId.toString();
+          if (existingMap.containsKey(key)) {
+            final existing = existingMap[key]!;
+            final isNowOnline = existing.isOnline ||
+                Tracking().isOnline(rawIsOnline: apiUser.isOnline, lastSeen: apiUser.lastSeen);
+            apiUser.isOnline = isNowOnline;
+
+            if (existing.latitude != null &&
+                existing.latitude != 0.0 &&
+                (apiUser.latitude == null || apiUser.latitude == 0.0)) {
+              apiUser.latitude = existing.latitude;
+              apiUser.longitude = existing.longitude;
+            }
+            if (existing.lastSeen != null && apiUser.lastSeen == null) {
+              apiUser.lastSeen = existing.lastSeen;
+            }
+            if ((apiUser.location == null || apiUser.location!.isEmpty) &&
+                existing.location != null &&
+                existing.location!.isNotEmpty) {
+              apiUser.location = existing.location;
+            }
+            existingMap[key] = apiUser;
+          } else {
+            apiUser.isOnline = Tracking().isOnline(
+              rawIsOnline: apiUser.isOnline,
+              lastSeen: apiUser.lastSeen,
+            );
+            existingMap[key] = apiUser;
+          }
+        }
+
+        radiusUsers.assignAll(existingMap.values.toList());
         await _resolveAllMembersAddresses();
       } else {
         debugPrint(
             "⚠️ /users-within-radius returned: ${result.message}");
-        if (result.data != null && result.data!.isEmpty) {
+        if (result.data != null && result.data!.isEmpty && radiusUsers.every((u) => !u.isOnline)) {
           radiusUsers.clear();
         }
       }
@@ -1141,6 +1282,7 @@ class TrackController extends GetxController {
   void onClose() {
     _socketLiveLocationSubscription?.cancel();
     _positionStreamSubscription?.cancel();
+    _groupCountSubscription?.cancel();
     customRadiusController.dispose();
     searchController.dispose();
     mapController?.dispose();

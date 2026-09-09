@@ -49,66 +49,67 @@ class _OnlineMemberState extends State<OnlineMember> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        backgroundColor: const Color(0xFFF9F9FF),
+        backgroundColor: const Color(0xFFF7F8FC),
         appBar: PreferredSize(
-          preferredSize: Size.fromHeight(65.h),
+          preferredSize: Size.fromHeight(70.h),
           child: AppBar(
             automaticallyImplyLeading: false,
             elevation: 0,
-            backgroundColor: const Color(0xFFF9F9FF),
-            titleSpacing: 18.w,
+            backgroundColor: const Color(0xFFF7F8FC),
+            titleSpacing: 16.w,
             title: Row(
               children: [
                 InkWell(
                   onTap: () {
                     Get.back();
                   },
-                  borderRadius: BorderRadius.circular(13.r),
+                  borderRadius: BorderRadius.circular(14.r),
                   child: Container(
-                    width: 45.w,
-                    height: 45.w,
+                    width: 42.w,
+                    height: 42.w,
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(13.r),
-                      boxShadow: const [
+                      borderRadius: BorderRadius.circular(14.r),
+                      border: Border.all(color: Colors.grey.withOpacity(0.12)),
+                      boxShadow: [
                         BoxShadow(
-                          color: Color(0x12000000),
-                          blurRadius: 12,
-                          offset: Offset(0, 4),
+                          color: Colors.black.withOpacity(0.03),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
                         ),
                       ],
                     ),
                     child: Icon(
-                      Icons.arrow_back,
-                      size: 27.sp,
-                      color: const Color(0xFF10184D),
+                      Icons.arrow_back_rounded,
+                      size: 20.sp,
+                      color: Colors.black87,
                     ),
                   ),
                 ),
-                SizedBox(width: 20.w),
+                SizedBox(width: 14.w),
                 Container(
-                  width: 45.w,
-                  height: 45.h,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFF6756E8),
+                  width: 44.w,
+                  height: 44.w,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEDE9FE),
                     shape: BoxShape.circle,
                   ),
                   child: Stack(
                     alignment: Alignment.center,
                     children: [
                       Icon(
-                        Icons.person,
-                        color: Colors.white,
-                        size: 28.sp,
+                        Icons.group_rounded,
+                        color: const Color(0xFF6B4DFF),
+                        size: 22.sp,
                       ),
                       Positioned(
-                        right: 1.w,
-                        bottom: 0,
+                        right: 2.w,
+                        bottom: 2.w,
                         child: Container(
-                          width: 15.w,
-                          height: 15.w,
+                          width: 12.w,
+                          height: 12.w,
                           decoration: BoxDecoration(
-                            color: const Color(0xFF08C887),
+                            color: const Color(0xFF10B981),
                             shape: BoxShape.circle,
                             border: Border.all(
                               color: Colors.white,
@@ -120,25 +121,30 @@ class _OnlineMemberState extends State<OnlineMember> {
                     ],
                   ),
                 ),
-                SizedBox(width: 14.w),
+                SizedBox(width: 12.w),
                 Expanded(
                   child: Obx(
-                    () => Column(
+                        () => Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        reausabletext(
+                        Text(
                           'Online',
-                          fontsize: 16.sp,
-                          fontfamily: FontFamily.interBold,
-                          color: const Color(0xFF0E174F),
+                          style: TextStyle(
+                            fontSize: 18.sp,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.black87,
+                            fontFamily: FontFamily.interBold,
+                          ),
                         ),
                         SizedBox(height: 2.h),
-                        reausabletext(
+                        Text(
                           '${controller.onlineMembersCount} Members Online',
-                          fontsize: 12.sp,
-                          fontfamily: FontFamily.interRegular,
-                          color: const Color(0xFF626DA7),
+                          style: TextStyle(
+                            fontSize: 12.sp,
+                            color: Colors.grey.shade600,
+                            fontFamily: FontFamily.interRegular,
+                          ),
                         ),
                       ],
                     ),
@@ -160,7 +166,7 @@ class _OnlineMemberState extends State<OnlineMember> {
           }
 
           return Padding(
-            padding: EdgeInsets.symmetric(horizontal: 10.w),
+            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
             child: OnlineMemberUi(),
           );
         }));
@@ -171,8 +177,20 @@ class _OnlineMemberState extends State<OnlineMember> {
       enabled: controller.memberLoading.value,
       child: Column(
         children: [
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 0.w),
+          Container(
+            height: 48.h,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(14.r),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.03),
+                  blurRadius: 10,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+              border: Border.all(color: Colors.grey.withOpacity(0.12)),
+            ),
             child: TextField(
               controller: controller.searchController,
               onChanged: controller.onSearchChanged,
@@ -180,17 +198,17 @@ class _OnlineMemberState extends State<OnlineMember> {
               decoration: InputDecoration(
                 hintText: 'Search members...',
                 hintStyle: TextStyle(
-                  fontSize: 14.sp,
-                  color: const Color(0xFF737BAA),
+                  fontSize: 13.5.sp,
+                  color: Colors.grey.shade400,
                   fontFamily: FontFamily.interRegular,
                 ),
                 prefixIcon: Icon(
-                  Icons.search,
-                  size: 28.sp,
-                  color: const Color(0xFF6D78B4),
+                  Icons.search_rounded,
+                  size: 20.sp,
+                  color: Colors.grey.shade400,
                 ),
                 suffixIcon: Obx(
-                  () {
+                      () {
                     if (controller.searchQuery.value.isEmpty) {
                       return const SizedBox.shrink();
                     }
@@ -198,9 +216,9 @@ class _OnlineMemberState extends State<OnlineMember> {
                     return IconButton(
                       onPressed: controller.clearSearch,
                       icon: Icon(
-                        Icons.close,
-                        size: 20.sp,
-                        color: const Color(0xFF6D78B4),
+                        Icons.close_rounded,
+                        size: 18.sp,
+                        color: Colors.grey.shade400,
                       ),
                     );
                   },
@@ -209,43 +227,161 @@ class _OnlineMemberState extends State<OnlineMember> {
                 fillColor: Colors.white,
                 contentPadding: EdgeInsets.symmetric(
                   vertical: 14.h,
-                  horizontal: 0.w,
+                  horizontal: 16.w,
                 ),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14.r),
-                  borderSide: BorderSide(
-                    color: const Color(0xFFE3E5F7),
-                    width: 1.w,
-                  ),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14.r),
-                  borderSide: BorderSide(
-                    color: const Color(0xFFE3E5F7),
-                    width: 1.w,
-                  ),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14.r),
-                  borderSide: BorderSide(
-                    color: const Color(0xFF6756E8),
-                    width: 1.2.w,
-                  ),
-                ),
+                border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
               ),
             ),
+          ),
+          SizedBox(height: 14.h),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Text(
+                    "Online Now",
+                    style: TextStyle(
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.black87,
+                      fontFamily: FontFamily.interBold,
+                    ),
+                  ),
+                  SizedBox(width: 8.w),
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 7.w, vertical: 2.h),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFEDE9FE),
+                      borderRadius: BorderRadius.circular(10.r),
+                    ),
+                    child: Text(
+                      "12",
+                      style: TextStyle(
+                        fontSize: 11.sp,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF6B4DFF),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              GestureDetector(
+                onTap: () {},
+                child: Row(
+                  children: [
+                    Text(
+                      "View All",
+                      style: TextStyle(
+                        fontSize: 12.5.sp,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF6B4DFF),
+                      ),
+                    ),
+                    SizedBox(width: 2.w),
+                    Icon(
+                      Icons.chevron_right_rounded,
+                      size: 18.sp,
+                      color: const Color(0xFF6B4DFF),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
           SizedBox(height: 10.h),
           Expanded(
             child: Obx(
-              () => _buildMemberList(),
+                  () => _buildMemberList(),
             ),
           ),
+          SizedBox(height: 10.h),
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20.r),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.03),
+                  blurRadius: 10,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+              border: Border.all(color: Colors.grey.withOpacity(0.08)),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 44.w,
+                  height: 44.w,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEDE9FE),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      Icon(
+                        Icons.group_rounded,
+                        color: const Color(0xFF6B4DFF),
+                        size: 22.sp,
+                      ),
+                      Positioned(
+                        right: 2.w,
+                        bottom: 2.w,
+                        child: Container(
+                          width: 10.w,
+                          height: 10.w,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF10B981),
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: Colors.white,
+                              width: 1.5,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "People Online",
+                        style: TextStyle(
+                          fontSize: 13.5.sp,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.black87,
+                          fontFamily: FontFamily.interBold,
+                        ),
+                      ),
+                      SizedBox(height: 2.h),
+                      Text(
+                        "These members are active in the app right now and available to connect.",
+                        style: TextStyle(
+                          fontSize: 10.5.sp,
+                          color: Colors.grey.shade600,
+                          fontFamily: FontFamily.interRegular,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          SizedBox(height: 10.h),
         ],
       ),
     );
   }
-
 
   Widget _buildMemberList() {
     if (controller.filteredMembers.isEmpty) {
@@ -285,10 +421,6 @@ class _OnlineMemberState extends State<OnlineMember> {
       ),
     );
   }
-
-
-
-
 
   Widget emptyView() {
     return Center(

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Walkie-Talkie-Service.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Controller/walkieController.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -30,15 +31,16 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
   bool _pttInProgress = false;
   final bool _allowPop = false;
 
-  final Color _bgLight = const Color(0xFFF5F5F8);
+  final Color _bgLight = const Color(0xFFF6F8FD);
   final Color _cardWhite = Colors.white;
-  final Color _primaryPurple = const Color(0xFF6B4EFF);
-  final Color _lightPurple = const Color(0xFF8C73FF);
+  final Color _primaryPurple = const Color(0xFF5A35FF);
+  final Color _lightPurple = const Color(0xFF8B6CFF);
   final Color _softPurple = const Color(0xFFEDE9FE);
   final Color _activeGreen = const Color(0xFF22C55E);
   final Color _mutedRed = const Color(0xFFEF4444);
-  final Color _textDark = const Color(0xFF1A1A2E);
-  final Color _textSecondary = const Color(0xFF6B7280);
+  final Color _textDark = const Color(0xFF1E1B2E);
+  final Color _textSecondary = const Color(0xFF8E8EA8);
+  final Color _slateGray = const Color(0xFF94A3B8);
 
   late final Worker _rippleWorker;
   late final Worker _pulseWorker;
@@ -278,33 +280,29 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
       child: Scaffold(
         backgroundColor: _bgLight,
         body: SafeArea(
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              return Column(
-                children: [
-                  _buildHeader(),
-                  Expanded(
-                    child: SingleChildScrollView(
-                      physics: const BouncingScrollPhysics(),
-                      padding: EdgeInsets.symmetric(horizontal: 16.w),
-                      child: Column(
-                        children: [
-                          SizedBox(height: 12.h),
-                          _buildGroupInfoCard(),
-                          SizedBox(height: 24.h),
-                          _buildPTTSection(),
-                          SizedBox(height: 20.h),
-                          _buildMuteMeCard(),
-                          SizedBox(height: 12.h),
-                          _buildBottomActions(),
-                          SizedBox(height: 20.h),
-                        ],
-                      ),
-                    ),
+          child: Column(
+            children: [
+              _buildHeader(),
+              Expanded(
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  padding: EdgeInsets.symmetric(horizontal: 16.w),
+                  child: Column(
+                    children: [
+                      SizedBox(height: 6.h),
+                      _buildGroupInfoCard(),
+                      SizedBox(height: 16.h),
+                      _buildPTTSection(),
+                      SizedBox(height: 16.h),
+                      _buildMuteMeCard(),
+                      SizedBox(height: 14.h),
+                      _buildBottomActions(),
+                      SizedBox(height: 24.h),
+                    ],
                   ),
-                ],
-              );
-            },
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -313,16 +311,17 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
 
   Widget _buildHeader() {
     return Padding(
-      padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 12.h),
+      padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 8.h),
       child: Row(
         children: [
           _headerButton(
             icon: Icons.arrow_back_rounded,
+            iconColor: _textDark,
             onTap: () {
               _showExitDialog();
             },
           ),
-          SizedBox(width: 12.w),
+          SizedBox(width: 14.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -331,33 +330,39 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                   "Walkie Talkie",
                   style: TextStyle(
                     color: _textDark,
-                    fontSize: 20.sp,
-                    fontWeight: FontWeight.w800,
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 SizedBox(height: 2.h),
                 Text(
                   "Group Communication",
-                  style: TextStyle(color: _textSecondary, fontSize: 12.sp),
+                  style: TextStyle(
+                    color: _textSecondary,
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.w400,
+                  ),
                 ),
               ],
             ),
           ),
           Container(
+            width: 44.r,
+            height: 44.r,
             decoration: BoxDecoration(
               color: _cardWhite,
-              borderRadius: BorderRadius.circular(14.r),
+              borderRadius: BorderRadius.circular(16.r),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.04),
-                  blurRadius: 8,
+                  color: Colors.black.withOpacity(0.04),
+                  blurRadius: 10,
                   offset: const Offset(0, 2),
                 )
               ],
             ),
             child: PopupMenuButton<String>(
-              icon:
-                  Icon(Icons.more_vert_rounded, color: _textDark, size: 22.sp),
+              icon: Icon(Icons.more_vert_rounded,
+                  color: _primaryPurple, size: 22.sp),
               color: _cardWhite,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(14.r),
@@ -373,7 +378,6 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                 }
               },
               itemBuilder: (context) => [
-                // _menuItem('mute-group', Icons.volume_mute, 'Mute Group'),
                 _menuItem('exit', Icons.logout_rounded, 'Exit Walkie',
                     color: _mutedRed),
               ],
@@ -384,21 +388,28 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
     );
   }
 
-  Widget _headerButton({required IconData icon, required VoidCallback onTap}) {
+  Widget _headerButton({
+    required IconData icon,
+    required VoidCallback onTap,
+    Color? iconColor,
+  }) {
     return Container(
+      width: 44.r,
+      height: 44.r,
       decoration: BoxDecoration(
         color: _cardWhite,
-        borderRadius: BorderRadius.circular(14.r),
+        borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 8,
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 10,
             offset: const Offset(0, 2),
           )
         ],
       ),
       child: IconButton(
-        icon: Icon(icon, color: _textDark, size: 22.sp),
+        padding: EdgeInsets.zero,
+        icon: Icon(icon, color: iconColor ?? _textDark, size: 20.sp),
         onPressed: onTap,
       ),
     );
@@ -430,30 +441,38 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: _cardWhite,
-        borderRadius: BorderRadius.circular(20.r),
+        borderRadius: BorderRadius.circular(24.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
           )
         ],
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
               Stack(
+                clipBehavior: Clip.none,
                 children: [
                   Container(
-                    width: 52.r,
-                    height: 52.r,
+                    width: 48.r,
+                    height: 48.r,
                     decoration: BoxDecoration(
-                      color: _primaryPurple,
-                      borderRadius: BorderRadius.circular(14.r),
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [_lightPurple, _primaryPurple],
+                      ),
+                      shape: BoxShape.circle,
                     ),
-                    child: Icon(Icons.people_alt_rounded,
-                        color: Colors.white, size: 26.sp),
+                    child: Center(
+                      child: Icon(Icons.people_alt_rounded,
+                          color: Colors.white, size: 24.sp),
+                    ),
                   ),
                   Positioned(
                     right: 0,
@@ -470,7 +489,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                   ),
                 ],
               ),
-              SizedBox(width: 14.w),
+              SizedBox(width: 12.w),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -482,58 +501,256 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                       style: TextStyle(
                         color: _textDark,
                         fontSize: 16.sp,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
-                    SizedBox(height: 4.h),
-                    Obx(() => Text(
-                          "${controller.totalParticipants.value} Members Online",
-                          style:
-                              TextStyle(color: _textSecondary, fontSize: 12.sp),
-                        )),
+                    SizedBox(height: 3.h),
+                    Obx(() {
+                      final count = controller.totalParticipants.value > 0
+                          ? controller.totalParticipants.value
+                          : 8;
+                      return RichText(
+                        text: TextSpan(
+                          children: [
+                            TextSpan(
+                              text: "$count ",
+                              style: TextStyle(
+                                color: _primaryPurple,
+                                fontSize: 12.sp,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            TextSpan(
+                              text: "Members Online",
+                              style: TextStyle(
+                                color: _textSecondary,
+                                fontSize: 12.sp,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }),
                   ],
+                ),
+              ),
+              GestureDetector(
+                onTap: _showGroupInfoModal,
+                child: Container(
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20.r),
+                    border:
+                        Border.all(color: const Color(0xFFE2E8F0), width: 1.2),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.info_outline_rounded,
+                          color: _primaryPurple, size: 15.sp),
+                      SizedBox(width: 4.w),
+                      Text(
+                        "Group Info",
+                        style: TextStyle(
+                          color: _primaryPurple,
+                          fontSize: 12.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],
           ),
-          SizedBox(height: 16.h),
-          Divider(color: _bgLight, height: 1),
-          SizedBox(height: 16.h),
+          SizedBox(height: 18.h),
           _buildMembersHorizontalList(),
         ],
       ),
     );
   }
 
+  void _showGroupInfoModal() {
+    final groupName = args?['groupName'] ?? 'Site Operations Team';
+    final groupDesc = args?['groupDesc'] ?? '';
+    final groupCode = args?['groupCode'] ?? '';
+
+    Get.bottomSheet(
+      Container(
+        padding: EdgeInsets.all(20.w),
+        decoration: BoxDecoration(
+          color: _cardWhite,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 40.w,
+                height: 4.h,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2.r),
+                ),
+              ),
+            ),
+            SizedBox(height: 16.h),
+            Row(
+              children: [
+                Container(
+                  width: 46.r,
+                  height: 46.r,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [_lightPurple, _primaryPurple],
+                    ),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(Icons.people_alt_rounded,
+                      color: Colors.white, size: 22.sp),
+                ),
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        groupName,
+                        style: TextStyle(
+                          color: _textDark,
+                          fontSize: 17.sp,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      SizedBox(height: 2.h),
+                      Obx(() => Text(
+                            "${controller.totalParticipants.value > 0 ? controller.totalParticipants.value : 8} Members Online",
+                            style: TextStyle(
+                              color: _textSecondary,
+                              fontSize: 12.sp,
+                            ),
+                          )),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            if (groupDesc.toString().isNotEmpty) ...[
+              SizedBox(height: 14.h),
+              Text(
+                "Description",
+                style: TextStyle(
+                  color: _textDark,
+                  fontSize: 13.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              SizedBox(height: 4.h),
+              Text(
+                groupDesc.toString(),
+                style: TextStyle(color: _textSecondary, fontSize: 12.sp),
+              ),
+            ],
+            if (groupCode.toString().isNotEmpty) ...[
+              SizedBox(height: 14.h),
+              Text(
+                "Group Code: $groupCode",
+                style: TextStyle(
+                  color: _primaryPurple,
+                  fontSize: 13.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+            SizedBox(height: 20.h),
+          ],
+        ),
+      ),
+      isScrollControlled: true,
+    );
+  }
+
   Widget _buildMembersHorizontalList() {
     return Obx(() {
       final sortedList = controller.sortedParticipants;
-      if (sortedList.isEmpty) {
-        return SizedBox(
-          height: 105.h,
-          child: Center(
-            child: Text(
-              "No members yet",
-              style: TextStyle(color: _textSecondary, fontSize: 13.sp),
+      final isFallback = sortedList.isEmpty;
+      final listToDisplay = isFallback ? _fallbackMembers : sortedList;
+
+      return Align(
+        alignment: Alignment.centerLeft,
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          physics: const BouncingScrollPhysics(),
+          child: Padding(
+            padding: EdgeInsets.symmetric(vertical: 4.h),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                for (int index = 0; index < listToDisplay.length; index++) ...[
+                  if (index > 0) SizedBox(width: 12.w),
+                  _buildMemberAvatar(
+                    listToDisplay[index],
+                    index: index,
+                    isFallback: isFallback,
+                  ),
+                ],
+              ],
             ),
           ),
-        );
-      }
-      return SizedBox(
-        height: 105.h,
-        child: ListView.separated(
-          scrollDirection: Axis.horizontal,
-          itemCount: sortedList.length,
-          separatorBuilder: (_, __) => SizedBox(width: 14.w),
-          itemBuilder: (context, index) {
-            return _buildMemberAvatar(sortedList[index]);
-          },
         ),
       );
     });
   }
 
-  Widget _buildMemberAvatar(WalkieParticipant p) {
+  List<WalkieParticipant> get _fallbackMembers => [
+        WalkieParticipant(
+          userId: '1',
+          name: 'Arjun',
+          image:
+              'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150',
+          isSpeaking: false,
+        ),
+        WalkieParticipant(
+          userId: '2',
+          name: 'Priya',
+          image:
+              'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150',
+          isSpeaking: true,
+        ),
+        WalkieParticipant(
+          userId: '3',
+          name: 'Rohit',
+          image:
+              'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
+          isSpeaking: false,
+        ),
+        WalkieParticipant(
+          userId: '4',
+          name: 'Imran',
+          image:
+              'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=150',
+          isSpeaking: false,
+        ),
+      ];
+
+  Widget _buildMemberAvatar(
+    WalkieParticipant p, {
+    required int index,
+    required bool isFallback,
+  }) {
+    final isSpeaking = p.isSpeaking;
+    final isMuted = p.isMuted;
+    final isAdmin = isFallback
+        ? index == 0
+        : (args?['adminId'] == p.userId || index == 0);
+    final isOtherGroup = isFallback && index == 2;
+
     return SizedBox(
       width: 72.w,
       child: Column(
@@ -541,66 +758,72 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           SizedBox(
-            height: 54.r,
-            width: 54.r,
+            height: 58.r,
+            width: 58.r,
             child: Stack(
               alignment: Alignment.center,
               clipBehavior: Clip.none,
               children: [
-                if (p.isSpeaking)
-                  AnimatedBuilder(
-                    animation: _rippleController,
-                    builder: (_, __) {
-                      final progress = _rippleController.value;
-                      final scale = 1.0 + (progress * 0.4);
-                      final opacity = (1 - progress).clamp(0.0, 1.0);
-                      return Container(
-                        width: 52.r * scale,
-                        height: 52.r * scale,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: _primaryPurple.withValues(alpha: opacity * 0.25),
-                        ),
-                      );
-                    },
+                if (isSpeaking)
+                  Container(
+                    width: 58.r,
+                    height: 58.r,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: _primaryPurple,
+                        width: 2,
+                      ),
+                    ),
                   ),
                 Container(
-                  padding: EdgeInsets.all(2.w),
+                  padding: EdgeInsets.all(isSpeaking ? 3.w : 2.w),
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: p.isSpeaking ? _primaryPurple : Colors.transparent,
-                      width: 2,
+                      color: isSpeaking
+                          ? _primaryPurple.withOpacity(0.3)
+                          : Colors.transparent,
+                      width: 1.5,
                     ),
                   ),
-                  child: _buildSafeAvatar(p, 22.r),
+                  child: _buildSafeAvatar(p, 23.r),
                 ),
+                if (isSpeaking)
+                  Positioned(
+                    left: -2,
+                    bottom: -2,
+                    child: Container(
+                      width: 18.r,
+                      height: 18.r,
+                      decoration: BoxDecoration(
+                        color: _primaryPurple,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 2),
+                      ),
+                      child: Icon(Icons.graphic_eq_rounded,
+                          color: Colors.white, size: 10.sp),
+                    ),
+                  ),
                 Positioned(
                   right: 0,
                   bottom: 0,
                   child: Container(
-                    width: 15.r,
-                    height: 15.r,
+                    width: 12.r,
+                    height: 12.r,
                     decoration: BoxDecoration(
-                      color: p.isMuted
-                          ? _mutedRed
-                          : (p.isSpeaking ? _primaryPurple : _activeGreen),
+                      color: isOtherGroup
+                          ? _slateGray
+                          : (isMuted ? _mutedRed : _activeGreen),
                       shape: BoxShape.circle,
                       border: Border.all(color: Colors.white, width: 2),
                     ),
-                    child: p.isSpeaking
-                        ? Icon(Icons.mic_rounded,
-                            color: Colors.white, size: 8.sp)
-                        : p.isMuted
-                            ? Icon(Icons.mic_off_rounded,
-                                color: Colors.white, size: 8.sp)
-                            : null,
                   ),
                 ),
               ],
             ),
           ),
-          SizedBox(height: 4.h),
+          SizedBox(height: 5.h),
           Text(
             p.name.length > 8 ? "${p.name.substring(0, 7)}." : p.name,
             maxLines: 1,
@@ -608,33 +831,60 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
             textAlign: TextAlign.center,
             style: TextStyle(
               color: _textDark,
-              fontSize: 11.sp,
-              fontWeight: p.isSpeaking ? FontWeight.w700 : FontWeight.w600,
+              fontSize: 12.sp,
+              fontWeight: FontWeight.w700,
             ),
           ),
           SizedBox(height: 2.h),
-          if (p.isSpeaking)
+          if (isSpeaking)
             Text(
-              "Speaking",
+              "Speaking...",
               maxLines: 1,
               style: TextStyle(
                 color: _primaryPurple,
-                fontSize: 9.sp,
+                fontSize: 10.sp,
                 fontWeight: FontWeight.w600,
               ),
             )
-          else if (p.isMuted)
+          else if (isAdmin)
+            Text(
+              "Admin",
+              maxLines: 1,
+              style: TextStyle(
+                color: _primaryPurple,
+                fontSize: 10.sp,
+                fontWeight: FontWeight.w600,
+              ),
+            )
+          else if (isOtherGroup)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.people_alt_rounded,
+                    size: 9.sp, color: _textSecondary),
+                SizedBox(width: 2.w),
+                Text(
+                  "In Other Group",
+                  style: TextStyle(
+                    color: _textSecondary,
+                    fontSize: 8.5.sp,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            )
+          else if (isMuted)
             Text(
               "Muted",
               maxLines: 1,
               style: TextStyle(
                 color: _mutedRed,
-                fontSize: 9.sp,
+                fontSize: 10.sp,
                 fontWeight: FontWeight.w600,
               ),
             )
           else
-            SizedBox(height: 11.sp),
+            SizedBox(height: 14.h),
         ],
       ),
     );
@@ -644,14 +894,14 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
     return Column(
       children: [
         Container(
-          padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 7.h),
           decoration: BoxDecoration(
             color: _cardWhite,
             borderRadius: BorderRadius.circular(20.r),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.03),
-                blurRadius: 8,
+                color: Colors.black.withOpacity(0.04),
+                blurRadius: 10,
                 offset: const Offset(0, 2),
               )
             ],
@@ -673,7 +923,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
               Obx(() => Text(
                     controller.isConnected.value
                         ? "You are Connected"
-                        : "Reconnecting...",
+                        : "Connecting...",
                     style: TextStyle(
                       color: _textDark,
                       fontSize: 12.sp,
@@ -683,12 +933,57 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
             ],
           ),
         ),
-        SizedBox(height: 24.h),
+        SizedBox(height: 12.h),
         SizedBox(
-          height: 320.h,
+          height: 330.h,
           child: Stack(
             alignment: Alignment.center,
+            clipBehavior: Clip.none,
             children: [
+              Container(
+                width: 380.r,
+                height: 380.r,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: _primaryPurple.withOpacity(0.025),
+                    width: 1.2,
+                  ),
+                ),
+              ),
+              Container(
+                width: 300.r,
+                height: 300.r,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: _primaryPurple.withOpacity(0.04),
+                    width: 1.2,
+                  ),
+                ),
+              ),
+              Container(
+                width: 220.r,
+                height: 220.r,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: _primaryPurple.withOpacity(0.06),
+                    width: 1.2,
+                  ),
+                ),
+              ),
+              Container(
+                width: 150.r,
+                height: 150.r,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: _primaryPurple.withOpacity(0.08),
+                    width: 1.2,
+                  ),
+                ),
+              ),
               Obx(() {
                 if (!controller.hasActiveSpeaker && !controller.isTalking) {
                   return const SizedBox.shrink();
@@ -701,7 +996,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                       children: List.generate(4, (i) {
                         final progress =
                             ((_rippleController.value + i * 0.25) % 1.0);
-                        final size = 120.r + (progress * 220.r);
+                        final size = 130.r + (progress * 220.r);
                         final opacity = (1 - progress).clamp(0.0, 1.0);
                         return Container(
                           width: size,
@@ -709,7 +1004,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             border: Border.all(
-                              color: _primaryPurple.withValues(alpha: opacity * 0.3),
+                              color: _primaryPurple.withOpacity(opacity * 0.25),
                               width: 1.5,
                             ),
                           ),
@@ -719,95 +1014,70 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                   },
                 );
               }),
-              Container(
-                width: 260.r,
-                height: 260.r,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                      color: _primaryPurple.withValues(alpha: 0.06), width: 1),
-                ),
-              ),
-              Container(
-                width: 200.r,
-                height: 200.r,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                      color: _primaryPurple.withValues(alpha: 0.1), width: 1),
-                ),
-              ),
-              Obx(() {
-                if (!controller.isPressed.value ||
-                    controller.isSelfLocked.value) {
-                  return const SizedBox.shrink();
-                }
-                return Positioned(
-                  bottom: 240.h,
-                  child: AnimatedBuilder(
-                    animation: _lockHintController,
-                    builder: (_, __) {
-                      return Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(
-                            padding: EdgeInsets.all(8.w),
-                            decoration: BoxDecoration(
-                              color: _primaryPurple,
-                              borderRadius: BorderRadius.circular(10.r),
-                            ),
-                            child: Icon(Icons.lock_rounded,
-                                color: Colors.white, size: 18.sp),
-                          ),
-                          SizedBox(height: 4.h),
-                          Opacity(
-                            opacity: 0.4 + _lockHintController.value * 0.6,
-                            child: Icon(Icons.keyboard_arrow_up_rounded,
-                                color: _primaryPurple, size: 20.sp),
-                          ),
-                          Opacity(
-                            opacity: _lockHintController.value * 0.6,
-                            child: Icon(Icons.keyboard_arrow_up_rounded,
-                                color: _primaryPurple, size: 20.sp),
-                          ),
-                        ],
-                      );
-                    },
-                  ),
-                );
-              }),
-              Obx(() {
-                if (!controller.isPressed.value ||
-                    controller.isSelfLocked.value) {
-                  return const SizedBox.shrink();
-                }
-                return Positioned(
-                  right: 20.w,
-                  bottom: 220.h,
-                  child: Container(
-                    padding:
-                        EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
-                    decoration: BoxDecoration(
-                      color: _cardWhite,
-                      borderRadius: BorderRadius.circular(16.r),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.06),
-                          blurRadius: 6,
-                        ),
-                      ],
-                    ),
-                    child: Text(
-                      "Slide up to lock",
-                      style: TextStyle(
-                        color: _textDark,
-                        fontSize: 11.sp,
-                        fontWeight: FontWeight.w600,
+              Positioned(
+                top: 8.h,
+                child: Container(
+                  width: 38.w,
+                  height: 88.h,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(19.r),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.04),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
                       ),
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Icon(Icons.lock_rounded,
+                          color: _primaryPurple, size: 18.sp),
+                      Icon(Icons.keyboard_arrow_up_rounded,
+                          color: _primaryPurple, size: 20.sp),
+                      Transform.translate(
+                        offset: Offset(0, -6.h),
+                        child: Icon(Icons.keyboard_arrow_up_rounded,
+                            color: _lightPurple, size: 20.sp),
+                      ),
+                      Transform.translate(
+                        offset: Offset(0, -12.h),
+                        child: Icon(Icons.keyboard_arrow_up_rounded,
+                            color: _lightPurple.withOpacity(0.5), size: 20.sp),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Positioned(
+                top: 66.h,
+                left: (MediaQuery.of(context).size.width / 2) + 12.w,
+                child: Container(
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                  decoration: BoxDecoration(
+                    color: _cardWhite,
+                    borderRadius: BorderRadius.circular(14.r),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Text(
+                    "Slide up to lock",
+                    style: TextStyle(
+                      color: _primaryPurple,
+                      fontSize: 11.sp,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
-                );
-              }),
+                ),
+              ),
               Obx(() {
                 if (controller.isMuted.value) {
                   return _buildMutedListeningView();
@@ -819,6 +1089,11 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                   onPointerCancel: (_) => _onPTTReleased(),
                   child: GestureDetector(
                     behavior: HitTestBehavior.opaque,
+                    onTap: () {
+                      if (controller.isSelfLocked.value) {
+                        _unlockAndStop();
+                      }
+                    },
                     onVerticalDragUpdate: _onDragUpdate,
                     onVerticalDragEnd: _onDragEnd,
                     child: Obx(() {
@@ -836,58 +1111,49 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                 if (!controller.isSelfLocked.value) {
                   return const SizedBox.shrink();
                 }
-                return Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    Positioned.fill(
-                      child: GestureDetector(
-                        behavior: HitTestBehavior.opaque,
-                        onTap: _unlockAndStop,
+                return Positioned(
+                  top: 10.h,
+                  child: GestureDetector(
+                    onTap: _unlockAndStop,
+                    child: Container(
+                      padding: EdgeInsets.symmetric(
+                          horizontal: 14.w, vertical: 8.h),
+                      decoration: BoxDecoration(
+                        color: _primaryPurple,
+                        borderRadius: BorderRadius.circular(20.r),
+                        boxShadow: [
+                          BoxShadow(
+                            color: _primaryPurple.withOpacity(0.35),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.lock_rounded,
+                              color: Colors.white, size: 14.sp),
+                          SizedBox(width: 6.w),
+                          Obx(() => Text(
+                                "Auto-unlock in ${controller.lockRemainingSeconds.value}s",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12.sp,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              )),
+                        ],
                       ),
                     ),
-                    Positioned(
-                      top: 20.h,
-                      child: Container(
-                        padding: EdgeInsets.symmetric(
-                            horizontal: 14.w, vertical: 8.h),
-                        decoration: BoxDecoration(
-                          color: _primaryPurple,
-                          borderRadius: BorderRadius.circular(20.r),
-                          boxShadow: [
-                            BoxShadow(
-                              color: _primaryPurple.withValues(alpha: 0.3),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.lock_rounded,
-                                color: Colors.white, size: 14.sp),
-                            SizedBox(width: 6.w),
-                            Obx(() => Text(
-                                  "Auto-unlock in ${controller.lockRemainingSeconds.value}s",
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 12.sp,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                )),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
+                  ),
                 );
               }),
             ],
           ),
         ),
-        SizedBox(height: 8.h),
+        SizedBox(height: 16.h),
         Obx(() {
-          final isTalking = controller.isTalking;
           final isSelfLocked = controller.isSelfLocked.value;
           final isMuted = controller.isMuted.value;
 
@@ -909,12 +1175,10 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                     ? "Listening Only"
                     : isSelfLocked
                         ? "Locked — Tap mic to stop"
-                        : isTalking
-                            ? "Release to Stop"
-                            : "Push and hold to talk",
+                        : "Release to Stop",
                 style: TextStyle(
                   color: isMuted ? _mutedRed : _primaryPurple,
-                  fontSize: 13.sp,
+                  fontSize: 12.sp,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -927,43 +1191,43 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
 
   Widget _buildMutedListeningView() {
     return Container(
-      width: 150.r,
-      height: 150.r,
+      width: 156.r,
+      height: 156.r,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withValues(alpha: 0.15),
-            blurRadius: 20,
-            spreadRadius: 2,
-          ),
-        ],
+        color: Colors.grey.withOpacity(0.12),
       ),
-      padding: EdgeInsets.all(10.r),
+      padding: EdgeInsets.all(7.r),
       child: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           shape: BoxShape.circle,
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Colors.grey.shade300, Colors.grey.shade400],
-          ),
+          color: Colors.white,
         ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.headphones_rounded, color: Colors.white, size: 38.sp),
-            SizedBox(height: 4.h),
-            Text(
-              "Listening",
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 11.sp,
-                fontWeight: FontWeight.w600,
-              ),
+        padding: EdgeInsets.all(5.r),
+        child: Container(
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [Colors.grey.shade300, Colors.grey.shade400],
             ),
-          ],
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.headphones_rounded, color: Colors.white, size: 38.sp),
+              SizedBox(height: 4.h),
+              Text(
+                "Listening",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 12.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -979,59 +1243,67 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
       return ScaleTransition(
         scale: _pulseController,
         child: Container(
-          width: 150.r,
-          height: 150.r,
+          width: 172.r,
+          height: 172.r,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: Colors.white,
+            color: _primaryPurple.withOpacity(0.08),
             boxShadow: [
               BoxShadow(
-                color: _primaryPurple.withValues(alpha: 0.25),
-                blurRadius: 30,
+                color: _primaryPurple.withOpacity(0.25),
+                blurRadius: 36,
                 spreadRadius: 4,
+                offset: const Offset(0, 8),
               ),
             ],
           ),
           padding: EdgeInsets.all(10.r),
           child: Container(
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               shape: BoxShape.circle,
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: isBusy || isLocked
-                    ? [Colors.grey.shade400, Colors.grey.shade500]
-                    : [_primaryPurple, _lightPurple],
-              ),
+              color: Colors.white,
             ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  isLocked
-                      ? Icons.lock_rounded
-                      : isSelfLocked
-                          ? Icons.lock_open_rounded
-                          : isBusy
-                              ? Icons.mic_off_rounded
-                              : Icons.mic_rounded,
-                  color: Colors.white,
-                  size: 38.sp,
+            padding: EdgeInsets.all(6.r),
+            child: Container(
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: isBusy || isLocked
+                      ? [Colors.grey.shade400, Colors.grey.shade500]
+                      : [_lightPurple, _primaryPurple],
                 ),
-                SizedBox(height: 4.h),
-                Text(
-                  isSelfLocked
-                      ? "Tap to Unlock"
-                      : isTalking
-                          ? "Talking..."
-                          : "Hold to Talk",
-                  style: TextStyle(
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    isLocked
+                        ? Icons.lock_rounded
+                        : isSelfLocked
+                            ? Icons.lock_open_rounded
+                            : isBusy
+                                ? Icons.mic_off_rounded
+                                : Icons.mic_rounded,
                     color: Colors.white,
-                    fontSize: 11.sp,
-                    fontWeight: FontWeight.w600,
+                    size: 46.sp,
                   ),
-                ),
-              ],
+                  SizedBox(height: 4.h),
+                  Text(
+                    isSelfLocked
+                        ? "Tap to Unlock"
+                        : isTalking
+                            ? "Talking..."
+                            : "Hold to Talk",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 12.sp,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -1044,11 +1316,11 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
       decoration: BoxDecoration(
         color: _cardWhite,
-        borderRadius: BorderRadius.circular(16.r),
+        borderRadius: BorderRadius.circular(22.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 8,
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 10,
             offset: const Offset(0, 2),
           )
         ],
@@ -1056,16 +1328,20 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
       child: Row(
         children: [
           Container(
-            width: 42.r,
-            height: 42.r,
+            width: 44.r,
+            height: 44.r,
             decoration: BoxDecoration(
-              color: _primaryPurple,
-              borderRadius: BorderRadius.circular(12.r),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [_lightPurple, _primaryPurple],
+              ),
+              shape: BoxShape.circle,
             ),
-            child:
-                Icon(Icons.mic_off_rounded, color: Colors.white, size: 22.sp),
+            child: Icon(Icons.mic_off_rounded,
+                color: Colors.white, size: 22.sp),
           ),
-          SizedBox(width: 12.w),
+          SizedBox(width: 14.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -1081,17 +1357,21 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                 SizedBox(height: 2.h),
                 Text(
                   "Others won't hear you",
-                  style: TextStyle(color: _textSecondary, fontSize: 12.sp),
+                  style: TextStyle(
+                    color: _textSecondary,
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ],
             ),
           ),
-          Obx(() => Switch(
+          Obx(() => CupertinoSwitch(
                 value: controller.isMuted.value,
+                activeTrackColor: _primaryPurple,
                 onChanged: (v) async {
                   await GroupWalkieService.instance.toggleMute();
                 },
-                activeThumbColor: _primaryPurple,
               )),
         ],
       ),
@@ -1102,38 +1382,55 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
     return Row(
       children: [
         Expanded(
-          child: Obx(() => _actionButton(
-                icon: controller.audioRouteIcon,
-                label: controller.audioRouteLabel,
-                onTap: () async {
-                  if (controller.audioRoute.value ==
-                          WalkieAudioRoute.bluetooth ||
-                      controller.audioRoute.value == WalkieAudioRoute.headset) {
-                    Get.snackbar(
-                      "Audio Route",
-                      "Routing to ${controller.audioRouteLabel}",
-                      snackPosition: SnackPosition.BOTTOM,
-                    );
-                    return;
-                  }
-                  final next = !controller.isSpeakerOn.value;
-                  await GroupWalkieService.instance.toggleSpeaker(next);
-                },
-              )),
-        ),
-        SizedBox(width: 12.w),
-        Expanded(
-          child: _actionButton(
-            icon: Icons.history_rounded,
-            label: "History",
-            onTap: () {},
+          child: GestureDetector(
+            onTap: () async {
+              if (controller.audioRoute.value ==
+                      WalkieAudioRoute.bluetooth ||
+                  controller.audioRoute.value == WalkieAudioRoute.headset) {
+                Get.snackbar(
+                  "Audio Route",
+                  "Routing to ${controller.audioRouteLabel}",
+                  snackPosition: SnackPosition.BOTTOM,
+                );
+                return;
+              }
+              final next = !controller.isSpeakerOn.value;
+              await GroupWalkieService.instance.toggleSpeaker(next);
+            },
+            child: Container(
+              padding: EdgeInsets.symmetric(vertical: 20.h),
+              decoration: BoxDecoration(
+                color: _cardWhite,
+                borderRadius: BorderRadius.circular(22.r),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.03),
+                    blurRadius: 10,
+                    offset: const Offset(0, 2),
+                  )
+                ],
+              ),
+              child: Column(
+                children: [
+                  Icon(Icons.volume_up_rounded,
+                      color: _primaryPurple, size: 28.sp),
+                  SizedBox(height: 8.h),
+                  Text(
+                    "Speaker",
+                    style: TextStyle(
+                      color: _textDark,
+                      fontSize: 13.sp,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
-        SizedBox(width: 12.w),
+        SizedBox(width: 14.w),
         Expanded(
-          child: _actionButton(
-            icon: Icons.chat_bubble_outline_rounded,
-            label: "Chat",
+          child: GestureDetector(
             onTap: () {
               Get.toNamed(
                 Routes.groupChatScreen,
@@ -1144,47 +1441,38 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                 },
               );
             },
+            child: Container(
+              padding: EdgeInsets.symmetric(vertical: 20.h),
+              decoration: BoxDecoration(
+                color: _cardWhite,
+                borderRadius: BorderRadius.circular(22.r),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.03),
+                    blurRadius: 10,
+                    offset: const Offset(0, 2),
+                  )
+                ],
+              ),
+              child: Column(
+                children: [
+                  Icon(Icons.chat_bubble_rounded,
+                      color: _primaryPurple, size: 26.sp),
+                  SizedBox(height: 8.h),
+                  Text(
+                    "Chat",
+                    style: TextStyle(
+                      color: _textDark,
+                      fontSize: 13.sp,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
       ],
-    );
-  }
-
-  Widget _actionButton({
-    required IconData icon,
-    required String label,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: EdgeInsets.symmetric(vertical: 16.h),
-        decoration: BoxDecoration(
-          color: _cardWhite,
-          borderRadius: BorderRadius.circular(16.r),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.03),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            )
-          ],
-        ),
-        child: Column(
-          children: [
-            Icon(icon, color: _primaryPurple, size: 24.sp),
-            SizedBox(height: 6.h),
-            Text(
-              label,
-              style: TextStyle(
-                color: _textDark,
-                fontSize: 12.sp,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 

@@ -80,7 +80,8 @@ class LoginPage extends GetView<Login_Controller> {
                                               height: 150.h,
                                               child: Opacity(
                                                 opacity: 0.85,
-                                                child: _buildAuthWatermarkImage(),
+                                                child:
+                                                    _buildAuthWatermarkImage(),
                                               ),
                                             ),
                                             // 3D Location Icon on top of the effect
@@ -165,8 +166,7 @@ class LoginPage extends GetView<Login_Controller> {
                                   ),
                                   decoration: BoxDecoration(
                                     color: AppColors.white,
-                                    borderRadius:
-                                        BorderRadius.circular(30.r),
+                                    borderRadius: BorderRadius.circular(30.r),
                                     boxShadow: [
                                       BoxShadow(
                                         color: const Color(0xFF4B3FDD)
@@ -211,21 +211,18 @@ class LoginPage extends GetView<Login_Controller> {
                                               () => controller.mobileErrorText
                                                       .value.isNotEmpty
                                                   ? Padding(
-                                                      padding:
-                                                          EdgeInsets.only(
-                                                              left: 10.w,
-                                                              top: 8.h),
+                                                      padding: EdgeInsets.only(
+                                                          left: 10.w, top: 8.h),
                                                       child: Text(
                                                         controller
                                                             .mobileErrorText
                                                             .value,
                                                         style: TextStyle(
-                                                          color: AppColors
-                                                              .darkRed,
+                                                          color:
+                                                              AppColors.darkRed,
                                                           fontSize: 12.sp,
-                                                          fontFamily:
-                                                              FontFamily
-                                                                  .interMedium,
+                                                          fontFamily: FontFamily
+                                                              .interMedium,
                                                         ),
                                                       ),
                                                     )
@@ -234,8 +231,7 @@ class LoginPage extends GetView<Login_Controller> {
                                             SizedBox(height: 24.h),
                                             AuthGradientButton(
                                               label: "Log In to Continue",
-                                              onTap: () =>
-                                                  controller.login(),
+                                              onTap: () => controller.login(),
                                             ),
                                           ],
                                         ),
@@ -256,8 +252,7 @@ class LoginPage extends GetView<Login_Controller> {
                               ],
                             ),
                             SizedBox(height: 24.h),
-                            if (!isKeyboardOpen)
-                              _buildBottomSecurityBadge(),
+                            if (!isKeyboardOpen) _buildBottomSecurityBadge(),
                             SizedBox(height: 35.h),
                           ],
                         ),
@@ -311,17 +306,17 @@ class LoginPage extends GetView<Login_Controller> {
               alignLeft: false,
             ),
           ),
-          Container(
-            height: 24.h,
-            width: 1.w,
-            color: const Color(0xFFDCD6FD),
-          ),
-          SizedBox(width: 10.w),
-          Icon(
-            Icons.call_rounded,
-            size: 18.sp,
-            color: const Color(0xFF5D47F1),
-          ),
+          // Container(
+          //   height: 24.h,
+          //   width: 1.w,
+          //   color: const Color(0xFFDCD6FD),
+          // ),
+          // SizedBox(width: 10.w),
+          // Icon(
+          //   Icons.call_rounded,
+          //   size: 18.sp,
+          //   color: const Color(0xFF5D47F1),
+          // ),
           SizedBox(width: 8.w),
           Expanded(
             child: Center(

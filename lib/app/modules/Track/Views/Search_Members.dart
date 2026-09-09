@@ -94,17 +94,18 @@ class SearchMembers extends GetView<SearchMemberController> {
       itemCount: controller.filteredMembers.length,
       itemBuilder: (context, index) {
         final data = controller.filteredMembers[index];
-        bool isOnline = data.isOnline == true;
+        bool isOnline = Tracking().isOnline(
+          rawIsOnline: data.isOnline,
+          lastSeen: data.lastSeen,
+          thresholdMinutes: 5,
+        );
         String timeAgoText = isOnline ? "Online" : "Offline";
 
-        if (data.lastSeen != null && data.lastSeen!.isNotEmpty) {
+        if (!isOnline && data.lastSeen != null && data.lastSeen!.isNotEmpty) {
           try {
-            final ago = Tracking().getTimeAgo(DateTime.parse(data.lastSeen!));
-            if (ago.toLowerCase() == "just now") {
-              isOnline = true;
-              timeAgoText = "Online";
-            } else if (!isOnline) {
-              timeAgoText = ago;
+            final dt = Tracking.parseDateTime(data.lastSeen!);
+            if (dt != null) {
+              timeAgoText = Tracking().getTimeAgo(dt);
             }
           } catch (_) {}
         }

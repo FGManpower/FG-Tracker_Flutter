@@ -291,12 +291,9 @@ class Sidemenu extends StatelessWidget {
 
     // 2. Check lastSeen from backend UserData
     if (user.lastSeen != null && user.lastSeen!.isNotEmpty) {
-      try {
-        final dt = DateTime.parse(user.lastSeen!);
-        if (Tracking().getTimeAgo(dt).toLowerCase() == "just now") {
-          return true;
-        }
-      } catch (_) {}
+      if (Tracking().isOnline(lastSeen: user.lastSeen, thresholdMinutes: 5)) {
+        return true;
+      }
     }
 
     // 3. Check if user is present in liveLocations from backend/socket

@@ -97,23 +97,54 @@ class LiveLocationModel {
         '${json['ProfileImage'] ?? json['profileImage'] ?? json['image'] ?? json['avatar'] ?? json['profile_image'] ?? ''}';
 
     // Address, Area, City
-    final addr =
-        (json['address'] ?? json['location_name'] ?? location['address'])
-            ?.toString();
+    String? addr;
+    if (json['location'] is String && (json['location'] as String).trim().isNotEmpty) {
+      addr = (json['location'] as String).trim();
+    } else {
+      addr = (json['address'] ??
+              json['location_name'] ??
+              json['locationName'] ??
+              json['currentLocation'] ??
+              json['current_location'] ??
+              json['userAddress'] ??
+              location['address'] ??
+              location['name'] ??
+              location['location'] ??
+              location['formattedAddress'])
+          ?.toString();
+    }
+
     final area =
         (json['area'] ?? json['subLocality'] ?? location['area'])?.toString();
     final city =
         (json['city'] ?? json['locality'] ?? location['city'])?.toString();
 
-    // Online status
+    if (addr == null || addr.isEmpty) {
+      if (area != null && city != null && area.isNotEmpty && city.isNotEmpty) {
+        addr = area.toLowerCase() == city.toLowerCase() ? city : "$area, $city";
+      } else if (area != null && area.isNotEmpty) {
+        addr = area;
+      } else if (city != null && city.isNotEmpty) {
+        addr = city;
+      }
+    }
+
+    // Online status - liveLocationStream is actively broadcasting, so default to true unless explicitly offline
     final onlineVal = json['isOnline'] ?? json['online'] ?? json['is_online'];
-    bool online = false;
-    if (onlineVal is bool) {
-      online = onlineVal;
-    } else if (onlineVal is num) {
-      online = onlineVal == 1;
-    } else if (onlineVal is String) {
-      online = onlineVal.toLowerCase() == 'true' || onlineVal == '1';
+    bool online = true;
+    if (onlineVal != null) {
+      if (onlineVal is bool) {
+        online = onlineVal;
+      } else if (onlineVal is num) {
+        online = onlineVal == 1;
+      } else if (onlineVal is String) {
+        final lower = onlineVal.trim().toLowerCase();
+        if (lower == 'false' || lower == '0' || lower == 'offline') {
+          online = false;
+        } else if (lower == 'true' || lower == '1' || lower == 'online') {
+          online = true;
+        }
+      }
     }
 
     return LiveLocationModel(

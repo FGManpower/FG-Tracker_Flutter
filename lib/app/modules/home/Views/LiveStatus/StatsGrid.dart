@@ -8,6 +8,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
+import 'components/ghost_member.dart';
+import 'components/total_member.dart';
+
 class StatsGrid extends StatelessWidget {
   const StatsGrid({super.key, required this.controller});
 
@@ -52,6 +55,9 @@ class StatsGrid extends StatelessWidget {
               title: "Members",
               value: detail.totalMembers.toString(),
               subtitle: "Total",
+              onTap: () {
+                Get.to(TotalMember());
+              },
             ),
           ),
           SizedBox(width: 10.w),
@@ -63,7 +69,7 @@ class StatsGrid extends StatelessWidget {
               value: detail.locationDisabledMembers.toString(),
               subtitle: "Active",
               onTap:() {
-
+                Get.to(GhostMember());
               },
             ),
           ),
