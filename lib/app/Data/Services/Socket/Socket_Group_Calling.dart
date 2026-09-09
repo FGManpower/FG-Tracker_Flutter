@@ -22,7 +22,7 @@ class Socket_GroupCallService {
   final Map<String, List<RTCIceCandidate>> _pendingIce = {};
   final Set<String> remoteUsers = {};
 
-  /// userId -> { name, profileImage, isMuted }
+
   final Map<String, Map<String, dynamic>> participantMeta = {};
 
   Function()? onParticipantsUpdated;
@@ -91,9 +91,7 @@ class Socket_GroupCallService {
     return participantMeta[userId]?['isMuted'] == true;
   }
 
-  // ============================================================
-  // 1) connection
-  // ============================================================
+
   void init(String userId) {
     if (socket != null && socket!.connected && _selfUserId == userId) {
       _log('Already initialized for $userId');
@@ -124,20 +122,19 @@ class Socket_GroupCallService {
     );
 
     socket?.onConnect((_) {
-      _log('🟢 Connected to /groupCall');
+      _log('Connected to /groupCall');
       _listenersBound = false;
       _bindSocketListeners();
     });
 
-    // 15) disconnect
     socket?.onDisconnect((_) {
-      _log('🔴 Socket Disconnected');
+      _log('Socket Disconnected');
       _listenersBound = false;
     });
 
-    socket?.onAny((event, dynamic data) {
-      _log('📡 GroupSocketAllEvent: $event | Data: $data');
-    });
+    // socket?.onAny((event, dynamic data) {
+    //   _log('GroupSocketAllEvent: $event | Data: $data');
+    // });
   }
 
   void _bindSocketListeners() {
@@ -159,14 +156,8 @@ class Socket_GroupCallService {
       socket?.off(e);
     }
 
-    // ============================================================
-    // 3) group_call_started
-    // Supports both:
-    // A) direct payload
-    // B) push-style { type, data }
-    // ============================================================
     socket?.on("group_call_started", (raw) {
-      _log("📞 group_call_started: $raw");
+      _log(" group_call_started: $raw");
       if (raw == null) return;
 
       final Map<String, dynamic> data = raw is Map && raw['data'] is Map
@@ -224,9 +215,7 @@ class Socket_GroupCallService {
       onIncomingCallReceived?.call(data);
     });
 
-    // ============================================================
-    // 5) group_call_participant_joined
-    // ============================================================
+
     socket?.on("group_call_participant_joined", (raw) {
       _log("👤 group_call_participant_joined: $raw");
       if (raw == null) return;
@@ -250,18 +239,14 @@ class Socket_GroupCallService {
       onParticipantsUpdated?.call();
     });
 
-    // ============================================================
-    // 7) group_call_participant_rejected
-    // ============================================================
+
     socket?.on("group_call_participant_rejected", (raw) {
-      _log("🚫 group_call_participant_rejected: $raw");
+      _log(" group_call_participant_rejected: $raw");
       final userId = raw is Map ? raw['userId']?.toString() : null;
       if (userId != null) onParticipantRejected?.call(userId);
     });
 
-    // ============================================================
-    // NEW: group_call_participant_mute
-    // ============================================================
+
     socket?.on("group_call_participant_mute", (raw) {
       _log("🔇 group_call_participant_mute: $raw");
       if (raw == null) return;
@@ -279,9 +264,7 @@ class Socket_GroupCallService {
       onParticipantsUpdated?.call();
     });
 
-    // ============================================================
-    // 12) group_call_participant_left
-    // ============================================================
+
     socket?.on("group_call_participant_left", (raw) async {
       _log("👋 group_call_participant_left: $raw");
       final leftUserId = raw is Map ? raw['userId']?.toString() : null;
@@ -290,9 +273,6 @@ class Socket_GroupCallService {
       }
     });
 
-    // ============================================================
-    // 14) group_call_ended
-    // ============================================================
     socket?.on("group_call_ended", (raw) async {
       _log("📵 group_call_ended: $raw");
       if (Get.currentRoute == Routes.groupIncomingCallScreen) {
@@ -302,11 +282,8 @@ class Socket_GroupCallService {
       await endCallLocalCleanup(navigate: true);
     });
 
-    // ============================================================
-    // 8/9/10 listen offer/answer/ice
-    // ============================================================
     socket?.on("group_call_offer", (data) async {
-      _log("📥 group_call_offer");
+      _log(" group_call_offer");
       try {
         await _handleOffer(Map<String, dynamic>.from(data));
       } catch (e) {
@@ -315,7 +292,7 @@ class Socket_GroupCallService {
     });
 
     socket?.on("group_call_answer", (data) async {
-      _log("📥 group_call_answer");
+      _log(" group_call_answer");
       try {
         await _handleAnswer(Map<String, dynamic>.from(data));
       } catch (e) {
@@ -324,7 +301,7 @@ class Socket_GroupCallService {
     });
 
     socket?.on("group_call_ice", (data) async {
-      _log("❄️ group_call_ice");
+      _log("❄ group_call_ice");
       try {
         await _handleRemoteIce(Map<String, dynamic>.from(data));
       } catch (e) {
@@ -333,9 +310,7 @@ class Socket_GroupCallService {
     });
   }
 
-  // ============================================================
-  // 2) start_group_call
-  // ============================================================
+
   Future<void> startGroupCall({
     required String groupId,
     required bool isVideo,
@@ -343,7 +318,7 @@ class Socket_GroupCallService {
     required String callerProfileImage,
     required Function(bool success, String? callId, String? message) onResponse,
   }) async {
-    _log('🚀 emit start_group_call group=$groupId');
+    _log('emit start_group_call group=$groupId');
     currentGroupId = groupId;
 
     if (socket == null || !socket!.connected) {
@@ -351,7 +326,7 @@ class Socket_GroupCallService {
       return;
     }
 
-    // save self meta
+
     if (_selfUserId != null) {
       _saveParticipantMeta(
         _selfUserId!,
@@ -386,15 +361,13 @@ class Socket_GroupCallService {
     );
   }
 
-  // ============================================================
-  // 4) join_group_call
-  // ============================================================
+
   Future<void> joinGroupCall(
       String callId,
       String groupId,
       Function(bool success) onComplete,
       ) async {
-    _log('🚀 emit join_group_call callId=$callId');
+    _log(' emit join_group_call callId=$callId');
     currentCallId = callId;
     currentGroupId = groupId;
 
