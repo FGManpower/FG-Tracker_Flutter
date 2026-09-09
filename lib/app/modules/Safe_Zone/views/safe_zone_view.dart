@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -16,22 +17,22 @@ class SafeZoneView extends StatelessWidget {
     final controller = Get.put(SafeZoneController());
 
     return Scaffold(
-      backgroundColor: SafeColors.bg, // #F5F3FF lavender
-      appBar: const SafeAppBar(
+      backgroundColor: SafeColors.bg,
+      appBar: SafeAppBar(
         title: "Safe Zone",
         subtitle:
         "Define a safe area. Get alerts if someone\nsteps outside the safe zone.",
       ),
       body: Column(
         children: [
-          SizedBox(height: 8.h),
+          SizedBox(height: 5.h),
           SafeTabBar(controller: controller.tabController),
           Expanded(
             child: TabBarView(
               controller: controller.tabController,
               children: [
-                _buildIndividualTab(controller),
-                _buildGroupTab(controller),
+                _buildIndividualTab(context, controller),
+                _buildGroupTab(context, controller),
               ],
             ),
           ),
@@ -40,15 +41,13 @@ class SafeZoneView extends StatelessWidget {
     );
   }
 
-  // ================= INDIVIDUAL =================
-  Widget _buildIndividualTab(SafeZoneController controller) {
+  Widget _buildIndividualTab(BuildContext context, SafeZoneController controller) {
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
       padding: EdgeInsets.all(16.w),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Outer card + Inner card (member)
           SafeCard(
             title: "1. Select Member",
             innerCard: true,
@@ -59,8 +58,6 @@ class SafeZoneView extends StatelessWidget {
             )),
           ),
           SizedBox(height: 16.h),
-
-          // Map: outer card, content direct (search+map already styled)
           SafeCard(
             title: "2. Select Location on Map",
             innerCard: false,
@@ -68,27 +65,33 @@ class SafeZoneView extends StatelessWidget {
             child: _buildMapCard(controller, isGroup: false),
           ),
           SizedBox(height: 16.h),
-
-          // Radius: outer card, slider direct + inner selected-location card
           _buildCombinedRadiusLocationCard(controller, isGroup: false),
           SizedBox(height: 16.h),
 
-          // Preview: outer + inner
-          SafeCard(
-            title: "4. Preview Safe Zone",
-            innerCard: true,
-            child: _buildPreviewContent(isGroup: false),
+          // 👈 YAHAN CALL KIYA HAI (Section 4 Preview Card Tap Par)
+          GestureDetector(
+            onTap: () => showSafeZoneAlertSheet(context),
+            child: SafeCard(
+              title: "4. Preview Safe Zone",
+              innerCard: true,
+              child: _buildPreviewContent(isGroup: false),
+            ),
           ),
           SizedBox(height: 24.h),
-          const SafeSaveButton(text: "Save & Activate Safe Zone"),
+          SafeSaveButton(
+            text: "Save & Activate Safe Zone",
+            onPressed: () {
+              // Save karne par bhi alert bottom sheet open kar sakte hain:
+              showSafeZoneAlertSheet(context);
+            },
+          ),
           const SafeFooterNote(),
         ],
       ),
     );
   }
 
-  // ================= GROUP =================
-  Widget _buildGroupTab(SafeZoneController controller) {
+  Widget _buildGroupTab(BuildContext context, SafeZoneController controller) {
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
       padding: EdgeInsets.all(16.w),
@@ -113,26 +116,60 @@ class SafeZoneView extends StatelessWidget {
           SizedBox(height: 16.h),
           _buildCombinedRadiusLocationCard(controller, isGroup: true),
           SizedBox(height: 16.h),
-          SafeCard(
-            title: "4. Preview Safe Zone",
-            innerCard: true,
-            child: _buildPreviewContent(isGroup: true),
+
+          // 👈 YAHAN CALL KIYA HAI (Group Tab Section 4 Preview Card Tap Par)
+          GestureDetector(
+            onTap: () => showSafeZoneAlertSheet(context),
+            child: SafeCard(
+              title: "4. Preview Safe Zone",
+              innerCard: true,
+              child: _buildPreviewContent(isGroup: true),
+            ),
           ),
           SizedBox(height: 24.h),
-          const SafeSaveButton(text: "Save & Activate Safe Zone for Group"),
+          SafeSaveButton(
+            text: "Save & Activate Safe Zone for Group",
+            onPressed: () {
+              showSafeZoneAlertSheet(context);
+            },
+          ),
           const SafeFooterNote(),
         ],
       ),
     );
   }
 
-  // ================= MAP =================
   Widget _buildMapCard(SafeZoneController controller, {required bool isGroup}) {
     return Obx(() {
       final LatLng pos = controller.selectedLocation.value;
       final double radius = isGroup
           ? controller.radiusOptions[controller.groupRadiusIndex.value]
           : controller.radiusOptions[controller.individualRadiusIndex.value];
+
+      final List<LatLng> points = _calculateCirclePoints(pos, radius);
+
+      final Set<Polygon> fillPolygon = {
+        Polygon(
+          polygonId: PolygonId('safe_zone_fill_$radius'),
+          points: points,
+          fillColor: SafeColors.primary.withOpacity(0.18),
+          strokeColor: Colors.transparent,
+          strokeWidth: 0,
+        ),
+      };
+
+      final Set<Polyline> dashedPolyline = {
+        Polyline(
+          polylineId: PolylineId('safe_zone_dash_$radius'),
+          points: List<LatLng>.from(points)..add(points.first),
+          color: SafeColors.primary,
+          width: 2,
+          patterns: [
+            PatternItem.dash(12),
+            PatternItem.gap(8),
+          ],
+        ),
+      };
 
       return SafeMapCard(
         showContainer: false,
@@ -156,21 +193,37 @@ class SafeZoneView extends StatelessWidget {
                 BitmapDescriptor.hueViolet),
           ),
         },
-        circles: {
-          Circle(
-            circleId: CircleId('radius_$radius'),
-            center: pos,
-            radius: radius,
-            fillColor: SafeColors.primary.withOpacity(0.18),
-            strokeColor: SafeColors.primary.withOpacity(0.6),
-            strokeWidth: 2,
-          ),
-        },
+        polygons: fillPolygon,
+        polylines: dashedPolyline,
       );
     });
   }
 
-  // ================= RADIUS (outer card + nested inner cards) =================
+  List<LatLng> _calculateCirclePoints(LatLng center, double radiusInMeters) {
+    final List<LatLng> points = [];
+    const int numberOfPoints = 120;
+    const double earthRadius = 6371000;
+
+    final double latRad = center.latitude * pi / 180;
+    final double lngRad = center.longitude * pi / 180;
+    final double d = radiusInMeters / earthRadius;
+
+    for (int i = 0; i < numberOfPoints; i++) {
+      final double bearing = (i * 360 / numberOfPoints) * pi / 180;
+      final double pointLatRad = asin(sin(latRad) * cos(d) +
+          cos(latRad) * sin(d) * cos(bearing));
+      final double pointLngRad = lngRad +
+          atan2(sin(bearing) * sin(d) * cos(latRad),
+              cos(d) - sin(latRad) * sin(pointLatRad));
+
+      points.add(LatLng(
+        pointLatRad * 180 / pi,
+        pointLngRad * 180 / pi,
+      ));
+    }
+    return points;
+  }
+
   Widget _buildCombinedRadiusLocationCard(
       SafeZoneController controller, {
         required bool isGroup,
@@ -178,11 +231,10 @@ class SafeZoneView extends StatelessWidget {
     return SafeCard(
       title: "3. Set Safe Zone Radius",
       gapAfterTitle: 16,
-      innerCard: false, // slider direct; location row alag inner card
+      innerCard: false,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Slider block
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 4.w),
             child: Column(
@@ -274,10 +326,7 @@ class SafeZoneView extends StatelessWidget {
               ],
             ),
           ),
-
           SizedBox(height: 14.h),
-
-          // Inner card: Selected Location + Radius
           SafeInnerCard(
             child: Row(
               children: [
@@ -298,7 +347,7 @@ class SafeZoneView extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       reausabletext("Selected Location",
-                          fontsize: 11,
+                          fontsize: 9,
                           fontweight: FontWeight.w500,
                           color: Colors.grey.shade600),
                       SizedBox(height: 2.h),
@@ -306,7 +355,7 @@ class SafeZoneView extends StatelessWidget {
                         controller.searchController.text.isEmpty
                             ? "Chembur, Mumbai"
                             : controller.searchController.text,
-                        fontsize: 12,
+                        fontsize: 10,
                         fontfamily: FontFamily.interSemiBold,
                         color: Colors.black,
                       ),
@@ -342,8 +391,6 @@ class SafeZoneView extends StatelessWidget {
               ],
             ),
           ),
-
-          // Group banner — another inner style card
           if (isGroup) ...[
             SizedBox(height: 10.h),
             SafeInnerCard(
@@ -369,7 +416,6 @@ class SafeZoneView extends StatelessWidget {
     );
   }
 
-  // ================= PREVIEW CONTENT =================
   Widget _buildPreviewContent({required bool isGroup}) {
     return Row(
       children: [
@@ -406,7 +452,7 @@ class SafeZoneView extends StatelessWidget {
               reausabletext(
                 isGroup
                     ? "All 12 members will be monitored\nwithin this safe zone."
-                    : "Members will be monitored within\nthis safe zone.",
+                    : "Members will be monitored within this safe zone.",
                 fontsize: 9,
                 color: Colors.grey.shade600,
               ),
