@@ -572,9 +572,9 @@ class SafeRouteView extends StatelessWidget {
   }
 
   Widget _buildPreviewContent(
-    SafeRouteController c, {
-    required bool isGroup,
-  }) {
+      SafeRouteController c, {
+        required bool isGroup,
+      }) {
     return Obx(() {
       final r = c.selectedRoute;
       final dev = c.deviationFor(isGroup: isGroup);
@@ -583,44 +583,47 @@ class SafeRouteView extends StatelessWidget {
         final m = c.groupMembers[c.selectedGroupMemberIndex.value];
 
         return Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  _previewRow(
-                    "Group",
-                    "${c.selectedGroup.value} (12 Members)",
-                    dot: Colors.green,
-                  ),
-                  _previewRow(
-                    "Route (${m.name})",
-                    "${m.start} → ${m.end} (${r.name})",
-                    dot: Colors.red,
-                  ),
-                  _previewRow(
-                    "Distance",
-                    "${r.distanceKm} km",
-                    suffix: "Est. Time : ${r.etaMin} min",
-                  ),
-                  _previewRow(
-                    "Deviation Limit",
-                    c.formatDeviation(dev),
-                  ),
-                ],
+              child: Padding(
+                padding: EdgeInsets.only(top: 2.h),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _previewRow(
+                      "Group",
+                      "${c.selectedGroup.value} (12 Members)",
+                      dot: Colors.green,
+                    ),
+                    _previewRow(
+                      "Route (${m.name})",
+                      "${m.start} → ${m.end} (${r.name})",
+                      dot: Colors.red,
+                    ),
+                    _previewRow(
+                      "Distance",
+                      "${r.distanceKm} km",
+                      suffix: "Est. Time : ${r.etaMin} min",
+                    ),
+                    _previewRow(
+                      "Deviation Limit",
+                      c.formatDeviation(dev),
+                    ),
+                  ],
+                ),
               ),
             ),
-            SizedBox(width: 3.w),
+            SizedBox(width: 4.w),
             SizedBox(
-              width: 90.w,
-              height: 82.h,
+              width: 88.w,
+              height: 76.h,
               child: Align(
-                alignment: Alignment.centerRight,
-                child: Assets.icons.safeRoute.image(
-                  width: 90.w,
-                  height: 82.h,
+                alignment: Alignment.topRight,
+                child: Assets.icons.singleSafeRoute.image(
+                  width: 88.w,
+                  height: 76.h,
                   fit: BoxFit.contain,
                 ),
               ),
@@ -633,10 +636,10 @@ class SafeRouteView extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: EdgeInsets.only(top: 8.h),
+            padding: EdgeInsets.only(top: 10.h),
             child: Container(
-              width: 56.w,
-              height: 56.w,
+              width: 50.w,
+              height: 50.w,
               decoration: BoxDecoration(
                 color: primary.withOpacity(0.08),
                 shape: BoxShape.circle,
@@ -645,55 +648,55 @@ class SafeRouteView extends StatelessWidget {
               child: Icon(
                 Icons.headset_mic_outlined,
                 color: primary,
-                size: 27.sp,
+                size: 26.sp,
               ),
             ),
           ),
-          SizedBox(width: 9.w),
+          SizedBox(width: 8.w),
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _previewRow(
-                  "Start",
-                  c.startLocation.value,
-                  dot: Colors.green,
-                ),
-                _previewRow(
-                  "Destination",
-                  c.destinationLocation.value,
-                  dot: Colors.red,
-                ),
-                _previewRow(
-                  "Selected Route",
-                  "${r.name} (Recommended)",
-                ),
-                _previewRow(
-                  "Distance",
-                  "${r.distanceKm} km",
-                  suffix: "Est. Time: ${r.etaMin} min",
-                ),
-                _previewRow(
-                  "Deviation Limit",
-                  c.formatDeviation(dev),
-                ),
-              ],
+            child: Padding(
+              padding: EdgeInsets.only(top: 2.h),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _previewRow(
+                    "Start",
+                    c.startLocation.value,
+                    dot: Colors.green,
+                  ),
+                  _previewRow(
+                    "Destination",
+                    c.destinationLocation.value,
+                    dot: Colors.red,
+                  ),
+                  _previewRow(
+                    "Selected Route",
+                    "${r.name} (Recommended)",
+                  ),
+                  _previewRow(
+                    "Distance",
+                    "${r.distanceKm} km",
+                    suffix: "Est. Time: ${r.etaMin} min",
+                  ),
+                  _previewRow(
+                    "Deviation Limit",
+                    c.formatDeviation(dev),
+                  ),
+                ],
+              ),
             ),
           ),
-          SizedBox(width: 2.w),
+          SizedBox(width: 3.w),
           SizedBox(
-            width: 90.w,
-            height: 82.h,
+            width: 88.w,
+            height: 76.h,
             child: Align(
-              alignment: Alignment.centerRight,
-              child: Transform.translate(
-                offset: Offset(2.w, 5.h),
-                child: Assets.icons.singleSafeRoute.image(
-                  width: 90.w,
-                  height: 82.h,
-                  fit: BoxFit.contain,
-                ),
+              alignment: Alignment.topRight,
+              child: Assets.icons.singleSafeRoute.image(
+                width: 88.w,
+                height: 76.h,
+                fit: BoxFit.contain,
               ),
             ),
           ),
@@ -703,13 +706,13 @@ class SafeRouteView extends StatelessWidget {
   }
 
   Widget _previewRow(
-    String label,
-    String value, {
-    Color? dot,
-    String? suffix,
-  }) {
+      String label,
+      String value, {
+        Color? dot,
+        String? suffix,
+      }) {
     return Padding(
-      padding: EdgeInsets.only(bottom: 5.h),
+      padding: EdgeInsets.only(bottom: 4.h),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -726,26 +729,30 @@ class SafeRouteView extends StatelessWidget {
               ),
             ),
           SizedBox(
-            width: 68.w,
+            width: 70.w,
             child: reausabletext(
               "$label :",
-              fontsize: 9,
+              fontsize: 8.5,
               color: Colors.black87,
               fontweight: FontWeight.w500,
               maxline: 2,
+              textoverflow: TextOverflow.visible,
             ),
           ),
           SizedBox(width: 2.w),
           Expanded(
             child: RichText(
               softWrap: true,
+              overflow: TextOverflow.visible,
               text: TextSpan(
                 children: [
                   TextSpan(
                     text: value,
                     style: TextStyle(
-                      fontSize: 9.sp,
-                      color: label.contains("Route") ? primary : Colors.black87,
+                      fontSize: 8.5.sp,
+                      color: label.contains("Route")
+                          ? primary
+                          : Colors.black87,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -753,7 +760,7 @@ class SafeRouteView extends StatelessWidget {
                     TextSpan(
                       text: "  |  $suffix",
                       style: TextStyle(
-                        fontSize: 9.sp,
+                        fontSize: 8.5.sp,
                         color: Colors.black87,
                         fontWeight: FontWeight.w500,
                       ),

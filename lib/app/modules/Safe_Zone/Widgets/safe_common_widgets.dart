@@ -708,7 +708,7 @@ class SafeLocationInput extends StatelessWidget {
                     Flexible(
                       child: reausabletext(
                         value,
-                        fontsize: 12,
+                        fontsize: 8,
                         fontfamily: FontFamily.interSemiBold,
                         color: Colors.black87,
                         textoverflow: TextOverflow.ellipsis,
@@ -871,7 +871,6 @@ class SafeAlertBottomSheet extends StatelessWidget {
 
           SizedBox(height: 12.h),
 
-          // ================= ACTIVE ZONE / ROUTE =================
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 18.w),
             child: Container(
@@ -963,7 +962,7 @@ class SafeAlertBottomSheet extends StatelessWidget {
 
           SizedBox(height: 12.h),
 
-          // ================= RECENT ALERTS TITLE =================
+
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 18.w),
             child: Row(
@@ -1000,7 +999,6 @@ class SafeAlertBottomSheet extends StatelessWidget {
 
           SizedBox(height: 7.h),
 
-          // ================= RECENT ALERTS SINGLE CARD =================
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 18.w),
             child: Container(
@@ -1084,7 +1082,6 @@ class SafeAlertBottomSheet extends StatelessWidget {
 
           SizedBox(height: 8.h),
 
-          // ================= ALERT SETTINGS =================
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 18.w),
             child: Container(
