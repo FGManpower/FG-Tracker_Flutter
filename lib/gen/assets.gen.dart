@@ -247,6 +247,14 @@ class $AssetsImagesGen {
   AssetGenImage get userVideo =>
       const AssetGenImage('assets/images/user_video.jpg');
 
+  /// File path: assets/images/auth_arc_bg.png
+  AssetGenImage get authArcBg =>
+      const AssetGenImage('assets/images/auth_arc_bg.png');
+
+  /// File path: assets/images/auth_map_watermark.png
+  AssetGenImage get authMapWatermark =>
+      const AssetGenImage('assets/images/auth_map_watermark.png');
+
   /// List of all assets
   List<AssetGenImage> get values => [
         introductionn1,
@@ -292,7 +300,9 @@ class $AssetsImagesGen {
         sosThreat,
         splashBg,
         userAvatar,
-        userVideo
+        userVideo,
+        authArcBg,
+        authMapWatermark
       ];
 }
 

@@ -4,8 +4,9 @@ import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/theme/AppText.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Core/values/utility.dart';
-import 'package:fgtracker/app/Model/ProfileRes.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
+import 'package:fgtracker/app/Model/ProfileRes.dart';
+import 'package:fgtracker/gen/assets.gen.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -553,16 +554,7 @@ class RegistrationScreen extends GetView<RegistrationController> {
   }
 
   static Widget _buildAuthWatermarkImage() {
-    final file = File(r"c:\projects\assets\images\auth_arc_bg.png");
-    if (file.existsSync()) {
-      return Image.file(
-        file,
-        fit: BoxFit.fill,
-        alignment: Alignment.topCenter,
-      );
-    }
-    return Image.asset(
-      'assets/images/auth_arc_bg.png',
+    return Assets.images.authArcBg.image(
       fit: BoxFit.fill,
       alignment: Alignment.topCenter,
       errorBuilder: (_, __, ___) => const SizedBox.shrink(),
@@ -836,18 +828,10 @@ class RegistrationScreen extends GetView<RegistrationController> {
         backgroundColor: defaultBgColor,
       );
     } else {
-      final file = File(r"c:\projects\assets\images\user_avatar.jpg");
-      if (file.existsSync()) {
-        return CircleAvatar(
-          radius: radius,
-          backgroundColor: defaultBgColor,
-          backgroundImage: FileImage(file),
-        );
-      }
       return CircleAvatar(
         radius: radius,
         backgroundColor: defaultBgColor,
-        child: Icon(Icons.person, size: radius * 1.05, color: const Color(0xFF5D47F1)),
+        backgroundImage: Assets.images.userAvatar.provider(),
       );
     }
   }

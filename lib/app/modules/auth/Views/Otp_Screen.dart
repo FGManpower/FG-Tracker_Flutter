@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:fgtracker/app/Core/values/colors.dart';
 import 'package:fgtracker/app/modules/auth/Controller/OtpController.dart';
 import 'package:fgtracker/app/modules/auth/Auth_Widget/hexagon_badge.dart';
@@ -38,12 +36,12 @@ class OTPScreen extends GetView<OtpController> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Color(0xFF7664F6),
-              Color(0xFF8F7EF8),
-              Color(0xFFD6CEFD),
-              Color(0xFFF3F1FE),
+              Color(0xFF7E7DE8),
+              Color(0xFF8E8DF0),
+              Color(0xFFCFCBFA),
+              Color(0xFFEEEDFD),
             ],
-            stops: [0.0, 0.35, 0.72, 1.0],
+            stops: [0.0, 0.35, 0.68, 1.0],
           ),
         ),
         child: Center(
@@ -432,16 +430,7 @@ class OTPScreen extends GetView<OtpController> {
   }
 
   static Widget _buildAuthWatermarkImage() {
-    final file = File(r"c:\projects\assets\images\auth_arc_bg.png");
-    if (file.existsSync()) {
-      return Image.file(
-        file,
-        fit: BoxFit.contain,
-        alignment: Alignment.topRight,
-      );
-    }
-    return Image.asset(
-      'assets/images/auth_arc_bg.png',
+    return Assets.images.authArcBg.image(
       fit: BoxFit.contain,
       alignment: Alignment.topRight,
       errorBuilder: (_, __, ___) => const SizedBox.shrink(),

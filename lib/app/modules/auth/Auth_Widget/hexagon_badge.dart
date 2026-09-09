@@ -59,15 +59,15 @@ class AuthGradientButton extends StatelessWidget {
           borderRadius: BorderRadius.circular(30.r),
           gradient: const LinearGradient(
             colors: [
-              AppColors.primaryDarkblue,
-              AppColors.primaryElement,
+              AppColors.authGradientTop,
+              Color(0xFF5D47F1),
             ],
             begin: Alignment.centerLeft,
             end: Alignment.centerRight,
           ),
           boxShadow: [
             BoxShadow(
-              color: AppColors.primaryElement.withValues(alpha: 0.38),
+              color: AppColors.authGradientTop.withValues(alpha: 0.38),
               blurRadius: 18,
               offset: const Offset(0, 8),
             ),
@@ -157,7 +157,7 @@ class _HexagonHaloPainter extends CustomPainter {
     canvas.drawPath(path.shift(const Offset(0, 5)), shadowPaint);
 
     final auraPaint = Paint()
-      ..color = AppColors.primaryElementLight
+      ..color = AppColors.authIconBgCircle
       ..style = PaintingStyle.fill;
     canvas.drawPath(path, auraPaint);
   }
