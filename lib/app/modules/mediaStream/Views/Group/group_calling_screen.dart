@@ -1,10 +1,12 @@
+import 'package:fgtracker/app/modules/mediaStream/Controller/group_calling_controller.dart';
+import 'package:fgtracker/app/modules/mediaStream/Widget/group_call_controls.dart';
+import 'package:fgtracker/app/modules/mediaStream/Widget/group_participant_grid.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import '../../../../../gen/fonts.gen.dart';
-import '../../Controller/group_calling_controller.dart';
-import '../../Widget/group_call_controls.dart';
-import '../../Widget/group_participant_grid.dart';
+
+
 
 class GroupCallingScreen extends GetView<GroupCallingController> {
   const GroupCallingScreen({super.key});
@@ -25,7 +27,6 @@ class GroupCallingScreen extends GetView<GroupCallingController> {
                 );
               }),
             ),
-
             Positioned(
               top: 0,
               left: 0,
@@ -42,7 +43,6 @@ class GroupCallingScreen extends GetView<GroupCallingController> {
                 child: _buildHeader(),
               ),
             ),
-
             Positioned(
               bottom: 0,
               left: 0,
@@ -72,7 +72,6 @@ class GroupCallingScreen extends GetView<GroupCallingController> {
               onPressed: controller.endCall,
             ),
           ),
-
           Expanded(
             child: Transform.translate(
               offset: Offset(0, 18.h),
@@ -91,8 +90,8 @@ class GroupCallingScreen extends GetView<GroupCallingController> {
                     ),
                   ),
                   SizedBox(height: 2.h),
-                  Text(
-                    "${controller.totalMemberCount} members",
+                  Obx(() => Text(
+                    "${controller.activeParticipants.length} in call · ${controller.totalMemberCount} members",
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
@@ -100,7 +99,7 @@ class GroupCallingScreen extends GetView<GroupCallingController> {
                       fontFamily: FontFamily.interRegular,
                       color: Colors.white70,
                     ),
-                  ),
+                  )),
                   SizedBox(height: 6.h),
                   Row(
                     mainAxisSize: MainAxisSize.min,
@@ -135,9 +134,7 @@ class GroupCallingScreen extends GetView<GroupCallingController> {
             child: IconButton(
               padding: EdgeInsets.zero,
               icon: const Icon(Icons.people_outline, color: Colors.white, size: 28),
-              onPressed: () {
-                // controller.openParticipantsSheet():
-              },
+              onPressed: controller.openParticipantsSheet,
             ),
           ),
         ],

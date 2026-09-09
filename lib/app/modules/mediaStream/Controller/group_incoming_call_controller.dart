@@ -47,27 +47,27 @@ class GroupIncomingCallController extends GetxController {
   }
 
   void _playRingtone() {
-    try {
-      FlutterRingtonePlayer().play(
-        asAlarm: false,
-        fromAsset: Assets.music.incomingCall,
-        looping: true,
-        volume: 1.0,
-      );
-    } catch (_) {
-      try {
-        FlutterRingtonePlayer().playRingtone(
-          asAlarm: false,
-          looping: true,
-          volume: 1.0,
-        );
-      } catch (_) {}
-    }
+    // try {
+    //   FlutterRingtonePlayer().play(
+    //     asAlarm: false,
+    //     fromAsset: Assets.music.incomingCall,
+    //     looping: true,
+    //     volume: 1.0,
+    //   );
+    // } catch (_) {
+    //   try {
+    //     FlutterRingtonePlayer().playRingtone(
+    //       asAlarm: false,
+    //       looping: true,
+    //       volume: 1.0,
+    //     );
+    //   } catch (_) {}
+    // }
   }
 
   void _stopRingtone() {
     try {
-      FlutterRingtonePlayer().stop();
+      // FlutterRingtonePlayer().stop();
     } catch (_) {}
   }
 
