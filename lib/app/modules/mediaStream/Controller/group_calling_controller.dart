@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'dart:developer';
+import 'package:fgtracker/app/Core/constant/const_res.dart';
+import 'package:fgtracker/app/Core/global/launchedFromCall.dart';
 import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
@@ -276,13 +278,19 @@ class GroupCallingController extends GetxController {
     }
 
     try {
+      var param ={
+        "callId": int.tryParse(callId!) ?? callId,
+        "groupId": int.tryParse(groupId) ?? groupId,
+        // "targetUserId": participant.userId,
+        "userId": participant.userId,
+        // "userId": Global.storageServices.get(PrefConst.userId),
+
+      };
+
+      print("=======notifyParam:${param}");
       svc.socket?.emitWithAck(
         "group_call_notify",
-        {
-          "callId": int.tryParse(callId!) ?? callId,
-          "groupId": int.tryParse(groupId) ?? groupId,
-          "targetUserId": participant.userId,
-        },
+       param,
         ack: (res) {
           _log("group_call_notify ACK: $res");
           if (res is Map && res["success"] == false) {
@@ -486,6 +494,7 @@ class GroupCallingController extends GetxController {
     } else {
       Socket_GroupCallService.instance.leaveGroupCall();
     }
+    CallSessionState.reset();
     Get.offAllNamed(Routes.Home_Screen);
   }
 

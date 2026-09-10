@@ -5,7 +5,7 @@ import 'dart:io';
 import 'package:connectycube_flutter_call_kit/connectycube_flutter_call_kit.dart';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
-import 'package:fgtracker/app/Core/util/group_callkit_service.dart';
+
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Group_Calling.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Walkie-Talkie-Service.dart';
 import 'package:flutter/material.dart';
@@ -18,7 +18,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-import 'app/Core/util/callkit_service.dart';
+import 'app/Core/util/CallKit/callkit_service.dart';
 import 'app/Core/values/Context_Utility.dart';
 import 'app/Core/values/global.dart';
 import 'app/Data/Services/NotificationServices.dart';
@@ -29,6 +29,7 @@ import 'app/modules/Track/Controller/SocketServices.dart';
 import 'app/modules/Track/Controller/TrackController.dart';
 import 'app/modules/Track/Controller/LocationService.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+
 
 final socket = SignallingService.instance.socket;
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
@@ -56,13 +57,14 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
       "callerProfileImage": callData['callerProfileImage'].toString(),
       "sdpOfferCompressed": callData['sdpOfferCompressed'].toString(),
       "notificationId": callData['notificationId']?.toString() ?? "",
+      "screen_name": "incomingCall",
     };
 
     try {
       await ConnectycubeFlutterCallKit.showCallNotification(
         CallEvent(
           sessionId: callIdToUuid(originalCallId),
-          callerName: callData['callerName'],
+          callerName: callData['groupName'],
           callType: callData['isVideo'] == true ? 1 : 0,
           opponentsIds: {int.parse(callData['callerId'])},
           callerId: int.parse(callData['callerId']),
@@ -83,16 +85,8 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     final callData = jsonDecode(message.data['callData']);
     final originalCallId = callData['callId'].toString();
 
-    final Map<String, String> userInfo = {
-      "callId": originalCallId,
-      "callerId": callData['callerId'].toString(),
-      "receiverId": callData['receiverId'].toString(),
-      "isVideo": callData['isVideo'].toString(),
-      "callerName": callData['callerName'].toString(),
-      "callerProfileImage": callData['callerProfileImage'].toString(),
-      "notificationId": callData['notificationId']?.toString() ?? "",
-    };
-
+    final Map<String, String> userInfo = callData.map<String, String>(
+            (key, value) => MapEntry(key.toString(), value.toString()));
     try {
       await ConnectycubeFlutterCallKit.showCallNotification(
         CallEvent(
@@ -177,7 +171,7 @@ Future<void> onCallRejectedWhenTerminated(CallEvent event) async {
 @pragma('vm:entry-point')
 void onCallEventBackground() {
   CallKitService.instance.init();
-  GroupCallKitService.instance.init();
+
 }
 
 Future<void> main() async {
@@ -190,7 +184,6 @@ Future<void> main() async {
       onCallRejectedWhenTerminated;
   await firebaseNotificationServices().initialized();
   CallKitService.instance.init();
-  GroupCallKitService.instance.init();
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(statusBarColor: Colors.transparent),
   );
@@ -238,7 +231,6 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
     CallKitService.instance.init();
-    GroupCallKitService.instance.init();
   }
 
   @override

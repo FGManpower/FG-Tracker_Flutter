@@ -132,9 +132,9 @@ class Socket_GroupCallService {
       _listenersBound = false;
     });
 
-    // socket?.onAny((event, dynamic data) {
-    //   _log('GroupSocketAllEvent: $event | Data: $data');
-    // });
+    socket?.onAny((event, dynamic data) {
+      _log('GroupSocketAllEvent: $event | Data: $data');
+    });
   }
 
   void _bindSocketListeners() {
@@ -157,62 +157,62 @@ class Socket_GroupCallService {
     }
 
     socket?.on("group_call_started", (raw) {
-      _log(" group_call_started: $raw");
-      if (raw == null) return;
-
-      final Map<String, dynamic> data = raw is Map && raw['data'] is Map
-          ? Map<String, dynamic>.from(raw['data'])
-          : Map<String, dynamic>.from(raw);
-
-      final callerId = (data['callerId'] ?? data['userId'])?.toString();
-      if (callerId == null || callerId == _selfUserId) {
-        _log('Ignore self/invalid group_call_started');
-        return;
-      }
-
-      final callerName = (data['name'] ??
-          data['callerName'] ??
-          'Someone')
-          .toString();
-      final callerProfile = (data['profileImage'] ??
-          data['callerProfileImage'] ??
-          '')
-          .toString();
-
-      currentCallId = data['callId']?.toString();
-      currentGroupId = data['groupId']?.toString();
-
-      _saveParticipantMeta(
-        callerId,
-        name: callerName,
-        profileImage: callerProfile,
-        isMuted: false,
-      );
-
-      final currentRoute = Get.currentRoute;
-      if (currentRoute == Routes.groupCallingScreen ||
-          currentRoute == Routes.groupIncomingCallScreen) {
-        _log('Already in call UI, skip navigation');
-        return;
-      }
-
-      Get.toNamed(
-        Routes.groupIncomingCallScreen,
-        arguments: {
-          "callId": data['callId']?.toString(),
-          "groupId": data['groupId']?.toString() ?? "",
-          "groupName": (data['groupName'] ?? "Group Call").toString(),
-          "callerName": callerName,
-          "groupProfile": (data['groupProfile'] ?? callerProfile).toString(),
-          "callerProfileImage": callerProfile,
-          "activeMemberCount": 1,
-          "totalMemberCount": data['totalMembers'] ?? 0,
-          "isVideo": data['isVideo'] == true,
-          "callType": "incoming",
-        },
-      );
-
-      onIncomingCallReceived?.call(data);
+      // _log(" group_call_started: $raw");
+      // if (raw == null) return;
+      //
+      // final Map<String, dynamic> data = raw is Map && raw['data'] is Map
+      //     ? Map<String, dynamic>.from(raw['data'])
+      //     : Map<String, dynamic>.from(raw);
+      //
+      // final callerId = (data['callerId'] ?? data['userId'])?.toString();
+      // if (callerId == null || callerId == _selfUserId) {
+      //   _log('Ignore self/invalid group_call_started');
+      //   return;
+      // }
+      //
+      // final callerName = (data['name'] ??
+      //     data['callerName'] ??
+      //     'Someone')
+      //     .toString();
+      // final callerProfile = (data['profileImage'] ??
+      //     data['callerProfileImage'] ??
+      //     '')
+      //     .toString();
+      //
+      // currentCallId = data['callId']?.toString();
+      // currentGroupId = data['groupId']?.toString();
+      //
+      // _saveParticipantMeta(
+      //   callerId,
+      //   name: callerName,
+      //   profileImage: callerProfile,
+      //   isMuted: false,
+      // );
+      //
+      // final currentRoute = Get.currentRoute;
+      // if (currentRoute == Routes.groupCallingScreen ||
+      //     currentRoute == Routes.groupIncomingCallScreen) {
+      //   _log('Already in call UI, skip navigation');
+      //   return;
+      // }
+      //
+      // Get.toNamed(
+      //   Routes.groupIncomingCallScreen,
+      //   arguments: {
+      //     "callId": data['callId']?.toString(),
+      //     "groupId": data['groupId']?.toString() ?? "",
+      //     "groupName": (data['groupName'] ?? "Group Call").toString(),
+      //     "callerName": callerName,
+      //     "groupProfile": (data['groupProfile'] ?? callerProfile).toString(),
+      //     "callerProfileImage": callerProfile,
+      //     "activeMemberCount": 1,
+      //     "totalMemberCount": data['totalMembers'] ?? 0,
+      //     "isVideo": data['isVideo'] == true,
+      //     "callType": "incoming",
+      //   },
+      // );
+      //
+      // onIncomingCallReceived?.call(data);
     });
 
 

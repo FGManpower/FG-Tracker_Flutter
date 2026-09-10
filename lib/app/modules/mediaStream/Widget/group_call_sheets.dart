@@ -35,7 +35,6 @@ class GroupParticipantsSheet {
             ),
             SizedBox(height: 16.h),
 
-            // ===== IN CALL =====
             Obx(() => reausabletext(
               "In this call (${controller.activeParticipants.length})",
               fontsize: 16,
