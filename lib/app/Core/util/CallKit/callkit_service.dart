@@ -2,18 +2,20 @@ import 'dart:convert';
 import 'dart:developer';
 import 'package:connectycube_flutter_call_kit/connectycube_flutter_call_kit.dart';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
+import 'package:fgtracker/app/Core/values/utility.dart';
+import 'package:fgtracker/app/Data/Services/Socket/Socket_Group_Calling.dart';
 import 'package:fgtracker/app/modules/Notification/Controller/Notification_Controller.dart';
 import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../Data/Services/CallStateTracker.dart';
-import '../../Data/Services/Socket/Socket_SignallingService.dart';
-import '../../Model/call_model.dart';
-import '../../routes/app_pages.dart';
-import '../constant/pref_res.dart';
-import '../global/launchedFromCall.dart';
-import '../values/global.dart';
-import 'decomPress.dart';
+import '../../../Data/Services/CallStateTracker.dart';
+import '../../../Data/Services/Socket/Socket_SignallingService.dart';
+import '../../../Model/call_model.dart';
+import '../../../routes/app_pages.dart';
+import '../../constant/pref_res.dart';
+import '../../global/launchedFromCall.dart';
+import '../../values/global.dart';
+import '../decomPress.dart';
 import 'package:http/http.dart' as http;
 
 class CallKitService {
@@ -62,7 +64,13 @@ class CallKitService {
         log("onCallAccepted parsed data: $data");
 
         if (data.isNotEmpty) {
-          await navigateToCallScreen(data);
+
+
+          if (data['screenName'].toString() == "incomingGroupCall") {
+            await navigateToGroupCallScreen(data);
+          } else {
+            await navigateToCallScreen(data);
+          }
         } else {
           log("userInfo empty → using fallback");
           await _fallbackGetCallData(event.sessionId, accept: true);
@@ -90,7 +98,11 @@ class CallKitService {
         }
 
         if (data.isNotEmpty) {
-          await declineCall(data);
+          if (data['screenName'].toString() == "incomingGroupCall") {
+            await declineGroupCall(data);
+          } else {
+            await declineCall(data);
+          }
         } else {
           await _fallbackGetCallData(event.sessionId, accept: false);
           log("========fallback-called");
@@ -106,7 +118,7 @@ class CallKitService {
       if (userInfoRaw is String) return jsonDecode(userInfoRaw);
       if (userInfoRaw is Map) return Map<String, dynamic>.from(userInfoRaw);
     } catch (e) {
-      log("❌ _parseRawCallData error: $e");
+      log(" _parseRawCallData error: $e");
     }
     return {};
   }
@@ -143,9 +155,18 @@ class CallKitService {
 
       if (data.isNotEmpty) {
         if (accept) {
-          await navigateToCallScreen(data);
+
+          if (data['screenName'].toString() == "incomingGroupCall") {
+            await navigateToGroupCallScreen(data);
+          } else {
+            await navigateToCallScreen(data);
+          }
         } else {
-          await declineCall(data);
+          if (data['screenName'].toString() == "incomingGroupCall") {
+            await declineGroupCall(data);
+          } else {
+            await declineCall(data);
+          }
         }
       }
     } catch (e) {
@@ -204,6 +225,41 @@ class CallKitService {
     }
   }
 
+  Future<void> navigateToGroupCallScreen(Map<String, dynamic> data) async {
+    try {
+      if (CallSessionState.isCallActive) return;
+
+      log("navigateToCallScreen data: $data");
+
+      CallSessionState.isCallActive = true;
+      CallSessionState.launchedFromCall = true;
+      Get.offNamed(
+        Routes.groupCallingScreen,
+        arguments: {
+          "groupId": data['groupId'].toString(),
+          "groupName": data['groupName'],
+          "groupProfile": data['callerProfileImage'] ?? "",
+          "callerId": data["callerId"].toString(),
+          "callerName": data["callerName"].toString(),
+          "callerProfileImage": data['callerProfileImage'],
+          "isVideo": data["isVideo"].toString()=="true" ?true:false,
+          "totalGroupMember": data['totalGroupMember'].toString() ?? 10,
+          "callId":  data['callId'].toString(),
+          "callType": "incoming",
+        },
+      );
+
+
+      final notificationId = int.tryParse(
+        data["notificationId"]?.toString() ?? "",
+      );
+      if (notificationId != null && notificationId > 0) {
+        await NotificationController().markAsRead(notificationId);
+      }
+    } catch (e) {
+      log("navigateToCallScreen error: $e");
+    }
+  }
   Future<void> declineCall(Map<String, dynamic> data) async {
     try {
       final parsedData = {
@@ -243,7 +299,38 @@ class CallKitService {
     }
   }
 
-  Future<void> _rejectCallViaApi(int? callId) async {
+  Future<void> declineGroupCall(Map<String, dynamic> data) async {
+    try {
+      CallStateTracker.isIncomingCallScreenOpen = false;
+
+      if (CallSessionState.sessionId != null) {
+        await ConnectycubeFlutterCallKit.reportCallEnded(
+          sessionId: CallSessionState.sessionId!,
+        );
+      }
+
+      final socket = SignallingService.instance.socket;
+
+      if (socket != null && socket.connected) {
+        log("declineCall → via SOCKET");
+        socket.emit("rejectCall", {
+          "callId": data["callId"],
+          "remoteUserId": data["callerId"],
+        });
+        if (Utility.isNotNullEmptyOrFalse(data["callId"])) {
+          Socket_GroupCallService.instance.rejectGroupCall(
+              data["callId"].toString(), data["groupId"].toString());
+        }
+      } else {
+        log("declineCall → via REST API (socket not available)");
+        await _rejectCallViaApi(data["callId"],groupId: data['groupId'].toString());
+      }
+    } catch (e) {
+      log("declineCall error: $e");
+    }
+  }
+
+  Future<void> _rejectCallViaApi(dynamic callId, {String? groupId}) async {
     if (callId == null) {
       log("_rejectCallViaApi: callId is null");
       return;
@@ -257,8 +344,13 @@ class CallKitService {
         log("_rejectCallViaApi: token is empty");
         return;
       }
-
-      final url = Uri.parse("${ConstRes.aBaseUrl}callRejected?callId=$callId");
+      final Uri url;
+      if (groupId!.isNotEmpty) {
+        url = Uri.parse(
+            "${ConstRes.aBaseUrl}callRejected?callId=$callId&groupId=$groupId");
+      } else {
+        url = Uri.parse("${ConstRes.aBaseUrl}callRejected?callId=$callId");
+      }
 
       await http.get(
         url,
@@ -301,7 +393,11 @@ class CallKitService {
         case "accepted":
           log("State: accepted → navigating to CallScreen");
           if (data.isNotEmpty) {
-            await navigateToCallScreen(data);
+            if (data['screenName'].toString() == "incomingGroupCall") {
+              await navigateToGroupCallScreen(data);
+            } else {
+              await navigateToCallScreen(data);
+            }
           } else {
             log("accepted but data empty → fallback");
             await _fallbackGetCallData(sessionId, accept: true);
@@ -311,17 +407,23 @@ class CallKitService {
         case "rejected":
           log("State: rejected → cleaning up");
           if (data.isNotEmpty) {
-            final socket = SignallingService.instance.socket;
-            if (socket != null && socket.connected) {
-              socket.emit("rejectCall", {
-                "callId": data['callId']?.toString(),
-                "remoteUserId": data['callerId']?.toString(),
-              });
-              log("rejectCall emitted via socket");
+
+
+            if (data['screenName'].toString() == "incomingGroupCall") {
+              declineGroupCall(data);
             } else {
-              await _rejectCallViaApi(
-                int.tryParse(data['callId']?.toString() ?? ""),
-              );
+              final socket = SignallingService.instance.socket;
+              if (socket != null && socket.connected) {
+                socket.emit("rejectCall", {
+                  "callId": data['callId']?.toString(),
+                  "remoteUserId": data['callerId']?.toString(),
+                });
+                log("rejectCall emitted via socket");
+              } else {
+                await _rejectCallViaApi(
+                  int.tryParse(data['callId']?.toString() ?? ""),
+                );
+              }
             }
           }
           await _cleanupCall(sessionId);
@@ -338,7 +440,6 @@ class CallKitService {
 
         default:
           if (data.isNotEmpty) {
-
             final socket = SignallingService.instance.socket;
             if (socket != null && socket.connected) {
               final myUserId =
@@ -374,10 +475,9 @@ class CallKitService {
       CallSessionState.reset();
       CallStateTracker.isIncomingCallScreenOpen = false;
       // await RemoteLoggerTest.log("_Callcleaned", "up: $sessionId");
-      log("✅ Call cleaned up: $sessionId");
+      log(" Call cleaned up: $sessionId");
     } catch (e) {
-
-      log("❌ _cleanupCall error: $e");
+      log(" _cleanupCall error: $e");
     }
   }
 }

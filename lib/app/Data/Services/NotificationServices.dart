@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:connectycube_flutter_call_kit/connectycube_flutter_call_kit.dart';
 import 'package:fgtracker/app/Core/global/launchedFromCall.dart';
-import 'package:fgtracker/app/Core/util/callkit_service.dart';
+import 'package:fgtracker/app/Core/util/CallKit/callkit_service.dart';
 import 'package:fgtracker/app/Core/values/Context_Utility.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_SignallingService.dart';
 import 'package:fgtracker/app/Model/MemberDataRes.dart';
@@ -264,7 +264,7 @@ class firebaseNotificationServices {
           await ConnectycubeFlutterCallKit.showCallNotification(
             CallEvent(
               sessionId: callIdToUuid(callData['callId'].toString()),
-              callerName: callData['callerName'],
+              callerName: callData['groupName'],
               callType: callData['isVideo'] == true ? 1 : 0,
               opponentsIds: {int.parse(callData['callerId'])},
               callerId: int.parse(callData['callerId']),

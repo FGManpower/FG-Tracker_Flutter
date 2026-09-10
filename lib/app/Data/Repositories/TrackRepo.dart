@@ -1,5 +1,3 @@
-import 'dart:developer';
-import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/constant/urls.dart';
 import 'package:fgtracker/app/Core/util/http/http_util.dart';

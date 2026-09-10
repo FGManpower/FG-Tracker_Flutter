@@ -17,8 +17,14 @@ class SafeColors {
 class SafeAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
   final String subtitle;
-  const SafeAppBar({Key? key, required this.title, required this.subtitle, })
-      : super(key: key);
+  final VoidCallback? onInfoTap;
+
+  const SafeAppBar({
+    Key? key,
+    required this.title,
+    required this.subtitle,
+    this.onInfoTap,
+  }) : super(key: key);
 
   @override
   Size get preferredSize => Size.fromHeight(64.h);
@@ -31,6 +37,7 @@ class SafeAppBar extends StatelessWidget implements PreferredSizeWidget {
       scrolledUnderElevation: 0,
       centerTitle: false,
       leadingWidth: 56.w,
+
       leading: Padding(
         padding: EdgeInsets.only(left: 16.w),
         child: GestureDetector(
@@ -40,13 +47,19 @@ class SafeAppBar extends StatelessWidget implements PreferredSizeWidget {
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(12.r),
-              border: Border.all(color: SafeColors.border),
+              border: Border.all(
+                color: SafeColors.border,
+              ),
             ),
-            child: Icon(Icons.arrow_back_ios_new,
-                color: Colors.black, size: 16.sp),
+            child: Icon(
+              Icons.arrow_back_ios_new,
+              color: Colors.black,
+              size: 16.sp,
+            ),
           ),
         ),
       ),
+
       title: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -65,18 +78,21 @@ class SafeAppBar extends StatelessWidget implements PreferredSizeWidget {
           ),
         ],
       ),
+
       actions: [
         IconButton(
-          icon: Icon(Icons.info_outline,
-              color: SafeColors.primary, size: 22.sp),
-          onPressed: () {},
+          icon: Icon(
+            Icons.info_outline,
+            color: SafeColors.primary,
+            size: 22.sp,
+          ),
+          onPressed: onInfoTap,
         ),
         SizedBox(width: 8.w),
       ],
     );
   }
 }
-
 class SafeTabBar extends StatelessWidget {
   final TabController controller;
   const SafeTabBar({Key? key, required this.controller}) : super(key: key);
