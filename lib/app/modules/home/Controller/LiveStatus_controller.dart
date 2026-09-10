@@ -1,5 +1,5 @@
 import 'package:fgtracker/app/Data/Repositories/TrackRepo.dart';
-import 'package:fgtracker/app/Model/member_live_status.dart';
+import 'package:fgtracker/app/Model/online_member_model.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -10,11 +10,11 @@ class LivesStatusController extends GetxController {
   final TextEditingController searchController =
   TextEditingController();
 
-  final RxList<UserMemberData> memberData =
-      <UserMemberData>[].obs;
+  final RxList<OnlineMemberData> memberData =
+      <OnlineMemberData>[].obs;
 
-  final RxList<UserMemberData> filteredMembers =
-      <UserMemberData>[].obs;
+  final RxList<OnlineMemberData> filteredMembers =
+      <OnlineMemberData>[].obs;
 
   final RxString searchQuery = ''.obs;
 
@@ -29,7 +29,7 @@ class LivesStatusController extends GetxController {
 
   final RxString memberFilter = 'online'.obs;
 
-  RxList<UserMemberData> get filtermember {
+  RxList<OnlineMemberData> get filtermember {
     return filteredMembers;
   }
 
@@ -63,10 +63,11 @@ class LivesStatusController extends GetxController {
     filteredMembers.clear();
 
     try {
-      final MemberLiveStatus result =
+      final OnlineMemberModel result =
       await TrackRepo.getGroupMember(
-        page: '0',
+        page: '1',
         filter: memberFilter.value,
+        limit: 20,
       );
 
       if (result.status != true) {
@@ -75,21 +76,12 @@ class LivesStatusController extends GetxController {
         return;
       }
 
-      final List<UserMemberData> apiMembers =
-      List<UserMemberData>.from(
-        result.data ?? <UserMemberData>[],
+      final List<OnlineMemberData> apiMembers =
+      List<OnlineMemberData>.from(
+        result.data ?? <OnlineMemberData>[],
       );
 
-      final List<UserMemberData> onlineMembers =
-      memberFilter.value.toLowerCase() == 'online'
-          ? apiMembers
-          .where((UserMemberData member) {
-        return member.isOnline == 1;
-      })
-          .toList()
-          : apiMembers;
-
-      memberData.assignAll(onlineMembers);
+      memberData.assignAll(apiMembers);
 
       pagination.value =
           result.pagination?.currentPage ?? 1;
@@ -117,10 +109,11 @@ class LivesStatusController extends GetxController {
     try {
       final int nextPage = pagination.value + 1;
 
-      final MemberLiveStatus result =
+      final OnlineMemberModel result =
       await TrackRepo.getGroupMember(
         page: nextPage.toString(),
         filter: memberFilter.value,
+        limit: 20,
       );
 
       if (result.status != true) {
@@ -128,22 +121,13 @@ class LivesStatusController extends GetxController {
         return;
       }
 
-      final List<UserMemberData> apiMembers =
-      List<UserMemberData>.from(
-        result.data ?? <UserMemberData>[],
+      final List<OnlineMemberData> apiMembers =
+      List<OnlineMemberData>.from(
+        result.data ?? <OnlineMemberData>[],
       );
 
-      final List<UserMemberData> newMembers =
-      memberFilter.value.toLowerCase() == 'online'
-          ? apiMembers
-          .where((UserMemberData member) {
-        return member.isOnline == 1;
-      })
-          .toList()
-          : apiMembers;
-
-      if (newMembers.isNotEmpty) {
-        memberData.addAll(newMembers);
+      if (apiMembers.isNotEmpty) {
+        memberData.addAll(apiMembers);
       }
 
       pagination.value =
@@ -178,7 +162,7 @@ class LivesStatusController extends GetxController {
     searchQuery.value = '';
 
     filteredMembers.assignAll(
-      List<UserMemberData>.from(memberData),
+      List<OnlineMemberData>.from(memberData),
     );
   }
 
@@ -188,13 +172,13 @@ class LivesStatusController extends GetxController {
 
     if (query.isEmpty) {
       filteredMembers.assignAll(
-        List<UserMemberData>.from(memberData),
+        List<OnlineMemberData>.from(memberData),
       );
       return;
     }
 
-    final List<UserMemberData> result =
-    memberData.where((UserMemberData member) {
+    final List<OnlineMemberData> result =
+    memberData.where((OnlineMemberData member) {
       final String name =
           member.name?.toLowerCase() ?? '';
 
@@ -228,7 +212,15 @@ class LivesStatusController extends GetxController {
   int get onlineMembersCount {
     return memberData
         .where(
-          (UserMemberData member) => member.isOnline == 1,
+          (OnlineMemberData member) => member.isOnline == 1 || member.online,
+    )
+        .length;
+  }
+
+  int get recentlyOnlineCount {
+    return memberData
+        .where(
+          (OnlineMemberData member) => member.isOnline != 1 && !member.online,
     )
         .length;
   }

@@ -6,7 +6,7 @@ import 'package:fgtracker/app/Core/util/http/http_util.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Model/LocationDataRes.dart';
 import 'package:fgtracker/app/Model/UsersWithinRadiusRes.dart';
-import 'package:fgtracker/app/Model/member_live_status.dart';
+import 'package:fgtracker/app/Model/online_member_model.dart';
 import 'package:flutter/foundation.dart';
 
 class TrackRepo {
@@ -75,19 +75,21 @@ class TrackRepo {
     }
   }
 
-  static Future<MemberLiveStatus> getGroupMember({
-    String page = '0',
+  static Future<OnlineMemberModel> getGroupMember({
+    String page = '1',
     String filter = 'online',
+    int limit = 20,
   }) async {
     try {
       final response = await HttpUtil().get(
         '${Urls.allGroupMembers}'
-        '?page=$page'
-        '&filter=$filter',
+        '?filter=$filter'
+        '&page=$page'
+        '&limit=$limit',
       );
-      return MemberLiveStatus.fromJson(response);
+      return OnlineMemberModel.fromJson(response);
     } catch (e) {
-      return MemberLiveStatus(status: false, message: e.toString(), data: []);
+      return OnlineMemberModel(status: false, message: e.toString(), data: []);
     }
   }
 

@@ -12,7 +12,8 @@ class Urls {
   static const String updateProfile = '${ConstRes.aBaseUrl}updateProfile';
   static const String banner = '${ConstRes.aBaseUrl}banners';
   static const String getAllGroup = '${ConstRes.aBaseUrl}get-all-group';
-  static const String recentCallHistory = '${ConstRes.aBaseUrl}history';
+  static const String recentCallHistory = '${ConstRes.aBaseUrl}history'
+      '';
   static const String allGroupMembers = '${ConstRes.aBaseUrl}all-group-members';
   static const String usersWithinRadius = '${ConstRes.aBaseUrl}users-within-radius';
   static const String userWithinRadiusFallback = '${ConstRes.aBaseUrl}user-within-radius';
