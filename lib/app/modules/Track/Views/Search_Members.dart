@@ -21,7 +21,7 @@ class SearchMembers extends GetView<SearchMemberController> {
       () => Scaffold(
         appBar: AppBar(
           backgroundColor: ToggleThemeData.darkPurple,
-          elevation: 4.0,
+          elevation: 4,
           titleSpacing: 0,
           toolbarHeight: 70.h,
           leading: IconButton(

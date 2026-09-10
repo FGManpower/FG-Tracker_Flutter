@@ -9,6 +9,7 @@ import 'package:fgtracker/app/Model/UsersWithinRadiusRes.dart';
 import 'package:fgtracker/app/Model/ghost_member_model.dart';
 import 'package:fgtracker/app/Model/online_member_model.dart';
 import 'package:flutter/foundation.dart';
+import 'GroupRepo.dart';
 
 class TrackRepo {
   static Future<UsersWithinRadiusRes> getUsersWithinRadius({
@@ -69,11 +70,44 @@ class TrackRepo {
       var response =
           await HttpUtil().get("/getGrouplocationsData?groupId=$groupId");
       debugPrint("📍 [TrackRepo] Response from /getGrouplocationsData: $response");
-      return LocationDataRes.fromJson(response);
+      final parsed = LocationDataRes.fromJson(response);
+      if (parsed.status == true && parsed.locations != null && parsed.locations!.isNotEmpty) {
+        return parsed;
+      }
     } catch (e) {
       debugPrint("❌ [TrackRepo] Error in getUserLocationData: $e");
-      return LocationDataRes(status: false, message: e.toString(), locations: []);
     }
+
+    try {
+      debugPrint("🔄 [TrackRepo] Falling back to /getMembers?groupId=$groupId");
+      var membersRes = await GroupRepo.getMemberData(groupId.toString());
+      if (membersRes.status == true && membersRes.memberData != null) {
+        final List<LocationData> fallbackList = membersRes.memberData!.map((m) {
+          return LocationData(
+            id: m.id,
+            userId: m.userId,
+            groupId: m.groupId,
+            name: m.name,
+            profileImage: m.profileImage,
+            isCreator: m.isCreator,
+            isOnline: m.isOnline,
+            lastSeen: m.lastSeen,
+            locationSharing: m.locationSharing ?? true,
+            latitude: 0.0,
+            longitude: 0.0,
+          );
+        }).toList();
+        return LocationDataRes(
+          status: true,
+          message: "Loaded members",
+          locations: fallbackList,
+        );
+      }
+    } catch (fallbackErr) {
+      debugPrint("❌ [TrackRepo] Fallback error: $fallbackErr");
+    }
+
+    return LocationDataRes(status: false, message: "Failed to load group locations", locations: []);
   }
 
   static Future<OnlineMemberModel> getGroupMember({

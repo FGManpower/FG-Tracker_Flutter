@@ -135,17 +135,19 @@ class TrackingController extends GetxController {
             "Current User Id : ${Global.storageServices.get(PrefConst.userId)}");
         print("Total Members : ${result.locations?.length}");
 
-        for (var data in result.locations!) {
-          print("--------------------------------");
-          print("UserId           : ${data.userId}");
-          print("Name             : ${data.name}");
-          print("Location Sharing : ${data.locationSharing}");
-          print("Latitude         : ${data.latitude}");
-          print("Longitude        : ${data.longitude}");
-          print("Last Seen        : ${data.lastSeen}");
-          print("--------------------------------");
+        if (result.locations != null && result.locations!.isNotEmpty) {
+          for (var data in result.locations!) {
+            print("--------------------------------");
+            print("UserId           : ${data.userId}");
+            print("Name             : ${data.name}");
+            print("Location Sharing : ${data.locationSharing}");
+            print("Latitude         : ${data.latitude}");
+            print("Longitude        : ${data.longitude}");
+            print("Last Seen        : ${data.lastSeen}");
+            print("--------------------------------");
 
-          updateGroupMarker(data);
+            updateGroupMarker(data);
+          }
         }
 
         print("==================================");
