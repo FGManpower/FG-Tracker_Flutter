@@ -73,7 +73,7 @@ class LiveLocationModel {
 
     // User ID
     final uId = int.tryParse(
-            '${json['userId'] ?? json['UserId'] ?? json['id'] ?? json['user_id'] ?? 0}') ??
+            '${json['userId'] ?? json['UserId'] ?? json['id'] ?? json['user_id'] ?? json['_id'] ?? 0}') ??
         0;
 
     // Names

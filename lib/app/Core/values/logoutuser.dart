@@ -15,6 +15,10 @@ class LogoutUser {
     Global.storageServices.remove(PrefConst.STORAGE_USER_TOKEN_KEY);
     Global.storageServices.remove(PrefConst.DEVICE_ID);
     Global.storageServices.remove(PrefConst.isRegistered);
+    Global.storageServices.remove(PrefConst.userEmail);
+    Global.storageServices.remove(PrefConst.userName);
+    Global.storageServices.remove(PrefConst.userPhone);
+    Global.storageServices.remove(PrefConst.userId);
 
     await GroupWalkieService.instance.dispose();
     Get.offNamedUntil(Routes.Login, (route) => false);

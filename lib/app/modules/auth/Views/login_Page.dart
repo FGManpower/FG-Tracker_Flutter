@@ -43,7 +43,9 @@ class LoginPage extends GetView<Login_Controller> {
                   return SingleChildScrollView(
                     keyboardDismissBehavior:
                     ScrollViewKeyboardDismissBehavior.onDrag,
-                    physics: const AlwaysScrollableScrollPhysics(),
+                    physics: isKeyboardOpen
+                        ? const ClampingScrollPhysics()
+                        : const NeverScrollableScrollPhysics(),
                     child: ConstrainedBox(
                       constraints:
                       BoxConstraints(minHeight: constraints.maxHeight),
@@ -285,7 +287,7 @@ class LoginPage extends GetView<Login_Controller> {
             width: 105.w,
             child: CountryCodePicker(
               onChanged: (country) {
-                controller.selectedDialCode = country.dialCode ?? '+91';
+                controller.selectedDialCode.value = country.dialCode ?? '+91';
               },
               initialSelection: 'IN',
               favorite: const ['+91', 'IN'],
@@ -312,40 +314,46 @@ class LoginPage extends GetView<Login_Controller> {
           SizedBox(width: 8.w),
           Expanded(
             child: Center(
-              child: TextFormField(
-                focusNode: controller.phoneFocusNode,
-                inputFormatters: [
-                  FilteringTextInputFormatter.digitsOnly,
-                ],
-                style: TextStyle(
-                  fontSize: 14.5.sp,
-                  fontFamily: FontFamily.interMedium,
-                  color: AppColors.authTextNavy,
-                ),
-                controller: controller.mobNoController,
-                keyboardType: TextInputType.phone,
-                textInputAction: TextInputAction.done,
-                maxLength: 15,
-                decoration: InputDecoration(
-                  counterText: '',
-                  border: InputBorder.none,
-                  enabledBorder: InputBorder.none,
-                  focusedBorder: InputBorder.none,
-                  hintText: 'Enter Mobile Number',
-                  hintStyle: TextStyle(
-                    fontSize: 13.5.sp,
-                    color: const Color(0xFF9E9EAF),
-                    fontFamily: FontFamily.interRegular,
+              child: Obx(
+                () => TextFormField(
+                  focusNode: controller.phoneFocusNode,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                    LengthLimitingTextInputFormatter(
+                      controller.selectedDialCode.value == '+91' ? 10 : 15,
+                    ),
+                  ],
+                  style: TextStyle(
+                    fontSize: 14.5.sp,
+                    fontFamily: FontFamily.interMedium,
+                    color: AppColors.authTextNavy,
                   ),
-                  isDense: true,
-                  contentPadding: EdgeInsets.zero,
+                  controller: controller.mobNoController,
+                  keyboardType: TextInputType.phone,
+                  textInputAction: TextInputAction.done,
+                  maxLength:
+                      controller.selectedDialCode.value == '+91' ? 10 : 15,
+                  decoration: InputDecoration(
+                    counterText: '',
+                    border: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    hintText: 'Enter Mobile Number',
+                    hintStyle: TextStyle(
+                      fontSize: 13.5.sp,
+                      color: const Color(0xFF9E9EAF),
+                      fontFamily: FontFamily.interRegular,
+                    ),
+                    isDense: true,
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                  onChanged: (value) {
+                    controller.checkAndDismissKeyboard(value);
+                  },
+                  onFieldSubmitted: (_) {
+                    controller.phoneFocusNode.unfocus();
+                  },
                 ),
-                onChanged: (value) {
-                  controller.checkAndDismissKeyboard(value);
-                },
-                onFieldSubmitted: (_) {
-                  controller.phoneFocusNode.unfocus();
-                },
               ),
             ),
           ),

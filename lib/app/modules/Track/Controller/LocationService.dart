@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:location/location.dart';
 
+import 'package:geocoding/geocoding.dart' hide Location;
 import 'package:fgtracker/app/modules/Track/Controller/Track_controller.dart';
 import '../../../Core/values/Context_Utility.dart';
 import 'TrackController.dart';
@@ -125,6 +126,27 @@ class LocationService extends GetxService {
         }
       }
 
+      if (area == null || area.isEmpty) {
+        try {
+          final placemarks = await placemarkFromCoordinates(lat, lng);
+          if (placemarks.isNotEmpty) {
+            final p = placemarks.first;
+            area = (p.subLocality?.trim().isNotEmpty == true
+                ? p.subLocality!.trim()
+                : (p.thoroughfare?.trim().isNotEmpty == true
+                    ? p.thoroughfare!.trim()
+                    : p.subAdministrativeArea?.trim())) ?? '';
+            city = (p.locality?.trim().isNotEmpty == true
+                ? p.locality!.trim()
+                : p.administrativeArea?.trim()) ?? '';
+            if (address == null || address.isEmpty) {
+              address = area.isNotEmpty && city.isNotEmpty
+                  ? '$area, $city'
+                  : (area.isNotEmpty ? area : city);
+            }
+          }
+        } catch (_) {}
+      }
 
       socketService.emitLocation(
         userId,

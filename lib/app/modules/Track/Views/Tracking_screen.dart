@@ -130,194 +130,120 @@ class TrackingScreen extends StatelessWidget {
     );
   }
 
-  // --- TRACKING HELP POPUP DIALOG ---
   void _showTrackingHelpDialog(BuildContext context) {
-    int? expandedIndex;
-
     showGeneralDialog(
       context: context,
       barrierDismissible: true,
       barrierLabel: "Tracking Help",
-      barrierColor: Colors.black.withOpacity(0.45),
-      transitionDuration: const Duration(milliseconds: 220),
+      barrierColor: Colors.black.withOpacity(0.35),
+      transitionDuration: const Duration(milliseconds: 200),
       pageBuilder: (ctx, anim1, anim2) {
-        return StatefulBuilder(
-          builder: (dialogCtx, setDialogState) {
-            return SafeArea(
-              child: Align(
-                alignment: Alignment.topRight,
-                child: Padding(
-                  padding: EdgeInsets.only(top: 10.h, right: 16.w),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      // Active Help Button matching position
-                      GestureDetector(
-                        onTap: () => Navigator.of(ctx).pop(),
-                        child: Container(
-                          width: 42.w,
-                          height: 42.w,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(12.r),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.12),
-                                blurRadius: 10.r,
-                                offset: Offset(0, 2.h),
-                              ),
-                            ],
+        return SafeArea(
+          child: Align(
+            alignment: Alignment.topRight,
+            child: Padding(
+              padding: EdgeInsets.only(top: 10.h, right: 16.w),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  GestureDetector(
+                    onTap: () => Navigator.of(ctx).pop(),
+                    child: Container(
+                      width: 42.w,
+                      height: 42.w,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12.r),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.12),
+                            blurRadius: 10.r,
+                            offset: Offset(0, 2.h),
                           ),
-                          child: Icon(
-                            Icons.help_outline_rounded,
-                            color: AppColors.primaryText,
-                            size: 20.sp,
-                          ),
-                        ),
+                        ],
                       ),
-                      SizedBox(height: 8.h),
-                      // Help Card
-                      Material(
-                        color: Colors.transparent,
-                        child: Container(
-                          width: 310.w,
-                          constraints: BoxConstraints(
-                            maxHeight: MediaQuery.of(context).size.height * 0.78,
+                      child: Icon(
+                        Icons.help_outline_rounded,
+                        color: AppColors.primaryText,
+                        size: 20.sp,
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 8.h),
+                  Material(
+                    color: Colors.transparent,
+                    child: Container(
+                      width: 245.w,
+                      padding: EdgeInsets.fromLTRB(14.w, 12.h, 14.w, 14.h),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16.r),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.12),
+                            blurRadius: 20.r,
+                            offset: Offset(0, 6.h),
                           ),
-                          padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 18.h),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(20.r),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.16),
-                                blurRadius: 24.r,
-                                offset: Offset(0, 8.h),
+                        ],
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                "Tracking Help",
+                                style: TextStyle(
+                                  fontSize: 14.sp,
+                                  fontWeight: FontWeight.w800,
+                                  color: const Color(0xFF1E1B4B),
+                                ),
                               ),
-                            ],
-                          ),
-                          child: SingleChildScrollView(
-                            physics: const BouncingScrollPhysics(),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                // Header: "Tracking Help" + Close Button
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Container(
-                                          width: 28.r,
-                                          height: 28.r,
-                                          decoration: BoxDecoration(
-                                            color: AppColors.primaryElementLight,
-                                            shape: BoxShape.circle,
-                                          ),
-                                          child: Icon(
-                                            Icons.lightbulb_outline_rounded,
-                                            color: AppColors.primaryElement,
-                                            size: 16.sp,
-                                          ),
-                                        ),
-                                        SizedBox(width: 8.w),
-                                        Text(
-                                          "Tracking Help",
-                                          style: TextStyle(
-                                            fontSize: 16.sp,
-                                            fontWeight: FontWeight.w800,
-                                            color: AppColors.primaryText,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    GestureDetector(
-                                      onTap: () => Navigator.of(ctx).pop(),
-                                      child: Padding(
-                                        padding: EdgeInsets.all(2.r),
-                                        child: Icon(
-                                          Icons.close_rounded,
-                                          color: AppColors.primaryElement,
-                                          size: 20.sp,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                SizedBox(height: 14.h),
-                                // Item 0: What is Live Tracking?
-                                _buildInteractiveHelpCard(
-                                  context: context,
-                                  dialogCtx: ctx,
-                                  index: 0,
-                                  isExpanded: expandedIndex == 0,
-                                  icon: Icons.location_on_rounded,
-                                  title: "What is Live Tracking?",
-                                  subtitle:
-                                      "Track team's real-time location on the map.",
-                                  onTap: () {
-                                    setDialogState(() {
-                                      expandedIndex =
-                                          (expandedIndex == 0) ? null : 0;
-                                    });
-                                  },
-                                  expandedChild: _buildLiveTrackingAnswer(ctx),
-                                ),
-                                SizedBox(height: 12.h),
-                                // Item 1: How to Add Group?
-                                _buildInteractiveHelpCard(
-                                  context: context,
-                                  dialogCtx: ctx,
-                                  index: 1,
-                                  isExpanded: expandedIndex == 1,
-                                  icon: Icons.groups_rounded,
-                                  title: "How to Add Group?",
-                                  subtitle:
-                                      "Create a group to track multiple members.",
-                                  onTap: () {
-                                    setDialogState(() {
-                                      expandedIndex =
-                                          (expandedIndex == 1) ? null : 1;
-                                    });
-                                  },
-                                  expandedChild: _buildAddGroupAnswer(ctx),
-                                ),
-                                SizedBox(height: 12.h),
-                                // Item 2: What is Tracking Radius?
-                                _buildInteractiveHelpCard(
-                                  context: context,
-                                  dialogCtx: ctx,
-                                  index: 2,
-                                  isExpanded: expandedIndex == 2,
-                                  icon: Icons.gps_fixed_rounded,
-                                  title: "What is Tracking Radius?",
-                                  subtitle:
-                                      "Set the area to find nearby members on the map.",
-                                  onTap: () {
-                                    setDialogState(() {
-                                      expandedIndex =
-                                          (expandedIndex == 2) ? null : 2;
-                                    });
-                                  },
-                                  expandedChild: _buildTrackingRadiusAnswer(
-                                    ctx,
-                                    setDialogState,
+                              GestureDetector(
+                                onTap: () => Navigator.of(ctx).pop(),
+                                child: Padding(
+                                  padding: EdgeInsets.all(2.r),
+                                  child: Icon(
+                                    Icons.close_rounded,
+                                    color: const Color(0xFF4338CA),
+                                    size: 17.sp,
                                   ),
                                 ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
-                        ),
+                          SizedBox(height: 12.h),
+                          _helpItem(
+                            icon: Icons.location_on_rounded,
+                            title: "What is Live Tracking?",
+                            subtitle:
+                                "Track team's real-time location on the map.",
+                          ),
+                          SizedBox(height: 11.h),
+                          _helpItem(
+                            icon: Icons.groups_rounded,
+                            title: "How to Add Group?",
+                            subtitle:
+                                "Create a group to track multiple members.",
+                          ),
+                          SizedBox(height: 11.h),
+                          _helpItem(
+                            icon: Icons.gps_fixed_rounded,
+                            title: "What is Tracking Radius?",
+                            subtitle:
+                                "Set the area to find nearby members on the map.",
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
-                ),
+                ],
               ),
-            );
-          },
+            ),
+          ),
         );
       },
       transitionBuilder: (ctx, anim1, anim2, child) {
@@ -336,401 +262,51 @@ class TrackingScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildInteractiveHelpCard({
-    required BuildContext context,
-    required BuildContext dialogCtx,
-    required int index,
-    required bool isExpanded,
+  Widget _helpItem({
     required IconData icon,
     required String title,
     required String subtitle,
-    required VoidCallback onTap,
-    required Widget expandedChild,
   }) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 200),
-      decoration: BoxDecoration(
-        color: isExpanded ? const Color(0xFFF8FAFC) : Colors.white,
-        borderRadius: BorderRadius.circular(14.r),
-        border: Border.all(
-          color: isExpanded
-              ? AppColors.primaryElement.withOpacity(0.4)
-              : const Color(0xFFE2E8F0),
-          width: isExpanded ? 1.4 : 1,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          InkWell(
-            onTap: onTap,
-            borderRadius: BorderRadius.circular(14.r),
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 10.h),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    width: 36.w,
-                    height: 36.w,
-                    decoration: BoxDecoration(
-                      color: isExpanded
-                          ? AppColors.primaryElement
-                          : AppColors.primaryElementLight,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      icon,
-                      color:
-                          isExpanded ? Colors.white : AppColors.primaryElement,
-                      size: 18.sp,
-                    ),
-                  ),
-                  SizedBox(width: 10.w),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          title,
-                          style: TextStyle(
-                            fontSize: 12.8.sp,
-                            fontWeight: FontWeight.w700,
-                            color: isExpanded
-                                ? AppColors.primaryElement
-                                : AppColors.primaryText,
-                          ),
-                        ),
-                        SizedBox(height: 2.h),
-                        Text(
-                          subtitle,
-                          style: TextStyle(
-                            fontSize: 10.5.sp,
-                            fontWeight: FontWeight.w400,
-                            color: AppColors.primarySecondaryElementText,
-                            height: 1.25,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Icon(
-                    isExpanded
-                        ? Icons.keyboard_arrow_up_rounded
-                        : Icons.keyboard_arrow_down_rounded,
-                    color: isExpanded
-                        ? AppColors.primaryElement
-                        : const Color(0xFF94A3B8),
-                    size: 20.sp,
-                  ),
-                ],
-              ),
-            ),
-          ),
-          if (isExpanded) ...[
-            Container(
-              height: 1,
-              color: const Color(0xFFE2E8F0),
-            ),
-            Padding(
-              padding: EdgeInsets.fromLTRB(12.w, 10.h, 12.w, 12.h),
-              child: expandedChild,
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
-  Widget _buildLiveTrackingAnswer(BuildContext dialogCtx) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          "Live Tracking gives you real-time GPS visibility of your active field staff and team members moving continuously on Google Maps.",
-          style: TextStyle(
-            fontSize: 11.sp,
-            color: const Color(0xFF334155),
-            height: 1.35,
-          ),
-        ),
-        SizedBox(height: 8.h),
-        _helpBullet(
-          Icons.pin_drop_rounded,
-          "Live Pins: Members update continuously on the interactive map.",
-        ),
-        SizedBox(height: 6.h),
-        _helpBullet(
-          Icons.battery_charging_full_rounded,
-          "Battery & Distance: View exact km away and real-time battery %.",
-        ),
-        SizedBox(height: 6.h),
-        _helpBullet(
-          Icons.touch_app_rounded,
-          "Tap to Zoom: Tap any member in the list to center on their location.",
-        ),
-        SizedBox(height: 12.h),
-        SizedBox(
-          width: double.infinity,
-          height: 34.h,
-          child: ElevatedButton(
-            onPressed: () {
-              Navigator.of(dialogCtx).pop();
-              controller.selectTab(0);
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primaryElement,
-              elevation: 0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8.r),
-              ),
-              padding: EdgeInsets.zero,
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.map_rounded, color: Colors.white, size: 15.sp),
-                SizedBox(width: 6.w),
-                Text(
-                  "Explore Live Map",
-                  style: TextStyle(
-                    fontSize: 11.5.sp,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildAddGroupAnswer(BuildContext dialogCtx) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          "Create a group to organize multiple members and track their locations together on one shared radar.",
-          style: TextStyle(
-            fontSize: 11.sp,
-            color: const Color(0xFF334155),
-            height: 1.35,
-          ),
-        ),
-        SizedBox(height: 8.h),
-        _helpBullet(
-          Icons.looks_one_rounded,
-          "Go to Group Tab: Switch to the Group tab to view your teams.",
-        ),
-        SizedBox(height: 6.h),
-        _helpBullet(
-          Icons.looks_two_rounded,
-          "Create Group: Enter group name and description to get a Group Code.",
-        ),
-        SizedBox(height: 6.h),
-        _helpBullet(
-          Icons.looks_3_rounded,
-          "Invite Team: Share the unique Group Code or QR with members.",
-        ),
-        SizedBox(height: 12.h),
-        Row(
-          children: [
-            Expanded(
-              child: SizedBox(
-                height: 34.h,
-                child: OutlinedButton(
-                  onPressed: () {
-                    Navigator.of(dialogCtx).pop();
-                    controller.selectTab(1);
-                  },
-                  style: OutlinedButton.styleFrom(
-                    side: BorderSide(color: AppColors.primaryElement),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8.r),
-                    ),
-                    padding: EdgeInsets.zero,
-                  ),
-                  child: Text(
-                    "View Groups",
-                    style: TextStyle(
-                      fontSize: 11.5.sp,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.primaryElement,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            SizedBox(width: 8.w),
-            Expanded(
-              child: SizedBox(
-                height: 34.h,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.of(dialogCtx).pop();
-                    if (!Get.isRegistered<GroupController>()) {
-                      Get.put(GroupController());
-                    }
-                    showCreateGroupSheet();
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryElement,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8.r),
-                    ),
-                    padding: EdgeInsets.zero,
-                  ),
-                  child: Text(
-                    "+ Create Group",
-                    style: TextStyle(
-                      fontSize: 11.5.sp,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildTrackingRadiusAnswer(
-    BuildContext dialogCtx,
-    StateSetter setDialogState,
-  ) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          "Tracking Radius filters out far-away users and only shows team members within your chosen distance perimeter.",
-          style: TextStyle(
-            fontSize: 11.sp,
-            color: const Color(0xFF334155),
-            height: 1.35,
-          ),
-        ),
-        SizedBox(height: 8.h),
-        _helpBullet(
-          Icons.radar_rounded,
-          "Smart Filter: Only members within radius appear on radar.",
-        ),
-        SizedBox(height: 6.h),
-        _helpBullet(
-          Icons.zoom_in_map_rounded,
-          "Auto-Zoom: Map circle and camera zoom adjust dynamically.",
-        ),
-        SizedBox(height: 10.h),
-        Text(
-          "Quick Select Radius:",
-          style: TextStyle(
-            fontSize: 11.sp,
-            fontWeight: FontWeight.w700,
-            color: AppColors.primaryText,
-          ),
-        ),
-        SizedBox(height: 6.h),
-        Obx(() {
-          final currentRadius = controller.selectedRadius.value;
-          return Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: ["2", "4", "6", "8"].map((r) {
-              final isSelected = currentRadius == r;
-              return GestureDetector(
-                onTap: () {
-                  controller.updateRadius(r);
-                  setDialogState(() {});
-                },
-                child: Container(
-                  width: 58.w,
-                  height: 30.h,
-                  decoration: BoxDecoration(
-                    color: isSelected
-                        ? AppColors.primaryElement
-                        : Colors.white,
-                    borderRadius: BorderRadius.circular(8.r),
-                    border: Border.all(
-                      color: isSelected
-                          ? AppColors.primaryElement
-                          : const Color(0xFFCBD5E1),
-                      width: 1.2,
-                    ),
-                  ),
-                  alignment: Alignment.center,
-                  child: Text(
-                    "$r km",
-                    style: TextStyle(
-                      fontSize: 11.sp,
-                      fontWeight:
-                          isSelected ? FontWeight.w700 : FontWeight.w500,
-                      color: isSelected
-                          ? Colors.white
-                          : const Color(0xFF334155),
-                    ),
-                  ),
-                ),
-              );
-            }).toList(),
-          );
-        }),
-        SizedBox(height: 10.h),
-        SizedBox(
-          width: double.infinity,
-          height: 34.h,
-          child: ElevatedButton(
-            onPressed: () {
-              Navigator.of(dialogCtx).pop();
-              controller.selectTab(0);
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primaryElement,
-              elevation: 0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8.r),
-              ),
-              padding: EdgeInsets.zero,
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.check_circle_outline_rounded,
-                    color: Colors.white, size: 15.sp),
-                SizedBox(width: 6.w),
-                Text(
-                  "Apply to Map",
-                  style: TextStyle(
-                    fontSize: 11.5.sp,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _helpBullet(IconData icon, String text) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, size: 14.sp, color: AppColors.primaryElement),
-        SizedBox(width: 6.w),
+        Container(
+          width: 30.w,
+          height: 30.w,
+          decoration: const BoxDecoration(
+            color: Color(0xFFEEF2FF),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(
+            icon,
+            color: const Color(0xFF4F46E5),
+            size: 16.sp,
+          ),
+        ),
+        SizedBox(width: 10.w),
         Expanded(
-          child: Text(
-            text,
-            style: TextStyle(
-              fontSize: 10.5.sp,
-              color: const Color(0xFF475569),
-              height: 1.3,
-            ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 11.5.sp,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF1E1B4B),
+                ),
+              ),
+              SizedBox(height: 2.h),
+              Text(
+                subtitle,
+                style: TextStyle(
+                  fontSize: 9.5.sp,
+                  fontWeight: FontWeight.w400,
+                  color: const Color(0xFF64748B),
+                  height: 1.2,
+                ),
+              ),
+            ],
           ),
         ),
       ],

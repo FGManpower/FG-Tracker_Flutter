@@ -25,45 +25,59 @@ class RegistrationScreen extends GetView<RegistrationController> {
 
     // Ensure pre-filled email, phone and name are populated when opening Edit Profile
     if (isUpdate) {
-      if (Get.arguments is Map && (Get.arguments as Map)['userData'] is UserData) {
+      if (Get.arguments is Map &&
+          (Get.arguments as Map)['userData'] is UserData) {
         final u = (Get.arguments as Map)['userData'] as UserData;
-        if (controller.userData.userId == null) {
-          controller.userData = u;
-        }
-        if (u.email != null && u.email!.isNotEmpty && controller.emailController.text.isEmpty) {
-          controller.emailController.text = u.email!;
-        }
-        if (u.name != null && u.name!.isNotEmpty && controller.nameController.text.isEmpty) {
+        controller.userData = u;
+        if (u.name != null &&
+            u.name!.isNotEmpty &&
+            controller.nameController.text.isEmpty) {
           controller.nameController.text = u.name!;
         }
-        if (u.mobileNo != null && u.mobileNo!.isNotEmpty && controller.phoneController.text.isEmpty) {
+        if (u.mobileNo != null &&
+            u.mobileNo!.isNotEmpty &&
+            controller.phoneController.text.isEmpty) {
           controller.phoneController.text = u.mobileNo!;
         }
       }
-      if (controller.emailController.text.isEmpty) {
-        final savedEmail = (controller.userData.email != null && controller.userData.email!.isNotEmpty)
-            ? controller.userData.email!
-            : (Global.storageServices.get(PrefConst.userEmail)?.toString() ??
-               (Get.arguments is Map ? (Get.arguments as Map)['email']?.toString() : null) ??
-               "");
-        if (savedEmail.isNotEmpty) {
-          controller.emailController.text = savedEmail;
-        }
+
+      final existingEmail = (controller.userData.email != null &&
+              controller.userData.email!.trim().isNotEmpty &&
+              controller.userData.email!.trim().toLowerCase() != "null")
+          ? controller.userData.email!.trim()
+          : ((Global.storageServices.get(PrefConst.userEmail)?.toString() ??
+                  (Get.arguments is Map
+                      ? (Get.arguments as Map)['email']?.toString()
+                      : null) ??
+                  "")
+              .trim());
+
+      if (existingEmail.isNotEmpty && existingEmail.toLowerCase() != "null") {
+        controller.emailController.text = existingEmail;
+        controller.hasExistingEmail.value = true;
+      } else {
+        controller.emailController.clear();
+        controller.hasExistingEmail.value = false;
       }
       if (controller.phoneController.text.isEmpty) {
-        final savedPhone = (controller.userData.mobileNo != null && controller.userData.mobileNo!.isNotEmpty)
+        final savedPhone = (controller.userData.mobileNo != null &&
+                controller.userData.mobileNo!.isNotEmpty)
             ? controller.userData.mobileNo!
             : (Global.storageServices.get(PrefConst.userPhone)?.toString() ??
-               (Get.arguments is Map ? (Get.arguments as Map)['mobNo']?.toString() : null) ??
-               "");
+                (Get.arguments is Map
+                    ? (Get.arguments as Map)['mobNo']?.toString()
+                    : null) ??
+                "");
         if (savedPhone.isNotEmpty) {
           controller.phoneController.text = savedPhone;
         }
       }
       if (controller.nameController.text.isEmpty) {
-        final savedName = (controller.userData.name != null && controller.userData.name!.isNotEmpty)
+        final savedName = (controller.userData.name != null &&
+                controller.userData.name!.isNotEmpty)
             ? controller.userData.name!
-            : (Global.storageServices.get(PrefConst.userName)?.toString() ?? "");
+            : (Global.storageServices.get(PrefConst.userName)?.toString() ??
+                "");
         if (savedName.isNotEmpty) {
           controller.nameController.text = savedName;
         }
@@ -601,7 +615,8 @@ class RegistrationScreen extends GetView<RegistrationController> {
               children: [
                 // Header Row (Back Button + Centered Title)
                 Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
                   child: Row(
                     children: [
                       GestureDetector(
@@ -648,7 +663,8 @@ class RegistrationScreen extends GetView<RegistrationController> {
                       borderRadius: BorderRadius.circular(28.r),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF5D47F1).withValues(alpha: 0.10),
+                          color:
+                              const Color(0xFF5D47F1).withValues(alpha: 0.10),
                           blurRadius: 22,
                           offset: const Offset(0, 8),
                         ),
@@ -658,7 +674,8 @@ class RegistrationScreen extends GetView<RegistrationController> {
                       borderRadius: BorderRadius.circular(28.r),
                       child: SingleChildScrollView(
                         physics: const BouncingScrollPhysics(),
-                        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 24.h),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 20.w, vertical: 24.h),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
@@ -689,7 +706,8 @@ class RegistrationScreen extends GetView<RegistrationController> {
                                       ),
                                       child: CircleAvatar(
                                         radius: 17.r,
-                                        backgroundColor: const Color(0xFF5D47F1),
+                                        backgroundColor:
+                                            const Color(0xFF5D47F1),
                                         child: Icon(
                                           Icons.camera_alt_rounded,
                                           color: Colors.white,
@@ -748,14 +766,19 @@ class RegistrationScreen extends GetView<RegistrationController> {
                             ),
 
                             // 3. Email Address
-                            _buildEditProfileField(
-                              label: "Email Address",
-                              controller: controller.emailController,
-                              icon: Icons.mail_outline_rounded,
-                              keyboardType: TextInputType.emailAddress,
-                              validator: (value) =>
-                                  Validator.validateEmail(value),
-                            ),
+                            Obx(() {
+                              if (!controller.hasExistingEmail.value) {
+                                return const SizedBox.shrink();
+                              }
+                              return _buildEditProfileField(
+                                label: "Email Address",
+                                controller: controller.emailController,
+                                icon: Icons.mail_outline_rounded,
+                                keyboardType: TextInputType.emailAddress,
+                                validator: (value) =>
+                                    Validator.validateEmail(value),
+                              );
+                            }),
 
                             SizedBox(height: 26.h),
 
@@ -1075,4 +1098,3 @@ class _RegHexCardPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
-

@@ -51,7 +51,9 @@ Widget headerUi(HomeController controller) {
                 Get.toNamed(Routes.Register, arguments: {
                   "type": "Update",
                   'userData': controller.userData.value,
-                  'email': controller.userData.value.email ?? Global.storageServices.get(PrefConst.userEmail)?.toString() ?? "",
+                  'email': (controller.userData.value.email != null && controller.userData.value.email!.trim().isNotEmpty && controller.userData.value.email != "null")
+                      ? controller.userData.value.email!.trim()
+                      : (Global.storageServices.get(PrefConst.userEmail)?.toString() ?? ""),
                   'mobNo': controller.userData.value.mobileNo ?? Global.storageServices.get(PrefConst.userPhone)?.toString() ?? "",
                 });
               },

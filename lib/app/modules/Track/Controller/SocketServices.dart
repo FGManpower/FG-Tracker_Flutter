@@ -69,33 +69,40 @@ class SocketService extends GetxService {
       return;
     }
 
+    final String? cleanAddress =
+        (address != null && address.trim().isNotEmpty) ? address.trim() : null;
+    final String? cleanArea =
+        (area != null && area.trim().isNotEmpty) ? area.trim() : null;
+    final String? cleanCity =
+        (city != null && city.trim().isNotEmpty) ? city.trim() : null;
+
     if (connectedGroupIds.isEmpty) {
-      final payload = {
+      final payload = <String, dynamic>{
         "userId": userId,
         "lat": lat,
         "lng": lng,
         "latitude": lat,
         "longitude": lng,
-        if (address != null && address.isNotEmpty) "address": address,
-        if (address != null && address.isNotEmpty) "location": address,
-        if (area != null && area.isNotEmpty) "area": area,
-        if (city != null && city.isNotEmpty) "city": city,
+        if (cleanAddress != null) "address": cleanAddress,
+        if (cleanAddress != null) "location": cleanAddress,
+        if (cleanArea != null) "area": cleanArea,
+        if (cleanCity != null) "city": cleanCity,
       };
       _socket?.emit("send-location", payload);
       log("📡 [SocketService] Emitted send-location (broadcast): $payload");
     } else {
       for (String groupId in connectedGroupIds) {
-        final payload = {
+        final payload = <String, dynamic>{
           "userId": userId,
           "groupId": groupId,
           "lat": lat,
           "lng": lng,
           "latitude": lat,
           "longitude": lng,
-          if (address != null && address.isNotEmpty) "address": address,
-          if (address != null && address.isNotEmpty) "location": address,
-          if (area != null && area.isNotEmpty) "area": area,
-          if (city != null && city.isNotEmpty) "city": city,
+          if (cleanAddress != null) "address": cleanAddress,
+          if (cleanAddress != null) "location": cleanAddress,
+          if (cleanArea != null) "area": cleanArea,
+          if (cleanCity != null) "city": cleanCity,
         };
         _socket?.emit("send-location", payload);
         log("📡 [SocketService] Emitted send-location to group $groupId: $payload");

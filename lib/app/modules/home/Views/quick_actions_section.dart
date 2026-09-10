@@ -66,7 +66,7 @@ class QuickActionsSection extends StatelessWidget {
             _QuickActionCard(
               "Safe Zone",
               Icons.verified_user_rounded,
-              onTap: () => Get.to(() => const SafetyDashboardView()),
+              onTap: () => Get.to(() =>  SafetyDashboardView()),
             ),
           ],
         ),

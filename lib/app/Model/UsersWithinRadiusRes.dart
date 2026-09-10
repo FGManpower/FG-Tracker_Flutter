@@ -115,7 +115,7 @@ class UsersWithinRadiusData {
   }
 
   UsersWithinRadiusData.fromJson(Map<String, dynamic> json) {
-    userId = json['userId'] ?? json['UserId'] ?? json['id'] ?? json['user_id'];
+    userId = json['userId'] ?? json['UserId'] ?? json['id'] ?? json['user_id'] ?? json['_id'];
 
     // Resolve name
     String? resolvedName =

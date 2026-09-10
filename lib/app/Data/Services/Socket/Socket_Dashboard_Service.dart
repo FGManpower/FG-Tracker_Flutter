@@ -13,11 +13,10 @@ class SocketDashboardService extends GetxService {
       Get.put(SocketDashboardService());
 
   Socket? _socket;
+  Map<String, dynamic>? _lastLiveLocationParams;
 
   final StreamController<dynamic> _groupCountController =
       StreamController<dynamic>.broadcast();
-
-
 
   final StreamController<List<LiveLocationModel>>
   _liveLocationController =
@@ -29,7 +28,6 @@ class SocketDashboardService extends GetxService {
   Stream<dynamic> get groupCountStream => _groupCountController.stream;
 
   bool get isConnected => _socket?.connected ?? false;
-
 
   void init() {
     if (_socket != null) return;
@@ -46,6 +44,10 @@ class SocketDashboardService extends GetxService {
     _socket!.onConnect((_) {
       log('Dashboard socket connected');
       requestGroupCount();
+      if (_lastLiveLocationParams != null) {
+        log('📡 [DashboardSocket] Re-emitting get-user-live-location on connect: $_lastLiveLocationParams');
+        _socket?.emit('get-user-live-location', _lastLiveLocationParams);
+      }
     });
 
     _socket!.onConnectError((error) {
@@ -139,6 +141,8 @@ class SocketDashboardService extends GetxService {
       if (area != null && area.isNotEmpty) 'area': area,
       if (city != null && city.isNotEmpty) 'city': city,
     };
+
+    _lastLiveLocationParams = param;
 
     log('📡 [DashboardSocket] Emitting get-user-live-location: $param');
     _socket?.emit(

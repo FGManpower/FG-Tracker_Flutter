@@ -143,7 +143,9 @@ class Sidemenu extends StatelessWidget {
                         Get.toNamed(Routes.Register, arguments: {
                           "type": "Update",
                           'userData': user,
-                          'email': user.email ?? Global.storageServices.get(PrefConst.userEmail)?.toString() ?? "",
+                          'email': (user.email != null && user.email!.trim().isNotEmpty && user.email != "null")
+                              ? user.email!.trim()
+                              : (Global.storageServices.get(PrefConst.userEmail)?.toString() ?? ""),
                           'mobNo': user.mobileNo ?? Global.storageServices.get(PrefConst.userPhone)?.toString() ?? "",
                         });
                       },
@@ -469,7 +471,9 @@ class Sidemenu extends StatelessWidget {
               Get.toNamed(Routes.Register, arguments: {
                 "type": "Update",
                 'userData': controller.userData.value,
-                'email': controller.userData.value.email ?? Global.storageServices.get(PrefConst.userEmail)?.toString() ?? "",
+                'email': (controller.userData.value.email != null && controller.userData.value.email!.trim().isNotEmpty && controller.userData.value.email != "null")
+                    ? controller.userData.value.email!.trim()
+                    : (Global.storageServices.get(PrefConst.userEmail)?.toString() ?? ""),
                 'mobNo': controller.userData.value.mobileNo ?? Global.storageServices.get(PrefConst.userPhone)?.toString() ?? "",
               });
             },
