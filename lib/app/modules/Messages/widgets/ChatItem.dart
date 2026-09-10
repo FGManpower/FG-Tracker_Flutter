@@ -40,6 +40,8 @@ class ChatBubble extends StatelessWidget {
   });
 
   static const Color _purple = Color(0xFF5045B9);
+  static const Color _myBubbleBg = Color(0xFFDCD6F5);
+  static const Color _otherBubbleBg = Colors.white;
 
   @override
   Widget build(BuildContext context) {
@@ -48,127 +50,79 @@ class ChatBubble extends StatelessWidget {
 
     final isSentByMe = message.senderId.toString() == currentUserId;
 
-    final bgColor = isSentByMe
-        ? const LinearGradient(
-      colors: [ToggleThemeData.darkPurple, ToggleThemeData.Appcolor],
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-    )
-        : const LinearGradient(
-      colors: [Colors.white, Colors.white],
-    );
-
-    final textColor = isSentByMe ? Colors.white : Colors.black87;
+    final bgColor = isSentByMe ? _myBubbleBg : _otherBubbleBg;
+    final textColor = Colors.black87;
 
     final borderRadius = isSentByMe
-        ? const BorderRadius.only(
-      topLeft: Radius.circular(16),
-      topRight: Radius.circular(2),
-      bottomLeft: Radius.circular(16),
-      bottomRight: Radius.circular(16),
+        ? BorderRadius.only(
+      topLeft: Radius.circular(16.r),
+      topRight: Radius.circular(16.r),
+      bottomLeft: Radius.circular(16.r),
+      bottomRight: Radius.circular(4.r),
     )
-        : const BorderRadius.only(
-      topLeft: Radius.circular(2),
-      topRight: Radius.circular(16),
-      bottomLeft: Radius.circular(16),
-      bottomRight: Radius.circular(16),
+        : BorderRadius.only(
+      topLeft: Radius.circular(4.r),
+      topRight: Radius.circular(16.r),
+      bottomLeft: Radius.circular(16.r),
+      bottomRight: Radius.circular(16.r),
     );
 
     return Obx(
           () => Container(
         margin: EdgeInsets.symmetric(vertical: 6.h),
-        child: Column(
-          crossAxisAlignment:
-          isSentByMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment:
+          isSentByMe ? MainAxisAlignment.end : MainAxisAlignment.start,
           children: [
-            GestureDetector(
-              onLongPress: () {
-                _showMessageMenu(context, isSentByMe);
-              },
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
-                constraints: BoxConstraints(
-                  maxWidth: MediaQuery.of(context).size.width * 0.75,
-                ),
-                padding: EdgeInsets.symmetric(
-                  horizontal: 12.w,
-                  vertical: 10.h,
-                ),
-                decoration: BoxDecoration(
-                  gradient: controller.highlightedMessageId.value == message.id
-                      ? LinearGradient(
-                    colors: [
-                      Colors.yellow.withValues(alpha: .35),
-                      Colors.yellow.withValues(alpha: .20),
+            Flexible(
+              child: GestureDetector(
+                onLongPress: () => _showMessageMenu(context, isSentByMe),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  constraints: BoxConstraints(
+                    maxWidth: MediaQuery.of(context).size.width * 0.75,
+                  ),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 12.w,
+                    vertical: 8.h,
+                  ),
+                  decoration: BoxDecoration(
+                    color: controller.highlightedMessageId.value == message.id
+                        ? Colors.yellow.withValues(alpha: .35)
+                        : bgColor,
+                    borderRadius: borderRadius,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.04),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
                     ],
-                  )
-                      : bgColor,
-                  borderRadius: borderRadius,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.05),
-                      blurRadius: 4,
-                      offset: const Offset(2, 2),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildReplyPreview(
-                      message,
-                      isSentByMe,
-                    ),
-                    _buildMessageContent(
-                      message,
-                      textColor,
-                      isSentByMe,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            SizedBox(height: 4.h),
-            Padding(
-              padding: EdgeInsets.only(
-                left: isSentByMe ? 0 : 6.w,
-                right: isSentByMe ? 6.w : 0,
-              ),
-              child: Align(
-                alignment:
-                isSentByMe ? Alignment.centerRight : Alignment.centerLeft,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (message.isEdited == true)
-                      Padding(
-                        padding: EdgeInsets.only(right: 4.w),
-                        child: Text(
-                          "edited",
-                          style: TextStyle(
-                            fontSize: 10.sp,
-                            color: Colors.grey[700],
-                            fontStyle: FontStyle.italic,
+                  ),
+                  child: IntrinsicWidth(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _buildReplyPreview(message, isSentByMe),
+                        if (_isPlainTextMessage(message))
+                          _buildTextWithTime(
+                            message: message,
+                            textColor: textColor,
+                            isSentByMe: isSentByMe,
+                          )
+                        else ...[
+                          _buildMessageContent(message, textColor, isSentByMe),
+                          SizedBox(height: 4.h),
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: _buildTimeRow(isSentByMe),
                           ),
-                        ),
-                      ),
-                    reausabletext(
-                      formatTime(message.timestamp ?? ""),
-                      fontsize: 10.sp,
-                      color: Colors.grey[500],
+                        ],
+                      ],
                     ),
-                    if (isSentByMe) SizedBox(width: 4.w),
-                    if (isSentByMe)
-                      Icon(
-                        (message.seenCount ?? 0) > 0
-                            ? Icons.done_all
-                            : Icons.done,
-                        size: 16.sp,
-                        color: (message.seenCount ?? 0) > 0
-                            ? Colors.blueAccent
-                            : Colors.grey,
-                      ),
-                  ],
+                  ),
                 ),
               ),
             ),
@@ -178,13 +132,124 @@ class ChatBubble extends StatelessWidget {
     );
   }
 
+  bool _isPlainTextMessage(MessageData message) {
+    final type = message.messageType ?? "text";
+    return type == "text" || type == "text_message" || type.isEmpty;
+  }
+
+  Widget _buildTimeRow(bool isSentByMe) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (message.isEdited == true) ...[
+          Text(
+            "edited",
+            style: TextStyle(
+              fontSize: 9.sp,
+              color: Colors.grey.shade600,
+              fontStyle: FontStyle.italic,
+            ),
+          ),
+          SizedBox(width: 4.w),
+        ],
+        Text(
+          formatTime(message.timestamp ?? ""),
+          style: TextStyle(
+            fontSize: 10.sp,
+            color: Colors.grey.shade600,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        if (isSentByMe) ...[
+          SizedBox(width: 3.w),
+          Icon(
+            (message.seenCount ?? 0) > 0 ? Icons.done_all : Icons.done,
+            size: 14.sp,
+            color: (message.seenCount ?? 0) > 0
+                ? _purple
+                : Colors.grey.shade500,
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildTextWithTime({
+    required MessageData message,
+    required Color textColor,
+    required bool isSentByMe,
+  }) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Expanded(
+          child: _buildTextContent(message, textColor, isSentByMe),
+        ),
+        SizedBox(width: 14.w),
+        _buildTimeRow(isSentByMe),
+      ],
+    );
+  }
+
+  Widget _buildTextContent(
+      MessageData message,
+      Color textColor,
+      bool isSentByMe,
+      ) {
+    final query = controller.searchQuery.value;
+    final content = message.content?.toString() ?? "";
+
+    if (query.isNotEmpty &&
+        content.toLowerCase().contains(query.toLowerCase())) {
+      return _buildHighlightedText(
+        content,
+        query,
+        normalStyle: TextStyle(
+          color: textColor,
+          fontSize: 13.sp,
+          fontFamily: FontFamily.interMedium,
+          height: 1.35,
+        ),
+        highlightStyle: TextStyle(
+          backgroundColor: const Color(0xFFFFD700),
+          color: Colors.black,
+          fontWeight: FontWeight.bold,
+          fontSize: 13.sp,
+          fontFamily: FontFamily.interMedium,
+          height: 1.35,
+        ),
+      );
+    }
+
+    return Linkify(
+      text: content,
+      style: TextStyle(
+        color: textColor,
+        fontSize: 13.sp,
+        fontFamily: FontFamily.interMedium,
+        height: 1.35,
+      ),
+      linkStyle: TextStyle(
+        color: _purple,
+        decoration: TextDecoration.underline,
+        fontSize: 13.sp,
+      ),
+      onOpen: (link) async {
+        Uri uri = Uri.parse(link.url);
+        if (!uri.hasScheme) {
+          uri = Uri.parse("https://${link.url}");
+        }
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      },
+    );
+  }
+
   Widget _buildMessageContent(
       MessageData message,
       Color textColor,
       bool isSentByMe,
       ) {
     if (message.messageType == "image" || message.messageType == "image_text") {
-      final parts = message.content?.split("||") ?? [];
       final imagePart = message.content ?? "";
       final caption = message.caption ?? "";
 
@@ -207,7 +272,7 @@ class ChatBubble extends StatelessWidget {
             reausabletext(
               caption,
               color: textColor,
-              fontsize: 11.sp,
+              fontsize: 12.sp,
             ),
         ],
       );
@@ -218,11 +283,8 @@ class ChatBubble extends StatelessWidget {
       );
     } else if (message.messageType == "video") {
       final parts = message.content?.split("||") ?? [];
-
       final videoPath = parts.isNotEmpty ? parts[0] : "";
-
       final thumbnailPath = parts.length > 1 ? parts[1] : "";
-
       final duration = parts.length > 2 ? parts[2] : "--:--";
 
       return Column(
@@ -245,58 +307,41 @@ class ChatBubble extends StatelessWidget {
             Padding(
               padding: EdgeInsets.only(top: 8.h),
               child: reausabletext(
-                message.caption.toString(),
+                message.caption!,
                 color: textColor,
-                fontsize: 11.sp,
-                fontfamily: FontFamily.interMedium,
+                fontsize: 12.sp,
               ),
             ),
         ],
       );
     } else if (message.messageType == "document") {
       final parts = message.content?.split("||") ?? [];
-
       final documentUrl = parts.isNotEmpty ? parts[0] : "";
-
       String documentName =
       parts.length > 1 ? parts[1] : documentUrl.split('/').last;
-
-      documentName = removeDuplicateExtension(
-        documentName,
-      );
-
+      documentName = removeDuplicateExtension(documentName);
       final extension = documentName.split('.').last.toLowerCase();
+      final fileSize = parts.length > 2 ? parts[2] : "";
 
       IconData icon;
-      Color iconColor;
-
       switch (extension) {
         case "pdf":
-          icon = Icons.picture_as_pdf;
-          iconColor = Colors.red;
+          icon = Icons.picture_as_pdf_rounded;
           break;
-
         case "doc":
         case "docx":
-          icon = Icons.description;
-          iconColor = Colors.blue;
+          icon = Icons.description_rounded;
           break;
-
         case "xls":
         case "xlsx":
-          icon = Icons.table_chart;
-          iconColor = Colors.green;
+          icon = Icons.table_chart_rounded;
           break;
-
         case "ppt":
         case "pptx":
-          icon = Icons.slideshow;
-          iconColor = Colors.orange;
+          icon = Icons.slideshow_rounded;
           break;
-
         default:
-          icon = Icons.insert_drive_file;
-          iconColor = Colors.grey;
+          icon = Icons.insert_drive_file_rounded;
       }
 
       return Column(
@@ -304,63 +349,62 @@ class ChatBubble extends StatelessWidget {
         children: [
           InkWell(
             onTap: () async {
-              await DocumentService().openDocument(
-                "${ConstRes.aImageBaseUrl}$documentUrl",
-              );
+              await DocumentService()
+                  .openDocument("${ConstRes.aImageBaseUrl}$documentUrl");
             },
+            borderRadius: BorderRadius.circular(12.r),
             child: Container(
               width: 240.w,
-              padding: EdgeInsets.all(12.w),
+              padding: EdgeInsets.all(10.w),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: .08),
+                color: isSentByMe
+                    ? Colors.white.withValues(alpha: 0.6)
+                    : const Color(0xFFF3F1FB),
                 borderRadius: BorderRadius.circular(12.r),
               ),
               child: Row(
                 children: [
                   Container(
-                    width: 50.w,
-                    height: 50.w,
+                    width: 44.w,
+                    height: 44.w,
                     decoration: BoxDecoration(
-                      color: iconColor,
+                      color: _purple.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(10.r),
                     ),
-                    child: Icon(
-                      icon,
-                      color: Colors.white,
-                      size: 26.sp,
-                    ),
+                    child: Icon(icon, color: _purple, size: 24.sp),
                   ),
                   SizedBox(width: 10.w),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
                           documentName,
-                          maxLines: 2,
+                          maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
-                            color: textColor,
+                            color: Colors.black87,
                             fontSize: 12.sp,
-                            fontWeight: FontWeight.w600,
+                            fontWeight: FontWeight.w700,
                           ),
                         ),
-                        SizedBox(height: 4.h),
+                        SizedBox(height: 3.h),
                         Text(
-                          extension.toUpperCase(),
+                          fileSize.isNotEmpty
+                              ? "$fileSize • ${extension.toUpperCase()}"
+                              : extension.toUpperCase(),
                           style: TextStyle(
-                            color: Colors.grey,
+                            color: Colors.grey.shade600,
                             fontSize: 10.sp,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
                       ],
                     ),
                   ),
-                  Icon(
-                    Icons.download_rounded,
-                    color: textColor,
-                    size: 20.sp,
-                  ),
+                  SizedBox(width: 6.w),
+                  Icon(Icons.download_rounded, color: _purple, size: 20.sp),
                 ],
               ),
             ),
@@ -371,7 +415,7 @@ class ChatBubble extends StatelessWidget {
               child: reausabletext(
                 message.caption.toString(),
                 color: textColor,
-                fontsize: 11.sp,
+                fontsize: 12.sp,
                 fontfamily: FontFamily.interMedium,
               ),
             ),
@@ -390,82 +434,27 @@ class ChatBubble extends StatelessWidget {
         textColor: textColor,
       );
     } else {
-      final query = controller.searchQuery.value;
-      final content = message.content?.toString() ?? "";
-
-      if (query.isNotEmpty &&
-          content.toLowerCase().contains(query.toLowerCase())) {
-        return _buildHighlightedText(
-          content,
-          query,
-          normalStyle: TextStyle(
-            color: textColor,
-            fontSize: 12.sp,
-            fontFamily: FontFamily.interMedium,
-          ),
-          highlightStyle: TextStyle(
-            backgroundColor: const Color(0xFFFFD700),
-            color: Colors.black,
-            fontWeight: FontWeight.bold,
-            fontSize: 12.sp,
-            fontFamily: FontFamily.interMedium,
-          ),
-        );
-      }
-
-      return Linkify(
-        text: content,
-        style: TextStyle(
-          color: textColor,
-          fontSize: 12.sp,
-          fontFamily: FontFamily.interMedium,
-        ),
-        linkStyle: const TextStyle(
-          color: Colors.blue,
-          decoration: TextDecoration.underline,
-        ),
-        onOpen: (link) async {
-          Uri uri = Uri.parse(link.url);
-          if (!uri.hasScheme) {
-            uri = Uri.parse("https://${link.url}");
-          }
-          print("URL => $uri");
-          await launchUrl(
-            uri,
-            mode: LaunchMode.externalApplication,
-          );
-        },
-      );
+      return _buildTextContent(message, textColor, isSentByMe);
     }
   }
 
-  Widget _buildReplyPreview(
-      MessageData message,
-      bool isSentByMe,
-      ) {
-    if (message.replyId == null) {
-      return const SizedBox.shrink();
-    }
+  Widget _buildReplyPreview(MessageData message, bool isSentByMe) {
+    if (message.replyId == null) return const SizedBox.shrink();
 
     String preview = message.replyMessage?.toString() ?? "";
-
     switch (message.replyType) {
       case "image":
         preview = "📷 Photo";
         break;
-
       case "video":
         preview = "🎥 Video";
         break;
-
       case "audio":
         preview = "🎤 Voice message";
         break;
-
       case "document":
         preview = "📄 Document";
         break;
-
       case "location":
         preview = "📍 Location";
         break;
@@ -483,14 +472,11 @@ class ChatBubble extends StatelessWidget {
         padding: EdgeInsets.all(8.w),
         decoration: BoxDecoration(
           color: isSentByMe
-              ? Colors.white.withValues(alpha: .15)
-              : Colors.grey.shade200,
-          borderRadius: BorderRadius.circular(8.r),
+              ? Colors.white.withValues(alpha: .5)
+              : Colors.grey.shade100,
+          borderRadius: BorderRadius.circular(10.r),
           border: Border(
-            left: BorderSide(
-              color: Colors.green,
-              width: 4,
-            ),
+            left: BorderSide(color: _purple, width: 3),
           ),
         ),
         child: Column(
@@ -501,7 +487,7 @@ class ChatBubble extends StatelessWidget {
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 11.sp,
-                color: isSentByMe ? Colors.white : Colors.green,
+                color: _purple,
               ),
             ),
             SizedBox(height: 2.h),
@@ -511,7 +497,7 @@ class ChatBubble extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 fontSize: 11.sp,
-                color: isSentByMe ? Colors.white70 : Colors.black54,
+                color: Colors.grey.shade700,
               ),
             ),
           ],
@@ -519,7 +505,6 @@ class ChatBubble extends StatelessWidget {
       ),
     );
   }
-
 
   void _showMessageMenu(BuildContext context, bool isSentByMe) {
     final isPinned = controller.pinnedMessage.value?.id == message.id;
@@ -540,7 +525,6 @@ class ChatBubble extends StatelessWidget {
                 child: const SizedBox.expand(),
               ),
             ),
-
             Positioned(
               top: 90.h,
               right: 12.w,
@@ -573,7 +557,6 @@ class ChatBubble extends StatelessWidget {
                             controller.setReply(message);
                           },
                         ),
-
                         if (isText)
                           _menuTile(
                             icon: Icons.copy_rounded,
@@ -587,7 +570,6 @@ class ChatBubble extends StatelessWidget {
                               Utils().fluttertoast("Message copied");
                             },
                           ),
-
                         _menuTile(
                           icon: Icons.forward_rounded,
                           iconColor: _purple,
@@ -600,7 +582,6 @@ class ChatBubble extends StatelessWidget {
                             );
                           },
                         ),
-
                         if (isSentByMe && isText)
                           _menuTile(
                             icon: Icons.edit_rounded,
@@ -611,7 +592,6 @@ class ChatBubble extends StatelessWidget {
                               controller.startEditingMessage(message);
                             },
                           ),
-
                         _menuTile(
                           icon: Icons.push_pin_rounded,
                           iconColor: isPinned ? Colors.redAccent : _purple,
@@ -625,7 +605,6 @@ class ChatBubble extends StatelessWidget {
                             }
                           },
                         ),
-
                         Divider(
                           height: 1,
                           thickness: 1,
@@ -633,7 +612,6 @@ class ChatBubble extends StatelessWidget {
                           indent: 12,
                           endIndent: 12,
                         ),
-
                         if (isSentByMe)
                           _menuTile(
                             icon: Icons.delete_outline_rounded,
@@ -648,7 +626,6 @@ class ChatBubble extends StatelessWidget {
                               );
                             },
                           ),
-
                         _menuTile(
                           icon: Icons.delete_rounded,
                           iconColor: Colors.redAccent,
@@ -722,32 +699,22 @@ class ChatBubble extends StatelessWidget {
       final index = lowerText.indexOf(lowerQuery, start);
       if (index == -1) {
         if (start < text.length) {
-          spans.add(TextSpan(
-            text: text.substring(start),
-            style: normalStyle,
-          ));
+          spans.add(TextSpan(text: text.substring(start), style: normalStyle));
         }
         break;
       }
-
       if (index > start) {
-        spans.add(TextSpan(
-          text: text.substring(start, index),
-          style: normalStyle,
-        ));
+        spans.add(
+            TextSpan(text: text.substring(start, index), style: normalStyle));
       }
-
       spans.add(TextSpan(
         text: text.substring(index, index + query.length),
         style: highlightStyle,
       ));
-
       start = index + query.length;
     }
 
-    return RichText(
-      text: TextSpan(children: spans),
-    );
+    return RichText(text: TextSpan(children: spans));
   }
 }
 class GroupChatBubble extends StatelessWidget {
@@ -1159,7 +1126,7 @@ class GroupChatBubble extends StatelessWidget {
     } else if (message.messageType == "audio") {
       return AudioBubble(
         audioUrl: "${ConstRes.aImageBaseUrl}${message.content}",
-        isMe: isSentByMe,
+        isMe: false,
       );
     } else if (message.messageType == "video") {
       final parts = message.content?.split("||") ?? [];

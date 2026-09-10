@@ -7,25 +7,27 @@ import 'package:fgtracker/app/Core/values/utility.dart';
 import 'package:fgtracker/app/Data/Services/Tracking.dart';
 import 'package:fgtracker/app/Model/ContactMessage.dart';
 import 'package:fgtracker/app/Model/LocationMessage.dart';
-
-import 'package:fgtracker/app/config/themes_data.dart';
 import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
 import 'package:fgtracker/app/modules/Messages/Controller/MessageController.dart';
-import 'package:fgtracker/app/modules/Messages/widgets/message_Widgets.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:fgtracker/app/widgets/PinnedMessageBanner.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import '../widgets/ChatInputArea.dart';
 import '../widgets/ChatList.dart';
 import 'ContactPickerPage.dart';
 import 'LocationPickerPage.dart';
+import 'UserProfileScreen.dart';
 
 class ChatScreen extends GetView<MessageController> {
   ChatScreen({super.key});
 
   final TextEditingController _controller = TextEditingController();
   final groupController = Get.put(GroupController());
+
+  static const Color _purple = Color(0xFF5045B9);
+  static const Color _scaffoldBg = Color(0xFFF5F3FB);
 
   Future<void> _sendMessage() async {
     await controller.sendMessage(textController: _controller);
@@ -39,13 +41,11 @@ class ChatScreen extends GetView<MessageController> {
 
     if (userData.lastSeen != null && userData.lastSeen!.trim().isNotEmpty) {
       final rawLastSeen = userData.lastSeen!.trim();
-
       try {
         lastSeenText = Tracking().getTimeAgo(DateTime.parse(rawLastSeen));
       } catch (_) {
         lastSeenText = rawLastSeen;
       }
-
       isOnline = lastSeenText.toLowerCase() == "just now";
     }
 
@@ -56,129 +56,14 @@ class ChatScreen extends GetView<MessageController> {
         return false;
       },
       child: Scaffold(
-        backgroundColor: ToggleThemeData.chatBackground,
+        backgroundColor: _scaffoldBg,
         resizeToAvoidBottomInset: true,
         appBar: PreferredSize(
-          preferredSize: const Size.fromHeight(kToolbarHeight),
+          preferredSize: Size.fromHeight(64.h),
           child: Obx(() {
-            if (controller.isSearching.value) {
-              return AppBar(
-                backgroundColor: Colors.white,
-                surfaceTintColor: Colors.white,
-                leading: IconButton(
-                  icon: const Icon(Icons.arrow_back, color: Colors.black),
-                  onPressed: () => controller.stopSearch(),
-                ),
-                title: TextField(
-                  autofocus: true,
-                  decoration: const InputDecoration(
-                    hintText: "Search messages...",
-                    border: InputBorder.none,
-                    hintStyle: TextStyle(color: Colors.grey),
-                  ),
-                  style: const TextStyle(color: Colors.black, fontSize: 16),
-                  onChanged: controller.onSearchChanged,
-                ),
-                actions: [
-                  Obx(() {
-                    final total = controller.searchResultIds.length;
-                    final current = controller.currentSearchIndex.value;
-                    final display =
-                    total == 0 ? "0/0" : "${total - current}/$total";
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      child: Center(
-                        child: Text(
-                          display,
-                          style: const TextStyle(
-                            color: Colors.grey,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ),
-                    );
-                  }),
-                  Obx(() => IconButton(
-                    icon: const Icon(Icons.keyboard_arrow_up,
-                        color: Colors.black),
-                    onPressed: controller.searchResultIds.isEmpty
-                        ? null
-                        : controller.previousSearchResult,
-                  )),
-                  Obx(() => IconButton(
-                    icon: const Icon(Icons.keyboard_arrow_down,
-                        color: Colors.black),
-                    onPressed: controller.searchResultIds.isEmpty
-                        ? null
-                        : controller.nextSearchResult,
-                  )),
-                ],
-              );
-            }
-
-            return CommonChatAppBar(
-              profileImageUrl:
-              "${ConstRes.aImageBaseUrl}${userData.profileImage ?? ""}",
-              userName: userData.name ?? "",
-              controller: controller,
-              groupName: controller.arguments?['groupName'],
-              isOnline: isOnline,
-              lastSeen: lastSeenText,
-              isGroupChat: false,
-              onBackTap: () {
-                controller.handleBackPressed(context,
-                    groupID: int.parse(userData.groupId.toString()));
-              },
-              onCallTap: () {
-                controller.startCall(
-                  context,
-                  callerId:
-                  Global.storageServices.get(PrefConst.userId).toString(),
-                  remoteUserId: controller.memberData.userId.toString(),
-                  is_video: false,
-                  callerName: controller.memberData.name,
-                );
-              },
-              onVideoTap: () {
-                controller.startCall(
-                  context,
-                  callerId:
-                  Global.storageServices.get(PrefConst.userId).toString(),
-                  remoteUserId: controller.memberData.userId.toString(),
-                  is_video: true,
-                  callerName: controller.memberData.name,
-                );
-              },
-              onUpdateGroupName: () {
-                groupController.groupName.text =
-                    controller.arguments?['groupName'] ?? "";
-                DialogBox().showUpdateGroupBottomSheet(
-                    context: context,
-                    controller: groupController,
-                    groupId: userData.groupId.toString());
-              },
-              onDeleteMember: () {
-                CommonDialog.ConfirmationDialog(
-                  title: "Remove Member",
-                  content:
-                  "Are you sure you want to remove this member from the group?",
-                  confirm: "Remove",
-                  onConfirm: () {
-                    groupController.deleteGroupMember(
-                      context,
-                      groupId: userData.groupId.toString(),
-                      groupMemberId: controller.memberData.userId.toString(),
-                      onSuccess: (success) {
-                        if (success) {
-                          Get.offAllNamed(Routes.Home_Screen);
-                        }
-                      },
-                    );
-                  },
-                );
-              },
-              onSearchTap: () => controller.startSearch(),
-            );
+            if (controller.isSearching.value) return _buildSearchAppBar();
+            return _buildNormalAppBar(
+                context, userData, isOnline, lastSeenText);
           }),
         ),
         body: SafeArea(
@@ -186,11 +71,9 @@ class ChatScreen extends GetView<MessageController> {
             children: [
               Obx(() {
                 final pinned = controller.pinnedMessage.value;
-
                 if (pinned == null || !controller.showPinnedBanner.value) {
                   return const SizedBox.shrink();
                 }
-
                 return PinnedMessageBanner(
                   pinnedMessage: pinned,
                   onTap: () => controller.scrollToPinnedMessage(),
@@ -202,23 +85,18 @@ class ChatScreen extends GetView<MessageController> {
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
-                    ChatList(
-                      controller: controller,
-                    ),
+                    ChatList(controller: controller),
                     Obx(() {
                       final isVisible = controller.showFloatingDate.value;
                       final date = controller.floatingDate.value;
-
-                      if (date.isEmpty) {
-                        return const SizedBox.shrink();
-                      }
+                      if (date.isEmpty) return const SizedBox.shrink();
 
                       return IgnorePointer(
                         child: Align(
                           alignment: Alignment.topCenter,
                           child: AnimatedSlide(
                             offset:
-                            isVisible ? Offset.zero : const Offset(0, -0.8),
+                                isVisible ? Offset.zero : const Offset(0, -0.8),
                             duration: const Duration(milliseconds: 220),
                             curve: Curves.easeOutCubic,
                             child: AnimatedOpacity(
@@ -229,15 +107,14 @@ class ChatScreen extends GetView<MessageController> {
                                 padding: const EdgeInsets.only(top: 8),
                                 child: Container(
                                   padding: const EdgeInsets.symmetric(
-                                    horizontal: 14,
-                                    vertical: 7,
-                                  ),
+                                      horizontal: 14, vertical: 6),
                                   decoration: BoxDecoration(
                                     color: Colors.grey.shade300,
                                     borderRadius: BorderRadius.circular(18),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: Colors.black.withValues(alpha: 0.10),
+                                        color: Colors.black
+                                            .withValues(alpha: 0.10),
                                         blurRadius: 8,
                                         offset: const Offset(0, 2),
                                       ),
@@ -263,52 +140,63 @@ class ChatScreen extends GetView<MessageController> {
               ),
               Obx(() {
                 final reply = controller.replyMessage.value;
-
                 if (reply == null) return const SizedBox.shrink();
 
+                String previewText;
+                switch (reply.messageType) {
+                  case "image":
+                    previewText = "📷 Photo";
+                    break;
+                  case "video":
+                    previewText = "🎥 Video";
+                    break;
+                  case "audio":
+                    previewText = "🎤 Voice message";
+                    break;
+                  case "document":
+                    previewText = "📄 Document";
+                    break;
+                  default:
+                    previewText = reply.content?.toString() ?? "";
+                }
+
                 return Container(
-                  width: double.infinity,
-                  padding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  margin:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    border: Border(
-                      top: BorderSide(color: Colors.grey.shade300),
+                    borderRadius: BorderRadius.circular(12),
+                    border: const Border(
+                      left: BorderSide(color: _purple, width: 4),
                     ),
+                    boxShadow: const [
+                      BoxShadow(color: Colors.black12, blurRadius: 4),
+                    ],
                   ),
                   child: Row(
                     children: [
-                      Container(
-                        width: 4,
-                        height: 42,
-                        color: Colors.green,
-                      ),
-                      const SizedBox(width: 10),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
-                              reply.senderName?.toString() ?? "",
+                              reply.senderName ?? "Unknown",
                               style: const TextStyle(
+                                color: _purple,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.green,
                               ),
                             ),
-                            const SizedBox(height: 2),
-                            Text(
-                              reply.content?.toString() ?? "",
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
+                            const SizedBox(height: 4),
+                            Text(previewText,
+                                maxLines: 1, overflow: TextOverflow.ellipsis),
                           ],
                         ),
                       ),
                       IconButton(
                         onPressed: controller.clearReply,
                         icon: const Icon(Icons.close),
-                      )
+                      ),
                     ],
                   ),
                 );
@@ -348,23 +236,18 @@ class ChatScreen extends GetView<MessageController> {
                 },
                 onLocationSelected: () async {
                   final location = await Get.to<LocationMessage>(
-                        () => const LocationPickerPage(),
+                    () => const LocationPickerPage(),
                   );
                   if (location != null) {
-                    await controller.sendLocation(
-                      location: location,
-                    );
+                    await controller.sendLocation(location: location);
                   }
                 },
                 onContactSelected: () async {
                   final contact = await Get.to<ContactMessage>(
-                        () => const ContactPickerPage(),
+                    () => const ContactPickerPage(),
                   );
-
                   if (contact != null) {
-                    await controller.sendContact(
-                      contact: contact,
-                    );
+                    await controller.sendContact(contact: contact);
                   }
                 },
               ),
@@ -374,181 +257,330 @@ class ChatScreen extends GetView<MessageController> {
       ),
     );
   }
-}
 
-class VoiceMessagePlayerBubble extends StatefulWidget {
-  final String audioUrl;
-  final bool isSender;
-  final bool isListened;
-
-  const VoiceMessagePlayerBubble({
-    super.key,
-    required this.audioUrl,
-    required this.isSender,
-    this.isListened = false,
-  });
-
-  @override
-  State<VoiceMessagePlayerBubble> createState() =>
-      _VoiceMessagePlayerBubbleState();
-}
-
-class _VoiceMessagePlayerBubbleState extends State<VoiceMessagePlayerBubble>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _animController;
-  bool isPlaying = false;
-  double progress = 0.0;
-
-  final List<double> speeds = [1.0, 1.5, 2.0];
-  int speedIndex = 0;
-
-  final List<double> barHeights = [
-    10, 16, 24, 12, 18, 32, 14, 22, 28, 10,
-    18, 26, 12, 22, 34, 16, 10, 24, 30, 14,
-    20, 10, 26, 18, 12, 22, 28, 16, 10, 20
-  ];
-
-  @override
-  void initState() {
-    super.initState();
-    _animController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 12),
-    )..addListener(() {
-      setState(() {
-        progress = _animController.value;
-      });
-      if (_animController.isCompleted) {
-        setState(() {
-          isPlaying = false;
-          _animController.reset();
-          progress = 0.0;
-        });
-      }
-    });
-  }
-
-  void _togglePlayPause() {
-    setState(() {
-      isPlaying = !isPlaying;
-      if (isPlaying) {
-        _animController.forward(from: progress);
-      } else {
-        _animController.stop();
-      }
-    });
-  }
-
-  void _toggleSpeed() {
-    setState(() {
-      speedIndex = (speedIndex + 1) % speeds.length;
-      final currentSpeed = speeds[speedIndex];
-      _animController.duration = Duration(
-        milliseconds: (12000 / currentSpeed).round(),
-      );
-      if (isPlaying) {
-        _animController.forward(from: progress);
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _animController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final currentSpeed = speeds[speedIndex];
-    final activeColor =
-    widget.isSender ? Colors.white : const Color(0xFF075E54);
-    final inactiveColor =
-    widget.isSender ? Colors.white.withValues(alpha: 0.4) : Colors.grey.shade400;
-
-    final Color micStatusColor = widget.isListened
-        ? Colors.blueAccent
-        : (widget.isSender ? Colors.white70 : Colors.grey.shade600);
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      constraints: const BoxConstraints(maxWidth: 270),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          IconButton(
-            icon: Icon(
-              isPlaying ? Icons.pause_circle_filled : Icons.play_circle_fill,
-              color: activeColor,
-              size: 34,
+  Widget _buildSearchAppBar() {
+    return AppBar(
+      backgroundColor: Colors.white,
+      surfaceTintColor: Colors.white,
+      elevation: 0,
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back, color: Colors.black),
+        onPressed: () => controller.stopSearch(),
+      ),
+      title: TextField(
+        autofocus: true,
+        decoration: const InputDecoration(
+          hintText: "Search messages...",
+          border: InputBorder.none,
+          hintStyle: TextStyle(color: Colors.grey),
+        ),
+        style: const TextStyle(color: Colors.black, fontSize: 16),
+        onChanged: controller.onSearchChanged,
+      ),
+      actions: [
+        Obx(() {
+          final total = controller.searchResultIds.length;
+          final current = controller.currentSearchIndex.value;
+          final display = total == 0 ? "0/0" : "${total - current}/$total";
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: Center(
+              child: Text(display,
+                  style: const TextStyle(color: Colors.grey, fontSize: 13)),
             ),
-            onPressed: _togglePlayPause,
-          ),
-          const SizedBox(width: 4),
-          Expanded(
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                return GestureDetector(
-                  onTapDown: (details) {
-                    final double tapPos = details.localPosition.dx;
-                    final double width = constraints.maxWidth;
-                    final double newProgress = (tapPos / width).clamp(0.0, 1.0);
-                    setState(() {
-                      progress = newProgress;
-                      _animController.value = newProgress;
-                    });
-                  },
-                  child: SizedBox(
-                    height: 36,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: List.generate(barHeights.length, (index) {
-                        final double barPercent = index / barHeights.length;
-                        final bool isPlayed = barPercent <= progress;
+          );
+        }),
+        Obx(() => IconButton(
+              icon: const Icon(Icons.keyboard_arrow_up, color: Colors.black),
+              onPressed: controller.searchResultIds.isEmpty
+                  ? null
+                  : controller.previousSearchResult,
+            )),
+        Obx(() => IconButton(
+              icon: const Icon(Icons.keyboard_arrow_down, color: Colors.black),
+              onPressed: controller.searchResultIds.isEmpty
+                  ? null
+                  : controller.nextSearchResult,
+            )),
+      ],
+    );
+  }
 
-                        return Container(
-                          width: 2.8,
-                          height: barHeights[index],
-                          decoration: BoxDecoration(
-                            color: isPlayed ? activeColor : inactiveColor,
-                            borderRadius: BorderRadius.circular(2),
-                          ),
-                        );
-                      }),
-                    ),
-                  ),
-                );
+  Widget _buildNormalAppBar(BuildContext context, dynamic userData,
+      bool isOnline, String lastSeenText) {
+    return AppBar(
+      elevation: 0,
+      backgroundColor: _scaffoldBg,
+      surfaceTintColor: _scaffoldBg,
+      automaticallyImplyLeading: false,
+      toolbarHeight: 64.h,
+      titleSpacing: 0,
+      title: Padding(
+        padding: EdgeInsets.only(left: 12.w, right: 8.w),
+        child: Row(
+          children: [
+            _roundIconBtn(
+              icon: Icons.arrow_back_rounded,
+              onTap: () {
+                controller.handleBackPressed(context,
+                    groupID: int.parse(userData.groupId.toString()));
               },
             ),
-          ),
-          const SizedBox(width: 6),
-          GestureDetector(
-            onTap: _toggleSpeed,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-              decoration: BoxDecoration(
-                color: widget.isSender
-                    ? Colors.white.withValues(alpha: 0.2)
-                    : Colors.grey.shade200,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Text(
-                "${currentSpeed == 1.0 ? '1' : currentSpeed}x",
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 11,
-                  color: activeColor,
+            SizedBox(width: 8.w),
+            Expanded(
+              child: GestureDetector(
+                onTap: () {
+                  Get.to(() => const UserProfileScreen());
+                },
+                child: Row(
+                  children: [
+                    Container(
+                      height: 40.w,
+                      width: 40.w,
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [Color(0xFF8B78FF), Color(0xFF6A5AE0)],
+                        ),
+                      ),
+                      child: (userData.profileImage != null &&
+                              userData.profileImage.toString().isNotEmpty)
+                          ? ClipOval(
+                              child: Image.network(
+                                "${ConstRes.aImageBaseUrl}${userData.profileImage}",
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, __, ___) => Icon(
+                                  Icons.person,
+                                  color: Colors.white,
+                                  size: 22.sp,
+                                ),
+                              ),
+                            )
+                          : Icon(
+                              Icons.person,
+                              color: Colors.white,
+                              size: 22.sp,
+                            ),
+                    ),
+                    SizedBox(width: 8.w),
+                    Expanded(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            userData.name?.toString().isEmpty ?? true
+                                ? "Unknown"
+                                : userData.name.toString(),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: Colors.black87,
+                              fontSize: 15.sp,
+                              fontWeight: FontWeight.w700,
+                              height: 1.15,
+                            ),
+                          ),
+                          SizedBox(height: 2.h),
+                          Row(
+                            children: [
+                              if (isOnline)
+                                Container(
+                                  width: 7.w,
+                                  height: 7.w,
+                                  margin: EdgeInsets.only(right: 5.w),
+                                  decoration: const BoxDecoration(
+                                    color: Colors.green,
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                              Expanded(
+                                child: Text(
+                                  isOnline ? "Online" : lastSeenText,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    color: isOnline
+                                        ? Colors.green
+                                        : Colors.grey.shade600,
+                                    fontSize: 11.sp,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
-          ),
-          const SizedBox(width: 4),
-          Icon(
-            Icons.mic,
-            size: 16,
-            color: micStatusColor,
+            SizedBox(width: 4.w),
+            _roundIconBtn(
+              icon: Icons.call_rounded,
+              onTap: () {
+                controller.startCall(
+                  context,
+                  callerId:
+                      Global.storageServices.get(PrefConst.userId).toString(),
+                  remoteUserId: controller.memberData.userId.toString(),
+                  is_video: false,
+                  callerName: controller.memberData.name,
+                );
+              },
+            ),
+            SizedBox(width: 6.w),
+            _roundIconBtn(
+              icon: Icons.videocam_rounded,
+              onTap: () {
+                controller.startCall(
+                  context,
+                  callerId:
+                      Global.storageServices.get(PrefConst.userId).toString(),
+                  remoteUserId: controller.memberData.userId.toString(),
+                  is_video: true,
+                  callerName: controller.memberData.name,
+                );
+              },
+            ),
+            SizedBox(width: 2.w),
+            Theme(
+              data: Theme.of(context).copyWith(
+                splashColor: Colors.transparent,
+                highlightColor: Colors.transparent,
+              ),
+              child: PopupMenuButton<int>(
+                offset: const Offset(0, 50),
+                color: const Color(0xFFF9F8FF),
+                elevation: 4,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16.r),
+                ),
+                icon: Padding(
+                  padding: EdgeInsets.symmetric(vertical: 8.h),
+                  child: Icon(
+                    Icons.more_vert_rounded,
+                    color: _purple,
+                    size: 24.sp,
+                  ),
+                ),
+                onSelected: (value) {
+                  if (value == 0) {
+                    controller.startSearch();
+                  } else if (value == 1) {
+                    groupController.groupName.text =
+                        controller.arguments?['groupName'] ?? "";
+                    DialogBox().showUpdateGroupBottomSheet(
+                      context: context,
+                      controller: groupController,
+                      groupId: userData.groupId.toString(),
+                    );
+                  } else if (value == 2) {
+                    CommonDialog.ConfirmationDialog(
+                      title: "Remove Member",
+                      content:
+                          "Are you sure you want to remove this member from the group?",
+                      confirm: "Remove",
+                      onConfirm: () {
+                        groupController.deleteGroupMember(
+                          context,
+                          groupId: userData.groupId.toString(),
+                          groupMemberId:
+                              controller.memberData.userId.toString(),
+                          onSuccess: (success) {
+                            if (success) {
+                              Get.offAllNamed(Routes.Home_Screen);
+                            }
+                          },
+                        );
+                      },
+                    );
+                  }
+                },
+                itemBuilder: (context) {
+                  return [
+                    _buildPopupMenuItem(
+                      value: 0,
+                      icon: Icons.search,
+                      iconColor: _purple,
+                      title: "Search Messages",
+                    ),
+                    _buildPopupMenuItem(
+                      value: 1,
+                      icon: Icons.edit_rounded,
+                      iconColor: _purple,
+                      title: "Update Group",
+                    ),
+                    _buildPopupMenuItem(
+                      value: 2,
+                      icon: Icons.person_remove_rounded,
+                      iconColor: Colors.redAccent,
+                      title: "Delete Member",
+                      isDestructive: true,
+                    ),
+                  ];
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  PopupMenuItem<int> _buildPopupMenuItem({
+    required int value,
+    required IconData icon,
+    required Color iconColor,
+    required String title,
+    bool isDestructive = false,
+  }) {
+    return PopupMenuItem<int>(
+      value: value,
+      padding: EdgeInsets.symmetric(horizontal: 16.w),
+      height: 46.h,
+      child: Row(
+        children: [
+          Icon(icon, color: iconColor, size: 20.sp),
+          SizedBox(width: 14.w),
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 14.sp,
+              fontWeight: FontWeight.w600,
+              color: isDestructive ? Colors.redAccent : const Color(0xFF1B1B1B),
+            ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _roundIconBtn({
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        height: 36.w,
+        width: 36.w,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(10.r),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 4,
+              offset: const Offset(0, 1),
+            ),
+          ],
+        ),
+        child: Icon(icon, color: _purple, size: 18.sp),
       ),
     );
   }
