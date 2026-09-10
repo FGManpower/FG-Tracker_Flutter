@@ -1,12 +1,14 @@
-import 'package:fgtracker/app/Model/member_live_status.dart';
+import 'package:fgtracker/app/Core/constant/const_res.dart';
+import 'package:fgtracker/app/Data/Repositories/TrackRepo.dart';
+import 'package:fgtracker/app/Model/ghost_member_model.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
+import 'package:fgtracker/app/modules/Track/Controller/TrackController.dart';
 import 'package:fgtracker/app/modules/home/Controller/LiveStatus_controller.dart';
 import 'package:fgtracker/app/modules/home/Home_Widget/LiveStatus_widget.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:skeletonizer/skeletonizer.dart';
 
 class GhostMember extends StatefulWidget {
   const GhostMember({super.key});
@@ -17,15 +19,26 @@ class GhostMember extends StatefulWidget {
 
 class _GhostMemberState extends State<GhostMember> {
   late final LivesStatusController controller;
+  late final TrackingController trackingController;
   final ScrollController _scrollController = ScrollController();
-  final RxBool isPrivateModeOn = true.obs;
 
   @override
   void initState() {
     super.initState();
+
     controller = Get.isRegistered<LivesStatusController>()
         ? Get.find<LivesStatusController>()
         : Get.put(LivesStatusController());
+
+    trackingController = Get.isRegistered<TrackingController>()
+        ? Get.find<TrackingController>()
+        : Get.put(TrackingController());
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (controller.privateMemberData.isEmpty) {
+        controller.getPrivateMembers();
+      }
+    });
 
     _scrollController.addListener(_onScroll);
   }
@@ -36,20 +49,20 @@ class _GhostMemberState extends State<GhostMember> {
     final double maxPosition = _scrollController.position.maxScrollExtent;
 
     if (currentPosition >= maxPosition - 250) {
-      controller.loadMoreMembers();
+      controller.loadMorePrivateMembers();
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F8FC),
+      backgroundColor: const Color(0xFFF8F9FE),
       appBar: PreferredSize(
-        preferredSize: Size.fromHeight(70.h),
+        preferredSize: Size.fromHeight(68.h),
         child: AppBar(
           automaticallyImplyLeading: false,
           elevation: 0,
-          backgroundColor: const Color(0xFFF7F8FC),
+          backgroundColor: const Color(0xFFF8F9FE),
           titleSpacing: 16.w,
           title: Row(
             children: [
@@ -57,15 +70,17 @@ class _GhostMemberState extends State<GhostMember> {
                 onTap: () => Get.back(),
                 borderRadius: BorderRadius.circular(14.r),
                 child: Container(
-                  width: 42.w,
-                  height: 42.w,
+                  width: 40.w,
+                  height: 40.w,
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(14.r),
-                    border: Border.all(color: Colors.grey.withOpacity(0.12)),
+                    border: Border.all(
+                      color: Colors.grey.withValues(alpha: 0.12),
+                    ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.03),
+                        color: Colors.black.withValues(alpha: 0.03),
                         blurRadius: 8,
                         offset: const Offset(0, 2),
                       ),
@@ -78,343 +93,346 @@ class _GhostMemberState extends State<GhostMember> {
                   ),
                 ),
               ),
-              SizedBox(width: 14.w),
+              SizedBox(width: 12.w),
               Container(
                 width: 42.w,
                 height: 42.w,
                 decoration: const BoxDecoration(
-                  color: Color(0xFFEDE9FE),
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Color(0xFF818CF8),
+                      Color(0xFF6366F1),
+                    ],
+                  ),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(
-                  Icons.admin_panel_settings_rounded,
-                  color: const Color(0xFF6B4DFF),
-                  size: 22.sp,
+                child: Center(
+                  child: Icon(
+                    Icons.verified_user_rounded,
+                    color: Colors.white,
+                    size: 20.sp,
+                  ),
                 ),
               ),
               SizedBox(width: 12.w),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      'Private Mode',
-                      style: TextStyle(
-                        fontSize: 18.sp,
-                        fontWeight: FontWeight.w800,
-                        color: Colors.black87,
-                        fontFamily: FontFamily.interBold,
+                child: Obx(() {
+                  final int count = controller.privateMemberData.length;
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Private Mode',
+                        style: TextStyle(
+                          fontSize: 18.sp,
+                          fontWeight: FontWeight.w800,
+                          color: const Color(0xFF111827),
+                          fontFamily: FontFamily.interBold,
+                        ),
                       ),
-                    ),
-                    SizedBox(height: 2.h),
-                    Text(
-                      '3 Active Sessions',
-                      style: TextStyle(
-                        fontSize: 12.sp,
-                        color: Colors.grey.shade600,
-                        fontFamily: FontFamily.interRegular,
+                      SizedBox(height: 1.h),
+                      Text(
+                        '$count Active Sessions',
+                        style: TextStyle(
+                          fontSize: 12.sp,
+                          color: const Color(0xFF6B7280),
+                          fontFamily: FontFamily.interRegular,
+                        ),
                       ),
-                    ),
-                  ],
-                ),
+                    ],
+                  );
+                }),
               ),
             ],
           ),
         ),
       ),
       body: Obx(() {
-        if (controller.memberLoading.value) {
+        if (controller.privateMemberLoading.value &&
+            controller.privateMemberData.isEmpty) {
           return SkeletonMember();
         }
-        if (controller.responseError.value.isNotEmpty) {
+        if (controller.privateResponseError.value.isNotEmpty &&
+            controller.privateMemberData.isEmpty) {
           return LostinternetConnection(
-            retry: controller.getGroupMember,
-            messgae: controller.responseError.value,
+            retry: controller.getPrivateMembers,
+            messgae: controller.privateResponseError.value,
           );
         }
 
-        return Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
-          child: _buildGhostMemberContent(),
+        return RefreshIndicator(
+          color: const Color(0xFF6366F1),
+          onRefresh: controller.refreshPrivateMembers,
+          child: SingleChildScrollView(
+            controller: _scrollController,
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
+            child: _buildGhostMemberContent(),
+          ),
         );
       }),
     );
   }
 
   Widget _buildGhostMemberContent() {
-    return Skeletonizer(
-      enabled: controller.memberLoading.value,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Invisible Banner Toggle Card
+    final List<GhostMemberData> members = controller.privateMemberData;
+    final int sessionCount = members.length;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildInvisibleToggleCard(),
+        SizedBox(height: 18.h),
+        _buildSectionHeader(sessionCount),
+        SizedBox(height: 10.h),
+        if (members.isEmpty)
           Container(
-            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+            width: double.infinity,
+            padding: EdgeInsets.symmetric(vertical: 36.h, horizontal: 16.w),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(20.r),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.03),
-                  blurRadius: 10,
-                  offset: const Offset(0, 3),
-                ),
-              ],
-              border: Border.all(color: Colors.grey.withOpacity(0.08)),
+              borderRadius: BorderRadius.circular(18.r),
+              border: Border.all(color: const Color(0xFFF1F3F9)),
             ),
-            child: Row(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Container(
-                  width: 48.w,
-                  height: 48.w,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFEDE9FE),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    Icons.lock_rounded,
-                    color: const Color(0xFF6B4DFF),
-                    size: 24.sp,
-                  ),
+                Icon(
+                  Icons.visibility_off_outlined,
+                  size: 36.sp,
+                  color: const Color(0xFF9CA3AF),
                 ),
-                SizedBox(width: 14.w),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "You're Invisible",
-                        style: TextStyle(
-                          fontSize: 14.5.sp,
-                          fontWeight: FontWeight.w800,
-                          color: Colors.black87,
-                          fontFamily: FontFamily.interBold,
-                        ),
-                      ),
-                      SizedBox(height: 2.h),
-                      Text(
-                        "When Private Mode is ON, others can't see your online status or last seen.",
-                        style: TextStyle(
-                          fontSize: 11.sp,
-                          color: Colors.grey.shade600,
-                          fontFamily: FontFamily.interRegular,
-                          height: 1.3,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                SizedBox(width: 8.w),
-                Obx(
-                      () => Switch.adaptive(
-                    value: isPrivateModeOn.value,
-                    activeColor: const Color(0xFF6B4DFF),
-                    onChanged: (val) {
-                      isPrivateModeOn.value = val;
-                    },
+                SizedBox(height: 8.h),
+                Text(
+                  "No active private sessions",
+                  style: TextStyle(
+                    fontSize: 13.5.sp,
+                    color: const Color(0xFF6B7280),
+                    fontFamily: FontFamily.interMedium,
                   ),
                 ),
               ],
+            ),
+          )
+        else
+          _buildSessionsGroupCard(members),
+        SizedBox(height: 20.h),
+        _buildBottomPrivacyBanner(),
+        if (controller.privateMemberLoadingMore.value) ...[
+          SizedBox(height: 16.h),
+          const Center(
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: Color(0xFF6366F1),
             ),
           ),
-          SizedBox(height: 18.h),
+        ],
+        SizedBox(height: 24.h),
+      ],
+    );
+  }
 
-          // Active Sessions Header
-          Row(
-            children: [
-              Text(
-                "Active Sessions",
-                style: TextStyle(
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.w800,
-                  color: Colors.black87,
-                  fontFamily: FontFamily.interBold,
+  Widget _buildInvisibleToggleCard() {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18.r),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+        border: Border.all(color: const Color(0xFFECEEF5)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 44.w,
+            height: 44.w,
+            decoration: const BoxDecoration(
+              color: Color(0xFFEDE9FE),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.lock_rounded,
+              color: const Color(0xFF6B4DFF),
+              size: 22.sp,
+            ),
+          ),
+          SizedBox(width: 14.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "You're Invisible",
+                  style: TextStyle(
+                    fontSize: 14.5.sp,
+                    fontWeight: FontWeight.w800,
+                    color: const Color(0xFF111827),
+                    fontFamily: FontFamily.interBold,
+                  ),
                 ),
-              ),
-              SizedBox(width: 8.w),
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 7.w, vertical: 2.h),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFEDE9FE),
-                  borderRadius: BorderRadius.circular(10.r),
-                ),
-                child: Text(
-                  "3",
+                SizedBox(height: 2.h),
+                Text(
+                  "When Private Mode is ON, others can't see your online status or last seen.",
                   style: TextStyle(
                     fontSize: 11.sp,
-                    fontWeight: FontWeight.w700,
-                    color: const Color(0xFF6B4DFF),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 10.h),
-
-          // Member List
-          Expanded(
-            child: Obx(() => _buildMemberList()),
-          ),
-          SizedBox(height: 10.h),
-
-          // Bottom Security Footer Card
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20.r),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.03),
-                  blurRadius: 10,
-                  offset: const Offset(0, 3),
-                ),
-              ],
-              border: Border.all(color: Colors.grey.withOpacity(0.08)),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 38.w,
-                  height: 38.w,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFEDE9FE),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    Icons.verified_user_rounded,
-                    color: const Color(0xFF6B4DFF),
-                    size: 20.sp,
-                  ),
-                ),
-                SizedBox(width: 12.w),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "Your privacy is our priority",
-                        style: TextStyle(
-                          fontSize: 13.5.sp,
-                          fontWeight: FontWeight.w800,
-                          color: Colors.black87,
-                          fontFamily: FontFamily.interBold,
-                        ),
-                      ),
-                      SizedBox(height: 2.h),
-                      Text(
-                        "Private Mode only hides your activity. You can still send messages and use the app normally.",
-                        style: TextStyle(
-                          fontSize: 10.5.sp,
-                          color: Colors.grey.shade600,
-                          fontFamily: FontFamily.interRegular,
-                          height: 1.3,
-                        ),
-                      ),
-                    ],
+                    color: const Color(0xFF6B7280),
+                    fontFamily: FontFamily.interRegular,
+                    height: 1.3,
                   ),
                 ),
               ],
             ),
           ),
-          SizedBox(height: 10.h),
+          SizedBox(width: 8.w),
+          Obx(
+            () => Switch.adaptive(
+              value: !trackingController.isLocationSharing.value,
+              activeColor: const Color(0xFF6366F1),
+              onChanged: (val) async {
+                await trackingController.toggleLocationSharing(!val);
+                controller.refreshPrivateMembers();
+              },
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildMemberList() {
-    if (controller.filteredMembers.isEmpty) {
-      return emptyView();
-    }
-
-    final List<UserMemberData> members = List<UserMemberData>.from(
-      controller.filteredMembers,
+  Widget _buildSectionHeader(int count) {
+    return Row(
+      children: [
+        Text(
+          "Active Sessions",
+          style: TextStyle(
+            fontSize: 14.5.sp,
+            fontWeight: FontWeight.w800,
+            color: const Color(0xFF111827),
+            fontFamily: FontFamily.interBold,
+          ),
+        ),
+        SizedBox(width: 8.w),
+        Container(
+          padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.5.h),
+          decoration: BoxDecoration(
+            color: const Color(0xFFEDE9FE),
+            borderRadius: BorderRadius.circular(10.r),
+          ),
+          child: Text(
+            count.toString(),
+            style: TextStyle(
+              fontSize: 11.5.sp,
+              fontWeight: FontWeight.w700,
+              color: const Color(0xFF6B4DFF),
+              fontFamily: FontFamily.interBold,
+            ),
+          ),
+        ),
+      ],
     );
+  }
 
-    final bool showLoadingMore = controller.memberLoadingMore.value;
-
-    return RefreshIndicator(
-      color: const Color(0xFF6756E8),
-      onRefresh: controller.refreshMembers,
-      child: ListView.builder(
-        controller: _scrollController,
-        physics: const AlwaysScrollableScrollPhysics(),
-        itemCount: members.length + (showLoadingMore ? 1 : 0),
+  Widget _buildSessionsGroupCard(List<GhostMemberData> members) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18.r),
+        border: Border.all(color: const Color(0xFFF1F3F9)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.025),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: ListView.separated(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: members.length,
+        separatorBuilder: (_, __) => Divider(
+          height: 1,
+          thickness: 0.8,
+          color: const Color(0xFFF3F4F6),
+          indent: 68.w,
+        ),
         itemBuilder: (context, index) {
-          if (index >= members.length) {
-            return Padding(
-              padding: EdgeInsets.symmetric(vertical: 15.h),
-              child: const Center(
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: Color(0xFF6756E8),
-                ),
-              ),
-            );
-          }
-
-          return _ghostMemberCard(members[index]);
+          final member = members[index];
+          return _buildSessionTile(member);
         },
       ),
     );
   }
 
-  Widget _ghostMemberCard(UserMemberData member) {
-    return Container(
-      margin: EdgeInsets.only(bottom: 10.h),
-      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
-          ),
-        ],
-        border: Border.all(color: Colors.grey.withOpacity(0.08)),
-      ),
+  Widget _buildSessionTile(GhostMemberData member) {
+    final String name = member.name?.trim().isNotEmpty == true
+        ? member.name!.trim()
+        : 'Member';
+
+    final hasProfileImage = member.profileImage != null &&
+        member.profileImage!.trim().isNotEmpty &&
+        member.profileImage!.toLowerCase() != 'null';
+
+    final String? imageUrl = hasProfileImage
+        ? (member.profileImage!.startsWith('http')
+            ? member.profileImage!
+            : "${ConstRes.aImageBaseUrl}${member.profileImage}")
+        : null;
+
+    final String timeText = _formatStartedTime(member.startedAt);
+
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 11.h),
       child: Row(
         children: [
           Stack(
+            clipBehavior: Clip.none,
             children: [
               CircleAvatar(
                 radius: 22.r,
-                backgroundColor: const Color(0xFFEDE9FE),
-                backgroundImage: member.profileImage != null && member.profileImage!.isNotEmpty
-                    ? NetworkImage(member.profileImage!)
-                    : null,
-                child: member.profileImage == null || member.profileImage!.isEmpty
+                backgroundColor: const Color(0xFFEEF2F6),
+                backgroundImage:
+                    imageUrl != null ? NetworkImage(imageUrl) : null,
+                onBackgroundImageError: imageUrl != null ? (_, __) {} : null,
+                child: !hasProfileImage
                     ? Text(
-                  (member.name != null && member.name!.isNotEmpty)
-                      ? member.name![0].toUpperCase()
-                      : "U",
-                  style: TextStyle(
-                    color: const Color(0xFF6B4DFF),
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16.sp,
-                  ),
-                )
+                        name.isNotEmpty ? name[0].toUpperCase() : '?',
+                        style: TextStyle(
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF6366F1),
+                          fontFamily: FontFamily.interBold,
+                        ),
+                      )
                     : null,
               ),
               Positioned(
-                right: 0,
-                bottom: 0,
+                right: -1.w,
+                bottom: -1.h,
                 child: Container(
-                  width: 16.w,
-                  height: 16.w,
+                  width: 14.w,
+                  height: 14.w,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF6B4DFF),
+                    color: const Color(0xFF6366F1),
                     shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 2),
+                    border: Border.all(
+                      color: Colors.white,
+                      width: 2,
+                    ),
                   ),
                   child: Center(
                     child: Icon(
                       Icons.lock_rounded,
-                      size: 9.sp,
+                      size: 8.sp,
                       color: Colors.white,
                     ),
                   ),
@@ -422,17 +440,17 @@ class _GhostMemberState extends State<GhostMember> {
               ),
             ],
           ),
-          SizedBox(width: 12.w),
+          SizedBox(width: 14.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  member.name ?? "User Name",
+                  name,
                   style: TextStyle(
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w800,
-                    color: Colors.black87,
+                    fontSize: 14.5.sp,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF111827),
                     fontFamily: FontFamily.interBold,
                   ),
                 ),
@@ -441,8 +459,8 @@ class _GhostMemberState extends State<GhostMember> {
                   "Private Mode is ON",
                   style: TextStyle(
                     fontSize: 11.5.sp,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.grey.shade600,
+                    fontWeight: FontWeight.w500,
+                    color: const Color(0xFF6366F1),
                     fontFamily: FontFamily.interMedium,
                   ),
                 ),
@@ -452,14 +470,14 @@ class _GhostMemberState extends State<GhostMember> {
                     Icon(
                       Icons.access_time_rounded,
                       size: 11.sp,
-                      color: Colors.grey.shade400,
+                      color: const Color(0xFF9CA3AF),
                     ),
                     SizedBox(width: 4.w),
                     Text(
-                      "Started at 10:24 AM",
+                      timeText,
                       style: TextStyle(
-                        fontSize: 10.5.sp,
-                        color: Colors.grey.shade500,
+                        fontSize: 11.sp,
+                        color: const Color(0xFF9CA3AF),
                         fontFamily: FontFamily.interRegular,
                       ),
                     ),
@@ -473,27 +491,80 @@ class _GhostMemberState extends State<GhostMember> {
     );
   }
 
-  Widget emptyView() {
-    return Center(
-      child: Padding(
-        padding: EdgeInsets.all(30.w),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.admin_panel_settings_outlined,
-              size: 55.sp,
-              color: const Color(0xFFAAAED0),
+  String _formatStartedTime(String? raw) {
+    if (raw == null || raw.trim().isEmpty || raw == 'null') {
+      return 'Started recently';
+    }
+
+    final trimmed = raw.trim();
+    if (trimmed.toLowerCase().startsWith('started at')) {
+      return trimmed;
+    }
+
+    final dt = DateTime.tryParse(trimmed);
+    if (dt != null) {
+      final hour = dt.hour > 12 ? dt.hour - 12 : (dt.hour == 0 ? 12 : dt.hour);
+      final minute = dt.minute.toString().padLeft(2, '0');
+      final period = dt.hour >= 12 ? 'PM' : 'AM';
+      return 'Started at $hour:$minute $period';
+    }
+
+    return 'Started at $trimmed';
+  }
+
+  Widget _buildBottomPrivacyBanner() {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 13.h),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF5F3FF),
+        borderRadius: BorderRadius.circular(18.r),
+        border: Border.all(color: const Color(0xFFE8E5FA)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 44.w,
+            height: 44.w,
+            decoration: const BoxDecoration(
+              color: Color(0xFFEDE9FE),
+              shape: BoxShape.circle,
             ),
-            SizedBox(height: 12.h),
-            reausabletext(
-              'No active private sessions',
-              fontsize: 15.sp,
-              fontfamily: FontFamily.interSemiBold,
-              color: const Color(0xFF68729C),
+            child: Center(
+              child: Icon(
+                Icons.verified_user_rounded,
+                color: const Color(0xFF6B4DFF),
+                size: 20.sp,
+              ),
             ),
-          ],
-        ),
+          ),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "Your privacy is our priority",
+                  style: TextStyle(
+                    fontSize: 13.5.sp,
+                    fontWeight: FontWeight.w800,
+                    color: const Color(0xFF1E1B4B),
+                    fontFamily: FontFamily.interBold,
+                  ),
+                ),
+                SizedBox(height: 2.h),
+                Text(
+                  "Private Mode only hides your activity. You can still send messages and use the app normally.",
+                  style: TextStyle(
+                    fontSize: 11.sp,
+                    color: const Color(0xFF6B7280),
+                    fontFamily: FontFamily.interRegular,
+                    height: 1.3,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -9,9 +9,12 @@ class ProfileRepo {
     ProfileRes profileRes = ProfileRes.fromJson(response);
     if (profileRes.status == true && profileRes.data != null) {
       if (profileRes.data!.email != null &&
-          profileRes.data!.email!.isNotEmpty) {
+          profileRes.data!.email!.isNotEmpty &&
+          profileRes.data!.email != "null") {
         Global.storageServices
             .setString(PrefConst.userEmail, profileRes.data!.email!);
+      } else {
+        Global.storageServices.remove(PrefConst.userEmail);
       }
       if (profileRes.data!.name != null && profileRes.data!.name!.isNotEmpty) {
         Global.storageServices

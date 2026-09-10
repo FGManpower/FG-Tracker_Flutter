@@ -6,6 +6,7 @@ import 'package:fgtracker/app/Core/util/http/http_util.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Model/LocationDataRes.dart';
 import 'package:fgtracker/app/Model/UsersWithinRadiusRes.dart';
+import 'package:fgtracker/app/Model/ghost_member_model.dart';
 import 'package:fgtracker/app/Model/online_member_model.dart';
 import 'package:flutter/foundation.dart';
 
@@ -90,6 +91,23 @@ class TrackRepo {
       return OnlineMemberModel.fromJson(response);
     } catch (e) {
       return OnlineMemberModel(status: false, message: e.toString(), data: []);
+    }
+  }
+
+  static Future<GhostMemberModel> getPrivateMembers({
+    String page = '1',
+    int limit = 20,
+  }) async {
+    try {
+      final response = await HttpUtil().get(
+        '${Urls.allGroupMembers}'
+        '?filter=private'
+        '&page=$page'
+        '&limit=$limit',
+      );
+      return GhostMemberModel.fromJson(response);
+    } catch (e) {
+      return GhostMemberModel(status: false, message: e.toString(), data: []);
     }
   }
 

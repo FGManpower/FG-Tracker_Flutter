@@ -1,11 +1,11 @@
-class OnlineMemberModel {
+class GhostMemberModel {
   bool? status;
   String? message;
   String? filter;
-  OnlinePagination? pagination;
-  List<OnlineMemberData>? data;
+  GhostPagination? pagination;
+  List<GhostMemberData>? data;
 
-  OnlineMemberModel({
+  GhostMemberModel({
     this.status,
     this.message,
     this.filter,
@@ -13,13 +13,13 @@ class OnlineMemberModel {
     this.data,
   });
 
-  OnlineMemberModel.fromJson(dynamic json) {
+  GhostMemberModel.fromJson(dynamic json) {
     if (json is List) {
       status = true;
       data = json
           .whereType<Map>()
           .map(
-            (item) => OnlineMemberData.fromJson(
+            (item) => GhostMemberData.fromJson(
               Map<String, dynamic>.from(item),
             ),
           )
@@ -29,7 +29,7 @@ class OnlineMemberModel {
 
     if (json is! Map) {
       status = false;
-      data = <OnlineMemberData>[];
+      data = <GhostMemberData>[];
       return;
     }
 
@@ -40,7 +40,7 @@ class OnlineMemberModel {
     filter = map['filter']?.toString();
 
     pagination = map['pagination'] is Map
-        ? OnlinePagination.fromJson(
+        ? GhostPagination.fromJson(
             Map<String, dynamic>.from(map['pagination']),
           )
         : null;
@@ -51,13 +51,13 @@ class OnlineMemberModel {
       data = rawList
           .whereType<Map>()
           .map(
-            (item) => OnlineMemberData.fromJson(
+            (item) => GhostMemberData.fromJson(
               Map<String, dynamic>.from(item),
             ),
           )
           .toList();
     } else {
-      data = <OnlineMemberData>[];
+      data = <GhostMemberData>[];
     }
   }
 
@@ -72,7 +72,7 @@ class OnlineMemberModel {
   }
 }
 
-class OnlinePagination {
+class GhostPagination {
   int? totalRecords;
   int? currentPage;
   int? perPage;
@@ -80,7 +80,7 @@ class OnlinePagination {
   bool? hasNextPage;
   bool? hasPreviousPage;
 
-  OnlinePagination({
+  GhostPagination({
     this.totalRecords,
     this.currentPage,
     this.perPage,
@@ -89,7 +89,7 @@ class OnlinePagination {
     this.hasPreviousPage,
   });
 
-  OnlinePagination.fromJson(Map<String, dynamic> json) {
+  GhostPagination.fromJson(Map<String, dynamic> json) {
     totalRecords = _toInt(json['totalRecords']);
     currentPage = _toInt(json['currentPage']);
     perPage = _toInt(json['perPage']);
@@ -117,7 +117,7 @@ class OnlinePagination {
   }
 }
 
-class OnlineMemberData {
+class GhostMemberData {
   int? userId;
   String? name;
   String? mobileNo;
@@ -126,10 +126,9 @@ class OnlineMemberData {
   int? isOnline;
   int? locationSharing;
   String? department;
-  double? latitude;
-  double? longitude;
+  String? startedAt;
 
-  OnlineMemberData({
+  GhostMemberData({
     this.userId,
     this.name,
     this.mobileNo,
@@ -138,16 +137,11 @@ class OnlineMemberData {
     this.isOnline,
     this.locationSharing,
     this.department,
-    this.latitude,
-    this.longitude,
+    this.startedAt,
   });
 
-  bool get online =>
-      isOnline == 1 ||
-      (lastSeen != null && lastSeen!.trim().toLowerCase() == 'online');
-
-  OnlineMemberData.fromJson(Map<String, dynamic> json) {
-    userId = _toInt(json['userId'] ?? json['user_id'] ?? json['id'] ?? json['_id']);
+  GhostMemberData.fromJson(Map<String, dynamic> json) {
+    userId = _toInt(json['userId'] ?? json['user_id'] ?? json['id']);
 
     name = (json['Name'] ??
             json['name'] ??
@@ -188,14 +182,15 @@ class OnlineMemberData {
             json['groupName'])
         ?.toString();
 
-    if (json['location'] is Map) {
-      final loc = json['location'] as Map;
-      latitude = _toDouble(loc['lat'] ?? loc['latitude'] ?? loc['userLat']);
-      longitude = _toDouble(loc['lng'] ?? loc['lon'] ?? loc['longitude'] ?? loc['userLong']);
-    } else {
-      latitude = _toDouble(json['latitude'] ?? json['lat'] ?? json['userLat']);
-      longitude = _toDouble(json['longitude'] ?? json['lng'] ?? json['lon'] ?? json['long'] ?? json['userLong']);
-    }
+    startedAt = (json['startedAt'] ??
+            json['started_at'] ??
+            json['startTime'] ??
+            json['start_time'] ??
+            json['createdAt'] ??
+            json['created_at'] ??
+            json['lastSeen'] ??
+            json['updatedAt'])
+        ?.toString();
   }
 
   Map<String, dynamic> toJson() {
@@ -208,21 +203,13 @@ class OnlineMemberData {
       'isOnline': isOnline,
       'locationSharing': locationSharing,
       'department': department,
-      'latitude': latitude,
-      'longitude': longitude,
+      'startedAt': startedAt,
     };
   }
 
   static int? _toInt(dynamic value) {
-    if (value == null) return null;
     if (value is int) return value;
     if (value is bool) return value ? 1 : 0;
-    return int.tryParse(value.toString());
-  }
-
-  static double? _toDouble(dynamic value) {
-    if (value == null) return null;
-    if (value is num) return value.toDouble();
-    return double.tryParse(value.toString());
+    return int.tryParse(value?.toString() ?? '');
   }
 }

@@ -11,8 +11,8 @@ Future<BitmapDescriptor> getCustomIcon(
     String imageUrl, dynamic isOnline, {bool isMe = false}) async {
   return MarkerWidget(imageUrl: imageUrl, isOnline: isOnline, isMe: isMe)
       .toBitmapDescriptor(
-    logicalSize: Size(70.w, 84.h),
-    imageSize: Size(140.w, 168.h),
+    logicalSize: Size(46.w, 55.h),
+    imageSize: Size(92.w, 110.h),
   );
 }
 
@@ -53,8 +53,8 @@ class MarkerWidget extends StatelessWidget {
         : (isOnline == true ? AppColors.primaryElementStatus : AppColors.darkRed);
 
     return Container(
-      width: 70.w,
-      height: 84.h,
+      width: 46.w,
+      height: 55.h,
       alignment: Alignment.topCenter,
       child: Stack(
         alignment: Alignment.topCenter,
@@ -63,23 +63,23 @@ class MarkerWidget extends StatelessWidget {
             bottom: 0,
             child: Icon(
               Icons.location_pin,
-              size: 70.sp,
+              size: 46.sp,
               color: pinColor,
             ),
           ),
           Positioned(
-            top: 24.5.h,
+            top: 16.h,
             child: Stack(
               children: [
                 Container(
-                  width: 36.w,
-                  height: 36.w,
+                  width: 24.w,
+                  height: 24.w,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: AppColors.white,
                     border: Border.all(
                       color: borderColor,
-                      width: 2.0,
+                      width: 1.5,
                     ),
                   ),
                   child: ClipOval(
@@ -91,7 +91,7 @@ class MarkerWidget extends StatelessWidget {
                               debugPrint("❌ Image load error: $fullUrl");
                               return Icon(
                                 isMe ? Icons.person_pin : Icons.person,
-                                size: 21.sp,
+                                size: 14.sp,
                                 color: isMe
                                     ? AppColors.darkBlue
                                     : AppColors.grey,
@@ -100,7 +100,7 @@ class MarkerWidget extends StatelessWidget {
                           )
                         : Icon(
                             isMe ? Icons.person_pin : Icons.person,
-                            size: 21.sp,
+                            size: 14.sp,
                             color:
                                 isMe ? AppColors.darkBlue : AppColors.grey,
                           ),
@@ -112,10 +112,10 @@ class MarkerWidget extends StatelessWidget {
                   child: Container(
                     padding: isMe
                         ? const EdgeInsets.symmetric(
-                            horizontal: 3, vertical: 1)
+                            horizontal: 2, vertical: 0.5)
                         : EdgeInsets.zero,
-                    width: isMe ? null : 8.5.w,
-                    height: isMe ? null : 8.5.w,
+                    width: isMe ? null : 6.5.w,
+                    height: isMe ? null : 6.5.w,
                     decoration: BoxDecoration(
                       shape: isMe ? BoxShape.rectangle : BoxShape.circle,
                       borderRadius:

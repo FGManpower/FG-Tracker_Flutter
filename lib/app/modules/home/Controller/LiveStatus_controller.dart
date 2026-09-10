@@ -1,4 +1,5 @@
 import 'package:fgtracker/app/Data/Repositories/TrackRepo.dart';
+import 'package:fgtracker/app/Model/ghost_member_model.dart';
 import 'package:fgtracker/app/Model/online_member_model.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -29,6 +30,14 @@ class LivesStatusController extends GetxController {
 
   final RxString memberFilter = 'online'.obs;
 
+  final RxList<GhostMemberData> privateMemberData =
+      <GhostMemberData>[].obs;
+  final RxBool privateMemberLoading = false.obs;
+  final RxBool privateMemberLoadingMore = false.obs;
+  final RxString privateResponseError = ''.obs;
+  final RxInt privatePagination = 0.obs;
+  final RxBool hasMorePrivateMembers = true.obs;
+
   RxList<OnlineMemberData> get filtermember {
     return filteredMembers;
   }
@@ -38,6 +47,7 @@ class LivesStatusController extends GetxController {
     super.onInit();
 
     getGroupMember();
+    getPrivateMembers();
   }
 
   @override
@@ -144,6 +154,87 @@ class LivesStatusController extends GetxController {
     }
   }
 
+  Future<void> getPrivateMembers() async {
+    if (privateMemberLoading.value || privateMemberLoadingMore.value) {
+      return;
+    }
+
+    privateMemberLoading.value = true;
+    privateResponseError.value = '';
+    privatePagination.value = 0;
+    hasMorePrivateMembers.value = true;
+    privateMemberData.clear();
+
+    try {
+      final GhostMemberModel result = await TrackRepo.getPrivateMembers(
+        page: '1',
+        limit: 20,
+      );
+
+      if (result.status != true) {
+        privateResponseError.value =
+            result.message ?? 'Something went wrong';
+        return;
+      }
+
+      final List<GhostMemberData> members =
+          List<GhostMemberData>.from(result.data ?? <GhostMemberData>[]);
+
+      privateMemberData.assignAll(members);
+
+      privatePagination.value = result.pagination?.currentPage ?? 1;
+      hasMorePrivateMembers.value = result.pagination?.hasNextPage ?? false;
+    } catch (error) {
+      privateResponseError.value = error.toString();
+    } finally {
+      privateMemberLoading.value = false;
+    }
+  }
+
+  Future<void> loadMorePrivateMembers() async {
+    if (privateMemberLoading.value ||
+        privateMemberLoadingMore.value ||
+        !hasMorePrivateMembers.value) {
+      return;
+    }
+
+    privateMemberLoadingMore.value = true;
+
+    try {
+      final int nextPage = privatePagination.value + 1;
+
+      final GhostMemberModel result = await TrackRepo.getPrivateMembers(
+        page: nextPage.toString(),
+        limit: 20,
+      );
+
+      if (result.status != true) {
+        hasMorePrivateMembers.value = false;
+        return;
+      }
+
+      final List<GhostMemberData> members =
+          List<GhostMemberData>.from(result.data ?? <GhostMemberData>[]);
+
+      if (members.isNotEmpty) {
+        privateMemberData.addAll(members);
+      }
+
+      privatePagination.value = result.pagination?.currentPage ?? nextPage;
+      hasMorePrivateMembers.value = result.pagination?.hasNextPage ?? false;
+    } catch (error) {
+      privateResponseError.value = error.toString();
+    } finally {
+      privateMemberLoadingMore.value = false;
+    }
+  }
+
+  Future<void> refreshPrivateMembers() async {
+    privateMemberLoading.value = false;
+    privateMemberLoadingMore.value = false;
+    await getPrivateMembers();
+  }
+
   Future<void> loadMoreRecentCalls() async {
     await loadMoreMembers();
   }
@@ -200,11 +291,12 @@ class LivesStatusController extends GetxController {
   }
 
   Future<void> changeFilter(String filter) async {
-    if (memberFilter.value == filter) {
+    final bool isSame = memberFilter.value == filter;
+    memberFilter.value = filter;
+
+    if (isSame && memberData.isNotEmpty) {
       return;
     }
-
-    memberFilter.value = filter;
 
     await getGroupMember();
   }

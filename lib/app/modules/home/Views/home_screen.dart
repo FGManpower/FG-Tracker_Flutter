@@ -1,8 +1,10 @@
+import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Data/Services/NotificationServices.dart';
 import 'package:fgtracker/app/Data/Services/PermissionGuard.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Dashboard_Service.dart';
 import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
 import 'package:fgtracker/app/modules/Group/controller/JoinGroup_Controller.dart';
+import 'package:fgtracker/app/modules/Track/Controller/SocketServices.dart';
 import 'package:fgtracker/app/modules/Track/Controller/TrackController.dart';
 import 'package:fgtracker/app/modules/home/Controller/home_controller.dart';
 import 'package:fgtracker/app/modules/home/Home_Widget/bannerUi.dart';
@@ -71,6 +73,9 @@ class _HomeScreenState extends State<HomeScreen> {
     await controller.getProfileData();
     await groupController.getGroupData();
     await trackingController.loadLocationSharing();
+    await SocketService.instance.init(ConstRes.socketUrl);
+    trackingController.initializeLocation();
+    await controller.startLiveLocationSession();
   }
 
   @override

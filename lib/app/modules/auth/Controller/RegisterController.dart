@@ -20,6 +20,7 @@ class RegistrationController extends GetxController {
   var gender = "".obs;
   var phoneNumber = ''.obs;
   var phoneError = ''.obs;
+  var hasExistingEmail = false.obs;
 
   final registerKey = GlobalKey<FormState>();
   final nameController = TextEditingController();
@@ -74,12 +75,37 @@ class RegistrationController extends GetxController {
       if (phone.isNotEmpty) phoneController.text = phone;
 
       // 3. Email Address (Pre-filled directly from backend UserData, storage, or args)
-      final email = (userData.email != null && userData.email!.isNotEmpty)
-          ? userData.email!
-          : (Global.storageServices.get(PrefConst.userEmail)?.toString() ??
-              args?['email']?.toString() ??
-              "");
-      if (email.isNotEmpty) emailController.text = email;
+      String email = "";
+      if (userData.email != null &&
+          userData.email!.trim().isNotEmpty &&
+          userData.email!.trim().toLowerCase() != "null") {
+        email = userData.email!.trim();
+      } else if (args?['email'] != null &&
+          args!['email'].toString().trim().isNotEmpty &&
+          args['email'].toString().trim().toLowerCase() != "null") {
+        email = args['email'].toString().trim();
+      } else if (Get.arguments is Map &&
+          (Get.arguments as Map)['email'] != null &&
+          (Get.arguments as Map)['email'].toString().trim().isNotEmpty &&
+          (Get.arguments as Map)['email'].toString().trim().toLowerCase() != "null") {
+        email = (Get.arguments as Map)['email'].toString().trim();
+      } else {
+        final stored = Global.storageServices.get(PrefConst.userEmail)?.toString().trim() ?? "";
+        if (stored.isNotEmpty && stored.toLowerCase() != "null") {
+          email = stored;
+        }
+      }
+
+      if (email.isNotEmpty && email.toLowerCase() != "null") {
+        emailController.text = email;
+        hasExistingEmail.value = true;
+      } else if (emailController.text.trim().isNotEmpty &&
+          emailController.text.trim().toLowerCase() != "null") {
+        hasExistingEmail.value = true;
+      } else {
+        emailController.clear();
+        hasExistingEmail.value = false;
+      }
 
       // 4. Gender
       if (userData.gender != null && userData.gender.toString().isNotEmpty) {
@@ -97,10 +123,8 @@ class RegistrationController extends GetxController {
           '';
       if (phone.isNotEmpty) phoneController.text = phone;
 
-      final savedEmail = Global.storageServices.get(PrefConst.userEmail)?.toString() ?? '';
-      if (savedEmail.isNotEmpty && emailController.text.isEmpty) {
-        emailController.text = savedEmail;
-      }
+      emailController.clear();
+      hasExistingEmail.value = false;
     }
   }
 
@@ -109,9 +133,25 @@ class RegistrationController extends GetxController {
       var res = await ProfileRepo.getProfileData();
       if (res.status == true && res.data != null) {
         userData = res.data!;
-        if (res.data!.email != null && res.data!.email!.isNotEmpty) {
-          emailController.text = res.data!.email!;
-          Global.storageServices.setString(PrefConst.userEmail, res.data!.email!);
+        final remoteEmail = res.data!.email?.trim();
+        if (remoteEmail != null &&
+            remoteEmail.isNotEmpty &&
+            remoteEmail.toLowerCase() != "null") {
+          emailController.text = remoteEmail;
+          Global.storageServices.setString(PrefConst.userEmail, remoteEmail);
+          hasExistingEmail.value = true;
+        } else if (emailController.text.trim().isNotEmpty &&
+            emailController.text.trim().toLowerCase() != "null") {
+          hasExistingEmail.value = true;
+        } else {
+          final saved = Global.storageServices.get(PrefConst.userEmail)?.toString().trim() ?? "";
+          if (saved.isNotEmpty && saved.toLowerCase() != "null") {
+            emailController.text = saved;
+            hasExistingEmail.value = true;
+          } else {
+            emailController.clear();
+            hasExistingEmail.value = false;
+          }
         }
         if (res.data!.name != null && res.data!.name!.isNotEmpty) {
           nameController.text = res.data!.name!;
@@ -171,6 +211,8 @@ class RegistrationController extends GetxController {
               PrefConst.userEmail,
               controller.emailController.text.trim(),
             );
+          } else {
+            Global.storageServices.remove(PrefConst.userEmail);
           }
           if (controller.phoneController.text.trim().isNotEmpty) {
             Global.storageServices.setString(
@@ -194,9 +236,13 @@ class RegistrationController extends GetxController {
     if (registerKey.currentState!.validate()) {
       try {
         Loading().showloading();
+        if (!controller.hasExistingEmail.value) {
+          controller.emailController.clear();
+        }
         var result = await AuthRepo.updateProfile(controller);
         if (result.status == true) {
-          if (controller.emailController.text.trim().isNotEmpty) {
+          if (controller.hasExistingEmail.value &&
+              controller.emailController.text.trim().isNotEmpty) {
             Global.storageServices.setString(
               PrefConst.userEmail,
               controller.emailController.text.trim(),
@@ -233,11 +279,15 @@ class RegistrationController extends GetxController {
           PrefConst.profileImage,
           profileData.data!.profileImage ?? "Unknown",
         );
-        if (profileData.data?.email != null && profileData.data!.email!.isNotEmpty) {
+        if (profileData.data?.email != null &&
+            profileData.data!.email!.isNotEmpty &&
+            profileData.data!.email != "null") {
           Global.storageServices.setString(
             PrefConst.userEmail,
             profileData.data!.email!,
           );
+        } else {
+          Global.storageServices.remove(PrefConst.userEmail);
         }
         if (profileData.data?.mobileNo != null && profileData.data!.mobileNo!.isNotEmpty) {
           Global.storageServices.setString(

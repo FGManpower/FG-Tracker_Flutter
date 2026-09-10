@@ -53,7 +53,9 @@ class OTPScreen extends GetView<OtpController> {
                   return SingleChildScrollView(
                     keyboardDismissBehavior:
                         ScrollViewKeyboardDismissBehavior.onDrag,
-                    physics: const AlwaysScrollableScrollPhysics(),
+                    physics: isKeyboardOpen
+                        ? const ClampingScrollPhysics()
+                        : const NeverScrollableScrollPhysics(),
                     child: ConstrainedBox(
                       constraints:
                           BoxConstraints(minHeight: constraints.maxHeight),

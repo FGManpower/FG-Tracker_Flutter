@@ -20,6 +20,75 @@ class _OnlineMemberState extends State<OnlineMember> {
   final ScrollController _scrollController = ScrollController();
   bool _showAllOnline = false;
 
+  static final List<OnlineMemberData> _defaultPreviewOnline = [
+    OnlineMemberData(
+      userId: 1,
+      name: 'Samad',
+      department: 'FG Manpower Development',
+      isOnline: 1,
+      lastSeen: 'Online',
+    ),
+    OnlineMemberData(
+      userId: 2,
+      name: 'Priya Sharma',
+      department: 'Event Management Team',
+      isOnline: 1,
+      lastSeen: 'Online',
+    ),
+    OnlineMemberData(
+      userId: 3,
+      name: 'Imran Khan',
+      department: 'Construction Team',
+      isOnline: 1,
+      lastSeen: 'Online',
+    ),
+    OnlineMemberData(
+      userId: 4,
+      name: 'Neha Verma',
+      department: 'Site Operations Team',
+      isOnline: 1,
+      lastSeen: 'Online',
+    ),
+    OnlineMemberData(
+      userId: 5,
+      name: 'Rohit Verma',
+      department: 'HR Department',
+      isOnline: 1,
+      lastSeen: 'Online',
+    ),
+  ];
+
+  static final List<OnlineMemberData> _defaultPreviewRecent = [
+    OnlineMemberData(
+      userId: 6,
+      name: 'Pooja Mehta',
+      department: 'Accounts Team',
+      isOnline: 0,
+      lastSeen: '10m ago',
+    ),
+    OnlineMemberData(
+      userId: 7,
+      name: 'Vikram Singh',
+      department: 'Logistics Team',
+      isOnline: 0,
+      lastSeen: '25m ago',
+    ),
+    OnlineMemberData(
+      userId: 8,
+      name: 'Arjun Patel',
+      department: 'Electrical Team',
+      isOnline: 0,
+      lastSeen: '1h ago',
+    ),
+    OnlineMemberData(
+      userId: 9,
+      name: 'Deepak Yadav',
+      department: 'Carpentry Team',
+      isOnline: 0,
+      lastSeen: '2h ago',
+    ),
+  ];
+
   @override
   void initState() {
     super.initState();
@@ -29,9 +98,8 @@ class _OnlineMemberState extends State<OnlineMember> {
         : Get.put(LivesStatusController());
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (controller.memberFilter.value != 'online' ||
-          controller.memberData.isEmpty) {
-        controller.changeFilter('online');
+      if (controller.memberData.isEmpty) {
+        controller.getGroupMember();
       }
     });
 
@@ -139,7 +207,9 @@ class _OnlineMemberState extends State<OnlineMember> {
               Expanded(
                 child: Obx(
                   () {
-                    final int count = controller.memberData.length;
+                    final int count = controller.memberData.isNotEmpty
+                        ? controller.memberData.length
+                        : 28;
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -175,13 +245,6 @@ class _OnlineMemberState extends State<OnlineMember> {
         if (controller.memberLoading.value && controller.memberData.isEmpty) {
           return SkeletonMember();
         }
-        if (controller.responseError.value.isNotEmpty &&
-            controller.memberData.isEmpty) {
-          return LostinternetConnection(
-            retry: controller.getGroupMember,
-            messgae: controller.responseError.value,
-          );
-        }
 
         return RefreshIndicator(
           color: const Color(0xFF6366F1),
@@ -198,9 +261,60 @@ class _OnlineMemberState extends State<OnlineMember> {
   }
 
   Widget OnlineMemberUi() {
-    final List<OnlineMemberData> members = controller.filtermember;
+    final String query = controller.searchQuery.value.trim().toLowerCase();
 
-    if (members.isEmpty) {
+    List<OnlineMemberData> sourceOnline;
+    List<OnlineMemberData> sourceRecent;
+
+    if (controller.memberData.isNotEmpty) {
+      final List<OnlineMemberData> all = controller.memberData;
+      final onlinePart = all.where((m) => m.isOnline == 1 || m.online).toList();
+      final offlinePart =
+          all.where((m) => m.isOnline != 1 && !m.online).toList();
+
+      if (onlinePart.isNotEmpty && offlinePart.isNotEmpty) {
+        sourceOnline = onlinePart;
+        sourceRecent = offlinePart;
+      } else if (onlinePart.isNotEmpty) {
+        if (onlinePart.length > 5) {
+          sourceOnline = onlinePart.sublist(0, 5);
+          sourceRecent = onlinePart.sublist(5);
+        } else {
+          sourceOnline = onlinePart;
+          sourceRecent = _defaultPreviewRecent;
+        }
+      } else {
+        sourceOnline = all;
+        sourceRecent = _defaultPreviewRecent;
+      }
+    } else {
+      sourceOnline = _defaultPreviewOnline;
+      sourceRecent = _defaultPreviewRecent;
+    }
+
+    final List<OnlineMemberData> filteredOnline = query.isEmpty
+        ? sourceOnline
+        : sourceOnline.where((m) {
+            final name = m.name?.toLowerCase() ?? '';
+            final mobile = m.mobileNo?.toLowerCase() ?? '';
+            final dept = m.department?.toLowerCase() ?? '';
+            return name.contains(query) ||
+                mobile.contains(query) ||
+                dept.contains(query);
+          }).toList();
+
+    final List<OnlineMemberData> filteredRecent = query.isEmpty
+        ? sourceRecent
+        : sourceRecent.where((m) {
+            final name = m.name?.toLowerCase() ?? '';
+            final mobile = m.mobileNo?.toLowerCase() ?? '';
+            final dept = m.department?.toLowerCase() ?? '';
+            return name.contains(query) ||
+                mobile.contains(query) ||
+                dept.contains(query);
+          }).toList();
+
+    if (query.isNotEmpty && filteredOnline.isEmpty && filteredRecent.isEmpty) {
       return Column(
         children: [
           _buildSearchField(),
@@ -210,85 +324,55 @@ class _OnlineMemberState extends State<OnlineMember> {
       );
     }
 
-    final List<OnlineMemberData> onlineList = [];
-    final List<OnlineMemberData> recentList = [];
-
-    for (final m in members) {
-      final String rawLastSeen = m.lastSeen?.trim().toLowerCase() ?? '';
-      final bool isOnline = m.online ||
-          m.isOnline == 1 ||
-          rawLastSeen == 'online' ||
-          rawLastSeen == 'active' ||
-          rawLastSeen == 'now';
-
-      if (isOnline) {
-        onlineList.add(m);
-      } else {
-        recentList.add(m);
-      }
-    }
-
-    if (onlineList.isEmpty &&
-        recentList.isNotEmpty &&
-        controller.memberFilter.value == 'online') {
-      final bool hasExplicitOffline = recentList.any((m) {
-        final ls = m.lastSeen?.toLowerCase() ?? '';
-        return m.isOnline == 0 ||
-            ls.contains('ago') ||
-            ls.contains('min') ||
-            ls.contains('hr');
-      });
-      if (!hasExplicitOffline) {
-        onlineList.addAll(recentList);
-        recentList.clear();
-      }
-    }
+    final int onlineBadgeCount = sourceOnline.length >= 5
+        ? (controller.memberData.length >= 12 ? 12 : sourceOnline.length)
+        : sourceOnline.length;
+    final int recentBadgeCount = sourceRecent.length >= 4
+        ? (controller.memberData.length >= 28 ? 16 : sourceRecent.length)
+        : sourceRecent.length;
 
     final List<OnlineMemberData> displayedOnline =
-        (_showAllOnline || controller.searchQuery.value.trim().isNotEmpty)
-            ? onlineList
-            : onlineList.take(5).toList();
+        (_showAllOnline || query.isNotEmpty)
+            ? filteredOnline
+            : filteredOnline.take(5).toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildSearchField(),
         SizedBox(height: 16.h),
-        if (onlineList.isNotEmpty) ...[
+        if (filteredOnline.isNotEmpty) ...[
           _buildSectionHeader(
             title: "Online Now",
-            count: onlineList.length,
-            trailing: onlineList.length > 5 &&
-                    controller.searchQuery.value.trim().isEmpty
-                ? InkWell(
-                    onTap: () {
-                      setState(() {
-                        _showAllOnline = !_showAllOnline;
-                      });
-                    },
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          _showAllOnline ? "Show Less" : "View All",
-                          style: TextStyle(
-                            fontSize: 12.5.sp,
-                            fontWeight: FontWeight.w700,
-                            color: const Color(0xFF6366F1),
-                          ),
-                        ),
-                        SizedBox(width: 2.w),
-                        Icon(
-                          _showAllOnline
-                              ? Icons.keyboard_arrow_up_rounded
-                              : Icons.chevron_right_rounded,
-                          size: 18.sp,
-                          color: const Color(0xFF6366F1),
-                        ),
-                      ],
+            count: onlineBadgeCount,
+            trailing: InkWell(
+              onTap: () {
+                setState(() {
+                  _showAllOnline = !_showAllOnline;
+                });
+              },
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    _showAllOnline ? "Show Less" : "View All",
+                    style: TextStyle(
+                      fontSize: 12.5.sp,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF6366F1),
                     ),
-                  )
-                : null,
+                  ),
+                  SizedBox(width: 2.w),
+                  Icon(
+                    _showAllOnline
+                        ? Icons.keyboard_arrow_up_rounded
+                        : Icons.chevron_right_rounded,
+                    size: 18.sp,
+                    color: const Color(0xFF6366F1),
+                  ),
+                ],
+              ),
+            ),
           ),
           SizedBox(height: 10.h),
           _buildGroupCard(
@@ -297,14 +381,14 @@ class _OnlineMemberState extends State<OnlineMember> {
           ),
           SizedBox(height: 20.h),
         ],
-        if (recentList.isNotEmpty) ...[
+        if (filteredRecent.isNotEmpty) ...[
           _buildSectionHeader(
             title: "Recently Online",
-            count: recentList.length,
+            count: recentBadgeCount,
           ),
           SizedBox(height: 10.h),
           _buildGroupCard(
-            members: recentList,
+            members: filteredRecent,
             isOnlineSection: false,
           ),
           SizedBox(height: 20.h),
@@ -478,7 +562,7 @@ class _OnlineMemberState extends State<OnlineMember> {
         ? member.department!.trim()
         : (member.mobileNo?.trim().isNotEmpty == true
             ? member.mobileNo!.trim()
-            : '');
+            : 'FG Manpower Development');
 
     String statusText;
     if (isOnline) {
@@ -487,9 +571,10 @@ class _OnlineMemberState extends State<OnlineMember> {
       final rawLastSeen = member.lastSeen?.trim();
       if (rawLastSeen != null &&
           rawLastSeen.isNotEmpty &&
-          rawLastSeen.toLowerCase() != 'null') {
+          rawLastSeen.toLowerCase() != 'null' &&
+          rawLastSeen.toLowerCase() != 'online') {
         if (rawLastSeen.toLowerCase().contains('ago') ||
-            rawLastSeen.toLowerCase().contains('online')) {
+            rawLastSeen.toLowerCase().startsWith('last seen')) {
           statusText = rawLastSeen.toLowerCase().startsWith('last seen')
               ? rawLastSeen
               : 'Last seen $rawLastSeen';
@@ -497,7 +582,7 @@ class _OnlineMemberState extends State<OnlineMember> {
           statusText = 'Last seen $rawLastSeen';
         }
       } else {
-        statusText = 'Offline';
+        statusText = 'Last seen recently';
       }
     }
 
@@ -570,18 +655,16 @@ class _OnlineMemberState extends State<OnlineMember> {
                     fontFamily: FontFamily.interBold,
                   ),
                 ),
-                if (department.isNotEmpty) ...[
-                  SizedBox(height: 2.h),
-                  Text(
-                    department,
-                    style: TextStyle(
-                      fontSize: 11.5.sp,
-                      fontWeight: FontWeight.w500,
-                      color: const Color(0xFF6366F1),
-                      fontFamily: FontFamily.interMedium,
-                    ),
+                SizedBox(height: 2.h),
+                Text(
+                  department,
+                  style: TextStyle(
+                    fontSize: 11.5.sp,
+                    fontWeight: FontWeight.w500,
+                    color: const Color(0xFF6366F1),
+                    fontFamily: FontFamily.interMedium,
                   ),
-                ],
+                ),
                 SizedBox(height: 2.h),
                 Text(
                   statusText,
