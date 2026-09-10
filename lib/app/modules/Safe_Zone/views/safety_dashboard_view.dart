@@ -4,13 +4,13 @@ import 'package:fgtracker/gen/assets.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import '../../../routes/app_pages.dart';
+import '../../Notification/Controller/Notification_Controller.dart';
 import '../controller/safety_dashboard_controller.dart';
-
-// 👈 BOTTOM SHEET WALI FILE IMPORT KI HAI
 import '../Widgets/safe_common_widgets.dart';
 
 class SafetyDashboardView extends StatelessWidget {
-  const SafetyDashboardView({Key? key}) : super(key: key);
+   SafetyDashboardView({Key? key}) : super(key: key);
 
   final Color _textColorDark = const Color(0xFF1A1A2C);
   final Color _textColorGrey = const Color(0xFF7A7A8C);
@@ -21,6 +21,7 @@ class SafetyDashboardView extends StatelessWidget {
   final Color _alertIconBg = const Color(0xFFFCE9E9);
   final Color _zoneAlertIconBg = const Color(0xFFFCE6E6);
   final Color _routeAlertIconBg = const Color(0xFFFDF0E1);
+  final notificationController = Get.find<NotificationController>();
 
   List<BoxShadow> get _cardShadow => [
     BoxShadow(
@@ -164,40 +165,72 @@ class SafetyDashboardView extends StatelessWidget {
         ),
       ),
       actions: [
-        Center(
-          child: Container(
-            margin: EdgeInsets.only(right: 16.w),
-            width: 40.w,
-            height: 40.w,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12.r),
-              boxShadow: _cardShadow,
-            ),
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                Icon(
-                  Icons.notifications_none_rounded,
-                  color: _primaryColor,
-                  size: 22.sp,
+        Obx(() {
+          final count = notificationController.unreadCount.value;
+
+          return Center(
+            child: GestureDetector(
+              onTap: () {
+                Get.toNamed(Routes.notificationScreen);
+              },
+              child: Container(
+                margin: EdgeInsets.only(right: 16.w),
+                width: 40.w,
+                height: 40.w,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12.r),
+                  boxShadow: _cardShadow,
                 ),
-                Positioned(
-                  top: 10.h,
-                  right: 10.w,
-                  child: Container(
-                    width: 6.w,
-                    height: 6.w,
-                    decoration: const BoxDecoration(
-                      color: Colors.red,
-                      shape: BoxShape.circle,
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  alignment: Alignment.center,
+                  children: [
+                    Icon(
+                      Icons.notifications_none_rounded,
+                      color: _primaryColor,
+                      size: 22.sp,
                     ),
-                  ),
+
+                    if (count > 0)
+                      Positioned(
+                        top: -5.h,
+                        right: -5.w,
+                        child: Container(
+                          constraints: BoxConstraints(
+                            minWidth: 18.w,
+                            minHeight: 18.w,
+                          ),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 4.w,
+                            vertical: 2.h,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.red,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: Colors.white,
+                              width: 1.5,
+                            ),
+                          ),
+                          child: Center(
+                            child: Text(
+                              count > 99 ? "99+" : count.toString(),
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 9.sp,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
-              ],
+              ),
             ),
-          ),
-        ),
+          );
+        }),
       ],
     );
   }

@@ -19,9 +19,10 @@ class SafeRouteView extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: SafeColors.bg,
-      appBar: const SafeAppBar(
+      appBar: SafeAppBar(
         title: "Safe Route",
         subtitle: "Set a safe route for your team member.",
+        onInfoTap: () => _showSafeRouteHelp(context),
       ),
       body: Column(
         children: [
@@ -772,5 +773,206 @@ class SafeRouteView extends StatelessWidget {
         ],
       ),
     );
+  }
+
+
+  void _showSafeRouteHelp(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+
+    showGeneralDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierLabel: "Safe Route Help",
+      barrierColor: Colors.black.withOpacity(0.45),
+      transitionDuration: const Duration(milliseconds: 180),
+      pageBuilder: (context, animation, secondaryAnimation) {
+        return SafeArea(
+          child: Stack(
+            children: [
+              Positioned(
+                top: 64,
+                right: 5,
+                child: Material(
+                  color: Colors.transparent,
+                  child: Container(
+                    width: screenWidth * 0.485,
+                    padding: const EdgeInsets.fromLTRB(
+                      16,
+                      14,
+                      14,
+                      14,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(18),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.12),
+                          blurRadius: 20,
+                          offset: const Offset(0, 6),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "Safe Route Help",
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w800,
+                            color: Color(0xff10205C),
+                          ),
+                        ),
+
+                        const SizedBox(height: 15),
+
+                        _routeHelpItem(
+                          icon: Icons.location_on_rounded,
+                          title: "What is Safe Route?",
+                          description:
+                          "Set a start and destination location to create a safe travel route for your team member.",
+                        ),
+
+                        const SizedBox(height: 13),
+
+                        _routeHelpItem(
+                          icon: Icons.sync_alt_rounded,
+                          title: "How to Create Safe Route?",
+                          description:
+                          "Select the member, choose start and destination locations, pick the best route and set a deviation limit.",
+                        ),
+
+                        const SizedBox(height: 13),
+
+                        _routeHelpItem(
+                          icon: Icons.shield_outlined,
+                          title: "What is Deviation Limit?",
+                          description:
+                          "Set the allowed distance a member can move away from the selected route. You’ll get an alert if they exceed this limit.",
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
+              // Arrow
+              Positioned(
+                top: 56,
+                right: 28,
+                child: CustomPaint(
+                  size: const Size(16, 9),
+                  painter: _HelpArrowPainter(),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+      transitionBuilder: (
+          context,
+          animation,
+          secondaryAnimation,
+          child,
+          ) {
+        return FadeTransition(
+          opacity: CurvedAnimation(
+            parent: animation,
+            curve: Curves.easeOut,
+          ),
+          child: SlideTransition(
+            position: Tween<Offset>(
+              begin: const Offset(0.04, -0.02),
+              end: Offset.zero,
+            ).animate(
+              CurvedAnimation(
+                parent: animation,
+                curve: Curves.easeOut,
+              ),
+            ),
+            child: child,
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _routeHelpItem({
+    required IconData icon,
+    required String title,
+    required String description,
+  }) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: 28,
+          height: 28,
+          decoration: const BoxDecoration(
+            color: Color(0xffF0EEFF),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(
+            icon,
+            color: SafeColors.primary,
+            size: 17,
+          ),
+        ),
+
+        const SizedBox(width: 8),
+
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 10,
+                  height: 1.1,
+                  fontWeight: FontWeight.w800,
+                  color: Color(0xff10205C),
+                ),
+              ),
+
+              const SizedBox(height: 2),
+
+              Text(
+                description,
+                style: const TextStyle(
+                  fontSize: 8,
+                  height: 1.25,
+                  fontWeight: FontWeight.w500,
+                  color: Color(0xff59658A),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+class _HelpArrowPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.fill;
+
+    final path = Path()
+      ..moveTo(0, size.height)
+      ..lineTo(size.width / 2, 0)
+      ..lineTo(size.width, size.height)
+      ..close();
+
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+    return false;
   }
 }

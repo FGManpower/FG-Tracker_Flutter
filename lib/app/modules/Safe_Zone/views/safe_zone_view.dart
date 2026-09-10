@@ -22,8 +22,8 @@ class SafeZoneView extends StatelessWidget {
         title: "Safe Zone",
         subtitle:
         "Define a safe area. Get alerts if someone\nsteps outside the safe zone.",
-      ),
-      body: Column(
+        onInfoTap: () => _showSafeZoneHelp(context),
+      ),      body: Column(
         children: [
           SizedBox(height: 5.h),
           SafeTabBar(controller: controller.tabController),
@@ -68,7 +68,6 @@ class SafeZoneView extends StatelessWidget {
           _buildCombinedRadiusLocationCard(controller, isGroup: false),
           SizedBox(height: 16.h),
 
-          // 👈 YAHAN CALL KIYA HAI (Section 4 Preview Card Tap Par)
           GestureDetector(
             onTap: () => showSafeZoneAlertSheet(context),
             child: SafeCard(
@@ -81,7 +80,6 @@ class SafeZoneView extends StatelessWidget {
           SafeSaveButton(
             text: "Save & Activate Safe Zone",
             onPressed: () {
-              // Save karne par bhi alert bottom sheet open kar sakte hain:
               showSafeZoneAlertSheet(context);
             },
           ),
@@ -117,7 +115,6 @@ class SafeZoneView extends StatelessWidget {
           _buildCombinedRadiusLocationCard(controller, isGroup: true),
           SizedBox(height: 16.h),
 
-          // 👈 YAHAN CALL KIYA HAI (Group Tab Section 4 Preview Card Tap Par)
           GestureDetector(
             onTap: () => showSafeZoneAlertSheet(context),
             child: SafeCard(
@@ -140,65 +137,129 @@ class SafeZoneView extends StatelessWidget {
   }
 
   Widget _buildMapCard(SafeZoneController controller, {required bool isGroup}) {
-    return Obx(() {
-      final LatLng pos = controller.selectedLocation.value;
-      final double radius = isGroup
-          ? controller.radiusOptions[controller.groupRadiusIndex.value]
-          : controller.radiusOptions[controller.individualRadiusIndex.value];
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        Obx(() {
+          final LatLng pos = controller.selectedLocation.value;
+          final double radius = isGroup
+              ? controller.radiusOptions[controller.groupRadiusIndex.value]
+              : controller.radiusOptions[controller.individualRadiusIndex.value];
 
-      final List<LatLng> points = _calculateCirclePoints(pos, radius);
+          final List<LatLng> points = _calculateCirclePoints(pos, radius);
 
-      final Set<Polygon> fillPolygon = {
-        Polygon(
-          polygonId: PolygonId('safe_zone_fill_$radius'),
-          points: points,
-          fillColor: SafeColors.primary.withOpacity(0.18),
-          strokeColor: Colors.transparent,
-          strokeWidth: 0,
-        ),
-      };
+          final Set<Polygon> fillPolygon = {
+            Polygon(
+              polygonId: PolygonId('safe_zone_fill_$radius'),
+              points: points,
+              fillColor: SafeColors.primary.withOpacity(0.18),
+              strokeColor: Colors.transparent,
+              strokeWidth: 0,
+            ),
+          };
 
-      final Set<Polyline> dashedPolyline = {
-        Polyline(
-          polylineId: PolylineId('safe_zone_dash_$radius'),
-          points: List<LatLng>.from(points)..add(points.first),
-          color: SafeColors.primary,
-          width: 2,
-          patterns: [
-            PatternItem.dash(12),
-            PatternItem.gap(8),
-          ],
-        ),
-      };
+          final Set<Polyline> dashedPolyline = {
+            Polyline(
+              polylineId: PolylineId('safe_zone_dash_$radius'),
+              points: List<LatLng>.from(points)..add(points.first),
+              color: SafeColors.primary,
+              width: 2,
+              patterns: [
+                PatternItem.dash(12),
+                PatternItem.gap(8),
+              ],
+            ),
+          };
 
-      return SafeMapCard(
-        showContainer: false,
-        mapKey: ValueKey('map_${isGroup}_$radius'),
-        searchController: controller.searchController,
-        onSearchSubmit: (val) => controller.searchLocation(val),
-        onClearSearch: controller.clearSearch,
-        onMapCreated: (mapCtrl) =>
-            controller.onMapCreated(mapCtrl, isGroup: isGroup),
-        onRecenter: () => controller.reCenterMap(isGroup: isGroup),
-        onZoomIn: () => controller.zoomIn(isGroup: isGroup),
-        onZoomOut: () => controller.zoomOut(isGroup: isGroup),
-        initialCamera:
-        CameraPosition(target: pos, zoom: controller.getZoomLevel(radius)),
-        mapHeight: 200,
-        markers: {
-          Marker(
-            markerId: const MarkerId('location'),
-            position: pos,
-            icon: BitmapDescriptor.defaultMarkerWithHue(
-                BitmapDescriptor.hueViolet),
-          ),
-        },
-        polygons: fillPolygon,
-        polylines: dashedPolyline,
-      );
-    });
+          return SafeMapCard(
+            showContainer: false,
+            mapKey: ValueKey('map_${isGroup}_$radius'),
+            searchController: controller.searchController,
+            onSearchSubmit: (val) => controller.searchLocation(val),
+            onClearSearch: controller.clearSearch,
+            onMapCreated: (mapCtrl) =>
+                controller.onMapCreated(mapCtrl, isGroup: isGroup),
+            onRecenter: () => controller.reCenterMap(isGroup: isGroup),
+            onZoomIn: () => controller.zoomIn(isGroup: isGroup),
+            onZoomOut: () => controller.zoomOut(isGroup: isGroup),
+            initialCamera: CameraPosition(
+                target: pos, zoom: controller.getZoomLevel(radius)),
+            mapHeight: 200,
+            markers: {
+              Marker(
+                markerId: const MarkerId('location'),
+                position: pos,
+                icon: BitmapDescriptor.defaultMarkerWithHue(
+                    BitmapDescriptor.hueViolet),
+              ),
+            },
+            polygons: fillPolygon,
+            polylines: dashedPolyline,
+          );
+        }),
+
+        Obx(() {
+          if (controller.suggestions.isEmpty) return const SizedBox.shrink();
+
+          return Positioned(
+            top: 54.h,
+            left: 12.w,
+            right: 12.w,
+            child: Container(
+              constraints: BoxConstraints(maxHeight: 180.h),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(10.r),
+                border: Border.all(color: Colors.grey.shade200, width: 1),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.12),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(10.r),
+                child: ListView.separated(
+                  shrinkWrap: true,
+                  padding: EdgeInsets.zero,
+                  itemCount: controller.suggestions.length,
+                  separatorBuilder: (context, index) =>
+                      Divider(height: 1, color: Colors.grey.shade100),
+                  itemBuilder: (context, index) {
+                    final suggestion = controller.suggestions[index];
+                    return ListTile(
+                      dense: true,
+                      contentPadding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 2.h),
+                      leading: Icon(
+                        Icons.location_on_rounded,
+                        color: SafeColors.primary,
+                        size: 16.sp,
+                      ),
+                      title: Text(
+                        suggestion.description,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 11.sp,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      onTap: () {
+                        controller.selectSuggestion(suggestion);
+                      },
+                    );
+                  },
+                ),
+              ),
+            ),
+          );
+        }),
+      ],
+    );
   }
-
   List<LatLng> _calculateCirclePoints(LatLng center, double radiusInMeters) {
     final List<LatLng> points = [];
     const int numberOfPoints = 120;
@@ -466,5 +527,208 @@ class SafeZoneView extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  void _showSafeZoneHelp(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+
+    showGeneralDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierLabel: "Safe Zone Help",
+      barrierColor: Colors.black.withOpacity(0.45),
+      transitionDuration: const Duration(milliseconds: 180),
+      pageBuilder: (context, animation, secondaryAnimation) {
+        return SafeArea(
+          child: Stack(
+            children: [
+              Positioned(
+                top: 64,
+                right: 5,
+                child: Material(
+                  color: Colors.transparent,
+                  child: Container(
+                    width: screenWidth * 0.485,
+
+                    padding: const EdgeInsets.fromLTRB(
+                      16,
+                      14,
+                      14,
+                      14,
+                    ),
+
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(18),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.12),
+                          blurRadius: 20,
+                          offset: const Offset(0, 6),
+                        ),
+                      ],
+                    ),
+
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "Safe Zone Help",
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w800,
+                            color: const Color(0xff10205C),
+                          ),
+                        ),
+
+                        const SizedBox(height: 15),
+
+                        _helpItem(
+                          icon: Icons.location_on_rounded,
+                          title: "What is Safe Zone?",
+                          description:
+                          "Set a specific area on the map and get alerts if the member steps outside the safe zone.",
+                        ),
+
+                        const SizedBox(height: 13),
+
+                        _helpItem(
+                          icon: Icons.groups_rounded,
+                          title: "How to Create Safe Zone?",
+                          description:
+                          "Select a member, choose a location on the map and set the radius.",
+                        ),
+
+                        const SizedBox(height: 13),
+
+                        _helpItem(
+                          icon: Icons.gps_fixed_rounded,
+                          title: "What is Safe Zone Radius?",
+                          description:
+                          "Set the area radius (500 m, 1 km, 2 km or 5 km) according to your need.",
+                        ),
+                      ],
+                    ),                  ),
+                ),
+              ),
+
+
+              Positioned(
+                top: 56,
+                right: 28,
+                child: CustomPaint(
+                  size: const Size(16, 9),
+                  painter: _HelpArrowPainter(),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+      transitionBuilder: (
+          context,
+          animation,
+          secondaryAnimation,
+          child,
+          ) {
+        return FadeTransition(
+          opacity: CurvedAnimation(
+            parent: animation,
+            curve: Curves.easeOut,
+          ),
+          child: SlideTransition(
+            position: Tween<Offset>(
+              begin: const Offset(0.04, -0.02),
+              end: Offset.zero,
+            ).animate(
+              CurvedAnimation(
+                parent: animation,
+                curve: Curves.easeOut,
+              ),
+            ),
+            child: child,
+          ),
+        );
+      },
+    );
+  }
+  Widget _helpItem({
+    required IconData icon,
+    required String title,
+    required String description,
+  }) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: 28,
+          height: 28,
+          decoration: const BoxDecoration(
+            color: Color(0xffF0EEFF),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(
+            icon,
+            color: SafeColors.primary,
+            size: 17,
+          ),
+        ),
+
+        const SizedBox(width: 8),
+
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 11,
+                  height: 1.1,
+                  fontWeight: FontWeight.w800,
+                  color: Color(0xff10205C),
+                ),
+              ),
+
+              const SizedBox(height: 2),
+
+              Text(
+                description,
+                style: const TextStyle(
+                  fontSize: 8.5,
+                  height: 1.25,
+                  fontWeight: FontWeight.w500,
+                  color: Color(0xff59658A),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+}
+
+class _HelpArrowPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.fill;
+
+    final path = Path()
+      ..moveTo(0, size.height)
+      ..lineTo(size.width / 2, 0)
+      ..lineTo(size.width, size.height)
+      ..close();
+
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+    return false;
   }
 }
