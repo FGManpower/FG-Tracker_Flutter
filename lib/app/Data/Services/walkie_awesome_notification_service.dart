@@ -142,7 +142,7 @@ class WalkieAwesomeNotificationService {
           key: 'WALKIE_JOIN',
           label: 'Join',
           actionType: ActionType.Default,
-          color: const Color(0xFF22C55E),
+          color: Color(0xFF22C55E),
         ),
         NotificationActionButton(
           key: 'WALKIE_REJECT',
