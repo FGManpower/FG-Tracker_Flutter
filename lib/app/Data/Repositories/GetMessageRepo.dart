@@ -6,6 +6,7 @@ import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Model/ChatImageUploadResponse.dart';
 import 'package:fgtracker/app/Model/GetMessage.dart';
 import 'package:fgtracker/app/Model/LocationDataRes.dart';
+import 'package:fgtracker/app/Model/PrivateChatModel.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:dio/dio.dart';
 import 'package:path/path.dart' as p;
@@ -129,5 +130,16 @@ class MessageRepo {
     );
 
     return LocationDataRes.fromJson(response);
+  }
+
+  static Future<PrivateChatResponse> getPrivateChatList({
+    int page = 1,
+    int limit = 2,
+  }) async {
+    final response = await HttpUtil().get(
+      "/private-chat-list?page=$page&limit=$limit",
+    );
+
+    return PrivateChatResponse.fromJson(response);
   }
 }

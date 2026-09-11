@@ -56,7 +56,7 @@ class QuickActionsSection extends StatelessWidget {
             _QuickActionCard(
               "Chatting",
               Icons.message_outlined,
-              onTap: () => Get.to(() => const ChatListScreen()),
+              onTap: () => Get.to(() =>  ChatListScreen()),
             ),
             _QuickActionCard(
               "Group Chat",
