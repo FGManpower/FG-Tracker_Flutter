@@ -68,7 +68,7 @@ class StatsGrid extends StatelessWidget {
               title: "Ghost Mode",
               value: detail.locationDisabledMembers.toString(),
               subtitle: "Active",
-              onTap:() {
+              onTap: () {
                 Get.to(GhostMember());
               },
             ),

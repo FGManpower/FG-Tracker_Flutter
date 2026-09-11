@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:awesome_notifications/awesome_notifications.dart';
+import 'package:fgtracker/app/Core/constant/notification_holder.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Walkie-Talkie-Service.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/WalkieTalkieScreen.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
@@ -10,18 +11,26 @@ class WalkieAwesomeNotificationService {
   WalkieAwesomeNotificationService._();
   static final instance = WalkieAwesomeNotificationService._();
 
-  static const int incomingNotificationId = 7001;
-  static const int activeNotificationId = 7002;
+  static const int walkieNotificationId = 5001;
   static const String channelKey = 'group_walkie_channel';
+
+  /// Tracks whether the user is currently on the Walkie screen.
+  /// When true, notifications are NOT shown and any active notification is dismissed.
+  static bool isWalkieScreenActive = false;
+  static Map<String, dynamic>? pendingWalkiePayload;
 
   Timer? _sessionTimer;
   int _elapsedSeconds = 0;
   String? _activeGroupId;
   String? _activeGroupName;
+  String? _currentSpeakerName;
+  String? _currentSpeakerImage;
+  bool _isSpeaking = false;
 
   bool get isInActiveSession => _activeGroupId != null;
   String? get activeGroupId => _activeGroupId;
   String? get activeGroupName => _activeGroupName;
+  String? get currentSpeakerName => _currentSpeakerName;
 
   Future<void> init() async {
     await AwesomeNotifications().initialize(
@@ -29,12 +38,12 @@ class WalkieAwesomeNotificationService {
       [
         NotificationChannel(
           channelKey: channelKey,
-          channelName: 'Group Walkie',
-          channelDescription: 'Group Walkie Call and Session Notifications',
+          channelName: 'Walkie Talkie',
+          channelDescription: 'Group Walkie Call and Speaking Updates',
           defaultColor: const Color(0xFF5A35FF),
           ledColor: Colors.white,
-          importance: NotificationImportance.Max,
-          channelShowBadge: true,
+          importance: NotificationImportance.High,
+          channelShowBadge: false,
           playSound: true,
           enableVibration: true,
           criticalAlerts: true,
@@ -53,6 +62,14 @@ class WalkieAwesomeNotificationService {
     AwesomeNotifications().setListeners(
       onActionReceivedMethod: onActionReceivedMethod,
     );
+
+    try {
+      final initialAction =
+          await AwesomeNotifications().getInitialNotificationAction();
+      if (initialAction != null) {
+        await onActionReceivedMethod(initialAction);
+      }
+    } catch (_) {}
   }
 
   @pragma('vm:entry-point')
@@ -63,90 +80,180 @@ class WalkieAwesomeNotificationService {
     final speakerName = payload['speakerName'] ?? '';
     final speakerImage = payload['speakerImage'] ?? '';
 
-    if (action.buttonKeyPressed == 'WALKIE_JOIN') {
-      await instance.dismissIncomingNotification();
-      if (groupId.isNotEmpty) {
-        await instance.startActiveSession(groupId: groupId, groupName: groupName);
-        if (Get.currentRoute != Routes.groupWalkieScreen) {
-          Get.to(
-            () => const GroupWalkieScreen(),
-            routeName: Routes.groupWalkieScreen,
-            arguments: {
-              "groupId": groupId,
-              "groupName": groupName,
-              "speakerName": speakerName,
-              "speakerImage": speakerImage,
-            },
-          );
-        }
+    if (action.buttonKeyPressed == 'WALKIE_LEAVE') {
+      await instance.dismissWalkieNotification();
+      if (groupId.isNotEmpty &&
+          GroupWalkieService.instance.currentGroupId == groupId) {
+        await GroupWalkieService.instance.leaveGroup();
       }
-    } else if (action.buttonKeyPressed == 'WALKIE_REJECT') {
-      await instance.dismissIncomingNotification();
-    } else if (action.buttonKeyPressed == 'WALKIE_EXIT') {
-      await instance.exitActiveSession();
-      if (Get.currentRoute == Routes.groupWalkieScreen) {
+      if (isWalkieScreenActive && Get.currentRoute == Routes.groupWalkieScreen) {
         Get.back();
       }
     } else {
-      if (groupId.isNotEmpty && Get.currentRoute != Routes.groupWalkieScreen) {
-        Get.to(
-          () => const GroupWalkieScreen(),
-          routeName: Routes.groupWalkieScreen,
-          arguments: {
-            "groupId": groupId,
-            "groupName": groupName,
-            "speakerName": speakerName,
-            "speakerImage": speakerImage,
-          },
-        );
+      // Tapped 'WALKIE_OPEN' or tapped anywhere on the notification card
+      await instance.dismissWalkieNotification();
+      if (groupId.isNotEmpty) {
+        WalkieLaunchTracker.fromWalkieCall = true;
+        pendingWalkiePayload = {
+          "groupId": groupId,
+          "groupName": groupName,
+          "speakerName": speakerName,
+          "speakerImage": speakerImage,
+        };
+
+        // If coming from another group, switch to the new group
+        if (GroupWalkieService.instance.currentGroupId != null &&
+            GroupWalkieService.instance.currentGroupId != groupId) {
+          await GroupWalkieService.instance.leaveGroup();
+        }
+
+        // Join the walkie session
+        await GroupWalkieService.instance.joinGroup(groupId);
+
+        navigateToWalkieScreen({
+          "groupId": groupId,
+          "groupName": groupName,
+          "speakerName": speakerName,
+          "speakerImage": speakerImage,
+        });
       }
     }
   }
 
-  Future<void> showIncomingCallNotification({
+  static void navigateToWalkieScreen(Map<String, dynamic> arguments) {
+    void doNavigate() {
+      if (Get.currentRoute == Routes.groupWalkieScreen) {
+        Get.offNamed(
+          Routes.groupWalkieScreen,
+          arguments: arguments,
+        );
+      } else {
+        Get.toNamed(
+          Routes.groupWalkieScreen,
+          arguments: arguments,
+        );
+      }
+    }
+
+    if (Get.context != null) {
+      doNavigate();
+    } else {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        doNavigate();
+      });
+    }
+  }
+
+  /// Shows or updates the Call-style smart notification.
+  /// Does NOT show notification if the user is currently on the Walkie screen for this group.
+  Future<void> showTalkingNotification({
     required String groupId,
     required String groupName,
-    String? speakerName,
+    required String speakerName,
     String? speakerImage,
+    bool isSpeaking = true,
   }) async {
-    if (_activeGroupId == groupId) return;
+    // If the user is currently active on the Walkie screen for this group, DO NOT show notification!
+    if (isWalkieScreenActive &&
+        GroupWalkieService.instance.currentGroupId == groupId) {
+      await dismissWalkieNotification();
+      return;
+    }
 
-    final hasValidSpeakerImage = speakerImage != null &&
-        speakerImage.isNotEmpty &&
-        speakerImage.startsWith('http');
+    final isNewSpeakerOrGroup = _activeGroupId != groupId ||
+        _currentSpeakerName != speakerName ||
+        !_isSpeaking;
+
+    _activeGroupId = groupId;
+    _activeGroupName = groupName.isNotEmpty ? groupName : 'FG Manpower Group';
+    _currentSpeakerName = speakerName.isNotEmpty ? speakerName : 'Someone';
+    _currentSpeakerImage = speakerImage;
+    _isSpeaking = isSpeaking;
+
+    if (isSpeaking) {
+      if (isNewSpeakerOrGroup) {
+        _elapsedSeconds = 0;
+      }
+      _sessionTimer?.cancel();
+      await _renderNotification();
+
+      _sessionTimer = Timer.periodic(const Duration(seconds: 1), (timer) async {
+        if (isWalkieScreenActive &&
+            GroupWalkieService.instance.currentGroupId == _activeGroupId) {
+          await dismissWalkieNotification();
+          return;
+        }
+        _elapsedSeconds++;
+        await _renderNotification();
+      });
+    } else {
+      _sessionTimer?.cancel();
+      _sessionTimer = null;
+      await _renderNotification();
+    }
+  }
+
+  String _formatTimer(int seconds) {
+    final m = seconds ~/ 60;
+    final s = seconds % 60;
+    return "${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}";
+  }
+
+  Future<void> _renderNotification() async {
+    if (_activeGroupId == null) return;
+    if (isWalkieScreenActive &&
+        GroupWalkieService.instance.currentGroupId == _activeGroupId) {
+      await dismissWalkieNotification();
+      return;
+    }
+
+    final timerStr = _formatTimer(_elapsedSeconds);
+    final speaker = _currentSpeakerName ?? 'Someone';
+    final group = _activeGroupName ?? 'FG Manpower Group';
+
+    final titleText = _isSpeaking
+        ? "$speaker is talking"
+        : "$speaker stopped talking";
+
+    final bodyText = "$group\n🎙 $timerStr";
+
+    final hasValidImage = _currentSpeakerImage != null &&
+        _currentSpeakerImage!.isNotEmpty &&
+        _currentSpeakerImage!.startsWith('http');
 
     await AwesomeNotifications().createNotification(
       content: NotificationContent(
-        id: incomingNotificationId,
+        id: walkieNotificationId,
         channelKey: channelKey,
-        title: 'Group-Walkie',
-        body: groupName.isNotEmpty ? groupName : 'FG-Manpower',
-        summary: 'Incoming Walkie',
+        title: titleText,
+        body: bodyText,
+        notificationLayout: NotificationLayout.BigText,
         category: NotificationCategory.Call,
-        largeIcon: hasValidSpeakerImage
-            ? speakerImage
+        actionType: ActionType.Default,
+        autoDismissible: true,
+        wakeUpScreen: true,
+        largeIcon: hasValidImage
+            ? _currentSpeakerImage
             : 'asset://assets/icons/walkie-talkie.png',
         color: const Color(0xFF5A35FF),
-        wakeUpScreen: true,
-        fullScreenIntent: true,
-        autoDismissible: false,
+        locked: false,
         payload: {
-          'groupId': groupId,
-          'groupName': groupName,
-          'speakerName': speakerName ?? '',
-          'speakerImage': speakerImage ?? '',
+          'groupId': _activeGroupId ?? '',
+          'groupName': _activeGroupName ?? '',
+          'speakerName': _currentSpeakerName ?? '',
+          'speakerImage': _currentSpeakerImage ?? '',
         },
       ),
       actionButtons: [
         NotificationActionButton(
-          key: 'WALKIE_JOIN',
-          label: 'Join',
+          key: 'WALKIE_OPEN',
+          label: 'Go to Walkie Screen',
           actionType: ActionType.Default,
-          color: Color(0xFF22C55E),
+          color: const Color(0xFF5A35FF),
         ),
         NotificationActionButton(
-          key: 'WALKIE_REJECT',
-          label: 'Reject',
+          key: 'WALKIE_LEAVE',
+          label: 'Leave',
           actionType: ActionType.DismissAction,
           isDangerousOption: true,
           color: const Color(0xFFEF4444),
@@ -155,87 +262,48 @@ class WalkieAwesomeNotificationService {
     );
   }
 
+  /// Backward-compatible startActiveSession method
   Future<void> startActiveSession({
     required String groupId,
     required String groupName,
+    String? speakerName,
   }) async {
     _activeGroupId = groupId;
-    _activeGroupName = groupName.isNotEmpty ? groupName : 'FG-Manpower';
-    _elapsedSeconds = 0;
+    _activeGroupName = groupName.isNotEmpty ? groupName : 'FG Manpower Group';
 
-    await GroupWalkieService.instance.joinGroup(groupId);
-
-    _sessionTimer?.cancel();
-    await _updateActiveNotification();
-
-    _sessionTimer = Timer.periodic(const Duration(seconds: 1), (timer) async {
-      _elapsedSeconds++;
-      await _updateActiveNotification();
-    });
-  }
-
-  String _formatTimer(int seconds) {
-    final m = seconds ~/ 60;
-    final s = seconds % 60;
-    if (m > 0) {
-      return "${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}";
+    // If user is already on the walkie screen, don't show notifications
+    if (isWalkieScreenActive) {
+      await dismissWalkieNotification();
+      return;
     }
-    return "${s.toString().padLeft(2, '0')}:000";
-  }
 
-  Future<void> _updateActiveNotification() async {
-    if (_activeGroupId == null) return;
-
-    final timerLabel = _formatTimer(_elapsedSeconds);
-
-    await AwesomeNotifications().createNotification(
-      content: NotificationContent(
-        id: activeNotificationId,
-        channelKey: channelKey,
-        title: 'Group-Walkie',
-        body: _activeGroupName ?? 'FG-Manpower',
-        summary: 'Live Session',
-        category: NotificationCategory.Call,
-        largeIcon: 'asset://assets/icons/walkie-talkie.png',
-        color: const Color(0xFF5A35FF),
-        autoDismissible: false,
-        locked: true,
-        payload: {
-          'groupId': _activeGroupId ?? '',
-          'groupName': _activeGroupName ?? '',
-        },
-      ),
-      actionButtons: [
-        NotificationActionButton(
-          key: 'WALKIE_TIMER',
-          label: '⏱️ $timerLabel',
-          actionType: ActionType.KeepOnTop,
-          color: const Color(0xFF5A35FF),
-        ),
-        NotificationActionButton(
-          key: 'WALKIE_EXIT',
-          label: 'Exit',
-          actionType: ActionType.Default,
-          isDangerousOption: true,
-          color: const Color(0xFFEF4444),
-        ),
-      ],
+    await showTalkingNotification(
+      groupId: groupId,
+      groupName: groupName,
+      speakerName: speakerName ?? 'Active Session',
+      isSpeaking: true,
     );
   }
 
   Future<void> exitActiveSession() async {
-    _sessionTimer?.cancel();
-    _sessionTimer = null;
-    _elapsedSeconds = 0;
+    await dismissWalkieNotification();
     _activeGroupId = null;
     _activeGroupName = null;
-
-    await AwesomeNotifications().cancel(activeNotificationId);
+    _currentSpeakerName = null;
+    _currentSpeakerImage = null;
+    _isSpeaking = false;
     await GroupWalkieService.instance.leaveGroup();
   }
 
+  Future<void> dismissWalkieNotification() async {
+    _sessionTimer?.cancel();
+    _sessionTimer = null;
+    _elapsedSeconds = 0;
+    await AwesomeNotifications().cancel(walkieNotificationId);
+  }
+
   Future<void> dismissIncomingNotification() async {
-    await AwesomeNotifications().cancel(incomingNotificationId);
+    await dismissWalkieNotification();
   }
 
   Future<void> dismissAll() async {
@@ -244,7 +312,12 @@ class WalkieAwesomeNotificationService {
     _elapsedSeconds = 0;
     _activeGroupId = null;
     _activeGroupName = null;
-    await AwesomeNotifications().cancel(incomingNotificationId);
-    await AwesomeNotifications().cancel(activeNotificationId);
+    _currentSpeakerName = null;
+    _currentSpeakerImage = null;
+    _isSpeaking = false;
+    await AwesomeNotifications().cancel(walkieNotificationId);
+    // Also cancel legacy notification IDs if any exist
+    await AwesomeNotifications().cancel(7001);
+    await AwesomeNotifications().cancel(7002);
   }
 }

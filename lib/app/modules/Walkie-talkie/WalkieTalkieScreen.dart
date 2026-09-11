@@ -50,6 +50,8 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
   void initState() {
     super.initState();
     WalkieLaunchTracker.fromWalkieCall = true;
+    WalkieAwesomeNotificationService.isWalkieScreenActive = true;
+    WalkieAwesomeNotificationService.instance.dismissWalkieNotification();
 
     if (Get.arguments is Map<String, dynamic>) {
       args = Get.arguments as Map<String, dynamic>;
@@ -74,14 +76,19 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
 
     final groupId = args?['groupId']?.toString() ?? '';
     final groupName = args?['groupName']?.toString() ?? 'FG-Manpower';
+    final speakerName = args?['speakerName']?.toString() ?? '';
+    final speakerImage = args?['speakerImage']?.toString() ?? '';
     if (groupId.isNotEmpty) {
       controller.setCurrentGroup(groupId);
-      if (GroupWalkieService.instance.currentGroupId != groupId ||
-          !WalkieAwesomeNotificationService.instance.isInActiveSession) {
-        WalkieAwesomeNotificationService.instance.startActiveSession(
-          groupId: groupId,
-          groupName: groupName,
+      if (speakerName.isNotEmpty) {
+        controller.onSpeakerActive(
+          speakerId: 'incoming_speaker',
+          speakerName: speakerName,
+          speakerImage: speakerImage,
         );
+      }
+      if (GroupWalkieService.instance.currentGroupId != groupId) {
+        GroupWalkieService.instance.joinGroup(groupId);
       }
     } else {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -116,12 +123,13 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
 
   @override
   void dispose() {
+    WalkieAwesomeNotificationService.isWalkieScreenActive = false;
+    WalkieLaunchTracker.fromWalkieCall = false;
     _rippleWorker.dispose();
     _pulseWorker.dispose();
     _rippleController.dispose();
     _pulseController.dispose();
     _lockHintController.dispose();
-    WalkieLaunchTracker.fromWalkieCall = false;
     super.dispose();
   }
 
