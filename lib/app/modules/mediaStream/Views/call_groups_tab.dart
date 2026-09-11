@@ -10,7 +10,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
-import '../../../Data/Services/group_call_service.dart';
 import '../../../routes/app_pages.dart';
 
 class CallGroupsTab extends StatelessWidget {

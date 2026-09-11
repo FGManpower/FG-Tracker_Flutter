@@ -1,15 +1,12 @@
 import 'dart:async';
 import 'dart:developer';
-import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/global/launchedFromCall.dart';
 import 'package:fgtracker/app/Core/values/Utils.dart';
-import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:get/get.dart' hide navigator;
 import 'package:wakelock_plus/wakelock_plus.dart';
 import 'package:proximity_screen_lock/proximity_screen_lock.dart';
 
-import 'package:fgtracker/gen/assets.gen.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Model/group_call_participant.dart';

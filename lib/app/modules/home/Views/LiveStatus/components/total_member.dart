@@ -1,4 +1,3 @@
-import 'package:fgtracker/app/Model/member_live_status.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/modules/home/Controller/LiveStatus_controller.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';

@@ -1,5 +1,3 @@
-import 'package:fgtracker/app/Core/values/colors.dart';
-import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -11,7 +9,6 @@ import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Model/MemberDataRes.dart';
 import 'package:fgtracker/app/modules/Notification/Controller/Notification_Controller.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
-import '../../../config/themes_data.dart';
 
 class NotificationScreen extends StatelessWidget {
   NotificationScreen({super.key});
