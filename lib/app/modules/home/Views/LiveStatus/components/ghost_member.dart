@@ -374,9 +374,8 @@ class _GhostMemberState extends State<GhostMember> {
   }
 
   Widget _buildSessionTile(GhostMemberData member) {
-    final String name = member.name?.trim().isNotEmpty == true
-        ? member.name!.trim()
-        : 'Member';
+    final String name =
+        member.name?.trim().isNotEmpty == true ? member.name!.trim() : 'Member';
 
     final hasProfileImage = member.profileImage != null &&
         member.profileImage!.trim().isNotEmpty &&

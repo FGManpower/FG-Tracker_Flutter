@@ -181,11 +181,6 @@ class OtpController extends GetxController {
               selfUserId: result.data!.userId.toString(),
             );
 
-            GroupWalkieService.instance.init(
-              websocketUrl: ConstRes.socketUrl,
-              selfUserId: result.data!.userId.toString(),
-            );
-
             Socket_GroupCallService.instance
                 .init(result.data!.userId.toString());
           }

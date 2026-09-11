@@ -214,6 +214,12 @@ class AppPages {
       name: Routes.WalkieGroupSelect,
       page: () => const WalkieGroupSelectScreen(),
     ),
+    GetPage(
+      name: Routes.groupWalkieScreen,
+      page: () => const GroupWalkieScreen(),
+      transition: Transition.rightToLeft,
+      transitionDuration: const Duration(milliseconds: 400),
+    ),
 
 
     GetPage(

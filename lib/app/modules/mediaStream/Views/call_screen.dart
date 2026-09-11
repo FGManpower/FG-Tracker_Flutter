@@ -1,12 +1,14 @@
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/modules/mediaStream/Views/call_contacts_tab.dart';
 import 'package:fgtracker/app/modules/mediaStream/Views/call_groups_tab.dart';
-import 'package:fgtracker/app/modules/mediaStream/Views/call_recent_calls_tab.dart';
 import 'package:fgtracker/app/modules/mediaStream/controller/call_controller.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+
+import '../Widget/call_dial_pad.dart';
+import 'call_recent_calls_tab.dart';
 
 class CallScreen extends StatefulWidget {
   const CallScreen({super.key});
@@ -34,7 +36,6 @@ class _CallScreenState extends State<CallScreen>
 
   @override
   void dispose() {
-
     _tabController.dispose();
     super.dispose();
   }
@@ -44,29 +45,45 @@ class _CallScreenState extends State<CallScreen>
     return Scaffold(
       backgroundColor: const Color(0xFFF5F4FB),
       body: SafeArea(
-        child: Column(
+        child: Stack(
           children: [
-            _buildAppBar(),
-            SizedBox(height: 10.h),
-            _buildSearchBar(),
-            SizedBox(height: 12.h),
-            _buildTabBar(),
-            SizedBox(height: 12.h),
-            Expanded(
-              child: TabBarView(
-                controller: _tabController,
-                children: [
-                  CallRecentCallsTab(),
-                  CallContactsTab(),
-                  CallGroupsTab(),
-                ],
+            Column(
+              children: [
+                _buildAppBar(),
+                SizedBox(height: 10.h),
+                _buildSearchBar(),
+                SizedBox(height: 12.h),
+                _buildTabBar(),
+                SizedBox(height: 12.h),
+                Expanded(
+                  child: TabBarView(
+                    controller: _tabController,
+                    children: [
+                      CallRecentCallsTab(),
+                      CallContactsTab(),
+                      CallGroupsTab(),
+                    ],
+                  ),
+                ),
+              ],
+            ),
 
-              ),
+            // Dial pad overlay
+            const Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: CallDialPad(),
             ),
           ],
         ),
       ),
-      floatingActionButton: const _QuickCallActionButton(),
+      floatingActionButton: Obx(() {
+        if (controller.isDialPadOpen.value) {
+          return const SizedBox.shrink();
+        }
+        return const _QuickCallActionButton();
+      }),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
@@ -89,7 +106,6 @@ class _CallScreenState extends State<CallScreen>
               color: Colors.black87,
             ),
           ),
-
         ],
       ),
     );
@@ -116,6 +132,11 @@ class _CallScreenState extends State<CallScreen>
               child: TextField(
                 controller: controller.searchController,
                 onChanged: controller.onSearchChanged,
+                onTap: () {
+                  if (controller.isDialPadOpen.value) {
+                    controller.isDialPadOpen.value = false;
+                  }
+                },
                 style: TextStyle(
                   fontSize: 13.sp,
                   fontFamily: FontFamily.interRegular,
@@ -157,7 +178,6 @@ class _CallScreenState extends State<CallScreen>
       padding: EdgeInsets.symmetric(horizontal: 16.w),
       child: Container(
         height: 45.h,
-        // padding: EdgeInsets.all(4.w),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(15.r),
@@ -213,12 +233,11 @@ Widget callTab({
   required IconData icon,
 }) {
   return Tab(
-    // height: 45.h,
     child: Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         reausableIcon(icon: icon, size: 15),
-        SizedBox(
+        const SizedBox(
           width: 5.4,
         ),
         reausabletext(
@@ -265,21 +284,25 @@ class _QuickCallActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 58.w,
-      height: 58.w,
-      decoration: BoxDecoration(
-        color: const Color(0xFF4818F0),
-        borderRadius: BorderRadius.circular(18.r),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF4818F0).withValues(alpha: 0.4),
-            blurRadius: 14,
-            offset: const Offset(0, 6),
-          ),
-        ],
+    final callController = CallController.instance;
+    return GestureDetector(
+      onTap: callController.toggleDialPad,
+      child: Container(
+        width: 58.w,
+        height: 58.w,
+        decoration: BoxDecoration(
+          color: const Color(0xFF4818F0),
+          borderRadius: BorderRadius.circular(18.r),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF4818F0).withValues(alpha: 0.4),
+              blurRadius: 14,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: Icon(Icons.dialpad_rounded, size: 24.sp, color: Colors.white),
       ),
-      child: Icon(Icons.apps_rounded, size: 26.sp, color: Colors.white),
     );
   }
 }
