@@ -7,6 +7,7 @@ import 'package:fgtracker/app/Core/constant/notification_holder.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Controller/walkieController.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Views/walkie_invite_dialog.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/WalkieTalkieScreen.dart';
+import 'package:fgtracker/app/Data/Services/walkie_awesome_notification_service.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:get/get.dart' hide navigator;
@@ -267,16 +268,11 @@ class GroupWalkieService {
         await leaveGroup();
       }
 
-      Get.to(
-        () => const GroupWalkieScreen(),
-        routeName: Routes.groupWalkieScreen,
-        arguments: {
-          "groupId": groupId,
-          "groupName": groupName,
-          "speakerName": speakerName,
-          "speakerImage": speakerImage,
-          "autoOpened": true,
-        },
+      await WalkieAwesomeNotificationService.instance.showIncomingCallNotification(
+        groupId: groupId,
+        groupName: groupName,
+        speakerName: speakerName,
+        speakerImage: speakerImage,
       );
     });
 
@@ -734,6 +730,7 @@ class GroupWalkieService {
     } catch (_) {}
     _localStream = null;
     _streamCompleter = null;
+    await WalkieAwesomeNotificationService.instance.dismissAll();
   }
 
   Future<void> exitGroupMembership(String groupId) async {

@@ -30,6 +30,7 @@ dependencies:
   firebase_messaging: ^16.5.0
   firebase_core: ^4.13.0
   flutter_local_notifications: ^17.2.1
+  awesome_notifications: ^0.10.0
   pretty_dio_logger:
   fluttertoast: ^8.2.10
   cached_network_image: ^3.2.1

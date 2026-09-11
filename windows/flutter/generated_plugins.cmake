@@ -4,6 +4,7 @@
 
 list(APPEND FLUTTER_PLUGIN_LIST
   app_links
+  awesome_notifications
   cloud_firestore
   emoji_picker_flutter
   file_selector_windows

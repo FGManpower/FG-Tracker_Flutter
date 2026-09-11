@@ -22,6 +22,7 @@ import 'app/Core/util/CallKit/callkit_service.dart';
 import 'app/Core/values/Context_Utility.dart';
 import 'app/Core/values/global.dart';
 import 'app/Data/Services/NotificationServices.dart';
+import 'app/Data/Services/walkie_awesome_notification_service.dart';
 import 'app/Data/Services/Socket/Socket_SignallingService.dart';
 import 'app/modules/Notification/Controller/cubit/notification_count_cubit.dart';
 import 'app/routes/app_pages.dart';
@@ -184,6 +185,7 @@ Future<void> main() async {
       onCallRejectedWhenTerminated;
   await firebaseNotificationServices().initialized();
   CallKitService.instance.init();
+  await WalkieAwesomeNotificationService.instance.init();
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(statusBarColor: Colors.transparent),
   );

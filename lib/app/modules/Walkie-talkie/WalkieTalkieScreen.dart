@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Walkie-Talkie-Service.dart';
+import 'package:fgtracker/app/Data/Services/walkie_awesome_notification_service.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Controller/walkieController.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:flutter/cupertino.dart';
@@ -72,9 +73,16 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
     );
 
     final groupId = args?['groupId']?.toString() ?? '';
+    final groupName = args?['groupName']?.toString() ?? 'FG-Manpower';
     if (groupId.isNotEmpty) {
       controller.setCurrentGroup(groupId);
-      GroupWalkieService.instance.joinGroup(groupId);
+      if (GroupWalkieService.instance.currentGroupId != groupId ||
+          !WalkieAwesomeNotificationService.instance.isInActiveSession) {
+        WalkieAwesomeNotificationService.instance.startActiveSession(
+          groupId: groupId,
+          groupName: groupName,
+        );
+      }
     } else {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         Get.back();
@@ -114,7 +122,6 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
     _pulseController.dispose();
     _lockHintController.dispose();
     WalkieLaunchTracker.fromWalkieCall = false;
-    _safeLeave();
     super.dispose();
   }
 
@@ -124,7 +131,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
     _rippleController.stop();
     _pulseController.stop();
     _lockHintController.stop();
-    await GroupWalkieService.instance.leaveGroup();
+    await WalkieAwesomeNotificationService.instance.exitActiveSession();
     controller.reset();
   }
 
@@ -272,10 +279,10 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
   @override
   Widget build(BuildContext context) {
     return PopScope(
-      canPop: _allowPop,
+      canPop: true,
       onPopInvokedWithResult: (didPop, result) async {
         if (didPop) return;
-        _showExitDialog();
+        Get.back();
       },
       child: Scaffold(
         backgroundColor: _bgLight,
@@ -318,7 +325,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
             icon: Icons.arrow_back_rounded,
             iconColor: _textDark,
             onTap: () {
-              _showExitDialog();
+              Get.back();
             },
           ),
           SizedBox(width: 14.w),
