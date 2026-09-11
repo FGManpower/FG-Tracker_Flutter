@@ -279,6 +279,10 @@ class firebaseNotificationServices {
         final callData = jsonDecode(message.data['callData']);
         final sessionId = callData['session_id'].toString();
         callEnded(sessionId, type: "Notification-services");
+      }    else if (message.data['screen_name'] == "missedGroupCall") {
+        final callData = jsonDecode(message.data['callData']);
+        final sessionId = callData['session_id'].toString();
+        callEnded(sessionId, type: "Notification-services");
       }
     }
   }

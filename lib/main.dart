@@ -31,7 +31,6 @@ import 'app/modules/Track/Controller/TrackController.dart';
 import 'app/modules/Track/Controller/LocationService.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
-
 final socket = SignallingService.instance.socket;
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
@@ -77,7 +76,6 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     }
   }
 
-
   if (message.data['screen_name'] == "incomingGroupCall") {
     if (Platform.isIOS) {
       // await RemoteLoggerTest.log("FCM_BG_HANDLER", "iOS detected in FCM background handler: ${message.data}");
@@ -87,12 +85,12 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     final originalCallId = callData['callId'].toString();
 
     final Map<String, String> userInfo = callData.map<String, String>(
-            (key, value) => MapEntry(key.toString(), value.toString()));
+        (key, value) => MapEntry(key.toString(), value.toString()));
     try {
       await ConnectycubeFlutterCallKit.showCallNotification(
         CallEvent(
           sessionId: callIdToUuid(originalCallId),
-          callerName: callData['callerName'],
+          callerName: callData['groupName'],
           callType: callData['isVideo'] == true ? 1 : 0,
           opponentsIds: {int.parse(callData['callerId'])},
           callerId: int.parse(callData['callerId']),
@@ -102,15 +100,13 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     } catch (e) {
       log("showCallNotification error: $e");
     }
-  }
-
-  else if (message.data['screen_name'] == "missedCall") {
+  } else if (message.data['screen_name'] == "missedCall") {
     final callData = jsonDecode(message.data['callData']);
     final sessionId = callData['session_id'].toString();
     callEnded(sessionId);
-  } else if (message.data['screen_name'] == "callEnded") {
-    final sessionId = message.data['sessionId'];
-    log("========CallEndedFromBackend===$sessionId");
+  } else if (message.data['screen_name'] == "missedGroupCall") {
+    final callData = jsonDecode(message.data['callData']);
+    final sessionId = callData['session_id'].toString();
     callEnded(sessionId);
   }
 }
@@ -140,27 +136,31 @@ Future<void> onCallRejectedWhenTerminated(CallEvent event) async {
   final callId = int.tryParse(data['callId'].toString());
   if (callId == null) return;
   try {
-    final socket = SignallingService.instance.socket;
-
-    if (socket != null && socket.connected) {
-      socket.emit("rejectCall", {
-        "callId": callId,
-        "remoteUserId": data["callerId"].toString(),
-      });
-      log("========call-rejected via socket");
+    if (data['screenName'].toString() == "incomingGroupCall") {
+      CallKitService.instance.declineGroupCall(data);
     } else {
-      final pref = await SharedPreferences.getInstance();
-      final token = pref.getString(PrefConst.STORAGE_USER_TOKEN_KEY) ?? "";
+      final socket = SignallingService.instance.socket;
 
-      if (token.isEmpty) return;
+      if (socket != null && socket.connected) {
+        socket.emit("rejectCall", {
+          "callId": callId,
+          "remoteUserId": data["callerId"].toString(),
+        });
+        log("========call-rejected via socket");
+      } else {
+        final pref = await SharedPreferences.getInstance();
+        final token = pref.getString(PrefConst.STORAGE_USER_TOKEN_KEY) ?? "";
 
-      await http.get(
-        Uri.parse("${ConstRes.aBaseUrl}callRejected?callId=$callId"),
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer $token",
-        },
-      ).timeout(const Duration(seconds: 15));
+        if (token.isEmpty) return;
+
+        await http.get(
+          Uri.parse("${ConstRes.aBaseUrl}callRejected?callId=$callId"),
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer $token",
+          },
+        ).timeout(const Duration(seconds: 15));
+      }
     }
   } catch (e) {
     log("[TERMINATED-ANDROID] ERROR: $e");
@@ -172,7 +172,6 @@ Future<void> onCallRejectedWhenTerminated(CallEvent event) async {
 @pragma('vm:entry-point')
 void onCallEventBackground() {
   CallKitService.instance.init();
-
 }
 
 Future<void> main() async {
@@ -216,8 +215,9 @@ groupWalkieInitialize(userId) async {
     await GroupWalkieService.instance.init(
       websocketUrl: ConstRes.socketUrl,
       selfUserId: userId,
-
     );
+
+    // each group with i will join //
   }
 }
 
