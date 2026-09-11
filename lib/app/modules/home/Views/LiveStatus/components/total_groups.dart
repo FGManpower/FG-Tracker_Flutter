@@ -1,16 +1,18 @@
 import 'package:fgtracker/app/Core/values/colorPool.dart';
-import 'package:fgtracker/app/Model/GroupRes.dart';
-import 'package:fgtracker/app/global_widget/common_widget.dart';
+import 'package:fgtracker/app/Model/GroupChatListModel.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:skeletonizer/skeletonizer.dart';
+import '../../../Controller/total_group_controller.dart';
 
 class totalGroup extends StatelessWidget {
   const totalGroup({super.key});
-
   @override
   Widget build(BuildContext context) {
+    final controller = Get.put(TotalGroupController());
+
     return Scaffold(
       backgroundColor: const Color(0xFFF7F8FC),
       appBar: AppBar(
@@ -26,7 +28,9 @@ class totalGroup extends StatelessWidget {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(14.r),
-                border: Border.all(color: Colors.grey.withOpacity(0.12)),
+                border: Border.all(
+                  color: Colors.grey.withOpacity(0.12),
+                ),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withOpacity(0.03),
@@ -43,35 +47,39 @@ class totalGroup extends StatelessWidget {
             ),
           ),
         ),
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              "Groups",
-              style: TextStyle(
-                fontSize: 18.sp,
-                fontWeight: FontWeight.w800,
-                color: Colors.black87,
-                fontFamily: FontFamily.interBold,
+        title: Obx(
+          () => Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "Groups",
+                style: TextStyle(
+                  fontSize: 18.sp,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.black87,
+                  fontFamily: FontFamily.interBold,
+                ),
               ),
-            ),
-            SizedBox(height: 2.h),
-            Text(
-              "10 Groups",
-              style: TextStyle(
-                fontSize: 12.sp,
-                color: Colors.grey.shade600,
-                fontFamily: FontFamily.interRegular,
+              SizedBox(height: 2.h),
+              Text(
+                "${controller.groupList.length} Groups",
+                style: TextStyle(
+                  fontSize: 12.sp,
+                  color: Colors.grey.shade600,
+                  fontFamily: FontFamily.interRegular,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
       body: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
+        padding: EdgeInsets.symmetric(
+          horizontal: 16.w,
+          vertical: 10.h,
+        ),
         child: Column(
           children: [
-            // Search Bar matching image UI
             Container(
               height: 48.h,
               decoration: BoxDecoration(
@@ -84,67 +92,138 @@ class totalGroup extends StatelessWidget {
                     offset: const Offset(0, 2),
                   ),
                 ],
-                border: Border.all(color: Colors.grey.withOpacity(0.12)),
+                border: Border.all(
+                  color: Colors.grey.withOpacity(0.12),
+                ),
               ),
-              child: TextField(
-                decoration: InputDecoration(
-                  hintText: "Search groups...",
-                  hintStyle: TextStyle(
-                    fontSize: 13.5.sp,
-                    color: Colors.grey.shade400,
-                    fontFamily: FontFamily.interRegular,
-                  ),
-                  prefixIcon: Icon(
-                    Icons.search_rounded,
-                    size: 20.sp,
-                    color: Colors.grey.shade400,
-                  ),
-                  border: InputBorder.none,
-                  enabledBorder: InputBorder.none,
-                  focusedBorder: InputBorder.none,
-                  contentPadding: EdgeInsets.symmetric(
-                    horizontal: 16.w,
-                    vertical: 14.h,
-                  ),
-                  suffixIcon: GestureDetector(
-                    onTap: () {},
-                    child: Icon(
-                      Icons.close_rounded,
-                      size: 18.sp,
+              child: Obx(
+                () => TextField(
+                  controller: controller.searchController,
+                  decoration: InputDecoration(
+                    hintText: "Search groups...",
+                    hintStyle: TextStyle(
+                      fontSize: 13.5.sp,
+                      color: Colors.grey.shade400,
+                      fontFamily: FontFamily.interRegular,
+                    ),
+                    prefixIcon: Icon(
+                      Icons.search_rounded,
+                      size: 20.sp,
                       color: Colors.grey.shade400,
                     ),
+                    border: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 16.w,
+                      vertical: 14.h,
+                    ),
+                    suffixIcon: controller.searchText.value.isNotEmpty
+                        ? GestureDetector(
+                            onTap: controller.clearSearch,
+                            child: Icon(
+                              Icons.close_rounded,
+                              size: 18.sp,
+                              color: Colors.grey.shade400,
+                            ),
+                          )
+                        : null,
                   ),
                 ),
               ),
             ),
             SizedBox(height: 16.h),
-
-            // List of Groups
             Expanded(
-              child: ListView.builder(
-                itemCount: 8,
-                scrollDirection: Axis.vertical,
-                physics: const BouncingScrollPhysics(),
-                itemBuilder: (context, index) => apiGroupCard(
-                  GroupsResData(
-                    id: index,
-                    groupCode: "FG-00$index",
-                    groupDesc: index % 2 == 0
-                        ? "Arjun: Safety meeting at 4 PM today."
-                        : "Vikram: Tools checklist update.",
-                    groupName: index == 0
-                        ? "Construction Team"
-                        : index == 1
-                        ? "Event Crew"
-                        : index == 2
-                        ? "Site Workers - Ghatkopar"
-                        : "Team Member $index",
-                    groupProfile: "",
-                    memberCount: 12 + index,
+              child: Obx(() {
+                if (controller.isLoading.value &&
+                    controller.groupList.isEmpty) {
+                  return _buildGroupList(
+                    controller: controller,
+                    isLoading: true,
+                  );
+                }
+
+                if (controller.hasError.value && controller.groupList.isEmpty) {
+                  return Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.error_outline_rounded,
+                          size: 45.sp,
+                          color: Colors.grey.shade400,
+                        ),
+                        SizedBox(height: 10.h),
+                        Text(
+                          controller.errorMessage.value.isNotEmpty
+                              ? controller.errorMessage.value
+                              : "Something went wrong",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 13.sp,
+                            color: Colors.grey.shade600,
+                            fontFamily: FontFamily.interRegular,
+                          ),
+                        ),
+                        SizedBox(height: 12.h),
+                        ElevatedButton(
+                          onPressed: controller.refreshGroups,
+                          child: const Text("Retry"),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
+                final groups = controller.filteredGroupList;
+
+                if (groups.isEmpty) {
+                  return RefreshIndicator(
+                    onRefresh: controller.refreshGroups,
+                    child: ListView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      children: [
+                        SizedBox(
+                          height: 250.h,
+                          child: Center(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  controller.searchText.value.isNotEmpty
+                                      ? Icons.search_off_rounded
+                                      : Icons.groups_outlined,
+                                  size: 45.sp,
+                                  color: Colors.grey.shade400,
+                                ),
+                                SizedBox(height: 10.h),
+                                Text(
+                                  controller.searchText.value.isNotEmpty
+                                      ? "No groups found"
+                                      : "No groups available",
+                                  style: TextStyle(
+                                    fontSize: 13.sp,
+                                    color: Colors.grey.shade600,
+                                    fontFamily: FontFamily.interRegular,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
+                return RefreshIndicator(
+                  onRefresh: controller.refreshGroups,
+                  child: _buildGroupList(
+                    controller: controller,
+                    data: groups,
                   ),
-                  index,
-                ),
-              ),
+                );
+              }),
             ),
           ],
         ),
@@ -152,16 +231,63 @@ class totalGroup extends StatelessWidget {
     );
   }
 
-  Widget apiGroupCard(GroupsResData group, int index) {
+  Widget _buildGroupList({
+    required TotalGroupController controller,
+    List<GroupChatData>? data,
+    bool isLoading = false,
+  }) {
+    final List<GroupChatData>? items = isLoading ? null : data;
+
+    final int itemCount = items?.length ?? 6;
+
+    return Skeletonizer(
+      enabled: items == null,
+      child: ListView.separated(
+        controller: controller.scrollController,
+        padding: EdgeInsets.only(bottom: 8.h),
+        itemCount: itemCount,
+        separatorBuilder: (_, __) => SizedBox(height: 12.h),
+        physics: const AlwaysScrollableScrollPhysics(
+          parent: BouncingScrollPhysics(),
+        ),
+        itemBuilder: (context, index) {
+          if (items == null) {
+            return const _GroupCardSkeleton();
+          }
+
+          return apiGroupCard(
+            items[index],
+            index,
+            controller,
+          );
+        },
+      ),
+    );
+  }
+
+  Widget apiGroupCard(
+    GroupChatData group,
+    int index,
+    TotalGroupController controller,
+  ) {
     final colors = colorPool[index % colorPool.length];
 
+    final String groupName = controller.getGroupName(group);
+    final String description = controller.getGroupDescription(group);
+    final int memberCount = controller.getMemberCount(group);
+    final int unreadCount = controller.getUnreadCount(group);
+    final String groupDate = controller.getGroupDate(group);
+
     return Padding(
-      padding: EdgeInsets.only(bottom: 12.h),
+      padding: EdgeInsets.only(bottom: 0.h),
       child: InkWell(
         onTap: () {},
         borderRadius: BorderRadius.circular(20.r),
         child: Container(
-          padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 14.h),
+          padding: EdgeInsets.symmetric(
+            horizontal: 14.w,
+            vertical: 14.h,
+          ),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(20.r),
@@ -172,11 +298,12 @@ class totalGroup extends StatelessWidget {
                 offset: const Offset(0, 3),
               ),
             ],
-            border: Border.all(color: Colors.grey.withOpacity(0.08)),
+            border: Border.all(
+              color: Colors.grey.withOpacity(0.08),
+            ),
           ),
           child: Row(
             children: [
-              // Colored Avatar Icon matching reference image
               Container(
                 width: 48.w,
                 height: 48.w,
@@ -191,14 +318,14 @@ class totalGroup extends StatelessWidget {
                 ),
               ),
               SizedBox(width: 14.w),
-
-              // Group Details (Name, Members Count, Description/Latest Message)
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      group.groupName ?? "No Name Group",
+                      groupName,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         fontSize: 14.5.sp,
                         fontWeight: FontWeight.w800,
@@ -207,23 +334,19 @@ class totalGroup extends StatelessWidget {
                       ),
                     ),
                     SizedBox(height: 3.h),
-                    Row(
-                      children: [
-                        Text(
-                          "${group.memberCount ?? 0} Members",
-                          style: TextStyle(
-                            fontSize: 11.5.sp,
-                            fontWeight: FontWeight.w600,
-                            color: const Color(0xFF6B4DFF),
-                            fontFamily: FontFamily.interMedium,
-                          ),
-                        ),
-                      ],
+                    Text(
+                      "$memberCount Members",
+                      style: TextStyle(
+                        fontSize: 11.5.sp,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF6B4DFF),
+                        fontFamily: FontFamily.interMedium,
+                      ),
                     ),
-                    if (group.groupDesc != null && group.groupDesc!.isNotEmpty) ...[
+                    if (description.isNotEmpty) ...[
                       SizedBox(height: 3.h),
                       Text(
-                        group.groupDesc!,
+                        description,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
@@ -237,42 +360,47 @@ class totalGroup extends StatelessWidget {
                 ),
               ),
               SizedBox(width: 10.w),
-
-              // Right side timestamp, counter badge, and arrow icon
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Text(
-                    index == 0 ? "Yesterday" : index == 1 ? "22 May" : "${21 - index} May",
-                    style: TextStyle(
-                      fontSize: 10.5.sp,
-                      color: Colors.grey.shade500,
-                      fontFamily: FontFamily.interRegular,
+                  if (groupDate.isNotEmpty)
+                    Text(
+                      groupDate,
+                      style: TextStyle(
+                        fontSize: 10.5.sp,
+                        color: Colors.grey.shade500,
+                        fontFamily: FontFamily.interRegular,
+                      ),
                     ),
-                  ),
                   SizedBox(height: 8.h),
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Container(
-                        width: 20.w,
-                        height: 20.w,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFF6B4DFF),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Center(
-                          child: Text(
-                            "3",
-                            style: TextStyle(
-                              fontSize: 10.sp,
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
+                      if (unreadCount > 0)
+                        Container(
+                          constraints: BoxConstraints(
+                            minWidth: 20.w,
+                            minHeight: 20.w,
+                          ),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 5.w,
+                          ),
+                          decoration: const BoxDecoration(
+                            color: Color(0xFF6B4DFF),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Center(
+                            child: Text(
+                              unreadCount > 99 ? "99+" : unreadCount.toString(),
+                              style: TextStyle(
+                                fontSize: 10.sp,
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                      SizedBox(width: 8.w),
+                      if (unreadCount > 0) SizedBox(width: 8.w),
                       Icon(
                         Icons.arrow_forward_ios_rounded,
                         size: 14.sp,
@@ -285,6 +413,101 @@ class totalGroup extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _GroupCardSkeleton extends StatelessWidget {
+  const _GroupCardSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: 14.w,
+        vertical: 14.h,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20.r),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+        border: Border.all(
+          color: Colors.grey.withOpacity(0.08),
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 48.w,
+            height: 48.w,
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+            ),
+          ),
+          SizedBox(width: 14.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "Group Name Placeholder",
+                  style: TextStyle(
+                    fontSize: 14.5.sp,
+                    fontWeight: FontWeight.w800,
+                    fontFamily: FontFamily.interBold,
+                  ),
+                ),
+                SizedBox(height: 5.h),
+                Text(
+                  "12 Members",
+                  style: TextStyle(
+                    fontSize: 11.5.sp,
+                    fontWeight: FontWeight.w600,
+                    fontFamily: FontFamily.interMedium,
+                  ),
+                ),
+                SizedBox(height: 4.h),
+                Text(
+                  "Last message placeholder",
+                  style: TextStyle(
+                    fontSize: 11.sp,
+                    fontFamily: FontFamily.interRegular,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          SizedBox(width: 10.w),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                "Yesterday",
+                style: TextStyle(
+                  fontSize: 10.5.sp,
+                  fontFamily: FontFamily.interRegular,
+                ),
+              ),
+              SizedBox(height: 8.h),
+              Container(
+                width: 20.w,
+                height: 20.w,
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

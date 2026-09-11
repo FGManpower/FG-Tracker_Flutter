@@ -38,6 +38,16 @@ class CallController extends GetxController {
 
   final List<_RecentEntry> _recentRaw = <_RecentEntry>[];
 
+  final RxBool isDialPadOpen = false.obs;
+  final RxString dialNumber = ''.obs;
+
+  @override
+  void onInit() {
+    super.onInit();
+    getRegisteredContacts();
+    getRecentCall();
+  }
+
   @override
   void onClose() {
     searchController.dispose();
@@ -50,7 +60,62 @@ class CallController extends GetxController {
     recentCallResponseError.close();
     recentCallFilter.close();
     hasMoreRecentCalls.close();
+
+    isDialPadOpen.close();
+    dialNumber.close();
     super.onClose();
+  }
+
+  void toggleDialPad() {
+    isDialPadOpen.value = !isDialPadOpen.value;
+    if (isDialPadOpen.value) {
+      FocusManager.instance.primaryFocus?.unfocus();
+    } else {
+      clearDialNumber();
+    }
+  }
+
+  void addDigit(String digit) {
+    if (dialNumber.value.length >= 15) return;
+
+    dialNumber.value += digit;
+
+    searchController.value = TextEditingValue(
+      text: dialNumber.value,
+      selection: TextSelection.collapsed(
+        offset: dialNumber.value.length,
+      ),
+    );
+
+    onSearchChanged(dialNumber.value);
+  }
+
+  void removeLastDigit() {
+    if (dialNumber.value.isEmpty) return;
+
+    dialNumber.value =
+        dialNumber.value.substring(0, dialNumber.value.length - 1);
+
+    searchController.value = TextEditingValue(
+      text: dialNumber.value,
+      selection: TextSelection.collapsed(
+        offset: dialNumber.value.length,
+      ),
+    );
+
+    onSearchChanged(dialNumber.value);
+  }
+
+  void clearDialNumber() {
+    dialNumber.value = '';
+    searchController.clear();
+    searchQuery.value = '';
+    filteredUsers.value = allUserProfileData;
+  }
+
+  void makeCall() {
+    if (dialNumber.value.isEmpty) return;
+    debugPrint("Calling Number: ${dialNumber.value}");
   }
 
   Future<void> getRegisteredContacts() async {
@@ -121,6 +186,7 @@ class CallController extends GetxController {
   void clearSearch() {
     searchController.clear();
     searchQuery.value = '';
+    dialNumber.value = '';
     filteredUsers.value = allUserProfileData;
   }
 
@@ -228,10 +294,26 @@ class CallController extends GetxController {
   Map<String, String> _buildRow(_RecentEntry entry) {
     final CallingDetail call = entry.call;
     final RecentContact? contact = call.contact;
+
     final String name = [
       contact?.firstName,
       contact?.lastName,
     ].whereType<String>().join(' ').trim();
+
+    String mobileNo = '';
+
+    if (contact?.id != null && contact!.id!.isNotEmpty) {
+      final int? contactUserId = int.tryParse(contact.id!);
+
+      if (contactUserId != null) {
+        final UserListData? matchedUser = allUserProfileData.firstWhereOrNull(
+          (user) => user.userId == contactUserId,
+        );
+
+        mobileNo = matchedUser?.mobileNo ?? '';
+      }
+    }
+
     return {
       'name': name.isEmpty ? 'Unknown' : name,
       'type': _composeTypeLabel(call),
@@ -239,6 +321,7 @@ class CallController extends GetxController {
       'avatar': (contact?.avatar ?? '').trim(),
       'callType': (call.type ?? '').trim(),
       'callerId': (contact?.id ?? '').trim(),
+      'mobileNo': mobileNo,
     };
   }
 
@@ -329,12 +412,49 @@ class CallController extends GetxController {
   List<Map<String, String>> get filteredRecentCalls {
     final String query = _query;
     final String filter = recentCallFilter.value;
+    final String queryDigits = _normalizePhone(query);
+
+    debugPrint("========== RECENT SEARCH ==========");
+    debugPrint("Query: $query");
+    debugPrint("Query Digits: $queryDigits");
+
     return recentCallList.where((call) {
-      final String name = (call['name'] ?? '').toLowerCase();
+      final String name = (call['name'] ?? '').toLowerCase().trim();
       final String type = (call['type'] ?? '').toLowerCase();
+      final String callerId = (call['callerId'] ?? '').trim();
+      final String mobileNo = (call['mobileNo'] ?? '').trim();
+
+      final String normalizedCallerId = _normalizePhone(callerId);
+      final String normalizedMobileNo = _normalizePhone(mobileNo);
+
+      final bool nameMatch =
+          query.isNotEmpty && name.contains(query);
+
+      final bool callerIdMatch =
+          queryDigits.isNotEmpty &&
+              normalizedCallerId.contains(queryDigits);
+
+      final bool mobileMatch =
+          queryDigits.isNotEmpty &&
+              normalizedMobileNo.contains(queryDigits);
+
+      debugPrint(
+        "CALL => name=$name | callerId=$callerId | mobileNo=$mobileNo",
+      );
+
+      debugPrint(
+        "MATCH => name=$nameMatch | callerId=$callerIdMatch | mobile=$mobileMatch",
+      );
+
       final bool matchQuery =
-          query.isEmpty || name.contains(query) || type.contains(query);
+          query.isEmpty ||
+              nameMatch ||
+              callerIdMatch ||
+              mobileMatch ||
+              type.contains(query);
+
       bool matchFilter = filter == 'All';
+
       if (filter == 'Missed') {
         matchFilter = type.contains('missed');
       } else if (filter == 'Outgoing') {
@@ -342,10 +462,10 @@ class CallController extends GetxController {
       } else if (filter == 'Incoming') {
         matchFilter = type.contains('incoming');
       }
+
       return matchQuery && matchFilter;
     }).toList();
   }
-
   List<GroupsResData> get filteredGroups {
     final String query = _query;
     if (query.isEmpty) return _groupController.groupData;
@@ -366,6 +486,7 @@ class CallController extends GetxController {
 
   void onSearchChanged(String value) {
     searchQuery.value = value;
+    dialNumber.value = value;
     filterUsers(value);
   }
 

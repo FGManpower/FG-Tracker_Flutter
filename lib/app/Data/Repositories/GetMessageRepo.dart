@@ -11,6 +11,8 @@ import 'package:http_parser/http_parser.dart';
 import 'package:dio/dio.dart';
 import 'package:path/path.dart' as p;
 
+import '../../Model/GroupChatListModel.dart';
+
 
 class MessageRepo {
   static Future<GetMessage> MessageHistory(
@@ -141,5 +143,17 @@ class MessageRepo {
     );
 
     return PrivateChatResponse.fromJson(response);
+  }
+
+
+  static Future<GroupChatListResponse> getGroupChatList({
+    int page = 1,
+    int limit = 20,
+  }) async {
+    final response = await HttpUtil().get(
+      "/group-chat-list?page=$page&limit=$limit",
+    );
+
+    return GroupChatListResponse.fromJson(response);
   }
 }
