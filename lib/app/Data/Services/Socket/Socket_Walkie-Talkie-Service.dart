@@ -3,10 +3,7 @@ import 'dart:developer';
 import 'dart:io';
 
 import 'package:audio_session/audio_session.dart';
-import 'package:fgtracker/app/Core/constant/notification_holder.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Controller/walkieController.dart';
-import 'package:fgtracker/app/modules/Walkie-talkie/Views/walkie_invite_dialog.dart';
-import 'package:fgtracker/app/modules/Walkie-talkie/WalkieTalkieScreen.dart';
 import 'package:fgtracker/app/Data/Services/walkie_awesome_notification_service.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:flutter/material.dart';

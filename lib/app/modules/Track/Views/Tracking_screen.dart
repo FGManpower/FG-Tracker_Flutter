@@ -12,8 +12,6 @@ import 'package:fgtracker/app/Model/GroupRes.dart';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Model/LocationDataRes.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
-import 'package:fgtracker/app/Core/constant/BottomSheet/create_group_sheet.dart';
-import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 class TrackingScreen extends StatelessWidget {

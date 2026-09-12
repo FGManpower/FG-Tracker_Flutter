@@ -312,17 +312,22 @@ class CallKitService {
       final socket = SignallingService.instance.socket;
 
       if (socket != null && socket.connected) {
-        log("declineCall → via SOCKET");
-        socket.emit("rejectCall", {
-          "callId": data["callId"],
-          "remoteUserId": data["callerId"],
-        });
+        log("reject_group_call → via SOCKET");
+        socket.emitWithAck(
+          "reject_group_call",
+          {
+            "callId": data["callId"],
+            "groupId": int.tryParse(data["groupId"]) ?? data["groupId"],
+          },
+          ack: (r) => log('reject_group_call ACK: $r'),
+        );
+
         if (Utility.isNotNullEmptyOrFalse(data["callId"])) {
           Socket_GroupCallService.instance.rejectGroupCall(
               data["callId"].toString(), data["groupId"].toString());
         }
       } else {
-        log("declineCall → via REST API (socket not available)");
+        log("reject_group_call → via REST API (socket not available)");
         await _rejectCallViaApi(data["callId"],groupId: data['groupId'].toString());
       }
     } catch (e) {

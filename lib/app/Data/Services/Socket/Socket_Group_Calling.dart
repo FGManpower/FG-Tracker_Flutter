@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'dart:developer';
+import 'package:connectycube_flutter_call_kit/connectycube_flutter_call_kit.dart';
+import 'package:fgtracker/app/Core/global/launchedFromCall.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:socket_io_client/socket_io_client.dart';
 import 'package:get/get.dart';
@@ -21,7 +23,6 @@ class Socket_GroupCallService {
   final Map<String, RTCVideoRenderer> remoteRenderers = {};
   final Map<String, List<RTCIceCandidate>> _pendingIce = {};
   final Set<String> remoteUsers = {};
-
 
   final Map<String, Map<String, dynamic>> participantMeta = {};
 
@@ -59,11 +60,11 @@ class Socket_GroupCallService {
   void _log(String message) => log('[GroupCallService] $message');
 
   void _saveParticipantMeta(
-      String userId, {
-        String? name,
-        String? profileImage,
-        bool? isMuted,
-      }) {
+    String userId, {
+    String? name,
+    String? profileImage,
+    bool? isMuted,
+  }) {
     final existing = participantMeta[userId] ?? <String, dynamic>{};
     if (name != null && name.trim().isNotEmpty) {
       existing['name'] = name.trim();
@@ -90,7 +91,6 @@ class Socket_GroupCallService {
   bool getParticipantMuted(String userId) {
     return participantMeta[userId]?['isMuted'] == true;
   }
-
 
   void init(String userId) {
     if (socket != null && socket!.connected && _selfUserId == userId) {
@@ -215,7 +215,6 @@ class Socket_GroupCallService {
       // onIncomingCallReceived?.call(data);
     });
 
-
     socket?.on("group_call_participant_joined", (raw) {
       _log("👤 group_call_participant_joined: $raw");
       if (raw == null) return;
@@ -226,7 +225,7 @@ class Socket_GroupCallService {
 
       final name = (data['name'] ?? data['userName'] ?? '').toString();
       final profileImage =
-      (data['profileImage'] ?? data['userProfileImage'] ?? '').toString();
+          (data['profileImage'] ?? data['userProfileImage'] ?? '').toString();
 
       _saveParticipantMeta(
         joinedUserId,
@@ -239,13 +238,11 @@ class Socket_GroupCallService {
       onParticipantsUpdated?.call();
     });
 
-
     socket?.on("group_call_participant_rejected", (raw) {
       _log(" group_call_participant_rejected: $raw");
       final userId = raw is Map ? raw['userId']?.toString() : null;
       if (userId != null) onParticipantRejected?.call(userId);
     });
-
 
     socket?.on("group_call_participant_mute", (raw) {
       _log("🔇 group_call_participant_mute: $raw");
@@ -263,7 +260,6 @@ class Socket_GroupCallService {
       onParticipantMuteChanged?.call(userId, isMuted);
       onParticipantsUpdated?.call();
     });
-
 
     socket?.on("group_call_participant_left", (raw) async {
       _log("👋 group_call_participant_left: $raw");
@@ -310,7 +306,6 @@ class Socket_GroupCallService {
     });
   }
 
-
   Future<void> startGroupCall({
     required String groupId,
     required bool isVideo,
@@ -325,7 +320,6 @@ class Socket_GroupCallService {
       onResponse(false, null, "Socket disconnected");
       return;
     }
-
 
     if (_selfUserId != null) {
       _saveParticipantMeta(
@@ -361,12 +355,11 @@ class Socket_GroupCallService {
     );
   }
 
-
   Future<void> joinGroupCall(
-      String callId,
-      String groupId,
-      Function(bool success) onComplete,
-      ) async {
+    String callId,
+    String groupId,
+    Function(bool success) onComplete,
+  ) async {
     _log(' emit join_group_call callId=$callId');
     currentCallId = callId;
     currentGroupId = groupId;
@@ -402,7 +395,8 @@ class Socket_GroupCallService {
           _saveParticipantMeta(
             uid,
             name: (p['name'] ?? p['userName'])?.toString(),
-            profileImage: (p['profileImage'] ?? p['userProfileImage'])?.toString(),
+            profileImage:
+                (p['profileImage'] ?? p['userProfileImage'])?.toString(),
             isMuted: p['isMuted'] == true,
           );
         }
@@ -706,6 +700,22 @@ class Socket_GroupCallService {
     if (navigate && Get.currentRoute == Routes.groupCallingScreen) {
       Get.offAllNamed(Routes.Home_Screen);
     }
+  }
+
+  groupCallRejected(
+      {required String sessionId,
+      required String callId,
+      required String groupId}) async {
+    rejectGroupCall(callId, groupId);
+    await ConnectycubeFlutterCallKit.reportCallEnded(
+      sessionId: sessionId,
+    );
+
+    await ConnectycubeFlutterCallKit.clearCallData(
+      sessionId: sessionId,
+    );
+    log('==========groupCallRejected:$sessionId');
+    CallSessionState.reset();
   }
 
   Future<void> dispose() async {

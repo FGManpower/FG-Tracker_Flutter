@@ -1,5 +1,4 @@
 import 'package:fgtracker/app/Core/constant/const_res.dart';
-import 'package:fgtracker/app/Data/Repositories/TrackRepo.dart';
 import 'package:fgtracker/app/Model/ghost_member_model.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/modules/Track/Controller/TrackController.dart';
