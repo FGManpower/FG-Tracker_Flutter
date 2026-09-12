@@ -68,7 +68,6 @@ class _CallScreenState extends State<CallScreen>
               ],
             ),
 
-            // Dial pad overlay
             const Positioned(
               left: 0,
               right: 0,

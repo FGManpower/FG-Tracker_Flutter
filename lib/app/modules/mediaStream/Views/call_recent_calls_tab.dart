@@ -13,6 +13,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
+import 'contact_profile_screen.dart';
+
 class CallRecentCallsTab extends StatefulWidget {
   const CallRecentCallsTab({super.key});
 
@@ -91,10 +93,13 @@ class _CallRecentCallsTabState extends State<CallRecentCallsTab> {
                       return Padding(
                         padding: EdgeInsets.only(top: 10.h),
                         child: InkWell(
+                            onTap: () {
+                              Get.to(() => ContactProfileScreen(contactData: calls[index]));
+                            },
                             child: _RecentCallTile(
-                          call: calls[index],
-                          onCallTap: (type) {
-                            if (type == "video") {
+                              call: calls[index],
+                              onCallTap: (type) {
+                                if (type == "video") {
                               CallService().startCall(
                                 context,
                                 callerId: Global.storageServices

@@ -124,7 +124,6 @@ class _AllChatsBody extends StatelessWidget {
           children: [
             SizedBox(height: 8.h),
 
-            // ================= STATUS =================
 
             _sectionTitle(
               "Status",
@@ -135,7 +134,6 @@ class _AllChatsBody extends StatelessWidget {
 
             SizedBox(height: 20.h),
 
-            // ================= PINNED CHATS =================
 
             Obx(() {
               final pinnedChats = controller.privateChats
@@ -172,7 +170,6 @@ class _AllChatsBody extends StatelessWidget {
 
             SizedBox(height: 10.h),
 
-            // ================= ALL CHATS =================
 
             _sectionTitle(
               "All Chats",

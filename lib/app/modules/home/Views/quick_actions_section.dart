@@ -9,8 +9,6 @@ import 'package:get/get.dart';
 
 import '../../Messages/Views/chatlist_screen.dart';
 import '../../Safe_Zone/views/safety_dashboard_view.dart';
-
-
 class QuickActionsSection extends StatelessWidget {
   const QuickActionsSection({super.key});
 

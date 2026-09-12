@@ -32,11 +32,35 @@ class LivesStatusController extends GetxController {
 
   final RxList<GhostMemberData> privateMemberData =
       <GhostMemberData>[].obs;
+
   final RxBool privateMemberLoading = false.obs;
   final RxBool privateMemberLoadingMore = false.obs;
+
   final RxString privateResponseError = ''.obs;
+
   final RxInt privatePagination = 0.obs;
+
   final RxBool hasMorePrivateMembers = true.obs;
+
+  final RxList<OnlineMemberData> allMemberData =
+      <OnlineMemberData>[].obs;
+
+  final RxList<OnlineMemberData> filteredAllMembers =
+      <OnlineMemberData>[].obs;
+
+  final RxBool allMemberLoading = false.obs;
+  final RxBool allMemberLoadingMore = false.obs;
+
+  final RxString allResponseError = ''.obs;
+
+  final RxInt allPagination = 0.obs;
+
+  final RxBool hasMoreAllMembers = true.obs;
+
+  final RxInt totalMembersCount = 0.obs;
+  final RxInt activeMembersCount = 0.obs;
+  final RxInt inactiveMembersCount = 0.obs;
+  final RxInt newMembersCount = 0.obs;
 
   RxList<OnlineMemberData> get filtermember {
     return filteredMembers;
@@ -53,7 +77,6 @@ class LivesStatusController extends GetxController {
   @override
   void onClose() {
     searchController.dispose();
-
     super.onClose();
   }
 
@@ -76,7 +99,7 @@ class LivesStatusController extends GetxController {
       final OnlineMemberModel result =
       await TrackRepo.getGroupMember(
         page: '1',
-        filter: memberFilter.value,
+        filter: 'online',
         limit: 20,
       );
 
@@ -86,10 +109,18 @@ class LivesStatusController extends GetxController {
         return;
       }
 
-      final List<OnlineMemberData> apiMembers =
-      List<OnlineMemberData>.from(
-        result.data ?? <OnlineMemberData>[],
-      );
+      final List<OnlineMemberData> currentOnline =
+          result.data?.currentOnline ??
+              <OnlineMemberData>[];
+
+      final List<OnlineMemberData> recentOnline =
+          result.data?.recentOnline ??
+              <OnlineMemberData>[];
+
+      final List<OnlineMemberData> apiMembers = [
+        ...currentOnline,
+        ...recentOnline,
+      ];
 
       memberData.assignAll(apiMembers);
 
@@ -117,12 +148,13 @@ class LivesStatusController extends GetxController {
     memberLoadingMore.value = true;
 
     try {
-      final int nextPage = pagination.value + 1;
+      final int nextPage =
+          pagination.value + 1;
 
       final OnlineMemberModel result =
       await TrackRepo.getGroupMember(
         page: nextPage.toString(),
-        filter: memberFilter.value,
+        filter: 'online',
         limit: 20,
       );
 
@@ -131,17 +163,38 @@ class LivesStatusController extends GetxController {
         return;
       }
 
-      final List<OnlineMemberData> apiMembers =
-      List<OnlineMemberData>.from(
-        result.data ?? <OnlineMemberData>[],
-      );
+      final List<OnlineMemberData> currentOnline =
+          result.data?.currentOnline ??
+              <OnlineMemberData>[];
 
-      if (apiMembers.isNotEmpty) {
-        memberData.addAll(apiMembers);
+      final List<OnlineMemberData> recentOnline =
+          result.data?.recentOnline ??
+              <OnlineMemberData>[];
+
+      final List<OnlineMemberData> apiMembers = [
+        ...currentOnline,
+        ...recentOnline,
+      ];
+
+      for (final OnlineMemberData member in apiMembers) {
+        if (member.userId == null) {
+          memberData.add(member);
+          continue;
+        }
+
+        final bool exists = memberData.any(
+              (OnlineMemberData existing) =>
+          existing.userId == member.userId,
+        );
+
+        if (!exists) {
+          memberData.add(member);
+        }
       }
 
       pagination.value =
-          result.pagination?.currentPage ?? nextPage;
+          result.pagination?.currentPage ??
+              nextPage;
 
       hasMoreMembers.value =
           result.pagination?.hasNextPage ?? false;
@@ -154,19 +207,172 @@ class LivesStatusController extends GetxController {
     }
   }
 
+  Future<void> getAllMembers() async {
+    if (allMemberLoading.value ||
+        allMemberLoadingMore.value) {
+      return;
+    }
+
+    allMemberLoading.value = true;
+    allResponseError.value = '';
+
+    allPagination.value = 0;
+    hasMoreAllMembers.value = true;
+
+    allMemberData.clear();
+    filteredAllMembers.clear();
+
+    try {
+      final OnlineMemberModel result =
+      await TrackRepo.getGroupMember(
+        page: '1',
+        filter: 'all',
+        limit: 20,
+      );
+
+      if (result.status != true) {
+        allResponseError.value =
+            result.message ?? 'Something went wrong';
+        return;
+      }
+
+      final List<OnlineMemberData> currentOnline =
+          result.data?.currentOnline ??
+              <OnlineMemberData>[];
+
+      final List<OnlineMemberData> recentOnline =
+          result.data?.recentOnline ??
+              <OnlineMemberData>[];
+
+      final List<OnlineMemberData> members = [
+        ...currentOnline,
+        ...recentOnline,
+      ];
+
+      allMemberData.assignAll(members);
+
+      totalMembersCount.value =
+          result.metaData?.totalMembers ??
+              members.length;
+
+      activeMembersCount.value =
+          result.metaData?.totalOnlineMembers ??
+              members.where(
+                    (OnlineMemberData member) =>
+                member.isOnline == 1,
+              ).length;
+
+      inactiveMembersCount.value =
+          result.metaData?.totalOfflineMembers ??
+              members.where(
+                    (OnlineMemberData member) =>
+                member.isOnline != 1,
+              ).length;
+
+      newMembersCount.value =
+          result.metaData?.totalNewMembers ?? 0;
+
+      allPagination.value =
+          result.pagination?.currentPage ?? 1;
+
+      hasMoreAllMembers.value =
+          result.pagination?.hasNextPage ?? false;
+
+      _applyAllSearch();
+    } catch (error) {
+      allResponseError.value = error.toString();
+    } finally {
+      allMemberLoading.value = false;
+    }
+  }
+
+  Future<void> loadMoreAllMembers() async {
+    if (allMemberLoading.value ||
+        allMemberLoadingMore.value ||
+        !hasMoreAllMembers.value) {
+      return;
+    }
+
+    allMemberLoadingMore.value = true;
+
+    try {
+      final int nextPage =
+          allPagination.value + 1;
+
+      final OnlineMemberModel result =
+      await TrackRepo.getGroupMember(
+        page: nextPage.toString(),
+        filter: 'all',
+        limit: 20,
+      );
+
+      if (result.status != true) {
+        hasMoreAllMembers.value = false;
+        return;
+      }
+
+      final List<OnlineMemberData> currentOnline =
+          result.data?.currentOnline ??
+              <OnlineMemberData>[];
+
+      final List<OnlineMemberData> recentOnline =
+          result.data?.recentOnline ??
+              <OnlineMemberData>[];
+
+      final List<OnlineMemberData> members = [
+        ...currentOnline,
+        ...recentOnline,
+      ];
+
+      for (final OnlineMemberData member in members) {
+        if (member.userId == null) {
+          allMemberData.add(member);
+          continue;
+        }
+
+        final bool exists = allMemberData.any(
+              (OnlineMemberData existing) =>
+          existing.userId == member.userId,
+        );
+
+        if (!exists) {
+          allMemberData.add(member);
+        }
+      }
+
+      allPagination.value =
+          result.pagination?.currentPage ??
+              nextPage;
+
+      hasMoreAllMembers.value =
+          result.pagination?.hasNextPage ??
+              false;
+
+      _applyAllSearch();
+    } catch (error) {
+      allResponseError.value = error.toString();
+    } finally {
+      allMemberLoadingMore.value = false;
+    }
+  }
+
   Future<void> getPrivateMembers() async {
-    if (privateMemberLoading.value || privateMemberLoadingMore.value) {
+    if (privateMemberLoading.value ||
+        privateMemberLoadingMore.value) {
       return;
     }
 
     privateMemberLoading.value = true;
     privateResponseError.value = '';
+
     privatePagination.value = 0;
     hasMorePrivateMembers.value = true;
+
     privateMemberData.clear();
 
     try {
-      final GhostMemberModel result = await TrackRepo.getPrivateMembers(
+      final GhostMemberModel result =
+      await TrackRepo.getPrivateMembers(
         page: '1',
         limit: 20,
       );
@@ -178,14 +384,21 @@ class LivesStatusController extends GetxController {
       }
 
       final List<GhostMemberData> members =
-          List<GhostMemberData>.from(result.data ?? <GhostMemberData>[]);
+      List<GhostMemberData>.from(
+        result.data ??
+            <GhostMemberData>[],
+      );
 
       privateMemberData.assignAll(members);
 
-      privatePagination.value = result.pagination?.currentPage ?? 1;
-      hasMorePrivateMembers.value = result.pagination?.hasNextPage ?? false;
+      privatePagination.value =
+          result.pagination?.currentPage ?? 1;
+
+      hasMorePrivateMembers.value =
+          result.pagination?.hasNextPage ?? false;
     } catch (error) {
-      privateResponseError.value = error.toString();
+      privateResponseError.value =
+          error.toString();
     } finally {
       privateMemberLoading.value = false;
     }
@@ -201,9 +414,11 @@ class LivesStatusController extends GetxController {
     privateMemberLoadingMore.value = true;
 
     try {
-      final int nextPage = privatePagination.value + 1;
+      final int nextPage =
+          privatePagination.value + 1;
 
-      final GhostMemberModel result = await TrackRepo.getPrivateMembers(
+      final GhostMemberModel result =
+      await TrackRepo.getPrivateMembers(
         page: nextPage.toString(),
         limit: 20,
       );
@@ -214,16 +429,24 @@ class LivesStatusController extends GetxController {
       }
 
       final List<GhostMemberData> members =
-          List<GhostMemberData>.from(result.data ?? <GhostMemberData>[]);
+      List<GhostMemberData>.from(
+        result.data ??
+            <GhostMemberData>[],
+      );
 
       if (members.isNotEmpty) {
         privateMemberData.addAll(members);
       }
 
-      privatePagination.value = result.pagination?.currentPage ?? nextPage;
-      hasMorePrivateMembers.value = result.pagination?.hasNextPage ?? false;
+      privatePagination.value =
+          result.pagination?.currentPage ??
+              nextPage;
+
+      hasMorePrivateMembers.value =
+          result.pagination?.hasNextPage ?? false;
     } catch (error) {
-      privateResponseError.value = error.toString();
+      privateResponseError.value =
+          error.toString();
     } finally {
       privateMemberLoadingMore.value = false;
     }
@@ -232,6 +455,7 @@ class LivesStatusController extends GetxController {
   Future<void> refreshPrivateMembers() async {
     privateMemberLoading.value = false;
     privateMemberLoadingMore.value = false;
+
     await getPrivateMembers();
   }
 
@@ -244,6 +468,11 @@ class LivesStatusController extends GetxController {
     _applySearch();
   }
 
+  void onAllSearchChanged(String value) {
+    searchQuery.value = value;
+    _applyAllSearch();
+  }
+
   void searchMembers(String value) {
     onSearchChanged(value);
   }
@@ -253,7 +482,20 @@ class LivesStatusController extends GetxController {
     searchQuery.value = '';
 
     filteredMembers.assignAll(
-      List<OnlineMemberData>.from(memberData),
+      List<OnlineMemberData>.from(
+        memberData,
+      ),
+    );
+  }
+
+  void clearAllSearch() {
+    searchController.clear();
+    searchQuery.value = '';
+
+    filteredAllMembers.assignAll(
+      List<OnlineMemberData>.from(
+        allMemberData,
+      ),
     );
   }
 
@@ -263,24 +505,58 @@ class LivesStatusController extends GetxController {
 
     if (query.isEmpty) {
       filteredMembers.assignAll(
-        List<OnlineMemberData>.from(memberData),
+        List<OnlineMemberData>.from(
+          memberData,
+        ),
       );
       return;
     }
 
     final List<OnlineMemberData> result =
-    memberData.where((OnlineMemberData member) {
-      final String name =
-          member.name?.toLowerCase() ?? '';
+    memberData.where(
+          (OnlineMemberData member) {
+        final String name =
+            member.name?.toLowerCase() ?? '';
 
-      final String mobile =
-          member.mobileNo?.toLowerCase() ?? '';
+        final String mobile =
+            member.mobileNo?.toLowerCase() ?? '';
 
-      return name.contains(query) ||
-          mobile.contains(query);
-    }).toList();
+        return name.contains(query) ||
+            mobile.contains(query);
+      },
+    ).toList();
 
     filteredMembers.assignAll(result);
+  }
+
+  void _applyAllSearch() {
+    final String query =
+    searchQuery.value.trim().toLowerCase();
+
+    if (query.isEmpty) {
+      filteredAllMembers.assignAll(
+        List<OnlineMemberData>.from(
+          allMemberData,
+        ),
+      );
+      return;
+    }
+
+    final List<OnlineMemberData> result =
+    allMemberData.where(
+          (OnlineMemberData member) {
+        final String name =
+            member.name?.toLowerCase() ?? '';
+
+        final String mobile =
+            member.mobileNo?.toLowerCase() ?? '';
+
+        return name.contains(query) ||
+            mobile.contains(query);
+      },
+    ).toList();
+
+    filteredAllMembers.assignAll(result);
   }
 
   Future<void> refreshMembers() async {
@@ -290,8 +566,17 @@ class LivesStatusController extends GetxController {
     await getGroupMember();
   }
 
+  Future<void> refreshAllMembers() async {
+    allMemberLoading.value = false;
+    allMemberLoadingMore.value = false;
+
+    await getAllMembers();
+  }
+
   Future<void> changeFilter(String filter) async {
-    final bool isSame = memberFilter.value == filter;
+    final bool isSame =
+        memberFilter.value == filter;
+
     memberFilter.value = filter;
 
     if (isSame && memberData.isNotEmpty) {
@@ -304,7 +589,9 @@ class LivesStatusController extends GetxController {
   int get onlineMembersCount {
     return memberData
         .where(
-          (OnlineMemberData member) => member.isOnline == 1 || member.online,
+          (OnlineMemberData member) =>
+      member.isOnline == 1 ||
+          member.online,
     )
         .length;
   }
@@ -312,7 +599,9 @@ class LivesStatusController extends GetxController {
   int get recentlyOnlineCount {
     return memberData
         .where(
-          (OnlineMemberData member) => member.isOnline != 1 && !member.online,
+          (OnlineMemberData member) =>
+      member.isOnline != 1 &&
+          !member.online,
     )
         .length;
   }

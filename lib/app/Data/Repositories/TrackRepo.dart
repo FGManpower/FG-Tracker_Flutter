@@ -26,24 +26,44 @@ class TrackRepo {
     };
 
     dynamic response;
+
     try {
-      debugPrint("📍 [TrackRepo] GET ${Urls.usersWithinRadius} - params: $queryParams");
+      debugPrint(
+        "📍 [TrackRepo] GET ${Urls.usersWithinRadius} - params: $queryParams",
+      );
+
       response = await HttpUtil().get(
         Urls.usersWithinRadius,
         data: queryParams,
       );
-      debugPrint("📍 [TrackRepo] Response from /users-within-radius: $response");
+
+      debugPrint(
+        "📍 [TrackRepo] Response from /users-within-radius: $response",
+      );
     } catch (e) {
-      debugPrint("⚠️ Primary ${Urls.usersWithinRadius} failed: $e, trying /user-within-radius fallback");
+      debugPrint(
+        "⚠️ Primary ${Urls.usersWithinRadius} failed: $e, trying /user-within-radius fallback",
+      );
+
       try {
         response = await HttpUtil().get(
           Urls.userWithinRadiusFallback,
           data: queryParams,
         );
-        debugPrint("📍 [TrackRepo] Response from /user-within-radius: $response");
+
+        debugPrint(
+          "📍 [TrackRepo] Response from /user-within-radius: $response",
+        );
       } catch (e2) {
-        debugPrint("❌ [TrackRepo] Error in getUsersWithinRadius: $e2");
-        return UsersWithinRadiusRes(status: false, message: e2.toString(), data: []);
+        debugPrint(
+          "❌ [TrackRepo] Error in getUsersWithinRadius: $e2",
+        );
+
+        return UsersWithinRadiusRes(
+          status: false,
+          message: e2.toString(),
+          data: [],
+        );
       }
     }
 
@@ -51,36 +71,72 @@ class TrackRepo {
       if (response is Map<String, dynamic>) {
         return UsersWithinRadiusRes.fromJson(response);
       } else if (response is Map) {
-        return UsersWithinRadiusRes.fromJson(Map<String, dynamic>.from(response));
+        return UsersWithinRadiusRes.fromJson(
+          Map<String, dynamic>.from(response),
+        );
       } else if (response is List) {
-        return UsersWithinRadiusRes.fromJson({"status": true, "data": response});
+        return UsersWithinRadiusRes.fromJson({
+          "status": true,
+          "data": response,
+        });
       }
+
       return UsersWithinRadiusRes.fromJson({});
     } catch (parseErr) {
-      debugPrint("❌ [TrackRepo] JSON parse error in getUsersWithinRadius: $parseErr");
-      return UsersWithinRadiusRes(status: false, message: parseErr.toString(), data: []);
+      debugPrint(
+        "❌ [TrackRepo] JSON parse error in getUsersWithinRadius: $parseErr",
+      );
+
+      return UsersWithinRadiusRes(
+        status: false,
+        message: parseErr.toString(),
+        data: [],
+      );
     }
   }
 
-  static Future<LocationDataRes> getUserLocationData(int groupId) async {
+  static Future<LocationDataRes> getUserLocationData(
+      int groupId,
+      ) async {
     try {
-      debugPrint("📍 [TrackRepo] GET /getGrouplocationsData?groupId=$groupId");
-      var response =
-          await HttpUtil().get("/getGrouplocationsData?groupId=$groupId");
-      debugPrint("📍 [TrackRepo] Response from /getGrouplocationsData: $response");
+      debugPrint(
+        "📍 [TrackRepo] GET /getGrouplocationsData?groupId=$groupId",
+      );
+
+      final response = await HttpUtil().get(
+        "/getGrouplocationsData?groupId=$groupId",
+      );
+
+      debugPrint(
+        "📍 [TrackRepo] Response from /getGrouplocationsData: $response",
+      );
+
       final parsed = LocationDataRes.fromJson(response);
-      if (parsed.status == true && parsed.locations != null && parsed.locations!.isNotEmpty) {
+
+      if (parsed.status == true &&
+          parsed.locations != null &&
+          parsed.locations!.isNotEmpty) {
         return parsed;
       }
     } catch (e) {
-      debugPrint("❌ [TrackRepo] Error in getUserLocationData: $e");
+      debugPrint(
+        "❌ [TrackRepo] Error in getUserLocationData: $e",
+      );
     }
 
     try {
-      debugPrint("🔄 [TrackRepo] Falling back to /getMembers?groupId=$groupId");
-      var membersRes = await GroupRepo.getMemberData(groupId.toString());
-      if (membersRes.status == true && membersRes.memberData != null) {
-        final List<LocationData> fallbackList = membersRes.memberData!.map((m) {
+      debugPrint(
+        "🔄 [TrackRepo] Falling back to /getMembers?groupId=$groupId",
+      );
+
+      final membersRes = await GroupRepo.getMemberData(
+        groupId.toString(),
+      );
+
+      if (membersRes.status == true &&
+          membersRes.memberData != null) {
+        final List<LocationData> fallbackList =
+        membersRes.memberData!.map((m) {
           return LocationData(
             id: m.id,
             userId: m.userId,
@@ -95,6 +151,7 @@ class TrackRepo {
             longitude: 0.0,
           );
         }).toList();
+
         return LocationDataRes(
           status: true,
           message: "Loaded members",
@@ -102,10 +159,16 @@ class TrackRepo {
         );
       }
     } catch (fallbackErr) {
-      debugPrint("❌ [TrackRepo] Fallback error: $fallbackErr");
+      debugPrint(
+        "❌ [TrackRepo] Fallback error: $fallbackErr",
+      );
     }
 
-    return LocationDataRes(status: false, message: "Failed to load group locations", locations: []);
+    return LocationDataRes(
+      status: false,
+      message: "Failed to load group locations",
+      locations: [],
+    );
   }
 
   static Future<OnlineMemberModel> getGroupMember({
@@ -114,15 +177,61 @@ class TrackRepo {
     int limit = 20,
   }) async {
     try {
-      final response = await HttpUtil().get(
-        '${Urls.allGroupMembers}'
-        '?filter=$filter'
-        '&page=$page'
-        '&limit=$limit',
+      final String url =
+          '${Urls.allGroupMembers}'
+          '?filter=$filter'
+          '&page=$page'
+          '&limit=$limit';
+
+      debugPrint(
+        "🟢 [TrackRepo] GET Group Members: $url",
       );
-      return OnlineMemberModel.fromJson(response);
+
+      final response = await HttpUtil().get(url);
+
+      debugPrint(
+        "🟢 [TrackRepo] Group Members Response: $response",
+      );
+
+      if (response is Map<String, dynamic>) {
+        return OnlineMemberModel.fromJson(response);
+      }
+
+      if (response is Map) {
+        return OnlineMemberModel.fromJson(
+          Map<String, dynamic>.from(response),
+        );
+      }
+
+      if (response is List) {
+        return OnlineMemberModel.fromJson({
+          "status": true,
+          "filter": filter,
+          "data": response,
+        });
+      }
+
+      return OnlineMemberModel(
+        status: false,
+        message: "Invalid response format",
+        data: OnlineMemberResponseData(
+          currentOnline: [],
+          recentOnline: [],
+        ),
+      );
     } catch (e) {
-      return OnlineMemberModel(status: false, message: e.toString(), data: []);
+      debugPrint(
+        "❌ [TrackRepo] getGroupMember Error: $e",
+      );
+
+      return OnlineMemberModel(
+        status: false,
+        message: e.toString(),
+        data: OnlineMemberResponseData(
+          currentOnline: [],
+          recentOnline: [],
+        ),
+      );
     }
   }
 
@@ -133,23 +242,32 @@ class TrackRepo {
     try {
       final response = await HttpUtil().get(
         '${Urls.allGroupMembers}'
-        '?filter=private'
-        '&page=$page'
-        '&limit=$limit',
+            '?filter=private'
+            '&page=$page'
+            '&limit=$limit',
       );
+
       return GhostMemberModel.fromJson(response);
     } catch (e) {
-      return GhostMemberModel(status: false, message: e.toString(), data: []);
+      return GhostMemberModel(
+        status: false,
+        message: e.toString(),
+        data: [],
+      );
     }
   }
 
-  static Future<bool> updateLocationSharing(bool locationSharing) async {
+  static Future<bool> updateLocationSharing(
+      bool locationSharing,
+      ) async {
     try {
       final response = await HttpUtil().post(
         "/location-sharing/update",
         data: {
           "userId": int.parse(
-            Global.storageServices.get(PrefConst.userId).toString(),
+            Global.storageServices
+                .get(PrefConst.userId)
+                .toString(),
           ),
           "locationSharing": locationSharing,
         },

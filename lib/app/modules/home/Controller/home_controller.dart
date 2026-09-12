@@ -16,6 +16,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../../Model/banner_model.dart';
+import '../../../Model/online_member_model.dart';
 
 class HomeController extends GetxController {
   RxBool ProfileData_loading = false.obs;
@@ -204,17 +205,37 @@ class HomeController extends GetxController {
       if (groupMemberLocations.isNotEmpty) {
         liveLocations.assignAll(groupMemberLocations);
       } else {
-        final onlineRes = await TrackRepo.getGroupMember(filter: 'all', limit: 50);
+        final onlineRes = await TrackRepo.getGroupMember(
+          filter: 'all',
+          limit: 50,
+        );
+
         if (onlineRes.status == true && onlineRes.data != null) {
           final List<LiveLocationModel> memberLocs = [];
-          for (final m in onlineRes.data!) {
+
+          final List<OnlineMemberData> allMembers = [
+            ...onlineRes.data!.currentOnline,
+            ...onlineRes.data!.recentOnline,
+          ];
+
+          for (final m in allMembers) {
             final double lat = m.latitude ?? 0.0;
             final double lng = m.longitude ?? 0.0;
+
             if (lat != 0.0 && lng != 0.0) {
-              final String fullName = (m.name ?? 'Member').toString().trim();
+              final String fullName =
+              (m.name ?? 'Member').toString().trim();
+
               final parts = fullName.split(' ');
-              final firstName = parts.isNotEmpty ? parts[0] : 'Member';
-              final lastName = parts.length > 1 ? parts.sublist(1).join(' ') : '';
+
+              final firstName =
+              parts.isNotEmpty ? parts[0] : 'Member';
+
+              final lastName =
+              parts.length > 1
+                  ? parts.sublist(1).join(' ')
+                  : '';
+
               memberLocs.add(
                 LiveLocationModel(
                   userId: m.userId ?? 0,
@@ -228,6 +249,7 @@ class HomeController extends GetxController {
               );
             }
           }
+
           if (memberLocs.isNotEmpty) {
             liveLocations.assignAll(memberLocs);
           }
