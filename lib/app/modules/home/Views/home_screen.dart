@@ -99,7 +99,7 @@ class _HomeScreenState extends State<HomeScreen> {
               SizedBox(height: 15.h),
               StatsGrid(controller: controller),
               SizedBox(height: 25.h),
-              const MapSection(),
+              // const MapSection(),
               SizedBox(height: 25.h),
               const QuickActionsSection(),
               SizedBox(height: 10.h),

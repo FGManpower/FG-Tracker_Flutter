@@ -64,8 +64,6 @@ class CallKitService {
         log("onCallAccepted parsed data: $data");
 
         if (data.isNotEmpty) {
-
-
           if (data['screenName'].toString() == "incomingGroupCall") {
             await navigateToGroupCallScreen(data);
           } else {
@@ -155,7 +153,6 @@ class CallKitService {
 
       if (data.isNotEmpty) {
         if (accept) {
-
           if (data['screenName'].toString() == "incomingGroupCall") {
             await navigateToGroupCallScreen(data);
           } else {
@@ -242,13 +239,12 @@ class CallKitService {
           "callerId": data["callerId"].toString(),
           "callerName": data["callerName"].toString(),
           "callerProfileImage": data['callerProfileImage'],
-          "isVideo": data["isVideo"].toString()=="true" ?true:false,
+          "isVideo": data["isVideo"].toString() == "true" ? true : false,
           "totalGroupMember": data['totalGroupMember'].toString() ?? 10,
-          "callId":  data['callId'].toString(),
+          "callId": data['callId'].toString(),
           "callType": "incoming",
         },
       );
-
 
       final notificationId = int.tryParse(
         data["notificationId"]?.toString() ?? "",
@@ -260,6 +256,7 @@ class CallKitService {
       log("navigateToCallScreen error: $e");
     }
   }
+
   Future<void> declineCall(Map<String, dynamic> data) async {
     try {
       final parsedData = {
@@ -303,10 +300,15 @@ class CallKitService {
     try {
       CallStateTracker.isIncomingCallScreenOpen = false;
 
-      if (CallSessionState.sessionId != null) {
+      if (Utility.isNotNullEmptyOrFalse(data['callId'].toString())) {
         await ConnectycubeFlutterCallKit.reportCallEnded(
-          sessionId: CallSessionState.sessionId!,
+          sessionId: callIdToUuid(data['callId'].toString()),
         );
+        await ConnectycubeFlutterCallKit.clearCallData(
+          sessionId: callIdToUuid(data['callId'].toString()),
+        );
+
+        print("========DeclineGroup-SessionId:${callIdToUuid(data['callId'].toString())}");
       }
 
       final socket = SignallingService.instance.socket;
@@ -328,8 +330,11 @@ class CallKitService {
         }
       } else {
         log("reject_group_call → via REST API (socket not available)");
-        await _rejectCallViaApi(data["callId"],groupId: data['groupId'].toString());
+        await _rejectCallViaApi(data["callId"],
+            groupId: data['groupId'].toString());
       }
+
+      CallSessionState.reset();
     } catch (e) {
       log("declineCall error: $e");
     }
@@ -412,8 +417,6 @@ class CallKitService {
         case "rejected":
           log("State: rejected → cleaning up");
           if (data.isNotEmpty) {
-
-
             if (data['screenName'].toString() == "incomingGroupCall") {
               declineGroupCall(data);
             } else {

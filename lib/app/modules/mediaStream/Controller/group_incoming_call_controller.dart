@@ -1,3 +1,4 @@
+import 'package:fgtracker/app/Core/util/CallKit/callkit_service.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Group_Calling.dart';
 import 'package:get/get.dart';
 import '../../../routes/app_pages.dart';
@@ -93,6 +94,12 @@ class GroupIncomingCallController extends GetxController {
     _stopRingtone();
     if (callId != null) {
       Socket_GroupCallService.instance.rejectGroupCall(callId!, groupId);
+      var data = {
+        "callId": callerId,
+        "groupId": groupId,
+      };
+
+      CallKitService.instance.declineGroupCall(data);
     }
     Get.back();
   }

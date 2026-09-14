@@ -422,9 +422,7 @@ class Socket_GroupCallService {
     );
   }
 
-  // ============================================================
-  // 6) reject_group_call
-  // ============================================================
+
   void rejectGroupCall(String callId, String groupId) {
     _log('🚀 emit reject_group_call');
     socket?.emitWithAck(
@@ -702,21 +700,7 @@ class Socket_GroupCallService {
     }
   }
 
-  groupCallRejected(
-      {required String sessionId,
-      required String callId,
-      required String groupId}) async {
-    rejectGroupCall(callId, groupId);
-    await ConnectycubeFlutterCallKit.reportCallEnded(
-      sessionId: sessionId,
-    );
 
-    await ConnectycubeFlutterCallKit.clearCallData(
-      sessionId: sessionId,
-    );
-    log('==========groupCallRejected:$sessionId');
-    CallSessionState.reset();
-  }
 
   Future<void> dispose() async {
     if (_isDisposed) return;

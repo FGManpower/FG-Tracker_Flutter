@@ -169,7 +169,7 @@ class OtpController extends GetxController {
         Loading().dismissloading();
 
         try {
-          if (result.data!.userId != null) {}
+
           if (result.data!.userId != null) {
             SignallingService.instance.init(
               websocketUrl: ConstRes.socketUrl,

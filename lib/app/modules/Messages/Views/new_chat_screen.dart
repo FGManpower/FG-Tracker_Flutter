@@ -1,22 +1,13 @@
+import 'package:fgtracker/app/Core/constant/const_res.dart';
+import 'package:fgtracker/app/Model/user_profileList_res.dart';
+import 'package:fgtracker/app/modules/Messages/Controller/newChat_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
+import 'package:fgtracker/gen/assets.gen.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
-
-class _ContactItem {
-  final String name;
-  final String role;
-  final bool isInvite;
-  final String? image;
-
-  const _ContactItem({
-    required this.name,
-    required this.role,
-    required this.isInvite,
-    this.image,
-  });
-}
+import 'package:skeletonizer/skeletonizer.dart';
 
 class NewChatScreen extends StatefulWidget {
   const NewChatScreen({super.key});
@@ -28,88 +19,11 @@ class NewChatScreen extends StatefulWidget {
 class _NewChatScreenState extends State<NewChatScreen> {
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _searchController = TextEditingController();
-  final RxString _searchQuery = ''.obs;
+
   final RxBool _isSearchCollapsed = false.obs;
   final RxBool _showSearchInAppBar = false.obs;
 
-  final List<_ContactItem> _directContacts = const [
-    _ContactItem(
-        name: "Samad",
-        role: "FG Manpower Development",
-        isInvite: false,
-        image: "https://i.pravatar.cc/150?img=3"),
-    _ContactItem(
-        name: "Riya Sharma",
-        role: "Event Management Team",
-        isInvite: false,
-        image: "https://i.pravatar.cc/150?img=5"),
-    _ContactItem(
-        name: "Neha Verma",
-        role: "Construction Site Team",
-        isInvite: false,
-        image: "https://i.pravatar.cc/150?img=9"),
-    _ContactItem(
-        name: "Arjun Patel",
-        role: "Logistics & Delivery Team",
-        isInvite: false,
-        image: "https://i.pravatar.cc/150?img=12"),
-  ];
-
-  final List<_ContactItem> _inviteContacts = const [
-    _ContactItem(
-        name: "Pooja Mehta",
-        role: "Accounts Team",
-        isInvite: true,
-        image: "https://i.pravatar.cc/150?img=10"),
-    _ContactItem(
-        name: "Rahul Chauhan",
-        role: "Site Supervisor",
-        isInvite: true,
-        image: "https://i.pravatar.cc/150?img=11"),
-    _ContactItem(
-        name: "Mohit Kumar",
-        role: "Field Operations",
-        isInvite: true,
-        image: "https://i.pravatar.cc/150?img=13"),
-    _ContactItem(
-        name: "Sandeep Yadav",
-        role: "Warehouse Team",
-        isInvite: true,
-        image: "https://i.pravatar.cc/150?img=14"),
-    _ContactItem(
-        name: "Rahul Chauhan",
-        role: "Site Supervisor",
-        isInvite: true,
-        image: "https://i.pravatar.cc/150?img=11"),
-    _ContactItem(
-        name: "Mohit Kumar",
-        role: "Field Operations",
-        isInvite: true,
-        image: "https://i.pravatar.cc/150?img=13"),
-    _ContactItem(
-        name: "Sandeep Yadav",
-        role: "Warehouse Team",
-        isInvite: true,
-        image: "https://i.pravatar.cc/150?img=14"),
-  ];
-
-  List<_ContactItem> get _filteredDirect {
-    final q = _searchQuery.value.trim().toLowerCase();
-    if (q.isEmpty) return _directContacts;
-    return _directContacts.where((c) {
-      return c.name.toLowerCase().contains(q) ||
-          c.role.toLowerCase().contains(q);
-    }).toList();
-  }
-
-  List<_ContactItem> get _filteredInvite {
-    final q = _searchQuery.value.trim().toLowerCase();
-    if (q.isEmpty) return _inviteContacts;
-    return _inviteContacts.where((c) {
-      return c.name.toLowerCase().contains(q) ||
-          c.role.toLowerCase().contains(q);
-    }).toList();
-  }
+  final NewChatController controller = Get.put(NewChatController());
 
   @override
   void initState() {
@@ -140,25 +54,49 @@ class _NewChatScreenState extends State<NewChatScreen> {
         child: Column(
           children: [
             Obx(() => AnimatedSize(
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeInOut,
-              alignment: Alignment.topCenter,
-              child:
-              (_isSearchCollapsed.value && !_showSearchInAppBar.value)
-                  ? const SizedBox(width: double.infinity)
-                  : _buildSearchBar(),
-            )),
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeInOut,
+                  alignment: Alignment.topCenter,
+                  child:
+                      (_isSearchCollapsed.value && !_showSearchInAppBar.value)
+                          ? const SizedBox(width: double.infinity)
+                          : _buildSearchBar(),
+                )),
             Expanded(
               child: Obx(() {
-                final direct = _filteredDirect;
-                final invite = _filteredInvite;
+                // 1. Error State
+                if (controller.responseError.value.isNotEmpty) {
+                  return LostinternetConnection(
+                    retry: () => controller.getRegisteredContacts(),
+                    messgae: controller.responseError.value,
+                  );
+                }
 
+                // 2. Loading State
+                if (controller.contactLoading.value) {
+                  return _buildSkeletonList();
+                }
+
+                final direct = controller.filteredMatchedUsers;
+                final invite = controller.filteredOtherUsers;
+
+                // 3. Empty State
                 if (direct.isEmpty && invite.isEmpty) {
                   return Center(
-                    child: reausabletext(
-                      "No contacts found for '${_searchQuery.value}'",
-                      fontsize: 13.sp,
-                      color: Colors.grey,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        DataEmpty_AssetsIcon(
+                            assetspath: Assets.images.notFount.path),
+                        SizedBox(height: 12.h),
+                        reausabletext(
+                          controller.searchQuery.value.isEmpty
+                              ? "No active tracker contacts found"
+                              : "No results for '${controller.searchQuery.value}'",
+                          fontsize: 13.sp,
+                          color: Colors.grey,
+                        ),
+                      ],
                     ),
                   );
                 }
@@ -168,16 +106,14 @@ class _NewChatScreenState extends State<NewChatScreen> {
                   padding: EdgeInsets.only(bottom: 40.h),
                   children: [
                     SizedBox(height: 12.h),
-
                     if (direct.isNotEmpty) ...[
                       _buildSectionTitle("Start a New Chat (Contacts)"),
-                      _buildContactsCard(direct),
+                      _buildContactsCard(direct, isInvite: false),
                       SizedBox(height: 16.h),
                     ],
-
                     if (invite.isNotEmpty) ...[
                       _buildSectionTitle("Invite to Chat (More Contacts)"),
-                      _buildContactsCard(invite),
+                      _buildContactsCard(invite, isInvite: true),
                     ],
                   ],
                 );
@@ -189,7 +125,8 @@ class _NewChatScreenState extends State<NewChatScreen> {
     );
   }
 
-  Widget _buildContactsCard(List<_ContactItem> items) {
+  Widget _buildContactsCard(List<UserListData> items,
+      {required bool isInvite}) {
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 16.w),
       decoration: BoxDecoration(
@@ -215,25 +152,34 @@ class _NewChatScreenState extends State<NewChatScreen> {
           color: Colors.grey.withValues(alpha: 0.12),
         ),
         itemBuilder: (context, index) {
-          final item = items[index];
-          return _buildContactRow(item);
+          final user = items[index];
+          return _buildContactRow(user, isInvite: isInvite);
         },
       ),
     );
   }
 
-  Widget _buildContactRow(_ContactItem item) {
+  Widget _buildContactRow(UserListData user, {required bool isInvite}) {
+    final String? avatar = user.profileImage;
+    final bool hasAvatar = avatar != null && avatar.isNotEmpty;
+    final String imageUrl = hasAvatar ? (ConstRes.aImageBaseUrl + avatar) : '';
+
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
       child: Row(
         children: [
           CircleAvatar(
             radius: 25.r,
-            backgroundColor: Colors.grey.shade300,
-            backgroundImage:
-            item.image != null ? NetworkImage(item.image!) : null,
-            child: item.image == null
-                ? Icon(Icons.person, color: Colors.white, size: 28.sp)
+            backgroundColor: Colors.grey.shade200,
+            backgroundImage: hasAvatar ? NetworkImage(imageUrl) : null,
+            child: !hasAvatar
+                ? reausabletext(
+                    (user.name?.isNotEmpty == true ? user.name![0] : '?')
+                        .toUpperCase(),
+                    fontsize: 16.sp,
+                    fontfamily: FontFamily.interBold,
+                    color: const Color(0xFF6B4DFF),
+                  )
                 : null,
           ),
           SizedBox(width: 12.w),
@@ -242,50 +188,66 @@ class _NewChatScreenState extends State<NewChatScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 reausabletext(
-                  item.name,
+                  user.name ?? 'Unknown User',
                   fontsize: 14.sp,
                   fontfamily: FontFamily.interSemiBold,
                 ),
                 SizedBox(height: 2.h),
                 reausabletext(
-                  item.role,
+                  user.mobileNo ?? '',
                   fontsize: 11.sp,
                   fontweight: FontWeight(500),
-                  color:  Colors.grey.shade600,
+                  color: Colors.grey.shade600,
                 ),
               ],
             ),
           ),
-          if (item.isInvite)
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF3F0FF),
-                borderRadius: BorderRadius.circular(20.r),
-              ),
-              child: reausabletext(
-                "Invite",
-                fontsize: 12.sp,
-                color: const Color(0xFF6B4DFF),
-                fontfamily: FontFamily.interSemiBold,
+          if (isInvite)
+            GestureDetector(
+              onTap: () => _handleOnAction(user, isInvite: true),
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF3F0FF),
+                  borderRadius: BorderRadius.circular(20.r),
+                ),
+                child: reausabletext(
+                  "Invite",
+                  fontsize: 12.sp,
+                  color: const Color(0xFF6B4DFF),
+                  fontfamily: FontFamily.interSemiBold,
+                ),
               ),
             )
           else
-            Container(
-              padding: EdgeInsets.all(10.w),
-              decoration: const BoxDecoration(
-                color: Color(0xFFF3F0FF),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                Icons.chat_bubble_outline,
-                size: 18.sp,
-                color: const Color(0xFF6B4DFF),
+            GestureDetector(
+              onTap: () => _handleOnAction(user, isInvite: false),
+              child: Container(
+                padding: EdgeInsets.all(10.w),
+                decoration: const BoxDecoration(
+                  color: Color(0xFFF3F0FF),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.chat_bubble_outline,
+                  size: 18.sp,
+                  color: const Color(0xFF6B4DFF),
+                ),
               ),
             ),
         ],
       ),
     );
+  }
+
+  void _handleOnAction(UserListData user, {required bool isInvite}) {
+    if (isInvite) {
+
+      Get.snackbar("Invite", "Invite link sent to ${user.name}");
+    } else {
+
+      Get.snackbar("Chat", "Opening chat window with ${user.name}");
+    }
   }
 
   PreferredSizeWidget _buildAppBar() {
@@ -317,11 +279,9 @@ class _NewChatScreenState extends State<NewChatScreen> {
                   child: Icon(
                     Icons.arrow_back,
                     size: 20.sp,
-
                   ),
                 ),
-              )
-          ),
+              )),
           SizedBox(width: 12.w),
           Expanded(
             child: Column(
@@ -401,19 +361,19 @@ class _NewChatScreenState extends State<NewChatScreen> {
         ),
         child: Row(
           children: [
-            Icon(Icons.search, size: 25.sp, color:  Colors.grey),
+            Icon(Icons.search, size: 25.sp, color: Colors.grey),
             SizedBox(width: 12.w),
             Expanded(
               child: TextField(
                 controller: _searchController,
-                onChanged: (val) => _searchQuery.value = val,
+                onChanged: (val) => controller.filterContacts(val),
                 style: TextStyle(
                   fontSize: 14.sp,
                   fontFamily: FontFamily.interMedium,
                   color: Colors.black87,
                 ),
                 decoration: InputDecoration(
-                  hintText: "Search by name...",
+                  hintText: "Search by name or number...",
                   hintStyle: TextStyle(
                     fontSize: 11.sp,
                     color: Colors.grey.shade600,
@@ -425,11 +385,12 @@ class _NewChatScreenState extends State<NewChatScreen> {
               ),
             ),
             Obx(() {
-              if (_searchQuery.value.isEmpty) return const SizedBox.shrink();
+              if (controller.searchQuery.value.isEmpty)
+                return const SizedBox.shrink();
               return GestureDetector(
                 onTap: () {
                   _searchController.clear();
-                  _searchQuery.value = '';
+                  controller.filterContacts('');
                   FocusScope.of(context).unfocus();
                 },
                 child: Icon(Icons.close, size: 18.sp, color: Colors.grey),
@@ -449,6 +410,47 @@ class _NewChatScreenState extends State<NewChatScreen> {
         fontsize: 13.sp,
         fontfamily: FontFamily.interBold,
         color: Colors.black87,
+      ),
+    );
+  }
+
+  // Beautiful Skeleton Loading UI
+  Widget _buildSkeletonList() {
+    return Skeletonizer(
+      enabled: true,
+      child: ListView.builder(
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+        itemCount: 6,
+        itemBuilder: (context, index) {
+          return Padding(
+            padding: EdgeInsets.only(bottom: 14.h),
+            child: Row(
+              children: [
+                CircleAvatar(
+                    radius: 25.r, backgroundColor: Colors.grey.shade200),
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(width: 120.w, height: 14.h, color: Colors.grey),
+                      SizedBox(height: 6.h),
+                      Container(width: 80.w, height: 11.h, color: Colors.grey),
+                    ],
+                  ),
+                ),
+                Container(
+                  width: 60.w,
+                  height: 28.h,
+                  decoration: BoxDecoration(
+                    color: Colors.grey,
+                    borderRadius: BorderRadius.circular(20.r),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
       ),
     );
   }

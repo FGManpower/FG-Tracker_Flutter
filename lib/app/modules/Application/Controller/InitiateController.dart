@@ -83,7 +83,7 @@ class InitiateController extends GetxController
 
       _splashTimer = Timer(
         const Duration(seconds: 4),
-        () => checkLoginStatus(),
+            () => checkLoginStatus(),
       );
     });
   }
@@ -100,13 +100,13 @@ class InitiateController extends GetxController
     await Future.delayed(const Duration(seconds: 1));
 
     if (Utility.isNotNullEmptyOrFalse(
-            Global.storageServices.getaccesstoken()) &&
+        Global.storageServices.getaccesstoken()) &&
         Utility.isNotNullEmptyOrFalse(
             Global.storageServices.get(PrefConst.isRegistered))) {
       Get.offAllNamed(Routes.Home_Screen);
     } else {
       final introDone =
-          await Global.storageServices.getBool(PrefConst.introStatus);
+      await Global.storageServices.getBool(PrefConst.introStatus);
 
       if (introDone == true) {
         Get.offAllNamed(Routes.Login);

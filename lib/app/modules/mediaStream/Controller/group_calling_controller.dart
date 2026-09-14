@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:developer';
 import 'package:fgtracker/app/Core/global/launchedFromCall.dart';
+import 'package:fgtracker/app/Core/util/CallKit/callkit_service.dart';
 import 'package:fgtracker/app/Core/values/Utils.dart';
+import 'package:fgtracker/app/Data/Services/Socket/Socket_SignallingService.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:get/get.dart' hide navigator;
 import 'package:wakelock_plus/wakelock_plus.dart';
@@ -491,6 +493,15 @@ class GroupCallingController extends GetxController {
     } else {
       Socket_GroupCallService.instance.leaveGroupCall();
     }
+
+    if (callId != null) {
+      log("========CallerSideSessionId:${callId}");
+      callEnded(callIdToUuid(callId.toString()),
+          type: "GroupCallEnded-Type");
+    }
+
+
+    print("======EndGroupCallCalled----${CallSessionState.sessionId}");
     CallSessionState.reset();
     Get.offAllNamed(Routes.Home_Screen);
   }
