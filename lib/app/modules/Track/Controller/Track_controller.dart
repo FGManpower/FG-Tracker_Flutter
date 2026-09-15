@@ -891,6 +891,25 @@ class TrackController extends GetxController {
               u.latitude = locs.first.latitude;
               u.longitude = locs.first.longitude;
               debugPrint("📍 Geocoded '${u.location}' to coords: (${u.latitude}, ${u.longitude})");
+              return;
+            }
+          } catch (_) {}
+          try {
+            final dio = Dio();
+            final res = await dio.get(
+              "https://maps.googleapis.com/maps/api/geocode/json",
+              queryParameters: {
+                "address": u.location!.trim(),
+                "key": ConstRes.gMapApiKey,
+              },
+            );
+            if (res.data != null &&
+                res.data['results'] is List &&
+                (res.data['results'] as List).isNotEmpty) {
+              final loc = res.data['results'][0]['geometry']['location'];
+              u.latitude = (loc['lat'] as num).toDouble();
+              u.longitude = (loc['lng'] as num).toDouble();
+              debugPrint("📍 Google Geocoded '${u.location}' to coords: (${u.latitude}, ${u.longitude})");
             }
           } catch (_) {}
         }());
@@ -1097,10 +1116,6 @@ class TrackController extends GetxController {
         debugPrint(
             "📍 Loaded ${result.data!.length} users strictly from /users-within-radius");
 
-        for (var apiUser in result.data!) {
-          apiUser.isOnline = true;
-        }
-
         radiusUsers.assignAll(result.data!);
         await _resolveAllMembersAddresses();
       } else {
@@ -1156,12 +1171,13 @@ class TrackController extends GetxController {
 
     isSearchDropdownOpen.value = false;
 
-    // Search in radiusUsers first
+    // Search in online radiusUsers first
     final matchingUsers = radiusUsers.where((u) {
       final name = (u.name ?? "").toLowerCase();
       final team = (u.team ?? "").toLowerCase();
       final loc = (u.location ?? "").toLowerCase();
-      return (name.contains(q) || team.contains(q) || loc.contains(q)) &&
+      return u.isOnline &&
+          (name.contains(q) || team.contains(q) || loc.contains(q)) &&
           u.latitude != null &&
           u.longitude != null &&
           u.latitude != 0.0 &&
@@ -1403,9 +1419,9 @@ class TrackController extends GetxController {
       ),
     );
 
-    // Member markers
+    // Member markers - only show online members on the live map
     final String q = searchController.text.trim().toLowerCase();
-    for (var u in radiusUsers) {
+    for (var u in radiusUsers.where((u) => u.isOnline)) {
       if (u.latitude != null &&
           u.longitude != null &&
           u.latitude != 0.0 &&
@@ -1515,7 +1531,7 @@ class TrackController extends GetxController {
     final double lng = currentLong.value != 0.0 ? currentLong.value : 72.8777;
     points.add(LatLng(lat, lng));
 
-    for (var u in radiusUsers) {
+    for (var u in radiusUsers.where((u) => u.isOnline)) {
       if (u.latitude != null &&
           u.longitude != null &&
           u.latitude != 0.0 &&

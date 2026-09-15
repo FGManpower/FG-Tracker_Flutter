@@ -1652,7 +1652,9 @@ class TrackingScreen extends StatelessWidget {
                   width: 11.w,
                   height: 11.w,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF10B981),
+                    color: member.isOnline
+                        ? const Color(0xFF10B981)
+                        : const Color(0xFF94A3B8),
                     shape: BoxShape.circle,
                     border: Border.all(color: Colors.white, width: 2.w),
                   ),
