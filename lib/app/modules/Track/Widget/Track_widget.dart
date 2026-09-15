@@ -95,65 +95,58 @@ class MarkerWidget extends StatelessWidget {
         isOnline == 'true' ||
         isOnline == '1';
 
+    final Color ringColor = online
+        ? const Color(0xFF10B981)
+        : const Color(0xFF94A3B8);
+
     return SizedBox(
       width: 48.w,
       height: 48.w,
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          Container(
-            width: 44.w,
-            height: 44.w,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.white,
-              border: Border.all(
-                color: const Color(0xFF6366F1),
-                width: 1.8.w,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.12),
-                  blurRadius: 6,
-                  offset: const Offset(0, 2),
-                ),
-              ],
+      child: Center(
+        child: Container(
+          width: 44.w,
+          height: 44.w,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: Colors.white,
+            border: Border.all(
+              color: ringColor,
+              width: 2.8.w,
             ),
-            child: ClipOval(
-              child: fullUrl.isNotEmpty
-                  ? Image.network(
-                      fullUrl,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) =>
-                          _fallbackAvatar(),
-                    )
-                  : _fallbackAvatar(),
-            ),
-          ),
-          Positioned(
-            bottom: 1.h,
-            right: 1.w,
-            child: Container(
-              width: 11.w,
-              height: 11.w,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
                 color: online
-                    ? const Color(0xFF10B981)
-                    : const Color(0xFF9CA3AF),
-                border: Border.all(color: Colors.white, width: 2.w),
+                    ? const Color(0xFF10B981).withOpacity(0.35)
+                    : Colors.black.withOpacity(0.12),
+                blurRadius: 6,
+                spreadRadius: 1,
+                offset: const Offset(0, 1),
               ),
-            ),
+            ],
           ),
-        ],
+          child: ClipOval(
+            child: fullUrl.isNotEmpty
+                ? Image.network(
+                    fullUrl,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) =>
+                        _fallbackAvatar(online),
+                  )
+                : _fallbackAvatar(online),
+          ),
+        ),
       ),
     );
   }
 
-  Widget _fallbackAvatar() {
+  Widget _fallbackAvatar(bool online) {
     return Container(
-      color: const Color(0xFFEEF2FF),
-      child: Icon(Icons.person, color: const Color(0xFF4338CA), size: 22.sp),
+      color: online ? const Color(0xFFECFDF5) : const Color(0xFFF1F5F9),
+      child: Icon(
+        Icons.person,
+        color: online ? const Color(0xFF059669) : const Color(0xFF64748B),
+        size: 22.sp,
+      ),
     );
   }
 }

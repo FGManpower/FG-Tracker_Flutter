@@ -6,6 +6,7 @@ class LiveLocationModel {
   final double latitude;
   final double longitude;
   final bool isOnline;
+  final dynamic battery;
   final String? address;
   final String? area;
   final String? city;
@@ -18,6 +19,7 @@ class LiveLocationModel {
     required this.latitude,
     required this.longitude,
     required this.isOnline,
+    this.battery,
     this.address,
     this.area,
     this.city,
@@ -147,6 +149,13 @@ class LiveLocationModel {
       }
     }
 
+    final battery = json['battery'] ??
+        json['Battery'] ??
+        json['batteryLevel'] ??
+        json['battery_level'] ??
+        json['batteryPercentage'] ??
+        json['percentage'];
+
     return LiveLocationModel(
       userId: uId,
       firstName: fn,
@@ -155,6 +164,7 @@ class LiveLocationModel {
       latitude: lat,
       longitude: lng,
       isOnline: online,
+      battery: battery,
       address: addr,
       area: area,
       city: city,

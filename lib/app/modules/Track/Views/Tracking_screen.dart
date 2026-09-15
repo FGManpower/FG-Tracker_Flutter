@@ -1235,11 +1235,7 @@ class TrackingScreen extends StatelessWidget {
             SizedBox(width: 6.w),
             Obx(
               () {
-                final count = controller.liveNowCount.value > 0
-                    ? controller.liveNowCount.value
-                    : (controller.liveMembers.isNotEmpty
-                        ? controller.liveMembers.length
-                        : 0);
+                final count = controller.liveMembers.length;
                 return Text(
                   "$count Members Live",
                   style: TextStyle(
@@ -1724,15 +1720,19 @@ class TrackingScreen extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(
-                    _getBatteryIcon(member.battery ?? 80),
-                    color: const Color(0xFF4338CA),
+                    _getBatteryIcon(member.battery ?? 100),
+                    color: member.battery != null
+                        ? const Color(0xFF4338CA)
+                        : const Color(0xFF94A3B8),
                     size: 14.sp,
                   ),
                   SizedBox(width: 3.w),
                   Text(
-                    "${member.battery ?? 80}%",
+                    member.battery != null ? "${member.battery}%" : "--%",
                     style: TextStyle(
-                      color: const Color(0xFF4338CA),
+                      color: member.battery != null
+                          ? const Color(0xFF4338CA)
+                          : const Color(0xFF94A3B8),
                       fontSize: 11.sp,
                       fontWeight: FontWeight.w600,
                     ),
@@ -1881,7 +1881,6 @@ class TrackingScreen extends StatelessWidget {
 
     return GestureDetector(
       onTap: () {
-        controller.selectGroup(group);
         final int gId = group.id is int
             ? (group.id as int)
             : (int.tryParse(group.id?.toString() ?? '0') ?? 0);
@@ -2256,14 +2255,17 @@ class TrackingScreen extends StatelessWidget {
   }
 
   String _formatDistance(String distance) {
-    if (distance.isEmpty) return "Nearby";
+    if (distance.isEmpty || distance.toLowerCase().contains("nan")) {
+      return "Nearby";
+    }
     if (distance.contains("away")) return distance;
+    if (distance.contains("km")) return "$distance away";
     final cleaned = distance.replaceAll(RegExp(r'[^\d.]'), '');
     final numVal = double.tryParse(cleaned);
     if (numVal != null) {
       return "${numVal.toStringAsFixed(1)} km away";
     }
-    return "$distance km away";
+    return "$distance away";
   }
 
   IconData _getBatteryIcon(int level) {
