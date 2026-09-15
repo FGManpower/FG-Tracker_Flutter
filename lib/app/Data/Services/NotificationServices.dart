@@ -216,6 +216,21 @@ class firebaseNotificationServices {
           Routes.IncomingCallScreen,
           arguments: {"callDetail": call},
         );
+      } else if (message.data['screen_name'] == 'incomingGroupCall') {
+        print("=====NotificationgroupCall-called");
+        if (CallStateTracker.isIncomingCallScreenOpen) return;
+
+        final data = jsonDecode(message.data['callData']);
+        // final call = IncomingCallModel.fromMap(callMap);
+        //
+        // CallStateTracker.isIncomingCallScreenOpen = true;
+        //
+        // Get.toNamed(
+        //   Routes.IncomingCallScreen,
+        //   arguments: {"callDetail": call},
+        // );
+
+        CallKitService.instance.navigateToGroupCallScreen(data);
       } else if (message.data['screen_name'] == "missedCall") {
         Get.toNamed(Routes.notificationScreen);
         // final callData = jsonDecode(message.data['callData']);
@@ -280,8 +295,7 @@ class firebaseNotificationServices {
         final sessionId = callData['session_id'].toString();
         callEnded(sessionId, type: "Notification-services");
       }    else if (message.data['screen_name'] == "missedGroupCall") {
-        final callData = jsonDecode(message.data['callData']);
-        final sessionId = callData['session_id'].toString();
+        final sessionId =message.data['session_id'].toString();
         callEnded(sessionId, type: "Notification-services");
       }
     }

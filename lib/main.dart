@@ -60,7 +60,6 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
       "screen_name": "incomingCall",
     };
 
-
     try {
       await ConnectycubeFlutterCallKit.showCallNotification(
         CallEvent(
@@ -106,8 +105,7 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     final sessionId = callData['session_id'].toString();
     callEnded(sessionId);
   } else if (message.data['screen_name'] == "missedGroupCall") {
-    final callData = jsonDecode(message.data['callData']);
-    final sessionId = callData['session_id'].toString();
+    final sessionId = message.data['session_id'].toString();
     callEnded(sessionId);
   }
 }
@@ -166,8 +164,12 @@ Future<void> onCallRejectedWhenTerminated(CallEvent event) async {
   } catch (e) {
     log("[TERMINATED-ANDROID] ERROR: $e");
   }
-
-  await ConnectycubeFlutterCallKit.clearCallData(sessionId: event.sessionId);
+  await ConnectycubeFlutterCallKit.reportCallEnded(
+    sessionId: event.sessionId,
+  );
+  await ConnectycubeFlutterCallKit.clearCallData(
+    sessionId: event.sessionId,
+  );
 }
 
 @pragma('vm:entry-point')
@@ -195,18 +197,20 @@ Future<void> main() async {
   Get.put<LocationService>(LocationService());
   Get.put<SocketService>(SocketService());
 
-  final userId = Global.storageServices.get(PrefConst.userId)?.toString();
+
+  final shared = await SharedPreferences.getInstance();
+
+  var userId = shared.get(PrefConst.userId);
 
   if (userId != null) {
     SignallingService.instance.init(
       websocketUrl: ConstRes.socketUrl,
-      selfCallerID: userId,
+      selfCallerID: userId.toString(),
     );
     groupWalkieInitialize(userId);
+    Socket_GroupCallService.instance.init(userId.toString());
   }
-  if (userId != null) {
-    Socket_GroupCallService.instance.init(userId);
-  }
+
 
   runApp(const MyApp());
 }
@@ -218,7 +222,6 @@ groupWalkieInitialize(userId) async {
       selfUserId: userId,
     );
 
-    // each group with i will join //
   }
 }
 

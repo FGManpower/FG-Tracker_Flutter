@@ -224,6 +224,7 @@ class CallKitService {
 
   Future<void> navigateToGroupCallScreen(Map<String, dynamic> data) async {
     try {
+      log("beforenavigateToCallScreen data: $data");
       if (CallSessionState.isCallActive) return;
 
       log("navigateToCallScreen data: $data");
@@ -298,6 +299,7 @@ class CallKitService {
 
   Future<void> declineGroupCall(Map<String, dynamic> data) async {
     try {
+
       CallStateTracker.isIncomingCallScreenOpen = false;
 
       if (Utility.isNotNullEmptyOrFalse(data['callId'].toString())) {
