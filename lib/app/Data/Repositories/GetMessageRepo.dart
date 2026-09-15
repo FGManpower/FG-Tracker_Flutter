@@ -13,12 +13,25 @@ import 'package:path/path.dart' as p;
 
 import '../../Model/GroupChatListModel.dart';
 
-
 class MessageRepo {
-  static Future<GetMessage> MessageHistory(
-      {required String recieverId, required int groupId}) async {
+  static Future<GetMessage> MessageHistory({
+    required String recieverId,
+    required int groupId,
+  }) async {
     var response = await HttpUtil().get(
-        "/getMessageHistory?senderId=${Global.storageServices.get(PrefConst.userId)}&receiverId=$recieverId&groupId=$groupId");
+      "/getMessageHistory?senderId=${Global.storageServices.get(PrefConst.userId)}&receiverId=$recieverId&groupId=$groupId",
+    );
+
+    return GetMessage.fromJson(response);
+  }
+
+  static Future<GetMessage> privateChatHistory({
+    required String chatId,
+  }) async {
+    final response = await HttpUtil().get(
+      "/private-chat/$chatId/messages",
+    );
+
     return GetMessage.fromJson(response);
   }
 
@@ -29,12 +42,12 @@ class MessageRepo {
       "/getGroupMessageHistory?groupId=$groupId",
     );
 
-    return GetMessage.fromJson(
-      response,
-    );
+    return GetMessage.fromJson(response);
   }
 
-  static Future<ChatImageUploadResponse> uploadChatImage(File imageFile) async {
+  static Future<ChatImageUploadResponse> uploadChatImage(
+    File imageFile,
+  ) async {
     FormData data = FormData.fromMap({
       "chatImage": await MultipartFile.fromFile(
         imageFile.path,
@@ -53,17 +66,21 @@ class MessageRepo {
   }
 
   static Future<ChatImageUploadResponse> uploadChatAudio(
-      String audioPath) async {
+    String audioPath,
+  ) async {
     FormData data = FormData.fromMap({
       "chatAudio": await MultipartFile.fromFile(
         audioPath,
         filename: audioPath.split('/').last,
         contentType: MediaType('audio', 'm4a'),
-      )
+      ),
     });
 
-    var response = await HttpUtil()
-        .Authpost("/uploadAudio", formdata: data, type: "formdata");
+    var response = await HttpUtil().Authpost(
+      "/uploadAudio",
+      formdata: data,
+      type: "formdata",
+    );
 
     return ChatImageUploadResponse.fromJson(response);
   }
@@ -78,6 +95,7 @@ class MessageRepo {
     print("Video Exists: ${await File(videoPath).exists()}");
     print("Video Size: ${await File(videoPath).length()}");
     print("Extension: ${p.extension(videoPath)}");
+
     final ext = p.extension(videoPath).replaceFirst('.', '');
 
     FormData data = FormData.fromMap({
@@ -104,7 +122,8 @@ class MessageRepo {
   }
 
   static Future<ChatImageUploadResponse> uploadChatDocument(
-      String documentPath) async {
+    String documentPath,
+  ) async {
     final ext = p.extension(documentPath).replaceFirst('.', '');
 
     FormData data = FormData.fromMap({
@@ -112,7 +131,7 @@ class MessageRepo {
         documentPath,
         filename: p.basename(documentPath),
         contentType: MediaType('document', ext),
-      )
+      ),
     });
 
     var response = await HttpUtil().Authpost(
@@ -136,7 +155,7 @@ class MessageRepo {
 
   static Future<PrivateChatResponse> getPrivateChatList({
     int page = 1,
-    int limit = 2,
+    int limit = 10,
   }) async {
     final response = await HttpUtil().get(
       "/private-chat-list?page=$page&limit=$limit",
@@ -144,7 +163,6 @@ class MessageRepo {
 
     return PrivateChatResponse.fromJson(response);
   }
-
 
   static Future<GroupChatListResponse> getGroupChatList({
     int page = 1,
