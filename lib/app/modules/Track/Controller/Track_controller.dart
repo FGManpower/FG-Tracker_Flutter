@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 import 'package:dio/dio.dart';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
@@ -75,6 +76,7 @@ class TrackController extends GetxController {
   GoogleMapController? mapController;
   final RxSet<Marker> markers = <Marker>{}.obs;
   final RxSet<Circle> circles = <Circle>{}.obs;
+  final RxSet<Polyline> polylines = <Polyline>{}.obs;
   final Map<String, BitmapDescriptor> _markerIconCache = {};
   final Map<String, String> _addressCache = {};
   final Map<String, GeocodedAddressResult> _detailedAddressCache = {};
@@ -1050,15 +1052,39 @@ class TrackController extends GetxController {
     final double radiusKm = double.tryParse(selectedRadius.value) ?? 2.0;
     final double radiusMeters = radiusKm * 1000.0;
 
-    // Update Radius Circle
+    // Update Radius Circle & Dashed Boundary Line
     circles.value = {
       Circle(
         circleId: const CircleId('tracking_radius_circle'),
         center: LatLng(lat, lng),
         radius: radiusMeters,
-        fillColor: AppColors.darkBlue.withOpacity(0.12),
-        strokeColor: AppColors.darkBlue.withOpacity(0.65),
-        strokeWidth: 2,
+        fillColor: const Color(0xFF818CF8).withOpacity(0.12),
+        strokeWidth: 0,
+      ),
+    };
+
+    final List<LatLng> dashedPoints = [];
+    const int numPoints = 72;
+    final double cosLat = math.cos(lat * math.pi / 180.0);
+    final double effectiveCosLat = cosLat.abs() < 0.0001 ? 1.0 : cosLat;
+    for (int i = 0; i <= numPoints; i++) {
+      final double theta = (i / numPoints) * 2 * math.pi;
+      final double dLat = (radiusMeters * math.cos(theta)) / 111320.0;
+      final double dLng = (radiusMeters * math.sin(theta)) /
+          (111320.0 * effectiveCosLat);
+      dashedPoints.add(LatLng(lat + dLat, lng + dLng));
+    }
+
+    polylines.value = {
+      Polyline(
+        polylineId: const PolylineId('tracking_radius_dashed_line'),
+        points: dashedPoints,
+        color: const Color(0xFF6366F1),
+        width: 2,
+        patterns: [
+          PatternItem.dash(12),
+          PatternItem.gap(8),
+        ],
       ),
     };
 

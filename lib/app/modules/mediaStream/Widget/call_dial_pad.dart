@@ -1,4 +1,4 @@
-import 'package:fgtracker/app/modules/mediaStream/controller/call_controller.dart';
+import 'package:fgtracker/app/modules/mediaStream/Controller/call_controller.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';

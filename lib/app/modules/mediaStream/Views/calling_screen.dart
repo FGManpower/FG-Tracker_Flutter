@@ -5,7 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import '../../../../gen/fonts.gen.dart';
-import '../controller/calling_controller.dart';
+import '../Controller/calling_controller.dart';
 
 class CallingScreen extends StatelessWidget {
   final controller = Get.put(CallingController());
