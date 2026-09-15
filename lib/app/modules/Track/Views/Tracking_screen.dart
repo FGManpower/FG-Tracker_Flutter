@@ -20,19 +20,19 @@ class TrackingScreen extends StatelessWidget {
   final Rx<MapType> _mapType = MapType.normal.obs;
   final DraggableScrollableController _sheetController =
       DraggableScrollableController();
-  final RxDouble _sheetExtent = 0.175.obs;
+  final RxDouble _sheetExtent = 0.11.obs;
 
   void _toggleSheet() {
     if (_sheetController.isAttached) {
-      if (_sheetExtent.value < 0.3) {
+      if (_sheetExtent.value < 0.25) {
         _sheetController.animateTo(
-          0.88,
+          0.58,
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeOutCubic,
         );
       } else {
         _sheetController.animateTo(
-          0.175,
+          0.11,
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeOutCubic,
         );
@@ -55,27 +55,42 @@ class TrackingScreen extends StatelessWidget {
                   ? controller.currentLong.value
                   : 72.8777;
 
-              return GoogleMap(
-                initialCameraPosition: CameraPosition(
-                  target: LatLng(lat, lng),
-                  zoom: 16.0,
-                ),
-                markers: controller.markers.value,
-                circles: controller.circles.value,
-                polylines: controller.polylines.value,
-                zoomControlsEnabled: false,
-                myLocationButtonEnabled: false,
-                myLocationEnabled: false,
-                mapToolbarEnabled: false,
-                compassEnabled: false,
-                buildingsEnabled: true,
-                mapType: _mapType.value,
-                gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>{
-                  Factory<OneSequenceGestureRecognizer>(
-                    () => EagerGestureRecognizer(),
+              final double extent = _sheetExtent.value;
+              final double screenH = MediaQuery.of(context).size.height;
+              final double progress =
+                  ((extent - 0.11) / (0.58 - 0.11)).clamp(0.0, 1.0);
+              final double mapOffsetY = -progress * (screenH * 0.18);
+
+              return Transform.translate(
+                offset: Offset(0, mapOffsetY),
+                child: GoogleMap(
+                  initialCameraPosition: CameraPosition(
+                    target: LatLng(lat, lng),
+                    zoom: 14.5,
                   ),
-                },
-                onMapCreated: controller.onMapCreated,
+                  markers: controller.markers.value,
+                  circles: controller.circles.value,
+                  polylines: controller.polylines.value,
+                  zoomControlsEnabled: false,
+                  myLocationButtonEnabled: false,
+                  myLocationEnabled: false,
+                  mapToolbarEnabled: false,
+                  compassEnabled: false,
+                  buildingsEnabled: true,
+                  mapType: _mapType.value,
+                  gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>{
+                    Factory<OneSequenceGestureRecognizer>(
+                      () => EagerGestureRecognizer(),
+                    ),
+                  },
+                  onMapCreated: controller.onMapCreated,
+                  onTap: (latLng) {
+                    if (controller.isSearchDropdownOpen.value) {
+                      controller.isSearchDropdownOpen.value = false;
+                      FocusScope.of(context).unfocus();
+                    }
+                  },
+                ),
               );
             }),
           ),
@@ -86,22 +101,43 @@ class TrackingScreen extends StatelessWidget {
             right: 0,
             child: SafeArea(
               bottom: false,
-              child: _buildTopSearchBar(),
+              child: _buildTopSection(context),
             ),
           ),
 
-          Positioned(
-            top: 104.h,
-            right: 16.w,
-            child: _buildRightActionButtons(),
-          ),
+          Obx(() {
+            final double screenH = MediaQuery.of(context).size.height;
+            final double topBarBottom =
+                MediaQuery.of(context).padding.top + 120.h;
+            final double collapsedSheetTop = screenH * (1 - 0.11);
+            final double buttonsHeight = 210.h;
+
+            // When map is big (sheet collapsed at 0.11), center the buttons vertically in visible area
+            final double availableBigMapHeight =
+                collapsedSheetTop - topBarBottom;
+            final double centerTop =
+                topBarBottom + (availableBigMapHeight - buttonsHeight) / 2;
+
+            // When sheet is expanded (0.58), position buttons safely near top below app bar
+            final double topTop = topBarBottom + 6.h;
+
+            final double progress =
+                ((_sheetExtent.value - 0.11) / (0.58 - 0.11)).clamp(0.0, 1.0);
+
+            // Smooth interpolation between vertical center (when map is big) and top (when sheet expands)
+            final double currentTop =
+                centerTop + (topTop - centerTop) * progress;
+
+            return Positioned(
+              top: currentTop,
+              right: 16.w,
+              child: _buildRightActionButtons(context),
+            );
+          }),
 
           Obx(() {
             final screenH = MediaQuery.of(context).size.height;
             final pillBottom = (_sheetExtent.value * screenH) + 12.h;
-            if (_sheetExtent.value > 0.70) {
-              return const SizedBox.shrink();
-            }
             return Positioned(
               left: 16.w,
               bottom: pillBottom,
@@ -116,11 +152,11 @@ class TrackingScreen extends StatelessWidget {
             },
             child: DraggableScrollableSheet(
               controller: _sheetController,
-              initialChildSize: 0.175,
-              minChildSize: 0.175,
-              maxChildSize: 0.88,
+              initialChildSize: 0.11,
+              minChildSize: 0.11,
+              maxChildSize: 0.58,
               snap: true,
-              snapSizes: const [0.175, 0.88],
+              snapSizes: const [0.11, 0.58],
               builder: (context, scrollController) {
                 return Container(
                   clipBehavior: Clip.antiAlias,
@@ -151,7 +187,6 @@ class TrackingScreen extends StatelessWidget {
                                 behavior: HitTestBehavior.opaque,
                                 child: _buildDragHandle(),
                               ),
-                              _buildSheetHeader(context),
                               _buildCustomTabs(),
                               SizedBox(height: 10.h),
                             ],
@@ -173,76 +208,388 @@ class TrackingScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildTopSearchBar() {
+  Widget _buildTopSection(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-      child: GestureDetector(
-        onTap: () {
-          final List<LocationData> membersList = controller.radiusUsers
-              .map((u) => LocationData(
-                    userId: u.userId,
-                    name: u.name,
-                    profileImage: u.profileImage,
-                    latitude: u.latitude,
-                    longitude: u.longitude,
-                    isOnline: u.isOnline,
-                    lastSeen: DateTime.now().toIso8601String(),
-                  ))
-              .toList();
-
-          Get.toNamed(
-            Routes.SearchMembers,
-            arguments: {
-              "GroupMembers": membersList,
-            },
-          )?.then((selectedUserId) {
-            if (selectedUserId != null &&
-                selectedUserId.toString().isNotEmpty) {
-              controller.focusMemberById(selectedUserId.toString());
+      padding: EdgeInsets.fromLTRB(16.w, 10.h, 16.w, 8.h),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _buildTopAppBar(context),
+          SizedBox(height: 10.h),
+          _buildTopSearchBar(context),
+          Obx(() {
+            if (!controller.isSearchDropdownOpen.value ||
+                controller.searchQuery.value.trim().isEmpty) {
+              return const SizedBox.shrink();
             }
-          });
-        },
-        child: Container(
-          height: 48.h,
-          padding: EdgeInsets.symmetric(horizontal: 14.w),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16.r),
-            border: Border.all(color: const Color(0xFFE2E8F0)),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.06),
-                blurRadius: 12.r,
-                offset: Offset(0, 3.h),
-              ),
-            ],
+            return _buildSearchDropdown(context);
+          }),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTopAppBar(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        _iconButton(
+          icon: Icons.arrow_back_rounded,
+          onTap: () => Get.back(),
+        ),
+        _iconButton(
+          icon: Icons.help_outline_rounded,
+          onTap: () => _showTrackingHelpDialog(context),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTopSearchBar(BuildContext context) {
+    return Container(
+      height: 48.h,
+      padding: EdgeInsets.symmetric(horizontal: 12.w),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 14.r,
+            offset: Offset(0, 3.h),
           ),
-          child: Row(
-            children: [
-              Icon(
-                Icons.search_rounded,
-                color: const Color(0xFF4338CA),
-                size: 22.sp,
+        ],
+      ),
+      child: Row(
+        children: [
+          GestureDetector(
+            onTap: () {
+              if (controller.searchController.text.trim().isNotEmpty) {
+                controller.submitSearch(controller.searchController.text);
+                FocusScope.of(context).unfocus();
+              }
+            },
+            child: Icon(
+              Icons.search_rounded,
+              color: const Color(0xFF4338CA),
+              size: 22.sp,
+            ),
+          ),
+          SizedBox(width: 10.w),
+          Expanded(
+            child: TextField(
+              controller: controller.searchController,
+              textInputAction: TextInputAction.search,
+              onSubmitted: (val) {
+                controller.submitSearch(val);
+                FocusScope.of(context).unfocus();
+              },
+              onChanged: (val) {
+                controller.onSearch(val);
+              },
+              style: TextStyle(
+                fontSize: 13.5.sp,
+                color: const Color(0xFF1E1B4B),
+                fontWeight: FontWeight.w500,
               ),
-              SizedBox(width: 10.w),
-              Expanded(
-                child: Text(
-                  "Search location...",
-                  style: TextStyle(
-                    fontSize: 13.5.sp,
-                    color: const Color(0xFF94A3B8),
-                    fontWeight: FontWeight.w500,
+              decoration: InputDecoration(
+                isDense: true,
+                hintText: "Search members or groups...",
+                hintStyle: TextStyle(
+                  color: const Color(0xFF94A3B8),
+                  fontSize: 12.5.sp,
+                ),
+                border: InputBorder.none,
+                contentPadding: EdgeInsets.symmetric(vertical: 12.h),
+              ),
+            ),
+          ),
+          ValueListenableBuilder<TextEditingValue>(
+            valueListenable: controller.searchController,
+            builder: (context, value, child) {
+              if (value.text.isNotEmpty) {
+                return GestureDetector(
+                  onTap: () {
+                    controller.searchController.clear();
+                    controller.searchQuery.value = "";
+                    controller.isSearchDropdownOpen.value = false;
+                    controller.onSearch('');
+                    FocusScope.of(context).unfocus();
+                  },
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 4.w),
+                    child: Icon(
+                      Icons.close_rounded,
+                      color: const Color(0xFF94A3B8),
+                      size: 18.sp,
+                    ),
+                  ),
+                );
+              }
+              return const SizedBox.shrink();
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSearchDropdown(BuildContext context) {
+    final query = controller.searchQuery.value.trim().toLowerCase();
+    final matchingMembers = controller.allFetchedMembers
+        .where((m) =>
+            m.name.toLowerCase().contains(query) ||
+            m.team.toLowerCase().contains(query) ||
+            m.location.toLowerCase().contains(query))
+        .toList();
+
+    final matchingGroups = controller.groupList
+        .where((g) =>
+            (g.groupName ?? "").toLowerCase().contains(query) ||
+            (g.groupDesc ?? "").toLowerCase().contains(query) ||
+            (g.groupCode ?? "").toLowerCase().contains(query))
+        .toList();
+
+    final bool hasNoResults = matchingMembers.isEmpty && matchingGroups.isEmpty;
+
+    return Container(
+      margin: EdgeInsets.only(top: 8.h),
+      constraints: BoxConstraints(maxHeight: 280.h),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.12),
+            blurRadius: 18.r,
+            offset: Offset(0, 6.h),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16.r),
+        child: hasNoResults
+            ? Padding(
+                padding: EdgeInsets.symmetric(vertical: 24.h, horizontal: 16.w),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.person_search_rounded,
+                      color: const Color(0xFF94A3B8),
+                      size: 32.sp,
+                    ),
+                    SizedBox(height: 8.h),
+                    Text(
+                      "No members or groups matching\n'${controller.searchQuery.value}'",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 12.5.sp,
+                        color: const Color(0xFF64748B),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            : ListView(
+                padding: EdgeInsets.symmetric(vertical: 6.h),
+                shrinkWrap: true,
+                children: [
+                  if (matchingMembers.isNotEmpty) ...[
+                    Padding(
+                      padding: EdgeInsets.fromLTRB(14.w, 6.h, 14.w, 4.h),
+                      child: Text(
+                        "MEMBERS (${matchingMembers.length})",
+                        style: TextStyle(
+                          fontSize: 10.5.sp,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF6366F1),
+                          letterSpacing: 0.6,
+                        ),
+                      ),
+                    ),
+                    ...matchingMembers.map((m) => _searchMemberItem(context, m)),
+                  ],
+                  if (matchingGroups.isNotEmpty) ...[
+                    if (matchingMembers.isNotEmpty)
+                      Divider(height: 12.h, color: const Color(0xFFF1F5F9)),
+                    Padding(
+                      padding: EdgeInsets.fromLTRB(14.w, 6.h, 14.w, 4.h),
+                      child: Text(
+                        "GROUPS (${matchingGroups.length})",
+                        style: TextStyle(
+                          fontSize: 10.5.sp,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF6366F1),
+                          letterSpacing: 0.6,
+                        ),
+                      ),
+                    ),
+                    ...matchingGroups.map((g) => _searchGroupItem(context, g)),
+                  ],
+                ],
+              ),
+      ),
+    );
+  }
+
+  Widget _searchMemberItem(BuildContext context, MemberModel m) {
+    return InkWell(
+      onTap: () {
+        controller.searchController.text = m.name;
+        controller.isSearchDropdownOpen.value = false;
+        FocusScope.of(context).unfocus();
+        controller.focusMember(m);
+      },
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
+        child: Row(
+          children: [
+            Stack(
+              clipBehavior: Clip.none,
+              children: [
+                CircleAvatar(
+                  radius: 18.r,
+                  backgroundColor: const Color(0xFFEEF2FF),
+                  backgroundImage:
+                      m.avatarUrl.isNotEmpty ? NetworkImage(m.avatarUrl) : null,
+                  child: m.avatarUrl.isEmpty
+                      ? Icon(Icons.person,
+                          size: 20.sp, color: const Color(0xFF4338CA))
+                      : null,
+                ),
+                Positioned(
+                  right: 0,
+                  bottom: 0,
+                  child: Container(
+                    width: 9.w,
+                    height: 9.w,
+                    decoration: BoxDecoration(
+                      color: m.isOnline
+                          ? const Color(0xFF10B981)
+                          : const Color(0xFF94A3B8),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 1.5.w),
+                    ),
                   ),
                 ),
+              ],
+            ),
+            SizedBox(width: 10.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    m.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 13.sp,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF1E1B4B),
+                    ),
+                  ),
+                  SizedBox(height: 2.h),
+                  Text(
+                    "${m.team.isNotEmpty ? '${m.team} • ' : ''}${m.location.isNotEmpty ? m.location : m.distance}",
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 11.sp,
+                      color: const Color(0xFF64748B),
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+            Icon(
+              Icons.my_location_rounded,
+              size: 18.sp,
+              color: const Color(0xFF6366F1),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildRightActionButtons() {
+  Widget _searchGroupItem(BuildContext context, GroupsResData g) {
+    return InkWell(
+      onTap: () {
+        controller.searchController.text = g.groupName ?? "";
+        controller.isSearchDropdownOpen.value = false;
+        controller.selectTab(1);
+        FocusScope.of(context).unfocus();
+        if (_sheetController.isAttached) {
+          _sheetController.animateTo(
+            0.58,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeOutCubic,
+          );
+        }
+      },
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
+        child: Row(
+          children: [
+            Container(
+              width: 36.w,
+              height: 36.w,
+              decoration: BoxDecoration(
+                color: const Color(0xFFEEF2FF),
+                borderRadius: BorderRadius.circular(10.r),
+              ),
+              child: Icon(
+                Icons.groups_rounded,
+                size: 20.sp,
+                color: const Color(0xFF4338CA),
+              ),
+            ),
+            SizedBox(width: 10.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    g.groupName ?? "Unnamed Group",
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 13.sp,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF1E1B4B),
+                    ),
+                  ),
+                  SizedBox(height: 2.h),
+                  Text(
+                    "${g.memberCount ?? 0} members • Code: ${g.groupCode ?? 'N/A'}",
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 11.sp,
+                      color: const Color(0xFF64748B),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.arrow_forward_ios_rounded,
+              size: 13.sp,
+              color: const Color(0xFF94A3B8),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRightActionButtons(BuildContext context) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -264,12 +611,15 @@ class TrackingScreen extends StatelessWidget {
           onTap: () => controller.recenterMap(zoom: 16.0),
         ),
         SizedBox(height: 10.h),
-        _mapActionButton(
-          icon: Icons.refresh_rounded,
-          onTap: () => controller.getUsersWithinRadius(),
+        Obx(
+          () => _mapActionButton(
+            icon: Icons.refresh_rounded,
+            isLoading: controller.isLoading.value,
+            onTap: () => controller.getUsersWithinRadius(),
+          ),
         ),
         SizedBox(height: 10.h),
-        _buildRadiusButton(),
+        _buildRadiusButton(context),
       ],
     );
   }
@@ -277,9 +627,10 @@ class TrackingScreen extends StatelessWidget {
   Widget _mapActionButton({
     required IconData icon,
     required VoidCallback onTap,
+    bool isLoading = false,
   }) {
     return GestureDetector(
-      onTap: onTap,
+      onTap: isLoading ? null : onTap,
       child: Container(
         width: 44.w,
         height: 44.w,
@@ -296,91 +647,563 @@ class TrackingScreen extends StatelessWidget {
           ],
         ),
         child: Center(
-          child: Icon(
-            icon,
-            color: const Color(0xFF4338CA),
-            size: 20.sp,
-          ),
+          child: isLoading
+              ? SizedBox(
+                  width: 18.w,
+                  height: 18.w,
+                  child: const CircularProgressIndicator(
+                    strokeWidth: 2.2,
+                    valueColor:
+                        AlwaysStoppedAnimation<Color>(Color(0xFF4338CA)),
+                  ),
+                )
+              : Icon(
+                  icon,
+                  color: const Color(0xFF4338CA),
+                  size: 20.sp,
+                ),
         ),
       ),
     );
   }
 
-  Widget _buildRadiusButton() {
-    return PopupMenuButton<String>(
-      offset: Offset(-8.w, 48.h),
-      color: Colors.white,
-      elevation: 6,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(14.r),
-      ),
-      onSelected: (value) => controller.updateRadius(value),
-      itemBuilder: (context) => ["2", "4", "6", "8"]
-          .map(
-            (r) => PopupMenuItem<String>(
-              value: r,
-              height: 38.h,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    "$r km",
-                    style: TextStyle(
-                      fontWeight: controller.selectedRadius.value == r
-                          ? FontWeight.w800
-                          : FontWeight.w500,
-                      fontSize: 13.sp,
-                      color: controller.selectedRadius.value == r
-                          ? const Color(0xFF4338CA)
-                          : AppColors.primaryText,
+  Widget _buildRadiusButton(BuildContext context) {
+    // 4 preset options starting from 100m, followed by custom
+    final List<Map<String, String>> presets = [
+      {"label": "100 m", "value": "0.1"},
+      {"label": "200 m", "value": "0.2"},
+      {"label": "500 m", "value": "0.5"},
+      {"label": "1 km", "value": "1"},
+    ];
+
+    return Obx(() {
+      final String currentVal = controller.selectedRadius.value;
+      final bool isCustom = !presets.any((p) => p["value"] == currentVal);
+
+      return PopupMenuButton<String>(
+        offset: Offset(-8.w, 48.h),
+        color: Colors.white,
+        elevation: 6,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(14.r),
+        ),
+        onSelected: (value) {
+          if (value == "custom") {
+            _showCustomRadiusDialog(context);
+          } else {
+            controller.updateRadius(value);
+          }
+        },
+        itemBuilder: (ctx) => [
+          ...presets.map(
+            (p) {
+              final bool isSelected = currentVal == p["value"];
+              return PopupMenuItem<String>(
+                value: p["value"],
+                height: 38.h,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      p["label"]!,
+                      style: TextStyle(
+                        fontWeight:
+                            isSelected ? FontWeight.w800 : FontWeight.w500,
+                        fontSize: 13.sp,
+                        color: isSelected
+                            ? const Color(0xFF4338CA)
+                            : AppColors.primaryText,
+                      ),
                     ),
-                  ),
-                  if (controller.selectedRadius.value == r)
+                    if (isSelected)
+                      Icon(
+                        Icons.check_rounded,
+                        color: const Color(0xFF4338CA),
+                        size: 16.sp,
+                      ),
+                  ],
+                ),
+              );
+            },
+          ),
+          const PopupMenuDivider(height: 1),
+          PopupMenuItem<String>(
+            value: "custom",
+            height: 38.h,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
                     Icon(
-                      Icons.check_rounded,
-                      color: const Color(0xFF4338CA),
-                      size: 16.sp,
+                      Icons.tune_rounded,
+                      size: 15.sp,
+                      color: isCustom
+                          ? const Color(0xFF4338CA)
+                          : const Color(0xFF64748B),
                     ),
-                ],
-              ),
+                    SizedBox(width: 8.w),
+                    Text(
+                      isCustom
+                          ? "Custom (${controller.currentFormattedRadius})"
+                          : "Custom",
+                      style: TextStyle(
+                        fontWeight:
+                            isCustom ? FontWeight.w800 : FontWeight.w500,
+                        fontSize: 13.sp,
+                        color: isCustom
+                            ? const Color(0xFF4338CA)
+                            : AppColors.primaryText,
+                      ),
+                    ),
+                  ],
+                ),
+                if (isCustom)
+                  Icon(
+                    Icons.check_rounded,
+                    color: const Color(0xFF4338CA),
+                    size: 16.sp,
+                  ),
+              ],
             ),
-          )
-          .toList(),
-      child: Container(
-        width: 44.w,
-        padding: EdgeInsets.symmetric(vertical: 6.h),
+          ),
+        ],
+        child: Container(
+          width: 44.w,
+          padding: EdgeInsets.symmetric(vertical: 6.h),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(14.r),
+            border: Border.all(color: const Color(0xFFE2E8F0)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.08),
+                blurRadius: 10.r,
+                offset: Offset(0, 2.h),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.track_changes_rounded,
+                color: const Color(0xFF4338CA),
+                size: 18.sp,
+              ),
+              SizedBox(height: 1.h),
+              Text(
+                controller.currentFormattedRadius,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 8.5.sp,
+                  fontWeight: FontWeight.w800,
+                  color: const Color(0xFF4338CA),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    });
+  }
+
+  void _showCustomRadiusDialog(BuildContext context) {
+    final List<double> radiusOptions = [
+      100.0,
+      250.0,
+      500.0,
+      1000.0,
+      2000.0,
+      5000.0,
+    ];
+
+    String formatRadius(double meters) {
+      if (meters >= 1000) {
+        final km = meters / 1000.0;
+        return km == km.toInt()
+            ? '${km.toInt()} km'
+            : '${km.toStringAsFixed(1)} km';
+      }
+      return '${meters.toInt()} m';
+    }
+
+    final double currentMeters =
+        (double.tryParse(controller.selectedRadius.value) ?? 0.1) * 1000.0;
+    int initialIndex = 0;
+    double minDiff = double.infinity;
+    for (int i = 0; i < radiusOptions.length; i++) {
+      final diff = (radiusOptions[i] - currentMeters).abs();
+      if (diff < minDiff) {
+        minDiff = diff;
+        initialIndex = i;
+      }
+    }
+
+    final RxInt selectedIndex = initialIndex.obs;
+
+    Get.bottomSheet(
+      Container(
+        padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 24.h),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(14.r),
-          border: Border.all(color: const Color(0xFFE2E8F0)),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.08),
-              blurRadius: 10.r,
-              offset: Offset(0, 2.h),
+              color: Colors.black.withOpacity(0.12),
+              blurRadius: 20.r,
+              offset: Offset(0, -4.h),
             ),
           ],
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.track_changes_rounded,
-              color: const Color(0xFF4338CA),
-              size: 18.sp,
-            ),
-            SizedBox(height: 1.h),
-            Text(
-              "Radius",
-              style: TextStyle(
-                fontSize: 8.5.sp,
-                fontWeight: FontWeight.w800,
-                color: const Color(0xFF4338CA),
+        child: SafeArea(
+          top: false,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 44.w,
+                  height: 4.h,
+                  margin: EdgeInsets.only(bottom: 14.h),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFCBD5E1),
+                    borderRadius: BorderRadius.circular(2.r),
+                  ),
+                ),
               ),
-            ),
-          ],
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: EdgeInsets.all(7.w),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF4338CA).withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(10.r),
+                        ),
+                        child: Icon(
+                          Icons.shield_outlined,
+                          color: const Color(0xFF4338CA),
+                          size: 20.sp,
+                        ),
+                      ),
+                      SizedBox(width: 10.w),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Set Tracking Radius",
+                            style: TextStyle(
+                              fontSize: 16.sp,
+                              fontWeight: FontWeight.w800,
+                              color: const Color(0xFF1E1B4B),
+                            ),
+                          ),
+                          Text(
+                            "Slide to select area radius",
+                            style: TextStyle(
+                              fontSize: 11.5.sp,
+                              color: const Color(0xFF64748B),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  GestureDetector(
+                    onTap: () => Get.back(),
+                    child: Container(
+                      padding: EdgeInsets.all(4.r),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF1F5F9),
+                        borderRadius: BorderRadius.circular(8.r),
+                      ),
+                      child: Icon(
+                        Icons.close_rounded,
+                        size: 18.sp,
+                        color: const Color(0xFF64748B),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 22.h),
+
+              // Safe Zone style slider with floating badge
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 4.w),
+                child: Column(
+                  children: [
+                    Obx(() {
+                      final int index = selectedIndex.value;
+                      final double alignX = -1.0 + (index / 5.0) * 2.0;
+                      final radius = radiusOptions[index];
+
+                      return AnimatedAlign(
+                        duration: const Duration(milliseconds: 150),
+                        alignment: Alignment(alignX, 0),
+                        child: Container(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 12.w, vertical: 5.h),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF4338CA),
+                            borderRadius: BorderRadius.circular(6.r),
+                            boxShadow: [
+                              BoxShadow(
+                                color:
+                                    const Color(0xFF4338CA).withOpacity(0.3),
+                                blurRadius: 6.r,
+                                offset: Offset(0, 2.h),
+                              ),
+                            ],
+                          ),
+                          child: Text(
+                            formatRadius(radius),
+                            style: TextStyle(
+                              fontSize: 11.sp,
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      );
+                    }),
+                    Obx(() {
+                      final double sliderValue =
+                          selectedIndex.value.toDouble();
+
+                      return SliderTheme(
+                        data: SliderThemeData(
+                          activeTrackColor: const Color(0xFF4338CA),
+                          inactiveTrackColor: Colors.grey.shade200,
+                          thumbColor: Colors.white,
+                          overlayColor:
+                              const Color(0xFF4338CA).withOpacity(0.1),
+                          trackHeight: 3.h,
+                          thumbShape: RoundSliderThumbShape(
+                            enabledThumbRadius: 9.r,
+                            elevation: 2,
+                          ),
+                        ),
+                        child: Slider(
+                          value: sliderValue,
+                          min: 0,
+                          max: 5,
+                          divisions: 5,
+                          onChanged: (val) {
+                            selectedIndex.value = val.round();
+                          },
+                        ),
+                      );
+                    }),
+                    SizedBox(height: 4.h),
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 6.w),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: radiusOptions.asMap().entries.map((e) {
+                          return Obx(() {
+                            final isActive = e.key == selectedIndex.value;
+                            return Column(
+                              children: [
+                                Container(
+                                  width: 1,
+                                  height: 5.h,
+                                  color: isActive
+                                      ? const Color(0xFF4338CA)
+                                      : Colors.grey.shade400,
+                                ),
+                                SizedBox(height: 2.h),
+                                Text(
+                                  formatRadius(e.value),
+                                  style: TextStyle(
+                                    fontSize: 10.sp,
+                                    color: isActive
+                                        ? const Color(0xFF4338CA)
+                                        : Colors.grey.shade600,
+                                    fontWeight: isActive
+                                        ? FontWeight.bold
+                                        : FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            );
+                          });
+                        }).toList(),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: 18.h),
+
+              // Safe Zone style InnerCard (Selected Location & Radius)
+              Container(
+                padding: EdgeInsets.all(12.r),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF8FAFC),
+                  borderRadius: BorderRadius.circular(14.r),
+                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: EdgeInsets.all(8.w),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF4338CA).withOpacity(0.08),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: const Color(0xFF4338CA).withOpacity(0.3),
+                          width: 1,
+                        ),
+                      ),
+                      child: Icon(
+                        Icons.shield_outlined,
+                        color: const Color(0xFF4338CA),
+                        size: 20.sp,
+                      ),
+                    ),
+                    SizedBox(width: 12.w),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Selected Location",
+                            style: TextStyle(
+                              fontSize: 9.sp,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.grey.shade600,
+                            ),
+                          ),
+                          SizedBox(height: 2.h),
+                          Obx(
+                            () => Text(
+                              controller.currentLocationName.value.isNotEmpty
+                                  ? controller.currentLocationName.value
+                                  : "Current Location",
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 10.5.sp,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.black,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      height: 30.h,
+                      width: 1,
+                      margin: EdgeInsets.symmetric(horizontal: 12.w),
+                      color: Colors.grey.shade300,
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          "Radius",
+                          style: TextStyle(
+                            fontSize: 11.sp,
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
+                        SizedBox(height: 2.h),
+                        Obx(() {
+                          final radius = radiusOptions[selectedIndex.value];
+                          return Text(
+                            formatRadius(radius),
+                            style: TextStyle(
+                              fontSize: 15.sp,
+                              fontWeight: FontWeight.w700,
+                              color: const Color(0xFF4338CA),
+                            ),
+                          );
+                        }),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: 20.h),
+
+              // Action buttons
+              Row(
+                children: [
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () => Get.back(),
+                      child: Container(
+                        height: 42.h,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF1F5F9),
+                          borderRadius: BorderRadius.circular(12.r),
+                        ),
+                        alignment: Alignment.center,
+                        child: Text(
+                          "Cancel",
+                          style: TextStyle(
+                            fontSize: 13.sp,
+                            fontWeight: FontWeight.w700,
+                            color: const Color(0xFF64748B),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 10.w),
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        final double selectedMeters =
+                            radiusOptions[selectedIndex.value];
+                        final double inKm = selectedMeters / 1000.0;
+                        final String kmString = inKm == inKm.toInt()
+                            ? "${inKm.toInt()}"
+                            : "$inKm";
+                        controller.updateRadius(kmString);
+                        Get.back();
+                      },
+                      child: Container(
+                        height: 42.h,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF4338CA),
+                          borderRadius: BorderRadius.circular(12.r),
+                          boxShadow: [
+                            BoxShadow(
+                              color:
+                                  const Color(0xFF4338CA).withOpacity(0.25),
+                              blurRadius: 8.r,
+                              offset: Offset(0, 3.h),
+                            ),
+                          ],
+                        ),
+                        alignment: Alignment.center,
+                        child: Text(
+                          "Apply Radius",
+                          style: TextStyle(
+                            fontSize: 13.sp,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
+      isScrollControlled: true,
     );
   }
 
@@ -458,49 +1281,7 @@ class TrackingScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSheetHeader(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.fromLTRB(16.w, 4.h, 16.w, 8.h),
-      child: Row(
-        children: [
-          _iconButton(
-            icon: Icons.arrow_back_rounded,
-            onTap: () => Get.back(),
-          ),
-          SizedBox(width: 12.w),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "Tracking",
-                  style: TextStyle(
-                    fontSize: 18.sp,
-                    fontWeight: FontWeight.w800,
-                    color: const Color(0xFF1E1B4B),
-                    letterSpacing: -0.2,
-                  ),
-                ),
-                SizedBox(height: 1.h),
-                Text(
-                  "Live location tracking",
-                  style: TextStyle(
-                    fontSize: 11.5.sp,
-                    fontWeight: FontWeight.w500,
-                    color: const Color(0xFF6366F1),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          _iconButton(
-            icon: Icons.help_outline_rounded,
-            onTap: () => _showTrackingHelpDialog(context),
-          ),
-        ],
-      ),
-    );
-  }
+
 
   Widget _buildCustomTabs() {
     final isLive = controller.selectedTabIndex.value == 0;
@@ -645,7 +1426,7 @@ class TrackingScreen extends StatelessWidget {
                     Text(
                       controller.searchController.text.trim().isNotEmpty
                           ? "No members match '${controller.searchController.text}'"
-                          : "No members found within ${controller.selectedRadius.value} km",
+                          : "No members found within ${controller.currentFormattedRadius}",
                       style: TextStyle(
                         color: AppColors.primarySecondaryElementText,
                         fontSize: 13.sp,
@@ -771,6 +1552,11 @@ class TrackingScreen extends StatelessWidget {
       child: TextField(
         controller: controller.searchController,
         onChanged: controller.onSearch,
+        textInputAction: TextInputAction.search,
+        onSubmitted: (val) {
+          controller.submitSearch(val);
+          FocusManager.instance.primaryFocus?.unfocus();
+        },
         style: TextStyle(
           fontSize: 13.sp,
           color: const Color(0xFF1E1B4B),
@@ -813,7 +1599,7 @@ class TrackingScreen extends StatelessWidget {
           );
           if (_sheetController.isAttached) {
             _sheetController.animateTo(
-              0.175,
+              0.11,
               duration: const Duration(milliseconds: 300),
               curve: Curves.easeOutCubic,
             );
@@ -972,7 +1758,7 @@ class TrackingScreen extends StatelessWidget {
                 );
                 if (_sheetController.isAttached) {
                   _sheetController.animateTo(
-                    0.175,
+                    0.11,
                     duration: const Duration(milliseconds: 300),
                     curve: Curves.easeOutCubic,
                   );

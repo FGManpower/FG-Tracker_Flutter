@@ -41,9 +41,11 @@ class GeocodedAddressResult {
 }
 
 class TrackController extends GetxController {
-  RxString selectedRadius = '2'.obs;
+  RxString selectedRadius = '0.1'.obs;
   TextEditingController customRadiusController = TextEditingController();
   TextEditingController searchController = TextEditingController();
+  final RxString searchQuery = "".obs;
+  final RxBool isSearchDropdownOpen = false.obs;
 
   RxInt selectedTabIndex = 0.obs;
   RxBool isLoading = false.obs;
@@ -957,46 +959,161 @@ class TrackController extends GetxController {
   }
 
   void onSearch(String value) {
+    final query = value.trim().toLowerCase();
+    searchQuery.value = value.trim();
+    isSearchDropdownOpen.value = value.trim().isNotEmpty;
+
     if (selectedTabIndex.value == 1) {
-      if (value.isEmpty) {
+      if (query.isEmpty) {
         filteredGroups.value = groupList;
       } else {
         filteredGroups.value = groupList
             .where((g) =>
-                (g.groupName ?? "")
-                    .toLowerCase()
-                    .contains(value.toLowerCase()) ||
-                (g.groupDesc ?? "")
-                    .toLowerCase()
-                    .contains(value.toLowerCase()) ||
-                (g.groupCode ?? "")
-                    .toLowerCase()
-                    .contains(value.toLowerCase()))
+                (g.groupName ?? "").toLowerCase().contains(query) ||
+                (g.groupDesc ?? "").toLowerCase().contains(query) ||
+                (g.groupCode ?? "").toLowerCase().contains(query))
             .toList();
       }
     } else {
-      if (value.isEmpty) {
+      if (query.isEmpty) {
         liveMembers.value = allFetchedMembers;
       } else {
         liveMembers.value = allFetchedMembers
             .where((m) =>
-                m.name.toLowerCase().contains(value.toLowerCase()) ||
-                m.team.toLowerCase().contains(value.toLowerCase()) ||
-                m.location.toLowerCase().contains(value.toLowerCase()))
+                m.name.toLowerCase().contains(query) ||
+                m.team.toLowerCase().contains(query) ||
+                m.location.toLowerCase().contains(query))
             .toList();
       }
     }
+    updateMapMarkersAndCircle();
+  }
+
+  void submitSearch(String query) {
+    final q = query.trim().toLowerCase();
+    if (q.isEmpty) return;
+
+    isSearchDropdownOpen.value = false;
+
+    // Search in radiusUsers first
+    final matchingUsers = radiusUsers.where((u) {
+      final name = (u.name ?? "").toLowerCase();
+      final team = (u.team ?? "").toLowerCase();
+      final loc = (u.location ?? "").toLowerCase();
+      return (name.contains(q) || team.contains(q) || loc.contains(q)) &&
+          u.latitude != null &&
+          u.longitude != null &&
+          u.latitude != 0.0 &&
+          u.longitude != 0.0;
+    }).toList();
+
+    if (matchingUsers.isNotEmpty) {
+      if (matchingUsers.length == 1) {
+        final u = matchingUsers.first;
+        mapController?.animateCamera(
+          CameraUpdate.newCameraPosition(
+            CameraPosition(
+              target: LatLng(u.latitude!, u.longitude!),
+              zoom: 17.0,
+            ),
+          ),
+        );
+      } else {
+        double minLat = matchingUsers.first.latitude!;
+        double maxLat = matchingUsers.first.latitude!;
+        double minLng = matchingUsers.first.longitude!;
+        double maxLng = matchingUsers.first.longitude!;
+        for (var u in matchingUsers) {
+          if (u.latitude! < minLat) minLat = u.latitude!;
+          if (u.latitude! > maxLat) maxLat = u.latitude!;
+          if (u.longitude! < minLng) minLng = u.longitude!;
+          if (u.longitude! > maxLng) maxLng = u.longitude!;
+        }
+        if (minLat == maxLat && minLng == maxLng) {
+          mapController?.animateCamera(
+            CameraUpdate.newCameraPosition(
+              CameraPosition(
+                target: LatLng(minLat, minLng),
+                zoom: 17.0,
+              ),
+            ),
+          );
+        } else {
+          mapController?.animateCamera(
+            CameraUpdate.newLatLngBounds(
+              LatLngBounds(
+                southwest: LatLng(minLat, minLng),
+                northeast: LatLng(maxLat, maxLng),
+              ),
+              80.0,
+            ),
+          );
+        }
+      }
+      return;
+    }
+
+    // Check allFetchedMembers if not in radiusUsers
+    final matchingMembers = allFetchedMembers.where((m) {
+      final name = m.name.toLowerCase();
+      final team = m.team.toLowerCase();
+      final loc = m.location.toLowerCase();
+      return (name.contains(q) || team.contains(q) || loc.contains(q)) &&
+          m.latitude != null &&
+          m.longitude != null &&
+          m.latitude != 0.0 &&
+          m.longitude != 0.0;
+    }).toList();
+
+    if (matchingMembers.isNotEmpty) {
+      final m = matchingMembers.first;
+      mapController?.animateCamera(
+        CameraUpdate.newCameraPosition(
+          CameraPosition(
+            target: LatLng(m.latitude!, m.longitude!),
+            zoom: 17.0,
+          ),
+        ),
+      );
+      return;
+    }
+
+    // Check matching groups
+    final matchingGroups = groupList.where((g) {
+      final name = (g.groupName ?? "").toLowerCase();
+      final desc = (g.groupDesc ?? "").toLowerCase();
+      final code = (g.groupCode ?? "").toLowerCase();
+      return name.contains(q) || desc.contains(q) || code.contains(q);
+    }).toList();
+
+    if (matchingGroups.isNotEmpty) {
+      selectTab(1);
+      return;
+    }
+
+    Get.snackbar(
+      "Search",
+      "No members or groups found for '$query'",
+      snackPosition: SnackPosition.TOP,
+      backgroundColor: const Color(0xFF1E1B4B),
+      colorText: Colors.white,
+      margin: const EdgeInsets.all(16),
+      duration: const Duration(seconds: 2),
+    );
   }
 
   void selectTab(int index) {
     selectedTabIndex.value = index;
     searchController.clear();
+    searchQuery.value = "";
+    isSearchDropdownOpen.value = false;
     if (index == 1) {
       filteredGroups.value = groupList;
       fetchGroupData();
     } else {
       liveMembers.value = allFetchedMembers;
     }
+    updateMapMarkersAndCircle();
   }
 
   void updateRadius(String value) {
@@ -1043,7 +1160,7 @@ class TrackController extends GetxController {
 
     // Dynamically update radius circle & map zoom
     updateMapMarkersAndCircle();
-    _zoomForRadius(double.tryParse(value) ?? 2.0);
+    _zoomForRadius(double.tryParse(value) ?? 0.1);
   }
 
   Future<void> updateMapMarkersAndCircle() async {
@@ -1126,11 +1243,19 @@ class TrackController extends GetxController {
     );
 
     // Member markers
+    final String q = searchController.text.trim().toLowerCase();
     for (var u in radiusUsers) {
       if (u.latitude != null &&
           u.longitude != null &&
           u.latitude != 0.0 &&
           u.longitude != 0.0) {
+        if (q.isNotEmpty) {
+          final matches = (u.name ?? "").toLowerCase().contains(q) ||
+              (u.team ?? "").toLowerCase().contains(q) ||
+              (u.location ?? "").toLowerCase().contains(q) ||
+              (u.mobileNo ?? "").toLowerCase().contains(q);
+          if (!matches) continue;
+        }
         final cacheKey = "${u.userId}_${u.profileImage}_${u.isOnline}_sm";
         BitmapDescriptor customIcon;
 
@@ -1175,23 +1300,39 @@ class TrackController extends GetxController {
 
   void onMapCreated(GoogleMapController controller) {
     mapController = controller;
-    recenterMap(zoom: 16.0);
+    final double radiusKm = double.tryParse(selectedRadius.value) ?? 2.0;
+    _zoomForRadius(radiusKm);
+  }
+
+  String formatRadius(String radiusKmStr) {
+    final double radiusKm = double.tryParse(radiusKmStr) ?? 0.1;
+    final double meters = radiusKm * 1000.0;
+    if (meters < 1000) {
+      return "${meters.round()} m";
+    } else {
+      final double km = radiusKm;
+      return km == km.toInt()
+          ? "${km.toInt()} km"
+          : "${km.toStringAsFixed(1)} km";
+    }
+  }
+
+  String get currentFormattedRadius => formatRadius(selectedRadius.value);
+
+  double calculateZoomForRadius(double radiusKm) {
+    final double radiusMeters = radiusKm * 1000.0;
+    if (radiusMeters <= 120) return 16.8;
+    if (radiusMeters <= 260) return 15.8;
+    if (radiusMeters <= 600) return 14.8;
+    if (radiusMeters <= 1200) return 13.8;
+    if (radiusMeters <= 2500) return 12.8;
+    if (radiusMeters <= 5500) return 11.5;
+    return 10.5;
   }
 
   void _zoomForRadius(double radiusKm) {
     if (mapController == null) return;
-    double zoomLevel = 15.0;
-    if (radiusKm <= 2) {
-      zoomLevel = 15.0;
-    } else if (radiusKm <= 4) {
-      zoomLevel = 14.0;
-    } else if (radiusKm <= 6) {
-      zoomLevel = 13.2;
-    } else if (radiusKm <= 8) {
-      zoomLevel = 12.5;
-    } else {
-      zoomLevel = 11.5;
-    }
+    final double zoomLevel = calculateZoomForRadius(radiusKm);
 
     final double lat = currentLat.value != 0.0 ? currentLat.value : 19.0760;
     final double lng = currentLong.value != 0.0 ? currentLong.value : 72.8777;
@@ -1271,14 +1412,16 @@ class TrackController extends GetxController {
     mapController?.animateCamera(CameraUpdate.zoomOut());
   }
 
-  void recenterMap({double zoom = 16.0}) {
+  void recenterMap({double? zoom}) {
     final double lat = currentLat.value != 0.0 ? currentLat.value : 19.0760;
     final double lng = currentLong.value != 0.0 ? currentLong.value : 72.8777;
+    final double radiusKm = double.tryParse(selectedRadius.value) ?? 2.0;
+    final double targetZoom = zoom ?? calculateZoomForRadius(radiusKm);
     mapController?.animateCamera(
       CameraUpdate.newCameraPosition(
         CameraPosition(
           target: LatLng(lat, lng),
-          zoom: zoom,
+          zoom: targetZoom,
         ),
       ),
     );
@@ -1300,6 +1443,40 @@ class TrackController extends GetxController {
         );
         return;
       }
+    }
+    for (var m in allFetchedMembers) {
+      if (m.userId.toString() == userId &&
+          m.latitude != null &&
+          m.longitude != null &&
+          m.latitude != 0.0) {
+        mapController?.animateCamera(
+          CameraUpdate.newCameraPosition(
+            CameraPosition(
+              target: LatLng(m.latitude!, m.longitude!),
+              zoom: 17.0,
+            ),
+          ),
+        );
+        return;
+      }
+    }
+  }
+
+  void focusMember(MemberModel member) {
+    if (member.latitude != null &&
+        member.longitude != null &&
+        member.latitude != 0.0 &&
+        member.longitude != 0.0) {
+      mapController?.animateCamera(
+        CameraUpdate.newCameraPosition(
+          CameraPosition(
+            target: LatLng(member.latitude!, member.longitude!),
+            zoom: 17.0,
+          ),
+        ),
+      );
+    } else {
+      focusMemberById(member.userId.toString());
     }
   }
 
