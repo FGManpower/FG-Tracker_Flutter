@@ -27,42 +27,54 @@ class TrackRepo {
 
     dynamic response;
 
+    // 1. Try Urls.userWithinRadiusFallback first as requested
     try {
       debugPrint(
-        "📍 [TrackRepo] GET ${Urls.usersWithinRadius} - params: $queryParams",
+        "📍 [TrackRepo] GET ${Urls.userWithinRadiusFallback} - params: $queryParams",
       );
 
       response = await HttpUtil().get(
-        Urls.usersWithinRadius,
+        Urls.userWithinRadiusFallback,
         data: queryParams,
       );
 
       debugPrint(
-        "📍 [TrackRepo] Response from /users-within-radius: $response",
+        "📍 [TrackRepo] Response from /user-within-radius: $response",
       );
     } catch (e) {
       debugPrint(
-        "⚠️ Primary ${Urls.usersWithinRadius} failed: $e, trying /user-within-radius fallback",
+        "⚠️ /user-within-radius failed: $e, trying /users-within-radius",
       );
+    }
 
+    // 2. Check if we got valid user list; if not, query /users-within-radius
+    final bool hasData = response != null &&
+        ((response is Map &&
+                response['data'] is List &&
+                (response['data'] as List).isNotEmpty) ||
+            (response is List && response.isNotEmpty));
+
+    if (!hasData) {
       try {
-        response = await HttpUtil().get(
-          Urls.userWithinRadiusFallback,
+        debugPrint(
+          "📍 [TrackRepo] GET ${Urls.usersWithinRadius} - params: $queryParams",
+        );
+
+        final res2 = await HttpUtil().get(
+          Urls.usersWithinRadius,
           data: queryParams,
         );
 
         debugPrint(
-          "📍 [TrackRepo] Response from /user-within-radius: $response",
-        );
-      } catch (e2) {
-        debugPrint(
-          "❌ [TrackRepo] Error in getUsersWithinRadius: $e2",
+          "📍 [TrackRepo] Response from /users-within-radius: $res2",
         );
 
-        return UsersWithinRadiusRes(
-          status: false,
-          message: e2.toString(),
-          data: [],
+        if (res2 != null) {
+          response = res2;
+        }
+      } catch (e2) {
+        debugPrint(
+          "❌ [TrackRepo] Both endpoints failed: $e2",
         );
       }
     }

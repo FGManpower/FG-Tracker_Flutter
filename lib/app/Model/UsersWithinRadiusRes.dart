@@ -128,17 +128,25 @@ class UsersWithinRadiusData {
       final ln =
           (json['lastName'] ?? json['last_name'] ?? '')?.toString().trim() ??
               '';
-      final combined = '$fn $ln'.trim();
+      final fCap = fn.isNotEmpty ? (fn[0].toUpperCase() + fn.substring(1)) : '';
+      final lCap = ln.isNotEmpty ? (ln[0].toUpperCase() + ln.substring(1)) : '';
+      final combined = '$fCap $lCap'.trim();
       if (combined.isNotEmpty) {
         resolvedName = combined;
       }
     }
     name = resolvedName;
 
-    mobileNo =
-        (json['mobileNo'] ?? json['MobileNo'] ?? json['mobile'])?.toString();
-    profileImage = (json['profileImage'] ??
-            json['ProfileImage'] ??
+    mobileNo = (json['mobileNumber'] ??
+            json['mobile_number'] ??
+            json['MobileNumber'] ??
+            json['mobileNo'] ??
+            json['MobileNo'] ??
+            json['mobile'] ??
+            json['phone'])
+        ?.toString();
+    profileImage = (json['ProfileImage'] ??
+            json['profileImage'] ??
             json['image'] ??
             json['profile_image'])
         ?.toString();
@@ -212,18 +220,38 @@ class UsersWithinRadiusData {
       }
     }
 
-    distance = json['distance'] ??
-        json['Distance'] ??
-        json['distanceInKm'] ??
-        json['distance_km'] ??
-        json['dist'];
-    battery = json['battery'] ?? json['Battery'];
-    team = (json['team'] ??
-            json['teamName'] ??
-            json['groupName'] ??
-            json['group_name'] ??
-            json['team_name'])
+    final rawDistance = (json['distance'] ??
+            json['Distance'] ??
+            json['distanceInKm'] ??
+            json['distance_km'] ??
+            json['dist'])
         ?.toString();
+    if (rawDistance != null && !rawDistance.toLowerCase().contains("nan")) {
+      distance = rawDistance;
+    } else {
+      distance = null;
+    }
+
+    battery = json['battery'] ??
+        json['Battery'] ??
+        json['batteryLevel'] ??
+        json['battery_level'] ??
+        json['batteryPercentage'] ??
+        json['percentage'];
+
+    dynamic groupField = json['groups'] ??
+        json['group'] ??
+        json['team'] ??
+        json['teamName'] ??
+        json['groupName'] ??
+        json['group_name'] ??
+        json['team_name'];
+    if (groupField is List && groupField.isNotEmpty) {
+      team = groupField.first.toString();
+    } else if (groupField != null) {
+      team = groupField.toString();
+    }
+
     lastSeen = json['lastSeen']?.toString();
 
     final onlineVal = json['isOnline'] ?? json['online'] ?? json['is_online'];
@@ -313,7 +341,7 @@ class UsersWithinRadiusData {
     double? currentUserLong,
     String? fallbackTeam,
   }) {
-    String formattedDistance = "0.0";
+    String formattedDistance = "Nearby";
 
     // If both current user coordinates and member coordinates are available, calculate exact geodesic distance
     if (currentUserLat != null &&
@@ -332,39 +360,44 @@ class UsersWithinRadiusData {
           longitude!,
         );
         final km = meters / 1000.0;
-        formattedDistance = km.toStringAsFixed(1);
+        formattedDistance = "${km.toStringAsFixed(1)} km";
       } catch (_) {
-        formattedDistance = "0.0";
+        formattedDistance = "Nearby";
       }
-    } else if (distance != null) {
-      double? d =
-          double.tryParse(distance.toString().replaceAll(RegExp(r'[^\d.]'), ''));
+    } else if (distance != null && !distance.toString().toLowerCase().contains("nan")) {
+      final cleaned = distance.toString().replaceAll(RegExp(r'[^\d.]'), '');
+      final d = double.tryParse(cleaned);
       if (d != null) {
-        formattedDistance = d.toStringAsFixed(1);
+        formattedDistance = "${d.toStringAsFixed(1)} km";
       } else {
         formattedDistance = distance.toString();
       }
+    } else {
+      formattedDistance = "Nearby";
     }
 
-    int finalBattery;
+    int? finalBattery;
     if (battery != null) {
       final parsed =
           int.tryParse(battery.toString().replaceAll(RegExp(r'[^\d]'), ''));
-      finalBattery = (parsed != null && parsed > 0 && parsed <= 100) ? parsed : 85;
-    } else {
-      final idNum = int.tryParse(userId?.toString() ?? '0') ??
-          (name?.hashCode ?? 85).abs();
-      finalBattery = 68 + (idNum % 31);
+      if (parsed != null && parsed >= 0 && parsed <= 100) {
+        finalBattery = parsed;
+      }
     }
 
     String avatar = "";
     if (profileImage != null &&
         profileImage!.trim().isNotEmpty &&
         profileImage != "null") {
-      if (profileImage!.startsWith("http")) {
-        avatar = profileImage!.trim();
+      final img = profileImage!.trim();
+      if (img.startsWith("http://") || img.startsWith("https://")) {
+        avatar = img;
       } else {
-        avatar = "${ConstRes.aImageBaseUrl}${profileImage!.trim()}";
+        final cleanBase = ConstRes.production.endsWith('/')
+            ? ConstRes.production
+            : '${ConstRes.production}/';
+        final cleanPath = img.startsWith('/') ? img.substring(1) : img;
+        avatar = "$cleanBase$cleanPath";
       }
     }
 
@@ -401,9 +434,7 @@ class UsersWithinRadiusData {
           : (mobileNo != null && mobileNo!.trim().isNotEmpty
               ? mobileNo!.trim()
               : "User ${userId ?? ''}"),
-      team: (team != null &&
-              team!.trim().isNotEmpty &&
-              !team!.toLowerCase().contains("test"))
+      team: (team != null && team!.trim().isNotEmpty)
           ? team!.trim()
           : (fallbackTeam ?? ""),
       location: resolvedLocation.isNotEmpty ? resolvedLocation : "Location unavailable",

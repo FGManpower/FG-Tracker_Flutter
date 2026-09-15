@@ -74,6 +74,8 @@ class MessageController extends GetxController with WidgetsBindingObserver {
   final RxBool showFloatingDate = false.obs;
   final Rxn<MessageData> editingMessage = Rxn<MessageData>();
 
+  RxString privateChatId = "".obs;
+
   Timer? _floatingDateTimer;
 
   @override
@@ -91,10 +93,10 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     WidgetsBinding.instance.removeObserver(this);
     _messageStreamController.close();
     _floatingDateTimer?.cancel();
+    socketService.disconnectPrivateChatSocket();
     super.onClose();
   }
 
-  @override
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) async {
     if (state == AppLifecycleState.resumed) {
@@ -193,8 +195,25 @@ class MessageController extends GetxController with WidgetsBindingObserver {
   }
 
   void _initializeChat() {
-    final userId = memberData.userId.toString();
-    final groupId = memberData.groupId!;
+    final currentUserId =
+    Global.storageServices.get(PrefConst.userId).toString();
+
+    final receiverId = memberData.userId.toString();
+
+    final bool isPrivateChat =
+        arguments?['type'] == 'chatScreen' ||
+            arguments?['chatType'] == 'private' ||
+            arguments?['groupId'] == 0 ||
+            memberData.groupId == null ||
+            memberData.groupId == 0;
+
+    log("=================================");
+    log("CHAT TYPE => ${isPrivateChat ? 'PRIVATE' : 'GROUP'}");
+    log("CURRENT USER ID => $currentUserId");
+    log("RECEIVER ID => $receiverId");
+    log("GROUP ID => ${memberData.groupId}");
+    log("=================================");
+
     try {
       TrackingController.instance.initializeLocation();
     } catch (e) {
@@ -203,91 +222,127 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
     ChatStateTracker.isChatCallScreenOpen = true;
 
-    socketService.init(
-      ConstRes.socketUrl,
-      userId: userId,
-      groupId: groupId,
-    );
+    // ============================================================
+    // PRIVATE CHAT
+    // ============================================================
+    if (isPrivateChat) {
+      // ------------------------------------------------------------
+      // RECEIVE PRIVATE MESSAGE
+      // ------------------------------------------------------------
+      socketService.receivePrivateMessage(
+        senderId: currentUserId,
+        receiverId: receiverId,
+        callback: (message) {
+          print("PRIVATE RECEIVE MESSAGE => $message");
 
-    socketService.RecievedMessage(
-      senderId: Global.storageServices.get(PrefConst.userId).toString(),
-      recieverId: userId,
-      groupId: groupId,
-      callback: (message) {
-        print(message);
-        _messages.add(MessageData.fromJson(message));
-        updateMessageStream();
-        scrollToBottom();
+          try {
+            final messageData =
+            MessageData.fromJson(Map<String, dynamic>.from(message));
 
-        // if (isUserAtBottom()) {
-        socketService.markSeen(
-          Global.storageServices.get(PrefConst.userId).toString(),
-          groupId,
-        );
-        // }
-      },
-    );
+            _messages.add(messageData);
 
-    socketService.listenSeenUpdate(
-      groupId: groupId,
-      callback: (data) {
-        final List updatedIds = data["messageIds"] ?? [];
+            updateMessageStream();
 
-        for (var msg in _messages) {
-          if (updatedIds.contains(msg.id)) {
-            msg.seenCount = (msg.seenCount ?? 0) + 1;
+            scrollToBottom();
+
+            // Mark delivered
+            if (messageData.id != null) {
+              socketService.markPrivateDelivered(
+                messageIds: [messageData.id!],
+                userId: currentUserId,
+                otherUserId: receiverId,
+              );
+            }
+
+            // Mark seen
+            if (privateChatId.value.isNotEmpty) {
+              socketService.markPrivateSeen(
+                chatId: privateChatId.value,
+                userId: currentUserId,
+                otherUserId: receiverId,
+              );
+            }
+          } catch (e) {
+            log("PRIVATE MESSAGE PARSE ERROR => $e");
           }
-        }
+        },
+      );
 
-        updateMessageStream();
-      },
-    );
 
-    socketService.listenMessageEdited(
-      callback: (data) {
-        final messageId = int.tryParse(
-          data["messageId"].toString(),
-        );
+      socketService.listenPrivateMessagesDelivered(
+        callback: (data) {
+          print("PRIVATE MESSAGES DELIVERED =====> $data");
+        },
+      );
 
-        if (messageId == null) return;
 
-        final index = _messages.indexWhere(
-          (message) => message.id == messageId,
-        );
+      socketService.listenPrivateMessagesSeenUpdate(
+        callback: (data) {
+          final dataChatId = data["chatId"]?.toString();
 
-        if (index == -1) return;
+          if (privateChatId.value.isNotEmpty &&
+              dataChatId != null &&
+              dataChatId != privateChatId.value) {
+            return;
+          }
 
-        _messages[index].content = data["content"];
+          final List updatedIds = data["messageIds"] ?? [];
 
-        _messages[index].isEdited = data["isEdited"] ?? true;
+          for (var msg in _messages) {
+            if (updatedIds.any(
+                  (id) => id.toString() == msg.id.toString(),
+            )) {
+              msg.seenCount = (msg.seenCount ?? 0) + 1;
+            }
+          }
 
-        _messages[index].editedAt = data["editedAt"];
+          updateMessageStream();
+        },
+      );
 
-        updateMessageStream();
 
-        log("PRIVATE MESSAGE EDITED => $messageId");
-      },
-    );
+      socketService.initPrivateChat(
+        ConstRes.socketUrl,
+        userId: currentUserId,
+        receiverId: receiverId,
+        onJoined: (data) async {
+          log("=================================");
+          log("PRIVATE CHAT JOINED");
+          log("JOINED DATA => $data");
+          log("=================================");
 
-    socketService.listenMessageDeleted(
-      callback: (data) {
-        final int? messageId = data["messageId"];
-        if (messageId == null) return;
+          final chatId = data["chatId"]?.toString() ??
+              socketService.privateChatId?.toString();
 
-        if (pinnedMessage.value?.id == messageId) {
-          pinnedMessage.value = null;
-          showPinnedBanner.value = false;
-        }
+          if (chatId == null || chatId.isEmpty) {
+            log("PRIVATE CHAT ID NOT FOUND");
+            return;
+          }
 
-        _messages.removeWhere((e) => e.id == messageId);
-        updateMessageStream();
-        log("Message Deleted => $messageId");
-      },
-    );
+          privateChatId.value = chatId;
+
+          log("PRIVATE CHAT ID => $chatId");
+
+          await getPrivateMessageHistory(chatId);
+
+          socketService.markPrivateSeen(
+            chatId: chatId,
+            userId: currentUserId,
+            otherUserId: receiverId,
+          );
+        },
+      );
+    }
+
+
+    else {
+
+    }
+
 
     socketService.listenPinMessage(
       callback: (data) {
-        print("📌 PRIVATE MESSAGE PINNED =====> $data");
+        print("📌 MESSAGE PINNED =====> $data");
 
         final messageId = int.tryParse(
           data["messageId"].toString(),
@@ -297,6 +352,24 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
         if (data["chatType"] != "private") return;
 
+        final currentUserId =
+        Global.storageServices.get(PrefConst.userId).toString();
+
+        final otherUserId = memberData.userId.toString();
+
+        final senderId = data["senderId"]?.toString();
+        final receiverId = data["receiverId"]?.toString();
+
+        if (senderId != null && receiverId != null) {
+          final isSameChat =
+              (senderId == currentUserId &&
+                  receiverId == otherUserId) ||
+                  (senderId == otherUserId &&
+                      receiverId == currentUserId);
+
+          if (!isSameChat) return;
+        }
+
         final msg = _messages.firstWhereOrNull(
               (e) => e.id == messageId,
         );
@@ -304,6 +377,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         if (msg != null) {
           pinnedMessage.value = msg;
           showPinnedBanner.value = true;
+
           updateMessageStream();
         }
       },
@@ -311,7 +385,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
     socketService.listenUnpinMessage(
       callback: (data) {
-        print("📌 PRIVATE MESSAGE UNPINNED =====> $data");
+        print("📌 MESSAGE UNPINNED =====> $data");
 
         if (data["chatType"] != "private") return;
 
@@ -339,10 +413,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         print("✅ PRIVATE PIN REMOVED FROM UI");
       },
     );
-    getMessageHistory(userId, groupId);
-  }
-
-  bool isUserAtBottom() {
+  }  bool isUserAtBottom() {
     if (_messages.isEmpty) return true;
 
     final positions = itemPositionsListener.itemPositions.value;
@@ -376,10 +447,9 @@ class MessageController extends GetxController with WidgetsBindingObserver {
           final result = await MessageRepo.uploadChatImage(image);
 
           if (result.status == true && result.filename != null) {
-            socketService.sendMessage(
+            socketService.sendPrivateMessage(
               messageType: "image",
               receiverId: memberData.userId.toString(),
-              groupId: memberData.groupId!,
               content: result.filename!,
               caption: text,
               replyId: replyMessage.value?.id,
@@ -426,10 +496,9 @@ class MessageController extends GetxController with WidgetsBindingObserver {
       }
 
       if (!hasMedia && text.isNotEmpty) {
-        socketService.sendMessage(
+        socketService.sendPrivateMessage(
           messageType: "text",
           receiverId: memberData.userId.toString(),
-          groupId: memberData.groupId!,
           content: text,
           replyId: replyMessage.value?.id,
           replyMessage: replyMessage.value?.content,
@@ -453,10 +522,9 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     var result = await MessageRepo.uploadChatAudio(path);
 
     if (result.status == true) {
-      socketService.sendMessage(
+      socketService.sendPrivateMessage(
         messageType: "audio",
         receiverId: memberData.userId.toString(),
-        groupId: memberData.groupId!,
         content: result.filename!,
         replyId: replyMessage.value?.id,
         replyMessage: replyMessage.value?.content,
@@ -491,10 +559,9 @@ class MessageController extends GetxController with WidgetsBindingObserver {
       );
 
       if (result.status == true) {
-        socketService.sendMessage(
+        socketService.sendPrivateMessage(
           messageType: "video",
           receiverId: memberData.userId.toString(),
-          groupId: memberData.groupId!,
           content:
               "${result.videoUrl}||${result.thumbnail}||${result.duration}",
           caption: caption,
@@ -536,10 +603,9 @@ class MessageController extends GetxController with WidgetsBindingObserver {
       );
 
       if (result.status == true) {
-        socketService.sendMessage(
+        socketService.sendPrivateMessage(
           messageType: "video",
           receiverId: memberData.userId.toString(),
-          groupId: memberData.groupId!,
           content:
               "${result.videoUrl}||${result.thumbnail}||${result.duration}",
           caption: caption,
@@ -560,10 +626,9 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     var result = await MessageRepo.uploadChatDocument(path);
 
     if (result.status == true) {
-      socketService.sendMessage(
+      socketService.sendPrivateMessage(
         messageType: "document",
         receiverId: memberData.userId.toString(),
-        groupId: memberData.groupId!,
         content: "${result.filename}||${result.originalName!}",
         caption: caption,
         replyId: replyMessage.value?.id,
@@ -579,9 +644,8 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     required LocationMessage location,
   }) async {
     try {
-      socketService.sendMessage(
+      socketService.sendPrivateMessage(
         receiverId: memberData.userId.toString(),
-        groupId: memberData.groupId!,
         content: location.toContent(),
         messageType: "location",
         replyId: replyMessage.value?.id,
@@ -601,9 +665,8 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     required ContactMessage contact,
   }) async {
     try {
-      socketService.sendMessage(
+      socketService.sendPrivateMessage(
         receiverId: memberData.userId.toString(),
-        groupId: memberData.groupId!,
         content: contact.toContent(),
         messageType: "contact",
         replyId: replyMessage.value?.id,
@@ -631,9 +694,9 @@ class MessageController extends GetxController with WidgetsBindingObserver {
   }
 
   Future<void> getMessageHistory(
-      String recieverId,
-      int groupId,
-      ) async {
+    String recieverId,
+    int groupId,
+  ) async {
     try {
       var result = await MessageRepo.MessageHistory(
         recieverId: recieverId,
@@ -649,7 +712,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
         if (pinnedId != null) {
           final pinned = _messages.firstWhereOrNull(
-                (message) => message.id == pinnedId,
+            (message) => message.id == pinnedId,
           );
 
           if (pinned != null) {
@@ -674,6 +737,48 @@ class MessageController extends GetxController with WidgetsBindingObserver {
       log("History Error: $e");
     }
   }
+
+  Future<void> getPrivateMessageHistory(String chatId) async {
+    try {
+      var result = await MessageRepo.privateChatHistory(
+        chatId: chatId,
+      );
+
+      if (result.status == true) {
+        _messages
+          ..clear()
+          ..addAll(result.messageData ?? []);
+
+        final pinnedId = result.pinnedMessageId;
+
+        if (pinnedId != null) {
+          final pinned = _messages.firstWhereOrNull(
+            (message) => message.id == pinnedId,
+          );
+
+          if (pinned != null) {
+            pinnedMessage.value = pinned;
+            showPinnedBanner.value = true;
+          } else {
+            pinnedMessage.value = null;
+            showPinnedBanner.value = false;
+          }
+        } else {
+          pinnedMessage.value = null;
+          showPinnedBanner.value = false;
+        }
+
+        updateMessageStream();
+        isCreator.value = result.isCreator ?? false;
+        scrollToBottom();
+      } else {
+        CommonDialog.errorMessage(result.message);
+      }
+    } catch (e) {
+      log("Private History Error: $e");
+    }
+  }
+
   void setReply(MessageData message) {
     replyMessage.value = message;
   }
@@ -698,8 +803,15 @@ class MessageController extends GetxController with WidgetsBindingObserver {
   void handleBackPressed(BuildContext context, {required int groupID}) {
     final userId = Global.storageServices.get(PrefConst.userId).toString();
 
-    socketService.leaveUserFromGroup(userId, groupID);
+    final receiverId = memberData.userId.toString();
+
+    socketService.leavePrivateChat(
+      userId: userId,
+      receiverId: receiverId,
+    );
     // socketService.disconnectSocket();
+
+    socketService.disconnectPrivateChatSocket();
 
     _messages.clear();
     messageText.value = "";
@@ -808,7 +920,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
   void pinMessage(MessageData message) {
     final currentUserId =
-    Global.storageServices.get(PrefConst.userId).toString();
+        Global.storageServices.get(PrefConst.userId).toString();
 
     final otherUserId = memberData.userId.toString();
 
@@ -817,14 +929,13 @@ class MessageController extends GetxController with WidgetsBindingObserver {
       senderId: currentUserId,
       receiverId: otherUserId,
       messageId: message.id!,
-      pinnedByName:
-      Global.storageServices.get(PrefConst.userName) ?? "User",
+      pinnedByName: Global.storageServices.get(PrefConst.userName) ?? "User",
     );
   }
 
   void unpinMessage() {
     final currentUserId =
-    Global.storageServices.get(PrefConst.userId).toString();
+        Global.storageServices.get(PrefConst.userId).toString();
 
     final otherUserId = memberData.userId.toString();
 

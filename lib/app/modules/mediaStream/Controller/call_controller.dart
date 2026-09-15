@@ -38,6 +38,7 @@ class CallController extends GetxController {
 
   final List<_RecentEntry> _recentRaw = <_RecentEntry>[];
 
+  // Dial pad state
   final RxBool isDialPadOpen = false.obs;
   final RxString dialNumber = ''.obs;
 

@@ -1,9 +1,9 @@
 
 
-import 'package:fgtracker/app/modules/mediaStream/controller/calling_controller.dart';
+import 'package:fgtracker/app/modules/mediaStream/Controller/calling_controller.dart';
 import 'package:get/get.dart';
 
-import '../controller/incoming_call_controller.dart';
+import '../Controller/incoming_call_controller.dart';
 
 
 

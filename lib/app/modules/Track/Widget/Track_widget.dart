@@ -1,7 +1,6 @@
 import 'dart:math';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/values/colors.dart';
-import 'package:fgtracker/app/config/themes_data.dart';
 import 'package:fgtracker/app/modules/Track/Widget/ToBitDescription.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -11,8 +10,8 @@ Future<BitmapDescriptor> getCustomIcon(
     String imageUrl, dynamic isOnline, {bool isMe = false}) async {
   return MarkerWidget(imageUrl: imageUrl, isOnline: isOnline, isMe: isMe)
       .toBitmapDescriptor(
-    logicalSize: Size(46.w, 55.h),
-    imageSize: Size(92.w, 110.h),
+    logicalSize: isMe ? Size(54.w, 64.h) : Size(48.w, 48.h),
+    imageSize: isMe ? Size(108.w, 128.h) : Size(96.w, 96.h),
   );
 }
 
@@ -28,120 +27,145 @@ class MarkerWidget extends StatelessWidget {
     this.isMe = false,
   });
 
-  Color get randomColor {
-    final Random random = Random(imageUrl.hashCode);
-    return Color.fromARGB(
-      255,
-      random.nextInt(256),
-      random.nextInt(256),
-      random.nextInt(256),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
+    if (isMe) {
+      return SizedBox(
+        width: 54.w,
+        height: 64.h,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 3.h),
+              decoration: BoxDecoration(
+                color: const Color(0xFF4338CA),
+                borderRadius: BorderRadius.circular(8.r),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.18),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Text(
+                "You",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w800,
+                  fontSize: 10.sp,
+                ),
+              ),
+            ),
+            CustomPaint(
+              size: Size(8.w, 4.h),
+              painter: _TrianglePainter(color: const Color(0xFF4338CA)),
+            ),
+            SizedBox(height: 2.h),
+            Container(
+              width: 22.w,
+              height: 22.w,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: const Color(0xFF4338CA).withOpacity(0.24),
+              ),
+              padding: EdgeInsets.all(3.w),
+              child: Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: const Color(0xFF4338CA),
+                  border: Border.all(color: Colors.white, width: 2.w),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     final String fullUrl = imageUrl.isEmpty
         ? ""
         : (imageUrl.startsWith("http")
             ? imageUrl
             : ConstRes.aImageBaseUrl + imageUrl);
 
-    final Color pinColor =
-        isMe ? AppColors.darkBlue : ToggleThemeData.Appcolor;
-    final Color borderColor = isMe
-        ? AppColors.darkBlue
-        : (isOnline == true ? AppColors.primaryElementStatus : AppColors.darkRed);
+    final bool online = isOnline == true ||
+        isOnline == 1 ||
+        isOnline == 'true' ||
+        isOnline == '1';
 
-    return Container(
-      width: 46.w,
-      height: 55.h,
-      alignment: Alignment.topCenter,
-      child: Stack(
-        alignment: Alignment.topCenter,
-        children: [
-          Positioned(
-            bottom: 0,
-            child: Icon(
-              Icons.location_pin,
-              size: 46.sp,
-              color: pinColor,
+    final Color ringColor = online
+        ? const Color(0xFF10B981)
+        : const Color(0xFF94A3B8);
+
+    return SizedBox(
+      width: 48.w,
+      height: 48.w,
+      child: Center(
+        child: Container(
+          width: 44.w,
+          height: 44.w,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: Colors.white,
+            border: Border.all(
+              color: ringColor,
+              width: 2.8.w,
             ),
+            boxShadow: [
+              BoxShadow(
+                color: online
+                    ? const Color(0xFF10B981).withOpacity(0.35)
+                    : Colors.black.withOpacity(0.12),
+                blurRadius: 6,
+                spreadRadius: 1,
+                offset: const Offset(0, 1),
+              ),
+            ],
           ),
-          Positioned(
-            top: 16.h,
-            child: Stack(
-              children: [
-                Container(
-                  width: 24.w,
-                  height: 24.w,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: AppColors.white,
-                    border: Border.all(
-                      color: borderColor,
-                      width: 1.5,
-                    ),
-                  ),
-                  child: ClipOval(
-                    child: fullUrl.isNotEmpty
-                        ? Image.network(
-                            fullUrl,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) {
-                              debugPrint("❌ Image load error: $fullUrl");
-                              return Icon(
-                                isMe ? Icons.person_pin : Icons.person,
-                                size: 14.sp,
-                                color: isMe
-                                    ? AppColors.darkBlue
-                                    : AppColors.grey,
-                              );
-                            },
-                          )
-                        : Icon(
-                            isMe ? Icons.person_pin : Icons.person,
-                            size: 14.sp,
-                            color:
-                                isMe ? AppColors.darkBlue : AppColors.grey,
-                          ),
-                  ),
-                ),
-                Positioned(
-                  right: 0,
-                  top: 0,
-                  child: Container(
-                    padding: isMe
-                        ? const EdgeInsets.symmetric(
-                            horizontal: 2, vertical: 0.5)
-                        : EdgeInsets.zero,
-                    width: isMe ? null : 6.5.w,
-                    height: isMe ? null : 6.5.w,
-                    decoration: BoxDecoration(
-                      shape: isMe ? BoxShape.rectangle : BoxShape.circle,
-                      borderRadius:
-                          isMe ? BorderRadius.circular(4.r) : null,
-                      color: isMe
-                          ? AppColors.darkBlue
-                          : (isOnline == true ? AppColors.primaryElementStatus : AppColors.darkRed),
-                      border: Border.all(color: AppColors.white, width: 1.2),
-                    ),
-                    child: isMe
-                        ? const Text(
-                            "YOU",
-                            style: TextStyle(
-                              color: AppColors.white,
-                              fontSize: 6,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          )
-                        : null,
-                  ),
-                ),
-              ],
-            ),
+          child: ClipOval(
+            child: fullUrl.isNotEmpty
+                ? Image.network(
+                    fullUrl,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) =>
+                        _fallbackAvatar(online),
+                  )
+                : _fallbackAvatar(online),
           ),
-        ],
+        ),
       ),
     );
   }
+
+  Widget _fallbackAvatar(bool online) {
+    return Container(
+      color: online ? const Color(0xFFECFDF5) : const Color(0xFFF1F5F9),
+      child: Icon(
+        Icons.person,
+        color: online ? const Color(0xFF059669) : const Color(0xFF64748B),
+        size: 22.sp,
+      ),
+    );
+  }
+}
+
+class _TrianglePainter extends CustomPainter {
+  final Color color;
+  _TrianglePainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()..color = color;
+    final path = Path()
+      ..moveTo(0, 0)
+      ..lineTo(size.width / 2, size.height)
+      ..lineTo(size.width, 0)
+      ..close();
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

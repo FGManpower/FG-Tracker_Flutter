@@ -44,7 +44,7 @@ class ChatBubble extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final currentUserId =
-        Global.storageServices.get(PrefConst.userId).toString();
+    Global.storageServices.get(PrefConst.userId).toString();
 
     final isSentByMe = message.senderId.toString() == currentUserId;
 
@@ -53,17 +53,17 @@ class ChatBubble extends StatelessWidget {
 
     final borderRadius = isSentByMe
         ? BorderRadius.only(
-            topLeft: Radius.circular(16.r),
-            topRight: Radius.circular(16.r),
-            bottomLeft: Radius.circular(16.r),
-            bottomRight: Radius.circular(4.r),
-          )
+      topLeft: Radius.circular(16.r),
+      topRight: Radius.circular(16.r),
+      bottomLeft: Radius.circular(16.r),
+      bottomRight: Radius.circular(4.r),
+    )
         : BorderRadius.only(
-            topLeft: Radius.circular(4.r),
-            topRight: Radius.circular(16.r),
-            bottomLeft: Radius.circular(16.r),
-            bottomRight: Radius.circular(16.r),
-          );
+      topLeft: Radius.circular(4.r),
+      topRight: Radius.circular(16.r),
+      bottomLeft: Radius.circular(16.r),
+      bottomRight: Radius.circular(16.r),
+    );
 
     return Container(
       margin: EdgeInsets.symmetric(vertical: 6.h),
@@ -82,8 +82,7 @@ class ChatBubble extends StatelessWidget {
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 300),
                       constraints: BoxConstraints(
-                        maxWidth:
-                        MediaQuery.of(context).size.width * 0.75,
+                        maxWidth: MediaQuery.of(context).size.width * 0.75,
                       ),
                       padding: EdgeInsets.symmetric(
                         horizontal: 12.w,
@@ -98,8 +97,7 @@ class ChatBubble extends StatelessWidget {
                         borderRadius: borderRadius,
                         boxShadow: [
                           BoxShadow(
-                            color:
-                            Colors.black.withValues(alpha: 0.04),
+                            color: Colors.black.withValues(alpha: 0.04),
                             blurRadius: 4,
                             offset: const Offset(0, 2),
                           ),
@@ -107,15 +105,13 @@ class ChatBubble extends StatelessWidget {
                       ),
                       child: IntrinsicWidth(
                         child: Column(
-                          crossAxisAlignment:
-                          CrossAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             _buildReplyPreview(
                               message,
                               isSentByMe,
                             ),
-
                             if (_isPlainTextMessage(message))
                               _buildTextWithTime(
                                 message: message,
@@ -147,7 +143,8 @@ class ChatBubble extends StatelessWidget {
           ),
         ],
       ),
-    );  }
+    );
+  }
 
   bool _isPlainTextMessage(MessageData message) {
     final type = message.messageType ?? "text";
@@ -183,7 +180,7 @@ class ChatBubble extends StatelessWidget {
             (message.seenCount ?? 0) > 0 ? Icons.done_all : Icons.done,
             size: 14.sp,
             color:
-                (message.seenCount ?? 0) > 0 ? _purple : Colors.grey.shade500,
+            (message.seenCount ?? 0) > 0 ? _purple : Colors.grey.shade500,
           ),
         ],
       ],
@@ -199,7 +196,11 @@ class ChatBubble extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
         Expanded(
-          child: _buildTextContent(message, textColor, isSentByMe),
+          child: _buildTextContent(
+            message,
+            textColor,
+            isSentByMe,
+          ),
         ),
         SizedBox(width: 14.w),
         _buildTimeRow(isSentByMe),
@@ -208,10 +209,10 @@ class ChatBubble extends StatelessWidget {
   }
 
   Widget _buildTextContent(
-    MessageData message,
-    Color textColor,
-    bool isSentByMe,
-  ) {
+      MessageData message,
+      Color textColor,
+      bool isSentByMe,
+      ) {
     final query = controller.searchQuery.value;
     final content = message.content?.toString() ?? "";
 
@@ -252,20 +253,26 @@ class ChatBubble extends StatelessWidget {
       ),
       onOpen: (link) async {
         Uri uri = Uri.parse(link.url);
+
         if (!uri.hasScheme) {
           uri = Uri.parse("https://${link.url}");
         }
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
+
+        await launchUrl(
+          uri,
+          mode: LaunchMode.externalApplication,
+        );
       },
     );
   }
 
   Widget _buildMessageContent(
-    MessageData message,
-    Color textColor,
-    bool isSentByMe,
-  ) {
-    if (message.messageType == "image" || message.messageType == "image_text") {
+      MessageData message,
+      Color textColor,
+      bool isSentByMe,
+      ) {
+    if (message.messageType == "image" ||
+        message.messageType == "image_text") {
       final imagePart = message.content ?? "";
       final caption = message.caption ?? "";
 
@@ -299,22 +306,33 @@ class ChatBubble extends StatelessWidget {
       );
     } else if (message.messageType == "video") {
       final parts = message.content?.split("||") ?? [];
-      final videoPath = parts.isNotEmpty ? parts[0] : "";
-      final thumbnailPath = parts.length > 1 ? parts[1] : "";
-      final duration = parts.length > 2 ? parts[2] : "--:--";
+
+      final videoPath = parts.isNotEmpty ? parts[0].trim() : "";
+
+      final rawThumbnailPath =
+      parts.length > 1 ? parts[1].trim() : "";
+
+      final duration =
+      parts.length > 2 && parts[2].trim().isNotEmpty
+          ? parts[2].trim()
+          : "--:--";
+
+      final videoUrl = _buildMediaUrl(videoPath);
+
+      final thumbnailUrl = _buildMediaUrl(rawThumbnailPath);
 
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           VideoThumbnailWidget(
-            videoUrl: "${ConstRes.aImageBaseUrl}$videoPath",
-            thumbnail: thumbnailPath,
+            videoUrl: videoUrl,
+            thumbnail: thumbnailUrl,
             duration: duration,
             onTap: () {
               Get.toNamed(
                 Routes.videoPlayerScreen,
                 arguments: {
-                  "videoUrl": "${ConstRes.aImageBaseUrl}$videoPath",
+                  "videoUrl": videoUrl,
                 },
               );
             },
@@ -332,30 +350,41 @@ class ChatBubble extends StatelessWidget {
       );
     } else if (message.messageType == "document") {
       final parts = message.content?.split("||") ?? [];
+
       final documentUrl = parts.isNotEmpty ? parts[0] : "";
-      String documentName =
-          parts.length > 1 ? parts[1] : documentUrl.split('/').last;
+
+      String documentName = parts.length > 1
+          ? parts[1]
+          : documentUrl.split('/').last;
+
       documentName = removeDuplicateExtension(documentName);
+
       final extension = documentName.split('.').last.toLowerCase();
+
       final fileSize = parts.length > 2 ? parts[2] : "";
 
       IconData icon;
+
       switch (extension) {
         case "pdf":
           icon = Icons.picture_as_pdf_rounded;
           break;
+
         case "doc":
         case "docx":
           icon = Icons.description_rounded;
           break;
+
         case "xls":
         case "xlsx":
           icon = Icons.table_chart_rounded;
           break;
+
         case "ppt":
         case "pptx":
           icon = Icons.slideshow_rounded;
           break;
+
         default:
           icon = Icons.insert_drive_file_rounded;
       }
@@ -365,8 +394,9 @@ class ChatBubble extends StatelessWidget {
         children: [
           InkWell(
             onTap: () async {
-              await DocumentService()
-                  .openDocument("${ConstRes.aImageBaseUrl}$documentUrl");
+              await DocumentService().openDocument(
+                "${ConstRes.aImageBaseUrl}$documentUrl",
+              );
             },
             borderRadius: BorderRadius.circular(12.r),
             child: Container(
@@ -387,7 +417,11 @@ class ChatBubble extends StatelessWidget {
                       color: _purple.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(10.r),
                     ),
-                    child: Icon(icon, color: _purple, size: 24.sp),
+                    child: Icon(
+                      icon,
+                      color: _purple,
+                      size: 24.sp,
+                    ),
                   ),
                   SizedBox(width: 10.w),
                   Expanded(
@@ -420,7 +454,11 @@ class ChatBubble extends StatelessWidget {
                     ),
                   ),
                   SizedBox(width: 6.w),
-                  Icon(Icons.download_rounded, color: _purple, size: 20.sp),
+                  Icon(
+                    Icons.download_rounded,
+                    color: _purple,
+                    size: 20.sp,
+                  ),
                 ],
               ),
             ),
@@ -450,27 +488,57 @@ class ChatBubble extends StatelessWidget {
         textColor: textColor,
       );
     } else {
-      return _buildTextContent(message, textColor, isSentByMe);
+      return _buildTextContent(
+        message,
+        textColor,
+        isSentByMe,
+      );
     }
   }
 
-  Widget _buildReplyPreview(MessageData message, bool isSentByMe) {
-    if (message.replyId == null) return const SizedBox.shrink();
+
+  String _buildMediaUrl(String path) {
+    if (path.trim().isEmpty) {
+      return "";
+    }
+
+    final value = path.trim();
+
+    if (value.startsWith("http://") ||
+        value.startsWith("https://")) {
+      return value;
+    }
+
+    return "${ConstRes.aImageBaseUrl}$value";
+  }
+
+  Widget _buildReplyPreview(
+      MessageData message,
+      bool isSentByMe,
+      ) {
+    if (message.replyId == null) {
+      return const SizedBox.shrink();
+    }
 
     String preview = message.replyMessage?.toString() ?? "";
+
     switch (message.replyType) {
       case "image":
         preview = "📷 Photo";
         break;
+
       case "video":
         preview = "🎥 Video";
         break;
+
       case "audio":
         preview = "🎤 Voice message";
         break;
+
       case "document":
         preview = "📄 Document";
         break;
+
       case "location":
         preview = "📍 Location";
         break;
@@ -492,7 +560,10 @@ class ChatBubble extends StatelessWidget {
               : Colors.grey.shade100,
           borderRadius: BorderRadius.circular(10.r),
           border: Border(
-            left: BorderSide(color: _purple, width: 3),
+            left: BorderSide(
+              color: _purple,
+              width: 3,
+            ),
           ),
         ),
         child: Column(
@@ -522,50 +593,60 @@ class ChatBubble extends StatelessWidget {
     );
   }
 
-  void _showMessageMenu(BuildContext bubbleContext, bool isSentByMe) {
-    final isPinned = controller.pinnedMessage.value?.id == message.id;
+  void _showMessageMenu(
+      BuildContext bubbleContext,
+      bool isSentByMe,
+      ) {
+    final isPinned =
+        controller.pinnedMessage.value?.id == message.id;
 
-    final isText = message.messageType == "text" ||
-        message.messageType == "text_message" ||
-        (message.messageType ?? "").isEmpty;
+    final isText =
+        message.messageType == "text" ||
+            message.messageType == "text_message" ||
+            (message.messageType ?? "").isEmpty;
 
     final renderBox =
     bubbleContext.findRenderObject() as RenderBox;
 
-    final position = renderBox.localToGlobal(Offset.zero);
+    final position =
+    renderBox.localToGlobal(Offset.zero);
+
     final size = renderBox.size;
 
-    final screenSize = MediaQuery.of(bubbleContext).size;
+    final screenSize =
+        MediaQuery.of(bubbleContext).size;
 
     const menuWidth = 220.0;
     const menuMargin = 8.0;
 
-    // Default: message ke right side
-    double left = position.dx + size.width + menuMargin;
+    double left =
+        position.dx + size.width + menuMargin;
 
-    // Right side space nahi hai -> message ke left side
-    if (left + menuWidth > screenSize.width - menuMargin) {
-      left = position.dx - menuWidth - menuMargin;
+    if (left + menuWidth >
+        screenSize.width - menuMargin) {
+      left =
+          position.dx - menuWidth - menuMargin;
     }
 
-    // Safety
     left = left.clamp(
       menuMargin,
-      screenSize.width - menuWidth - menuMargin,
+      screenSize.width -
+          menuWidth -
+          menuMargin,
     );
 
-    // Message ke top ke aas-paas
     double top = position.dy;
 
-    // Menu ki approximate height
     const menuHeight = 500.0;
 
-    // Neeche space nahi hai -> upar shift
-    if (top + menuHeight > screenSize.height - menuMargin) {
-      top = screenSize.height - menuHeight - menuMargin;
+    if (top + menuHeight >
+        screenSize.height - menuMargin) {
+      top =
+          screenSize.height -
+              menuHeight -
+              menuMargin;
     }
 
-    // Top boundary
     if (top < menuMargin) {
       top = menuMargin;
     }
@@ -583,7 +664,6 @@ class ChatBubble extends StatelessWidget {
                 child: const SizedBox.expand(),
               ),
             ),
-
             Positioned(
               left: left,
               top: top,
@@ -593,17 +673,20 @@ class ChatBubble extends StatelessWidget {
                   width: menuWidth,
                   decoration: BoxDecoration(
                     color: const Color(0xFFF8F7FC),
-                    borderRadius: BorderRadius.circular(16.r),
+                    borderRadius:
+                    BorderRadius.circular(16.r),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.14),
+                        color:
+                        Colors.black.withOpacity(0.14),
                         blurRadius: 24,
                         offset: const Offset(0, 8),
                       ),
                     ],
                   ),
                   child: ClipRRect(
-                    borderRadius: BorderRadius.circular(16.r),
+                    borderRadius:
+                    BorderRadius.circular(16.r),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -627,11 +710,14 @@ class ChatBubble extends StatelessWidget {
 
                               await Clipboard.setData(
                                 ClipboardData(
-                                  text: message.content ?? "",
+                                  text:
+                                  message.content ?? "",
                                 ),
                               );
 
-                              Utils().fluttertoast("Message copied");
+                              Utils().fluttertoast(
+                                "Message copied",
+                              );
                             },
                           ),
 
@@ -658,14 +744,19 @@ class ChatBubble extends StatelessWidget {
                             title: "Edit",
                             onTap: () {
                               Navigator.pop(ctx);
-                              controller.startEditingMessage(message);
+
+                              controller
+                                  .startEditingMessage(
+                                message,
+                              );
                             },
                           ),
 
                         _menuTile(
                           icon: Icons.push_pin_rounded,
-                          iconColor:
-                          isPinned ? Colors.redAccent : _purple,
+                          iconColor: isPinned
+                              ? Colors.redAccent
+                              : _purple,
                           title: isPinned
                               ? "Unpin Message"
                               : "Pin Message",
@@ -690,7 +781,8 @@ class ChatBubble extends StatelessWidget {
 
                         if (isSentByMe)
                           _menuTile(
-                            icon: Icons.delete_outline_rounded,
+                            icon:
+                            Icons.delete_outline_rounded,
                             iconColor: Colors.redAccent,
                             title: "Delete for Everyone",
                             isDestructive: true,
@@ -729,6 +821,7 @@ class ChatBubble extends StatelessWidget {
       },
     );
   }
+
   Widget _menuTile({
     required IconData icon,
     required Color iconColor,
@@ -739,10 +832,17 @@ class ChatBubble extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 13.h),
+        padding: EdgeInsets.symmetric(
+          horizontal: 16.w,
+          vertical: 13.h,
+        ),
         child: Row(
           children: [
-            Icon(icon, size: 20.sp, color: iconColor),
+            Icon(
+              icon,
+              size: 20.sp,
+              color: iconColor,
+            ),
             SizedBox(width: 14.w),
             Expanded(
               child: Text(
@@ -763,39 +863,63 @@ class ChatBubble extends StatelessWidget {
   }
 
   Widget _buildHighlightedText(
-    String text,
-    String query, {
-    required TextStyle normalStyle,
-    required TextStyle highlightStyle,
-  }) {
+      String text,
+      String query, {
+        required TextStyle normalStyle,
+        required TextStyle highlightStyle,
+      }) {
     final lowerText = text.toLowerCase();
     final lowerQuery = query.toLowerCase();
+
     final List<InlineSpan> spans = [];
+
     int start = 0;
 
     while (true) {
-      final index = lowerText.indexOf(lowerQuery, start);
+      final index =
+      lowerText.indexOf(lowerQuery, start);
+
       if (index == -1) {
         if (start < text.length) {
-          spans.add(TextSpan(text: text.substring(start), style: normalStyle));
+          spans.add(
+            TextSpan(
+              text: text.substring(start),
+              style: normalStyle,
+            ),
+          );
         }
         break;
       }
+
       if (index > start) {
         spans.add(
-            TextSpan(text: text.substring(start, index), style: normalStyle));
+          TextSpan(
+            text: text.substring(start, index),
+            style: normalStyle,
+          ),
+        );
       }
-      spans.add(TextSpan(
-        text: text.substring(index, index + query.length),
-        style: highlightStyle,
-      ));
+
+      spans.add(
+        TextSpan(
+          text: text.substring(
+            index,
+            index + query.length,
+          ),
+          style: highlightStyle,
+        ),
+      );
+
       start = index + query.length;
     }
 
-    return RichText(text: TextSpan(children: spans));
+    return RichText(
+      text: TextSpan(
+        children: spans,
+      ),
+    );
   }
 }
-
 class GroupChatBubble extends StatelessWidget {
   final MessageData message;
   final BuildContext context;

@@ -5,7 +5,12 @@ class GetMessage {
   bool? isCreator;
   int? pinnedMessageId;
 
-  GetMessage({this.status, this.message, this.messageData, this.isCreator,  this.pinnedMessageId,
+  GetMessage({
+    this.status,
+    this.message,
+    this.messageData,
+    this.isCreator,
+    this.pinnedMessageId,
   });
 
   GetMessage.fromJson(Map<String, dynamic> json) {
@@ -13,23 +18,43 @@ class GetMessage {
     message = json['message'];
     isCreator = json['isCreator'];
     pinnedMessageId = json['pinnedMessageId'];
-    if (json['MessageData'] != null) {
+
+    final messages = json['MessageData'] ??
+        json['messageData'] ??
+        json['messages'] ??
+        json['data'];
+
+    if (messages is List) {
       messageData = <MessageData>[];
-      json['MessageData'].forEach((v) {
-        messageData!.add(MessageData.fromJson(v));
-      });
+
+      for (final item in messages) {
+        if (item is Map<String, dynamic>) {
+          messageData!.add(
+            MessageData.fromJson(item),
+          );
+        } else if (item is Map) {
+          messageData!.add(
+            MessageData.fromJson(
+              Map<String, dynamic>.from(item),
+            ),
+          );
+        }
+      }
     }
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
+
     data['status'] = status;
     data['message'] = message;
     data['isCreator'] = isCreator;
     data['pinnedMessageId'] = pinnedMessageId;
+
     if (messageData != null) {
       data['MessageData'] = messageData!.map((v) => v.toJson()).toList();
     }
+
     return data;
   }
 }
@@ -56,27 +81,28 @@ class MessageData {
   dynamic replySenderName;
   dynamic locationSharing;
 
-  MessageData(
-      {this.id,
-      this.senderId,
-      this.receiverId,
-      this.messageType,
-      this.content,
-      this.timestamp,
-      this.seenCount,
-      this.senderImage,
-        this.seenBy,
-        this.edited,
-        this.isEdited,
-        this.editedAt,
-        this.senderName,
-      this.caption,
-      this.replyId,
-      this.replyMessage,
-      this.replyType,
-      this.replySenderName,
-      this.thumbnail,
-      this.locationSharing});
+  MessageData({
+    this.id,
+    this.senderId,
+    this.receiverId,
+    this.messageType,
+    this.content,
+    this.timestamp,
+    this.seenCount,
+    this.seenBy,
+    this.senderImage,
+    this.edited,
+    this.isEdited,
+    this.editedAt,
+    this.senderName,
+    this.caption,
+    this.replyId,
+    this.replyMessage,
+    this.replyType,
+    this.replySenderName,
+    this.thumbnail,
+    this.locationSharing,
+  });
 
   MessageData.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -84,7 +110,7 @@ class MessageData {
     receiverId = json['receiverId'];
     messageType = json['messageType'];
     content = json['content'];
-    timestamp = json['timestamp'];
+    timestamp = json['timestamp'] ?? json['createdAt'];
     seenCount = json['seenCount'];
     seenBy = json['seenBy'];
     edited = json['edited'];
@@ -93,18 +119,24 @@ class MessageData {
     senderName = json['senderName'];
     senderImage = json['senderImage'];
     thumbnail = json['thumbnail'];
-    caption = json["caption"];
-    replyId = json["replyId"] ?? json["reply_id"];
-    replyMessage = json["replyMessage"] ?? json["reply_message"];
-    replyType = json["replyType"] ?? json["reply_type"];
-    locationSharing = json["locationSharing"] ?? json["locationSharing"];
-    replySenderName = json["replySender"] ??
-        json["replySenderName"] ??
-        json["reply_sender_name"];
+    caption = json['caption'];
+
+    replyId = json['replyId'] ?? json['reply_id'];
+
+    replyMessage = json['replyMessage'] ?? json['reply_message'];
+
+    replyType = json['replyType'] ?? json['reply_type'];
+
+    replySenderName = json['replySender'] ??
+        json['replySenderName'] ??
+        json['reply_sender_name'];
+
+    locationSharing = json['locationSharing'] ?? json['location_sharing'];
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
+
     data['id'] = id;
     data['senderId'] = senderId;
     data['receiverId'] = receiverId;

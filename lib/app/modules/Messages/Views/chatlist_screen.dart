@@ -1,10 +1,14 @@
+import 'package:fgtracker/app/Model/MemberDataRes.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import '../../../Core/constant/const_res.dart';
+import '../Controller/MessageController.dart';
 import '../Controller/chat_list_controller.dart';
 import '../widgets/custom_dropdown_menu.dart';
+import 'Chat_Screen.dart';
 import 'new_chat_screen.dart';
 
 class ChatListScreen extends StatelessWidget {
@@ -123,59 +127,49 @@ class _AllChatsBody extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SizedBox(height: 8.h),
-
-
             _sectionTitle(
               "Status",
               showViewAll: true,
             ),
-
             _statusSection(),
-
             SizedBox(height: 20.h),
-
-
-            Obx(() {
-              final pinnedChats = controller.privateChats
-                  .where((chat) => chat.isPinned == true)
-                  .toList();
-
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _sectionTitle(
-                    "Pinned Chats 📌",
-                    badgeCount: pinnedChats.length,
-                  ),
-                  if (pinnedChats.isEmpty)
-                    _emptySection("No pinned chats")
-                  else
-                    ...pinnedChats.map(
-                      (chat) => _chatTile(
-                        context: context,
-                        name: chat.name ?? "Unknown User",
-                        role: chat.role ?? "",
-                        msg: chat.message ?? "",
-                        time: chat.time ?? "",
-                        unreadCount: chat.unreadCount ?? 0,
-                        statusColor: _statusColor(chat.status),
-                        isGroup: chat.isGroup ?? false,
-                        isPinned: true,
-                        image: chat.image,
-                      ),
-                    ),
-                ],
-              );
-            }),
-
-            SizedBox(height: 10.h),
-
-
+            // Obx(() {
+            //   final pinnedChats = controller.privateChats
+            //       .where((chat) => chat.isPinned == true)
+            //       .toList();
+            //
+            //   return Column(
+            //     crossAxisAlignment: CrossAxisAlignment.start,
+            //     children: [
+            //       _sectionTitle(
+            //         "Pinned Chats 📌",
+            //         badgeCount: pinnedChats.length,
+            //       ),
+            //       if (pinnedChats.isEmpty)
+            //         _emptySection("No pinned chats")
+            //       else
+            //         ...pinnedChats.map(
+            //           (chat) => _chatTile(
+            //             context: context,
+            //             name: chat.name ?? "Unknown User",
+            //             role: chat.role ?? "",
+            //             msg: chat.message ?? "",
+            //             time: chat.time ?? "",
+            //             unreadCount: chat.unreadCount ?? 0,
+            //             statusColor: _statusColor(chat.status),
+            //             isGroup: chat.isGroup ?? false,
+            //             isPinned: true,
+            //             image: chat.image,
+            //           ),
+            //         ),
+            //     ],
+            //   );
+            // }),
+            // SizedBox(height: 10.h),
             _sectionTitle(
               "All Chats",
               showDropdown: true,
             ),
-
             Obx(() {
               if (controller.isLoading.value &&
                   controller.privateChats.isEmpty) {
@@ -244,7 +238,6 @@ class _AllChatsBody extends StatelessWidget {
                 ),
               );
             }),
-
             SizedBox(height: 100.h),
           ],
         ),
@@ -485,8 +478,14 @@ class _AllChatsBody extends StatelessWidget {
               ),
               child: CircleAvatar(
                 backgroundColor: Colors.grey.shade300,
-                backgroundImage:
-                    imageUrl.isNotEmpty ? NetworkImage(imageUrl) : null,
+                backgroundImage: imageUrl.isNotEmpty
+                    ? NetworkImage(
+                  imageUrl.startsWith("http://") ||
+                      imageUrl.startsWith("https://")
+                      ? imageUrl
+                      : "${ConstRes.production}$imageUrl",
+                )
+                    : null,
                 child: imageUrl.isEmpty
                     ? Icon(
                         Icons.person,
@@ -547,6 +546,33 @@ class _AllChatsBody extends StatelessWidget {
       onTapDown: (d) {
         tapPos = d.globalPosition;
       },
+      onTap: () {
+        final chat = controller.privateChats.firstWhere(
+              (item) =>
+          item.name == name &&
+              item.image == image,
+          orElse: () => controller.privateChats.first,
+        );
+
+        if (chat.userId == null) {
+          return;
+        }
+
+        Get.to(
+              () => ChatScreen(),
+          arguments: {
+            "userData": MemberData(
+              userId: chat.userId,
+              name: chat.name,
+              profileImage: chat.image,
+              groupId: 0,
+            ),
+          },
+          binding: BindingsBuilder(() {
+            Get.put(MessageController());
+          }),
+        );
+      },
       onLongPress: () => _showChatOptions(context, tapPos),
       child: Container(
         margin: EdgeInsets.symmetric(
@@ -599,6 +625,33 @@ class _AllChatsBody extends StatelessWidget {
       onTapDown: (d) {
         tapPos = d.globalPosition;
       },
+      onTap: () {
+        final chat = controller.privateChats.firstWhere(
+              (item) =>
+          item.name == name &&
+              item.image == image,
+          orElse: () => controller.privateChats.first,
+        );
+
+        if (chat.userId == null) {
+          return;
+        }
+
+        Get.to(
+              () => ChatScreen(),
+          arguments: {
+            "userData": MemberData(
+              userId: chat.userId,
+              name: chat.name,
+              profileImage: chat.image,
+              groupId: 0,
+            ),
+          },
+          binding: BindingsBuilder(() {
+            Get.put(MessageController());
+          }),
+        );
+      },
       onLongPress: () => _showChatOptions(context, tapPos),
       child: Container(
         color: Colors.transparent,
@@ -642,7 +695,12 @@ class _AllChatsBody extends StatelessWidget {
               backgroundColor:
                   isGroup ? const Color(0xFF6B4DFF) : Colors.grey.shade300,
               backgroundImage: (!isGroup && image != null && image.isNotEmpty)
-                  ? NetworkImage(image)
+                  ? NetworkImage(
+                image.startsWith("http://") ||
+                    image.startsWith("https://")
+                    ? image
+                    : "${ConstRes.production}$image",
+              )
                   : null,
               child: isGroup
                   ? Icon(

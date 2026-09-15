@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 import 'package:dio/dio.dart';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
@@ -15,6 +16,7 @@ import 'package:fgtracker/app/Model/group_count_detail.dart';
 import 'package:fgtracker/app/Model/member_live_status.dart';
 import 'package:fgtracker/app/modules/Track/Controller/LocationService.dart';
 import 'package:fgtracker/app/modules/Track/Controller/SocketServices.dart';
+import 'package:fgtracker/app/modules/Track/Controller/TrackLiveLocationSocketService.dart';
 import 'package:fgtracker/app/modules/Track/Widget/Track_widget.dart';
 import 'package:fgtracker/app/Data/Services/Tracking.dart';
 import 'package:fgtracker/app/modules/home/Controller/home_controller.dart';
@@ -40,9 +42,11 @@ class GeocodedAddressResult {
 }
 
 class TrackController extends GetxController {
-  RxString selectedRadius = '2'.obs;
+  RxString selectedRadius = '0.1'.obs;
   TextEditingController customRadiusController = TextEditingController();
   TextEditingController searchController = TextEditingController();
+  final RxString searchQuery = "".obs;
+  final RxBool isSearchDropdownOpen = false.obs;
 
   RxInt selectedTabIndex = 0.obs;
   RxBool isLoading = false.obs;
@@ -68,24 +72,32 @@ class TrackController extends GetxController {
   RxString currentLocationName = "Locating...".obs;
   RxString currentArea = "".obs;
   RxString currentCity = "".obs;
-  RxString selectedGroupName = "FG Manpower".obs;
+  RxString selectedGroupName = "".obs;
   RxString selectedGroupId = "".obs;
 
   // Google Map State
   GoogleMapController? mapController;
   final RxSet<Marker> markers = <Marker>{}.obs;
   final RxSet<Circle> circles = <Circle>{}.obs;
+  final RxSet<Polyline> polylines = <Polyline>{}.obs;
   final Map<String, BitmapDescriptor> _markerIconCache = {};
   final Map<String, String> _addressCache = {};
   final Map<String, GeocodedAddressResult> _detailedAddressCache = {};
 
   StreamSubscription<List<LiveLocationModel>>? _socketLiveLocationSubscription;
+  StreamSubscription<LiveLocationSocketModel>? _trackLiveSocketSubscription;
+  StreamSubscription<UserStatusSocketModel>? _userStatusSocketSubscription;
   StreamSubscription<Position>? _positionStreamSubscription;
   StreamSubscription<dynamic>? _groupCountSubscription;
 
   @override
   void onInit() {
     super.onInit();
+
+    // 0. Ensure lists start clean so only /users-within-radius API populates live tracking
+    radiusUsers.clear();
+    liveMembers.clear();
+    allFetchedMembers.clear();
 
     // 1. Instant load user location from multiple sources
     _loadInitialLocation();
@@ -130,11 +142,6 @@ class TrackController extends GetxController {
           currentLong.value = home.currentLocation.value!.longitude;
           debugPrint("📍 Instant location loaded from HomeController: ${currentLat.value}, ${currentLong.value}");
           reverseGeocodeLocation(currentLat.value, currentLong.value);
-        }
-
-        if (home.liveLocations.isNotEmpty) {
-          debugPrint("📍 Instant live members loaded from HomeController: ${home.liveLocations.length}");
-          _mergeSocketLocations(home.liveLocations);
         }
       }
     } catch (e) {
@@ -185,14 +192,22 @@ class TrackController extends GetxController {
   }
 
   Future<void> _initSockets() async {
-    // Dashboard socket
+    // Dashboard socket (for group counts)
     SocketDashboardService.instance.init();
-    _listenToSocketLiveLocations();
     _listenToGroupCounts();
 
-    // Location socket
+    // Location socket & Live Location Socket Service
     try {
       await SocketService.instance.init(ConstRes.socketUrl);
+      if (SocketService.instance.isSocketConnected) {
+        TrackLiveLocationSocketService.instance
+            .attachSocket(SocketService.instance.socket);
+      } else {
+        await TrackLiveLocationSocketService.instance
+            .init(socketUrl: ConstRes.socketUrl);
+      }
+      _listenToLiveLocationSocket();
+      _listenToUserStatusSocket();
       _listenToLocationSocketUpdates();
       if (selectedGroupId.value.isNotEmpty) {
         _joinGroupSocket(selectedGroupId.value);
@@ -270,7 +285,113 @@ class TrackController extends GetxController {
     });
   }
 
+  void _listenToLiveLocationSocket() {
+    _trackLiveSocketSubscription?.cancel();
+    _trackLiveSocketSubscription = TrackLiveLocationSocketService.instance
+        .locationStream
+        .listen((liveData) {
+      _applyLiveSocketLocationUpdate(liveData);
+    });
+  }
+
+  void _listenToUserStatusSocket() {
+    _userStatusSocketSubscription?.cancel();
+    _userStatusSocketSubscription = TrackLiveLocationSocketService.instance
+        .userStatusStream
+        .listen((status) {
+      final idx = radiusUsers
+          .indexWhere((u) => u.userId.toString() == status.userId);
+      if (idx >= 0) {
+        radiusUsers[idx].isOnline = status.isOnline;
+      }
+      final gIdx = onlineGroupMembers
+          .indexWhere((u) => u.userId.toString() == status.userId);
+      if (gIdx >= 0) {
+        onlineGroupMembers[gIdx].isOnline = status.isOnline ? 1 : 0;
+      }
+      _refreshMembersAndMap();
+    });
+  }
+
+  void _applyLiveSocketLocationUpdate(LiveLocationSocketModel data) {
+    if (data.lat == 0.0 || data.lng == 0.0) return;
+
+    final String userIdStr = data.userId.toString();
+    final nowIso = DateTime.now().toIso8601String();
+
+    String resolvedAddress = data.address;
+    if (resolvedAddress.isEmpty) {
+      if (data.area.isNotEmpty && data.city.isNotEmpty) {
+        resolvedAddress = data.area.toLowerCase() == data.city.toLowerCase()
+            ? data.city
+            : '${data.area}, ${data.city}';
+      } else if (data.area.isNotEmpty) {
+        resolvedAddress = data.area;
+      } else if (data.city.isNotEmpty) {
+        resolvedAddress = data.city;
+      }
+    }
+
+    final existingIdx =
+        radiusUsers.indexWhere((u) => u.userId.toString() == userIdStr);
+    if (existingIdx >= 0) {
+      final prev = radiusUsers[existingIdx];
+      prev.latitude = data.lat;
+      prev.longitude = data.lng;
+      prev.isOnline = true;
+      prev.lastSeen = nowIso;
+      if (data.name != null && data.name!.isNotEmpty) {
+        prev.name = data.name;
+      }
+      if (data.profileImage != null && data.profileImage!.isNotEmpty) {
+        prev.profileImage = data.profileImage;
+      }
+      if (resolvedAddress.isNotEmpty) {
+        prev.location = resolvedAddress;
+      }
+      _resolveAddressForUser(prev);
+    } else {
+      final newUser = UsersWithinRadiusData(
+        userId: data.userId,
+        name: data.name ?? "Member",
+        profileImage: data.profileImage,
+        latitude: data.lat,
+        longitude: data.lng,
+        isOnline: true,
+        lastSeen: nowIso,
+        team: selectedGroupName.value,
+        location: resolvedAddress.isNotEmpty ? resolvedAddress : null,
+      );
+      radiusUsers.add(newUser);
+      _resolveAddressForUser(newUser);
+    }
+
+    if (selectedGroupId.value.isNotEmpty &&
+        data.groupId != null &&
+        data.groupId.toString() == selectedGroupId.value) {
+      final groupMemberIdx = onlineGroupMembers
+          .indexWhere((m) => m.userId.toString() == userIdStr);
+      if (groupMemberIdx >= 0) {
+        final gm = onlineGroupMembers[groupMemberIdx];
+        gm.latitude = data.lat;
+        gm.longitude = data.lng;
+        gm.isOnline = 1;
+      }
+    }
+
+    _refreshMembersAndMap();
+  }
+
   void _listenToLocationSocketUpdates() {
+    SocketService.instance.onSendLocation((item) {
+      debugPrint("📡 Received send-location via SocketService: $item");
+      if (item is Map) {
+        final model =
+            LiveLocationSocketModel.fromJson(Map<String, dynamic>.from(item));
+        _applyLiveSocketLocationUpdate(model);
+      }
+    });
+
     SocketService.instance.onGroupLocationUpdate((item) {
       debugPrint("📡 Received group-location-update: $item");
       if (item is Map) {
@@ -325,6 +446,9 @@ class TrackController extends GetxController {
             if (addr != null && addr.isNotEmpty) {
               prev.location = addr;
             }
+            if (item['battery'] != null) {
+              prev.battery = item['battery'];
+            }
             _resolveAddressForUser(prev);
           } else {
             final newUser = UsersWithinRadiusData(
@@ -336,6 +460,7 @@ class TrackController extends GetxController {
               lastSeen: nowIso,
               team: selectedGroupName.value,
               location: addr,
+              battery: item['battery'] ?? item['batteryLevel'] ?? item['battery_level'],
             );
             radiusUsers.add(newUser);
             _resolveAddressForUser(newUser);
@@ -384,6 +509,9 @@ class TrackController extends GetxController {
         if (suAddress != null && suAddress.isNotEmpty) {
           prev.location = suAddress;
         }
+        if (su.battery != null) {
+          prev.battery = su.battery;
+        }
         _resolveAddressForUser(prev);
       } else {
         final newUser = UsersWithinRadiusData(
@@ -393,6 +521,7 @@ class TrackController extends GetxController {
           latitude: su.latitude,
           longitude: su.longitude,
           isOnline: true,
+          battery: su.battery,
           lastSeen: nowIso,
           team: selectedGroupName.value,
           location: suAddress,
@@ -405,7 +534,8 @@ class TrackController extends GetxController {
   }
 
   void _refreshMembersAndMap() {
-    final mapped = radiusUsers
+    final onlineUsers = radiusUsers.where((u) => u.isOnline).toList();
+    final mapped = onlineUsers
         .map((e) => e.toMemberModel(
               currentUserLat: currentLat.value,
               currentUserLong: currentLong.value,
@@ -414,8 +544,7 @@ class TrackController extends GetxController {
         .toList();
 
     allFetchedMembers.value = mapped;
-    final onlineCount = mapped.where((m) => m.isOnline).length;
-    liveNowCount.value = onlineCount > 0 ? onlineCount : mapped.length;
+    liveNowCount.value = mapped.length;
     if (totalMembersCount.value < liveNowCount.value) {
       totalMembersCount.value = liveNowCount.value;
     }
@@ -438,20 +567,13 @@ class TrackController extends GetxController {
         groupList.value = result.data!.groupData!;
         filteredGroups.value = result.data!.groupData!;
 
-        GroupsResData? validGroup;
-        for (var g in groupList) {
-          if (g.groupName != null &&
-              g.groupName!.trim().isNotEmpty &&
-              !g.groupName!.toLowerCase().contains("test")) {
-            validGroup = g;
-            break;
-          }
-        }
-        if (validGroup != null) {
-          selectedGroupName.value = validGroup.groupName!;
-          selectedGroupId.value = validGroup.id?.toString() ?? "";
-        } else {
-          selectedGroupName.value = "FG Manpower";
+        if (groupList.isNotEmpty) {
+          final valid = groupList.firstWhere(
+            (g) => g.groupName != null && g.groupName!.trim().isNotEmpty,
+            orElse: () => groupList.first,
+          );
+          selectedGroupName.value = valid.groupName ?? "";
+          selectedGroupId.value = valid.id?.toString() ?? "";
         }
 
         int sumMembers = 0;
@@ -487,19 +609,87 @@ class TrackController extends GetxController {
   }
 
   void selectGroup(GroupsResData group) {
-    selectedGroupName.value = (group.groupName != null &&
-            !group.groupName!.toLowerCase().contains("test"))
-        ? group.groupName!
-        : "FG Manpower";
+    selectedGroupName.value = group.groupName ?? "";
     selectedGroupId.value = group.id?.toString() ?? "";
     if (group.memberCount != null && group.memberCount! > 0) {
       totalMembersCount.value = group.memberCount!;
     }
     if (group.id != null) {
-      _joinGroupSocket(group.id!.toString());
-      fetchMembersForSelectedGroup(group.id!.toString());
+      final gId = group.id!.toString();
+      _joinGroupSocket(gId);
     }
-    getUsersWithinRadius();
+  }
+
+  Future<void> fetchGroupLocationData(String groupId) async {
+    try {
+      isLoading.value = true;
+      final int? gId = int.tryParse(groupId);
+      if (gId == null) return;
+
+      final res = await TrackRepo.getUserLocationData(gId);
+      if (res.status == true && res.locations != null && res.locations!.isNotEmpty) {
+        final List<UsersWithinRadiusData> groupUsers = [];
+        for (var loc in res.locations!) {
+          final uId = loc.userId?.toString() ?? '';
+          if (uId.isEmpty) continue;
+
+          final double? lat = double.tryParse(loc.latitude?.toString() ?? '');
+          final double? lng = double.tryParse(loc.longitude?.toString() ?? '');
+          final bool isOnline = loc.isOnline == true ||
+              Tracking().isOnline(rawIsOnline: loc.isOnline, lastSeen: loc.lastSeen?.toString());
+
+          groupUsers.add(UsersWithinRadiusData(
+            userId: loc.userId,
+            name: (loc.name != null && loc.name.toString().trim().isNotEmpty)
+                ? loc.name.toString().trim()
+                : "Member $uId",
+            profileImage: loc.profileImage?.toString(),
+            latitude: lat,
+            longitude: lng,
+            isOnline: isOnline,
+            lastSeen: loc.lastSeen?.toString(),
+            team: selectedGroupName.value,
+            location: null,
+          ));
+        }
+
+        if (groupUsers.isNotEmpty) {
+          radiusUsers.assignAll(groupUsers);
+          await _resolveAllMembersAddresses();
+          _refreshMembersAndMap();
+          fitAllMembers();
+        }
+      } else {
+        // Fallback: fetch from GroupRepo.getMemberData
+        final memberRes = await GroupRepo.getMemberData(groupId);
+        if (memberRes.status == true && memberRes.memberData != null && memberRes.memberData!.isNotEmpty) {
+          final List<UsersWithinRadiusData> groupUsers = [];
+          for (var m in memberRes.memberData!) {
+            final bool isOnline = m.isOnline == true ||
+                Tracking().isOnline(rawIsOnline: m.isOnline, lastSeen: m.lastSeen);
+            groupUsers.add(UsersWithinRadiusData(
+              userId: m.userId,
+              name: m.name ?? m.mobileNo ?? "Member ${m.userId ?? ''}",
+              profileImage: m.profileImage,
+              latitude: null,
+              longitude: null,
+              isOnline: isOnline,
+              lastSeen: m.lastSeen,
+              team: selectedGroupName.value,
+              location: null,
+            ));
+          }
+          if (groupUsers.isNotEmpty) {
+            radiusUsers.assignAll(groupUsers);
+            _refreshMembersAndMap();
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint("Error in fetchGroupLocationData: $e");
+    } finally {
+      isLoading.value = false;
+    }
   }
 
   Future<GeocodedAddressResult> getDetailedCityAreaAddress(
@@ -690,6 +880,20 @@ class TrackController extends GetxController {
           u.latitude != 0.0 &&
           u.longitude != 0.0) {
         futures.add(_resolveAddressForUser(u));
+      } else if (u.location != null &&
+          u.location!.trim().isNotEmpty &&
+          u.location != "Location unavailable" &&
+          u.location != "Locating...") {
+        futures.add(() async {
+          try {
+            final locs = await locationFromAddress(u.location!.trim());
+            if (locs.isNotEmpty) {
+              u.latitude = locs.first.latitude;
+              u.longitude = locs.first.longitude;
+              debugPrint("📍 Geocoded '${u.location}' to coords: (${u.latitude}, ${u.longitude})");
+            }
+          } catch (_) {}
+        }());
       }
     }
     if (futures.isNotEmpty) {
@@ -771,9 +975,8 @@ class TrackController extends GetxController {
 
     updateMapMarkersAndCircle();
 
-    // If first time valid coordinates are set, request live members from socket and API
+    // If first time valid coordinates are set, request live members from users-within-radius API
     if (firstValidCoords) {
-      _emitSocketLiveLocationRequest();
       getUsersWithinRadius();
     }
   }
@@ -814,10 +1017,7 @@ class TrackController extends GetxController {
       }
     } catch (_) {}
 
-    // 4. Trigger socket request
-    _emitSocketLiveLocationRequest();
-
-    // 5. Fetch users within radius API
+    // 4. Fetch users within radius API strictly
     await getUsersWithinRadius();
   }
 
@@ -830,7 +1030,6 @@ class TrackController extends GetxController {
       ),
     ).listen((position) {
       _updateUserLocation(position.latitude, position.longitude);
-      _emitSocketLiveLocationRequest();
     });
   }
 
@@ -898,50 +1097,16 @@ class TrackController extends GetxController {
         debugPrint(
             "📍 Loaded ${result.data!.length} users strictly from /users-within-radius");
 
-        final Map<String, UsersWithinRadiusData> existingMap = {
-          for (var u in radiusUsers) u.userId.toString(): u
-        };
-
         for (var apiUser in result.data!) {
-          final key = apiUser.userId.toString();
-          if (existingMap.containsKey(key)) {
-            final existing = existingMap[key]!;
-            final isNowOnline = existing.isOnline ||
-                Tracking().isOnline(rawIsOnline: apiUser.isOnline, lastSeen: apiUser.lastSeen);
-            apiUser.isOnline = isNowOnline;
-
-            if (existing.latitude != null &&
-                existing.latitude != 0.0 &&
-                (apiUser.latitude == null || apiUser.latitude == 0.0)) {
-              apiUser.latitude = existing.latitude;
-              apiUser.longitude = existing.longitude;
-            }
-            if (existing.lastSeen != null && apiUser.lastSeen == null) {
-              apiUser.lastSeen = existing.lastSeen;
-            }
-            if ((apiUser.location == null || apiUser.location!.isEmpty) &&
-                existing.location != null &&
-                existing.location!.isNotEmpty) {
-              apiUser.location = existing.location;
-            }
-            existingMap[key] = apiUser;
-          } else {
-            apiUser.isOnline = Tracking().isOnline(
-              rawIsOnline: apiUser.isOnline,
-              lastSeen: apiUser.lastSeen,
-            );
-            existingMap[key] = apiUser;
-          }
+          apiUser.isOnline = true;
         }
 
-        radiusUsers.assignAll(existingMap.values.toList());
+        radiusUsers.assignAll(result.data!);
         await _resolveAllMembersAddresses();
       } else {
         debugPrint(
             "⚠️ /users-within-radius returned: ${result.message}");
-        if (result.data != null && result.data!.isEmpty && radiusUsers.every((u) => !u.isOnline)) {
-          radiusUsers.clear();
-        }
+        radiusUsers.clear();
       }
       _refreshMembersAndMap();
     } catch (e) {
@@ -955,46 +1120,161 @@ class TrackController extends GetxController {
   }
 
   void onSearch(String value) {
+    final query = value.trim().toLowerCase();
+    searchQuery.value = value.trim();
+    isSearchDropdownOpen.value = value.trim().isNotEmpty;
+
     if (selectedTabIndex.value == 1) {
-      if (value.isEmpty) {
+      if (query.isEmpty) {
         filteredGroups.value = groupList;
       } else {
         filteredGroups.value = groupList
             .where((g) =>
-                (g.groupName ?? "")
-                    .toLowerCase()
-                    .contains(value.toLowerCase()) ||
-                (g.groupDesc ?? "")
-                    .toLowerCase()
-                    .contains(value.toLowerCase()) ||
-                (g.groupCode ?? "")
-                    .toLowerCase()
-                    .contains(value.toLowerCase()))
+                (g.groupName ?? "").toLowerCase().contains(query) ||
+                (g.groupDesc ?? "").toLowerCase().contains(query) ||
+                (g.groupCode ?? "").toLowerCase().contains(query))
             .toList();
       }
     } else {
-      if (value.isEmpty) {
+      if (query.isEmpty) {
         liveMembers.value = allFetchedMembers;
       } else {
         liveMembers.value = allFetchedMembers
             .where((m) =>
-                m.name.toLowerCase().contains(value.toLowerCase()) ||
-                m.team.toLowerCase().contains(value.toLowerCase()) ||
-                m.location.toLowerCase().contains(value.toLowerCase()))
+                m.name.toLowerCase().contains(query) ||
+                m.team.toLowerCase().contains(query) ||
+                m.location.toLowerCase().contains(query))
             .toList();
       }
     }
+    updateMapMarkersAndCircle();
+  }
+
+  void submitSearch(String query) {
+    final q = query.trim().toLowerCase();
+    if (q.isEmpty) return;
+
+    isSearchDropdownOpen.value = false;
+
+    // Search in radiusUsers first
+    final matchingUsers = radiusUsers.where((u) {
+      final name = (u.name ?? "").toLowerCase();
+      final team = (u.team ?? "").toLowerCase();
+      final loc = (u.location ?? "").toLowerCase();
+      return (name.contains(q) || team.contains(q) || loc.contains(q)) &&
+          u.latitude != null &&
+          u.longitude != null &&
+          u.latitude != 0.0 &&
+          u.longitude != 0.0;
+    }).toList();
+
+    if (matchingUsers.isNotEmpty) {
+      if (matchingUsers.length == 1) {
+        final u = matchingUsers.first;
+        mapController?.animateCamera(
+          CameraUpdate.newCameraPosition(
+            CameraPosition(
+              target: LatLng(u.latitude!, u.longitude!),
+              zoom: 17.0,
+            ),
+          ),
+        );
+      } else {
+        double minLat = matchingUsers.first.latitude!;
+        double maxLat = matchingUsers.first.latitude!;
+        double minLng = matchingUsers.first.longitude!;
+        double maxLng = matchingUsers.first.longitude!;
+        for (var u in matchingUsers) {
+          if (u.latitude! < minLat) minLat = u.latitude!;
+          if (u.latitude! > maxLat) maxLat = u.latitude!;
+          if (u.longitude! < minLng) minLng = u.longitude!;
+          if (u.longitude! > maxLng) maxLng = u.longitude!;
+        }
+        if (minLat == maxLat && minLng == maxLng) {
+          mapController?.animateCamera(
+            CameraUpdate.newCameraPosition(
+              CameraPosition(
+                target: LatLng(minLat, minLng),
+                zoom: 17.0,
+              ),
+            ),
+          );
+        } else {
+          mapController?.animateCamera(
+            CameraUpdate.newLatLngBounds(
+              LatLngBounds(
+                southwest: LatLng(minLat, minLng),
+                northeast: LatLng(maxLat, maxLng),
+              ),
+              80.0,
+            ),
+          );
+        }
+      }
+      return;
+    }
+
+    // Check allFetchedMembers if not in radiusUsers
+    final matchingMembers = allFetchedMembers.where((m) {
+      final name = m.name.toLowerCase();
+      final team = m.team.toLowerCase();
+      final loc = m.location.toLowerCase();
+      return (name.contains(q) || team.contains(q) || loc.contains(q)) &&
+          m.latitude != null &&
+          m.longitude != null &&
+          m.latitude != 0.0 &&
+          m.longitude != 0.0;
+    }).toList();
+
+    if (matchingMembers.isNotEmpty) {
+      final m = matchingMembers.first;
+      mapController?.animateCamera(
+        CameraUpdate.newCameraPosition(
+          CameraPosition(
+            target: LatLng(m.latitude!, m.longitude!),
+            zoom: 17.0,
+          ),
+        ),
+      );
+      return;
+    }
+
+    // Check matching groups
+    final matchingGroups = groupList.where((g) {
+      final name = (g.groupName ?? "").toLowerCase();
+      final desc = (g.groupDesc ?? "").toLowerCase();
+      final code = (g.groupCode ?? "").toLowerCase();
+      return name.contains(q) || desc.contains(q) || code.contains(q);
+    }).toList();
+
+    if (matchingGroups.isNotEmpty) {
+      selectTab(1);
+      return;
+    }
+
+    Get.snackbar(
+      "Search",
+      "No members or groups found for '$query'",
+      snackPosition: SnackPosition.TOP,
+      backgroundColor: const Color(0xFF1E1B4B),
+      colorText: Colors.white,
+      margin: const EdgeInsets.all(16),
+      duration: const Duration(seconds: 2),
+    );
   }
 
   void selectTab(int index) {
     selectedTabIndex.value = index;
     searchController.clear();
+    searchQuery.value = "";
+    isSearchDropdownOpen.value = false;
     if (index == 1) {
       filteredGroups.value = groupList;
       fetchGroupData();
     } else {
       liveMembers.value = allFetchedMembers;
     }
+    updateMapMarkersAndCircle();
   }
 
   void updateRadius(String value) {
@@ -1041,7 +1321,7 @@ class TrackController extends GetxController {
 
     // Dynamically update radius circle & map zoom
     updateMapMarkersAndCircle();
-    _zoomForRadius(double.tryParse(value) ?? 2.0);
+    _zoomForRadius(double.tryParse(value) ?? 0.1);
   }
 
   Future<void> updateMapMarkersAndCircle() async {
@@ -1050,15 +1330,39 @@ class TrackController extends GetxController {
     final double radiusKm = double.tryParse(selectedRadius.value) ?? 2.0;
     final double radiusMeters = radiusKm * 1000.0;
 
-    // Update Radius Circle
+    // Update Radius Circle & Dashed Boundary Line
     circles.value = {
       Circle(
         circleId: const CircleId('tracking_radius_circle'),
         center: LatLng(lat, lng),
         radius: radiusMeters,
-        fillColor: AppColors.darkBlue.withOpacity(0.12),
-        strokeColor: AppColors.darkBlue.withOpacity(0.65),
-        strokeWidth: 2,
+        fillColor: const Color(0xFF818CF8).withOpacity(0.12),
+        strokeWidth: 0,
+      ),
+    };
+
+    final List<LatLng> dashedPoints = [];
+    const int numPoints = 72;
+    final double cosLat = math.cos(lat * math.pi / 180.0);
+    final double effectiveCosLat = cosLat.abs() < 0.0001 ? 1.0 : cosLat;
+    for (int i = 0; i <= numPoints; i++) {
+      final double theta = (i / numPoints) * 2 * math.pi;
+      final double dLat = (radiusMeters * math.cos(theta)) / 111320.0;
+      final double dLng = (radiusMeters * math.sin(theta)) /
+          (111320.0 * effectiveCosLat);
+      dashedPoints.add(LatLng(lat + dLat, lng + dLng));
+    }
+
+    polylines.value = {
+      Polyline(
+        polylineId: const PolylineId('tracking_radius_dashed_line'),
+        points: dashedPoints,
+        color: const Color(0xFF6366F1),
+        width: 2,
+        patterns: [
+          PatternItem.dash(12),
+          PatternItem.gap(8),
+        ],
       ),
     };
 
@@ -1100,11 +1404,19 @@ class TrackController extends GetxController {
     );
 
     // Member markers
+    final String q = searchController.text.trim().toLowerCase();
     for (var u in radiusUsers) {
       if (u.latitude != null &&
           u.longitude != null &&
           u.latitude != 0.0 &&
           u.longitude != 0.0) {
+        if (q.isNotEmpty) {
+          final matches = (u.name ?? "").toLowerCase().contains(q) ||
+              (u.team ?? "").toLowerCase().contains(q) ||
+              (u.location ?? "").toLowerCase().contains(q) ||
+              (u.mobileNo ?? "").toLowerCase().contains(q);
+          if (!matches) continue;
+        }
         final cacheKey = "${u.userId}_${u.profileImage}_${u.isOnline}_sm";
         BitmapDescriptor customIcon;
 
@@ -1149,23 +1461,39 @@ class TrackController extends GetxController {
 
   void onMapCreated(GoogleMapController controller) {
     mapController = controller;
-    recenterMap(zoom: 16.0);
+    final double radiusKm = double.tryParse(selectedRadius.value) ?? 2.0;
+    _zoomForRadius(radiusKm);
+  }
+
+  String formatRadius(String radiusKmStr) {
+    final double radiusKm = double.tryParse(radiusKmStr) ?? 0.1;
+    final double meters = radiusKm * 1000.0;
+    if (meters < 1000) {
+      return "${meters.round()} m";
+    } else {
+      final double km = radiusKm;
+      return km == km.toInt()
+          ? "${km.toInt()} km"
+          : "${km.toStringAsFixed(1)} km";
+    }
+  }
+
+  String get currentFormattedRadius => formatRadius(selectedRadius.value);
+
+  double calculateZoomForRadius(double radiusKm) {
+    final double radiusMeters = radiusKm * 1000.0;
+    if (radiusMeters <= 120) return 16.8;
+    if (radiusMeters <= 260) return 15.8;
+    if (radiusMeters <= 600) return 14.8;
+    if (radiusMeters <= 1200) return 13.8;
+    if (radiusMeters <= 2500) return 12.8;
+    if (radiusMeters <= 5500) return 11.5;
+    return 10.5;
   }
 
   void _zoomForRadius(double radiusKm) {
     if (mapController == null) return;
-    double zoomLevel = 15.0;
-    if (radiusKm <= 2) {
-      zoomLevel = 15.0;
-    } else if (radiusKm <= 4) {
-      zoomLevel = 14.0;
-    } else if (radiusKm <= 6) {
-      zoomLevel = 13.2;
-    } else if (radiusKm <= 8) {
-      zoomLevel = 12.5;
-    } else {
-      zoomLevel = 11.5;
-    }
+    final double zoomLevel = calculateZoomForRadius(radiusKm);
 
     final double lat = currentLat.value != 0.0 ? currentLat.value : 19.0760;
     final double lng = currentLong.value != 0.0 ? currentLong.value : 72.8777;
@@ -1245,14 +1573,16 @@ class TrackController extends GetxController {
     mapController?.animateCamera(CameraUpdate.zoomOut());
   }
 
-  void recenterMap({double zoom = 16.0}) {
+  void recenterMap({double? zoom}) {
     final double lat = currentLat.value != 0.0 ? currentLat.value : 19.0760;
     final double lng = currentLong.value != 0.0 ? currentLong.value : 72.8777;
+    final double radiusKm = double.tryParse(selectedRadius.value) ?? 2.0;
+    final double targetZoom = zoom ?? calculateZoomForRadius(radiusKm);
     mapController?.animateCamera(
       CameraUpdate.newCameraPosition(
         CameraPosition(
           target: LatLng(lat, lng),
-          zoom: zoom,
+          zoom: targetZoom,
         ),
       ),
     );
@@ -1275,11 +1605,47 @@ class TrackController extends GetxController {
         return;
       }
     }
+    for (var m in allFetchedMembers) {
+      if (m.userId.toString() == userId &&
+          m.latitude != null &&
+          m.longitude != null &&
+          m.latitude != 0.0) {
+        mapController?.animateCamera(
+          CameraUpdate.newCameraPosition(
+            CameraPosition(
+              target: LatLng(m.latitude!, m.longitude!),
+              zoom: 17.0,
+            ),
+          ),
+        );
+        return;
+      }
+    }
+  }
+
+  void focusMember(MemberModel member) {
+    if (member.latitude != null &&
+        member.longitude != null &&
+        member.latitude != 0.0 &&
+        member.longitude != 0.0) {
+      mapController?.animateCamera(
+        CameraUpdate.newCameraPosition(
+          CameraPosition(
+            target: LatLng(member.latitude!, member.longitude!),
+            zoom: 17.0,
+          ),
+        ),
+      );
+    } else {
+      focusMemberById(member.userId.toString());
+    }
   }
 
   @override
   void onClose() {
     _socketLiveLocationSubscription?.cancel();
+    _trackLiveSocketSubscription?.cancel();
+    _userStatusSocketSubscription?.cancel();
     _positionStreamSubscription?.cancel();
     _groupCountSubscription?.cancel();
     customRadiusController.dispose();

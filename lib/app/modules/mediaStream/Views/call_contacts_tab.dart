@@ -4,7 +4,7 @@ import 'package:fgtracker/app/Data/Services/call_service.dart';
 import 'package:fgtracker/app/Model/user_profileList_res.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/modules/mediaStream/Widget/call_widget.dart';
-import 'package:fgtracker/app/modules/mediaStream/controller/call_controller.dart';
+import 'package:fgtracker/app/modules/mediaStream/Controller/call_controller.dart';
 import 'package:fgtracker/gen/assets.gen.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';

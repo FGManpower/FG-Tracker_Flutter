@@ -6,7 +6,7 @@ import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import '../controller/incoming_call_controller.dart';
+import '../Controller/incoming_call_controller.dart';
 
 class IncomingCallScreen extends GetView<IncomingCallController> {
   const IncomingCallScreen({super.key});

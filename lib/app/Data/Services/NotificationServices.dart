@@ -183,11 +183,17 @@ class firebaseNotificationServices {
           debugPrint("Invalid memberData format: $e");
         }
         if (memberData != null) {
-          Get.toNamed(Routes.chatScreen, arguments: {
-            "userData": memberData,
-            "groupName": "Test",
-            "type": "chatScreen",
-          });
+          memberData.groupId = 0;
+
+          Get.toNamed(
+            Routes.chatScreen,
+            arguments: {
+              "userData": memberData,
+              "groupName": "",
+              "type": "chatScreen",
+            },
+          );
+
           await notificationCtr.markAsRead(
             int.parse(message.data["notificationId"].toString()),
           );
