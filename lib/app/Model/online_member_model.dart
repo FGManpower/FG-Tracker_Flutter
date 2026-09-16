@@ -353,6 +353,17 @@ class OnlineMemberData {
             json['groupName']
     )?.toString();
 
+    if (department == null || department!.trim().isEmpty || department == 'null') {
+      if (json['groupList'] is List && (json['groupList'] as List).isNotEmpty) {
+        final firstGroup = (json['groupList'] as List).first;
+        if (firstGroup is Map && firstGroup['groupName'] != null) {
+          department = firstGroup['groupName'].toString();
+        }
+      } else if (json['groups'] is List && (json['groups'] as List).isNotEmpty) {
+        department = (json['groups'] as List).first.toString();
+      }
+    }
+
     if (json['location'] is Map) {
       final Map<String, dynamic> location =
       Map<String, dynamic>.from(

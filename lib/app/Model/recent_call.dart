@@ -161,16 +161,42 @@ class CallingDetail {
       this.time});
 
   CallingDetail.fromJson(Map<String, dynamic> json) {
-    id = json['id'];
-    contact = json['contact'] != null
-        ? RecentContact.fromJson(json['contact'])
-        : null;
-    type = json['type'];
-    direction = json['direction'];
-    status = json['status'];
-    calledAt = json['called_at'];
-    date = json['date'];
-    time = json['time'];
+    id = json['id']?.toString();
+    if (json['contact'] != null && json['contact'] is Map<String, dynamic>) {
+      contact = RecentContact.fromJson(json['contact']);
+    } else {
+      contact = RecentContact(
+        id: json['caller_id']?.toString() ??
+            json['receiver_id']?.toString() ??
+            json['callerId']?.toString() ??
+            json['receiverId']?.toString() ??
+            json['userId']?.toString() ??
+            json['user_id']?.toString() ??
+            json['id']?.toString(),
+        firstName: json['caller_name'] ??
+            json['callerName'] ??
+            json['receiver_name'] ??
+            json['receiverName'] ??
+            json['name'] ??
+            json['first_name'] ??
+            '',
+        lastName: json['last_name'] ?? '',
+        avatar: json['caller_profile_image'] ??
+            json['callerProfileImage'] ??
+            json['receiver_profile_image'] ??
+            json['receiverProfileImage'] ??
+            json['profile_image'] ??
+            json['profileImage'] ??
+            json['avatar'] ??
+            '',
+      );
+    }
+    type = json['type']?.toString();
+    direction = json['direction']?.toString();
+    status = json['status']?.toString();
+    calledAt = json['called_at']?.toString() ?? json['calledAt']?.toString();
+    date = json['date']?.toString();
+    time = json['time']?.toString();
   }
 
   Map<String, dynamic> toJson() {
@@ -198,10 +224,29 @@ class RecentContact {
   RecentContact({this.id, this.firstName, this.lastName, this.avatar});
 
   RecentContact.fromJson(Map<String, dynamic> json) {
-    id = json['id'];
-    firstName = json['first_name'];
-    lastName = json['last_name'];
-    avatar = json['avatar'];
+    id = json['id']?.toString() ??
+        json['userId']?.toString() ??
+        json['user_id']?.toString() ??
+        json['caller_id']?.toString() ??
+        json['callerId']?.toString() ??
+        json['receiver_id']?.toString() ??
+        json['receiverId']?.toString();
+    firstName = json['first_name'] ??
+        json['firstName'] ??
+        json['caller_name'] ??
+        json['callerName'] ??
+        json['receiver_name'] ??
+        json['receiverName'] ??
+        json['name'];
+    lastName = json['last_name'] ?? json['lastName'] ?? '';
+    avatar = json['avatar'] ??
+        json['profile_image'] ??
+        json['profileImage'] ??
+        json['caller_profile_image'] ??
+        json['callerProfileImage'] ??
+        json['receiver_profile_image'] ??
+        json['receiverProfileImage'] ??
+        '';
   }
 
   Map<String, dynamic> toJson() {
