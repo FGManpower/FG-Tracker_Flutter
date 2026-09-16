@@ -126,49 +126,16 @@ class _AllChatsBody extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(height: 8.h),
-            _sectionTitle(
-              "Status",
-              showViewAll: true,
-            ),
-            _statusSection(),
-            SizedBox(height: 20.h),
-            // Obx(() {
-            //   final pinnedChats = controller.privateChats
-            //       .where((chat) => chat.isPinned == true)
-            //       .toList();
-            //
-            //   return Column(
-            //     crossAxisAlignment: CrossAxisAlignment.start,
-            //     children: [
-            //       _sectionTitle(
-            //         "Pinned Chats 📌",
-            //         badgeCount: pinnedChats.length,
-            //       ),
-            //       if (pinnedChats.isEmpty)
-            //         _emptySection("No pinned chats")
-            //       else
-            //         ...pinnedChats.map(
-            //           (chat) => _chatTile(
-            //             context: context,
-            //             name: chat.name ?? "Unknown User",
-            //             role: chat.role ?? "",
-            //             msg: chat.message ?? "",
-            //             time: chat.time ?? "",
-            //             unreadCount: chat.unreadCount ?? 0,
-            //             statusColor: _statusColor(chat.status),
-            //             isGroup: chat.isGroup ?? false,
-            //             isPinned: true,
-            //             image: chat.image,
-            //           ),
-            //         ),
-            //     ],
-            //   );
-            // }),
-            // SizedBox(height: 10.h),
+            // SizedBox(height: 8.h),
+            // _sectionTitle(
+            //   "Status",
+            //   showViewAll: true,
+            // ),
+            // _statusSection(),
+            // SizedBox(height: 20.h),
             _sectionTitle(
               "All Chats",
-              showDropdown: true,
+              // showDropdown: true,
             ),
             Obx(() {
               if (controller.isLoading.value &&
@@ -376,157 +343,157 @@ class _AllChatsBody extends StatelessWidget {
       ),
     );
   }
-
-  Widget _statusSection() {
-    return SizedBox(
-      height: 100.h,
-      child: Obx(() {
-        if (controller.privateChats.isEmpty) {
-          return ListView(
-            scrollDirection: Axis.horizontal,
-            padding: EdgeInsets.symmetric(
-              horizontal: 16.w,
-            ),
-            children: [
-              _emptyStatus(),
-            ],
-          );
-        }
-
-        final chatsWithStatus = controller.privateChats.where((chat) {
-          return (chat.status ?? "").isNotEmpty;
-        }).toList();
-
-        if (chatsWithStatus.isEmpty) {
-          return ListView(
-            scrollDirection: Axis.horizontal,
-            padding: EdgeInsets.symmetric(
-              horizontal: 16.w,
-            ),
-            children: [
-              _emptyStatus(),
-            ],
-          );
-        }
-
-        return ListView.builder(
-          scrollDirection: Axis.horizontal,
-          padding: EdgeInsets.symmetric(
-            horizontal: 16.w,
-          ),
-          itemCount: chatsWithStatus.length,
-          itemBuilder: (context, index) {
-            final chat = chatsWithStatus[index];
-
-            return Padding(
-              padding: EdgeInsets.only(
-                right: 16.w,
-              ),
-              child: _statusItem(
-                chat.name ?? "User",
-                chat.status ?? "Offline",
-                _statusColor(chat.status) ?? Colors.grey,
-                chat.image ?? "",
-              ),
-            );
-          },
-        );
-      }),
-    );
-  }
-
-  Widget _emptyStatus() {
-    return Center(
-      child: Container(
-        padding: EdgeInsets.symmetric(
-          horizontal: 16.w,
-          vertical: 10.h,
-        ),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16.r),
-        ),
-        child: reausabletext(
-          "No status available",
-          fontsize: 11.sp,
-          color: Colors.grey.shade600,
-        ),
-      ),
-    );
-  }
-
-  Widget _statusItem(
-    String name,
-    String subStatus,
-    Color ringColor,
-    String imageUrl,
-  ) {
-    return Column(
-      children: [
-        Stack(
-          children: [
-            Container(
-              width: 60.w,
-              height: 60.w,
-              padding: EdgeInsets.all(3.w),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: ringColor,
-                  width: 2,
-                ),
-              ),
-              child: CircleAvatar(
-                backgroundColor: Colors.grey.shade300,
-                backgroundImage: imageUrl.isNotEmpty
-                    ? NetworkImage(
-                  imageUrl.startsWith("http://") ||
-                      imageUrl.startsWith("https://")
-                      ? imageUrl
-                      : "${ConstRes.production}$imageUrl",
-                )
-                    : null,
-                child: imageUrl.isEmpty
-                    ? Icon(
-                        Icons.person,
-                        color: Colors.white,
-                        size: 26.sp,
-                      )
-                    : null,
-              ),
-            ),
-            Positioned(
-              bottom: 2,
-              right: 2,
-              child: Container(
-                width: 12.w,
-                height: 12.w,
-                decoration: BoxDecoration(
-                  color: ringColor,
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: Colors.white,
-                    width: 2,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-        SizedBox(height: 6.h),
-        reausabletext(
-          name.isEmpty ? "User" : name,
-          fontsize: 12.sp,
-          fontfamily: FontFamily.interSemiBold,
-        ),
-        reausabletext(
-          subStatus.isEmpty ? "Offline" : subStatus,
-          fontsize: 10.sp,
-          color: Colors.grey,
-        ),
-      ],
-    );
-  }
+  //
+  // Widget _statusSection() {
+  //   return SizedBox(
+  //     height: 100.h,
+  //     child: Obx(() {
+  //       if (controller.privateChats.isEmpty) {
+  //         return ListView(
+  //           scrollDirection: Axis.horizontal,
+  //           padding: EdgeInsets.symmetric(
+  //             horizontal: 16.w,
+  //           ),
+  //           children: [
+  //             _emptyStatus(),
+  //           ],
+  //         );
+  //       }
+  //
+  //       final chatsWithStatus = controller.privateChats.where((chat) {
+  //         return (chat.status ?? "").isNotEmpty;
+  //       }).toList();
+  //
+  //       if (chatsWithStatus.isEmpty) {
+  //         return ListView(
+  //           scrollDirection: Axis.horizontal,
+  //           padding: EdgeInsets.symmetric(
+  //             horizontal: 16.w,
+  //           ),
+  //           children: [
+  //             _emptyStatus(),
+  //           ],
+  //         );
+  //       }
+  //
+  //       return ListView.builder(
+  //         scrollDirection: Axis.horizontal,
+  //         padding: EdgeInsets.symmetric(
+  //           horizontal: 16.w,
+  //         ),
+  //         itemCount: chatsWithStatus.length,
+  //         itemBuilder: (context, index) {
+  //           final chat = chatsWithStatus[index];
+  //
+  //           return Padding(
+  //             padding: EdgeInsets.only(
+  //               right: 16.w,
+  //             ),
+  //             child: _statusItem(
+  //               chat.name ?? "User",
+  //               chat.status ?? "Offline",
+  //               _statusColor(chat.status) ?? Colors.grey,
+  //               chat.image ?? "",
+  //             ),
+  //           );
+  //         },
+  //       );
+  //     }),
+  //   );
+  // }
+  //
+  // Widget _emptyStatus() {
+  //   return Center(
+  //     child: Container(
+  //       padding: EdgeInsets.symmetric(
+  //         horizontal: 16.w,
+  //         vertical: 10.h,
+  //       ),
+  //       decoration: BoxDecoration(
+  //         color: Colors.white,
+  //         borderRadius: BorderRadius.circular(16.r),
+  //       ),
+  //       child: reausabletext(
+  //         "No status available",
+  //         fontsize: 11.sp,
+  //         color: Colors.grey.shade600,
+  //       ),
+  //     ),
+  //   );
+  // }
+  //
+  // Widget _statusItem(
+  //   String name,
+  //   String subStatus,
+  //   Color ringColor,
+  //   String imageUrl,
+  // ) {
+  //   return Column(
+  //     children: [
+  //       Stack(
+  //         children: [
+  //           Container(
+  //             width: 60.w,
+  //             height: 60.w,
+  //             padding: EdgeInsets.all(3.w),
+  //             decoration: BoxDecoration(
+  //               shape: BoxShape.circle,
+  //               border: Border.all(
+  //                 color: ringColor,
+  //                 width: 2,
+  //               ),
+  //             ),
+  //             child: CircleAvatar(
+  //               backgroundColor: Colors.grey.shade300,
+  //               backgroundImage: imageUrl.isNotEmpty
+  //                   ? NetworkImage(
+  //                       imageUrl.startsWith("http://") ||
+  //                               imageUrl.startsWith("https://")
+  //                           ? imageUrl
+  //                           : "${ConstRes.production}$imageUrl",
+  //                     )
+  //                   : null,
+  //               child: imageUrl.isEmpty
+  //                   ? Icon(
+  //                       Icons.person,
+  //                       color: Colors.white,
+  //                       size: 26.sp,
+  //                     )
+  //                   : null,
+  //             ),
+  //           ),
+  //           Positioned(
+  //             bottom: 2,
+  //             right: 2,
+  //             child: Container(
+  //               width: 12.w,
+  //               height: 12.w,
+  //               decoration: BoxDecoration(
+  //                 color: ringColor,
+  //                 shape: BoxShape.circle,
+  //                 border: Border.all(
+  //                   color: Colors.white,
+  //                   width: 2,
+  //                 ),
+  //               ),
+  //             ),
+  //           ),
+  //         ],
+  //       ),
+  //       SizedBox(height: 6.h),
+  //       reausabletext(
+  //         name.isEmpty ? "User" : name,
+  //         fontsize: 12.sp,
+  //         fontfamily: FontFamily.interSemiBold,
+  //       ),
+  //       reausabletext(
+  //         subStatus.isEmpty ? "Offline" : subStatus,
+  //         fontsize: 10.sp,
+  //         color: Colors.grey,
+  //       ),
+  //     ],
+  //   );
+  // }
 
   Widget _chatTile({
     required BuildContext context,
@@ -548,9 +515,7 @@ class _AllChatsBody extends StatelessWidget {
       },
       onTap: () {
         final chat = controller.privateChats.firstWhere(
-              (item) =>
-          item.name == name &&
-              item.image == image,
+          (item) => item.name == name && item.image == image,
           orElse: () => controller.privateChats.first,
         );
 
@@ -559,7 +524,7 @@ class _AllChatsBody extends StatelessWidget {
         }
 
         Get.to(
-              () => ChatScreen(),
+          () => ChatScreen(),
           arguments: {
             "userData": MemberData(
               userId: chat.userId,
@@ -627,9 +592,7 @@ class _AllChatsBody extends StatelessWidget {
       },
       onTap: () {
         final chat = controller.privateChats.firstWhere(
-              (item) =>
-          item.name == name &&
-              item.image == image,
+          (item) => item.name == name && item.image == image,
           orElse: () => controller.privateChats.first,
         );
 
@@ -638,7 +601,7 @@ class _AllChatsBody extends StatelessWidget {
         }
 
         Get.to(
-              () => ChatScreen(),
+          () => ChatScreen(),
           arguments: {
             "userData": MemberData(
               userId: chat.userId,
@@ -691,28 +654,28 @@ class _AllChatsBody extends StatelessWidget {
           clipBehavior: Clip.none,
           children: [
             CircleAvatar(
-              radius: 28.r,
+              radius: 26.r,
               backgroundColor:
                   isGroup ? const Color(0xFF6B4DFF) : Colors.grey.shade300,
               backgroundImage: (!isGroup && image != null && image.isNotEmpty)
                   ? NetworkImage(
-                image.startsWith("http://") ||
-                    image.startsWith("https://")
-                    ? image
-                    : "${ConstRes.production}$image",
-              )
+                      image.startsWith("http://") ||
+                              image.startsWith("https://")
+                          ? image
+                          : "${ConstRes.production}$image",
+                    )
                   : null,
               child: isGroup
                   ? Icon(
                       Icons.groups,
                       color: Colors.white,
-                      size: 26.sp,
+                      size: 24.sp,
                     )
                   : (image == null || image.isEmpty
                       ? Icon(
                           Icons.person,
                           color: Colors.white,
-                          size: 28.sp,
+                          size: 26.sp,
                         )
                       : null),
             ),
@@ -748,85 +711,57 @@ class _AllChatsBody extends StatelessWidget {
                 color: Colors.black87,
                 maxline: 1,
               ),
-              SizedBox(height: 2.h),
+              SizedBox(height: 4.h),
               reausabletext(
-                role,
-                fontsize: 11.sp,
-                fontweight: const FontWeight(500),
-                color: Colors.grey.shade700,
-                maxline: 1,
-              ),
-              SizedBox(height: 3.h),
-              reausabletext(
-                msg,
-                fontsize: 11.sp,
-                color: Colors.grey.shade600,
+                msg.isEmpty ? "" : msg,
+                fontsize: 12.sp,
+                fontfamily: FontFamily.interMedium,
+                color: const Color(0xFF6B4DFF),
                 maxline: 1,
               ),
             ],
           ),
         ),
-        SizedBox(width: 10.w),
-        SizedBox(
-          width: 85.w,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              SizedBox(
-                width: 48.w,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    reausabletext(
-                      time,
-                      fontsize: 11.sp,
-                      color: Colors.grey.shade700,
-                      maxline: 1,
-                    ),
-                    SizedBox(height: 7.h),
-                    if (unreadCount > 0)
-                      Container(
-                        width: 22.w,
-                        height: 22.w,
-                        alignment: Alignment.center,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFF6B4DFF),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Text(
-                          unreadCount.toString(),
-                          style: TextStyle(
-                            fontSize: 10.sp,
-                            color: Colors.white,
-                            fontFamily: FontFamily.interSemiBold,
-                          ),
-                        ),
-                      )
-                    else
-                      SizedBox(
-                        width: 22.w,
-                        height: 22.w,
-                      ),
-                  ],
-                ),
-              ),
-              SizedBox(width: 12.w),
-              SizedBox(
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            reausabletext(
+              time,
+              fontsize: 11.sp,
+              color: const Color(0xFF6B4DFF),
+              maxline: 1,
+            ),
+            SizedBox(height: 6.h),
+            if (unreadCount > 0)
+              Container(
                 width: 20.w,
-                child: Center(
-                  child: Icon(
-                    isPinned
-                        ? Icons.keyboard_arrow_down_rounded
-                        : Icons.chevron_right_rounded,
-                    size: 22.sp,
-                    color: Colors.grey.shade400,
+                height: 20.w,
+                alignment: Alignment.center,
+                decoration: const BoxDecoration(
+                  color: Color(0xFF6B4DFF),
+                  shape: BoxShape.circle,
+                ),
+                child: Text(
+                  unreadCount.toString(),
+                  style: TextStyle(
+                    fontSize: 10.sp,
+                    color: Colors.white,
+                    fontFamily: FontFamily.interSemiBold,
                   ),
                 ),
-              ),
-            ],
-          ),
+              )
+            else
+              SizedBox(height: 20.w),
+          ],
+        ),
+        SizedBox(width: 16.w),
+        Icon(
+          isPinned
+              ? Icons.keyboard_arrow_down_rounded
+              : Icons.chevron_right_rounded,
+          size: 20.sp,
+          color: const Color(0xFF6B4DFF),
         ),
       ],
     );
@@ -918,11 +853,9 @@ class _AllChatsBody extends StatelessWidget {
     if (difference.inMinutes < 1) {
       return "Just now";
     }
-
     if (difference.inHours < 1) {
       return "${difference.inMinutes} min";
     }
-
     if (difference.inDays == 0) {
       final hour = local.hour % 12 == 0 ? 12 : local.hour % 12;
 
@@ -932,15 +865,12 @@ class _AllChatsBody extends StatelessWidget {
 
       return "$hour:$minute $period";
     }
-
     if (difference.inDays == 1) {
       return "Yesterday";
     }
-
     if (difference.inDays < 7) {
       return "${difference.inDays} days";
     }
-
     return "${local.day}/${local.month}/${local.year}";
   }
 }

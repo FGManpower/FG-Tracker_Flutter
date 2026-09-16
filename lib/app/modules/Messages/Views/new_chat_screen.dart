@@ -9,6 +9,9 @@ import 'package:fgtracker/gen/assets.gen.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
+import '../../../Model/MemberDataRes.dart';
+import '../../../routes/app_pages.dart';
+
 class NewChatScreen extends StatefulWidget {
   const NewChatScreen({super.key});
 
@@ -242,11 +245,23 @@ class _NewChatScreenState extends State<NewChatScreen> {
 
   void _handleOnAction(UserListData user, {required bool isInvite}) {
     if (isInvite) {
-
       Get.snackbar("Invite", "Invite link sent to ${user.name}");
     } else {
+      final memberData = MemberData(
+        userId: user.userId,
+        name: user.name,
+        profileImage: user.profileImage,
+        groupId: 0,
+      );
 
-      Get.snackbar("Chat", "Opening chat window with ${user.name}");
+      Get.toNamed(
+        Routes.chatScreen,
+        arguments: {
+          "type": "chatScreen",
+          "chatType": "private",
+          "userData": memberData,
+        },
+      );
     }
   }
 
@@ -414,7 +429,6 @@ class _NewChatScreenState extends State<NewChatScreen> {
     );
   }
 
-  // Beautiful Skeleton Loading UI
   Widget _buildSkeletonList() {
     return Skeletonizer(
       enabled: true,

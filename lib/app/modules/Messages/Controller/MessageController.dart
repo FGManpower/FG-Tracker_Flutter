@@ -29,11 +29,11 @@ class MessageController extends GetxController with WidgetsBindingObserver {
   final ItemScrollController itemScrollController = ItemScrollController();
 
   final ItemPositionsListener itemPositionsListener =
-      ItemPositionsListener.create();
+  ItemPositionsListener.create();
   final List<MessageData> _messages = [];
 
   final StreamController<List<MessageData>> _messageStreamController =
-      StreamController<List<MessageData>>.broadcast();
+  StreamController<List<MessageData>>.broadcast();
 
   Stream<List<MessageData>> get messageStream =>
       _messageStreamController.stream;
@@ -222,85 +222,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
     ChatStateTracker.isChatCallScreenOpen = true;
 
-    // ============================================================
-    // PRIVATE CHAT
-    // ============================================================
     if (isPrivateChat) {
-      // ------------------------------------------------------------
-      // RECEIVE PRIVATE MESSAGE
-      // ------------------------------------------------------------
-      socketService.receivePrivateMessage(
-        senderId: currentUserId,
-        receiverId: receiverId,
-        callback: (message) {
-          print("PRIVATE RECEIVE MESSAGE => $message");
-
-          try {
-            final messageData =
-            MessageData.fromJson(Map<String, dynamic>.from(message));
-
-            _messages.add(messageData);
-
-            updateMessageStream();
-
-            scrollToBottom();
-
-            // Mark delivered
-            if (messageData.id != null) {
-              socketService.markPrivateDelivered(
-                messageIds: [messageData.id!],
-                userId: currentUserId,
-                otherUserId: receiverId,
-              );
-            }
-
-            // Mark seen
-            if (privateChatId.value.isNotEmpty) {
-              socketService.markPrivateSeen(
-                chatId: privateChatId.value,
-                userId: currentUserId,
-                otherUserId: receiverId,
-              );
-            }
-          } catch (e) {
-            log("PRIVATE MESSAGE PARSE ERROR => $e");
-          }
-        },
-      );
-
-
-      socketService.listenPrivateMessagesDelivered(
-        callback: (data) {
-          print("PRIVATE MESSAGES DELIVERED =====> $data");
-        },
-      );
-
-
-      socketService.listenPrivateMessagesSeenUpdate(
-        callback: (data) {
-          final dataChatId = data["chatId"]?.toString();
-
-          if (privateChatId.value.isNotEmpty &&
-              dataChatId != null &&
-              dataChatId != privateChatId.value) {
-            return;
-          }
-
-          final List updatedIds = data["messageIds"] ?? [];
-
-          for (var msg in _messages) {
-            if (updatedIds.any(
-                  (id) => id.toString() == msg.id.toString(),
-            )) {
-              msg.seenCount = (msg.seenCount ?? 0) + 1;
-            }
-          }
-
-          updateMessageStream();
-        },
-      );
-
-
       socketService.initPrivateChat(
         ConstRes.socketUrl,
         userId: currentUserId,
@@ -332,13 +254,78 @@ class MessageController extends GetxController with WidgetsBindingObserver {
           );
         },
       );
-    }
 
+      socketService.receivePrivateMessage(
+        senderId: currentUserId,
+        receiverId: receiverId,
+        callback: (message) {
+          print("PRIVATE RECEIVE MESSAGE => $message");
 
-    else {
+          try {
+            final messageData =
+            MessageData.fromJson(Map<String, dynamic>.from(message));
 
-    }
+            final alreadyExists = _messages.any(
+                  (msg) => msg.id == messageData.id && messageData.id != null,
+            );
 
+            if (!alreadyExists) {
+              _messages.add(messageData);
+              updateMessageStream();
+              scrollToBottom();
+            }
+
+            if (messageData.id != null) {
+              socketService.markPrivateDelivered(
+                messageIds: [messageData.id!],
+                userId: currentUserId,
+                otherUserId: receiverId,
+              );
+            }
+
+            if (privateChatId.value.isNotEmpty) {
+              socketService.markPrivateSeen(
+                chatId: privateChatId.value,
+                userId: currentUserId,
+                otherUserId: receiverId,
+              );
+            }
+          } catch (e) {
+            log("PRIVATE MESSAGE PARSE ERROR => $e");
+          }
+        },
+      );
+
+      socketService.listenPrivateMessagesDelivered(
+        callback: (data) {
+          print("PRIVATE MESSAGES DELIVERED =====> $data");
+        },
+      );
+
+      socketService.listenPrivateMessagesSeenUpdate(
+        callback: (data) {
+          final dataChatId = data["chatId"]?.toString();
+
+          if (privateChatId.value.isNotEmpty &&
+              dataChatId != null &&
+              dataChatId != privateChatId.value) {
+            return;
+          }
+
+          final List updatedIds = data["messageIds"] ?? [];
+
+          for (var msg in _messages) {
+            if (updatedIds.any(
+                  (id) => id.toString() == msg.id.toString(),
+            )) {
+              msg.seenCount = (msg.seenCount ?? 0) + 1;
+            }
+          }
+
+          updateMessageStream();
+        },
+      );
+    } else {}
 
     socketService.listenPinMessage(
       callback: (data) {
@@ -413,7 +400,9 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         print("✅ PRIVATE PIN REMOVED FROM UI");
       },
     );
-  }  bool isUserAtBottom() {
+  }
+
+  bool isUserAtBottom() {
     if (_messages.isEmpty) return true;
 
     final positions = itemPositionsListener.itemPositions.value;
@@ -421,7 +410,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     if (positions.isEmpty) return false;
 
     final maxVisible =
-        positions.map((e) => e.index).reduce((a, b) => a > b ? a : b);
+    positions.map((e) => e.index).reduce((a, b) => a > b ? a : b);
 
     return maxVisible >= _messages.length - 2;
   }
@@ -536,10 +525,10 @@ class MessageController extends GetxController with WidgetsBindingObserver {
   }
 
   Future<bool> uploadVideoAtIndex(
-    String path,
-    String caption,
-    int index,
-  ) async {
+      String path,
+      String caption,
+      int index,
+      ) async {
     try {
       final thumbnailPath = await generateThumbnailFile(path);
 
@@ -563,7 +552,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
           messageType: "video",
           receiverId: memberData.userId.toString(),
           content:
-              "${result.videoUrl}||${result.thumbnail}||${result.duration}",
+          "${result.videoUrl}||${result.thumbnail}||${result.duration}",
           caption: caption,
           replyId: replyMessage.value?.id,
           replyMessage: replyMessage.value?.content,
@@ -607,7 +596,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
           messageType: "video",
           receiverId: memberData.userId.toString(),
           content:
-              "${result.videoUrl}||${result.thumbnail}||${result.duration}",
+          "${result.videoUrl}||${result.thumbnail}||${result.duration}",
           caption: caption,
           replyId: replyMessage.value?.id,
           replyMessage: replyMessage.value?.content,
@@ -694,9 +683,9 @@ class MessageController extends GetxController with WidgetsBindingObserver {
   }
 
   Future<void> getMessageHistory(
-    String recieverId,
-    int groupId,
-  ) async {
+      String recieverId,
+      int groupId,
+      ) async {
     try {
       var result = await MessageRepo.MessageHistory(
         recieverId: recieverId,
@@ -712,7 +701,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
         if (pinnedId != null) {
           final pinned = _messages.firstWhereOrNull(
-            (message) => message.id == pinnedId,
+                (message) => message.id == pinnedId,
           );
 
           if (pinned != null) {
@@ -753,7 +742,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
         if (pinnedId != null) {
           final pinned = _messages.firstWhereOrNull(
-            (message) => message.id == pinnedId,
+                (message) => message.id == pinnedId,
           );
 
           if (pinned != null) {
@@ -800,8 +789,12 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     });
   }
 
-  void handleBackPressed(BuildContext context, {required int groupID}) {
-    final userId = Global.storageServices.get(PrefConst.userId).toString();
+  void handleBackPressed(
+      BuildContext context, {
+        required int groupID,
+      }) {
+    final userId =
+    Global.storageServices.get(PrefConst.userId).toString();
 
     final receiverId = memberData.userId.toString();
 
@@ -809,7 +802,6 @@ class MessageController extends GetxController with WidgetsBindingObserver {
       userId: userId,
       receiverId: receiverId,
     );
-    // socketService.disconnectSocket();
 
     socketService.disconnectPrivateChatSocket();
 
@@ -827,13 +819,13 @@ class MessageController extends GetxController with WidgetsBindingObserver {
   }
 
   startCall(
-    BuildContext context, {
-    required String callerId,
-    required String remoteUserId,
-    required bool is_video,
-    dynamic offer,
-    dynamic callerName,
-  }) {
+      BuildContext context, {
+        required String callerId,
+        required String remoteUserId,
+        required bool is_video,
+        dynamic offer,
+        dynamic callerName,
+      }) {
     Get.toNamed(
       Routes.callScreen,
       arguments: {
@@ -871,12 +863,14 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     if (searchQuery.value.isEmpty) return;
 
     final results = _messages
-        .where((msg) =>
-            msg.messageType == "text" &&
-            (msg.content?.toLowerCase().contains(
-                      searchQuery.value.toLowerCase(),
-                    ) ??
-                false))
+        .where(
+          (msg) =>
+      msg.messageType == "text" &&
+          (msg.content?.toLowerCase().contains(
+            searchQuery.value.toLowerCase(),
+          ) ??
+              false),
+    )
         .map((msg) => msg.id!)
         .toList();
 
@@ -920,7 +914,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
   void pinMessage(MessageData message) {
     final currentUserId =
-        Global.storageServices.get(PrefConst.userId).toString();
+    Global.storageServices.get(PrefConst.userId).toString();
 
     final otherUserId = memberData.userId.toString();
 
@@ -929,13 +923,14 @@ class MessageController extends GetxController with WidgetsBindingObserver {
       senderId: currentUserId,
       receiverId: otherUserId,
       messageId: message.id!,
-      pinnedByName: Global.storageServices.get(PrefConst.userName) ?? "User",
+      pinnedByName:
+      Global.storageServices.get(PrefConst.userName) ?? "User",
     );
   }
 
   void unpinMessage() {
     final currentUserId =
-        Global.storageServices.get(PrefConst.userId).toString();
+    Global.storageServices.get(PrefConst.userId).toString();
 
     final otherUserId = memberData.userId.toString();
 
@@ -976,7 +971,8 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
     if (positions.isEmpty) return;
 
-    final visible = positions.where((e) => e.itemTrailingEdge > 0).toList();
+    final visible =
+    positions.where((e) => e.itemTrailingEdge > 0).toList();
 
     if (visible.isEmpty) return;
 
@@ -986,9 +982,8 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
     if (firstVisibleIndex >= messageData.length) return;
 
-    final newDate = formatDateHeader(
-      messageData[firstVisibleIndex].timestamp ?? "",
-    );
+    final newDate =
+    formatDateHeader(messageData[firstVisibleIndex].timestamp ?? "");
 
     if (floatingDate.value != newDate) {
       floatingDate.value = newDate;
@@ -1002,7 +997,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
     _floatingDateTimer = Timer(
       const Duration(milliseconds: 800),
-      () {
+          () {
         showFloatingDate.value = false;
       },
     );
@@ -1014,7 +1009,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     }
 
     final currentUserId =
-        Global.storageServices.get(PrefConst.userId).toString();
+    Global.storageServices.get(PrefConst.userId).toString();
 
     if (message.senderId.toString() != currentUserId) {
       return;
