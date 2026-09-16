@@ -27,8 +27,8 @@ dependencies:
   image_picker: ^1.1.2
   shared_preferences: ^2.5.3
   flutter_svg: ^2.0.17
-  firebase_messaging: ^16.5.0
-  firebase_core: ^4.13.0
+  firebase_messaging: ^16.7.0
+  firebase_core: ^4.15.0
   flutter_local_notifications: ^17.2.1
   awesome_notifications: ^0.10.0
   pretty_dio_logger:
@@ -59,7 +59,7 @@ dependencies:
   flutter_compass: ^0.8.1
   geocoding: ^4.0.0
   camera: ^0.10.5+7
-  cloud_firestore: ^6.6.0
+  cloud_firestore: ^6.10.0
   googleapis_auth: ^2.0.0
   shorebird_code_push: ^2.0.3
   flutter_ringtone_player: ^4.0.0+4
