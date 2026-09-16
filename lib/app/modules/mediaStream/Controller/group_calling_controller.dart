@@ -3,7 +3,9 @@ import 'dart:developer';
 import 'package:fgtracker/app/Core/global/launchedFromCall.dart';
 import 'package:fgtracker/app/Core/util/CallKit/callkit_service.dart';
 import 'package:fgtracker/app/Core/values/Utils.dart';
+import 'package:fgtracker/app/Data/Repositories/GroupRepo.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_SignallingService.dart';
+import 'package:fgtracker/app/Model/MemberDataRes.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:get/get.dart' hide navigator;
 import 'package:wakelock_plus/wakelock_plus.dart';
@@ -36,11 +38,18 @@ class GroupCallingController extends GetxController {
   RxBool isSpeakerOn = false.obs;
   RxBool isFrontCamera = true.obs;
 
-  RxList<GroupCallParticipant> activeParticipants = <GroupCallParticipant>[].obs;
+  RxBool memberDataLoading = false.obs;
+  var memberData = <MemberData>[].obs;
+  var responseError = "".obs;
 
-  final RxList<GroupCallParticipant> allGroupMembers = <GroupCallParticipant>[].obs;
+  RxList<GroupCallParticipant> activeParticipants =
+      <GroupCallParticipant>[].obs;
 
-  final RxList<GroupCallParticipant> notInCallParticipants = <GroupCallParticipant>[].obs;
+  final RxList<GroupCallParticipant> allGroupMembers =
+      <GroupCallParticipant>[].obs;
+
+  final RxList<GroupCallParticipant> notInCallParticipants =
+      <GroupCallParticipant>[].obs;
 
   RTCVideoRenderer localRenderer = RTCVideoRenderer();
 
@@ -65,7 +74,8 @@ class GroupCallingController extends GetxController {
         _playSound();
         final myName = Global.storageServices.get(PrefConst.userName) ?? "User";
         final myImage =
-            Global.storageServices.get(PrefConst.profileImage)?.toString() ?? "";
+            Global.storageServices.get(PrefConst.profileImage)?.toString() ??
+                "";
 
         svc.startGroupCall(
           groupId: groupId,
@@ -87,10 +97,11 @@ class GroupCallingController extends GetxController {
       } else {
         callStatus.value = "Connecting...";
         if (callId != null) {
+
           svc.joinGroupCall(callId!, groupId, (success) {
             if (!success) {
               _stopSound();
-              Utils().fluttertoast("Failed to connect to the call session");
+              Utils().fluttertoast("Failed to connect to the call session:${callId},${groupId}");
               Get.back();
             } else {
               _syncParticipants();
@@ -103,6 +114,7 @@ class GroupCallingController extends GetxController {
       Utils().fluttertoast("Camera or Mic permissions are required");
       Get.back();
     });
+    getGroupMembersData(args["groupId"].toString());
   }
 
   void _initData() {
@@ -118,7 +130,7 @@ class GroupCallingController extends GetxController {
     final callerId = args["callerId"]?.toString();
     final callerName = args["callerName"]?.toString();
     final callerImage =
-    (args["callerProfileImage"] ?? args["groupProfile"])?.toString();
+        (args["callerProfileImage"] ?? args["groupProfile"])?.toString();
     if (callerId != null && callerId.isNotEmpty) {
       Socket_GroupCallService.instance.participantMeta[callerId] = {
         "name": callerName ?? "Someone",
@@ -134,17 +146,16 @@ class GroupCallingController extends GetxController {
     if (membersArg is List) {
       for (final m in membersArg) {
         if (m is! Map) continue;
-        final uid =
-        (m["userId"] ?? m["UserId"] ?? m["id"])?.toString();
+        final uid = (m["userId"] ?? m["UserId"] ?? m["id"])?.toString();
         if (uid == null || uid.isEmpty) continue;
 
         final uName =
-        (m["name"] ?? m["Name"] ?? m["userName"] ?? "User $uid").toString();
+            (m["name"] ?? m["Name"] ?? m["userName"] ?? "User $uid").toString();
         final uImg = (m["profileImage"] ??
-            m["ProfileImage"] ??
-            m["userProfileImage"] ??
-            m["image"] ??
-            "")
+                m["ProfileImage"] ??
+                m["userProfileImage"] ??
+                m["image"] ??
+                "")
             .toString();
 
         Socket_GroupCallService.instance.participantMeta[uid] = {
@@ -190,10 +201,10 @@ class GroupCallingController extends GetxController {
       'audio': true,
       'video': isVideo
           ? {
-        'facingMode': isFrontCamera.value ? 'user' : 'environment',
-        'width': {'ideal': 640},
-        'height': {'ideal': 480},
-      }
+              'facingMode': isFrontCamera.value ? 'user' : 'environment',
+              'width': {'ideal': 640},
+              'height': {'ideal': 480},
+            }
           : false,
     };
 
@@ -204,7 +215,7 @@ class GroupCallingController extends GetxController {
     final myUserId = Global.storageServices.get(PrefConst.userId).toString();
     final myName = Global.storageServices.get(PrefConst.userName) ?? "You";
     final myImage =
-    Global.storageServices.get(PrefConst.profileImage)?.toString();
+        Global.storageServices.get(PrefConst.profileImage)?.toString();
 
     activeParticipants.add(GroupCallParticipant(
       userId: myUserId,
@@ -241,7 +252,6 @@ class GroupCallingController extends GetxController {
       onShareScreen: () {
         Get.back();
         Utils().fluttertoast("Screen share coming soon");
-
       },
       onSendMessage: () {
         Get.back();
@@ -251,7 +261,6 @@ class GroupCallingController extends GetxController {
   }
 
   void _openGroupChat() {
-
     try {
       Get.toNamed(
         Routes.groupChatScreen,
@@ -268,7 +277,7 @@ class GroupCallingController extends GetxController {
     }
   }
 
-  void notifyParticipant(GroupCallParticipant participant) {
+  void notifyParticipant(MemberData participant) {
     final svc = Socket_GroupCallService.instance;
 
     if (callId == null || callId!.isEmpty) {
@@ -277,19 +286,15 @@ class GroupCallingController extends GetxController {
     }
 
     try {
-      var param ={
+      var param = {
         "callId": int.tryParse(callId!) ?? callId,
         "groupId": int.tryParse(groupId) ?? groupId,
-        // "targetUserId": participant.userId,
         "userId": participant.userId,
-        // "userId": Global.storageServices.get(PrefConst.userId),
-
       };
 
-      print("=======notifyParam:${param}");
       svc.socket?.emitWithAck(
         "group_call_notify",
-       param,
+        param,
         ack: (res) {
           _log("group_call_notify ACK: $res");
           if (res is Map && res["success"] == false) {
@@ -399,7 +404,7 @@ class GroupCallingController extends GetxController {
 
     svc.remoteRenderers.forEach((userId, renderer) {
       final existing =
-      activeParticipants.firstWhereOrNull((p) => p.userId == userId);
+          activeParticipants.firstWhereOrNull((p) => p.userId == userId);
 
       final name = svc.getParticipantName(userId);
       final image = svc.getParticipantProfileImage(userId);
@@ -495,13 +500,8 @@ class GroupCallingController extends GetxController {
     }
 
     if (callId != null) {
-      log("========CallerSideSessionId:${callId}");
-      callEnded(callIdToUuid(callId.toString()),
-          type: "GroupCallEnded-Type");
+      callEnded(callIdToUuid(callId.toString()), type: "GroupCallEnded-Type");
     }
-
-
-    print("======EndGroupCallCalled----${CallSessionState.sessionId}");
     CallSessionState.reset();
     Get.offAllNamed(Routes.Home_Screen);
   }
@@ -550,6 +550,24 @@ class GroupCallingController extends GetxController {
     } catch (_) {}
   }
 
+  Future<void> getGroupMembersData(String groupId) async {
+    try {
+      memberDataLoading.value = true;
+
+      var result = await GroupRepo.getMemberData(groupId);
+      if (result.status == true) {
+        memberData.value = result.memberData!;
+        responseError.value = "";
+      } else {
+        responseError.value = result.message.toString();
+      }
+    } catch (e) {
+      responseError.value = e.toString();
+    } finally {
+      memberDataLoading.value = false;
+    }
+  }
+
   @override
   void onClose() {
     _clearTimers();
@@ -569,6 +587,7 @@ class GroupCallingController extends GetxController {
     } catch (_) {}
     WakelockPlus.disable();
     ProximityScreenLock.setActive(false);
+    CallSessionState.reset();
     super.onClose();
   }
 }

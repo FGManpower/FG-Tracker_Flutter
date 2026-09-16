@@ -2,11 +2,14 @@ import 'dart:async';
 import 'dart:developer';
 import 'package:connectycube_flutter_call_kit/connectycube_flutter_call_kit.dart';
 import 'package:fgtracker/app/Core/global/launchedFromCall.dart';
+import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:socket_io_client/socket_io_client.dart';
 import 'package:get/get.dart';
 
 import 'package:fgtracker/app/Core/constant/const_res.dart';
+import 'package:fgtracker/app/Core/constant/pref_res.dart';
+import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 
 class Socket_GroupCallService {
@@ -60,11 +63,11 @@ class Socket_GroupCallService {
   void _log(String message) => log('[GroupCallService] $message');
 
   void _saveParticipantMeta(
-    String userId, {
-    String? name,
-    String? profileImage,
-    bool? isMuted,
-  }) {
+      String userId, {
+        String? name,
+        String? profileImage,
+        bool? isMuted,
+      }) {
     final existing = participantMeta[userId] ?? <String, dynamic>{};
     if (name != null && name.trim().isNotEmpty) {
       existing['name'] = name.trim();
@@ -81,7 +84,7 @@ class Socket_GroupCallService {
   String getParticipantName(String userId) {
     final name = participantMeta[userId]?['name']?.toString();
     if (name != null && name.isNotEmpty) return name;
-    return 'User $name';
+    return 'User $userId';
   }
 
   String? getParticipantProfileImage(String userId) {
@@ -94,7 +97,7 @@ class Socket_GroupCallService {
 
   void init(String userId) {
     if (socket != null && socket!.connected && _selfUserId == userId) {
-      _log('Already initialized for $userId');
+      _log('Already initialized and connected for $userId');
       return;
     }
 
@@ -106,6 +109,8 @@ class Socket_GroupCallService {
 
     _selfUserId = userId;
     _isDisposed = false;
+
+    _log('Initializing socket for $userId at ${ConstRes.socketUrl}/groupCall');
 
     socket = io(
       "${ConstRes.socketUrl}/groupCall",
@@ -122,19 +127,57 @@ class Socket_GroupCallService {
     );
 
     socket?.onConnect((_) {
-      _log('Connected to /groupCall');
+      _log('🟢 Connected to /groupCall Namespace');
       _listenersBound = false;
       _bindSocketListeners();
     });
 
-    socket?.onDisconnect((_) {
-      _log('Socket Disconnected');
+    socket?.onDisconnect((reason) {
+      _log('🔴 Socket Disconnected: $reason');
       _listenersBound = false;
     });
 
     socket?.onAny((event, dynamic data) {
       _log('GroupSocketAllEvent: $event | Data: $data');
     });
+  }
+
+  /// ✅ FIX: Waits for socket connection dynamically if launched from Terminated state
+  Future<bool> _ensureConnected({int timeoutSeconds = 10}) async {
+    if (socket != null && socket!.connected) return true;
+
+    // Ensure _selfUserId is available from storage if null
+    if (_selfUserId == null || _selfUserId!.isEmpty) {
+      final storedId = Global.storageServices.get(PrefConst.userId)?.toString();
+      if (storedId != null && storedId.isNotEmpty) {
+        _selfUserId = storedId;
+      }
+    }
+
+    if (_selfUserId != null && _selfUserId!.isNotEmpty) {
+      if (socket == null) {
+        init(_selfUserId!);
+      } else if (!socket!.connected) {
+        socket!.connect();
+      }
+    }
+
+    _log('⏳ Waiting for Socket connection (App Cold Start)...');
+    int waitedMs = 0;
+    const intervalMs = 200;
+    final maxWaitMs = timeoutSeconds * 1000;
+
+    while (waitedMs < maxWaitMs) {
+      if (socket != null && socket!.connected) {
+        _log('🟢 Socket connected successfully after ${waitedMs}ms');
+        return true;
+      }
+      await Future.delayed(const Duration(milliseconds: intervalMs));
+      waitedMs += intervalMs;
+    }
+
+    _log('❌ Socket connection timed out after $timeoutSeconds seconds');
+    return socket != null && socket!.connected;
   }
 
   void _bindSocketListeners() {
@@ -156,65 +199,6 @@ class Socket_GroupCallService {
       socket?.off(e);
     }
 
-    socket?.on("group_call_started", (raw) {
-      // _log(" group_call_started: $raw");
-      // if (raw == null) return;
-      //
-      // final Map<String, dynamic> data = raw is Map && raw['data'] is Map
-      //     ? Map<String, dynamic>.from(raw['data'])
-      //     : Map<String, dynamic>.from(raw);
-      //
-      // final callerId = (data['callerId'] ?? data['userId'])?.toString();
-      // if (callerId == null || callerId == _selfUserId) {
-      //   _log('Ignore self/invalid group_call_started');
-      //   return;
-      // }
-      //
-      // final callerName = (data['name'] ??
-      //     data['callerName'] ??
-      //     'Someone')
-      //     .toString();
-      // final callerProfile = (data['profileImage'] ??
-      //     data['callerProfileImage'] ??
-      //     '')
-      //     .toString();
-      //
-      // currentCallId = data['callId']?.toString();
-      // currentGroupId = data['groupId']?.toString();
-      //
-      // _saveParticipantMeta(
-      //   callerId,
-      //   name: callerName,
-      //   profileImage: callerProfile,
-      //   isMuted: false,
-      // );
-      //
-      // final currentRoute = Get.currentRoute;
-      // if (currentRoute == Routes.groupCallingScreen ||
-      //     currentRoute == Routes.groupIncomingCallScreen) {
-      //   _log('Already in call UI, skip navigation');
-      //   return;
-      // }
-      //
-      // Get.toNamed(
-      //   Routes.groupIncomingCallScreen,
-      //   arguments: {
-      //     "callId": data['callId']?.toString(),
-      //     "groupId": data['groupId']?.toString() ?? "",
-      //     "groupName": (data['groupName'] ?? "Group Call").toString(),
-      //     "callerName": callerName,
-      //     "groupProfile": (data['groupProfile'] ?? callerProfile).toString(),
-      //     "callerProfileImage": callerProfile,
-      //     "activeMemberCount": 1,
-      //     "totalMemberCount": data['totalMembers'] ?? 0,
-      //     "isVideo": data['isVideo'] == true,
-      //     "callType": "incoming",
-      //   },
-      // );
-      //
-      // onIncomingCallReceived?.call(data);
-    });
-
     socket?.on("group_call_participant_joined", (raw) {
       _log("👤 group_call_participant_joined: $raw");
       if (raw == null) return;
@@ -225,7 +209,7 @@ class Socket_GroupCallService {
 
       final name = (data['name'] ?? data['userName'] ?? '').toString();
       final profileImage =
-          (data['profileImage'] ?? data['userProfileImage'] ?? '').toString();
+      (data['profileImage'] ?? data['userProfileImage'] ?? '').toString();
 
       _saveParticipantMeta(
         joinedUserId,
@@ -270,12 +254,13 @@ class Socket_GroupCallService {
     });
 
     socket?.on("group_call_ended", (raw) async {
-      _log("📵 group_call_ended: $raw");
+      _log(" group_call_ended: $raw");
       if (Get.currentRoute == Routes.groupIncomingCallScreen) {
         Get.back();
       }
       onCallEnded?.call();
       await endCallLocalCleanup(navigate: true);
+      CallSessionState.reset();
     });
 
     socket?.on("group_call_offer", (data) async {
@@ -316,8 +301,9 @@ class Socket_GroupCallService {
     _log('emit start_group_call group=$groupId');
     currentGroupId = groupId;
 
-    if (socket == null || !socket!.connected) {
-      onResponse(false, null, "Socket disconnected");
+    bool connected = await _ensureConnected(timeoutSeconds: 8);
+    if (!connected) {
+      onResponse(false, null, "Socket connection timeout");
       return;
     }
 
@@ -337,7 +323,6 @@ class Socket_GroupCallService {
         "isVideo": isVideo,
         "callerName": callerName,
         "callerProfileImage": callerProfileImage,
-        // also send new keys for backend compatibility
         "name": callerName,
         "profileImage": callerProfileImage,
       },
@@ -356,25 +341,31 @@ class Socket_GroupCallService {
   }
 
   Future<void> joinGroupCall(
-    String callId,
-    String groupId,
-    Function(bool success) onComplete,
-  ) async {
-    _log(' emit join_group_call callId=$callId');
+      String callId,
+      String groupId,
+      Function(bool success) onComplete,
+      ) async {
+    _log('emit join_group_call callId=$callId, groupId=$groupId');
     currentCallId = callId;
     currentGroupId = groupId;
 
-    if (socket == null || !socket!.connected) {
+    // ✅ Ensures socket is connected even from Terminated Cold-Start
+    bool connected = await _ensureConnected(timeoutSeconds: 8);
+    if (!connected) {
+      _log('Socket connection timed out during joinGroupCall');
+      Utils().fluttertoast("Unable to connect to call server. Please check your network.");
       onComplete(false);
       return;
     }
 
+    var data = {
+      "callId": int.tryParse(callId) ?? callId,
+      "groupId": int.tryParse(groupId) ?? groupId,
+    };
+
     socket?.emitWithAck(
       "join_group_call",
-      {
-        "callId": int.tryParse(callId) ?? callId,
-        "groupId": int.tryParse(groupId) ?? groupId,
-      },
+      data,
       ack: (response) async {
         _log('join_group_call ACK: $response');
         if (response is! Map || response['success'] != true) {
@@ -384,8 +375,6 @@ class Socket_GroupCallService {
 
         currentCallId = response['callId']?.toString() ?? callId;
 
-        // existingParticipants can be:
-        // [{userId,name,profileImage,status}] OR [{userId,status}]
         final participants = (response['existingParticipants'] as List?) ?? [];
         for (final p in participants) {
           if (p is! Map) continue;
@@ -396,7 +385,7 @@ class Socket_GroupCallService {
             uid,
             name: (p['name'] ?? p['userName'])?.toString(),
             profileImage:
-                (p['profileImage'] ?? p['userProfileImage'])?.toString(),
+            (p['profileImage'] ?? p['userProfileImage'])?.toString(),
             isMuted: p['isMuted'] == true,
           );
         }
@@ -422,7 +411,6 @@ class Socket_GroupCallService {
     );
   }
 
-
   void rejectGroupCall(String callId, String groupId) {
     _log('🚀 emit reject_group_call');
     socket?.emitWithAck(
@@ -435,9 +423,6 @@ class Socket_GroupCallService {
     );
   }
 
-  // ============================================================
-  // NEW: group_call_mute (emit)
-  // ============================================================
   void emitMute({required bool isMuted}) {
     if (currentCallId == null || currentGroupId == null) {
       _log('⚠️ emitMute skipped: no active call');
@@ -461,9 +446,6 @@ class Socket_GroupCallService {
     );
   }
 
-  // ============================================================
-  // 11) leave_group_call
-  // ============================================================
   void leaveGroupCall() {
     if (currentCallId == null || currentGroupId == null) return;
     _log('🚀 emit leave_group_call');
@@ -478,9 +460,6 @@ class Socket_GroupCallService {
     endCallLocalCleanup(navigate: false);
   }
 
-  // ============================================================
-  // 13) end_group_call
-  // ============================================================
   void endGroupCall() {
     if (currentCallId == null || currentGroupId == null) return;
     _log('🚀 emit end_group_call');
@@ -664,8 +643,6 @@ class Socket_GroupCallService {
     }
 
     remoteUsers.remove(remoteId);
-    // keep meta optional; remove if you want hard cleanup:
-    // participantMeta.remove(remoteId);
 
     onParticipantLeft?.call(remoteId);
     onParticipantsUpdated?.call();
@@ -699,8 +676,6 @@ class Socket_GroupCallService {
       Get.offAllNamed(Routes.Home_Screen);
     }
   }
-
-
 
   Future<void> dispose() async {
     if (_isDisposed) return;

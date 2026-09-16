@@ -65,7 +65,7 @@ class GroupParticipantsSheet {
             SizedBox(height: 18.h),
 
             Obx(() => reausabletext(
-              "Not in this call (${controller.notInCallParticipants.length})",
+              "Not in this call (${controller.memberData.length})",
               fontsize: 16,
               fontfamily: FontFamily.interSemiBold,
               color: const Color(0xFF1E1147),
@@ -74,7 +74,14 @@ class GroupParticipantsSheet {
 
             Expanded(
               child: Obx(() {
-                final list = controller.notInCallParticipants.toList();
+                final activeUserIds = controller.activeParticipants
+                    .map((e) => e.name)
+                    .toSet();
+
+                final list = controller.memberData
+                    .where((participant) => !activeUserIds.contains(participant.name))
+                    .toList();
+
                 if (list.isEmpty) {
                   return Center(
                     child: reausabletext(
@@ -90,9 +97,12 @@ class GroupParticipantsSheet {
                   separatorBuilder: (_, __) => SizedBox(height: 14.h),
                   itemBuilder: (context, index) {
                     final participant = list[index];
-                    final imageUrl = Utility.isNullEmptyOrFalse(participant.profileImage)
+
+                    final imageUrl =
+                    Utility.isNullEmptyOrFalse(participant.profileImage)
                         ? MyAppTheme.ProfilenotFoundImg
-                        : ConstRes.aImageBaseUrl + (participant.profileImage ?? '');
+                        : ConstRes.aImageBaseUrl +
+                        (participant.profileImage ?? '');
 
                     return Row(
                       children: [
@@ -102,7 +112,9 @@ class GroupParticipantsSheet {
                           backgroundImage: NetworkImage(imageUrl),
                           onBackgroundImageError: (_, __) {},
                         ),
+
                         SizedBox(width: 14.w),
+
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -122,6 +134,7 @@ class GroupParticipantsSheet {
                             ],
                           ),
                         ),
+
                         InkWell(
                           onTap: () => controller.notifyParticipant(participant),
                           borderRadius: BorderRadius.circular(30.r),
@@ -136,8 +149,11 @@ class GroupParticipantsSheet {
                             ),
                             child: Row(
                               children: [
-                                const Icon(Icons.notifications_active,
-                                    color: Color(0xFF6E5CA4), size: 18),
+                                const Icon(
+                                  Icons.notifications_active,
+                                  color: Color(0xFF6E5CA4),
+                                  size: 18,
+                                ),
                                 SizedBox(width: 6.w),
                                 reausabletext(
                                   "Notify",
@@ -154,7 +170,7 @@ class GroupParticipantsSheet {
                   },
                 );
               }),
-            ),
+            )
           ],
         ),
       ),
