@@ -4,7 +4,9 @@ import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import '../../../Core/constant/const_res.dart';
+import '../../../Core/util/chatutil.dart';
 import '../Controller/MessageController.dart';
 import '../Controller/chat_list_controller.dart';
 import '../widgets/custom_dropdown_menu.dart';
@@ -126,32 +128,23 @@ class _AllChatsBody extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // SizedBox(height: 8.h),
-            // _sectionTitle(
-            //   "Status",
-            //   showViewAll: true,
-            // ),
-            // _statusSection(),
-            // SizedBox(height: 20.h),
             _sectionTitle(
               "All Chats",
               // showDropdown: true,
             ),
             Obx(() {
+              // 1. Loading State (Skeleton)
               if (controller.isLoading.value &&
                   controller.privateChats.isEmpty) {
-                return const Padding(
-                  padding: EdgeInsets.all(40),
-                  child: Center(
-                    child: CircularProgressIndicator(),
-                  ),
-                );
+                return _buildSkeletonList();
               }
 
+              // 2. Empty State
               if (controller.privateChats.isEmpty) {
                 return _emptyChats();
               }
 
+              // 3. Data State
               return Container(
                 margin: EdgeInsets.symmetric(
                   horizontal: 16.w,
@@ -192,7 +185,7 @@ class _AllChatsBody extends StatelessWidget {
                       context: context,
                       name: chat.name ?? "Unknown User",
                       role: chat.role ?? "",
-                      msg: chat.message ?? "",
+                      msg: ChatUtil.formatLastMessage(chat.message),
                       time: _formatChatTime(
                         chat.time ?? "",
                       ),
@@ -207,6 +200,87 @@ class _AllChatsBody extends StatelessWidget {
             }),
             SizedBox(height: 100.h),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSkeletonList() {
+    return Skeletonizer(
+      enabled: true,
+      child: Container(
+        margin: EdgeInsets.symmetric(horizontal: 16.w),
+        padding: EdgeInsets.symmetric(vertical: 4.h),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(18.r),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.03),
+              blurRadius: 12,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: ListView.separated(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          padding: EdgeInsets.zero,
+          itemCount: 6, // 6 dummy rows
+          separatorBuilder: (_, __) => Divider(
+            color: Colors.grey.withValues(alpha: 0.12),
+            height: 1,
+            indent: 16.w,
+            endIndent: 16.w,
+          ),
+          itemBuilder: (context, index) {
+            return Padding(
+              padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  CircleAvatar(
+                    radius: 26.r,
+                    backgroundColor: Colors.grey.shade300,
+                  ),
+                  SizedBox(width: 12.w),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(width: 120.w, height: 14.h, color: Colors.grey),
+                        SizedBox(height: 6.h),
+                        Container(width: 180.w, height: 12.h, color: Colors.grey),
+                      ],
+                    ),
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(width: 40.w, height: 11.h, color: Colors.grey),
+                      SizedBox(height: 6.h),
+                      Container(
+                        width: 20.w,
+                        height: 20.w,
+                        decoration: const BoxDecoration(
+                          color: Colors.grey,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(width: 16.w),
+                  Icon(
+                    Icons.chevron_right_rounded,
+                    size: 20.sp,
+                    color: Colors.grey,
+                  ),
+                ],
+              ),
+            );
+          },
         ),
       ),
     );
@@ -278,11 +352,11 @@ class _AllChatsBody extends StatelessWidget {
   }
 
   Widget _sectionTitle(
-    String title, {
-    bool showViewAll = false,
-    int? badgeCount,
-    bool showDropdown = false,
-  }) {
+      String title, {
+        bool showViewAll = false,
+        int? badgeCount,
+        bool showDropdown = false,
+      }) {
     final bool isPinned = title == "Pinned Chats 📌";
 
     return Padding(
@@ -343,157 +417,6 @@ class _AllChatsBody extends StatelessWidget {
       ),
     );
   }
-  //
-  // Widget _statusSection() {
-  //   return SizedBox(
-  //     height: 100.h,
-  //     child: Obx(() {
-  //       if (controller.privateChats.isEmpty) {
-  //         return ListView(
-  //           scrollDirection: Axis.horizontal,
-  //           padding: EdgeInsets.symmetric(
-  //             horizontal: 16.w,
-  //           ),
-  //           children: [
-  //             _emptyStatus(),
-  //           ],
-  //         );
-  //       }
-  //
-  //       final chatsWithStatus = controller.privateChats.where((chat) {
-  //         return (chat.status ?? "").isNotEmpty;
-  //       }).toList();
-  //
-  //       if (chatsWithStatus.isEmpty) {
-  //         return ListView(
-  //           scrollDirection: Axis.horizontal,
-  //           padding: EdgeInsets.symmetric(
-  //             horizontal: 16.w,
-  //           ),
-  //           children: [
-  //             _emptyStatus(),
-  //           ],
-  //         );
-  //       }
-  //
-  //       return ListView.builder(
-  //         scrollDirection: Axis.horizontal,
-  //         padding: EdgeInsets.symmetric(
-  //           horizontal: 16.w,
-  //         ),
-  //         itemCount: chatsWithStatus.length,
-  //         itemBuilder: (context, index) {
-  //           final chat = chatsWithStatus[index];
-  //
-  //           return Padding(
-  //             padding: EdgeInsets.only(
-  //               right: 16.w,
-  //             ),
-  //             child: _statusItem(
-  //               chat.name ?? "User",
-  //               chat.status ?? "Offline",
-  //               _statusColor(chat.status) ?? Colors.grey,
-  //               chat.image ?? "",
-  //             ),
-  //           );
-  //         },
-  //       );
-  //     }),
-  //   );
-  // }
-  //
-  // Widget _emptyStatus() {
-  //   return Center(
-  //     child: Container(
-  //       padding: EdgeInsets.symmetric(
-  //         horizontal: 16.w,
-  //         vertical: 10.h,
-  //       ),
-  //       decoration: BoxDecoration(
-  //         color: Colors.white,
-  //         borderRadius: BorderRadius.circular(16.r),
-  //       ),
-  //       child: reausabletext(
-  //         "No status available",
-  //         fontsize: 11.sp,
-  //         color: Colors.grey.shade600,
-  //       ),
-  //     ),
-  //   );
-  // }
-  //
-  // Widget _statusItem(
-  //   String name,
-  //   String subStatus,
-  //   Color ringColor,
-  //   String imageUrl,
-  // ) {
-  //   return Column(
-  //     children: [
-  //       Stack(
-  //         children: [
-  //           Container(
-  //             width: 60.w,
-  //             height: 60.w,
-  //             padding: EdgeInsets.all(3.w),
-  //             decoration: BoxDecoration(
-  //               shape: BoxShape.circle,
-  //               border: Border.all(
-  //                 color: ringColor,
-  //                 width: 2,
-  //               ),
-  //             ),
-  //             child: CircleAvatar(
-  //               backgroundColor: Colors.grey.shade300,
-  //               backgroundImage: imageUrl.isNotEmpty
-  //                   ? NetworkImage(
-  //                       imageUrl.startsWith("http://") ||
-  //                               imageUrl.startsWith("https://")
-  //                           ? imageUrl
-  //                           : "${ConstRes.production}$imageUrl",
-  //                     )
-  //                   : null,
-  //               child: imageUrl.isEmpty
-  //                   ? Icon(
-  //                       Icons.person,
-  //                       color: Colors.white,
-  //                       size: 26.sp,
-  //                     )
-  //                   : null,
-  //             ),
-  //           ),
-  //           Positioned(
-  //             bottom: 2,
-  //             right: 2,
-  //             child: Container(
-  //               width: 12.w,
-  //               height: 12.w,
-  //               decoration: BoxDecoration(
-  //                 color: ringColor,
-  //                 shape: BoxShape.circle,
-  //                 border: Border.all(
-  //                   color: Colors.white,
-  //                   width: 2,
-  //                 ),
-  //               ),
-  //             ),
-  //           ),
-  //         ],
-  //       ),
-  //       SizedBox(height: 6.h),
-  //       reausabletext(
-  //         name.isEmpty ? "User" : name,
-  //         fontsize: 12.sp,
-  //         fontfamily: FontFamily.interSemiBold,
-  //       ),
-  //       reausabletext(
-  //         subStatus.isEmpty ? "Offline" : subStatus,
-  //         fontsize: 10.sp,
-  //         color: Colors.grey,
-  //       ),
-  //     ],
-  //   );
-  // }
 
   Widget _chatTile({
     required BuildContext context,
@@ -513,9 +436,9 @@ class _AllChatsBody extends StatelessWidget {
       onTapDown: (d) {
         tapPos = d.globalPosition;
       },
-      onTap: () {
+      onTap: () async {
         final chat = controller.privateChats.firstWhere(
-          (item) => item.name == name && item.image == image,
+              (item) => item.name == name && item.image == image,
           orElse: () => controller.privateChats.first,
         );
 
@@ -523,8 +446,8 @@ class _AllChatsBody extends StatelessWidget {
           return;
         }
 
-        Get.to(
-          () => ChatScreen(),
+        await Get.to(
+              () => ChatScreen(),
           arguments: {
             "userData": MemberData(
               userId: chat.userId,
@@ -537,6 +460,7 @@ class _AllChatsBody extends StatelessWidget {
             Get.put(MessageController());
           }),
         );
+
       },
       onLongPress: () => _showChatOptions(context, tapPos),
       child: Container(
@@ -590,9 +514,9 @@ class _AllChatsBody extends StatelessWidget {
       onTapDown: (d) {
         tapPos = d.globalPosition;
       },
-      onTap: () {
+      onTap: () async {
         final chat = controller.privateChats.firstWhere(
-          (item) => item.name == name && item.image == image,
+              (item) => item.name == name && item.image == image,
           orElse: () => controller.privateChats.first,
         );
 
@@ -600,8 +524,8 @@ class _AllChatsBody extends StatelessWidget {
           return;
         }
 
-        Get.to(
-          () => ChatScreen(),
+        await Get.to(
+              () => ChatScreen(),
           arguments: {
             "userData": MemberData(
               userId: chat.userId,
@@ -614,6 +538,7 @@ class _AllChatsBody extends StatelessWidget {
             Get.put(MessageController());
           }),
         );
+
       },
       onLongPress: () => _showChatOptions(context, tapPos),
       child: Container(
@@ -656,28 +581,28 @@ class _AllChatsBody extends StatelessWidget {
             CircleAvatar(
               radius: 26.r,
               backgroundColor:
-                  isGroup ? const Color(0xFF6B4DFF) : Colors.grey.shade300,
+              isGroup ? const Color(0xFF6B4DFF) : Colors.grey.shade300,
               backgroundImage: (!isGroup && image != null && image.isNotEmpty)
                   ? NetworkImage(
-                      image.startsWith("http://") ||
-                              image.startsWith("https://")
-                          ? image
-                          : "${ConstRes.production}$image",
-                    )
+                image.startsWith("http://") ||
+                    image.startsWith("https://")
+                    ? image
+                    : "${ConstRes.production}$image",
+              )
                   : null,
               child: isGroup
                   ? Icon(
-                      Icons.groups,
-                      color: Colors.white,
-                      size: 24.sp,
-                    )
+                Icons.groups,
+                color: Colors.white,
+                size: 24.sp,
+              )
                   : (image == null || image.isEmpty
-                      ? Icon(
-                          Icons.person,
-                          color: Colors.white,
-                          size: 26.sp,
-                        )
-                      : null),
+                  ? Icon(
+                Icons.person,
+                color: Colors.white,
+                size: 26.sp,
+              )
+                  : null),
             ),
             if (statusColor != null)
               Positioned(
@@ -768,9 +693,9 @@ class _AllChatsBody extends StatelessWidget {
   }
 
   void _showChatOptions(
-    BuildContext context,
-    Offset position,
-  ) {
+      BuildContext context,
+      Offset position,
+      ) {
     CustomDropdownMenu.show(
       context: context,
       position: position,

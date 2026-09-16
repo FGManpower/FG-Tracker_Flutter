@@ -5,13 +5,14 @@ import 'dart:io';
 import 'package:connectycube_flutter_call_kit/connectycube_flutter_call_kit.dart';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
-
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Group_Calling.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Walkie-Talkie-Service.dart';
+import 'package:fgtracker/gen/assets.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -22,7 +23,6 @@ import 'app/Core/util/CallKit/callkit_service.dart';
 import 'app/Core/values/Context_Utility.dart';
 import 'app/Core/values/global.dart';
 import 'app/Data/Services/NotificationServices.dart';
-import 'app/Data/Services/walkie_awesome_notification_service.dart';
 import 'app/Data/Services/Socket/Socket_SignallingService.dart';
 import 'app/modules/Notification/Controller/cubit/notification_count_cubit.dart';
 import 'app/routes/app_pages.dart';
@@ -107,6 +107,15 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   } else if (message.data['screen_name'] == "missedGroupCall") {
     final sessionId = message.data['session_id'].toString();
     callEnded(sessionId);
+    flutterLocalNotificationsPlugin.cancelAll();
+  } else if (message.data['screen_name'] == 'groupCallNotify') {
+    FlutterRingtonePlayer().play(
+      asAlarm: false,
+      fromAsset: Assets.music.incomingCall,
+    );
+    Future.delayed(const Duration(seconds: 10), () {
+      FlutterRingtonePlayer().stop();
+    });
   }
 }
 
@@ -197,7 +206,6 @@ Future<void> main() async {
   Get.put<LocationService>(LocationService());
   Get.put<SocketService>(SocketService());
 
-
   final shared = await SharedPreferences.getInstance();
 
   var userId = shared.get(PrefConst.userId);
@@ -211,10 +219,8 @@ Future<void> main() async {
     Socket_GroupCallService.instance.init(userId.toString());
   }
 
-
   runApp(const MyApp());
 }
-
 
 groupWalkieInitialize(userId) async {
   if (userId != null) {
@@ -222,7 +228,6 @@ groupWalkieInitialize(userId) async {
       websocketUrl: ConstRes.socketUrl,
       selfUserId: userId,
     );
-
   }
 }
 
