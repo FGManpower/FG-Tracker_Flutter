@@ -2257,17 +2257,19 @@ class TrackingScreen extends StatelessWidget {
   }
 
   String _formatDistance(String distance) {
-    if (distance.isEmpty || distance.toLowerCase().contains("nan")) {
+    if (distance.isEmpty ||
+        distance.toLowerCase().contains("nan") ||
+        distance.trim() == "Nearby") {
       return "Nearby";
     }
     if (distance.contains("away")) return distance;
-    if (distance.contains("km")) return "$distance away";
+    if (distance.contains("km") || distance.contains(" m")) return "$distance away";
     final cleaned = distance.replaceAll(RegExp(r'[^\d.]'), '');
     final numVal = double.tryParse(cleaned);
     if (numVal != null) {
       return "${numVal.toStringAsFixed(1)} km away";
     }
-    return "$distance away";
+    return distance;
   }
 
   IconData _getBatteryIcon(int level) {

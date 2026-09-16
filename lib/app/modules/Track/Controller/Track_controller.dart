@@ -42,7 +42,7 @@ class GeocodedAddressResult {
 }
 
 class TrackController extends GetxController {
-  RxString selectedRadius = '0.1'.obs;
+  RxString selectedRadius = '2'.obs;
   TextEditingController customRadiusController = TextEditingController();
   TextEditingController searchController = TextEditingController();
   final RxString searchQuery = "".obs;
@@ -534,11 +534,28 @@ class TrackController extends GetxController {
   }
 
   void _refreshMembersAndMap() {
+    double userLat = currentLat.value;
+    double userLng = currentLong.value;
+    if (userLat == 0.0 || userLng == 0.0) {
+      final loc = LocationService.instance.currentPosition;
+      if (loc?.latitude != null && loc?.longitude != null) {
+        userLat = loc!.latitude!;
+        userLng = loc!.longitude!;
+      } else {
+        final savedLat = Global.storageServices.getDouble('user_last_lat');
+        final savedLng = Global.storageServices.getDouble('user_last_lng');
+        if (savedLat != null && savedLng != null && savedLat != 0.0 && savedLng != 0.0) {
+          userLat = savedLat;
+          userLng = savedLng;
+        }
+      }
+    }
+
     final onlineUsers = radiusUsers.where((u) => u.isOnline).toList();
     final mapped = onlineUsers
         .map((e) => e.toMemberModel(
-              currentUserLat: currentLat.value,
-              currentUserLong: currentLong.value,
+              currentUserLat: userLat,
+              currentUserLong: userLng,
               fallbackTeam: selectedGroupName.value,
             ))
         .toList();
@@ -919,6 +936,7 @@ class TrackController extends GetxController {
       try {
         await Future.wait(futures).timeout(const Duration(seconds: 4));
       } catch (_) {}
+      _refreshMembersAndMap();
     }
   }
 
@@ -992,7 +1010,7 @@ class TrackController extends GetxController {
       recenterMap(zoom: 16.0);
     }
 
-    updateMapMarkersAndCircle();
+    _refreshMembersAndMap();
 
     // If first time valid coordinates are set, request live members from users-within-radius API
     if (firstValidCoords) {
@@ -1421,7 +1439,9 @@ class TrackController extends GetxController {
 
     // Member markers - only show online members on the live map
     final String q = searchController.text.trim().toLowerCase();
-    for (var u in radiusUsers.where((u) => u.isOnline)) {
+    final List<UsersWithinRadiusData> membersToMark =
+        radiusUsers.where((u) => u.isOnline).toList();
+    for (var u in membersToMark) {
       if (u.latitude != null &&
           u.longitude != null &&
           u.latitude != 0.0 &&
@@ -1455,8 +1475,21 @@ class TrackController extends GetxController {
                 u.location != "Location")
             ? "${u.location} • "
             : "";
-        final distanceText =
-            u.distance != null ? "${u.distance} km away" : "Nearby";
+        final String distanceText;
+        if (u.distance != null &&
+            u.distance!.trim().isNotEmpty &&
+            !u.distance!.toLowerCase().contains("nan")) {
+          final dStr = u.distance!.trim();
+          if (dStr.contains("away")) {
+            distanceText = dStr;
+          } else if (dStr.contains("km") || dStr.contains("m")) {
+            distanceText = "$dStr away";
+          } else {
+            distanceText = "$dStr km away";
+          }
+        } else {
+          distanceText = "Nearby";
+        }
 
         newMarkers.add(
           Marker(
@@ -1531,7 +1564,9 @@ class TrackController extends GetxController {
     final double lng = currentLong.value != 0.0 ? currentLong.value : 72.8777;
     points.add(LatLng(lat, lng));
 
-    for (var u in radiusUsers.where((u) => u.isOnline)) {
+    final List<UsersWithinRadiusData> membersToFit =
+        radiusUsers.where((u) => u.isOnline).toList();
+    for (var u in membersToFit) {
       if (u.latitude != null &&
           u.longitude != null &&
           u.latitude != 0.0 &&

@@ -2,7 +2,6 @@ import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Data/Services/Tracking.dart';
 import 'package:fgtracker/app/Model/MemberModel.dart';
 import 'package:geocoding/geocoding.dart' hide Location;
-import 'package:geolocator/geolocator.dart';
 
 class UsersWithinRadiusRes {
   bool? status;
@@ -343,34 +342,17 @@ class UsersWithinRadiusData {
   }) {
     String formattedDistance = "Nearby";
 
-    // If both current user coordinates and member coordinates are available, calculate exact geodesic distance
-    if (currentUserLat != null &&
-        currentUserLong != null &&
-        currentUserLat != 0.0 &&
-        currentUserLong != 0.0 &&
-        latitude != null &&
-        longitude != null &&
-        latitude != 0.0 &&
-        longitude != 0.0) {
-      try {
-        final meters = Geolocator.distanceBetween(
-          currentUserLat,
-          currentUserLong,
-          latitude!,
-          longitude!,
-        );
-        final km = meters / 1000.0;
-        formattedDistance = "${km.toStringAsFixed(1)} km";
-      } catch (_) {
-        formattedDistance = "Nearby";
-      }
-    } else if (distance != null && !distance.toString().toLowerCase().contains("nan")) {
-      final cleaned = distance.toString().replaceAll(RegExp(r'[^\d.]'), '');
-      final d = double.tryParse(cleaned);
-      if (d != null) {
-        formattedDistance = "${d.toStringAsFixed(1)} km";
+    // Strictly use backend calculated distance without local calculation
+    if (distance != null &&
+        distance.toString().trim().isNotEmpty &&
+        !distance.toString().toLowerCase().contains("nan")) {
+      final str = distance.toString().trim();
+      if (str.contains("away")) {
+        formattedDistance = str;
+      } else if (str.contains("km") || str.contains("m")) {
+        formattedDistance = "$str away";
       } else {
-        formattedDistance = distance.toString();
+        formattedDistance = "$str km away";
       }
     } else {
       formattedDistance = "Nearby";

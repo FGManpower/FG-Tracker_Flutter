@@ -27,27 +27,27 @@ class TrackRepo {
 
     dynamic response;
 
-    // 1. Try Urls.userWithinRadiusFallback first as requested
+    // 1. Primary: query /users-within-radius
     try {
       debugPrint(
-        "📍 [TrackRepo] GET ${Urls.userWithinRadiusFallback} - params: $queryParams",
+        "📍 [TrackRepo] GET ${Urls.usersWithinRadius} - params: $queryParams",
       );
 
       response = await HttpUtil().get(
-        Urls.userWithinRadiusFallback,
+        Urls.usersWithinRadius,
         data: queryParams,
       );
 
       debugPrint(
-        "📍 [TrackRepo] Response from /user-within-radius: $response",
+        "📍 [TrackRepo] Response from /users-within-radius: $response",
       );
     } catch (e) {
       debugPrint(
-        "⚠️ /user-within-radius failed: $e, trying /users-within-radius",
+        "⚠️ /users-within-radius failed: $e, trying fallback",
       );
     }
 
-    // 2. Check if we got valid user list; if not, query /users-within-radius
+    // 2. Fallback if primary returned no data
     final bool hasData = response != null &&
         ((response is Map &&
                 response['data'] is List &&
@@ -56,27 +56,14 @@ class TrackRepo {
 
     if (!hasData) {
       try {
-        debugPrint(
-          "📍 [TrackRepo] GET ${Urls.usersWithinRadius} - params: $queryParams",
-        );
-
         final res2 = await HttpUtil().get(
-          Urls.usersWithinRadius,
+          Urls.userWithinRadiusFallback,
           data: queryParams,
         );
-
-        debugPrint(
-          "📍 [TrackRepo] Response from /users-within-radius: $res2",
-        );
-
         if (res2 != null) {
           response = res2;
         }
-      } catch (e2) {
-        debugPrint(
-          "❌ [TrackRepo] Both endpoints failed: $e2",
-        );
-      }
+      } catch (_) {}
     }
 
     try {
