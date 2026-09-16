@@ -45,8 +45,7 @@ class firebaseNotificationServices {
       Random.secure().nextInt(10000).toString(),
       "High Importance Notification",
       importance: Importance.max,
-      sound:
-          const RawResourceAndroidNotificationSound('recieve_notification.mp3'),
+      sound: const RawResourceAndroidNotificationSound('recieve_notification.mp3'),
     );
 
     AndroidNotificationDetails androidNotificationDetails = AndroidNotificationDetails(
@@ -55,9 +54,9 @@ class firebaseNotificationServices {
             importance: Importance.high,
             priority: Priority.high,
             ticker: "ticker",
-            sound: const RawResourceAndroidNotificationSound(
-                'recieve_notification'),
-            enableVibration: true);
+            sound: const RawResourceAndroidNotificationSound('recieve_notification'),
+            enableVibration: true
+    );
 
     const DarwinNotificationDetails darwinNotificationDetails =
         DarwinNotificationDetails(

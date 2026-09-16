@@ -41,6 +41,7 @@ class GroupParticipantsSheet {
               fontfamily: FontFamily.interSemiBold,
               color: const Color(0xFF1E1147),
             )),
+
             SizedBox(height: 10.h),
             Obx(() {
               final inCall = controller.activeParticipants.toList();

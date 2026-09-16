@@ -215,6 +215,7 @@ Future<void> main() async {
   runApp(const MyApp());
 }
 
+
 groupWalkieInitialize(userId) async {
   if (userId != null) {
     await GroupWalkieService.instance.init(
