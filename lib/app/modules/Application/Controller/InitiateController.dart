@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../../Core/constant/notification_holder.dart';
 import '../../../Core/constant/pref_res.dart';
 import '../../../Core/util/CallKit/callkit_service.dart';
 import '../../../Core/values/global.dart';
@@ -9,7 +8,6 @@ import '../../../Core/values/utility.dart';
 import '../../../routes/app_pages.dart';
 import '../../../Core/global/launchedFromCall.dart';
 import '../../../modules/AppUpdate/Controller/UpdateCubit/update_cubit.dart';
-import '../../../Data/Services/walkie_awesome_notification_service.dart';
 
 class InitiateController extends GetxController
     with GetTickerProviderStateMixin {
@@ -40,73 +38,40 @@ class InitiateController extends GetxController
 
     animationController.forward();
 
-    if (CallSessionState.launchedFromCall ||
-        CallSessionState.isCallActive ||
-        WalkieLaunchTracker.fromWalkieCall ||
-        WalkieAwesomeNotificationService.pendingWalkiePayload != null ||
-        WalkieAwesomeNotificationService.instance.isInActiveSession) {
+    if (CallSessionState.launchedFromCall || CallSessionState.isCallActive) {
       _splashTimer?.cancel();
-      final pending = WalkieAwesomeNotificationService.pendingWalkiePayload;
-      final activeGid = pending?['groupId']?.toString() ??
-          WalkieAwesomeNotificationService.instance.activeGroupId;
-      final activeGname = pending?['groupName']?.toString() ??
-          WalkieAwesomeNotificationService.instance.activeGroupName ??
-          'FG Manpower Group';
-      final speakerName = pending?['speakerName']?.toString() ?? '';
-      final speakerImage = pending?['speakerImage']?.toString() ?? '';
-
-      if (activeGid != null && activeGid.isNotEmpty) {
-        WalkieAwesomeNotificationService.pendingWalkiePayload = null;
-        Get.offAllNamed(
-          Routes.groupWalkieScreen,
-          arguments: {
-            "groupId": activeGid,
-            "groupName": activeGname,
-            "speakerName": speakerName,
-            "speakerImage": speakerImage,
-          },
-        );
-      }
       return;
     }
 
     Future.microtask(() async {
       await CallKitService.instance.checkCallOnLaunch();
 
-      if (CallSessionState.isCallActive ||
-          CallSessionState.launchedFromCall ||
-          WalkieLaunchTracker.fromWalkieCall ||
-          WalkieAwesomeNotificationService.pendingWalkiePayload != null ||
-          WalkieAwesomeNotificationService.instance.isInActiveSession) {
+      if (CallSessionState.isCallActive || CallSessionState.launchedFromCall) {
         return;
       }
 
       _splashTimer = Timer(
         const Duration(seconds: 4),
-            () => checkLoginStatus(),
+        () => checkLoginStatus(),
       );
     });
   }
 
   void checkLoginStatus() async {
-    if (CallSessionState.isCallActive ||
-        CallSessionState.launchedFromCall ||
-        WalkieLaunchTracker.fromWalkieCall ||
-        WalkieAwesomeNotificationService.pendingWalkiePayload != null ||
-        WalkieAwesomeNotificationService.instance.isInActiveSession) {
+    if (CallSessionState.isCallActive || CallSessionState.launchedFromCall) {
       return;
     }
 
     await Future.delayed(const Duration(seconds: 1));
 
     if (Utility.isNotNullEmptyOrFalse(
-        Global.storageServices.getaccesstoken()) &&
+            Global.storageServices.getaccesstoken()) &&
         Utility.isNotNullEmptyOrFalse(
             Global.storageServices.get(PrefConst.isRegistered))) {
       Get.offAllNamed(Routes.Home_Screen);
     } else {
       final introDone =
-      await Global.storageServices.getBool(PrefConst.introStatus);
+          await Global.storageServices.getBool(PrefConst.introStatus);
 
       if (introDone == true) {
         Get.offAllNamed(Routes.Login);

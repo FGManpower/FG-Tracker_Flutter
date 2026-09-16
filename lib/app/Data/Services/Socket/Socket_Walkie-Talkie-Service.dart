@@ -3,10 +3,11 @@ import 'dart:developer';
 import 'dart:io';
 
 import 'package:audio_session/audio_session.dart';
+import 'package:fgtracker/app/Core/constant/notification_holder.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Controller/walkieController.dart';
-import 'package:fgtracker/app/Data/Services/walkie_awesome_notification_service.dart';
+import 'package:fgtracker/app/modules/Walkie-talkie/Views/walkie_invite_dialog.dart';
+import 'package:fgtracker/app/modules/Walkie-talkie/WalkieTalkieScreen.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:get/get.dart' hide navigator;
 import 'package:permission_handler/permission_handler.dart';
@@ -260,49 +261,22 @@ class GroupWalkieService {
       final speakerImage = data['speakerImage']?.toString() ?? '';
 
       if (groupId.isEmpty) return;
+      if (_currentGroupId == groupId && WalkieLaunchTracker.fromWalkieCall) return;
 
-      // Ensure we join the group session to receive and play remote audio out loud!
-      if (_currentGroupId == null || _currentGroupId == groupId) {
-        await joinGroup(groupId);
+      if (_currentGroupId != null) {
+        await leaveGroup();
       }
 
-      // If user is currently ON the walkie screen for this group, do not show notification!
-      if (WalkieAwesomeNotificationService.isWalkieScreenActive &&
-          _currentGroupId == groupId) {
-        await WalkieAwesomeNotificationService.instance.dismissWalkieNotification();
-        return;
-      }
-
-      final isAppInForeground = WidgetsBinding.instance.lifecycleState == null ||
-          WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed;
-
-      final isNotJoinedElsewhere =
-          _currentGroupId == null || _currentGroupId == groupId;
-
-      if (isNotJoinedElsewhere && isAppInForeground) {
-        // If in the app and not joined anywhere else, directly open the Walkie screen!
-        await WalkieAwesomeNotificationService.instance.dismissWalkieNotification();
-        if (Get.currentRoute != Routes.groupWalkieScreen) {
-          Get.toNamed(
-            Routes.groupWalkieScreen,
-            arguments: {
-              "groupId": groupId,
-              "groupName": groupName,
-              "speakerName": speakerName,
-              "speakerImage": speakerImage,
-            },
-          );
-        }
-        return;
-      }
-
-      // If in background or already joined in another group, show/update call-style notification
-      await WalkieAwesomeNotificationService.instance.showTalkingNotification(
-        groupId: groupId,
-        groupName: groupName,
-        speakerName: speakerName,
-        speakerImage: speakerImage,
-        isSpeaking: true,
+      Get.to(
+        () => const GroupWalkieScreen(),
+        routeName: Routes.groupWalkieScreen,
+        arguments: {
+          "groupId": groupId,
+          "groupName": groupName,
+          "speakerName": speakerName,
+          "speakerImage": speakerImage,
+          "autoOpened": true,
+        },
       );
     });
 
@@ -398,40 +372,13 @@ class GroupWalkieService {
       }
     });
 
-    socket?.on('walkie_speaker_active', (data) async {
+    socket?.on('walkie_speaker_active', (data) {
       if (_isDisposed || data == null) return;
-      final speakerId = data['speakerId']?.toString() ?? '';
-      final speakerName = data['speakerName']?.toString() ?? 'User';
-      final speakerImage = data['speakerImage']?.toString() ?? '';
-      final groupId = data['groupId']?.toString() ?? _currentGroupId ?? '';
-
       if (Get.isRegistered<GroupWalkieController>()) {
         Get.find<GroupWalkieController>().onSpeakerActive(
-          speakerId: speakerId,
-          speakerName: speakerName,
-          speakerImage: speakerImage,
-        );
-      }
-
-      // If remote speaker started talking, ensure audio session & speakerphone are active!
-      if (speakerId != _selfUserId) {
-        await _configureAudioSession(speakerOn: _isSpeakerOn);
-        try {
-          await Helper.setSpeakerphoneOn(_isSpeakerOn);
-        } catch (_) {}
-      }
-
-      // If user is NOT on the walkie screen, update the smart notification
-      if (!WalkieAwesomeNotificationService.isWalkieScreenActive &&
-          speakerId != _selfUserId &&
-          groupId.isNotEmpty) {
-        final groupName = WalkieAwesomeNotificationService.instance.activeGroupName ?? 'FG Manpower Group';
-        WalkieAwesomeNotificationService.instance.showTalkingNotification(
-          groupId: groupId,
-          groupName: groupName,
-          speakerName: speakerName,
-          speakerImage: speakerImage,
-          isSpeaking: true,
+          speakerId: data['speakerId']?.toString() ?? '',
+          speakerName: data['speakerName']?.toString() ?? 'User',
+          speakerImage: data['speakerImage']?.toString() ?? '',
         );
       }
     });
@@ -440,22 +387,6 @@ class GroupWalkieService {
       if (_isDisposed) return;
       if (Get.isRegistered<GroupWalkieController>()) {
         Get.find<GroupWalkieController>().onSpeakerStopped();
-      }
-
-      // If user is NOT on the walkie screen, update notification to show speaker stopped
-      if (!WalkieAwesomeNotificationService.isWalkieScreenActive &&
-          WalkieAwesomeNotificationService.instance.isInActiveSession) {
-        final currentGroup = WalkieAwesomeNotificationService.instance.activeGroupId ?? _currentGroupId ?? '';
-        final currentGroupName = WalkieAwesomeNotificationService.instance.activeGroupName ?? 'FG Manpower Group';
-        final lastSpeaker = WalkieAwesomeNotificationService.instance.currentSpeakerName ?? 'Someone';
-        if (currentGroup.isNotEmpty) {
-          WalkieAwesomeNotificationService.instance.showTalkingNotification(
-            groupId: currentGroup,
-            groupName: currentGroupName,
-            speakerName: lastSpeaker,
-            isSpeaking: false,
-          );
-        }
       }
     });
 
@@ -540,39 +471,28 @@ class GroupWalkieService {
       }
     }
 
-    await _ensureLocalStream();
+    final ok = await _ensureLocalStream();
+    if (!ok) return null;
 
     final pc = await createPeerConnection(_rtcConfig);
 
-    if (_localStream != null) {
-      for (final t in _localStream!.getTracks()) {
-        try {
-          await pc.addTrack(t, _localStream!);
-        } catch (_) {}
-      }
+    for (final t in _localStream!.getTracks()) {
+      await pc.addTrack(t, _localStream!);
     }
 
     pc.onTrack = (event) async {
       if (_isDisposed) return;
       if (event.track.kind != 'audio') return;
 
-      event.track.enabled = true;
+      event.track.enabled = !_isMuted;
 
       if (event.streams.isNotEmpty) {
         _remoteStreams[remoteUserId] = event.streams[0];
-        for (final t in event.streams[0].getAudioTracks()) {
-          t.enabled = true;
-        }
       } else {
         final stream = await createLocalMediaStream('remote_$remoteUserId');
         await stream.addTrack(event.track);
         _remoteStreams[remoteUserId] = stream;
       }
-
-      await _configureAudioSession(speakerOn: _isSpeakerOn);
-      try {
-        await Helper.setSpeakerphoneOn(_isSpeakerOn);
-      } catch (_) {}
     };
 
     pc.onIceCandidate = (c) {
@@ -776,13 +696,16 @@ class GroupWalkieService {
     _currentGroupId = groupId;
     _offeredTo.clear();
 
-    await _ensureLocalStream();
+    final ok = await _ensureLocalStream();
+    if (!ok) {
+      _currentGroupId = null;
+      if (Get.isRegistered<GroupWalkieController>()) {
+        Get.find<GroupWalkieController>().showPermissionDeniedMessage();
+      }
+      return false;
+    }
 
     await _configureAudioSession(speakerOn: _isSpeakerOn);
-    try {
-      await Helper.setSpeakerphoneOn(_isSpeakerOn);
-    } catch (_) {}
-
     socket?.emit('join_walkie_session', {'groupId': groupId});
     return true;
   }
@@ -792,7 +715,6 @@ class GroupWalkieService {
 
     final groupId = _currentGroupId;
     _currentGroupId = null;
-    _offeredTo.clear();
 
     if (_isTalking) {
       _isTalking = false;
@@ -812,7 +734,6 @@ class GroupWalkieService {
     } catch (_) {}
     _localStream = null;
     _streamCompleter = null;
-    await WalkieAwesomeNotificationService.instance.dismissAll();
   }
 
   Future<void> exitGroupMembership(String groupId) async {
@@ -831,20 +752,6 @@ class GroupWalkieService {
         Get.find<GroupWalkieController>().showPermissionDeniedMessage();
       }
       return false;
-    }
-
-    if (_localStream != null) {
-      for (final pc in _peers.values) {
-        final senders = await pc.getSenders();
-        final hasAudioSender = senders.any((s) => s.track?.kind == 'audio');
-        if (!hasAudioSender) {
-          for (final t in _localStream!.getTracks()) {
-            try {
-              await pc.addTrack(t, _localStream!);
-            } catch (_) {}
-          }
-        }
-      }
     }
 
     _isTalking = true;

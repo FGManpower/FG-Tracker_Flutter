@@ -228,6 +228,8 @@ class GroupCallingController extends GetxController {
       stream: stream,
     ));
 
+
+
     if (!allGroupMembers.any((e) => e.userId == myUserId)) {
       allGroupMembers.add(GroupCallParticipant(
         userId: myUserId,
@@ -403,8 +405,7 @@ class GroupCallingController extends GetxController {
     final remoteList = <GroupCallParticipant>[];
 
     svc.remoteRenderers.forEach((userId, renderer) {
-      final existing =
-          activeParticipants.firstWhereOrNull((p) => p.userId == userId);
+      final existing = activeParticipants.firstWhereOrNull((p) => p.userId == userId);
 
       final name = svc.getParticipantName(userId);
       final image = svc.getParticipantProfileImage(userId);
