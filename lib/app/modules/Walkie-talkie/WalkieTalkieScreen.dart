@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Walkie-Talkie-Service.dart';
-import 'package:fgtracker/app/Data/Services/walkie_awesome_notification_service.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Controller/walkieController.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:flutter/cupertino.dart';
@@ -50,8 +49,6 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
   void initState() {
     super.initState();
     WalkieLaunchTracker.fromWalkieCall = true;
-    WalkieAwesomeNotificationService.isWalkieScreenActive = true;
-    WalkieAwesomeNotificationService.instance.dismissWalkieNotification();
 
     if (Get.arguments is Map<String, dynamic>) {
       args = Get.arguments as Map<String, dynamic>;
@@ -75,21 +72,9 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
     );
 
     final groupId = args?['groupId']?.toString() ?? '';
-    final groupName = args?['groupName']?.toString() ?? 'FG-Manpower';
-    final speakerName = args?['speakerName']?.toString() ?? '';
-    final speakerImage = args?['speakerImage']?.toString() ?? '';
     if (groupId.isNotEmpty) {
       controller.setCurrentGroup(groupId);
-      if (speakerName.isNotEmpty) {
-        controller.onSpeakerActive(
-          speakerId: 'incoming_speaker',
-          speakerName: speakerName,
-          speakerImage: speakerImage,
-        );
-      }
-      if (GroupWalkieService.instance.currentGroupId != groupId) {
-        GroupWalkieService.instance.joinGroup(groupId);
-      }
+      GroupWalkieService.instance.joinGroup(groupId);
     } else {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         Get.back();
@@ -123,13 +108,13 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
 
   @override
   void dispose() {
-    WalkieAwesomeNotificationService.isWalkieScreenActive = false;
-    WalkieLaunchTracker.fromWalkieCall = false;
     _rippleWorker.dispose();
     _pulseWorker.dispose();
     _rippleController.dispose();
     _pulseController.dispose();
     _lockHintController.dispose();
+    WalkieLaunchTracker.fromWalkieCall = false;
+    _safeLeave();
     super.dispose();
   }
 
@@ -139,7 +124,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
     _rippleController.stop();
     _pulseController.stop();
     _lockHintController.stop();
-    await WalkieAwesomeNotificationService.instance.exitActiveSession();
+    await GroupWalkieService.instance.leaveGroup();
     controller.reset();
   }
 
@@ -287,10 +272,10 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
   @override
   Widget build(BuildContext context) {
     return PopScope(
-      canPop: true,
+      canPop: _allowPop,
       onPopInvokedWithResult: (didPop, result) async {
         if (didPop) return;
-        Get.back();
+        _showExitDialog();
       },
       child: Scaffold(
         backgroundColor: _bgLight,
@@ -333,7 +318,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
             icon: Icons.arrow_back_rounded,
             iconColor: _textDark,
             onTap: () {
-              Get.back();
+              _showExitDialog();
             },
           ),
           SizedBox(width: 14.w),
