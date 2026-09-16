@@ -9,7 +9,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart' hide navigator;
 
 class CallController extends GetxController {
-  static CallController get instance => Get.put(CallController());
+  static CallController get instance => Get.isRegistered<CallController>()
+      ? Get.find<CallController>()
+      : Get.put(CallController());
 
   final GroupController _groupController = Get.isRegistered<GroupController>()
       ? Get.find<GroupController>()
@@ -195,6 +197,172 @@ class CallController extends GetxController {
     await getRegisteredContacts();
   }
 
+  // =========================================================================
+  // STATIC MOCKUP DATA (COMMENTED OUT AS REQUESTED)
+  // Dynamic API integration is active below in getRecentCall()
+  // =========================================================================
+  /*
+  final List<Map<String, String>> _staticMockRecentCalls = [
+    // --- TODAY ---
+    {
+      'name': 'Vikram Singh',
+      'type': 'Outgoing Video Call',
+      'time': 'Today, 10:24 AM',
+      'avatar': '',
+      'callType': 'video',
+      'callerId': '101',
+      'mobileNo': '9876543210',
+      'section': 'today',
+      'isOnline': 'false',
+    },
+    {
+      'name': 'Anjali Gupta',
+      'type': 'Missed Audio Call',
+      'time': 'Today, 09:58 AM',
+      'avatar': '',
+      'callType': 'audio',
+      'callerId': '102',
+      'mobileNo': '9876543211',
+      'section': 'today',
+      'isOnline': 'true',
+    },
+    {
+      'name': 'Karan Malhotra',
+      'type': 'Outgoing Audio Call',
+      'time': 'Today, 08:32 AM',
+      'avatar': '',
+      'callType': 'audio',
+      'callerId': '103',
+      'mobileNo': '9876543212',
+      'section': 'today',
+      'isOnline': 'false',
+    },
+    {
+      'name': 'Neha Yadav',
+      'type': 'Outgoing Video Call',
+      'time': 'Today, 07:45 AM',
+      'avatar': '',
+      'callType': 'video',
+      'callerId': '104',
+      'mobileNo': '9876543213',
+      'section': 'today',
+      'isOnline': 'true',
+    },
+    {
+      'name': 'Sandeep Yadav',
+      'type': 'Incoming Audio Call',
+      'time': 'Today, 06:12 AM',
+      'avatar': '',
+      'callType': 'audio',
+      'callerId': '105',
+      'mobileNo': '9876543214',
+      'section': 'today',
+      'isOnline': 'false',
+    },
+    {
+      'name': 'Manoj Kumar',
+      'type': 'Missed Video Call',
+      'time': 'Today, 04:36 AM',
+      'avatar': '',
+      'callType': 'video',
+      'callerId': '106',
+      'mobileNo': '9876543215',
+      'section': 'today',
+      'isOnline': 'false',
+    },
+    {
+      'name': 'Pooja Verma',
+      'type': 'Outgoing Audio Call',
+      'time': 'Today, 02:17 AM',
+      'avatar': '',
+      'callType': 'audio',
+      'callerId': '107',
+      'mobileNo': '9876543216',
+      'section': 'today',
+      'isOnline': 'true',
+    },
+    {
+      'name': 'Amit Singh',
+      'type': 'Outgoing Video Call',
+      'time': 'Today, 01:03 AM',
+      'avatar': '',
+      'callType': 'video',
+      'callerId': '108',
+      'mobileNo': '9876543217',
+      'section': 'today',
+      'isOnline': 'false',
+    },
+    // --- YESTERDAY ---
+    {
+      'name': 'Rakesh Patel',
+      'type': 'Outgoing Audio Call',
+      'time': 'Yesterday, 11:20 PM',
+      'avatar': '',
+      'callType': 'audio',
+      'callerId': '109',
+      'mobileNo': '9876543218',
+      'section': 'yesterday',
+      'isOnline': 'true',
+    },
+    {
+      'name': 'Deepak Sharma',
+      'type': 'Outgoing Video Call',
+      'time': 'Yesterday, 09:15 PM',
+      'avatar': '',
+      'callType': 'video',
+      'callerId': '110',
+      'mobileNo': '9876543219',
+      'section': 'yesterday',
+      'isOnline': 'true',
+    },
+    {
+      'name': 'Sahil Mehta',
+      'type': 'Missed Audio Call',
+      'time': 'Yesterday, 07:40 PM',
+      'avatar': '',
+      'callType': 'audio',
+      'callerId': '111',
+      'mobileNo': '9876543220',
+      'section': 'yesterday',
+      'isOnline': 'false',
+    },
+    {
+      'name': 'Sheetal Gupta',
+      'type': 'Outgoing Audio Call',
+      'time': 'Yesterday, 05:30 PM',
+      'avatar': '',
+      'callType': 'audio',
+      'callerId': '112',
+      'mobileNo': '9876543221',
+      'section': 'yesterday',
+      'isOnline': 'true',
+    },
+    {
+      'name': 'Rahul Verma',
+      'type': 'Incoming Video Call',
+      'time': 'Yesterday, 03:12 PM',
+      'avatar': '',
+      'callType': 'video',
+      'callerId': '113',
+      'mobileNo': '9876543222',
+      'section': 'yesterday',
+      'isOnline': 'true',
+    },
+    {
+      'name': 'Priya Sharma',
+      'type': 'Outgoing Audio Call',
+      'time': 'Yesterday, 12:45 PM',
+      'avatar': '',
+      'callType': 'audio',
+      'callerId': '114',
+      'mobileNo': '9876543223',
+      'section': 'yesterday',
+      'isOnline': 'true',
+    },
+  ];
+  */
+
+  /// Dynamic API call to fetch real recent calls from backend
   Future<void> getRecentCall() async {
     if (recentCallLoading.value || recentCallLoadingMore.value) return;
     recentCallLoading.value = true;
@@ -296,33 +464,45 @@ class CallController extends GetxController {
     final CallingDetail call = entry.call;
     final RecentContact? contact = call.contact;
 
-    final String name = [
+    String name = [
       contact?.firstName,
       contact?.lastName,
     ].whereType<String>().join(' ').trim();
 
     String mobileNo = '';
+    String avatar = (contact?.avatar ?? '').trim();
+    final String callerId = (contact?.id ?? '').trim();
 
-    if (contact?.id != null && contact!.id!.isNotEmpty) {
-      final int? contactUserId = int.tryParse(contact.id!);
+    if (callerId.isNotEmpty) {
+      final int? contactUserId = int.tryParse(callerId);
 
       if (contactUserId != null) {
         final UserListData? matchedUser = allUserProfileData.firstWhereOrNull(
           (user) => user.userId == contactUserId,
         );
 
-        mobileNo = matchedUser?.mobileNo ?? '';
+        if (matchedUser != null) {
+          mobileNo = matchedUser.mobileNo ?? '';
+          if (name.isEmpty && (matchedUser.name ?? '').isNotEmpty) {
+            name = matchedUser.name!.trim();
+          }
+          if (avatar.isEmpty && (matchedUser.profileImage ?? '').isNotEmpty) {
+            avatar = matchedUser.profileImage!.trim();
+          }
+        }
       }
     }
 
     return {
       'name': name.isEmpty ? 'Unknown' : name,
+      'phone': mobileNo.isNotEmpty ? mobileNo : callerId,
       'type': _composeTypeLabel(call),
       'time': _composeTimeLabel(entry),
-      'avatar': (contact?.avatar ?? '').trim(),
+      'avatar': avatar,
       'callType': (call.type ?? '').trim(),
-      'callerId': (contact?.id ?? '').trim(),
+      'callerId': callerId,
       'mobileNo': mobileNo,
+      'section': entry.section.trim().toLowerCase(),
     };
   }
 
@@ -467,6 +647,29 @@ class CallController extends GetxController {
       return matchQuery && matchFilter;
     }).toList();
   }
+
+  Map<String, List<Map<String, String>>> get groupedRecentCalls {
+    final Map<String, List<Map<String, String>>> groups = {
+      'Today': <Map<String, String>>[],
+      'Yesterday': <Map<String, String>>[],
+      'Older': <Map<String, String>>[],
+    };
+
+    for (final call in filteredRecentCalls) {
+      final String sec = (call['section'] ?? '').toLowerCase();
+      if (sec == 'today') {
+        groups['Today']!.add(call);
+      } else if (sec == 'yesterday') {
+        groups['Yesterday']!.add(call);
+      } else {
+        groups['Older']!.add(call);
+      }
+    }
+
+    groups.removeWhere((key, value) => value.isEmpty);
+    return groups;
+  }
+
   List<GroupsResData> get filteredGroups {
     final String query = _query;
     if (query.isEmpty) return _groupController.groupData;
