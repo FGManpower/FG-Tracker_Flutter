@@ -20,101 +20,26 @@ class _OnlineMemberState extends State<OnlineMember> {
   final ScrollController _scrollController = ScrollController();
   bool _showAllOnline = false;
 
-  static final List<OnlineMemberData> _defaultPreviewOnline = [
-    OnlineMemberData(
-      userId: 1,
-      name: 'Samad',
-      department: 'FG Manpower Development',
-      isOnline: 1,
-      lastSeen: 'Online',
-    ),
-    OnlineMemberData(
-      userId: 2,
-      name: 'Priya Sharma',
-      department: 'Event Management Team',
-      isOnline: 1,
-      lastSeen: 'Online',
-    ),
-    OnlineMemberData(
-      userId: 3,
-      name: 'Imran Khan',
-      department: 'Construction Team',
-      isOnline: 1,
-      lastSeen: 'Online',
-    ),
-    OnlineMemberData(
-      userId: 4,
-      name: 'Neha Verma',
-      department: 'Site Operations Team',
-      isOnline: 1,
-      lastSeen: 'Online',
-    ),
-    OnlineMemberData(
-      userId: 5,
-      name: 'Rohit Verma',
-      department: 'HR Department',
-      isOnline: 1,
-      lastSeen: 'Online',
-    ),
-  ];
-
-  static final List<OnlineMemberData> _defaultPreviewRecent = [
-    OnlineMemberData(
-      userId: 6,
-      name: 'Pooja Mehta',
-      department: 'Accounts Team',
-      isOnline: 0,
-      lastSeen: '10m ago',
-    ),
-    OnlineMemberData(
-      userId: 7,
-      name: 'Vikram Singh',
-      department: 'Logistics Team',
-      isOnline: 0,
-      lastSeen: '25m ago',
-    ),
-    OnlineMemberData(
-      userId: 8,
-      name: 'Arjun Patel',
-      department: 'Electrical Team',
-      isOnline: 0,
-      lastSeen: '1h ago',
-    ),
-    OnlineMemberData(
-      userId: 9,
-      name: 'Deepak Yadav',
-      department: 'Carpentry Team',
-      isOnline: 0,
-      lastSeen: '2h ago',
-    ),
-  ];
-
   @override
   void initState() {
     super.initState();
-
     controller = Get.isRegistered<LivesStatusController>()
         ? Get.find<LivesStatusController>()
         : Get.put(LivesStatusController());
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (controller.memberData.isEmpty) {
-        controller.getGroupMember();
-      }
+      controller.getGroupMember();
     });
 
     _scrollController.addListener(_onScroll);
   }
 
   void _onScroll() {
-    if (!_scrollController.hasClients) {
-      return;
-    }
-
+    if (!_scrollController.hasClients) return;
     final double currentPosition = _scrollController.position.pixels;
     final double maxPosition = _scrollController.position.maxScrollExtent;
 
-    if (currentPosition >= maxPosition - 250) {
+    if (currentPosition >= maxPosition - 200) {
       controller.loadMoreMembers();
     }
   }
@@ -133,9 +58,7 @@ class _OnlineMemberState extends State<OnlineMember> {
           title: Row(
             children: [
               InkWell(
-                onTap: () {
-                  Get.back();
-                },
+                onTap: () => Get.back(),
                 borderRadius: BorderRadius.circular(14.r),
                 child: Container(
                   width: 40.w,
@@ -207,9 +130,7 @@ class _OnlineMemberState extends State<OnlineMember> {
               Expanded(
                 child: Obx(
                   () {
-                    final int count = controller.memberData.isNotEmpty
-                        ? controller.memberData.length
-                        : 28;
+                    final int count = controller.memberData.length;
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -246,6 +167,32 @@ class _OnlineMemberState extends State<OnlineMember> {
           return SkeletonMember();
         }
 
+        if (controller.responseError.value.isNotEmpty &&
+            controller.memberData.isEmpty) {
+          return LostinternetConnection(
+            retry: () => controller.getGroupMember(),
+            messgae: controller.responseError.value,
+          );
+        }
+
+        if (controller.memberData.isEmpty) {
+          return RefreshIndicator(
+            color: const Color(0xFF6366F1),
+            onRefresh: controller.refreshMembers,
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
+              child: Column(
+                children: [
+                  _buildSearchField(),
+                  SizedBox(height: 80.h),
+                  emptyView(),
+                ],
+              ),
+            ),
+          );
+        }
+
         return RefreshIndicator(
           color: const Color(0xFF6366F1),
           onRefresh: controller.refreshMembers,
@@ -263,38 +210,25 @@ class _OnlineMemberState extends State<OnlineMember> {
   Widget OnlineMemberUi() {
     final String query = controller.searchQuery.value.trim().toLowerCase();
 
-    List<OnlineMemberData> sourceOnline;
-    List<OnlineMemberData> sourceRecent;
+    final List<OnlineMemberData> onlineList =
+        controller.currentOnlineMembers.isNotEmpty
+            ? controller.currentOnlineMembers
+            : controller.memberData
+                .where((m) => m.isOnline == 1 || m.online)
+                .toList();
 
-    if (controller.memberData.isNotEmpty) {
-      final List<OnlineMemberData> all = controller.memberData;
-      final onlinePart = all.where((m) => m.isOnline == 1 || m.online).toList();
-      final offlinePart =
-          all.where((m) => m.isOnline != 1 && !m.online).toList();
+    final List<OnlineMemberData> recentList =
+        controller.recentOnlineMembers.isNotEmpty
+            ? controller.recentOnlineMembers
+            : controller.memberData
+                .where((m) => m.isOnline != 1 && !m.online)
+                .toList();
 
-      if (onlinePart.isNotEmpty && offlinePart.isNotEmpty) {
-        sourceOnline = onlinePart;
-        sourceRecent = offlinePart;
-      } else if (onlinePart.isNotEmpty) {
-        if (onlinePart.length > 5) {
-          sourceOnline = onlinePart.sublist(0, 5);
-          sourceRecent = onlinePart.sublist(5);
-        } else {
-          sourceOnline = onlinePart;
-          sourceRecent = _defaultPreviewRecent;
-        }
-      } else {
-        sourceOnline = all;
-        sourceRecent = _defaultPreviewRecent;
-      }
-    } else {
-      sourceOnline = _defaultPreviewOnline;
-      sourceRecent = _defaultPreviewRecent;
-    }
+    final List<OnlineMemberData> allList = controller.memberData;
 
     final List<OnlineMemberData> filteredOnline = query.isEmpty
-        ? sourceOnline
-        : sourceOnline.where((m) {
+        ? onlineList
+        : onlineList.where((m) {
             final name = m.name?.toLowerCase() ?? '';
             final mobile = m.mobileNo?.toLowerCase() ?? '';
             final dept = m.department?.toLowerCase() ?? '';
@@ -304,8 +238,8 @@ class _OnlineMemberState extends State<OnlineMember> {
           }).toList();
 
     final List<OnlineMemberData> filteredRecent = query.isEmpty
-        ? sourceRecent
-        : sourceRecent.where((m) {
+        ? recentList
+        : recentList.where((m) {
             final name = m.name?.toLowerCase() ?? '';
             final mobile = m.mobileNo?.toLowerCase() ?? '';
             final dept = m.department?.toLowerCase() ?? '';
@@ -314,7 +248,18 @@ class _OnlineMemberState extends State<OnlineMember> {
                 dept.contains(query);
           }).toList();
 
-    if (query.isNotEmpty && filteredOnline.isEmpty && filteredRecent.isEmpty) {
+    final List<OnlineMemberData> filteredAll = query.isEmpty
+        ? allList
+        : allList.where((m) {
+            final name = m.name?.toLowerCase() ?? '';
+            final mobile = m.mobileNo?.toLowerCase() ?? '';
+            final dept = m.department?.toLowerCase() ?? '';
+            return name.contains(query) ||
+                mobile.contains(query) ||
+                dept.contains(query);
+          }).toList();
+
+    if (query.isNotEmpty && filteredAll.isEmpty) {
       return Column(
         children: [
           _buildSearchField(),
@@ -324,55 +269,54 @@ class _OnlineMemberState extends State<OnlineMember> {
       );
     }
 
-    final int onlineBadgeCount = sourceOnline.length >= 5
-        ? (controller.memberData.length >= 12 ? 12 : sourceOnline.length)
-        : sourceOnline.length;
-    final int recentBadgeCount = sourceRecent.length >= 4
-        ? (controller.memberData.length >= 28 ? 16 : sourceRecent.length)
-        : sourceRecent.length;
+    final bool hasRecentSection = filteredRecent.isNotEmpty;
+    final List<OnlineMemberData> primaryOnlineList =
+        hasRecentSection ? filteredOnline : filteredAll;
 
     final List<OnlineMemberData> displayedOnline =
-        (_showAllOnline || query.isNotEmpty)
-            ? filteredOnline
-            : filteredOnline.take(5).toList();
+        (_showAllOnline || query.isNotEmpty || primaryOnlineList.length <= 5)
+            ? primaryOnlineList
+            : primaryOnlineList.take(5).toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildSearchField(),
         SizedBox(height: 16.h),
-        if (filteredOnline.isNotEmpty) ...[
+        if (primaryOnlineList.isNotEmpty) ...[
           _buildSectionHeader(
-            title: "Online Now",
-            count: onlineBadgeCount,
-            trailing: InkWell(
-              onTap: () {
-                setState(() {
-                  _showAllOnline = !_showAllOnline;
-                });
-              },
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    _showAllOnline ? "Show Less" : "View All",
-                    style: TextStyle(
-                      fontSize: 12.5.sp,
-                      fontWeight: FontWeight.w700,
-                      color: const Color(0xFF6366F1),
+            title: hasRecentSection ? "Online Now" : "Online Members",
+            count: primaryOnlineList.length,
+            trailing: primaryOnlineList.length > 5
+                ? InkWell(
+                    onTap: () {
+                      setState(() {
+                        _showAllOnline = !_showAllOnline;
+                      });
+                    },
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          _showAllOnline ? "Show Less" : "View All",
+                          style: TextStyle(
+                            fontSize: 12.5.sp,
+                            fontWeight: FontWeight.w700,
+                            color: const Color(0xFF6366F1),
+                          ),
+                        ),
+                        SizedBox(width: 2.w),
+                        Icon(
+                          _showAllOnline
+                              ? Icons.keyboard_arrow_up_rounded
+                              : Icons.chevron_right_rounded,
+                          size: 18.sp,
+                          color: const Color(0xFF6366F1),
+                        ),
+                      ],
                     ),
-                  ),
-                  SizedBox(width: 2.w),
-                  Icon(
-                    _showAllOnline
-                        ? Icons.keyboard_arrow_up_rounded
-                        : Icons.chevron_right_rounded,
-                    size: 18.sp,
-                    color: const Color(0xFF6366F1),
-                  ),
-                ],
-              ),
-            ),
+                  )
+                : null,
           ),
           SizedBox(height: 10.h),
           _buildGroupCard(
@@ -381,10 +325,10 @@ class _OnlineMemberState extends State<OnlineMember> {
           ),
           SizedBox(height: 20.h),
         ],
-        if (filteredRecent.isNotEmpty) ...[
+        if (hasRecentSection) ...[
           _buildSectionHeader(
             title: "Recently Online",
-            count: recentBadgeCount,
+            count: filteredRecent.length,
           ),
           SizedBox(height: 10.h),
           _buildGroupCard(
