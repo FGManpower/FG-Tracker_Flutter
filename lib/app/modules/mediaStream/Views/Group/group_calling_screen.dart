@@ -60,18 +60,10 @@ class GroupCallingScreen extends GetView<GroupCallingController> {
 
   Widget _buildHeader() {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 10.h),
+      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 5.h),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          SizedBox(
-            width: 44.w,
-            child: IconButton(
-              padding: EdgeInsets.zero,
-              icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white, size: 32),
-              onPressed: controller.endCall,
-            ),
-          ),
           Expanded(
             child: Transform.translate(
               offset: Offset(0, 18.h),

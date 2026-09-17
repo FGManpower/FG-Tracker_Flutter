@@ -190,6 +190,7 @@ class CallKitService {
         "sdpOfferCompressed": data["sdpOfferCompressed"],
       };
 
+
       final call = IncomingCallModel.fromMap(parsedData);
 
       final offer = decomPress().decompressSDPOffer(

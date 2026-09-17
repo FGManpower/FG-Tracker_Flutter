@@ -1544,8 +1544,6 @@ PODS:
   - PromisesObjC (2.4.1)
   - proximity_screen_lock_ios (0.0.1):
     - Flutter
-  - qr_code_scanner_plus (0.2.6):
-    - Flutter
   - record_ios (1.2.1):
     - Flutter
   - SDWebImage (5.21.7):
@@ -1616,7 +1614,6 @@ DEPENDENCIES:
   - package_info_plus (from `.symlinks/plugins/package_info_plus/ios`)
   - permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)
   - proximity_screen_lock_ios (from `.symlinks/plugins/proximity_screen_lock_ios/ios`)
-  - qr_code_scanner_plus (from `.symlinks/plugins/qr_code_scanner_plus/ios`)
   - record_ios (from `.symlinks/plugins/record_ios/ios`)
   - share_plus (from `.symlinks/plugins/share_plus/ios`)
   - shared_preferences_foundation (from `.symlinks/plugins/shared_preferences_foundation/darwin`)
@@ -1743,8 +1740,6 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/permission_handler_apple/ios"
   proximity_screen_lock_ios:
     :path: ".symlinks/plugins/proximity_screen_lock_ios/ios"
-  qr_code_scanner_plus:
-    :path: ".symlinks/plugins/qr_code_scanner_plus/ios"
   record_ios:
     :path: ".symlinks/plugins/record_ios/ios"
   share_plus:
@@ -1835,7 +1830,6 @@ SPEC CHECKSUMS:
   permission_handler_apple: 92d754bbaa7361d436db2d6c3c1c2a0fdcec462e
   PromisesObjC: 752c3227f599e3467650e47ea36f433eeb10c273
   proximity_screen_lock_ios: 62ed259009d1f9c131fb338bef55b73d9118bde0
-  qr_code_scanner_plus: c6e79405d5fc87c45349daed2da322bcb2728961
   record_ios: 980fd386a97a35987d0fce3dfda4b26a38c90f4c
   SDWebImage: e9fc87c1aab89a8ab1bbd74eba378c6f53be8abf
   SDWebImageWebPCoder: 0e06e365080397465cc73a7a9b472d8a3bd0f377

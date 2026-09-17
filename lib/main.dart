@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:connectycube_flutter_call_kit/connectycube_flutter_call_kit.dart';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
+import 'package:fgtracker/app/Data/Services/CallStateTracker.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Group_Calling.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Walkie-Talkie-Service.dart';
 import 'package:fgtracker/gen/assets.gen.dart';
@@ -106,6 +107,7 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     callEnded(sessionId);
   } else if (message.data['screen_name'] == "missedGroupCall") {
     final sessionId = message.data['session_id'].toString();
+    CallStateTracker.isIncomingCallScreenOpen = false;
     callEnded(sessionId);
     flutterLocalNotificationsPlugin.cancelAll();
   } else if (message.data['screen_name'] == 'groupCallNotify') {
