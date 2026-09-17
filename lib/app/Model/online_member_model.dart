@@ -279,6 +279,8 @@ class OnlineMemberData {
   String? department;
   double? latitude;
   double? longitude;
+  String? createdAt;
+  String? joinedAt;
 
   OnlineMemberData({
     this.userId,
@@ -291,6 +293,8 @@ class OnlineMemberData {
     this.department,
     this.latitude,
     this.longitude,
+    this.createdAt,
+    this.joinedAt,
   });
 
   bool get online {
@@ -298,6 +302,19 @@ class OnlineMemberData {
         (lastSeen != null &&
             lastSeen!.trim().toLowerCase() ==
                 'online');
+  }
+
+  String? get joinDate {
+    for (final c in [joinedAt, createdAt, lastSeen]) {
+      if (c != null &&
+          c.trim().isNotEmpty &&
+          c.trim().toLowerCase() != 'null' &&
+          c.trim().toLowerCase() != 'online' &&
+          c.trim().toLowerCase() != 'offline') {
+        return c;
+      }
+    }
+    return null;
   }
 
   OnlineMemberData.fromJson(
@@ -336,6 +353,27 @@ class OnlineMemberData {
         json['lastSeen'] ??
             json['last_seen'] ??
             json['lastActive']
+    )?.toString();
+
+    joinedAt = (
+        json['joinedAt'] ??
+        json['joined_at'] ??
+        json['joinDate'] ??
+        json['join_date'] ??
+        json['joinedDate'] ??
+        json['joined_date'] ??
+        json['joined'] ??
+        json['memberJoinedAt'] ??
+        json['member_joined_at']
+    )?.toString();
+
+    createdAt = (
+        json['createdAt'] ??
+        json['created_at'] ??
+        json['createdDate'] ??
+        json['created_date'] ??
+        json['date'] ??
+        json['timestamp']
     )?.toString();
 
     isOnline = _toInt(
@@ -417,6 +455,8 @@ class OnlineMemberData {
       'department': department,
       'latitude': latitude,
       'longitude': longitude,
+      'createdAt': createdAt,
+      'joinedAt': joinedAt,
     };
   }
 

@@ -1,5 +1,7 @@
 import 'package:fgtracker/app/Core/values/colorPool.dart';
 import 'package:fgtracker/app/Model/GroupChatListModel.dart';
+import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
+import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -281,7 +283,45 @@ class totalGroup extends StatelessWidget {
     return Padding(
       padding: EdgeInsets.only(bottom: 0.h),
       child: InkWell(
-        onTap: () {},
+        onTap: () {
+          final gId = group.groupId?.toString() ?? '';
+          if (gId.isEmpty) return;
+
+          String groupCode = '';
+          String isCreator = 'false';
+          String isActive = 'true';
+          String profileImg = group.groupProfile ?? '';
+
+          if (Get.isRegistered<GroupController>()) {
+            final gc = Get.find<GroupController>();
+            final matched = gc.groupData.firstWhereOrNull(
+              (g) => g.id == group.groupId,
+            );
+            if (matched != null) {
+              groupCode = matched.groupCode ?? '';
+              isCreator = (matched.isCreator ?? false).toString();
+              isActive = (matched.isActive ?? true).toString();
+              if (profileImg.isEmpty && matched.groupProfile != null) {
+                profileImg = matched.groupProfile!;
+              }
+            }
+          }
+
+          Get.toNamed(
+            Routes.groupChatScreen,
+            arguments: {
+              "groupId": gId,
+              "groupName": groupName,
+              "groupProfile": profileImg,
+              "groupImage": profileImg,
+              "groupCode": groupCode,
+              "isCreator": isCreator,
+              "isActive": isActive,
+            },
+          )?.then((_) {
+            controller.getGroupChatList(refresh: true);
+          });
+        },
         borderRadius: BorderRadius.circular(20.r),
         child: Container(
           padding: EdgeInsets.symmetric(

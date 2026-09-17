@@ -205,7 +205,8 @@ class MessageController extends GetxController with WidgetsBindingObserver {
             arguments?['chatType'] == 'private' ||
             arguments?['groupId'] == 0 ||
             memberData.groupId == null ||
-            memberData.groupId == 0;
+            memberData.groupId == 0 ||
+            arguments?['userData'] != null;
 
     log("=================================");
     log("CHAT TYPE => ${isPrivateChat ? 'PRIVATE' : 'GROUP'}");

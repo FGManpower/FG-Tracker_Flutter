@@ -240,15 +240,39 @@ class TrackRepo {
     int limit = 20,
   }) async {
     try {
-      final response = await HttpUtil().get(
-        '${Urls.allGroupMembers}'
-        '?filter=private'
-        '&page=$page'
-        '&limit=$limit',
-      );
+      final String url = '${Urls.allGroupMembers}'
+          '?filter=private'
+          '&page=$page'
+          '&limit=$limit';
+
+      log("🟢 [TrackRepo] GET Private Members: $url");
+      debugPrint("🟢 [TrackRepo] GET Private Members: $url");
+
+      final response = await HttpUtil().get(url);
+
+      log("🟢 [TrackRepo] Private Members Response: $response");
+      debugPrint("🟢 [TrackRepo] Private Members Response: $response");
+
+      if (response is Map<String, dynamic>) {
+        return GhostMemberModel.fromJson(response);
+      }
+      if (response is Map) {
+        return GhostMemberModel.fromJson(
+          Map<String, dynamic>.from(response),
+        );
+      }
+      if (response is List) {
+        return GhostMemberModel.fromJson({
+          "status": true,
+          "filter": "private",
+          "data": response,
+        });
+      }
 
       return GhostMemberModel.fromJson(response);
     } catch (e) {
+      log("❌ [TrackRepo] getPrivateMembers error: $e");
+      debugPrint("❌ [TrackRepo] getPrivateMembers error: $e");
       return GhostMemberModel(
         status: false,
         message: e.toString(),

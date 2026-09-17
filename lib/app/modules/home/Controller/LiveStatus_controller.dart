@@ -476,7 +476,7 @@ class LivesStatusController extends GetxController {
     privateMemberLoading.value = true;
     privateResponseError.value = '';
 
-    privatePagination.value = 0;
+    privatePagination.value = 1;
     hasMorePrivateMembers.value = true;
 
     privateMemberData.clear();
@@ -506,8 +506,19 @@ class LivesStatusController extends GetxController {
           result.pagination?.currentPage ?? 1;
 
       hasMorePrivateMembers.value =
-          result.pagination?.hasNextPage ?? false;
+          result.pagination?.hasNextPage ??
+          (result.pagination?.totalPages != null
+              ? (result.pagination!.currentPage! < result.pagination!.totalPages!)
+              : (members.length >= 20));
+
+      if (result.pagination?.totalRecords != null &&
+          result.pagination!.totalRecords! > 0) {
+        privateMembersCount.value = result.pagination!.totalRecords!;
+      }
+
+      log("🟢 [LiveStatusController] getPrivateMembers loaded: ${members.length} members (total: ${privateMembersCount.value})");
     } catch (error) {
+      log("❌ [LiveStatusController] getPrivateMembers error: $error");
       privateResponseError.value =
           error.toString();
     } finally {
@@ -546,7 +557,14 @@ class LivesStatusController extends GetxController {
       );
 
       if (members.isNotEmpty) {
-        privateMemberData.addAll(members);
+        final existingIds = privateMemberData
+            .where((e) => e.userId != null)
+            .map((e) => e.userId)
+            .toSet();
+        final newMembers = members
+            .where((m) => m.userId == null || !existingIds.contains(m.userId))
+            .toList();
+        privateMemberData.addAll(newMembers);
       }
 
       privatePagination.value =
@@ -554,8 +572,14 @@ class LivesStatusController extends GetxController {
               nextPage;
 
       hasMorePrivateMembers.value =
-          result.pagination?.hasNextPage ?? false;
+          result.pagination?.hasNextPage ??
+          (result.pagination?.totalPages != null
+              ? (result.pagination!.currentPage! < result.pagination!.totalPages!)
+              : (members.length >= 20));
+
+      log("🟢 [LiveStatusController] loadMorePrivateMembers page $nextPage loaded ${members.length} items");
     } catch (error) {
+      log("❌ [LiveStatusController] loadMorePrivateMembers error: $error");
       privateResponseError.value =
           error.toString();
     } finally {

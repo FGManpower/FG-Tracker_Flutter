@@ -82,6 +82,7 @@ class GroupChatData {
   GroupLastMessage? lastMessage;
   bool? isOnline;
   int? unreadCount;
+  int? memberCount;
 
   GroupChatData({
     this.groupId,
@@ -90,6 +91,7 @@ class GroupChatData {
     this.lastMessage,
     this.isOnline,
     this.unreadCount,
+    this.memberCount,
   });
 
   GroupChatData.fromJson(Map<String, dynamic> json) {
@@ -103,6 +105,19 @@ class GroupChatData {
 
     isOnline = json['isOnline'];
     unreadCount = json['unreadCount'];
+
+    final dynamic rawCount = json['memberCount'] ??
+        json['member_count'] ??
+        json['totalMembers'] ??
+        json['total_members'] ??
+        json['membersCount'] ??
+        json['totalGroupMember'];
+
+    if (rawCount != null) {
+      memberCount = int.tryParse(rawCount.toString());
+    } else if (json['members'] is List) {
+      memberCount = (json['members'] as List).length;
+    }
   }
 
   Map<String, dynamic> toJson() {
@@ -113,6 +128,7 @@ class GroupChatData {
       'lastMessage': lastMessage?.toJson(),
       'isOnline': isOnline,
       'unreadCount': unreadCount,
+      'memberCount': memberCount,
     };
   }
 }

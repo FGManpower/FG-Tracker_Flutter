@@ -42,13 +42,13 @@ class LoginPage extends GetView<Login_Controller> {
                 builder: (context, constraints) {
                   return SingleChildScrollView(
                     keyboardDismissBehavior:
-                    ScrollViewKeyboardDismissBehavior.onDrag,
+                        ScrollViewKeyboardDismissBehavior.onDrag,
                     physics: isKeyboardOpen
                         ? const ClampingScrollPhysics()
                         : const NeverScrollableScrollPhysics(),
                     child: ConstrainedBox(
                       constraints:
-                      BoxConstraints(minHeight: constraints.maxHeight),
+                          BoxConstraints(minHeight: constraints.maxHeight),
                       child: Padding(
                         padding: EdgeInsets.symmetric(horizontal: 20.w),
                         child: Column(
@@ -81,7 +81,7 @@ class LoginPage extends GetView<Login_Controller> {
                                               child: Opacity(
                                                 opacity: 0.85,
                                                 child:
-                                                _buildAuthWatermarkImage(),
+                                                    _buildAuthWatermarkImage(),
                                               ),
                                             ),
                                             // 3D Location Icon on top of the effect
@@ -102,17 +102,17 @@ class LoginPage extends GetView<Login_Controller> {
                                   // Left-side Welcome Back text
                                   Padding(
                                     padding:
-                                    EdgeInsets.symmetric(horizontal: 4.w),
+                                        EdgeInsets.symmetric(horizontal: 4.w),
                                     child: Column(
                                       crossAxisAlignment:
-                                      CrossAxisAlignment.start,
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Text(
                                           "Welcome\nBack! 👋",
                                           style: TextStyle(
                                             color: AppColors.white,
                                             fontSize:
-                                            isKeyboardOpen ? 24.sp : 32.sp,
+                                                isKeyboardOpen ? 24.sp : 32.sp,
                                             fontWeight: FontWeight.bold,
                                             fontFamily: FontFamily.interBold,
                                             height: 1.15,
@@ -125,7 +125,7 @@ class LoginPage extends GetView<Login_Controller> {
                                           decoration: BoxDecoration(
                                             color: AppColors.authIconBar,
                                             borderRadius:
-                                            BorderRadius.circular(2.r),
+                                                BorderRadius.circular(2.r),
                                           ),
                                         ),
                                         if (!isKeyboardOpen) ...[
@@ -139,7 +139,7 @@ class LoginPage extends GetView<Login_Controller> {
                                                     .withValues(alpha: 0.9),
                                                 fontSize: 13.sp,
                                                 fontFamily:
-                                                FontFamily.interRegular,
+                                                    FontFamily.interRegular,
                                                 height: 1.4,
                                               ),
                                             ),
@@ -204,28 +204,28 @@ class LoginPage extends GetView<Login_Controller> {
                                         key: controller.loginKey,
                                         child: Column(
                                           crossAxisAlignment:
-                                          CrossAxisAlignment.start,
+                                              CrossAxisAlignment.start,
                                           children: [
                                             _buildPhoneInputField(),
                                             Obx(
-                                                  () => controller.mobileErrorText
-                                                  .value.isNotEmpty
+                                              () => controller.mobileErrorText
+                                                      .value.isNotEmpty
                                                   ? Padding(
-                                                padding: EdgeInsets.only(
-                                                    left: 10.w, top: 8.h),
-                                                child: Text(
-                                                  controller
-                                                      .mobileErrorText
-                                                      .value,
-                                                  style: TextStyle(
-                                                    color:
-                                                    AppColors.darkRed,
-                                                    fontSize: 12.sp,
-                                                    fontFamily: FontFamily
-                                                        .interMedium,
-                                                  ),
-                                                ),
-                                              )
+                                                      padding: EdgeInsets.only(
+                                                          left: 10.w, top: 8.h),
+                                                      child: Text(
+                                                        controller
+                                                            .mobileErrorText
+                                                            .value,
+                                                        style: TextStyle(
+                                                          color:
+                                                              AppColors.darkRed,
+                                                          fontSize: 12.sp,
+                                                          fontFamily: FontFamily
+                                                              .interMedium,
+                                                        ),
+                                                      ),
+                                                    )
                                                   : const SizedBox.shrink(),
                                             ),
                                             SizedBox(height: 24.h),

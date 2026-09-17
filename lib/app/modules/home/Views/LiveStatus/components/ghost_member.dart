@@ -34,9 +34,8 @@ class _GhostMemberState extends State<GhostMember> {
         : Get.put(TrackingController());
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (controller.privateMemberData.isEmpty) {
-        controller.getPrivateMembers();
-      }
+      trackingController.loadLocationSharing();
+      controller.getPrivateMembers();
     });
 
     _scrollController.addListener(_onScroll);
@@ -118,13 +117,15 @@ class _GhostMemberState extends State<GhostMember> {
               SizedBox(width: 12.w),
               Expanded(
                 child: Obx(() {
-                  final int count = controller.privateMemberData.length;
+                  final int count = controller.privateMembersCount.value > 0
+                      ? controller.privateMembersCount.value
+                      : controller.privateMemberData.length;
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        'Private Mode',
+                        'Ghost Mode',
                         style: TextStyle(
                           fontSize: 18.sp,
                           fontWeight: FontWeight.w800,
@@ -134,7 +135,7 @@ class _GhostMemberState extends State<GhostMember> {
                       ),
                       SizedBox(height: 1.h),
                       Text(
-                        '$count Active Sessions',
+                        '$count Private Members',
                         style: TextStyle(
                           fontSize: 12.sp,
                           color: const Color(0xFF6B7280),
@@ -206,7 +207,7 @@ class _GhostMemberState extends State<GhostMember> {
                 ),
                 SizedBox(height: 8.h),
                 Text(
-                  "No active private sessions",
+                  "No private members found",
                   style: TextStyle(
                     fontSize: 13.5.sp,
                     color: const Color(0xFF6B7280),
@@ -249,61 +250,69 @@ class _GhostMemberState extends State<GhostMember> {
         ],
         border: Border.all(color: const Color(0xFFECEEF5)),
       ),
-      child: Row(
-        children: [
-          Container(
-            width: 44.w,
-            height: 44.w,
-            decoration: const BoxDecoration(
-              color: Color(0xFFEDE9FE),
-              shape: BoxShape.circle,
+      child: Obx(() {
+        final bool isPrivate = trackingController.isLocationSharing.value;
+
+        return Row(
+          children: [
+            Container(
+              width: 44.w,
+              height: 44.w,
+              decoration: BoxDecoration(
+                color: isPrivate
+                    ? const Color(0xFFEDE9FE)
+                    : const Color(0xFFC7CBD9),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                isPrivate
+                    ? Icons.lock_rounded
+                    : Icons.visibility_rounded,
+                color: isPrivate ? const Color(0xFF6B4DFF) : Colors.white,
+                size: 22.sp,
+              ),
             ),
-            child: Icon(
-              Icons.lock_rounded,
-              color: const Color(0xFF6B4DFF),
-              size: 22.sp,
-            ),
-          ),
-          SizedBox(width: 14.w),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "You're Invisible",
-                  style: TextStyle(
-                    fontSize: 14.5.sp,
-                    fontWeight: FontWeight.w800,
-                    color: const Color(0xFF111827),
-                    fontFamily: FontFamily.interBold,
+            SizedBox(width: 14.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    isPrivate ? "You're Invisible" : "You're Visible",
+                    style: TextStyle(
+                      fontSize: 14.5.sp,
+                      fontWeight: FontWeight.w800,
+                      color: const Color(0xFF111827),
+                      fontFamily: FontFamily.interBold,
+                    ),
                   ),
-                ),
-                SizedBox(height: 2.h),
-                Text(
-                  "When Private Mode is ON, others can't see your online status or last seen.",
-                  style: TextStyle(
-                    fontSize: 11.sp,
-                    color: const Color(0xFF6B7280),
-                    fontFamily: FontFamily.interRegular,
-                    height: 1.3,
+                  SizedBox(height: 2.h),
+                  Text(
+                    isPrivate
+                        ? "When Private Mode is ON, others can't see your online status or last seen."
+                        : "When Private Mode is OFF, others can see your online status and last seen.",
+                    style: TextStyle(
+                      fontSize: 11.sp,
+                      color: const Color(0xFF6B7280),
+                      fontFamily: FontFamily.interRegular,
+                      height: 1.3,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          SizedBox(width: 8.w),
-          Obx(
-            () => Switch.adaptive(
-              value: !trackingController.isLocationSharing.value,
+            SizedBox(width: 8.w),
+            Switch.adaptive(
+              value: isPrivate,
               activeColor: const Color(0xFF6366F1),
               onChanged: (val) async {
-                await trackingController.toggleLocationSharing(!val);
+                await trackingController.toggleLocationSharing(val);
                 controller.refreshPrivateMembers();
               },
             ),
-          ),
-        ],
-      ),
+          ],
+        );
+      }),
     );
   }
 
@@ -311,7 +320,7 @@ class _GhostMemberState extends State<GhostMember> {
     return Row(
       children: [
         Text(
-          "Active Sessions",
+          "Private Members",
           style: TextStyle(
             fontSize: 14.5.sp,
             fontWeight: FontWeight.w800,
@@ -386,7 +395,21 @@ class _GhostMemberState extends State<GhostMember> {
             : "${ConstRes.aImageBaseUrl}${member.profileImage}")
         : null;
 
-    final String timeText = _formatStartedTime(member.startedAt);
+    final String department = (member.department ?? '').trim();
+    final String mobile = (member.mobileNo ?? '').trim();
+
+    final String subtitleText = department.isNotEmpty
+        ? department
+        : (mobile.isNotEmpty ? mobile : 'Private Mode');
+
+    final bool isOnline = member.online;
+    final String statusText = isOnline
+        ? "Online"
+        : ((member.lastSeen ?? '').trim().isNotEmpty
+            ? "Last seen: ${_formatLastSeen(member.lastSeen!)}"
+            : ((member.startedAt ?? '').trim().isNotEmpty
+                ? _formatStartedTime(member.startedAt)
+                : "Location Sharing Disabled"));
 
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 11.h),
@@ -397,7 +420,7 @@ class _GhostMemberState extends State<GhostMember> {
             children: [
               CircleAvatar(
                 radius: 22.r,
-                backgroundColor: const Color(0xFFEEF2F6),
+                backgroundColor: const Color(0xFFEDE9FE),
                 backgroundImage:
                     imageUrl != null ? NetworkImage(imageUrl) : null,
                 onBackgroundImageError: imageUrl != null ? (_, __) {} : null,
@@ -420,7 +443,9 @@ class _GhostMemberState extends State<GhostMember> {
                   width: 14.w,
                   height: 14.w,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF6366F1),
+                    color: isOnline
+                        ? const Color(0xFF10B981)
+                        : const Color(0xFF6366F1),
                     shape: BoxShape.circle,
                     border: Border.all(
                       color: Colors.white,
@@ -429,8 +454,8 @@ class _GhostMemberState extends State<GhostMember> {
                   ),
                   child: Center(
                     child: Icon(
-                      Icons.lock_rounded,
-                      size: 8.sp,
+                      isOnline ? Icons.circle : Icons.lock_rounded,
+                      size: isOnline ? 5.sp : 8.sp,
                       color: Colors.white,
                     ),
                   ),
@@ -445,6 +470,8 @@ class _GhostMemberState extends State<GhostMember> {
               children: [
                 Text(
                   name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     fontSize: 14.5.sp,
                     fontWeight: FontWeight.w700,
@@ -454,11 +481,13 @@ class _GhostMemberState extends State<GhostMember> {
                 ),
                 SizedBox(height: 2.h),
                 Text(
-                  "Private Mode is ON",
+                  subtitleText,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     fontSize: 11.5.sp,
                     fontWeight: FontWeight.w500,
-                    color: const Color(0xFF6366F1),
+                    color: const Color(0xFF6B7280),
                     fontFamily: FontFamily.interMedium,
                   ),
                 ),
@@ -466,17 +495,27 @@ class _GhostMemberState extends State<GhostMember> {
                 Row(
                   children: [
                     Icon(
-                      Icons.access_time_rounded,
+                      isOnline
+                          ? Icons.fiber_manual_record
+                          : Icons.access_time_rounded,
                       size: 11.sp,
-                      color: const Color(0xFF9CA3AF),
+                      color: isOnline
+                          ? const Color(0xFF10B981)
+                          : const Color(0xFF9CA3AF),
                     ),
                     SizedBox(width: 4.w),
-                    Text(
-                      timeText,
-                      style: TextStyle(
-                        fontSize: 11.sp,
-                        color: const Color(0xFF9CA3AF),
-                        fontFamily: FontFamily.interRegular,
+                    Expanded(
+                      child: Text(
+                        statusText,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 11.sp,
+                          color: isOnline
+                              ? const Color(0xFF10B981)
+                              : const Color(0xFF9CA3AF),
+                          fontFamily: FontFamily.interRegular,
+                        ),
                       ),
                     ),
                   ],
@@ -484,14 +523,76 @@ class _GhostMemberState extends State<GhostMember> {
               ],
             ),
           ),
+          SizedBox(width: 8.w),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: 7.w,
+                  vertical: 3.h,
+                ),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEDE9FE),
+                  borderRadius: BorderRadius.circular(8.r),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.visibility_off_rounded,
+                      size: 11.sp,
+                      color: const Color(0xFF6B4DFF),
+                    ),
+                    SizedBox(width: 3.w),
+                    Text(
+                      "Ghost",
+                      style: TextStyle(
+                        fontSize: 10.5.sp,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF6B4DFF),
+                        fontFamily: FontFamily.interSemiBold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (department.isNotEmpty && mobile.isNotEmpty) ...[
+                SizedBox(height: 4.h),
+                Text(
+                  mobile,
+                  style: TextStyle(
+                    fontSize: 10.sp,
+                    color: const Color(0xFF9CA3AF),
+                    fontFamily: FontFamily.interRegular,
+                  ),
+                ),
+              ],
+            ],
+          ),
         ],
       ),
     );
   }
 
+  String _formatLastSeen(String raw) {
+    final trimmed = raw.trim();
+    if (trimmed.isEmpty || trimmed.toLowerCase() == 'null') return 'Recently';
+    if (trimmed.toLowerCase() == 'online') return 'Online';
+    final dt = DateTime.tryParse(trimmed);
+    if (dt != null) {
+      final hour = dt.hour > 12 ? dt.hour - 12 : (dt.hour == 0 ? 12 : dt.hour);
+      final minute = dt.minute.toString().padLeft(2, '0');
+      final period = dt.hour >= 12 ? 'PM' : 'AM';
+      return '$hour:$minute $period';
+    }
+    return trimmed;
+  }
+
   String _formatStartedTime(String? raw) {
     if (raw == null || raw.trim().isEmpty || raw == 'null') {
-      return 'Started recently';
+      return 'Recently active';
     }
 
     final trimmed = raw.trim();
@@ -507,7 +608,7 @@ class _GhostMemberState extends State<GhostMember> {
       return 'Started at $hour:$minute $period';
     }
 
-    return 'Started at $trimmed';
+    return trimmed;
   }
 
   Widget _buildBottomPrivacyBanner() {

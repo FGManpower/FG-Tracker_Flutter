@@ -624,7 +624,7 @@ class _TotalMemberState extends State<TotalMember> {
             : "${ConstRes.aImageBaseUrl}${member.profileImage}")
         : null;
 
-    final String joinedDate = _formatJoinedOrLastSeen(member.lastSeen);
+    final String joinedDate = _formatJoinedDate(member.joinDate ?? member.lastSeen);
 
     return Container(
       margin: EdgeInsets.only(bottom: 10.h),
@@ -744,7 +744,7 @@ class _TotalMemberState extends State<TotalMember> {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                isActive ? "Status" : "Last seen",
+                "Joined",
                 style: TextStyle(
                   fontSize: 10.sp,
                   color: Colors.grey.shade400,
@@ -753,11 +753,11 @@ class _TotalMemberState extends State<TotalMember> {
               ),
               SizedBox(height: 2.h),
               Text(
-                isActive ? "Online" : joinedDate,
+                joinedDate,
                 style: TextStyle(
                   fontSize: 11.5.sp,
                   fontWeight: FontWeight.w600,
-                  color: isActive ? const Color(0xFF10B981) : Colors.grey.shade700,
+                  color: Colors.grey.shade700,
                   fontFamily: FontFamily.interMedium,
                 ),
               ),
@@ -912,42 +912,66 @@ class _TotalMemberState extends State<TotalMember> {
     );
   }
 
-  String _formatJoinedOrLastSeen(String? raw) {
+  String _formatJoinedDate(String? raw) {
     if (raw == null ||
         raw.trim().isEmpty ||
-        raw.trim().toLowerCase() == 'null') {
+        raw.trim().toLowerCase() == 'null' ||
+        raw.trim().toLowerCase() == 'online' ||
+        raw.trim().toLowerCase() == 'offline') {
       return '--';
     }
     final trimmed = raw.trim();
-    if (trimmed.toLowerCase() == 'online') {
-      return 'Online';
+
+    // Check if numeric timestamp (seconds or milliseconds)
+    final numVal = int.tryParse(trimmed);
+    if (numVal != null && numVal > 100000000) {
+      try {
+        final dt = numVal > 10000000000
+            ? DateTime.fromMillisecondsSinceEpoch(numVal).toLocal()
+            : DateTime.fromMillisecondsSinceEpoch(numVal * 1000).toLocal();
+        const months = [
+          'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+          'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+        ];
+        return '${dt.day.toString().padLeft(2, '0')} ${months[dt.month - 1]} ${dt.year}';
+      } catch (_) {}
     }
-    if (trimmed.toLowerCase().contains('ago')) {
-      return trimmed;
+
+    if (trimmed.contains('-') || trimmed.contains('/')) {
+      final sep = trimmed.contains('-') ? '-' : '/';
+      final parts = trimmed.split(sep);
+      if (parts.length == 3) {
+        if (parts[0].length <= 2 && parts[2].length == 4) {
+          final d = int.tryParse(parts[0]);
+          final m = int.tryParse(parts[1]);
+          final y = int.tryParse(parts[2]);
+          if (d != null && m != null && y != null && m >= 1 && m <= 12) {
+            const months = [
+              'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+              'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+            ];
+            return '${d.toString().padLeft(2, '0')} ${months[m - 1]} $y';
+          }
+        }
+      }
     }
+
     try {
       final dt = DateTime.tryParse(trimmed);
       if (dt != null) {
         final local = dt.toLocal();
         const months = [
-          'Jan',
-          'Feb',
-          'Mar',
-          'Apr',
-          'May',
-          'Jun',
-          'Jul',
-          'Aug',
-          'Sep',
-          'Oct',
-          'Nov',
-          'Dec'
+          'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+          'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
         ];
-        return '${local.day} ${months[local.month - 1]} ${local.year}';
+        return '${local.day.toString().padLeft(2, '0')} ${months[local.month - 1]} ${local.year}';
       }
     } catch (_) {}
+
     return trimmed;
   }
+
+  String _formatJoinedOrLastSeen(String? raw) => _formatJoinedDate(raw);
 
   @override
   void dispose() {

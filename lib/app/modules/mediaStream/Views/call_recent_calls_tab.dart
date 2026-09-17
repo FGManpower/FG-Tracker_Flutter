@@ -5,9 +5,11 @@ import 'package:fgtracker/app/Core/theme/appTheme.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Core/values/utility.dart';
 import 'package:fgtracker/app/Data/Services/call_service.dart';
+import 'package:fgtracker/app/Data/Services/group_call_service.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/modules/mediaStream/Widget/call_widget.dart';
 import 'package:fgtracker/app/modules/mediaStream/Controller/call_controller.dart';
+import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -142,9 +144,27 @@ class _CallRecentCallsTabState extends State<CallRecentCallsTab> {
                         ),
                       InkWell(
                         onTap: () {
-                          Get.to(() => ContactProfileScreen(
-                                contactData: entry.value[i],
-                              ));
+                          final isGroup =
+                              entry.value[i]['isGroup'] == 'true';
+                          if (isGroup) {
+                            final gId = entry.value[i]['groupId'] ??
+                                entry.value[i]['callerId'];
+                            if (gId != null && gId.isNotEmpty) {
+                              Get.toNamed(
+                                Routes.groupChatScreen,
+                                arguments: {
+                                  "groupId": gId,
+                                  "groupName":
+                                      entry.value[i]['name'] ?? "Group",
+                                  "groupProfile": entry.value[i]['avatar'],
+                                },
+                              );
+                            }
+                          } else {
+                            Get.to(() => ContactProfileScreen(
+                                  contactData: entry.value[i],
+                                ));
+                          }
                         },
                         borderRadius: BorderRadius.vertical(
                           top: i == 0 ? Radius.circular(20.r) : Radius.zero,
@@ -160,30 +180,52 @@ class _CallRecentCallsTabState extends State<CallRecentCallsTab> {
                           child: _RecentCallTile(
                             call: entry.value[i],
                             onCallTap: (type) {
-                              if (type == "video") {
-                                CallService().startCall(
+                              final isGroup =
+                                  entry.value[i]['isGroup'] == 'true';
+                              final bool isVideo = type == "video";
+
+                              if (isGroup) {
+                                final gId = entry.value[i]['groupId'] ??
+                                    entry.value[i]['callerId'] ??
+                                    '';
+                                GroupCallService.instance.startGroupCall(
                                   context,
-                                  callerId: Global.storageServices
-                                      .get(PrefConst.userId)
-                                      .toString(),
-                                  remoteUserId:
-                                      entry.value[i]['callerId'].toString(),
-                                  is_video: true,
-                                  callerName:
-                                      entry.value[i]['name'].toString(),
+                                  groupId: gId,
+                                  groupName: entry.value[i]['name'] ??
+                                      "Group Call",
+                                  groupProfile: entry.value[i]['avatar'],
+                                  isVideo: isVideo,
+                                  memberCount: int.tryParse(
+                                          entry.value[i]['memberCount'] ??
+                                              '0') ??
+                                      0,
                                 );
                               } else {
-                                CallService().startCall(
-                                  context,
-                                  callerId: Global.storageServices
-                                      .get(PrefConst.userId)
-                                      .toString(),
-                                  remoteUserId:
-                                      entry.value[i]['callerId'].toString(),
-                                  is_video: false,
-                                  callerName:
-                                      entry.value[i]['name'].toString(),
-                                );
+                                if (isVideo) {
+                                  CallService().startCall(
+                                    context,
+                                    callerId: Global.storageServices
+                                        .get(PrefConst.userId)
+                                        .toString(),
+                                    remoteUserId:
+                                        entry.value[i]['callerId'].toString(),
+                                    is_video: true,
+                                    callerName:
+                                        entry.value[i]['name'].toString(),
+                                  );
+                                } else {
+                                  CallService().startCall(
+                                    context,
+                                    callerId: Global.storageServices
+                                        .get(PrefConst.userId)
+                                        .toString(),
+                                    remoteUserId:
+                                        entry.value[i]['callerId'].toString(),
+                                    is_video: false,
+                                    callerName:
+                                        entry.value[i]['name'].toString(),
+                                  );
+                                }
                               }
                             },
                           ),
@@ -243,24 +285,52 @@ class _RecentCallTile extends StatelessWidget {
     final String name = call['name'] ?? '';
     final String? avatar = call['avatar'];
     final bool isOnline = (call['isOnline'] ?? '').toLowerCase() == 'true';
+    final bool isGroup = (call['isGroup'] ?? '').toLowerCase() == 'true';
 
     return Row(
       children: [
-        _buildAvatar(name, avatar, isOnline),
+        _buildAvatar(name, avatar, isOnline, isGroup: isGroup),
         SizedBox(width: 12.w),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                name,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 14.sp,
-                  fontFamily: FontFamily.interSemiBold,
-                  color: const Color(0xFF1E1B4B),
-                ),
+              Row(
+                children: [
+                  Flexible(
+                    child: Text(
+                      name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        fontFamily: FontFamily.interSemiBold,
+                        color: const Color(0xFF1E1B4B),
+                      ),
+                    ),
+                  ),
+                  if (isGroup) ...[
+                    SizedBox(width: 6.w),
+                    Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 5.w,
+                        vertical: 1.5.h,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFECEAFD),
+                        borderRadius: BorderRadius.circular(6.r),
+                      ),
+                      child: Text(
+                        "Group",
+                        style: TextStyle(
+                          fontSize: 9.sp,
+                          fontFamily: FontFamily.interSemiBold,
+                          color: const Color(0xFF4818F0),
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
               ),
               SizedBox(height: 3.h),
               Row(
@@ -290,7 +360,7 @@ class _RecentCallTile extends StatelessWidget {
         ),
         SizedBox(width: 8.w),
         Text(
-          call['time'] ?? '',
+          _formatDisplayTime(call['time'] ?? ''),
           style: TextStyle(
             fontSize: 10.5.sp,
             color: const Color(0xFF6B4DFF),
@@ -310,6 +380,14 @@ class _RecentCallTile extends StatelessWidget {
     );
   }
 
+  String _formatDisplayTime(String raw) {
+    final String trimmed = raw.trim();
+    final String cleaned = trimmed
+        .replaceAll(RegExp(r'^(today|yesterday),?\s*', caseSensitive: false), '')
+        .trim();
+    return cleaned.isNotEmpty ? cleaned : trimmed;
+  }
+
   String _buildAvatarUrl(String? raw) {
     if (raw == null || raw.trim().isEmpty) return '';
     raw = raw.trim();
@@ -318,9 +396,36 @@ class _RecentCallTile extends StatelessWidget {
     return '${ConstRes.aImageBaseUrl}$raw';
   }
 
-  Widget _buildAvatar(String name, String? avatar, bool isOnline) {
+  Widget _buildAvatar(
+    String name,
+    String? avatar,
+    bool isOnline, {
+    bool isGroup = false,
+  }) {
     final String avatarUrl = _buildAvatarUrl(avatar);
     final String initial = (name.isNotEmpty ? name[0] : '?').toUpperCase();
+
+    Widget placeholderOrFallback() {
+      if (isGroup) {
+        return Center(
+          child: Icon(
+            Icons.groups_rounded,
+            size: 20.sp,
+            color: const Color(0xFF4818F0),
+          ),
+        );
+      }
+      return Center(
+        child: Text(
+          initial,
+          style: TextStyle(
+            fontSize: 14.sp,
+            fontFamily: FontFamily.interBold,
+            color: const Color(0xFF4818F0),
+          ),
+        ),
+      );
+    }
 
     return Stack(
       clipBehavior: Clip.none,
@@ -334,40 +439,14 @@ class _RecentCallTile extends StatelessWidget {
                 ? CachedNetworkImage(
                     imageUrl: avatarUrl,
                     fit: BoxFit.cover,
-                    placeholder: (context, url) => Center(
-                      child: Text(
-                        initial,
-                        style: TextStyle(
-                          fontSize: 14.sp,
-                          fontFamily: FontFamily.interBold,
-                          color: const Color(0xFF4818F0),
-                        ),
-                      ),
-                    ),
-                    errorWidget: (context, url, error) => Center(
-                      child: Text(
-                        initial,
-                        style: TextStyle(
-                          fontSize: 14.sp,
-                          fontFamily: FontFamily.interBold,
-                          color: const Color(0xFF4818F0),
-                        ),
-                      ),
-                    ),
+                    placeholder: (context, url) => placeholderOrFallback(),
+                    errorWidget: (context, url, error) =>
+                        placeholderOrFallback(),
                   )
-                : Center(
-                    child: Text(
-                      initial,
-                      style: TextStyle(
-                        fontSize: 14.sp,
-                        fontFamily: FontFamily.interBold,
-                        color: const Color(0xFF4818F0),
-                      ),
-                    ),
-                  ),
+                : placeholderOrFallback(),
           ),
         ),
-        if (isOnline)
+        if (isOnline && !isGroup)
           Positioned(
             right: 0,
             bottom: 0,
