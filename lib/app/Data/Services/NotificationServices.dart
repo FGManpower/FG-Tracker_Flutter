@@ -47,18 +47,20 @@ class firebaseNotificationServices {
       Random.secure().nextInt(10000).toString(),
       "High Importance Notification",
       importance: Importance.max,
-      sound: const RawResourceAndroidNotificationSound('recieve_notification.mp3'),
+      sound:
+          const RawResourceAndroidNotificationSound('recieve_notification.mp3'),
     );
 
-    AndroidNotificationDetails androidNotificationDetails = AndroidNotificationDetails(
+    AndroidNotificationDetails androidNotificationDetails =
+        AndroidNotificationDetails(
             channel.id.toString(), channel.name.toString(),
             channelDescription: "you Channel Description",
             importance: Importance.high,
             priority: Priority.high,
             ticker: "ticker",
-            sound: const RawResourceAndroidNotificationSound('recieve_notification'),
-            enableVibration: true
-    );
+            sound: const RawResourceAndroidNotificationSound(
+                'recieve_notification'),
+            enableVibration: true);
 
     const DarwinNotificationDetails darwinNotificationDetails =
         DarwinNotificationDetails(
@@ -165,7 +167,6 @@ class firebaseNotificationServices {
 
   Future<void> handleMessage(BuildContext context, RemoteMessage message,
       {String? type}) async {
-
     print("Notification-MessageData:${message.data}");
     if (type == "recienvedmessage") {
       if (message.data['screen_name'] == "MemberPage") {
@@ -283,7 +284,8 @@ class firebaseNotificationServices {
         }
       }
       if (Platform.isAndroid) {
-        if (message.data['screen_name'] == "incomingGroupCall" && Platform.isAndroid) {
+        if (message.data['screen_name'] == "incomingGroupCall" &&
+            Platform.isAndroid) {
           final callData = jsonDecode(message.data['callData']);
 
           final Map<String, String> userInfo = callData.map<String, String>(
@@ -306,12 +308,11 @@ class firebaseNotificationServices {
         final callData = jsonDecode(message.data['callData']);
         final sessionId = callData['session_id'].toString();
         callEnded(sessionId, type: "Notification-services");
-      }    else if (message.data['screen_name'] == "missedGroupCall") {
-        final sessionId =message.data['session_id'].toString();
+      } else if (message.data['screen_name'] == "missedGroupCall") {
+        final sessionId = message.data['session_id'].toString();
         callEnded(sessionId, type: "Notification-services");
         flutterLocalNotificationsPlugin.cancelAll();
-
-      }else if (message.data['screen_name'] == 'groupCallNotify') {
+      } else if (message.data['screen_name'] == 'groupCallNotify') {
         FlutterRingtonePlayer().play(
           asAlarm: false,
           fromAsset: Assets.music.incomingCall,
