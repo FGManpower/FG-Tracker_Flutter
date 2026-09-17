@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'package:fgtracker/app/Data/Repositories/TrackRepo.dart';
 import 'package:fgtracker/app/Model/ghost_member_model.dart';
 import 'package:fgtracker/app/Model/online_member_model.dart';
@@ -253,8 +254,11 @@ class LivesStatusController extends GetxController {
   Future<void> getAllMembers() async {
     if (allMemberLoading.value ||
         allMemberLoadingMore.value) {
+      log("⚠️ [LiveStatusController] getAllMembers skipped: already loading");
       return;
     }
+
+    log("🟢 [LiveStatusController] getAllMembers() started...");
 
     allMemberLoading.value = true;
     allResponseError.value = '';
@@ -278,6 +282,7 @@ class LivesStatusController extends GetxController {
       );
 
       if (result.status != true) {
+        log("❌ [LiveStatusController] getAllMembers failed: ${result.message}");
         allResponseError.value =
             result.message ?? 'Something went wrong';
         return;
@@ -334,7 +339,10 @@ class LivesStatusController extends GetxController {
           result.pagination?.hasNextPage ?? (members.length >= 20);
 
       _applyAllSearch();
+
+      log("🟢 [LiveStatusController] getAllMembers loaded: ${members.length} members (online: ${currentOnline.length}, recent: ${recentOnline.length}, total: ${totalMembersCount.value})");
     } catch (error) {
+      log("❌ [LiveStatusController] getAllMembers error: $error");
       allResponseError.value = error.toString();
     } finally {
       allMemberLoading.value = false;
@@ -449,7 +457,10 @@ class LivesStatusController extends GetxController {
           result.pagination?.hasNextPage ?? (members.length >= 20);
 
       _applyAllSearch();
+
+      log("🟢 [LiveStatusController] loadMoreAllMembers loaded page $nextPage with ${members.length} items");
     } catch (error) {
+      log("❌ [LiveStatusController] loadMoreAllMembers error: $error");
       allResponseError.value = error.toString();
     } finally {
       allMemberLoadingMore.value = false;

@@ -6,6 +6,7 @@ import 'package:fgtracker/app/Model/LocationDataRes.dart';
 import 'package:fgtracker/app/Model/UsersWithinRadiusRes.dart';
 import 'package:fgtracker/app/Model/ghost_member_model.dart';
 import 'package:fgtracker/app/Model/online_member_model.dart';
+import 'dart:developer';
 import 'package:flutter/foundation.dart';
 import 'GroupRepo.dart';
 
@@ -95,8 +96,8 @@ class TrackRepo {
   }
 
   static Future<LocationDataRes> getUserLocationData(
-      int groupId,
-      ) async {
+    int groupId,
+  ) async {
     try {
       debugPrint(
         "📍 [TrackRepo] GET /getGrouplocationsData?groupId=$groupId",
@@ -132,10 +133,8 @@ class TrackRepo {
         groupId.toString(),
       );
 
-      if (membersRes.status == true &&
-          membersRes.memberData != null) {
-        final List<LocationData> fallbackList =
-        membersRes.memberData!.map((m) {
+      if (membersRes.status == true && membersRes.memberData != null) {
+        final List<LocationData> fallbackList = membersRes.memberData!.map((m) {
           return LocationData(
             id: m.id,
             userId: m.userId,
@@ -176,18 +175,19 @@ class TrackRepo {
     int limit = 20,
   }) async {
     try {
-      final String url =
-          '${Urls.allGroupMembers}'
+      final String url = '${Urls.allGroupMembers}'
           '?filter=$filter'
           '&page=$page'
           '&limit=$limit';
 
+      log("🟢 [TrackRepo] GET Group Members: $url");
       debugPrint(
         "🟢 [TrackRepo] GET Group Members: $url",
       );
 
       final response = await HttpUtil().get(url);
 
+      log("🟢 [TrackRepo] Group Members Response: $response");
       debugPrint(
         "🟢 [TrackRepo] Group Members Response: $response",
       );
@@ -219,6 +219,7 @@ class TrackRepo {
         ),
       );
     } catch (e) {
+      log("❌ [TrackRepo] getGroupMember Error: $e");
       debugPrint(
         "❌ [TrackRepo] getGroupMember Error: $e",
       );
@@ -241,9 +242,9 @@ class TrackRepo {
     try {
       final response = await HttpUtil().get(
         '${Urls.allGroupMembers}'
-            '?filter=private'
-            '&page=$page'
-            '&limit=$limit',
+        '?filter=private'
+        '&page=$page'
+        '&limit=$limit',
       );
 
       return GhostMemberModel.fromJson(response);
@@ -257,16 +258,14 @@ class TrackRepo {
   }
 
   static Future<bool> updateLocationSharing(
-      bool locationSharing,
-      ) async {
+    bool locationSharing,
+  ) async {
     try {
       final response = await HttpUtil().post(
         "/location-sharing/update",
         data: {
           "userId": int.parse(
-            Global.storageServices
-                .get(PrefConst.userId)
-                .toString(),
+            Global.storageServices.get(PrefConst.userId).toString(),
           ),
           "locationSharing": locationSharing,
         },
