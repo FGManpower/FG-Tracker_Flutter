@@ -1,4 +1,5 @@
 import 'package:fgtracker/app/Model/GroupChatListModel.dart';
+import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -47,6 +48,13 @@ class TotalGroupController extends GetxController {
     });
 
     scrollController.addListener(_scrollListener);
+
+    if (Get.isRegistered<GroupController>()) {
+      final gc = Get.find<GroupController>();
+      if (gc.groupData.isEmpty) {
+        gc.getGroupData();
+      }
+    }
 
     getGroupChatList();
   }
@@ -108,8 +116,7 @@ class TotalGroupController extends GetxController {
         }
 
         hasError.value = true;
-        errorMessage.value =
-            response.message ?? 'Unable to fetch groups';
+        errorMessage.value = response.message ?? 'Unable to fetch groups';
       }
     } catch (e) {
       if (currentPage == 1) {
@@ -201,7 +208,21 @@ class TotalGroupController extends GetxController {
   }
 
   int getMemberCount(GroupChatData group) {
-    return 0;
+    if (group.memberCount != null && group.memberCount! > 0) {
+      return group.memberCount!;
+    }
+
+    if (Get.isRegistered<GroupController>()) {
+      final gc = Get.find<GroupController>();
+      final matched = gc.groupData.firstWhereOrNull(
+        (g) => g.id == group.groupId,
+      );
+      if (matched?.memberCount != null && matched!.memberCount! > 0) {
+        return matched.memberCount!;
+      }
+    }
+
+    return group.memberCount ?? 0;
   }
 
   int getUnreadCount(GroupChatData group) {

@@ -16,14 +16,7 @@ class GhostMemberModel {
   GhostMemberModel.fromJson(dynamic json) {
     if (json is List) {
       status = true;
-      data = json
-          .whereType<Map>()
-          .map(
-            (item) => GhostMemberData.fromJson(
-              Map<String, dynamic>.from(item),
-            ),
-          )
-          .toList();
+      data = _parseList(json);
       return;
     }
 
@@ -35,30 +28,80 @@ class GhostMemberModel {
 
     final Map<String, dynamic> map = Map<String, dynamic>.from(json);
 
-    status = map['status'] as bool? ?? (map['success'] == true);
+    status = map['status'] as bool? ??
+        (map['success'] == true) ??
+        true;
     message = map['message']?.toString();
     filter = map['filter']?.toString();
 
-    pagination = map['pagination'] is Map
-        ? GhostPagination.fromJson(
-            Map<String, dynamic>.from(map['pagination']),
-          )
-        : null;
+    final dynamic rawPagination = map['pagination'] ??
+        (map['data'] is Map ? (map['data'] as Map)['pagination'] : null);
 
-    final rawList =
-        map['data'] ?? map['members'] ?? map['memberData'] ?? map['users'];
-    if (rawList is List) {
-      data = rawList
-          .whereType<Map>()
-          .map(
-            (item) => GhostMemberData.fromJson(
-              Map<String, dynamic>.from(item),
-            ),
-          )
-          .toList();
-    } else {
-      data = <GhostMemberData>[];
+    if (rawPagination is Map) {
+      pagination = GhostPagination.fromJson(
+        Map<String, dynamic>.from(rawPagination),
+      );
     }
+
+    final dynamic rawData = map['data'];
+    List<GhostMemberData> members = [];
+
+    if (rawData is List) {
+      members = _parseList(rawData);
+    } else if (rawData is Map) {
+      final Map<String, dynamic> dataMap = Map<String, dynamic>.from(rawData);
+
+      final dynamic listCandidate = dataMap['members'] ??
+          dataMap['privateMembers'] ??
+          dataMap['currentOnline'] ??
+          dataMap['recentOnline'] ??
+          dataMap['rows'] ??
+          dataMap['list'] ??
+          dataMap['users'] ??
+          dataMap['data'];
+
+      if (listCandidate is List) {
+        members = _parseList(listCandidate);
+      } else {
+        final dynamic current =
+            dataMap['currentOnline'] ?? dataMap['onlineMembers'];
+        final dynamic recent = dataMap['recentOnline'] ??
+            dataMap['recentMembers'] ??
+            dataMap['offlineMembers'];
+
+        if (current is List) {
+          members.addAll(_parseList(current));
+        }
+        if (recent is List) {
+          members.addAll(_parseList(recent));
+        }
+      }
+    }
+
+    if (members.isEmpty) {
+      final dynamic rootCandidate = map['members'] ??
+          map['memberData'] ??
+          map['users'] ??
+          map['privateMembers'] ??
+          map['rows'] ??
+          map['list'];
+      if (rootCandidate is List) {
+        members = _parseList(rootCandidate);
+      }
+    }
+
+    data = members;
+  }
+
+  static List<GhostMemberData> _parseList(List list) {
+    return list
+        .whereType<Map>()
+        .map(
+          (item) => GhostMemberData.fromJson(
+            Map<String, dynamic>.from(item),
+          ),
+        )
+        .toList();
   }
 
   Map<String, dynamic> toJson() {
@@ -90,13 +133,36 @@ class GhostPagination {
   });
 
   GhostPagination.fromJson(Map<String, dynamic> json) {
-    totalRecords = _toInt(json['totalRecords']);
-    currentPage = _toInt(json['currentPage']);
-    perPage = _toInt(json['perPage']);
-    totalPages = _toInt(json['totalPages']);
+    totalRecords = _toInt(
+      json['totalRecords'] ??
+          json['total_records'] ??
+          json['total'] ??
+          json['count'],
+    );
+    currentPage = _toInt(
+      json['currentPage'] ?? json['current_page'] ?? json['page'],
+    );
+    perPage = _toInt(
+      json['perPage'] ?? json['per_page'] ?? json['limit'],
+    );
+    totalPages = _toInt(
+      json['totalPages'] ?? json['total_pages'] ?? json['pages'],
+    );
 
-    hasNextPage = json['hasNextPage'] == true;
-    hasPreviousPage = json['hasPreviousPage'] == true;
+    if (json.containsKey('hasNextPage') || json.containsKey('has_next_page')) {
+      hasNextPage =
+          json['hasNextPage'] == true || json['has_next_page'] == true;
+    } else if (currentPage != null && totalPages != null) {
+      hasNextPage = currentPage! < totalPages!;
+    }
+
+    if (json.containsKey('hasPreviousPage') ||
+        json.containsKey('has_previous_page')) {
+      hasPreviousPage =
+          json['hasPreviousPage'] == true || json['has_previous_page'] == true;
+    } else if (currentPage != null) {
+      hasPreviousPage = currentPage! > 1;
+    }
   }
 
   Map<String, dynamic> toJson() {
@@ -112,6 +178,7 @@ class GhostPagination {
 
   static int? _toInt(dynamic value) {
     if (value is int) return value;
+    if (value is num) return value.toInt();
     if (value is bool) return value ? 1 : 0;
     return int.tryParse(value?.toString() ?? '');
   }
@@ -140,8 +207,18 @@ class GhostMemberData {
     this.startedAt,
   });
 
+  bool get online {
+    return isOnline == 1 ||
+        (lastSeen != null && lastSeen!.trim().toLowerCase() == 'online');
+  }
+
   GhostMemberData.fromJson(Map<String, dynamic> json) {
-    userId = _toInt(json['userId'] ?? json['user_id'] ?? json['id']);
+    userId = _toInt(
+      json['userId'] ??
+          json['user_id'] ??
+          json['id'] ??
+          json['_id'],
+    );
 
     name = (json['Name'] ??
             json['name'] ??
@@ -154,33 +231,55 @@ class GhostMemberData {
     mobileNo = (json['MobileNo'] ??
             json['mobileNo'] ??
             json['mobile'] ??
-            json['phone'])
+            json['phone'] ??
+            json['phoneNumber'])
         ?.toString();
 
     profileImage = (json['ProfileImage'] ??
             json['profileImage'] ??
             json['image'] ??
-            json['avatar'])
+            json['avatar'] ??
+            json['profile_image'])
         ?.toString();
 
     lastSeen = (json['lastSeen'] ??
             json['last_seen'] ??
-            json['lastActive'])
+            json['lastActive'] ??
+            json['last_active'] ??
+            json['updatedAt'] ??
+            json['updated_at'])
         ?.toString();
 
     isOnline = _toInt(
       json['isOnline'] ?? json['is_online'] ?? json['online'],
     );
     locationSharing = _toInt(
-      json['locationSharing'] ?? json['location_sharing'],
+      json['locationSharing'] ??
+          json['location_sharing'] ??
+          json['isLocationSharing'],
     );
     department = (json['department'] ??
             json['Department'] ??
             json['department_name'] ??
             json['designation'] ??
             json['role'] ??
-            json['groupName'])
+            json['groupName'] ??
+            json['group_name'])
         ?.toString();
+
+    if (department == null ||
+        department!.trim().isEmpty ||
+        department == 'null') {
+      if (json['groupList'] is List && (json['groupList'] as List).isNotEmpty) {
+        final firstGroup = (json['groupList'] as List).first;
+        if (firstGroup is Map && firstGroup['groupName'] != null) {
+          department = firstGroup['groupName'].toString();
+        }
+      } else if (json['groups'] is List &&
+          (json['groups'] as List).isNotEmpty) {
+        department = (json['groups'] as List).first.toString();
+      }
+    }
 
     startedAt = (json['startedAt'] ??
             json['started_at'] ??
@@ -189,6 +288,7 @@ class GhostMemberData {
             json['createdAt'] ??
             json['created_at'] ??
             json['lastSeen'] ??
+            json['last_seen'] ??
             json['updatedAt'])
         ?.toString();
   }
@@ -209,6 +309,7 @@ class GhostMemberData {
 
   static int? _toInt(dynamic value) {
     if (value is int) return value;
+    if (value is num) return value.toInt();
     if (value is bool) return value ? 1 : 0;
     return int.tryParse(value?.toString() ?? '');
   }

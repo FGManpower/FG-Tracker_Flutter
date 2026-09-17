@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:io';
+import 'dart:math' as math;
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Walkie-Talkie-Service.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Controller/walkieController.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
@@ -280,38 +282,110 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
       child: Scaffold(
         backgroundColor: _bgLight,
         body: SafeArea(
-          child: Column(
-            children: [
-              _buildHeader(),
-              Expanded(
-                child: SingleChildScrollView(
-                  physics: const BouncingScrollPhysics(),
-                  padding: EdgeInsets.symmetric(horizontal: 16.w),
-                  child: Column(
-                    children: [
-                      SizedBox(height: 6.h),
-                      _buildGroupInfoCard(),
-                      SizedBox(height: 16.h),
-                      _buildPTTSection(),
-                      SizedBox(height: 16.h),
-                      _buildMuteMeCard(),
-                      SizedBox(height: 14.h),
-                      _buildBottomActions(),
-                      SizedBox(height: 24.h),
-                    ],
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final bool isLandscapeWide = constraints.maxWidth >= 720 &&
+                  constraints.maxWidth > constraints.maxHeight;
+
+              return Column(
+                children: [
+                  _buildHeader(isWide: isLandscapeWide),
+                  Expanded(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: isLandscapeWide
+                            ? 20.w.clamp(16.0, 32.0)
+                            : 16.w.clamp(12.0, 20.0),
+                      ),
+                      child: isLandscapeWide
+                          ? _buildWideLayout(constraints)
+                          : Center(
+                              child: ConstrainedBox(
+                                constraints:
+                                    const BoxConstraints(maxWidth: 520),
+                                child: _buildPortraitLayout(constraints),
+                              ),
+                            ),
+                    ),
                   ),
-                ),
-              ),
-            ],
+                ],
+              );
+            },
           ),
         ),
       ),
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildPortraitLayout(BoxConstraints constraints) {
+    return Column(
+      children: [
+        SizedBox(height: 4.h.clamp(2.0, 6.0)),
+        _buildGroupInfoCard(),
+        SizedBox(height: 8.h.clamp(4.0, 12.0)),
+        Expanded(
+          child: _buildPTTSection(),
+        ),
+        SizedBox(height: 8.h.clamp(4.0, 12.0)),
+        _buildMuteMeCard(),
+        SizedBox(height: 10.h.clamp(8.0, 14.0)),
+        _buildBottomActions(),
+        SizedBox(height: 12.h.clamp(8.0, 16.0)),
+      ],
+    );
+  }
+
+  Widget _buildWideLayout(BoxConstraints constraints) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        SizedBox(
+          width: 380.w.clamp(320.0, 420.0),
+          child: Column(
+            children: [
+              Expanded(
+                child: _buildGroupInfoCard(isWide: true),
+              ),
+              SizedBox(height: 10.h.clamp(8.0, 14.0)),
+              _buildMuteMeCard(),
+              SizedBox(height: 10.h.clamp(8.0, 14.0)),
+              _buildBottomActions(),
+              SizedBox(height: 12.h.clamp(8.0, 16.0)),
+            ],
+          ),
+        ),
+        SizedBox(width: 16.w.clamp(12.0, 24.0)),
+        Expanded(
+          child: Padding(
+            padding: EdgeInsets.only(bottom: 12.h.clamp(8.0, 16.0)),
+            child: Container(
+              decoration: BoxDecoration(
+                color: _cardWhite,
+                borderRadius: BorderRadius.circular(28.r),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.03),
+                    blurRadius: 16,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: _buildPTTSection(isWide: true),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildHeader({bool isWide = false}) {
     return Padding(
-      padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 8.h),
+      padding: EdgeInsets.fromLTRB(
+        16.w.clamp(12.0, 20.0),
+        8.h.clamp(6.0, 12.0),
+        16.w.clamp(12.0, 20.0),
+        6.h.clamp(4.0, 8.0),
+      ),
       child: Row(
         children: [
           _headerButton(
@@ -321,7 +395,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
               _showExitDialog();
             },
           ),
-          SizedBox(width: 14.w),
+          SizedBox(width: 14.w.clamp(10.0, 16.0)),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -330,16 +404,18 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                   "Walkie Talkie",
                   style: TextStyle(
                     color: _textDark,
-                    fontSize: 18.sp,
+                    fontSize: 17.sp.clamp(16.0, 19.0),
                     fontWeight: FontWeight.w700,
                   ),
                 ),
                 SizedBox(height: 2.h),
                 Text(
-                  "Group Communication",
+                  isWide
+                      ? (args?['groupName'] ?? "Group Communication")
+                      : "Group Communication",
                   style: TextStyle(
                     color: _textSecondary,
-                    fontSize: 12.sp,
+                    fontSize: 11.5.sp.clamp(10.5, 12.5),
                     fontWeight: FontWeight.w400,
                   ),
                 ),
@@ -347,11 +423,11 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
             ),
           ),
           Container(
-            width: 44.r,
-            height: 44.r,
+            width: 42.r.clamp(38.0, 46.0),
+            height: 42.r.clamp(38.0, 46.0),
             decoration: BoxDecoration(
               color: _cardWhite,
-              borderRadius: BorderRadius.circular(16.r),
+              borderRadius: BorderRadius.circular(14.r),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.04),
@@ -362,13 +438,16 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
             ),
             child: PopupMenuButton<String>(
               icon: Icon(Icons.more_vert_rounded,
-                  color: _primaryPurple, size: 22.sp),
+                  color: _primaryPurple, size: 20.sp.clamp(18.0, 22.0)),
               color: _cardWhite,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(14.r),
               ),
               onSelected: (value) async {
                 switch (value) {
+                  case 'audio-output':
+                    _showAudioRouteBottomSheet();
+                    break;
                   case 'mute-group':
                     await GroupWalkieService.instance.toggleMute();
                     break;
@@ -378,6 +457,8 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                 }
               },
               itemBuilder: (context) => [
+                _menuItem('audio-output', Icons.speaker_phone_rounded,
+                    'Audio Output'),
                 _menuItem('exit', Icons.logout_rounded, 'Exit Walkie',
                     color: _mutedRed),
               ],
@@ -436,12 +517,15 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
     );
   }
 
-  Widget _buildGroupInfoCard() {
+  Widget _buildGroupInfoCard({bool isWide = false}) {
     return Container(
-      padding: EdgeInsets.all(16.w),
+      padding: EdgeInsets.symmetric(
+        horizontal: 14.w.clamp(12.0, 18.0),
+        vertical: 10.h.clamp(8.0, 14.0),
+      ),
       decoration: BoxDecoration(
         color: _cardWhite,
-        borderRadius: BorderRadius.circular(24.r),
+        borderRadius: BorderRadius.circular(20.r),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.03),
@@ -452,6 +536,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: isWide ? MainAxisSize.max : MainAxisSize.min,
         children: [
           Row(
             children: [
@@ -459,8 +544,8 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                 clipBehavior: Clip.none,
                 children: [
                   Container(
-                    width: 48.r,
-                    height: 48.r,
+                    width: 42.r.clamp(36.0, 46.0),
+                    height: 42.r.clamp(36.0, 46.0),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         begin: Alignment.topLeft,
@@ -471,25 +556,25 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                     ),
                     child: Center(
                       child: Icon(Icons.people_alt_rounded,
-                          color: Colors.white, size: 24.sp),
+                          color: Colors.white, size: 20.sp.clamp(18.0, 23.0)),
                     ),
                   ),
                   Positioned(
                     right: 0,
                     bottom: 0,
                     child: Container(
-                      width: 12.r,
-                      height: 12.r,
+                      width: 10.r.clamp(8.0, 12.0),
+                      height: 10.r.clamp(8.0, 12.0),
                       decoration: BoxDecoration(
                         color: _activeGreen,
                         shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 2),
+                        border: Border.all(color: Colors.white, width: 1.5),
                       ),
                     ),
                   ),
                 ],
               ),
-              SizedBox(width: 12.w),
+              SizedBox(width: 10.w.clamp(8.0, 14.0)),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -500,11 +585,11 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         color: _textDark,
-                        fontSize: 16.sp,
+                        fontSize: 15.sp.clamp(13.5, 16.5),
                         fontWeight: FontWeight.w700,
                       ),
                     ),
-                    SizedBox(height: 3.h),
+                    SizedBox(height: 2.h),
                     Obx(() {
                       final count = controller.totalParticipants.value > 0
                           ? controller.totalParticipants.value
@@ -516,7 +601,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                               text: "$count ",
                               style: TextStyle(
                                 color: _primaryPurple,
-                                fontSize: 12.sp,
+                                fontSize: 11.5.sp.clamp(10.5, 12.5),
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
@@ -524,7 +609,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                               text: "Members Online",
                               style: TextStyle(
                                 color: _textSecondary,
-                                fontSize: 12.sp,
+                                fontSize: 11.5.sp.clamp(10.5, 12.5),
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
@@ -538,25 +623,27 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
               GestureDetector(
                 onTap: _showGroupInfoModal,
                 child: Container(
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+                  padding: EdgeInsets.symmetric(
+                      horizontal: 8.w.clamp(6.0, 12.0),
+                      vertical: 5.h.clamp(3.0, 6.0)),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(20.r),
-                    border:
-                        Border.all(color: const Color(0xFFE2E8F0), width: 1.2),
+                    borderRadius: BorderRadius.circular(16.r),
+                    border: Border.all(
+                        color: const Color(0xFFE2E8F0), width: 1.2),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(Icons.info_outline_rounded,
-                          color: _primaryPurple, size: 15.sp),
+                          color: _primaryPurple,
+                          size: 13.sp.clamp(12.0, 15.0)),
                       SizedBox(width: 4.w),
                       Text(
-                        "Group Info",
+                        "Info",
                         style: TextStyle(
                           color: _primaryPurple,
-                          fontSize: 12.sp,
+                          fontSize: 11.sp.clamp(10.0, 12.5),
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -566,11 +653,162 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
               ),
             ],
           ),
-          SizedBox(height: 18.h),
-          _buildMembersHorizontalList(),
+          SizedBox(height: 10.h.clamp(6.0, 14.0)),
+          if (isWide)
+            Expanded(child: _buildMembersListWide())
+          else
+            _buildMembersHorizontalList(),
         ],
       ),
     );
+  }
+
+  Widget _buildMembersListWide() {
+    return Obx(() {
+      final sortedList = controller.sortedParticipants;
+      final isFallback = sortedList.isEmpty;
+      final listToDisplay = isFallback ? _fallbackMembers : sortedList;
+
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text(
+                "Members In Channel",
+                style: TextStyle(
+                  color: _textDark,
+                  fontSize: 13.sp.clamp(12.0, 14.5),
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const Spacer(),
+              Text(
+                "${listToDisplay.length} total",
+                style: TextStyle(
+                  color: _textSecondary,
+                  fontSize: 11.sp.clamp(10.0, 12.5),
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 8.h),
+          Expanded(
+            child: ListView.separated(
+              padding: EdgeInsets.symmetric(vertical: 4.h),
+              itemCount: listToDisplay.length,
+              separatorBuilder: (_, __) => SizedBox(height: 6.h),
+              itemBuilder: (context, index) {
+                final p = listToDisplay[index];
+                final isSpeaking = p.isSpeaking;
+                final isMuted = p.isMuted;
+                final isAdmin = isFallback
+                    ? index == 0
+                    : (args?['adminId'] == p.userId || index == 0);
+
+                return Container(
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 10.w, vertical: 7.h),
+                  decoration: BoxDecoration(
+                    color: isSpeaking
+                        ? const Color(0xFFF3F0FF)
+                        : const Color(0xFFF8FAFC),
+                    borderRadius: BorderRadius.circular(12.r),
+                    border: Border.all(
+                      color: isSpeaking
+                          ? _primaryPurple.withOpacity(0.4)
+                          : Colors.transparent,
+                      width: 1.2,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          _buildSafeAvatar(p, 16.r.clamp(14.0, 18.0)),
+                          Positioned(
+                            right: 0,
+                            bottom: 0,
+                            child: Container(
+                              width: 8.r,
+                              height: 8.r,
+                              decoration: BoxDecoration(
+                                color: isMuted ? _mutedRed : _activeGreen,
+                                shape: BoxShape.circle,
+                                border:
+                                    Border.all(color: Colors.white, width: 1.5),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(width: 10.w),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              p.name,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: _textDark,
+                                fontSize: 13.sp.clamp(12.0, 14.5),
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            Text(
+                              isSpeaking
+                                  ? "Speaking..."
+                                  : (isAdmin
+                                      ? "Admin"
+                                      : (isMuted ? "Muted" : "Online")),
+                              style: TextStyle(
+                                color: isSpeaking
+                                    ? _primaryPurple
+                                    : (isMuted ? _mutedRed : _textSecondary),
+                                fontSize: 10.5.sp.clamp(9.5, 12.0),
+                                fontWeight: isSpeaking
+                                    ? FontWeight.w700
+                                    : FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      if (isSpeaking)
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 8.w, vertical: 3.h),
+                          decoration: BoxDecoration(
+                            color: _primaryPurple,
+                            borderRadius: BorderRadius.circular(10.r),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.graphic_eq_rounded,
+                                  color: Colors.white, size: 11.sp),
+                              SizedBox(width: 3.w),
+                              Text("LIVE",
+                                  style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 9.sp,
+                                      fontWeight: FontWeight.bold)),
+                            ],
+                          ),
+                        ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      );
+    });
   }
 
   void _showGroupInfoModal() {
@@ -578,8 +816,11 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
     final groupDesc = args?['groupDesc'] ?? '';
     final groupCode = args?['groupCode'] ?? '';
 
-    Get.bottomSheet(
-      Container(
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (modalContext) => Container(
         padding: EdgeInsets.all(20.w),
         decoration: BoxDecoration(
           color: _cardWhite,
@@ -671,7 +912,6 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
           ],
         ),
       ),
-      isScrollControlled: true,
     );
   }
 
@@ -752,22 +992,22 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
     final isOtherGroup = isFallback && index == 2;
 
     return SizedBox(
-      width: 72.w,
+      width: 66.w.clamp(58.0, 74.0),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           SizedBox(
-            height: 58.r,
-            width: 58.r,
+            height: 48.r.clamp(42.0, 52.0),
+            width: 48.r.clamp(42.0, 52.0),
             child: Stack(
               alignment: Alignment.center,
               clipBehavior: Clip.none,
               children: [
                 if (isSpeaking)
                   Container(
-                    width: 58.r,
-                    height: 58.r,
+                    width: 48.r.clamp(42.0, 52.0),
+                    height: 48.r.clamp(42.0, 52.0),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
@@ -777,7 +1017,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                     ),
                   ),
                 Container(
-                  padding: EdgeInsets.all(isSpeaking ? 3.w : 2.w),
+                  padding: EdgeInsets.all(isSpeaking ? 2.5 : 1.5),
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     border: Border.all(
@@ -787,43 +1027,43 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                       width: 1.5,
                     ),
                   ),
-                  child: _buildSafeAvatar(p, 23.r),
+                  child: _buildSafeAvatar(p, 19.r.clamp(16.0, 21.0)),
                 ),
                 if (isSpeaking)
                   Positioned(
                     left: -2,
                     bottom: -2,
                     child: Container(
-                      width: 18.r,
-                      height: 18.r,
+                      width: 16.r.clamp(14.0, 18.0),
+                      height: 16.r.clamp(14.0, 18.0),
                       decoration: BoxDecoration(
                         color: _primaryPurple,
                         shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 2),
+                        border: Border.all(color: Colors.white, width: 1.5),
                       ),
                       child: Icon(Icons.graphic_eq_rounded,
-                          color: Colors.white, size: 10.sp),
+                          color: Colors.white, size: 9.sp.clamp(8.0, 11.0)),
                     ),
                   ),
                 Positioned(
                   right: 0,
                   bottom: 0,
                   child: Container(
-                    width: 12.r,
-                    height: 12.r,
+                    width: 10.r.clamp(8.0, 12.0),
+                    height: 10.r.clamp(8.0, 12.0),
                     decoration: BoxDecoration(
                       color: isOtherGroup
                           ? _slateGray
                           : (isMuted ? _mutedRed : _activeGreen),
                       shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 2),
+                      border: Border.all(color: Colors.white, width: 1.5),
                     ),
                   ),
                 ),
               ],
             ),
           ),
-          SizedBox(height: 5.h),
+          SizedBox(height: 3.h.clamp(2.0, 5.0)),
           Text(
             p.name.length > 8 ? "${p.name.substring(0, 7)}." : p.name,
             maxLines: 1,
@@ -831,18 +1071,18 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
             textAlign: TextAlign.center,
             style: TextStyle(
               color: _textDark,
-              fontSize: 12.sp,
+              fontSize: 11.sp.clamp(10.0, 12.5),
               fontWeight: FontWeight.w700,
             ),
           ),
-          SizedBox(height: 2.h),
+          SizedBox(height: 1.h),
           if (isSpeaking)
             Text(
               "Speaking...",
               maxLines: 1,
               style: TextStyle(
                 color: _primaryPurple,
-                fontSize: 10.sp,
+                fontSize: 9.5.sp.clamp(8.5, 11.0),
                 fontWeight: FontWeight.w600,
               ),
             )
@@ -852,7 +1092,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
               maxLines: 1,
               style: TextStyle(
                 color: _primaryPurple,
-                fontSize: 10.sp,
+                fontSize: 9.5.sp.clamp(8.5, 11.0),
                 fontWeight: FontWeight.w600,
               ),
             )
@@ -861,13 +1101,13 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(Icons.people_alt_rounded,
-                    size: 9.sp, color: _textSecondary),
+                    size: 8.5.sp, color: _textSecondary),
                 SizedBox(width: 2.w),
                 Text(
-                  "In Other Group",
+                  "In Other",
                   style: TextStyle(
                     color: _textSecondary,
-                    fontSize: 8.5.sp,
+                    fontSize: 8.sp,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -879,331 +1119,363 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
               maxLines: 1,
               style: TextStyle(
                 color: _mutedRed,
-                fontSize: 10.sp,
+                fontSize: 9.5.sp.clamp(8.5, 11.0),
                 fontWeight: FontWeight.w600,
               ),
             )
           else
-            SizedBox(height: 14.h),
+            SizedBox(height: 12.h.clamp(10.0, 14.0)),
         ],
       ),
     );
   }
 
-  Widget _buildPTTSection() {
-    return Column(
-      children: [
-        Container(
-          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 7.h),
-          decoration: BoxDecoration(
-            color: _cardWhite,
-            borderRadius: BorderRadius.circular(20.r),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.04),
-                blurRadius: 10,
-                offset: const Offset(0, 2),
-              )
-            ],
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Obx(() => Container(
-                    width: 8.r,
-                    height: 8.r,
+  Widget _buildPTTSection({bool isWide = false}) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final double totalH = constraints.maxHeight;
+        final double totalW = constraints.maxWidth;
+
+        // Keep room for connection chip and status label
+        final double availableStackH = (totalH - 76.0).clamp(180.0, 480.0);
+        final double buttonSize =
+            (availableStackH * (isWide ? 0.46 : 0.50)).clamp(120.0, 175.0);
+        final double maxRingRadius = math.min(availableStackH, totalW);
+        final double lockTargetTop =
+            math.max(6.0, ((availableStackH - buttonSize) / 2) - 76.0);
+
+        return Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: 14.w.clamp(12.0, 18.0),
+                vertical: 6.h.clamp(5.0, 8.0),
+              ),
+              decoration: BoxDecoration(
+                color: _cardWhite,
+                borderRadius: BorderRadius.circular(20.r),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.04),
+                    blurRadius: 10,
+                    offset: const Offset(0, 2),
+                  )
+                ],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Obx(() => Container(
+                        width: 8.r.clamp(7.0, 9.0),
+                        height: 8.r.clamp(7.0, 9.0),
+                        decoration: BoxDecoration(
+                          color: controller.isConnected.value
+                              ? _activeGreen
+                              : _mutedRed,
+                          shape: BoxShape.circle,
+                        ),
+                      )),
+                  SizedBox(width: 8.w.clamp(6.0, 10.0)),
+                  Obx(() => Text(
+                        controller.isConnected.value
+                            ? "You are Connected"
+                            : "Connecting...",
+                        style: TextStyle(
+                          color: _textDark,
+                          fontSize: 12.sp.clamp(11.0, 13.5),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      )),
+                ],
+              ),
+            ),
+            SizedBox(height: 8.h.clamp(4.0, 12.0)),
+            SizedBox(
+              height: availableStackH,
+              width: totalW,
+              child: Stack(
+                alignment: Alignment.center,
+                clipBehavior: Clip.none,
+                children: [
+                  Container(
+                    width: (buttonSize * 2.2).clamp(190.0, maxRingRadius),
+                    height: (buttonSize * 2.2).clamp(190.0, maxRingRadius),
                     decoration: BoxDecoration(
-                      color: controller.isConnected.value
-                          ? _activeGreen
-                          : _mutedRed,
                       shape: BoxShape.circle,
+                      border: Border.all(
+                        color: _primaryPurple.withOpacity(0.025),
+                        width: 1.2,
+                      ),
                     ),
-                  )),
-              SizedBox(width: 8.w),
-              Obx(() => Text(
-                    controller.isConnected.value
-                        ? "You are Connected"
-                        : "Connecting...",
-                    style: TextStyle(
-                      color: _textDark,
-                      fontSize: 12.sp,
-                      fontWeight: FontWeight.w600,
+                  ),
+                  Container(
+                    width: (buttonSize * 1.75).clamp(160.0, maxRingRadius),
+                    height: (buttonSize * 1.75).clamp(160.0, maxRingRadius),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: _primaryPurple.withOpacity(0.04),
+                        width: 1.2,
+                      ),
                     ),
-                  )),
-            ],
-          ),
-        ),
-        SizedBox(height: 12.h),
-        SizedBox(
-          height: 330.h,
-          child: Stack(
-            alignment: Alignment.center,
-            clipBehavior: Clip.none,
-            children: [
-              Container(
-                width: 380.r,
-                height: 380.r,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: _primaryPurple.withOpacity(0.025),
-                    width: 1.2,
                   ),
-                ),
-              ),
-              Container(
-                width: 300.r,
-                height: 300.r,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: _primaryPurple.withOpacity(0.04),
-                    width: 1.2,
+                  Container(
+                    width: (buttonSize * 1.35).clamp(130.0, maxRingRadius),
+                    height: (buttonSize * 1.35).clamp(130.0, maxRingRadius),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: _primaryPurple.withOpacity(0.06),
+                        width: 1.2,
+                      ),
+                    ),
                   ),
-                ),
-              ),
-              Container(
-                width: 220.r,
-                height: 220.r,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: _primaryPurple.withOpacity(0.06),
-                    width: 1.2,
+                  Container(
+                    width: (buttonSize * 1.05).clamp(100.0, maxRingRadius),
+                    height: (buttonSize * 1.05).clamp(100.0, maxRingRadius),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: _primaryPurple.withOpacity(0.08),
+                        width: 1.2,
+                      ),
+                    ),
                   ),
-                ),
-              ),
-              Container(
-                width: 150.r,
-                height: 150.r,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: _primaryPurple.withOpacity(0.08),
-                    width: 1.2,
-                  ),
-                ),
-              ),
-              Obx(() {
-                if (!controller.hasActiveSpeaker && !controller.isTalking) {
-                  return const SizedBox.shrink();
-                }
-                return AnimatedBuilder(
-                  animation: _rippleController,
-                  builder: (_, __) {
-                    return Stack(
-                      alignment: Alignment.center,
-                      children: List.generate(4, (i) {
-                        final progress =
-                            ((_rippleController.value + i * 0.25) % 1.0);
-                        final size = 130.r + (progress * 220.r);
-                        final opacity = (1 - progress).clamp(0.0, 1.0);
-                        return Container(
-                          width: size,
-                          height: size,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: _primaryPurple.withOpacity(opacity * 0.25),
-                              width: 1.5,
-                            ),
-                          ),
+                  Obx(() {
+                    if (!controller.hasActiveSpeaker && !controller.isTalking) {
+                      return const SizedBox.shrink();
+                    }
+                    return AnimatedBuilder(
+                      animation: _rippleController,
+                      builder: (_, __) {
+                        return Stack(
+                          alignment: Alignment.center,
+                          children: List.generate(4, (i) {
+                            final progress =
+                                ((_rippleController.value + i * 0.25) % 1.0);
+                            final rippleSize = buttonSize * 0.85 +
+                                (progress * (buttonSize * 1.25));
+                            final opacity = (1 - progress).clamp(0.0, 1.0);
+                            return Container(
+                              width: rippleSize,
+                              height: rippleSize,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color:
+                                      _primaryPurple.withOpacity(opacity * 0.25),
+                                  width: 1.5,
+                                ),
+                              ),
+                            );
+                          }),
                         );
-                      }),
+                      },
                     );
-                  },
-                );
-              }),
-              Positioned(
-                top: 8.h,
-                child: Container(
-                  width: 38.w,
-                  height: 88.h,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(19.r),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.04),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      Icon(Icons.lock_rounded,
-                          color: _primaryPurple, size: 18.sp),
-                      Icon(Icons.keyboard_arrow_up_rounded,
-                          color: _primaryPurple, size: 20.sp),
-                      Transform.translate(
-                        offset: Offset(0, -6.h),
-                        child: Icon(Icons.keyboard_arrow_up_rounded,
-                            color: _lightPurple, size: 20.sp),
-                      ),
-                      Transform.translate(
-                        offset: Offset(0, -12.h),
-                        child: Icon(Icons.keyboard_arrow_up_rounded,
-                            color: _lightPurple.withOpacity(0.5), size: 20.sp),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              Positioned(
-                top: 66.h,
-                left: (MediaQuery.of(context).size.width / 2) + 12.w,
-                child: Container(
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
-                  decoration: BoxDecoration(
-                    color: _cardWhite,
-                    borderRadius: BorderRadius.circular(14.r),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Text(
-                    "Slide up to lock",
-                    style: TextStyle(
-                      color: _primaryPurple,
-                      fontSize: 11.sp,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ),
-              Obx(() {
-                if (controller.isMuted.value) {
-                  return _buildMutedListeningView();
-                }
-                return Listener(
-                  behavior: HitTestBehavior.opaque,
-                  onPointerDown: (_) => _onPTTPressed(),
-                  onPointerUp: (_) => _onPTTReleased(),
-                  onPointerCancel: (_) => _onPTTReleased(),
-                  child: GestureDetector(
-                    behavior: HitTestBehavior.opaque,
-                    onTap: () {
-                      if (controller.isSelfLocked.value) {
-                        _unlockAndStop();
-                      }
-                    },
-                    onVerticalDragUpdate: _onDragUpdate,
-                    onVerticalDragEnd: _onDragEnd,
-                    child: Obx(() {
-                      final dragOffset = controller.dragOffset.value
-                          .clamp(0.0, _lockThreshold);
-                      return Transform.translate(
-                        offset: Offset(0, -dragOffset),
-                        child: _buildPTTButton(),
-                      );
-                    }),
-                  ),
-                );
-              }),
-              Obx(() {
-                if (!controller.isSelfLocked.value) {
-                  return const SizedBox.shrink();
-                }
-                return Positioned(
-                  top: 10.h,
-                  child: GestureDetector(
-                    onTap: _unlockAndStop,
+                  }),
+                  Positioned(
+                    top: lockTargetTop,
                     child: Container(
-                      padding: EdgeInsets.symmetric(
-                          horizontal: 14.w, vertical: 8.h),
+                      width: 36.w.clamp(32.0, 40.0),
+                      height: 74.h.clamp(66.0, 80.0),
                       decoration: BoxDecoration(
-                        color: _primaryPurple,
-                        borderRadius: BorderRadius.circular(20.r),
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(18.r),
                         boxShadow: [
                           BoxShadow(
-                            color: _primaryPurple.withOpacity(0.35),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
+                            color: Colors.black.withOpacity(0.04),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
                           ),
                         ],
                       ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
                           Icon(Icons.lock_rounded,
-                              color: Colors.white, size: 14.sp),
-                          SizedBox(width: 6.w),
-                          Obx(() => Text(
-                                "Auto-unlock in ${controller.lockRemainingSeconds.value}s",
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 12.sp,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              )),
+                              color: _primaryPurple,
+                              size: 16.sp.clamp(14.0, 18.0)),
+                          Icon(Icons.keyboard_arrow_up_rounded,
+                              color: _primaryPurple,
+                              size: 18.sp.clamp(16.0, 20.0)),
+                          Transform.translate(
+                            offset: const Offset(0, -4),
+                            child: Icon(Icons.keyboard_arrow_up_rounded,
+                                color: _lightPurple,
+                                size: 18.sp.clamp(16.0, 20.0)),
+                          ),
+                          Transform.translate(
+                            offset: const Offset(0, -8),
+                            child: Icon(Icons.keyboard_arrow_up_rounded,
+                                color: _lightPurple.withOpacity(0.5),
+                                size: 18.sp.clamp(16.0, 20.0)),
+                          ),
                         ],
                       ),
                     ),
                   ),
-                );
-              }),
-            ],
-          ),
-        ),
-        SizedBox(height: 16.h),
-        Obx(() {
-          final isSelfLocked = controller.isSelfLocked.value;
-          final isMuted = controller.isMuted.value;
+                  Positioned(
+                    top: lockTargetTop + 14.0,
+                    left: (totalW / 2) + 24.0,
+                    child: Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 10.w.clamp(8.0, 14.0),
+                        vertical: 5.h.clamp(4.0, 6.0),
+                      ),
+                      decoration: BoxDecoration(
+                        color: _cardWhite,
+                        borderRadius: BorderRadius.circular(14.r),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.05),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Text(
+                        "Slide up to lock",
+                        style: TextStyle(
+                          color: _primaryPurple,
+                          fontSize: 10.5.sp.clamp(9.5, 12.0),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                  Obx(() {
+                    if (controller.isMuted.value) {
+                      return _buildMutedListeningView(size: buttonSize);
+                    }
+                    return Listener(
+                      behavior: HitTestBehavior.opaque,
+                      onPointerDown: (_) => _onPTTPressed(),
+                      onPointerUp: (_) => _onPTTReleased(),
+                      onPointerCancel: (_) => _onPTTReleased(),
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: () {
+                          if (controller.isSelfLocked.value) {
+                            _unlockAndStop();
+                          }
+                        },
+                        onVerticalDragUpdate: _onDragUpdate,
+                        onVerticalDragEnd: _onDragEnd,
+                        child: Obx(() {
+                          final dragOffset = controller.dragOffset.value
+                              .clamp(0.0, _lockThreshold);
+                          return Transform.translate(
+                            offset: Offset(0, -dragOffset),
+                            child: _buildPTTButton(size: buttonSize),
+                          );
+                        }),
+                      ),
+                    );
+                  }),
+                  Obx(() {
+                    if (!controller.isSelfLocked.value) {
+                      return const SizedBox.shrink();
+                    }
+                    return Positioned(
+                      top: lockTargetTop + 10.0,
+                      child: GestureDetector(
+                        onTap: _unlockAndStop,
+                        child: Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 14.w.clamp(10.0, 16.0),
+                            vertical: 7.h.clamp(5.0, 9.0),
+                          ),
+                          decoration: BoxDecoration(
+                            color: _primaryPurple,
+                            borderRadius: BorderRadius.circular(20.r),
+                            boxShadow: [
+                              BoxShadow(
+                                color: _primaryPurple.withOpacity(0.35),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.lock_rounded,
+                                  color: Colors.white,
+                                  size: 13.sp.clamp(11.0, 15.0)),
+                              SizedBox(width: 6.w.clamp(4.0, 8.0)),
+                              Obx(() => Text(
+                                    "Auto-unlock in ${controller.lockRemainingSeconds.value}s",
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 11.5.sp.clamp(10.5, 13.0),
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  )),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  }),
+                ],
+              ),
+            ),
+            SizedBox(height: 8.h.clamp(4.0, 12.0)),
+            Obx(() {
+              final isSelfLocked = controller.isSelfLocked.value;
+              final isMuted = controller.isMuted.value;
 
-          return Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                isMuted
-                    ? Icons.headphones_rounded
-                    : isSelfLocked
-                        ? Icons.lock_rounded
-                        : Icons.volume_up_rounded,
-                color: isMuted ? _mutedRed : _primaryPurple,
-                size: 16.sp,
-              ),
-              SizedBox(width: 6.w),
-              Text(
-                isMuted
-                    ? "Listening Only"
-                    : isSelfLocked
-                        ? "Locked — Tap mic to stop"
-                        : "Release to Stop",
-                style: TextStyle(
-                  color: isMuted ? _mutedRed : _primaryPurple,
-                  fontSize: 12.sp,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          );
-        }),
-      ],
+              return Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    isMuted
+                        ? Icons.headphones_rounded
+                        : isSelfLocked
+                            ? Icons.lock_rounded
+                            : Icons.volume_up_rounded,
+                    color: isMuted ? _mutedRed : _primaryPurple,
+                    size: 15.sp.clamp(13.0, 17.0),
+                  ),
+                  SizedBox(width: 6.w.clamp(4.0, 8.0)),
+                  Text(
+                    isMuted
+                        ? "Listening Only"
+                        : isSelfLocked
+                            ? "Locked — Tap mic to stop"
+                            : "Release to Stop",
+                    style: TextStyle(
+                      color: isMuted ? _mutedRed : _primaryPurple,
+                      fontSize: 12.sp.clamp(11.0, 13.5),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              );
+            }),
+          ],
+        );
+      },
     );
   }
 
-  Widget _buildMutedListeningView() {
+  Widget _buildMutedListeningView({required double size}) {
+    final double s = size * 0.92;
     return Container(
-      width: 156.r,
-      height: 156.r,
+      width: s,
+      height: s,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: Colors.grey.withOpacity(0.12),
       ),
-      padding: EdgeInsets.all(7.r),
+      padding: EdgeInsets.all((s * 0.05).clamp(5.0, 8.0)),
       child: Container(
         decoration: const BoxDecoration(
           shape: BoxShape.circle,
           color: Colors.white,
         ),
-        padding: EdgeInsets.all(5.r),
+        padding: EdgeInsets.all((s * 0.035).clamp(3.0, 6.0)),
         child: Container(
           decoration: BoxDecoration(
             shape: BoxShape.circle,
@@ -1216,13 +1488,14 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.headphones_rounded, color: Colors.white, size: 38.sp),
-              SizedBox(height: 4.h),
+              Icon(Icons.headphones_rounded,
+                  color: Colors.white, size: (s * 0.26).clamp(32.0, 44.0)),
+              SizedBox(height: 3.h),
               Text(
                 "Listening",
                 style: TextStyle(
                   color: Colors.white,
-                  fontSize: 12.sp,
+                  fontSize: (s * 0.075).clamp(11.0, 13.0),
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -1233,7 +1506,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
     );
   }
 
-  Widget _buildPTTButton() {
+  Widget _buildPTTButton({required double size}) {
     return Obx(() {
       final isTalking = controller.isTalking;
       final isBusy = controller.hasActiveSpeaker && !controller.isTalking;
@@ -1243,27 +1516,27 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
       return ScaleTransition(
         scale: _pulseController,
         child: Container(
-          width: 172.r,
-          height: 172.r,
+          width: size,
+          height: size,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: _primaryPurple.withOpacity(0.08),
             boxShadow: [
               BoxShadow(
                 color: _primaryPurple.withOpacity(0.25),
-                blurRadius: 36,
-                spreadRadius: 4,
-                offset: const Offset(0, 8),
+                blurRadius: 32,
+                spreadRadius: 3,
+                offset: const Offset(0, 6),
               ),
             ],
           ),
-          padding: EdgeInsets.all(10.r),
+          padding: EdgeInsets.all((size * 0.06).clamp(6.0, 12.0)),
           child: Container(
             decoration: const BoxDecoration(
               shape: BoxShape.circle,
               color: Colors.white,
             ),
-            padding: EdgeInsets.all(6.r),
+            padding: EdgeInsets.all((size * 0.035).clamp(4.0, 8.0)),
             child: Container(
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
@@ -1287,9 +1560,9 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                                 ? Icons.mic_off_rounded
                                 : Icons.mic_rounded,
                     color: Colors.white,
-                    size: 46.sp,
+                    size: (size * 0.28).clamp(36.0, 52.0),
                   ),
-                  SizedBox(height: 4.h),
+                  SizedBox(height: (size * 0.02).clamp(2.0, 5.0)),
                   Text(
                     isSelfLocked
                         ? "Tap to Unlock"
@@ -1298,7 +1571,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                             : "Hold to Talk",
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 12.sp,
+                      fontSize: (size * 0.075).clamp(11.0, 14.0),
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -1313,10 +1586,13 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
 
   Widget _buildMuteMeCard() {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+      padding: EdgeInsets.symmetric(
+        horizontal: 16.w.clamp(12.0, 20.0),
+        vertical: 10.h.clamp(8.0, 12.0),
+      ),
       decoration: BoxDecoration(
         color: _cardWhite,
-        borderRadius: BorderRadius.circular(22.r),
+        borderRadius: BorderRadius.circular(18.r),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.03),
@@ -1328,8 +1604,8 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
       child: Row(
         children: [
           Container(
-            width: 44.r,
-            height: 44.r,
+            width: 38.r.clamp(34.0, 42.0),
+            height: 38.r.clamp(34.0, 42.0),
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
@@ -1339,9 +1615,9 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
               shape: BoxShape.circle,
             ),
             child: Icon(Icons.mic_off_rounded,
-                color: Colors.white, size: 22.sp),
+                color: Colors.white, size: 20.sp.clamp(18.0, 22.0)),
           ),
-          SizedBox(width: 14.w),
+          SizedBox(width: 12.w.clamp(8.0, 14.0)),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -1350,7 +1626,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                   "Mute Me",
                   style: TextStyle(
                     color: _textDark,
-                    fontSize: 15.sp,
+                    fontSize: 14.sp.clamp(13.0, 15.5),
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -1359,7 +1635,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                   "Others won't hear you",
                   style: TextStyle(
                     color: _textSecondary,
-                    fontSize: 12.sp,
+                    fontSize: 11.5.sp.clamp(10.5, 12.5),
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -1382,97 +1658,424 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
     return Row(
       children: [
         Expanded(
-          child: GestureDetector(
-            onTap: () async {
-              if (controller.audioRoute.value ==
-                      WalkieAudioRoute.bluetooth ||
-                  controller.audioRoute.value == WalkieAudioRoute.headset) {
-                Get.snackbar(
-                  "Audio Route",
-                  "Routing to ${controller.audioRouteLabel}",
-                  snackPosition: SnackPosition.BOTTOM,
-                );
-                return;
-              }
-              final next = !controller.isSpeakerOn.value;
-              await GroupWalkieService.instance.toggleSpeaker(next);
-            },
-            child: Container(
-              padding: EdgeInsets.symmetric(vertical: 20.h),
-              decoration: BoxDecoration(
-                color: _cardWhite,
-                borderRadius: BorderRadius.circular(22.r),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.03),
-                    blurRadius: 10,
-                    offset: const Offset(0, 2),
-                  )
-                ],
-              ),
-              child: Column(
-                children: [
-                  Icon(Icons.volume_up_rounded,
-                      color: _primaryPurple, size: 28.sp),
-                  SizedBox(height: 8.h),
-                  Text(
-                    "Speaker",
-                    style: TextStyle(
-                      color: _textDark,
-                      fontSize: 13.sp,
-                      fontWeight: FontWeight.w700,
-                    ),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(18.r),
+              onTap: () => _showAudioRouteBottomSheet(context),
+              child: Obx(() {
+                final route = controller.audioRoute.value;
+                final label = controller.audioRouteLabel;
+                final icon = controller.audioRouteIcon;
+                final isSpeaker = route == WalkieAudioRoute.speaker;
+                final isBluetooth = route == WalkieAudioRoute.bluetooth;
+
+                return Container(
+                  padding: EdgeInsets.symmetric(
+                    vertical: 12.h.clamp(10.0, 16.0),
+                    horizontal: 10.w.clamp(6.0, 14.0),
                   ),
-                ],
-              ),
+                  decoration: BoxDecoration(
+                    color: isSpeaker || isBluetooth
+                        ? const Color(0xFFF3F0FF)
+                        : _cardWhite,
+                    borderRadius: BorderRadius.circular(18.r),
+                    border: Border.all(
+                      color: isSpeaker || isBluetooth
+                          ? _primaryPurple.withOpacity(0.3)
+                          : Colors.transparent,
+                      width: 1.2,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.03),
+                        blurRadius: 10,
+                        offset: const Offset(0, 2),
+                      )
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        icon,
+                        color: isSpeaker || isBluetooth
+                            ? _primaryPurple
+                            : _textSecondary,
+                        size: 20.sp.clamp(18.0, 24.0),
+                      ),
+                      SizedBox(width: 8.w.clamp(6.0, 10.0)),
+                      Flexible(
+                        child: Text(
+                          label,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: isSpeaker || isBluetooth
+                                ? _primaryPurple
+                                : _textDark,
+                            fontSize: 13.sp.clamp(11.5, 14.0),
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: 4.w),
+                      Icon(
+                        Icons.arrow_drop_down_rounded,
+                        color: isSpeaker || isBluetooth
+                            ? _primaryPurple
+                            : _textSecondary,
+                        size: 20.sp.clamp(18.0, 22.0),
+                      ),
+                    ],
+                  ),
+                );
+              }),
             ),
           ),
         ),
-        SizedBox(width: 14.w),
+        SizedBox(width: 12.w.clamp(8.0, 16.0)),
         Expanded(
-          child: GestureDetector(
-            onTap: () {
-              Get.toNamed(
-                Routes.groupChatScreen,
-                arguments: {
-                  "groupId": args?['groupId']?.toString() ?? "",
-                  "groupName": args?['groupName']?.toString() ?? "",
-                  "groupImage": "",
-                },
-              );
-            },
-            child: Container(
-              padding: EdgeInsets.symmetric(vertical: 20.h),
-              decoration: BoxDecoration(
-                color: _cardWhite,
-                borderRadius: BorderRadius.circular(22.r),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.03),
-                    blurRadius: 10,
-                    offset: const Offset(0, 2),
-                  )
-                ],
-              ),
-              child: Column(
-                children: [
-                  Icon(Icons.chat_bubble_rounded,
-                      color: _primaryPurple, size: 26.sp),
-                  SizedBox(height: 8.h),
-                  Text(
-                    "Chat",
-                    style: TextStyle(
-                      color: _textDark,
-                      fontSize: 13.sp,
-                      fontWeight: FontWeight.w700,
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(18.r),
+              onTap: () {
+                Get.toNamed(
+                  Routes.groupChatScreen,
+                  arguments: {
+                    "groupId": args?['groupId']?.toString() ?? "",
+                    "groupName": args?['groupName']?.toString() ?? "",
+                    "groupImage": "",
+                  },
+                );
+              },
+              child: Container(
+                padding: EdgeInsets.symmetric(
+                  vertical: 12.h.clamp(10.0, 16.0),
+                  horizontal: 8.w.clamp(6.0, 12.0),
+                ),
+                decoration: BoxDecoration(
+                  color: _cardWhite,
+                  borderRadius: BorderRadius.circular(18.r),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.03),
+                      blurRadius: 10,
+                      offset: const Offset(0, 2),
+                    )
+                  ],
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.chat_bubble_rounded,
+                      color: _primaryPurple,
+                      size: 20.sp.clamp(18.0, 24.0),
                     ),
-                  ),
-                ],
+                    SizedBox(width: 8.w.clamp(6.0, 10.0)),
+                    Text(
+                      "Chat",
+                      style: TextStyle(
+                        color: _textDark,
+                        fontSize: 13.sp.clamp(11.5, 14.0),
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
         ),
       ],
+    );
+  }
+
+  void _showAudioRouteBottomSheet([BuildContext? ctx]) {
+    final effectiveContext = ctx ?? context;
+    HapticFeedback.lightImpact();
+    final isIOS = Platform.isIOS;
+    final phoneLabel = isIOS ? "iPhone" : "Phone";
+    final phoneIcon =
+        isIOS ? Icons.phone_iphone_rounded : Icons.phone_android_rounded;
+
+    showModalBottomSheet(
+      context: effectiveContext,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      barrierColor: Colors.black.withOpacity(0.35),
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 440),
+              child: Container(
+                margin: EdgeInsets.symmetric(
+                  horizontal: 14.w.clamp(10.0, 20.0),
+                  vertical: 12.h,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(24.r),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.08),
+                      blurRadius: 24,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
+                child: Obx(() {
+                  final currentRoute = controller.audioRoute.value;
+                  final hasBT = controller.hasBluetooth.value;
+                  final btName = controller.bluetoothName.value;
+                  final hasHeadset = controller.hasHeadset.value;
+                  final headsetName = controller.headsetName.value;
+
+                  return Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Handle
+                      Center(
+                        child: Container(
+                          margin: EdgeInsets.only(top: 10.h, bottom: 8.h),
+                          width: 38.w.clamp(32.0, 44.0),
+                          height: 4.h.clamp(3.0, 5.0),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFE2E8F0),
+                            borderRadius: BorderRadius.circular(2.r),
+                          ),
+                        ),
+                      ),
+
+                      // Title Header
+                      Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 18.w,
+                          vertical: 6.h,
+                        ),
+                        child: Row(
+                          children: [
+                            Text(
+                              "Audio Output",
+                              style: TextStyle(
+                                color: _textDark,
+                                fontSize: 16.sp.clamp(15.0, 18.0),
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            const Spacer(),
+                            GestureDetector(
+                              onTap: () => Navigator.of(sheetContext).pop(),
+                              child: Container(
+                                padding: const EdgeInsets.all(4),
+                                decoration: const BoxDecoration(
+                                  color: Color(0xFFF1F5F9),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(
+                                  Icons.close_rounded,
+                                  size: 16.sp,
+                                  color: _textSecondary,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(height: 4.h),
+                      const Divider(
+                        color: Color(0xFFF1F5F9),
+                        height: 1,
+                        thickness: 1,
+                      ),
+
+                      // Phone / iPhone (Receiver)
+                      _buildAudioRouteItem(
+                        title: phoneLabel,
+                        trailingIcon: phoneIcon,
+                        isSelected: currentRoute == WalkieAudioRoute.earpiece,
+                        onTap: () async {
+                          HapticFeedback.mediumImpact();
+                          Navigator.of(sheetContext).pop();
+                          await controller.setRoute(WalkieAudioRoute.earpiece);
+                        },
+                      ),
+                      _buildAudioRouteDivider(),
+
+                      // Speaker (Loudspeaker)
+                      _buildAudioRouteItem(
+                        title: "Speaker",
+                        trailingIcon: Icons.volume_up_rounded,
+                        isSelected: currentRoute == WalkieAudioRoute.speaker,
+                        onTap: () async {
+                          HapticFeedback.mediumImpact();
+                          Navigator.of(sheetContext).pop();
+                          await controller.setRoute(WalkieAudioRoute.speaker);
+                        },
+                      ),
+                      _buildAudioRouteDivider(),
+
+                      // Bluetooth Device
+                      _buildAudioRouteItem(
+                        title: hasBT ? btName : "Bluetooth",
+                        subtitle: hasBT ? "Connected" : "Not connected",
+                        trailingIcon: Icons.bluetooth_audio_rounded,
+                        isSelected: currentRoute == WalkieAudioRoute.bluetooth,
+                        isEnabled: hasBT,
+                        onTap: () async {
+                          if (!hasBT) {
+                            Get.snackbar(
+                              "Bluetooth",
+                              "No Bluetooth audio device connected. Please pair your Bluetooth headset in settings.",
+                              snackPosition: SnackPosition.BOTTOM,
+                              backgroundColor: Colors.black87,
+                              colorText: Colors.white,
+                              duration: const Duration(seconds: 3),
+                            );
+                            return;
+                          }
+                          HapticFeedback.mediumImpact();
+                          Navigator.of(sheetContext).pop();
+                          await controller.setRoute(WalkieAudioRoute.bluetooth);
+                        },
+                      ),
+
+                      if (hasHeadset) ...[
+                        _buildAudioRouteDivider(),
+                        _buildAudioRouteItem(
+                          title: headsetName,
+                          trailingIcon: Icons.headphones_rounded,
+                          isSelected: currentRoute == WalkieAudioRoute.headset,
+                          onTap: () async {
+                            HapticFeedback.mediumImpact();
+                            Navigator.of(sheetContext).pop();
+                            await controller.setRoute(WalkieAudioRoute.headset);
+                          },
+                        ),
+                      ],
+
+                      SizedBox(height: 10.h),
+                      Container(
+                        width: double.infinity,
+                        padding: EdgeInsets.symmetric(horizontal: 16.w),
+                        child: TextButton(
+                          onPressed: () => Navigator.of(sheetContext).pop(),
+                          style: TextButton.styleFrom(
+                            backgroundColor: const Color(0xFFF1F5F9),
+                            padding: EdgeInsets.symmetric(vertical: 12.h),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14.r),
+                            ),
+                          ),
+                          child: Text(
+                            "Cancel",
+                            style: TextStyle(
+                              color: _textDark,
+                              fontSize: 14.5.sp.clamp(13.0, 16.0),
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 12.h),
+                    ],
+                  );
+                }),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildAudioRouteItem({
+    required String title,
+    String? subtitle,
+    required IconData trailingIcon,
+    required bool isSelected,
+    bool isEnabled = true,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        child: Container(
+          color: isSelected ? const Color(0xFFF6F3FF) : Colors.transparent,
+          padding: EdgeInsets.symmetric(
+            horizontal: 18.w.clamp(14.0, 22.0),
+            vertical: 13.h.clamp(10.0, 16.0),
+          ),
+          child: Row(
+            children: [
+              SizedBox(
+                width: 24.w.clamp(20.0, 28.0),
+                child: isSelected
+                    ? Icon(
+                        Icons.check_rounded,
+                        color: _primaryPurple,
+                        size: 20.sp.clamp(18.0, 23.0),
+                      )
+                    : const SizedBox.shrink(),
+              ),
+              SizedBox(width: 10.w.clamp(8.0, 14.0)),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      title,
+                      style: TextStyle(
+                        color: !isEnabled
+                            ? _slateGray
+                            : (isSelected ? _primaryPurple : _textDark),
+                        fontSize: 15.sp.clamp(14.0, 16.5),
+                        fontWeight:
+                            isSelected ? FontWeight.w700 : FontWeight.w500,
+                      ),
+                    ),
+                    if (subtitle != null) ...[
+                      SizedBox(height: 2.h),
+                      Text(
+                        subtitle,
+                        style: TextStyle(
+                          color: isSelected
+                              ? _primaryPurple.withOpacity(0.8)
+                              : _textSecondary,
+                          fontSize: 11.5.sp.clamp(10.5, 12.5),
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              Icon(
+                trailingIcon,
+                color: !isEnabled
+                    ? _slateGray.withOpacity(0.5)
+                    : (isSelected ? _primaryPurple : _textSecondary),
+                size: 22.sp.clamp(19.0, 25.0),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAudioRouteDivider() {
+    return Divider(
+      color: const Color(0xFFF1F5F9),
+      height: 1,
+      thickness: 1,
+      indent: 52.w.clamp(44.0, 60.0),
+      endIndent: 16.w,
     );
   }
 

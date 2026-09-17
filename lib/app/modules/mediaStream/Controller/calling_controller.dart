@@ -13,6 +13,9 @@ import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:proximity_screen_lock/proximity_screen_lock.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 import '../../../../gen/assets.gen.dart';
+import 'package:fgtracker/app/Data/Repositories/call_repo.dart';
+import 'package:fgtracker/app/Model/callDetailRes.dart';
+import 'package:intl/intl.dart';
 import '../../../Core/global/launchedFromCall.dart';
 import '../../../Data/Services/Socket/Socket_SignallingService.dart';
 
@@ -41,6 +44,9 @@ class CallingController extends GetxController {
   final args = Get.arguments;
   Timer? callTimer;
   int callDurationSeconds = 0;
+
+  final Rxn<CallDetail> apiCallDetail = Rxn<CallDetail>();
+  final RxString callStartTime = "".obs;
 
   Timer? missedCallTimer;
   var missCallDurationSeconds = 40.obs;
@@ -77,6 +83,12 @@ class CallingController extends GetxController {
       TrackingController.instance.initializeLocation();
     } catch (e) {
       log("==============CallLocationException======${e.toString()}");
+    }
+
+    if (callId != null) {
+      fetchCallDetail();
+    } else {
+      callStartTime.value = DateFormat('hh:mm a').format(DateTime.now());
     }
 
     super.onInit();
@@ -194,6 +206,7 @@ class CallingController extends GetxController {
 
     socket?.on("callCreated", (data) {
       callId = data['callId'];
+      fetchCallDetail();
       startMissedCallTimer();
     });
   }
@@ -250,6 +263,7 @@ class CallingController extends GetxController {
 
       startCallTimer();
       callStatus.value = "Connected";
+      fetchCallDetail();
     };
 
     localStream = await navigator.mediaDevices.getUserMedia({
@@ -465,6 +479,38 @@ class CallingController extends GetxController {
     }
     return "$minutes:$seconds";
   }
+
+  Future<void> fetchCallDetail() async {
+    if (callId == null) return;
+    try {
+      final res = await CallRepo.callDetailData(callId.toString());
+      if (res.status == true && res.callDetail != null) {
+        apiCallDetail.value = res.callDetail;
+        final rawTime = res.callDetail?.startTime;
+        if (rawTime != null && rawTime.trim().isNotEmpty) {
+          callStartTime.value = _formatTime(rawTime);
+        }
+      }
+    } catch (e) {
+      log("Error fetching call detail: $e");
+    }
+    if (callStartTime.value.isEmpty) {
+      callStartTime.value = DateFormat('hh:mm a').format(DateTime.now());
+    }
+  }
+
+  String _formatTime(String raw) {
+    try {
+      final dt = DateTime.tryParse(raw);
+      if (dt != null) {
+        return DateFormat('hh:mm a').format(dt.toLocal());
+      }
+      return raw;
+    } catch (_) {
+      return raw;
+    }
+  }
+
 
   void startCallTimer() {
     if (callTimer != null) return;

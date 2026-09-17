@@ -43,14 +43,35 @@ class OnlineMemberModel {
     )
         : null;
 
-    final dynamic rawMeta = map['metaData'] ?? map['metadata'] ?? map['meta'] ?? map['meta_data'];
-    metaData = rawMeta is Map
-        ? OnlineMetaData.fromJson(
-      Map<String, dynamic>.from(
-        rawMeta,
-      ),
-    )
-        : null;
+    Map<String, dynamic>? metaMap;
+    if (map['metaData'] is Map) {
+      metaMap = Map<String, dynamic>.from(map['metaData']);
+    } else if (map['metadata'] is Map) {
+      metaMap = Map<String, dynamic>.from(map['metadata']);
+    } else if (map['meta'] is Map) {
+      metaMap = Map<String, dynamic>.from(map['meta']);
+    } else if (map['meta_data'] is Map) {
+      metaMap = Map<String, dynamic>.from(map['meta_data']);
+    } else if (map['data'] is Map && map['data']['metaData'] is Map) {
+      metaMap = Map<String, dynamic>.from(map['data']['metaData']);
+    } else if (map['data'] is Map && map['data']['metadata'] is Map) {
+      metaMap = Map<String, dynamic>.from(map['data']['metadata']);
+    } else if (map['data'] is Map && map['data']['meta'] is Map) {
+      metaMap = Map<String, dynamic>.from(map['data']['meta']);
+    } else if (map['data'] is Map &&
+        (map['data']['totalMembers'] != null ||
+            map['data']['totalOnlineMembers'] != null ||
+            map['data']['totalOfflineMembers'] != null ||
+            map['data']['totalNewMembers'] != null)) {
+      metaMap = Map<String, dynamic>.from(map['data']);
+    } else if (map['totalMembers'] != null ||
+        map['totalOnlineMembers'] != null ||
+        map['totalOfflineMembers'] != null ||
+        map['totalNewMembers'] != null) {
+      metaMap = map;
+    }
+
+    metaData = metaMap != null ? OnlineMetaData.fromJson(metaMap) : null;
 
     final dynamic rawData = map['data'];
 
@@ -279,6 +300,10 @@ class OnlineMemberData {
   String? department;
   double? latitude;
   double? longitude;
+  String? createdAt;
+  String? joinedAt;
+  bool? isActive;
+  String? status;
 
   OnlineMemberData({
     this.userId,
@@ -291,13 +316,31 @@ class OnlineMemberData {
     this.department,
     this.latitude,
     this.longitude,
+    this.createdAt,
+    this.joinedAt,
+    this.isActive,
+    this.status,
   });
 
   bool get online {
     return isOnline == 1 ||
         (lastSeen != null &&
-            lastSeen!.trim().toLowerCase() ==
-                'online');
+            lastSeen!.trim().toLowerCase() == 'online');
+  }
+
+  bool get isMemberActive => online;
+
+  String? get joinDate {
+    for (final c in [joinedAt, createdAt, lastSeen]) {
+      if (c != null &&
+          c.trim().isNotEmpty &&
+          c.trim().toLowerCase() != 'null' &&
+          c.trim().toLowerCase() != 'online' &&
+          c.trim().toLowerCase() != 'offline') {
+        return c;
+      }
+    }
+    return null;
   }
 
   OnlineMemberData.fromJson(
@@ -338,11 +381,48 @@ class OnlineMemberData {
             json['lastActive']
     )?.toString();
 
+    joinedAt = (
+        json['joinedAt'] ??
+        json['joined_at'] ??
+        json['joinDate'] ??
+        json['join_date'] ??
+        json['joinedDate'] ??
+        json['joined_date'] ??
+        json['joined'] ??
+        json['memberJoinedAt'] ??
+        json['member_joined_at']
+    )?.toString();
+
+    createdAt = (
+        json['createdAt'] ??
+        json['created_at'] ??
+        json['createdDate'] ??
+        json['created_date'] ??
+        json['date'] ??
+        json['timestamp']
+    )?.toString();
+
     isOnline = _toInt(
       json['isOnline'] ??
           json['is_online'] ??
-          json['online'],
+          json['online'] ??
+          json['user_online'] ??
+          json['userOnline'] ??
+          json['online_status'] ??
+          json['onlineStatus'],
     );
+
+    final dynamic rawActive = json['isActive'] ?? json['is_active'] ?? json['active'];
+    if (rawActive is bool) {
+      isActive = rawActive;
+    } else if (rawActive is num) {
+      isActive = rawActive == 1;
+    } else if (rawActive is String) {
+      final s = rawActive.trim().toLowerCase();
+      isActive = (s == 'true' || s == '1' || s == 'active');
+    }
+
+    status = (json['status'] ?? json['userStatus'] ?? json['user_status'])?.toString();
 
     locationSharing = _toInt(
       json['locationSharing'] ??
@@ -413,10 +493,14 @@ class OnlineMemberData {
       'ProfileImage': profileImage,
       'lastSeen': lastSeen,
       'isOnline': isOnline,
+      'isActive': isActive,
+      'status': status,
       'locationSharing': locationSharing,
       'department': department,
       'latitude': latitude,
       'longitude': longitude,
+      'createdAt': createdAt,
+      'joinedAt': joinedAt,
     };
   }
 
@@ -437,9 +521,15 @@ class OnlineMemberData {
       return value ? 1 : 0;
     }
 
-    return int.tryParse(
-      value.toString(),
-    );
+    final s = value.toString().trim().toLowerCase();
+    if (s == 'true' || s == 'online' || s == '1') {
+      return 1;
+    }
+    if (s == 'false' || s == 'offline' || s == '0') {
+      return 0;
+    }
+
+    return int.tryParse(s);
   }
 
   static double? _toDouble(dynamic value) {

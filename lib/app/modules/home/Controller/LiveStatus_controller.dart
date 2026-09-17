@@ -1,4 +1,6 @@
 import 'dart:developer';
+import 'package:fgtracker/app/Core/constant/pref_res.dart';
+import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Data/Repositories/TrackRepo.dart';
 import 'package:fgtracker/app/Model/ghost_member_model.dart';
 import 'package:fgtracker/app/Model/online_member_model.dart';
@@ -288,21 +290,13 @@ class LivesStatusController extends GetxController {
         return;
       }
 
-      List<OnlineMemberData> currentOnline =
+      final List<OnlineMemberData> currentOnline =
           result.data?.currentOnline ??
               <OnlineMemberData>[];
 
-      List<OnlineMemberData> recentOnline =
+      final List<OnlineMemberData> recentOnline =
           result.data?.recentOnline ??
               <OnlineMemberData>[];
-
-      // Fallback: If recentOnline is empty but currentOnline contains offline members, split them
-      if (recentOnline.isEmpty && currentOnline.any((m) => m.isOnline != 1 && !m.online)) {
-        final onlineOnly = currentOnline.where((m) => m.isOnline == 1 || m.online).toList();
-        final offlineOnly = currentOnline.where((m) => m.isOnline != 1 && !m.online).toList();
-        currentOnline = onlineOnly;
-        recentOnline = offlineOnly;
-      }
 
       allCurrentOnlineMembers.assignAll(currentOnline);
       allRecentOnlineMembers.assignAll(recentOnline);
@@ -315,16 +309,13 @@ class LivesStatusController extends GetxController {
       allMemberData.assignAll(members);
 
       totalMembersCount.value =
-          result.metaData?.totalMembers ??
-              members.length;
+          result.metaData?.totalMembers ?? 0;
 
       activeMembersCount.value =
-          result.metaData?.totalOnlineMembers ??
-              currentOnline.length;
+          result.metaData?.totalOnlineMembers ?? 0;
 
       inactiveMembersCount.value =
-          result.metaData?.totalOfflineMembers ??
-              recentOnline.length;
+          result.metaData?.totalOfflineMembers ?? 0;
 
       privateMembersCount.value =
           result.metaData?.totalPrivateMembers ?? 0;
@@ -374,20 +365,13 @@ class LivesStatusController extends GetxController {
         return;
       }
 
-      List<OnlineMemberData> currentOnline =
+      final List<OnlineMemberData> currentOnline =
           result.data?.currentOnline ??
               <OnlineMemberData>[];
 
-      List<OnlineMemberData> recentOnline =
+      final List<OnlineMemberData> recentOnline =
           result.data?.recentOnline ??
               <OnlineMemberData>[];
-
-      if (recentOnline.isEmpty && currentOnline.any((m) => m.isOnline != 1 && !m.online)) {
-        final onlineOnly = currentOnline.where((m) => m.isOnline == 1 || m.online).toList();
-        final offlineOnly = currentOnline.where((m) => m.isOnline != 1 && !m.online).toList();
-        currentOnline = onlineOnly;
-        recentOnline = offlineOnly;
-      }
 
       final List<OnlineMemberData> members = [
         ...currentOnline,
@@ -397,22 +381,6 @@ class LivesStatusController extends GetxController {
       if (members.isEmpty) {
         hasMoreAllMembers.value = false;
         return;
-      }
-
-      for (final OnlineMemberData member in currentOnline) {
-        if (member.userId == null) {
-          allCurrentOnlineMembers.add(member);
-        } else if (!allCurrentOnlineMembers.any((m) => m.userId == member.userId)) {
-          allCurrentOnlineMembers.add(member);
-        }
-      }
-
-      for (final OnlineMemberData member in recentOnline) {
-        if (member.userId == null) {
-          allRecentOnlineMembers.add(member);
-        } else if (!allRecentOnlineMembers.any((m) => m.userId == member.userId)) {
-          allRecentOnlineMembers.add(member);
-        }
       }
 
       for (final OnlineMemberData member in members) {
@@ -428,6 +396,22 @@ class LivesStatusController extends GetxController {
 
         if (!exists) {
           allMemberData.add(member);
+        }
+      }
+
+      for (final OnlineMemberData member in currentOnline) {
+        if (member.userId == null) {
+          allCurrentOnlineMembers.add(member);
+        } else if (!allCurrentOnlineMembers.any((m) => m.userId == member.userId)) {
+          allCurrentOnlineMembers.add(member);
+        }
+      }
+
+      for (final OnlineMemberData member in recentOnline) {
+        if (member.userId == null) {
+          allRecentOnlineMembers.add(member);
+        } else if (!allRecentOnlineMembers.any((m) => m.userId == member.userId)) {
+          allRecentOnlineMembers.add(member);
         }
       }
 
@@ -476,7 +460,7 @@ class LivesStatusController extends GetxController {
     privateMemberLoading.value = true;
     privateResponseError.value = '';
 
-    privatePagination.value = 0;
+    privatePagination.value = 1;
     hasMorePrivateMembers.value = true;
 
     privateMemberData.clear();
@@ -506,8 +490,19 @@ class LivesStatusController extends GetxController {
           result.pagination?.currentPage ?? 1;
 
       hasMorePrivateMembers.value =
-          result.pagination?.hasNextPage ?? false;
+          result.pagination?.hasNextPage ??
+          (result.pagination?.totalPages != null
+              ? (result.pagination!.currentPage! < result.pagination!.totalPages!)
+              : (members.length >= 20));
+
+      if (result.pagination?.totalRecords != null &&
+          result.pagination!.totalRecords! > 0) {
+        privateMembersCount.value = result.pagination!.totalRecords!;
+      }
+
+      log("🟢 [LiveStatusController] getPrivateMembers loaded: ${members.length} members (total: ${privateMembersCount.value})");
     } catch (error) {
+      log("❌ [LiveStatusController] getPrivateMembers error: $error");
       privateResponseError.value =
           error.toString();
     } finally {
@@ -546,7 +541,14 @@ class LivesStatusController extends GetxController {
       );
 
       if (members.isNotEmpty) {
-        privateMemberData.addAll(members);
+        final existingIds = privateMemberData
+            .where((e) => e.userId != null)
+            .map((e) => e.userId)
+            .toSet();
+        final newMembers = members
+            .where((m) => m.userId == null || !existingIds.contains(m.userId))
+            .toList();
+        privateMemberData.addAll(newMembers);
       }
 
       privatePagination.value =
@@ -554,8 +556,14 @@ class LivesStatusController extends GetxController {
               nextPage;
 
       hasMorePrivateMembers.value =
-          result.pagination?.hasNextPage ?? false;
+          result.pagination?.hasNextPage ??
+          (result.pagination?.totalPages != null
+              ? (result.pagination!.currentPage! < result.pagination!.totalPages!)
+              : (members.length >= 20));
+
+      log("🟢 [LiveStatusController] loadMorePrivateMembers page $nextPage loaded ${members.length} items");
     } catch (error) {
+      log("❌ [LiveStatusController] loadMorePrivateMembers error: $error");
       privateResponseError.value =
           error.toString();
     } finally {

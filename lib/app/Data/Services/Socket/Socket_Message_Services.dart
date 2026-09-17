@@ -274,6 +274,25 @@ class SocketMessageService extends GetxService {
         _privateChatSocket!.connected) {
       log("PRIVATE CHAT SOCKET ALREADY CONNECTED");
 
+      _privateChatSocket?.off("joined");
+      if (onJoined != null) {
+        _privateChatSocket?.on(
+          "joined",
+          (data) {
+            log("=================================");
+            log("PRIVATE CHAT JOINED");
+            log("JOINED DATA => $data");
+            log("=================================");
+
+            if (data is Map) {
+              _privateChatId = data["chatId"]?.toString();
+            }
+
+            onJoined.call(data);
+          },
+        );
+      }
+
       joinPrivateChat(
         userId: userId,
         receiverId: receiverId,
