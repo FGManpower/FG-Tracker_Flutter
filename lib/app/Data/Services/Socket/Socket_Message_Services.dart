@@ -661,27 +661,53 @@ class SocketMessageService extends GetxService {
     required int messageId,
     required String content,
     required String userId,
+    String? otherUserId,
   }) {
     final payload = {
       "messageId": messageId,
       "content": content,
       "userId": userId,
+      if (otherUserId != null) "otherUserId": otherUserId,
     };
+
+    log("EDIT MESSAGE => payload=$payload");
+
+    if (otherUserId != null && isPrivateChatSocketConnected) {
+      _privateChatSocket!.emit(
+        "editMessage",
+        payload,
+      );
+
+      log("PRIVATE EDIT EMITTED => $payload");
+      return;
+    }
 
     socket.emit(
       "editMessage",
       payload,
     );
+
+    log("GROUP EDIT EMITTED => $payload");
   }
 
   void listenMessageEdited({
     required Function(dynamic data) callback,
   }) {
-    socket.off("messageEdited");
+    _socket?.off("messageEdited");
+    _privateChatSocket?.off("messageEdited");
 
-    socket.on(
+    _socket?.on(
       "messageEdited",
           (data) {
+        log("GROUP MESSAGE EDITED RECEIVED => $data");
+        callback(data);
+      },
+    );
+
+    _privateChatSocket?.on(
+      "messageEdited",
+          (data) {
+        log("PRIVATE MESSAGE EDITED RECEIVED => $data");
         callback(data);
       },
     );
@@ -691,27 +717,53 @@ class SocketMessageService extends GetxService {
     required int messageId,
     required String userId,
     required String deleteType,
+    String? otherUserId,
   }) {
     final payload = {
       "messageId": messageId,
       "userId": userId,
       "deleteType": deleteType,
+      if (otherUserId != null) "otherUserId": otherUserId,
     };
+
+    log("DELETE MESSAGE => payload=$payload");
+
+    if (otherUserId != null && isPrivateChatSocketConnected) {
+      _privateChatSocket!.emit(
+        "delete_message",
+        payload,
+      );
+
+      log("PRIVATE DELETE EMITTED => $payload");
+      return;
+    }
 
     socket.emit(
       "delete_message",
       payload,
     );
+
+    log("GROUP DELETE EMITTED => $payload");
   }
 
   void listenMessageDeleted({
     required Function(dynamic data) callback,
   }) {
-    socket.off("message_deleted");
+    _socket?.off("message_deleted");
+    _privateChatSocket?.off("message_deleted");
 
-    socket.on(
+    _socket?.on(
       "message_deleted",
           (data) {
+        log("GROUP MESSAGE DELETED RECEIVED => $data");
+        callback(data);
+      },
+    );
+
+    _privateChatSocket?.on(
+      "message_deleted",
+          (data) {
+        log("PRIVATE MESSAGE DELETED RECEIVED => $data");
         callback(data);
       },
     );
@@ -725,21 +777,39 @@ class SocketMessageService extends GetxService {
     required int messageId,
     required String pinnedByName,
   }) {
-    final payload = {
-      "chatType": chatType,
-      if (chatType == "group") "groupId": groupId,
-      if (chatType == "private") "senderId": senderId,
-      if (chatType == "private") "receiverId": receiverId,
-      "messageId": messageId,
-      "pinnedByName": pinnedByName,
-    };
-
     if (chatType == "private") {
-      _privateChatSocket?.emit(
+      final payload = {
+        "userId": senderId,
+        "otherUserId": receiverId,
+        "messageId": messageId,
+        "pinnedByName": pinnedByName,
+      };
+
+      log("PRIVATE PIN EMIT => $payload");
+
+      if (!isPrivateChatSocketConnected) {
+        log("PRIVATE PIN ERROR => SOCKET NOT CONNECTED");
+        return;
+      }
+
+      _privateChatSocket!.emit(
         "pin_message",
         payload,
       );
 
+      return;
+    }
+
+    final payload = {
+      "groupId": groupId,
+      "messageId": messageId,
+      "pinnedByName": pinnedByName,
+    };
+
+    log("GROUP PIN EMIT => $payload");
+
+    if (!isSocketConnected) {
+      log("GROUP PIN ERROR => SOCKET NOT CONNECTED");
       return;
     }
 
@@ -755,19 +825,35 @@ class SocketMessageService extends GetxService {
     String? senderId,
     String? receiverId,
   }) {
-    final payload = {
-      "chatType": chatType,
-      if (chatType == "group") "groupId": groupId,
-      if (chatType == "private") "senderId": senderId,
-      if (chatType == "private") "receiverId": receiverId,
-    };
-
     if (chatType == "private") {
-      _privateChatSocket?.emit(
+      final payload = {
+        "userId": senderId,
+        "otherUserId": receiverId,
+      };
+
+      log("PRIVATE UNPIN EMIT => $payload");
+
+      if (!isPrivateChatSocketConnected) {
+        log("PRIVATE UNPIN ERROR => SOCKET NOT CONNECTED");
+        return;
+      }
+
+      _privateChatSocket!.emit(
         "unpin_message",
         payload,
       );
 
+      return;
+    }
+
+    final payload = {
+      "groupId": groupId,
+    };
+
+    log("GROUP UNPIN EMIT => $payload");
+
+    if (!isSocketConnected) {
+      log("GROUP UNPIN ERROR => SOCKET NOT CONNECTED");
       return;
     }
 

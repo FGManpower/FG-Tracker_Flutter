@@ -29,11 +29,11 @@ class MessageController extends GetxController with WidgetsBindingObserver {
   final ItemScrollController itemScrollController = ItemScrollController();
 
   final ItemPositionsListener itemPositionsListener =
-  ItemPositionsListener.create();
+      ItemPositionsListener.create();
   final List<MessageData> _messages = [];
 
   final StreamController<List<MessageData>> _messageStreamController =
-  StreamController<List<MessageData>>.broadcast();
+      StreamController<List<MessageData>>.broadcast();
 
   Stream<List<MessageData>> get messageStream =>
       _messageStreamController.stream;
@@ -196,16 +196,15 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
   void _initializeChat() {
     final currentUserId =
-    Global.storageServices.get(PrefConst.userId).toString();
+        Global.storageServices.get(PrefConst.userId).toString();
 
     final receiverId = memberData.userId.toString();
 
-    final bool isPrivateChat =
-        arguments?['type'] == 'chatScreen' ||
-            arguments?['chatType'] == 'private' ||
-            arguments?['groupId'] == 0 ||
-            memberData.groupId == null ||
-            memberData.groupId == 0;
+    final bool isPrivateChat = arguments?['type'] == 'chatScreen' ||
+        arguments?['chatType'] == 'private' ||
+        arguments?['groupId'] == 0 ||
+        memberData.groupId == null ||
+        memberData.groupId == 0;
 
     log("=================================");
     log("CHAT TYPE => ${isPrivateChat ? 'PRIVATE' : 'GROUP'}");
@@ -263,10 +262,10 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
           try {
             final messageData =
-            MessageData.fromJson(Map<String, dynamic>.from(message));
+                MessageData.fromJson(Map<String, dynamic>.from(message));
 
             final alreadyExists = _messages.any(
-                  (msg) => msg.id == messageData.id && messageData.id != null,
+              (msg) => msg.id == messageData.id && messageData.id != null,
             );
 
             if (!alreadyExists) {
@@ -316,13 +315,107 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
           for (var msg in _messages) {
             if (updatedIds.any(
-                  (id) => id.toString() == msg.id.toString(),
+              (id) => id.toString() == msg.id.toString(),
             )) {
               msg.seenCount = (msg.seenCount ?? 0) + 1;
             }
           }
 
           updateMessageStream();
+        },
+      );
+
+      socketService.listenMessageEdited(
+        callback: (data) {
+          log("PRIVATE EDIT SOCKET CALLBACK => $data");
+
+          if (data is! Map) {
+            log("PRIVATE EDIT INVALID DATA => $data");
+            return;
+          }
+
+          try {
+            final editedMessage = MessageData.fromJson(
+              Map<String, dynamic>.from(data),
+            );
+
+            final index = _messages.indexWhere(
+              (message) => message.id == editedMessage.id,
+            );
+
+            if (index == -1) {
+              log(
+                "PRIVATE EDIT MESSAGE NOT FOUND => messageId=${editedMessage.id}",
+              );
+              return;
+            }
+
+            _messages[index] = editedMessage;
+
+            updateMessageStream();
+
+            log(
+              "PRIVATE EDIT APPLIED FROM SOCKET => messageId=${editedMessage.id}, content=${editedMessage.content}, isEdited=${editedMessage.isEdited}",
+            );
+          } catch (e) {
+            log("PRIVATE EDIT PARSE ERROR => $e");
+          }
+        },
+      );
+
+      socketService.listenMessageDeleted(
+        callback: (data) {
+          log("PRIVATE DELETE SOCKET CALLBACK => $data");
+
+          if (data is! Map) {
+            log("PRIVATE DELETE INVALID DATA => $data");
+            return;
+          }
+
+          try {
+            final messageId = int.tryParse(
+              data["messageId"]?.toString() ?? "",
+            );
+
+            final deleteType = data["deleteType"]?.toString();
+
+            if (messageId == null) {
+              log("PRIVATE DELETE MESSAGE ID NOT FOUND => $data");
+              return;
+            }
+
+            final index = _messages.indexWhere(
+              (message) => message.id == messageId,
+            );
+
+            if (index == -1) {
+              log("PRIVATE DELETE MESSAGE NOT FOUND => messageId=$messageId");
+              return;
+            }
+
+            if (deleteType == "for_me") {
+              _messages.removeAt(index);
+
+              log(
+                "PRIVATE DELETE FOR ME APPLIED => messageId=$messageId",
+              );
+            } else if (deleteType == "for_everyone") {
+              _messages[index].content = "This message was deleted";
+              _messages[index].messageType = "text";
+
+              log(
+                "PRIVATE DELETE FOR EVERYONE APPLIED => messageId=$messageId",
+              );
+            }
+
+            updateMessageStream();
+
+            log(
+              "PRIVATE DELETE STREAM UPDATED => messageId=$messageId",
+            );
+          } catch (e) {
+            log("PRIVATE DELETE PARSE ERROR => $e");
+          }
         },
       );
     } else {}
@@ -340,7 +433,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         if (data["chatType"] != "private") return;
 
         final currentUserId =
-        Global.storageServices.get(PrefConst.userId).toString();
+            Global.storageServices.get(PrefConst.userId).toString();
 
         final otherUserId = memberData.userId.toString();
 
@@ -349,16 +442,14 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
         if (senderId != null && receiverId != null) {
           final isSameChat =
-              (senderId == currentUserId &&
-                  receiverId == otherUserId) ||
-                  (senderId == otherUserId &&
-                      receiverId == currentUserId);
+              (senderId == currentUserId && receiverId == otherUserId) ||
+                  (senderId == otherUserId && receiverId == currentUserId);
 
           if (!isSameChat) return;
         }
 
         final msg = _messages.firstWhereOrNull(
-              (e) => e.id == messageId,
+          (e) => e.id == messageId,
         );
 
         if (msg != null) {
@@ -377,7 +468,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         if (data["chatType"] != "private") return;
 
         final currentUserId =
-        Global.storageServices.get(PrefConst.userId).toString();
+            Global.storageServices.get(PrefConst.userId).toString();
 
         final otherUserId = memberData.userId.toString();
 
@@ -385,10 +476,8 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         final receiverId = data["receiverId"].toString();
 
         final isSameChat =
-            (senderId == currentUserId &&
-                receiverId == otherUserId) ||
-                (senderId == otherUserId &&
-                    receiverId == currentUserId);
+            (senderId == currentUserId && receiverId == otherUserId) ||
+                (senderId == otherUserId && receiverId == currentUserId);
 
         if (!isSameChat) return;
 
@@ -410,7 +499,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     if (positions.isEmpty) return false;
 
     final maxVisible =
-    positions.map((e) => e.index).reduce((a, b) => a > b ? a : b);
+        positions.map((e) => e.index).reduce((a, b) => a > b ? a : b);
 
     return maxVisible >= _messages.length - 2;
   }
@@ -525,10 +614,10 @@ class MessageController extends GetxController with WidgetsBindingObserver {
   }
 
   Future<bool> uploadVideoAtIndex(
-      String path,
-      String caption,
-      int index,
-      ) async {
+    String path,
+    String caption,
+    int index,
+  ) async {
     try {
       final thumbnailPath = await generateThumbnailFile(path);
 
@@ -552,7 +641,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
           messageType: "video",
           receiverId: memberData.userId.toString(),
           content:
-          "${result.videoUrl}||${result.thumbnail}||${result.duration}",
+              "${result.videoUrl}||${result.thumbnail}||${result.duration}",
           caption: caption,
           replyId: replyMessage.value?.id,
           replyMessage: replyMessage.value?.content,
@@ -596,7 +685,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
           messageType: "video",
           receiverId: memberData.userId.toString(),
           content:
-          "${result.videoUrl}||${result.thumbnail}||${result.duration}",
+              "${result.videoUrl}||${result.thumbnail}||${result.duration}",
           caption: caption,
           replyId: replyMessage.value?.id,
           replyMessage: replyMessage.value?.content,
@@ -675,17 +764,27 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     required int messageId,
     required String deleteType,
   }) async {
+    final currentUserId =
+        Global.storageServices.get(PrefConst.userId).toString();
+
+    final otherUserId = memberData.userId.toString();
+
+    log(
+      "DELETE MESSAGE CONTROLLER => messageId=$messageId, userId=$currentUserId, otherUserId=$otherUserId, deleteType=$deleteType",
+    );
+
     socketService.deleteMessage(
       messageId: messageId,
-      userId: Global.storageServices.get(PrefConst.userId).toString(),
+      userId: currentUserId,
       deleteType: deleteType,
+      otherUserId: otherUserId,
     );
   }
 
   Future<void> getMessageHistory(
-      String recieverId,
-      int groupId,
-      ) async {
+    String recieverId,
+    int groupId,
+  ) async {
     try {
       var result = await MessageRepo.MessageHistory(
         recieverId: recieverId,
@@ -701,7 +800,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
         if (pinnedId != null) {
           final pinned = _messages.firstWhereOrNull(
-                (message) => message.id == pinnedId,
+            (message) => message.id == pinnedId,
           );
 
           if (pinned != null) {
@@ -742,7 +841,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
         if (pinnedId != null) {
           final pinned = _messages.firstWhereOrNull(
-                (message) => message.id == pinnedId,
+            (message) => message.id == pinnedId,
           );
 
           if (pinned != null) {
@@ -790,11 +889,10 @@ class MessageController extends GetxController with WidgetsBindingObserver {
   }
 
   void handleBackPressed(
-      BuildContext context, {
-        required int groupID,
-      }) {
-    final userId =
-    Global.storageServices.get(PrefConst.userId).toString();
+    BuildContext context, {
+    required int groupID,
+  }) {
+    final userId = Global.storageServices.get(PrefConst.userId).toString();
 
     final receiverId = memberData.userId.toString();
 
@@ -819,13 +917,13 @@ class MessageController extends GetxController with WidgetsBindingObserver {
   }
 
   startCall(
-      BuildContext context, {
-        required String callerId,
-        required String remoteUserId,
-        required bool is_video,
-        dynamic offer,
-        dynamic callerName,
-      }) {
+    BuildContext context, {
+    required String callerId,
+    required String remoteUserId,
+    required bool is_video,
+    dynamic offer,
+    dynamic callerName,
+  }) {
     Get.toNamed(
       Routes.callScreen,
       arguments: {
@@ -865,12 +963,12 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     final results = _messages
         .where(
           (msg) =>
-      msg.messageType == "text" &&
-          (msg.content?.toLowerCase().contains(
-            searchQuery.value.toLowerCase(),
-          ) ??
-              false),
-    )
+              msg.messageType == "text" &&
+              (msg.content?.toLowerCase().contains(
+                        searchQuery.value.toLowerCase(),
+                      ) ??
+                  false),
+        )
         .map((msg) => msg.id!)
         .toList();
 
@@ -914,23 +1012,27 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
   void pinMessage(MessageData message) {
     final currentUserId =
-    Global.storageServices.get(PrefConst.userId).toString();
+        Global.storageServices.get(PrefConst.userId).toString();
 
     final otherUserId = memberData.userId.toString();
+
+    log("PIN CLICKED => messageId=${message.id}");
+    log("PIN USER => $currentUserId");
+    log("PIN OTHER USER => $otherUserId");
+    log("PRIVATE SOCKET CONNECTED => ${socketService.isPrivateChatSocketConnected}");
 
     socketService.pinMessage(
       chatType: "private",
       senderId: currentUserId,
       receiverId: otherUserId,
       messageId: message.id!,
-      pinnedByName:
-      Global.storageServices.get(PrefConst.userName) ?? "User",
+      pinnedByName: Global.storageServices.get(PrefConst.userName) ?? "User",
     );
   }
 
   void unpinMessage() {
     final currentUserId =
-    Global.storageServices.get(PrefConst.userId).toString();
+        Global.storageServices.get(PrefConst.userId).toString();
 
     final otherUserId = memberData.userId.toString();
 
@@ -971,8 +1073,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
     if (positions.isEmpty) return;
 
-    final visible =
-    positions.where((e) => e.itemTrailingEdge > 0).toList();
+    final visible = positions.where((e) => e.itemTrailingEdge > 0).toList();
 
     if (visible.isEmpty) return;
 
@@ -983,7 +1084,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     if (firstVisibleIndex >= messageData.length) return;
 
     final newDate =
-    formatDateHeader(messageData[firstVisibleIndex].timestamp ?? "");
+        formatDateHeader(messageData[firstVisibleIndex].timestamp ?? "");
 
     if (floatingDate.value != newDate) {
       floatingDate.value = newDate;
@@ -997,7 +1098,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
     _floatingDateTimer = Timer(
       const Duration(milliseconds: 800),
-          () {
+      () {
         showFloatingDate.value = false;
       },
     );
@@ -1009,7 +1110,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     }
 
     final currentUserId =
-    Global.storageServices.get(PrefConst.userId).toString();
+        Global.storageServices.get(PrefConst.userId).toString();
 
     if (message.senderId.toString() != currentUserId) {
       return;
@@ -1033,12 +1134,26 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
     if (text.isEmpty) return;
 
+    final currentUserId =
+        Global.storageServices.get(PrefConst.userId).toString();
+
+    final otherUserId = memberData.userId.toString();
+
+    log(
+      "UPDATE EDITED MESSAGE => messageId=${message.id}, userId=$currentUserId, otherUserId=$otherUserId, text=$text",
+    );
+
     socketService.editMessage(
       messageId: message.id!,
       content: text,
-      userId: Global.storageServices.get(PrefConst.userId).toString(),
+      userId: currentUserId,
+      otherUserId: otherUserId,
     );
 
     editingMessage.value = null;
+
+    log(
+      "EDIT REQUEST SENT => messageId=${message.id}",
+    );
   }
 }
