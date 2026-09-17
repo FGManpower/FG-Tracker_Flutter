@@ -116,10 +116,12 @@ class CallingScreen extends StatelessWidget {
     final Color subColor =
         isVideo ? Colors.white70 : primaryPurple.withOpacity(0.9);
 
+    final bool isOutgoing = c.args["callType"] == "outGoing";
+
     return Column(
       children: [
         Text(
-          "Call From",
+          isOutgoing ? "Calling" : "Call From",
           style: TextStyle(
             color: subColor,
             fontSize: 14.sp,
@@ -140,13 +142,31 @@ class CallingScreen extends StatelessWidget {
         SizedBox(height: 6.h),
         Obx(() {
           final waiting = c.formattedDuration == "00:00";
-          return Text(
-            waiting ? "${c.callStatus.value}..." : c.formattedDuration,
-            style: TextStyle(
-              color: subColor,
-              fontSize: 14.sp,
-              fontFamily: FontFamily.interMedium,
-            ),
+          final startTime = c.callStartTime.value;
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                waiting ? "${c.callStatus.value}..." : c.formattedDuration,
+                style: TextStyle(
+                  color: subColor,
+                  fontSize: 14.sp,
+                  fontFamily: FontFamily.interMedium,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              if (startTime.isNotEmpty) ...[
+                SizedBox(height: 3.h),
+                Text(
+                  startTime,
+                  style: TextStyle(
+                    color: isVideo ? Colors.white70 : darkText.withOpacity(0.5),
+                    fontSize: 11.5.sp,
+                    fontFamily: FontFamily.interRegular,
+                  ),
+                ),
+              ],
+            ],
           );
         }),
       ],

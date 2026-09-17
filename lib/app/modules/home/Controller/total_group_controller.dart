@@ -116,8 +116,7 @@ class TotalGroupController extends GetxController {
         }
 
         hasError.value = true;
-        errorMessage.value =
-            response.message ?? 'Unable to fetch groups';
+        errorMessage.value = response.message ?? 'Unable to fetch groups';
       }
     } catch (e) {
       if (currentPage == 1) {

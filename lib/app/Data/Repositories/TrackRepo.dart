@@ -6,6 +6,7 @@ import 'package:fgtracker/app/Model/LocationDataRes.dart';
 import 'package:fgtracker/app/Model/UsersWithinRadiusRes.dart';
 import 'package:fgtracker/app/Model/ghost_member_model.dart';
 import 'package:fgtracker/app/Model/online_member_model.dart';
+import 'dart:convert';
 import 'dart:developer';
 import 'package:flutter/foundation.dart';
 import 'GroupRepo.dart';
@@ -187,10 +188,11 @@ class TrackRepo {
 
       final response = await HttpUtil().get(url);
 
-      log("🟢 [TrackRepo] Group Members Response: $response");
-      debugPrint(
-        "🟢 [TrackRepo] Group Members Response: $response",
-      );
+      final String responseString = response is Map || response is List
+          ? jsonEncode(response)
+          : response.toString();
+      log("🟢 [TrackRepo] Group Members Response: $responseString");
+      debugPrint("🟢 [TrackRepo] Group Members Response: $responseString");
 
       if (response is Map<String, dynamic>) {
         return OnlineMemberModel.fromJson(response);

@@ -1,4 +1,6 @@
 import 'dart:developer';
+import 'package:fgtracker/app/Core/constant/pref_res.dart';
+import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Data/Repositories/TrackRepo.dart';
 import 'package:fgtracker/app/Model/ghost_member_model.dart';
 import 'package:fgtracker/app/Model/online_member_model.dart';
@@ -288,21 +290,13 @@ class LivesStatusController extends GetxController {
         return;
       }
 
-      List<OnlineMemberData> currentOnline =
+      final List<OnlineMemberData> currentOnline =
           result.data?.currentOnline ??
               <OnlineMemberData>[];
 
-      List<OnlineMemberData> recentOnline =
+      final List<OnlineMemberData> recentOnline =
           result.data?.recentOnline ??
               <OnlineMemberData>[];
-
-      // Fallback: If recentOnline is empty but currentOnline contains offline members, split them
-      if (recentOnline.isEmpty && currentOnline.any((m) => m.isOnline != 1 && !m.online)) {
-        final onlineOnly = currentOnline.where((m) => m.isOnline == 1 || m.online).toList();
-        final offlineOnly = currentOnline.where((m) => m.isOnline != 1 && !m.online).toList();
-        currentOnline = onlineOnly;
-        recentOnline = offlineOnly;
-      }
 
       allCurrentOnlineMembers.assignAll(currentOnline);
       allRecentOnlineMembers.assignAll(recentOnline);
@@ -315,16 +309,13 @@ class LivesStatusController extends GetxController {
       allMemberData.assignAll(members);
 
       totalMembersCount.value =
-          result.metaData?.totalMembers ??
-              members.length;
+          result.metaData?.totalMembers ?? 0;
 
       activeMembersCount.value =
-          result.metaData?.totalOnlineMembers ??
-              currentOnline.length;
+          result.metaData?.totalOnlineMembers ?? 0;
 
       inactiveMembersCount.value =
-          result.metaData?.totalOfflineMembers ??
-              recentOnline.length;
+          result.metaData?.totalOfflineMembers ?? 0;
 
       privateMembersCount.value =
           result.metaData?.totalPrivateMembers ?? 0;
@@ -374,20 +365,13 @@ class LivesStatusController extends GetxController {
         return;
       }
 
-      List<OnlineMemberData> currentOnline =
+      final List<OnlineMemberData> currentOnline =
           result.data?.currentOnline ??
               <OnlineMemberData>[];
 
-      List<OnlineMemberData> recentOnline =
+      final List<OnlineMemberData> recentOnline =
           result.data?.recentOnline ??
               <OnlineMemberData>[];
-
-      if (recentOnline.isEmpty && currentOnline.any((m) => m.isOnline != 1 && !m.online)) {
-        final onlineOnly = currentOnline.where((m) => m.isOnline == 1 || m.online).toList();
-        final offlineOnly = currentOnline.where((m) => m.isOnline != 1 && !m.online).toList();
-        currentOnline = onlineOnly;
-        recentOnline = offlineOnly;
-      }
 
       final List<OnlineMemberData> members = [
         ...currentOnline,
@@ -397,22 +381,6 @@ class LivesStatusController extends GetxController {
       if (members.isEmpty) {
         hasMoreAllMembers.value = false;
         return;
-      }
-
-      for (final OnlineMemberData member in currentOnline) {
-        if (member.userId == null) {
-          allCurrentOnlineMembers.add(member);
-        } else if (!allCurrentOnlineMembers.any((m) => m.userId == member.userId)) {
-          allCurrentOnlineMembers.add(member);
-        }
-      }
-
-      for (final OnlineMemberData member in recentOnline) {
-        if (member.userId == null) {
-          allRecentOnlineMembers.add(member);
-        } else if (!allRecentOnlineMembers.any((m) => m.userId == member.userId)) {
-          allRecentOnlineMembers.add(member);
-        }
       }
 
       for (final OnlineMemberData member in members) {
@@ -428,6 +396,22 @@ class LivesStatusController extends GetxController {
 
         if (!exists) {
           allMemberData.add(member);
+        }
+      }
+
+      for (final OnlineMemberData member in currentOnline) {
+        if (member.userId == null) {
+          allCurrentOnlineMembers.add(member);
+        } else if (!allCurrentOnlineMembers.any((m) => m.userId == member.userId)) {
+          allCurrentOnlineMembers.add(member);
+        }
+      }
+
+      for (final OnlineMemberData member in recentOnline) {
+        if (member.userId == null) {
+          allRecentOnlineMembers.add(member);
+        } else if (!allRecentOnlineMembers.any((m) => m.userId == member.userId)) {
+          allRecentOnlineMembers.add(member);
         }
       }
 

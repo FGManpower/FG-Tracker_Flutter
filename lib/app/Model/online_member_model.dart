@@ -43,14 +43,35 @@ class OnlineMemberModel {
     )
         : null;
 
-    final dynamic rawMeta = map['metaData'] ?? map['metadata'] ?? map['meta'] ?? map['meta_data'];
-    metaData = rawMeta is Map
-        ? OnlineMetaData.fromJson(
-      Map<String, dynamic>.from(
-        rawMeta,
-      ),
-    )
-        : null;
+    Map<String, dynamic>? metaMap;
+    if (map['metaData'] is Map) {
+      metaMap = Map<String, dynamic>.from(map['metaData']);
+    } else if (map['metadata'] is Map) {
+      metaMap = Map<String, dynamic>.from(map['metadata']);
+    } else if (map['meta'] is Map) {
+      metaMap = Map<String, dynamic>.from(map['meta']);
+    } else if (map['meta_data'] is Map) {
+      metaMap = Map<String, dynamic>.from(map['meta_data']);
+    } else if (map['data'] is Map && map['data']['metaData'] is Map) {
+      metaMap = Map<String, dynamic>.from(map['data']['metaData']);
+    } else if (map['data'] is Map && map['data']['metadata'] is Map) {
+      metaMap = Map<String, dynamic>.from(map['data']['metadata']);
+    } else if (map['data'] is Map && map['data']['meta'] is Map) {
+      metaMap = Map<String, dynamic>.from(map['data']['meta']);
+    } else if (map['data'] is Map &&
+        (map['data']['totalMembers'] != null ||
+            map['data']['totalOnlineMembers'] != null ||
+            map['data']['totalOfflineMembers'] != null ||
+            map['data']['totalNewMembers'] != null)) {
+      metaMap = Map<String, dynamic>.from(map['data']);
+    } else if (map['totalMembers'] != null ||
+        map['totalOnlineMembers'] != null ||
+        map['totalOfflineMembers'] != null ||
+        map['totalNewMembers'] != null) {
+      metaMap = map;
+    }
+
+    metaData = metaMap != null ? OnlineMetaData.fromJson(metaMap) : null;
 
     final dynamic rawData = map['data'];
 
@@ -281,6 +302,8 @@ class OnlineMemberData {
   double? longitude;
   String? createdAt;
   String? joinedAt;
+  bool? isActive;
+  String? status;
 
   OnlineMemberData({
     this.userId,
@@ -295,14 +318,17 @@ class OnlineMemberData {
     this.longitude,
     this.createdAt,
     this.joinedAt,
+    this.isActive,
+    this.status,
   });
 
   bool get online {
     return isOnline == 1 ||
         (lastSeen != null &&
-            lastSeen!.trim().toLowerCase() ==
-                'online');
+            lastSeen!.trim().toLowerCase() == 'online');
   }
+
+  bool get isMemberActive => online;
 
   String? get joinDate {
     for (final c in [joinedAt, createdAt, lastSeen]) {
@@ -379,8 +405,24 @@ class OnlineMemberData {
     isOnline = _toInt(
       json['isOnline'] ??
           json['is_online'] ??
-          json['online'],
+          json['online'] ??
+          json['user_online'] ??
+          json['userOnline'] ??
+          json['online_status'] ??
+          json['onlineStatus'],
     );
+
+    final dynamic rawActive = json['isActive'] ?? json['is_active'] ?? json['active'];
+    if (rawActive is bool) {
+      isActive = rawActive;
+    } else if (rawActive is num) {
+      isActive = rawActive == 1;
+    } else if (rawActive is String) {
+      final s = rawActive.trim().toLowerCase();
+      isActive = (s == 'true' || s == '1' || s == 'active');
+    }
+
+    status = (json['status'] ?? json['userStatus'] ?? json['user_status'])?.toString();
 
     locationSharing = _toInt(
       json['locationSharing'] ??
@@ -451,6 +493,8 @@ class OnlineMemberData {
       'ProfileImage': profileImage,
       'lastSeen': lastSeen,
       'isOnline': isOnline,
+      'isActive': isActive,
+      'status': status,
       'locationSharing': locationSharing,
       'department': department,
       'latitude': latitude,
@@ -477,9 +521,15 @@ class OnlineMemberData {
       return value ? 1 : 0;
     }
 
-    return int.tryParse(
-      value.toString(),
-    );
+    final s = value.toString().trim().toLowerCase();
+    if (s == 'true' || s == 'online' || s == '1') {
+      return 1;
+    }
+    if (s == 'false' || s == 'offline' || s == '0') {
+      return 0;
+    }
+
+    return int.tryParse(s);
   }
 
   static double? _toDouble(dynamic value) {

@@ -1,4 +1,6 @@
 import 'package:fgtracker/app/Core/constant/const_res.dart';
+import 'package:fgtracker/app/Core/constant/pref_res.dart';
+import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Model/online_member_model.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/modules/home/Controller/LiveStatus_controller.dart';
@@ -19,7 +21,7 @@ class _TotalMemberState extends State<TotalMember> {
   late final LivesStatusController controller;
   final ScrollController _scrollController = ScrollController();
   bool _isAscending = true;
-  bool _showAllOnline = false;
+  bool _showAllActive = false;
 
   @override
   void initState() {
@@ -114,9 +116,7 @@ class _TotalMemberState extends State<TotalMember> {
                     ),
                     SizedBox(height: 2.h),
                     Obx(() {
-                      final count = controller.totalMembersCount.value > 0
-                          ? controller.totalMembersCount.value
-                          : controller.allMemberData.length;
+                      final count = controller.totalMembersCount.value;
                       return Text(
                         '$count Total Members',
                         style: TextStyle(
@@ -168,12 +168,14 @@ class _TotalMemberState extends State<TotalMember> {
     return Obx(() {
       final String query = controller.searchQuery.value.trim().toLowerCase();
 
-      final List<OnlineMemberData> onlineList =
-          List<OnlineMemberData>.from(controller.filteredCurrentOnlineMembers);
-      final List<OnlineMemberData> recentList =
-          List<OnlineMemberData>.from(controller.filteredRecentOnlineMembers);
+      final List<OnlineMemberData> activeList = controller
+          .filteredCurrentOnlineMembers
+          .toList();
+      final List<OnlineMemberData> recentList = controller
+          .filteredRecentOnlineMembers
+          .toList();
 
-      onlineList.sort((a, b) {
+      activeList.sort((a, b) {
         final nameA = (a.name ?? '').toLowerCase();
         final nameB = (b.name ?? '').toLowerCase();
         return _isAscending ? nameA.compareTo(nameB) : nameB.compareTo(nameA);
@@ -185,11 +187,11 @@ class _TotalMemberState extends State<TotalMember> {
         return _isAscending ? nameA.compareTo(nameB) : nameB.compareTo(nameA);
       });
 
-      final bool hasOnline = onlineList.isNotEmpty;
+      final bool hasActive = activeList.isNotEmpty;
       final bool hasRecent = recentList.isNotEmpty;
       final bool isSearching = query.isNotEmpty;
 
-      if (isSearching && !hasOnline && !hasRecent) {
+      if (isSearching && !hasActive && !hasRecent) {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -202,7 +204,7 @@ class _TotalMemberState extends State<TotalMember> {
         );
       }
 
-      if (!isSearching && !hasOnline && !hasRecent) {
+      if (!isSearching && !hasActive && !hasRecent) {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -215,10 +217,10 @@ class _TotalMemberState extends State<TotalMember> {
         );
       }
 
-      final List<OnlineMemberData> displayedOnline =
-          (_showAllOnline || isSearching || onlineList.length <= 5)
-              ? onlineList
-              : onlineList.take(5).toList();
+      final List<OnlineMemberData> displayedActive =
+          (_showAllActive || isSearching || activeList.length <= 5)
+              ? activeList
+              : activeList.take(5).toList();
 
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -228,26 +230,26 @@ class _TotalMemberState extends State<TotalMember> {
           _buildStatCardsRow(),
           SizedBox(height: 16.h),
 
-          // Upper Section: Current Online Members
-          if (hasOnline) ...[
+          // Upper Section: Active Members
+          if (hasActive) ...[
             _buildSectionHeader(
-              title: "Online Now",
-              count: onlineList.length,
+              title: "Active",
+              count: activeList.length,
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  if (onlineList.length > 5 && !isSearching) ...[
+                  if (activeList.length > 5 && !isSearching) ...[
                     InkWell(
                       onTap: () {
                         setState(() {
-                          _showAllOnline = !_showAllOnline;
+                          _showAllActive = !_showAllActive;
                         });
                       },
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            _showAllOnline ? "Show Less" : "View All",
+                            _showAllActive ? "Show Less" : "View All",
                             style: TextStyle(
                               fontSize: 12.sp,
                               fontWeight: FontWeight.w700,
@@ -257,7 +259,7 @@ class _TotalMemberState extends State<TotalMember> {
                           ),
                           SizedBox(width: 2.w),
                           Icon(
-                            _showAllOnline
+                            _showAllActive
                                 ? Icons.keyboard_arrow_up_rounded
                                 : Icons.chevron_right_rounded,
                             size: 16.sp,
@@ -273,18 +275,17 @@ class _TotalMemberState extends State<TotalMember> {
               ),
             ),
             SizedBox(height: 10.h),
-            ...displayedOnline.map(
+            ...displayedActive.map(
               (member) => _buildMemberTile(member: member, isOnline: true),
             ),
             SizedBox(height: 14.h),
           ] else if (!isSearching) ...[
             _buildSectionHeader(
-              title: "Online Now",
+              title: "Active",
               count: 0,
-              trailing: _buildSortButton(),
             ),
             SizedBox(height: 8.h),
-            _buildNoOnlineCard(),
+            _buildNoActiveCard(),
             SizedBox(height: 16.h),
           ],
 
@@ -293,7 +294,7 @@ class _TotalMemberState extends State<TotalMember> {
             _buildSectionHeader(
               title: "Recently Online",
               count: recentList.length,
-              trailing: (!hasOnline && isSearching) ? _buildSortButton() : null,
+              trailing: (!hasActive || isSearching) ? _buildSortButton() : null,
             ),
             SizedBox(height: 10.h),
             ...recentList.map(
@@ -378,9 +379,7 @@ class _TotalMemberState extends State<TotalMember> {
 
   Widget _buildStatCardsRow() {
     return Obx(() {
-      final total = controller.totalMembersCount.value > 0
-          ? controller.totalMembersCount.value
-          : controller.allMemberData.length;
+      final total = controller.totalMembersCount.value;
       final online = controller.activeMembersCount.value;
       final offline = controller.inactiveMembersCount.value;
       final newMembers = controller.newMembersCount.value;
@@ -389,34 +388,38 @@ class _TotalMemberState extends State<TotalMember> {
         children: [
           _buildStatCard(
             "$total",
-            "Total",
+            "Total Members",
             Icons.group_rounded,
             const Color(0xFF6B4DFF),
             const Color(0xFFEDE9FE),
+            valueColor: const Color(0xFF6B4DFF),
           ),
           SizedBox(width: 8.w),
           _buildStatCard(
             "$online",
-            "Online",
+            "Active",
             Icons.fiber_manual_record_rounded,
             const Color(0xFF10B981),
             const Color(0xFFE8FDF2),
+            valueColor: const Color(0xFF10B981),
           ),
           SizedBox(width: 8.w),
           _buildStatCard(
             "$offline",
-            "Offline",
+            "Inactive",
             Icons.access_time_rounded,
             const Color(0xFFF59E0B),
             const Color(0xFFFEF3C7),
+            valueColor: const Color(0xFF10B981),
           ),
           SizedBox(width: 8.w),
           _buildStatCard(
             "$newMembers",
-            "New",
+            "New This Month",
             Icons.person_add_rounded,
             const Color(0xFF3B82F6),
             const Color(0xFFEFF6FF),
+            valueColor: const Color(0xFF2563EB),
           ),
         ],
       );
@@ -424,10 +427,11 @@ class _TotalMemberState extends State<TotalMember> {
   }
 
   Widget _buildStatCard(
-      String count, String label, IconData icon, Color iconColor, Color bgColor) {
+      String count, String label, IconData icon, Color iconColor, Color bgColor,
+      {Color? valueColor}) {
     return Expanded(
       child: Container(
-        padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 8.w),
+        padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 4.w),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16.r),
@@ -461,7 +465,7 @@ class _TotalMemberState extends State<TotalMember> {
               style: TextStyle(
                 fontSize: 16.sp,
                 fontWeight: FontWeight.w800,
-                color: Colors.black87,
+                color: valueColor ?? Colors.black87,
                 fontFamily: FontFamily.interBold,
               ),
             ),
@@ -469,13 +473,13 @@ class _TotalMemberState extends State<TotalMember> {
             Text(
               label,
               textAlign: TextAlign.center,
-              maxLines: 1,
+              maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                fontSize: 10.sp,
+                fontSize: 9.sp,
                 fontWeight: FontWeight.w600,
-                color: Colors.grey.shade600,
-                fontFamily: FontFamily.interRegular,
+                color: const Color(0xFF6B7280),
+                fontFamily: FontFamily.interMedium,
               ),
             ),
           ],
@@ -541,7 +545,7 @@ class _TotalMemberState extends State<TotalMember> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              _isAscending ? "Sort: (A-Z)" : "Sort: (Z-A)",
+              _isAscending ? "A to Z" : "Z to A",
               style: TextStyle(
                 fontSize: 12.sp,
                 fontWeight: FontWeight.w700,
@@ -563,7 +567,7 @@ class _TotalMemberState extends State<TotalMember> {
     );
   }
 
-  Widget _buildNoOnlineCard() {
+  Widget _buildNoActiveCard() {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
       decoration: BoxDecoration(
@@ -588,7 +592,7 @@ class _TotalMemberState extends State<TotalMember> {
           ),
           SizedBox(width: 12.w),
           Text(
-            "No members currently online",
+            "No members currently active",
             style: TextStyle(
               fontSize: 12.5.sp,
               color: Colors.grey.shade500,
@@ -604,7 +608,7 @@ class _TotalMemberState extends State<TotalMember> {
     required OnlineMemberData member,
     required bool isOnline,
   }) {
-    final bool isActive = isOnline || member.isOnline == 1 || member.online;
+    final bool isActive = isOnline;
     final String name = member.name?.trim().isNotEmpty == true
         ? member.name!.trim()
         : 'Member';
