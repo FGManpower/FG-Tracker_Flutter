@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/theme/appTheme.dart';
@@ -66,114 +67,138 @@ class _CallRecentCallsTabState extends State<CallRecentCallsTab> {
           messgae: controller.recentCallResponseError.value,
         );
       }
-      final List<Map<String, String>> calls = controller.filteredRecentCalls;
+
+      final Map<String, List<Map<String, String>>> groupedCalls =
+          controller.groupedRecentCalls;
+
+      if (controller.recentCallList.isEmpty) {
+        return RefreshIndicator(
+          color: const Color(0xFF4818F0),
+          onRefresh: controller.refreshRecentCalls,
+          child: ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            children: const [
+              _EmptyState(message: "No recent calls yet"),
+            ],
+          ),
+        );
+      }
+
+      if (groupedCalls.isEmpty) {
+        return RefreshIndicator(
+          color: const Color(0xFF4818F0),
+          onRefresh: controller.refreshRecentCalls,
+          child: ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            children: const [
+              _EmptyState(message: "No recent calls found"),
+            ],
+          ),
+        );
+      }
+
       return RefreshIndicator(
         color: const Color(0xFF4818F0),
         onRefresh: controller.refreshRecentCalls,
-        child: Padding(
-          padding: EdgeInsets.fromLTRB(16.w, 4.h, 16.w, 0.h),
-          child: Column(
-            children: [
-              if (controller.recentCallList.isNotEmpty) ...[
-                const _CallFilterBar(),
-                SizedBox(height: 7.h),
-              ],
-              if (controller.recentCallList.isEmpty)
-                const _EmptyState(message: "No recent calls yet")
-              else if (calls.isEmpty)
-                const _EmptyState(message: "No recent calls found")
-              else
-                Expanded(
-                  child: ListView.builder(
-                    itemCount: calls.length,
-                    scrollDirection: Axis.vertical,
-                    controller: _scrollController,
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    itemBuilder: (context, index) {
-                      return Padding(
-                        padding: EdgeInsets.only(top: 10.h),
-                        child: InkWell(
-                            onTap: () {
-                              Get.to(() => ContactProfileScreen(contactData: calls[index]));
-                            },
-                            child: _RecentCallTile(
-                              call: calls[index],
-                              onCallTap: (type) {
-                                if (type == "video") {
-                              CallService().startCall(
-                                context,
-                                callerId: Global.storageServices
-                                    .get(PrefConst.userId)
-                                    .toString(),
-                                remoteUserId:
-                                    calls[index]['callerId'].toString(),
-                                is_video: true,
-                                callerName: calls[index]['name'].toString(),
-                              );
-                            } else {
-                              CallService().startCall(
-                                context,
-                                callerId: Global.storageServices
-                                    .get(PrefConst.userId)
-                                    .toString(),
-                                remoteUserId:
-                                    calls[index]['callerId'].toString(),
-                                is_video: false,
-                                callerName: calls[index]['name'].toString(),
-                              );
-                            }
-                          },
-                        )),
-                      );
-                    },
+        child: ListView(
+          controller: _scrollController,
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: EdgeInsets.fromLTRB(16.w, 4.h, 16.w, 90.h),
+          children: [
+            for (final entry in groupedCalls.entries) ...[
+              Padding(
+                padding: EdgeInsets.only(top: 10.h, bottom: 8.h, left: 2.w),
+                child: Text(
+                  entry.key,
+                  style: TextStyle(
+                    fontSize: 16.sp,
+                    fontFamily: FontFamily.interBold,
+                    color: const Color(0xFF1E1B4B),
                   ),
                 ),
-              if (controller.recentCallLoadingMore.value)
-                const _BottomSkeletonLoader(),
-              SizedBox(height: 8.h),
+              ),
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20.r),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.02),
+                      blurRadius: 10,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    for (int i = 0; i < entry.value.length; i++) ...[
+                      if (i > 0)
+                        Divider(
+                          height: 1,
+                          thickness: 0.8,
+                          color: const Color(0xFFF1F3F9),
+                          indent: 62.w,
+                          endIndent: 14.w,
+                        ),
+                      InkWell(
+                        onTap: () {
+                          Get.to(() => ContactProfileScreen(
+                                contactData: entry.value[i],
+                              ));
+                        },
+                        borderRadius: BorderRadius.vertical(
+                          top: i == 0 ? Radius.circular(20.r) : Radius.zero,
+                          bottom: i == entry.value.length - 1
+                              ? Radius.circular(20.r)
+                              : Radius.zero,
+                        ),
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 14.w,
+                            vertical: 10.h,
+                          ),
+                          child: _RecentCallTile(
+                            call: entry.value[i],
+                            onCallTap: (type) {
+                              if (type == "video") {
+                                CallService().startCall(
+                                  context,
+                                  callerId: Global.storageServices
+                                      .get(PrefConst.userId)
+                                      .toString(),
+                                  remoteUserId:
+                                      entry.value[i]['callerId'].toString(),
+                                  is_video: true,
+                                  callerName:
+                                      entry.value[i]['name'].toString(),
+                                );
+                              } else {
+                                CallService().startCall(
+                                  context,
+                                  callerId: Global.storageServices
+                                      .get(PrefConst.userId)
+                                      .toString(),
+                                  remoteUserId:
+                                      entry.value[i]['callerId'].toString(),
+                                  is_video: false,
+                                  callerName:
+                                      entry.value[i]['name'].toString(),
+                                );
+                              }
+                            },
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              SizedBox(height: 6.h),
             ],
-          ),
-        ),
-      );
-    });
-  }
-}
-
-class _CallFilterBar extends StatelessWidget {
-  const _CallFilterBar();
-
-  @override
-  Widget build(BuildContext context) {
-    final CallController controller = Get.find<CallController>();
-    return Obx(() {
-      final String selected = controller.recentCallFilter.value;
-      return SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: [
-            _FilterPill(
-              label: "All",
-              selected: selected == 'All',
-              onTap: () => controller.setRecentCallFilter('All'),
-            ),
-            SizedBox(width: 10.w),
-            _FilterPill(
-              label: "Missed",
-              selected: selected == 'Missed',
-              onTap: () => controller.setRecentCallFilter('Missed'),
-            ),
-            SizedBox(width: 10.w),
-            _FilterPill(
-              label: "Outgoing",
-              selected: selected == 'Outgoing',
-              onTap: () => controller.setRecentCallFilter('Outgoing'),
-            ),
-            SizedBox(width: 10.w),
-            _FilterPill(
-              label: "Incoming",
-              selected: selected == 'Incoming',
-              onTap: () => controller.setRecentCallFilter('Incoming'),
-            ),
+            if (controller.recentCallLoadingMore.value) ...[
+              SizedBox(height: 12.h),
+              const _BottomSkeletonLoader(),
+            ],
           ],
         ),
       );
@@ -181,80 +206,47 @@ class _CallFilterBar extends StatelessWidget {
   }
 }
 
-class _FilterPill extends StatelessWidget {
-  const _FilterPill({
-    required this.label,
-    required this.selected,
-    required this.onTap,
+class _RecentCallTile extends StatelessWidget {
+  const _RecentCallTile({
+    required this.call,
+    required this.onCallTap,
   });
 
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        height: 38.h,
-        padding: EdgeInsets.symmetric(horizontal: 18.w),
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: selected ? const Color(0xFFECEAFD) : const Color(0xFFF3F4F7),
-          borderRadius: BorderRadius.circular(19.r),
-        ),
-        child: reausabletext(
-          label,
-          fontsize: 13.sp,
-          fontfamily:
-              selected ? FontFamily.interSemiBold : FontFamily.interRegular,
-          color: selected ? const Color(0xFF6B4DFF) : Colors.black87,
-        ),
-      ),
-    );
-  }
-}
-
-class _RecentCallTile extends StatelessWidget {
-  _RecentCallTile({required this.call, required this.onCallTap});
-
   final Map<String, String> call;
-  void Function(dynamic) onCallTap;
+  final void Function(dynamic) onCallTap;
 
   @override
   Widget build(BuildContext context) {
     final String type = call['type'] ?? '';
     final String callType = call['callType'] ?? '';
-    final bool missed = type.contains('Missed');
-    final bool incoming = type.contains('Incoming');
-    final bool cancelled = type.contains('Cancelled');
-    final Color accent = missed
-        ? const Color(0xFFE53935)
+    final bool missed = type.toLowerCase().contains('missed');
+    final bool incoming = type.toLowerCase().contains('incoming');
+    final bool cancelled = type.toLowerCase().contains('cancelled') ||
+        type.toLowerCase().contains('reject');
+
+    final Color statusColor = missed
+        ? const Color(0xFFEF4444)
         : incoming
-            ? const Color(0xFF43A047)
+            ? const Color(0xFF3B82F6)
             : cancelled
-                ? const Color(0xFF9E9E9E)
-                : const Color(0xFF6B4DFF);
+                ? const Color(0xFF9CA3AF)
+                : const Color(0xFF10B981);
+
     final IconData statusIcon = missed
-        ? Icons.call_missed_rounded
+        ? Icons.south_west_rounded
         : cancelled
             ? Icons.call_end_rounded
             : incoming
-                ? Icons.call_received_rounded
-                : Icons.call_made_rounded;
+                ? Icons.south_west_rounded
+                : Icons.arrow_outward_rounded;
 
     final String name = call['name'] ?? '';
+    final String? avatar = call['avatar'];
+    final bool isOnline = (call['isOnline'] ?? '').toLowerCase() == 'true';
+
     return Row(
       children: [
-        CircleAvatar(
-          radius: 22.r,
-          backgroundColor: Colors.grey.shade200,
-          backgroundImage: NetworkImage(
-              Utility.isNullEmptyOrFalse(call['avatar'])
-                  ? MyAppTheme.notFoundImg
-                  : ConstRes.aImageBaseUrl + call['avatar']!),
-        ),
+        _buildAvatar(name, avatar, isOnline),
         SizedBox(width: 12.w),
         Expanded(
           child: Column(
@@ -263,26 +255,33 @@ class _RecentCallTile extends StatelessWidget {
               Text(
                 name,
                 maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                    fontSize: 14.sp,
-                    fontFamily: FontFamily.interSemiBold,
-                    color: Colors.black87,
-                    overflow: TextOverflow.ellipsis),
+                  fontSize: 14.sp,
+                  fontFamily: FontFamily.interSemiBold,
+                  color: const Color(0xFF1E1B4B),
+                ),
               ),
               SizedBox(height: 3.h),
               Row(
                 children: [
                   Icon(
                     statusIcon,
-                    size: 11.sp,
-                    color: accent,
+                    size: 13.sp,
+                    color: statusColor,
                   ),
                   SizedBox(width: 4.w),
                   Expanded(
-                    child: reausabletext(type,
-                        fontsize: 9.sp,
-                        color: accent,
-                        fontfamily: FontFamily.interMedium),
+                    child: Text(
+                      type,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 11.sp,
+                        color: const Color(0xFF6B7280),
+                        fontFamily: FontFamily.interMedium,
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -290,17 +289,98 @@ class _RecentCallTile extends StatelessWidget {
           ),
         ),
         SizedBox(width: 8.w),
-        reausabletext(call['time'] ?? '',
-            fontsize: 9.sp,
-            color: Color(0xFF6B4DFF),
-            fontfamily: FontFamily.interMedium),
+        Text(
+          call['time'] ?? '',
+          style: TextStyle(
+            fontSize: 10.5.sp,
+            color: const Color(0xFF6B4DFF),
+            fontFamily: FontFamily.interMedium,
+          ),
+        ),
         SizedBox(width: 10.w),
         CallActionChip(
-          icon: callType == "video" ? Icons.videocam_rounded : Icons.call,
+          icon: callType == "video"
+              ? Icons.videocam_rounded
+              : Icons.call_rounded,
           onTap: () {
             onCallTap(callType);
           },
         ),
+      ],
+    );
+  }
+
+  String _buildAvatarUrl(String? raw) {
+    if (raw == null || raw.trim().isEmpty) return '';
+    raw = raw.trim();
+    if (raw.startsWith('http://') || raw.startsWith('https://')) return raw;
+    if (raw.startsWith('/')) raw = raw.substring(1);
+    return '${ConstRes.aImageBaseUrl}$raw';
+  }
+
+  Widget _buildAvatar(String name, String? avatar, bool isOnline) {
+    final String avatarUrl = _buildAvatarUrl(avatar);
+    final String initial = (name.isNotEmpty ? name[0] : '?').toUpperCase();
+
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        ClipOval(
+          child: Container(
+            width: 42.w,
+            height: 42.w,
+            color: const Color(0xFFECEAFD),
+            child: avatarUrl.isNotEmpty
+                ? CachedNetworkImage(
+                    imageUrl: avatarUrl,
+                    fit: BoxFit.cover,
+                    placeholder: (context, url) => Center(
+                      child: Text(
+                        initial,
+                        style: TextStyle(
+                          fontSize: 14.sp,
+                          fontFamily: FontFamily.interBold,
+                          color: const Color(0xFF4818F0),
+                        ),
+                      ),
+                    ),
+                    errorWidget: (context, url, error) => Center(
+                      child: Text(
+                        initial,
+                        style: TextStyle(
+                          fontSize: 14.sp,
+                          fontFamily: FontFamily.interBold,
+                          color: const Color(0xFF4818F0),
+                        ),
+                      ),
+                    ),
+                  )
+                : Center(
+                    child: Text(
+                      initial,
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        fontFamily: FontFamily.interBold,
+                        color: const Color(0xFF4818F0),
+                      ),
+                    ),
+                  ),
+          ),
+        ),
+        if (isOnline)
+          Positioned(
+            right: 0,
+            bottom: 0,
+            child: Container(
+              width: 8.5.w,
+              height: 8.5.w,
+              decoration: BoxDecoration(
+                color: const Color(0xFF10B981),
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white, width: 1.5.w),
+              ),
+            ),
+          ),
       ],
     );
   }
@@ -314,19 +394,34 @@ class _RecentSkeletonList extends StatelessWidget {
     return Skeletonizer(
       enabled: true,
       child: ListView(
-        padding: EdgeInsets.fromLTRB(16.w, 4.h, 16.w, 120.h),
+        padding: EdgeInsets.fromLTRB(16.w, 4.h, 16.w, 90.h),
         children: [
-          reausabletext(
-            "Recent Calls",
-            fontsize: 14.sp,
-            fontfamily: FontFamily.interBold,
-            color: Colors.black87,
+          Padding(
+            padding: EdgeInsets.only(top: 10.h, bottom: 8.h, left: 2.w),
+            child: Text(
+              "Today",
+              style: TextStyle(
+                fontSize: 16.sp,
+                fontFamily: FontFamily.interBold,
+                color: const Color(0xFF1E1B4B),
+              ),
+            ),
           ),
-          SizedBox(height: 4.h),
-          for (int i = 0; i < 8; i++) ...[
-            const _RecentSkeletonTile(),
-            SizedBox(height: 14.h),
-          ],
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20.r),
+            ),
+            child: Column(
+              children: [
+                for (int i = 0; i < 5; i++) ...[
+                  const _RecentSkeletonTile(),
+                  if (i < 4) SizedBox(height: 12.h),
+                ],
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -340,13 +435,20 @@ class _BottomSkeletonLoader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Skeletonizer(
       enabled: true,
-      child: Column(
-        children: [
-          for (int i = 0; i < 2; i++) ...[
-            const _RecentSkeletonTile(),
-            SizedBox(height: 14.h),
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20.r),
+        ),
+        child: Column(
+          children: [
+            for (int i = 0; i < 2; i++) ...[
+              const _RecentSkeletonTile(),
+              if (i < 1) SizedBox(height: 12.h),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }
@@ -359,37 +461,40 @@ class _RecentSkeletonTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        CircleAvatar(radius: 22.r, backgroundColor: Colors.grey.shade200),
+        CircleAvatar(radius: 21.r, backgroundColor: Colors.grey.shade200),
         SizedBox(width: 12.w),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              reausabletext(
+              Text(
                 "Loading contact",
-                fontsize: 14.sp,
-                fontfamily: FontFamily.interSemiBold,
-                color: Colors.black87,
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  fontFamily: FontFamily.interSemiBold,
+                ),
               ),
               SizedBox(height: 3.h),
-              reausabletext(
+              Text(
                 "Outgoing Video Call",
-                fontsize: 11.sp,
-                color: Colors.black45,
+                style: TextStyle(fontSize: 11.sp),
               ),
             ],
           ),
         ),
         SizedBox(width: 8.w),
-        reausabletext(
+        Text(
           "Today, 10:24 AM",
-          fontsize: 11.sp,
-          color: Colors.black45,
+          style: TextStyle(fontSize: 10.5.sp),
         ),
         SizedBox(width: 10.w),
-        CircleAvatar(
-          radius: 20.r,
-          backgroundColor: Color(0xFFECEAFD),
+        Container(
+          width: 38.w,
+          height: 38.w,
+          decoration: const BoxDecoration(
+            color: Color(0xFFF1F0FE),
+            shape: BoxShape.circle,
+          ),
         ),
       ],
     );
@@ -404,12 +509,15 @@ class _EmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: 30.h),
+      padding: EdgeInsets.symmetric(vertical: 40.h),
       child: Center(
-        child: reausabletext(
+        child: Text(
           message,
-          fontsize: 14.sp,
-          color: Colors.grey,
+          style: TextStyle(
+            fontSize: 14.sp,
+            color: Colors.grey,
+            fontFamily: FontFamily.interRegular,
+          ),
         ),
       ),
     );

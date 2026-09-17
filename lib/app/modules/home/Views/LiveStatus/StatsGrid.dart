@@ -30,7 +30,7 @@ class StatsGrid extends StatelessWidget {
               value: detail.totalGroups.toString(),
               subtitle: "Total",
               onTap: () {
-                Get.to(totalGroup());
+                Get.to(() => totalGroup());
               },
             ),
           ),
@@ -43,7 +43,7 @@ class StatsGrid extends StatelessWidget {
               value: detail.activeMembers.toString(),
               subtitle: "Now",
               onTap: () {
-                Get.to(OnlineMember());
+                Get.to(() => OnlineMember());
               },
             ),
           ),
@@ -56,7 +56,7 @@ class StatsGrid extends StatelessWidget {
               value: detail.totalMembers.toString(),
               subtitle: "Total",
               onTap: () {
-                Get.to(TotalMember());
+                Get.to(() => const TotalMember());
               },
             ),
           ),
@@ -69,7 +69,7 @@ class StatsGrid extends StatelessWidget {
               value: detail.locationDisabledMembers.toString(),
               subtitle: "Active",
               onTap: () {
-                Get.to(GhostMember());
+                Get.to(() => GhostMember());
               },
             ),
           ),

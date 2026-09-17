@@ -43,10 +43,11 @@ class OnlineMemberModel {
     )
         : null;
 
-    metaData = map['metaData'] is Map
+    final dynamic rawMeta = map['metaData'] ?? map['metadata'] ?? map['meta'] ?? map['meta_data'];
+    metaData = rawMeta is Map
         ? OnlineMetaData.fromJson(
       Map<String, dynamic>.from(
-        map['metaData'],
+        rawMeta,
       ),
     )
         : null;
@@ -99,12 +100,17 @@ class OnlineMemberResponseData {
   });
 
   OnlineMemberResponseData.fromJson(
-      Map<String, dynamic> json,
-      )   : currentOnline = _parseList(
-    json['currentOnline'],
-  ),
+    Map<String, dynamic> json,
+  )   : currentOnline = _parseList(
+          json['currentOnline'] ??
+              json['members'] ??
+              json['data'] ??
+              json['onlineMembers'] ??
+              json['rows'] ??
+              json['list'],
+        ),
         recentOnline = _parseList(
-          json['recentOnline'],
+          json['recentOnline'] ?? json['recentMembers'],
         );
 
   Map<String, dynamic> toJson() {
@@ -153,19 +159,19 @@ class OnlineMetaData {
       Map<String, dynamic> json,
       ) {
     totalMembers =
-        _toInt(json['totalMembers']);
+        _toInt(json['totalMembers'] ?? json['total_members'] ?? json['total']);
 
     totalOnlineMembers =
-        _toInt(json['totalOnlineMembers']);
+        _toInt(json['totalOnlineMembers'] ?? json['total_online_members'] ?? json['onlineMembers'] ?? json['active']);
 
     totalOfflineMembers =
-        _toInt(json['totalOfflineMembers']);
+        _toInt(json['totalOfflineMembers'] ?? json['total_offline_members'] ?? json['offlineMembers'] ?? json['inactive']);
 
     totalPrivateMembers =
-        _toInt(json['totalPrivateMembers']);
+        _toInt(json['totalPrivateMembers'] ?? json['total_private_members'] ?? json['privateMembers'] ?? json['private']);
 
     totalNewMembers =
-        _toInt(json['totalNewMembers']);
+        _toInt(json['totalNewMembers'] ?? json['total_new_members'] ?? json['newMembers'] ?? json['newThisMonth']);
   }
 
   Map<String, dynamic> toJson() {

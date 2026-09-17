@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Data/Services/call_service.dart';
@@ -22,7 +23,7 @@ class CallContactsTab extends StatefulWidget {
 }
 
 class _CallContactsTabState extends State<CallContactsTab> {
-  final CallController controller = Get.put(CallController());
+  final CallController controller = CallController.instance;
 
   @override
   void initState() {
@@ -56,100 +57,193 @@ class _CallContactsTabState extends State<CallContactsTab> {
 
   Widget callListUi({List<UserListData>? contactData, bool isLoading = false}) {
     final bool loading = isLoading || contactData == null;
-    return Skeletonizer(
-      enabled: loading,
-      child: ListView.builder(
-        padding: EdgeInsets.fromLTRB(16.w, 4.h, 16.w, 120.h),
-        itemCount: loading ? 8 : contactData.length,
-        itemBuilder: (context, index) {
-          if (loading) {
-            return SkeletonContactRow();
-          }
-          return _ContactRow(
-            user: contactData[index],
-            onTapAudio: () {
-              CallService().startCall(
-                context,
-                callerId:
-                    Global.storageServices.get(PrefConst.userId).toString(),
-                remoteUserId: contactData[index].userId.toString(),
-                is_video: false,
-                callerName: contactData[index].name.toString(),
-              );
-            },
-            onTapVideo: () {
-              CallService().startCall(
-                context,
-                callerId:
-                    Global.storageServices.get(PrefConst.userId).toString(),
-                remoteUserId: contactData[index].userId.toString(),
-                is_video: true,
-                callerName: contactData[index].name.toString(),
-              );
-            },
-          );
-        },
+    final int count = loading ? 8 : contactData.length;
+
+    return RefreshIndicator(
+      color: const Color(0xFF4818F0),
+      onRefresh: controller.refreshContacts,
+      child: Skeletonizer(
+        enabled: loading,
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: EdgeInsets.fromLTRB(16.w, 4.h, 16.w, 90.h),
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20.r),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.02),
+                    blurRadius: 10,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  for (int index = 0; index < count; index++) ...[
+                    if (index > 0)
+                      Divider(
+                        height: 1,
+                        thickness: 0.8,
+                        color: const Color(0xFFF1F3F9),
+                        indent: 62.w,
+                        endIndent: 14.w,
+                      ),
+                    Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 14.w,
+                        vertical: 10.h,
+                      ),
+                      child: loading
+                          ? const SkeletonContactRow()
+                          : _ContactRow(
+                              user: contactData[index],
+                              onTapAudio: () {
+                                CallService().startCall(
+                                  context,
+                                  callerId: Global.storageServices
+                                      .get(PrefConst.userId)
+                                      .toString(),
+                                  remoteUserId:
+                                      contactData[index].userId.toString(),
+                                  is_video: false,
+                                  callerName:
+                                      contactData[index].name.toString(),
+                                );
+                              },
+                              onTapVideo: () {
+                                CallService().startCall(
+                                  context,
+                                  callerId: Global.storageServices
+                                      .get(PrefConst.userId)
+                                      .toString(),
+                                  remoteUserId:
+                                      contactData[index].userId.toString(),
+                                  is_video: true,
+                                  callerName:
+                                      contactData[index].name.toString(),
+                                );
+                              },
+                            ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _ContactRow(
-      {required final UserListData user,
-      required void Function() onTapAudio,
-      required void Function() onTapVideo}) {
+  Widget _ContactRow({
+    required final UserListData user,
+    required void Function() onTapAudio,
+    required void Function() onTapVideo,
+  }) {
     final String? avatar = user.profileImage;
-    final bool hasAvatar = avatar != null && avatar.isNotEmpty;
-    return Padding(
-      padding: EdgeInsets.only(bottom: 14.h),
-      child: Row(
-        children: [
-          CircleAvatar(
-            radius: 22.r,
-            backgroundColor: Colors.grey.shade200,
-            backgroundImage: hasAvatar
-                ? NetworkImage(ConstRes.aImageBaseUrl + avatar)
-                : null,
-            child: hasAvatar
-                ? null
-                : reausabletext(
-                    (user.name?.isNotEmpty == true ? user.name![0] : '?')
-                        .toUpperCase(),
-                    fontsize: 16.sp,
-                    fontfamily: FontFamily.interBold,
-                    color: const Color(0xFF6B4DFF),
+    final String name = user.name ?? '';
+
+    return Row(
+      children: [
+        _buildAvatar(name, avatar),
+        SizedBox(width: 12.w),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                name,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  fontFamily: FontFamily.interSemiBold,
+                  color: const Color(0xFF1E1B4B),
+                ),
+              ),
+              SizedBox(height: 3.h),
+              Text(
+                user.mobileNo ?? '',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 11.sp,
+                  color: const Color(0xFF6B4DFF),
+                  fontFamily: FontFamily.interMedium,
+                ),
+              ),
+            ],
+          ),
+        ),
+        SizedBox(width: 8.w),
+        CallActionChip(
+          icon: Icons.videocam_rounded,
+          onTap: onTapVideo,
+        ),
+        SizedBox(width: 8.w),
+        CallActionChip(
+          icon: Icons.call_rounded,
+          onTap: onTapAudio,
+        ),
+      ],
+    );
+  }
+
+  String _buildAvatarUrl(String? raw) {
+    if (raw == null || raw.trim().isEmpty) return '';
+    raw = raw.trim();
+    if (raw.startsWith('http://') || raw.startsWith('https://')) return raw;
+    if (raw.startsWith('/')) raw = raw.substring(1);
+    return '${ConstRes.aImageBaseUrl}$raw';
+  }
+
+  Widget _buildAvatar(String name, String? avatar) {
+    final String avatarUrl = _buildAvatarUrl(avatar);
+    final String initial = (name.isNotEmpty ? name[0] : '?').toUpperCase();
+
+    return ClipOval(
+      child: Container(
+        width: 42.w,
+        height: 42.w,
+        color: const Color(0xFFECEAFD),
+        child: avatarUrl.isNotEmpty
+            ? CachedNetworkImage(
+                imageUrl: avatarUrl,
+                fit: BoxFit.cover,
+                placeholder: (context, url) => Center(
+                  child: Text(
+                    initial,
+                    style: TextStyle(
+                      fontSize: 14.sp,
+                      fontFamily: FontFamily.interBold,
+                      color: const Color(0xFF4818F0),
+                    ),
                   ),
-          ),
-          SizedBox(width: 12.w),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                reausabletext(
-                  user.name ?? '',
-                  fontsize: 14.sp,
-                  fontfamily: FontFamily.interSemiBold,
-                  color: Colors.black87,
                 ),
-                SizedBox(height: 3.h),
-                reausabletext(
-                  user.mobileNo ?? '',
-                  fontsize: 11.sp,
-                  color: const Color(0xFF6B4DFF).withValues(alpha: 0.7),
+                errorWidget: (context, url, error) => Center(
+                  child: Text(
+                    initial,
+                    style: TextStyle(
+                      fontSize: 14.sp,
+                      fontFamily: FontFamily.interBold,
+                      color: const Color(0xFF4818F0),
+                    ),
+                  ),
                 ),
-              ],
-            ),
-          ),
-          SizedBox(width: 8.w),
-          CallActionChip(
-            icon: Icons.videocam_rounded,
-            onTap: onTapVideo,
-          ),
-          SizedBox(width: 10.w),
-          CallActionChip(
-            icon: Icons.call_rounded,
-            onTap: onTapAudio,
-          ),
-        ],
+              )
+            : Center(
+                child: Text(
+                  initial,
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    fontFamily: FontFamily.interBold,
+                    color: const Color(0xFF4818F0),
+                  ),
+                ),
+              ),
       ),
     );
   }
@@ -160,37 +254,34 @@ class SkeletonContactRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: 14.h),
-      child: Row(
-        children: [
-          CircleAvatar(radius: 22.r, backgroundColor: Colors.grey.shade200),
-          SizedBox(width: 12.w),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "Loading contact",
-                  style: TextStyle(
-                    fontSize: 14.sp,
-                    fontFamily: FontFamily.interSemiBold,
-                  ),
+    return Row(
+      children: [
+        CircleAvatar(radius: 21.r, backgroundColor: Colors.grey.shade200),
+        SizedBox(width: 12.w),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "Loading contact",
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  fontFamily: FontFamily.interSemiBold,
                 ),
-                SizedBox(height: 3.h),
-                Text(
-                  "Loading number",
-                  style: TextStyle(fontSize: 11.sp),
-                ),
-              ],
-            ),
+              ),
+              SizedBox(height: 3.h),
+              Text(
+                "Loading number",
+                style: TextStyle(fontSize: 11.sp),
+              ),
+            ],
           ),
-          SizedBox(width: 8.w),
-          CallActionChip(icon: Icons.videocam_rounded),
-          SizedBox(width: 10.w),
-          CallActionChip(icon: Icons.call_rounded),
-        ],
-      ),
+        ),
+        SizedBox(width: 8.w),
+        const CallActionChip(icon: Icons.videocam_rounded),
+        SizedBox(width: 8.w),
+        const CallActionChip(icon: Icons.call_rounded),
+      ],
     );
   }
 }

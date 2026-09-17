@@ -13,60 +13,82 @@ import 'package:skeletonizer/skeletonizer.dart';
 import '../../../routes/app_pages.dart';
 
 class CallGroupsTab extends StatelessWidget {
-   CallGroupsTab({super.key});
+  CallGroupsTab({super.key});
 
-  final CallController controller = Get.find<CallController>();
+  final CallController controller = CallController.instance;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: const Color(0xFFF9F7FD),
-      child: Obx(() {
-        if (controller.groupsError.isNotEmpty) {
-          return LostinternetConnection(
-            retry: controller.loadGroups,
-            messgae: controller.groupsError,
-          );
-        }
-        if (controller.isGroupsLoading) {
-          return const _GroupListSkeleton();
-        }
-        final List<GroupsResData> groups = controller.filteredGroups;
-        if (groups.isEmpty) {
-          return _EmptyState(
-            message:
-            controller.groups.isEmpty ? "No groups yet" : "No groups found",
-          );
-        }
-        return
-          ListView.builder(
-          padding: EdgeInsets.fromLTRB(16.w, 4.h, 16.w, 120.h),
-          itemCount: groups.length,
-          itemBuilder: (context, index) {
-            return Padding(
-              padding:  EdgeInsets.only(bottom: 10.h),
-              child: _GroupTile(group: groups[index]),
-            );
-          },
-
+    return Obx(() {
+      if (controller.groupsError.isNotEmpty) {
+        return LostinternetConnection(
+          retry: controller.loadGroups,
+          messgae: controller.groupsError,
         );
-      }),
-    );
+      }
+      if (controller.isGroupsLoading) {
+        return const _GroupListSkeleton();
+      }
+      final List<GroupsResData> groups = controller.filteredGroups;
+      if (groups.isEmpty) {
+        return _EmptyState(
+          message:
+              controller.groups.isEmpty ? "No groups yet" : "No groups found",
+        );
+      }
+      return RefreshIndicator(
+        color: const Color(0xFF4818F0),
+        onRefresh: () async => controller.loadGroups(),
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: EdgeInsets.fromLTRB(16.w, 4.h, 16.w, 90.h),
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20.r),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.02),
+                    blurRadius: 10,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  for (int index = 0; index < groups.length; index++) ...[
+                    if (index > 0)
+                      Divider(
+                        height: 1,
+                        thickness: 0.8,
+                        color: const Color(0xFFF1F3F9),
+                        indent: 62.w,
+                        endIndent: 14.w,
+                      ),
+                    Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 14.w,
+                        vertical: 10.h,
+                      ),
+                      child: _GroupTile(group: groups[index]),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    });
   }
 }
 
-
-
 Future<void> _initiateGroupCall({
-  required dynamic group, // Replace 'dynamic' with your Group model type
+  required dynamic group,
   required bool isVideo,
 }) async {
   try {
-    // Get current user info
-    final myName = Global.storageServices.get(PrefConst.userName)?.toString() ?? "Me";
-    final myImage = Global.storageServices.get(PrefConst.profileImage)?.toString() ?? "";
-
-    // 1. Navigate immediately to the calling screen with outgoing state
     Get.toNamed(
       Routes.groupCallingScreen,
       arguments: {
@@ -78,9 +100,6 @@ Future<void> _initiateGroupCall({
         "callType": "outgoing",
       },
     );
-
-    // 2. Trigger the socket call - the calling controller will handle the rest
-    // (The controller already calls startGroupCall in its onInit for outgoing calls)
   } catch (e) {
     debugPrint("Error initiating group call: $e");
     Get.snackbar(
@@ -92,6 +111,7 @@ Future<void> _initiateGroupCall({
     );
   }
 }
+
 class _GroupTile extends StatelessWidget {
   const _GroupTile({required this.group});
 
@@ -99,19 +119,22 @@ class _GroupTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final String groupName = group.groupName ?? "No Name Group";
+    final int memberCount = group.memberCount ?? 0;
+
     return Row(
       children: [
         Container(
-          width: 44.w,
-          height: 44.w,
+          width: 42.w,
+          height: 42.w,
           decoration: const BoxDecoration(
-            color: Color(0xFFE2E0FA),
+            color: Color(0xFFF1F0FE),
             shape: BoxShape.circle,
           ),
           child: Icon(
             Icons.groups_rounded,
-            size: 22.sp,
-            color: const Color(0xFF6B4DFF),
+            size: 20.sp,
+            color: const Color(0xFF4818F0),
           ),
         ),
         SizedBox(width: 12.w),
@@ -119,24 +142,31 @@ class _GroupTile extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              reausabletext(
-                group.groupName ?? "No Name Group",
-                fontsize: 14.sp,
-                fontfamily: FontFamily.interSemiBold,
-                color: Colors.black87,
+              Text(
+                groupName,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  fontFamily: FontFamily.interSemiBold,
+                  color: const Color(0xFF1E1B4B),
+                ),
               ),
               SizedBox(height: 3.h),
-              reausabletext(
-                "${group.memberCount ?? 0} Members",
-                fontsize: 11.sp,
-                color: const Color(0xFF6B4DFF).withValues(alpha: 0.7),
+              Text(
+                "$memberCount Members",
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 11.sp,
+                  color: const Color(0xFF6B4DFF),
+                  fontFamily: FontFamily.interMedium,
+                ),
               ),
             ],
           ),
         ),
         SizedBox(width: 8.w),
-
-        // Video Call
         CallActionChip(
           icon: Icons.videocam_rounded,
           onTap: () => _initiateGroupCall(
@@ -144,12 +174,9 @@ class _GroupTile extends StatelessWidget {
             isVideo: true,
           ),
         ),
-
-        SizedBox(width: 7.w),
-
-        // Audio Call
+        SizedBox(width: 8.w),
         CallActionChip(
-          icon: Icons.call,
+          icon: Icons.call_rounded,
           onTap: () => _initiateGroupCall(
             group: group,
             isVideo: false,
@@ -165,28 +192,28 @@ class _GroupListSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView(
-      padding: EdgeInsets.fromLTRB(16.w, 4.h, 16.w, 120.h),
-      children: [
-        Skeletonizer(
-          enabled: true,
-          child: Column(
-            children: [
-              reausabletext(
-                "All Groups",
-                fontsize: 14.sp,
-                fontfamily: FontFamily.interBold,
-                color: Colors.black87,
-              ),
-              SizedBox(height: 8.h),
-              for (int i = 0; i < 5; i++) ...[
-                _GroupSkeletonTile(),
-                SizedBox(height: 14.h),
+    return Skeletonizer(
+      enabled: true,
+      child: ListView(
+        padding: EdgeInsets.fromLTRB(16.w, 4.h, 16.w, 90.h),
+        children: [
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20.r),
+            ),
+            child: Column(
+              children: [
+                for (int i = 0; i < 5; i++) ...[
+                  const _GroupSkeletonTile(),
+                  if (i < 4) SizedBox(height: 12.h),
+                ],
               ],
-            ],
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
@@ -198,14 +225,7 @@ class _GroupSkeletonTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Container(
-          width: 44.w,
-          height: 44.w,
-          decoration: BoxDecoration(
-            color: Colors.grey.shade200,
-            shape: BoxShape.circle,
-          ),
-        ),
+        CircleAvatar(radius: 21.r, backgroundColor: Colors.grey.shade200),
         SizedBox(width: 12.w),
         Expanded(
           child: Column(
@@ -226,7 +246,10 @@ class _GroupSkeletonTile extends StatelessWidget {
             ],
           ),
         ),
-        Icon(Icons.call_rounded, size: 20.sp),
+        SizedBox(width: 8.w),
+        const CallActionChip(icon: Icons.videocam_rounded),
+        SizedBox(width: 8.w),
+        const CallActionChip(icon: Icons.call_rounded),
       ],
     );
   }
@@ -240,12 +263,15 @@ class _EmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: 30.h),
+      padding: EdgeInsets.symmetric(vertical: 40.h),
       child: Center(
-        child: reausabletext(
+        child: Text(
           message,
-          fontsize: 14.sp,
-          color: Colors.grey,
+          style: TextStyle(
+            fontSize: 14.sp,
+            color: Colors.grey,
+            fontFamily: FontFamily.interRegular,
+          ),
         ),
       ),
     );
