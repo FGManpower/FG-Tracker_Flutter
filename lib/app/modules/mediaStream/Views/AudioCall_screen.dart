@@ -119,10 +119,18 @@ class AudiocallScreen extends StatelessWidget {
                   ],
                 ),
                 padding: EdgeInsets.all(4.r),
-                child: CircleAvatar(
-                  radius: 56.r,
-                  backgroundColor: Colors.white,
-                  backgroundImage: NetworkImage(imageUrl),
+                child: ClipOval(
+                  child: Image.network(
+                    imageUrl,
+                    width: 112.r,
+                    height: 112.r,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => Icon(
+                      Icons.person,
+                      size: 55.sp,
+                      color: primaryPurple,
+                    ),
+                  ),
                 ),
               ),
             ],

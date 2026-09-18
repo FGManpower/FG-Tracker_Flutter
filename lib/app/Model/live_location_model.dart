@@ -18,12 +18,22 @@ class LiveLocationModel {
     required this.profileImage,
     required this.latitude,
     required this.longitude,
-    required this.isOnline,
+    dynamic isOnline = false,
     this.battery,
     this.address,
     this.area,
     this.city,
-  });
+  }) : isOnline = _parseBool(isOnline, defaultValue: false);
+
+  static bool _parseBool(dynamic val, {bool defaultValue = false}) {
+    if (val == null) return defaultValue;
+    if (val is bool) return val;
+    if (val is num) return val == 1;
+    final s = val.toString().trim().toLowerCase();
+    if (s == 'false' || s == '0' || s == 'offline') return false;
+    if (s == 'true' || s == '1' || s == 'online') return true;
+    return defaultValue;
+  }
 
   String get fullName {
     final name = '$firstName $lastName'.trim();
@@ -133,21 +143,7 @@ class LiveLocationModel {
 
     // Online status - liveLocationStream is actively broadcasting, so default to true unless explicitly offline
     final onlineVal = json['isOnline'] ?? json['online'] ?? json['is_online'];
-    bool online = true;
-    if (onlineVal != null) {
-      if (onlineVal is bool) {
-        online = onlineVal;
-      } else if (onlineVal is num) {
-        online = onlineVal == 1;
-      } else if (onlineVal is String) {
-        final lower = onlineVal.trim().toLowerCase();
-        if (lower == 'false' || lower == '0' || lower == 'offline') {
-          online = false;
-        } else if (lower == 'true' || lower == '1' || lower == 'online') {
-          online = true;
-        }
-      }
-    }
+    final bool online = _parseBool(onlineVal, defaultValue: true);
 
     final battery = json['battery'] ??
         json['Battery'] ??

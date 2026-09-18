@@ -7,10 +7,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 Future<BitmapDescriptor> getCustomIcon(
-    String imageUrl, dynamic isOnline,
-    {bool isMe = false, String name = ""}) async {
-  return MarkerWidget(
-          imageUrl: imageUrl, isOnline: isOnline, isMe: isMe, name: name)
+    String imageUrl, dynamic isOnline, {bool isMe = false}) async {
+  return MarkerWidget(imageUrl: imageUrl, isOnline: isOnline, isMe: isMe)
       .toBitmapDescriptor(
     logicalSize: isMe ? Size(54.w, 64.h) : Size(48.w, 48.h),
     imageSize: isMe ? Size(108.w, 128.h) : Size(96.w, 96.h),
@@ -21,14 +19,12 @@ class MarkerWidget extends StatelessWidget {
   final String imageUrl;
   final dynamic isOnline;
   final bool isMe;
-  final String name;
 
   const MarkerWidget({
     super.key,
     required this.imageUrl,
     required this.isOnline,
     this.isMe = false,
-    this.name = "",
   });
 
   @override
@@ -88,16 +84,11 @@ class MarkerWidget extends StatelessWidget {
       );
     }
 
-    final String raw = imageUrl.trim();
-    final String fullUrl = (raw.isEmpty || raw.toLowerCase() == 'null')
+    final String fullUrl = imageUrl.isEmpty
         ? ""
-        : (raw.startsWith("http://") || raw.startsWith("https://")
-            ? raw
-            : (ConstRes.aImageBaseUrl.endsWith('/') && raw.startsWith('/')
-                ? "${ConstRes.aImageBaseUrl}${raw.substring(1)}"
-                : (!ConstRes.aImageBaseUrl.endsWith('/') && !raw.startsWith('/')
-                    ? "${ConstRes.aImageBaseUrl}/$raw"
-                    : "${ConstRes.aImageBaseUrl}$raw")));
+        : (imageUrl.startsWith("http")
+            ? imageUrl
+            : ConstRes.aImageBaseUrl + imageUrl);
 
     final bool online = isOnline == true ||
         isOnline == 1 ||
@@ -149,28 +140,13 @@ class MarkerWidget extends StatelessWidget {
   }
 
   Widget _fallbackAvatar(bool online) {
-    final String initial =
-        name.trim().isNotEmpty ? name.trim()[0].toUpperCase() : "";
     return Container(
       color: online ? const Color(0xFFECFDF5) : const Color(0xFFF1F5F9),
-      alignment: Alignment.center,
-      child: initial.isNotEmpty
-          ? Text(
-              initial,
-              style: TextStyle(
-                color: online
-                    ? const Color(0xFF059669)
-                    : const Color(0xFF64748B),
-                fontWeight: FontWeight.w800,
-                fontSize: 18.sp,
-              ),
-            )
-          : Icon(
-              Icons.person,
-              color:
-                  online ? const Color(0xFF059669) : const Color(0xFF64748B),
-              size: 22.sp,
-            ),
+      child: Icon(
+        Icons.person,
+        color: online ? const Color(0xFF059669) : const Color(0xFF64748B),
+        size: 22.sp,
+      ),
     );
   }
 }

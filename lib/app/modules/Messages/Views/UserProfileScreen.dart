@@ -172,10 +172,12 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                   end: Alignment.bottomRight,
                 ),
               ),
-              child: img.isNotEmpty
+              child: (img.isNotEmpty && img.toLowerCase() != 'null')
                   ? ClipOval(
                       child: Image.network(
-                        "${ConstRes.aImageBaseUrl}$img",
+                        (img.startsWith('http://') || img.startsWith('https://'))
+                            ? img
+                            : "${ConstRes.aImageBaseUrl}$img",
                         fit: BoxFit.cover,
                         errorBuilder: (_, __, ___) => Icon(
                           Icons.person,

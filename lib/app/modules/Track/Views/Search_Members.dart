@@ -110,20 +110,10 @@ class SearchMembers extends GetView<SearchMemberController> {
           } catch (_) {}
         }
 
-        final String rawMemberImg =
-            data.profileImage?.toString().trim() ?? '';
-        final String? imgUrl = (rawMemberImg.isNotEmpty &&
-                rawMemberImg.toLowerCase() != 'null')
-            ? (rawMemberImg.startsWith("http://") ||
-                    rawMemberImg.startsWith("https://")
-                ? rawMemberImg
-                : (ConstRes.aImageBaseUrl.endsWith('/') &&
-                        rawMemberImg.startsWith('/')
-                    ? "${ConstRes.aImageBaseUrl}${rawMemberImg.substring(1)}"
-                    : (!ConstRes.aImageBaseUrl.endsWith('/') &&
-                            !rawMemberImg.startsWith('/')
-                        ? "${ConstRes.aImageBaseUrl}/$rawMemberImg"
-                        : "${ConstRes.aImageBaseUrl}$rawMemberImg")))
+        final String? imgUrl = data.profileImage != null && data.profileImage!.isNotEmpty
+            ? (data.profileImage!.startsWith("http")
+                ? data.profileImage!
+                : "${ConstRes.aImageBaseUrl}${data.profileImage}")
             : null;
 
         return GestureDetector(

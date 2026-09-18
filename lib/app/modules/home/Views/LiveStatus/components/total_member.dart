@@ -1,14 +1,12 @@
-import 'package:fgtracker/app/Core/constant/const_res.dart';
-import 'package:fgtracker/app/Core/constant/pref_res.dart';
-import 'package:fgtracker/app/Core/values/global.dart';
-import 'package:fgtracker/app/Model/online_member_model.dart';
-import 'package:fgtracker/app/global_widget/common_widget.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:fgtracker/app/Core/values/Dialog/DialogBox.dart';
+import 'package:fgtracker/app/Model/group_member_model.dart';
 import 'package:fgtracker/app/modules/home/Controller/LiveStatus_controller.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:skeletonizer/skeletonizer.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class TotalMember extends StatefulWidget {
   const TotalMember({super.key});
@@ -20,15 +18,11 @@ class TotalMember extends StatefulWidget {
 class _TotalMemberState extends State<TotalMember> {
   late final LivesStatusController controller;
   final ScrollController _scrollController = ScrollController();
-  bool _isAscending = true;
-  bool _showAllActive = false;
 
   @override
   void initState() {
     super.initState();
-    controller = Get.isRegistered<LivesStatusController>()
-        ? Get.find<LivesStatusController>()
-        : Get.put(LivesStatusController());
+    controller = LivesStatusController.instance;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       controller.getAllMembers();
@@ -45,6 +39,12 @@ class _TotalMemberState extends State<TotalMember> {
     if (currentPosition >= maxPosition - 250) {
       controller.loadMoreAllMembers();
     }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   @override
@@ -69,10 +69,10 @@ class _TotalMemberState extends State<TotalMember> {
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(14.r),
-                    border: Border.all(color: Colors.grey.withOpacity(0.12)),
+                    border: Border.all(color: Colors.grey.withValues(alpha: 0.12)),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.03),
+                        color: Colors.black.withValues(alpha: 0.03),
                         blurRadius: 8,
                         offset: const Offset(0, 2),
                       ),
@@ -106,26 +106,25 @@ class _TotalMemberState extends State<TotalMember> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      'Members',
+                      "Members",
                       style: TextStyle(
-                        fontSize: 18.sp,
-                        fontWeight: FontWeight.w800,
-                        color: Colors.black87,
+                        fontSize: 19.sp,
+                        fontWeight: FontWeight.w700,
                         fontFamily: FontFamily.interBold,
+                        color: Colors.black87,
                       ),
                     ),
                     SizedBox(height: 2.h),
-                    Obx(() {
-                      final count = controller.totalMembersCount.value;
-                      return Text(
-                        '$count Total Members',
+                    Obx(
+                      () => Text(
+                        "${controller.totalMembersCount.value} Total Members",
                         style: TextStyle(
                           fontSize: 12.sp,
-                          color: Colors.grey.shade600,
                           fontFamily: FontFamily.interRegular,
+                          color: Colors.grey.shade600,
                         ),
-                      );
-                    }),
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -133,853 +132,480 @@ class _TotalMemberState extends State<TotalMember> {
           ),
         ),
       ),
-      body: Obx(() {
-        if (controller.allMemberLoading.value && controller.allMemberData.isEmpty) {
-          return Skeletonizer(
-            enabled: true,
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
-              child: _buildSkeletonContent(),
-            ),
-          );
-        }
-        if (controller.allResponseError.value.isNotEmpty && controller.allMemberData.isEmpty) {
-          return LostinternetConnection(
-            retry: controller.getAllMembers,
-            messgae: controller.allResponseError.value,
-          );
-        }
-
-        return RefreshIndicator(
-          color: const Color(0xFF6B4DFF),
-          onRefresh: controller.refreshAllMembers,
-          child: SingleChildScrollView(
-            controller: _scrollController,
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
-            child: _buildTotalMemberContent(),
+      body: RefreshIndicator(
+        color: const Color(0xFF6B4DFF),
+        onRefresh: () async {
+          await controller.getAllMembers(refresh: true);
+        },
+        child: SingleChildScrollView(
+          controller: _scrollController,
+          physics: const AlwaysScrollableScrollPhysics(
+            parent: BouncingScrollPhysics(),
           ),
-        );
-      }),
-    );
-  }
-
-  Widget _buildTotalMemberContent() {
-    return Obx(() {
-      final String query = controller.searchQuery.value.trim().toLowerCase();
-
-      final List<OnlineMemberData> activeList = controller
-          .filteredCurrentOnlineMembers
-          .toList();
-      final List<OnlineMemberData> recentList = controller
-          .filteredRecentOnlineMembers
-          .toList();
-
-      activeList.sort((a, b) {
-        final nameA = (a.name ?? '').toLowerCase();
-        final nameB = (b.name ?? '').toLowerCase();
-        return _isAscending ? nameA.compareTo(nameB) : nameB.compareTo(nameA);
-      });
-
-      recentList.sort((a, b) {
-        final nameA = (a.name ?? '').toLowerCase();
-        final nameB = (b.name ?? '').toLowerCase();
-        return _isAscending ? nameA.compareTo(nameB) : nameB.compareTo(nameA);
-      });
-
-      final bool hasActive = activeList.isNotEmpty;
-      final bool hasRecent = recentList.isNotEmpty;
-      final bool isSearching = query.isNotEmpty;
-
-      if (isSearching && !hasActive && !hasRecent) {
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildSearchField(),
-            SizedBox(height: 14.h),
-            _buildStatCardsRow(),
-            SizedBox(height: 40.h),
-            _buildEmptySearchView(query),
-          ],
-        );
-      }
-
-      if (!isSearching && !hasActive && !hasRecent) {
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildSearchField(),
-            SizedBox(height: 14.h),
-            _buildStatCardsRow(),
-            SizedBox(height: 40.h),
-            _buildEmptyAllMembersView(),
-          ],
-        );
-      }
-
-      final List<OnlineMemberData> displayedActive =
-          (_showAllActive || isSearching || activeList.length <= 5)
-              ? activeList
-              : activeList.take(5).toList();
-
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildSearchField(),
-          SizedBox(height: 14.h),
-          _buildStatCardsRow(),
-          SizedBox(height: 16.h),
-
-          // Upper Section: Active Members
-          if (hasActive) ...[
-            _buildSectionHeader(
-              title: "Active",
-              count: activeList.length,
-              trailing: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (activeList.length > 5 && !isSearching) ...[
-                    InkWell(
-                      onTap: () {
-                        setState(() {
-                          _showAllActive = !_showAllActive;
-                        });
-                      },
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            _showAllActive ? "Show Less" : "View All",
-                            style: TextStyle(
-                              fontSize: 12.sp,
-                              fontWeight: FontWeight.w700,
-                              color: const Color(0xFF6B4DFF),
-                              fontFamily: FontFamily.interBold,
-                            ),
-                          ),
-                          SizedBox(width: 2.w),
-                          Icon(
-                            _showAllActive
-                                ? Icons.keyboard_arrow_up_rounded
-                                : Icons.chevron_right_rounded,
-                            size: 16.sp,
-                            color: const Color(0xFF6B4DFF),
-                          ),
-                        ],
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildSearchBar(),
+              SizedBox(height: 16.h),
+              _buildMetadataCards(),
+              SizedBox(height: 20.h),
+              _buildSectionHeader(),
+              SizedBox(height: 12.h),
+              _buildMemberList(),
+              Obx(() {
+                if (controller.allMemberLoadingMore.value) {
+                  return Padding(
+                    padding: EdgeInsets.symmetric(vertical: 16.h),
+                    child: const Center(
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.5,
+                        color: Color(0xFF6B4DFF),
                       ),
                     ),
-                    SizedBox(width: 10.w),
-                  ],
-                  _buildSortButton(),
-                ],
-              ),
-            ),
-            SizedBox(height: 10.h),
-            ...displayedActive.map(
-              (member) => _buildMemberTile(member: member, isOnline: true),
-            ),
-            SizedBox(height: 14.h),
-          ] else if (!isSearching) ...[
-            _buildSectionHeader(
-              title: "Active",
-              count: 0,
-            ),
-            SizedBox(height: 8.h),
-            _buildNoActiveCard(),
-            SizedBox(height: 16.h),
-          ],
-
-          // Lower Section: Recently Online Members
-          if (hasRecent) ...[
-            _buildSectionHeader(
-              title: "Recently Online",
-              count: recentList.length,
-              trailing: (!hasActive || isSearching) ? _buildSortButton() : null,
-            ),
-            SizedBox(height: 10.h),
-            ...recentList.map(
-              (member) => _buildMemberTile(member: member, isOnline: false),
-            ),
-            SizedBox(height: 14.h),
-          ],
-
-          if (controller.allMemberLoadingMore.value) ...[
-            SizedBox(height: 10.h),
-            const Center(
-              child: CircularProgressIndicator(
-                strokeWidth: 2.5,
-                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF6B4DFF)),
-              ),
-            ),
-            SizedBox(height: 16.h),
-          ],
-          SizedBox(height: 20.h),
-        ],
-      );
-    });
+                  );
+                }
+                return SizedBox(height: 24.h);
+              }),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
-  Widget _buildSearchField() {
+  Widget _buildSearchBar() {
     return Container(
-      height: 48.h,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-        border: Border.all(color: Colors.grey.withOpacity(0.12)),
-      ),
-      child: TextField(
-        controller: controller.searchController,
-        onChanged: controller.onAllSearchChanged,
-        textInputAction: TextInputAction.search,
-        decoration: InputDecoration(
-          hintText: 'Search members...',
-          hintStyle: TextStyle(
-            fontSize: 13.5.sp,
-            color: Colors.grey.shade400,
-            fontFamily: FontFamily.interRegular,
-          ),
-          prefixIcon: Icon(
-            Icons.search_rounded,
-            size: 20.sp,
-            color: Colors.grey.shade400,
-          ),
-          suffixIcon: Obx(() {
-            if (controller.searchQuery.value.isEmpty) {
-              return const SizedBox.shrink();
-            }
-            return IconButton(
-              onPressed: controller.clearAllSearch,
-              icon: Icon(
-                Icons.close_rounded,
-                size: 18.sp,
-                color: Colors.grey.shade400,
-              ),
-            );
-          }),
-          filled: true,
-          fillColor: Colors.white,
-          contentPadding: EdgeInsets.symmetric(
-            vertical: 14.h,
-            horizontal: 16.w,
-          ),
-          border: InputBorder.none,
-          enabledBorder: InputBorder.none,
-          focusedBorder: InputBorder.none,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStatCardsRow() {
-    return Obx(() {
-      final total = controller.totalMembersCount.value;
-      final online = controller.activeMembersCount.value;
-      final offline = controller.inactiveMembersCount.value;
-      final newMembers = controller.newMembersCount.value;
-
-      return Row(
-        children: [
-          _buildStatCard(
-            "$total",
-            "Total Members",
-            Icons.group_rounded,
-            const Color(0xFF6B4DFF),
-            const Color(0xFFEDE9FE),
-            valueColor: const Color(0xFF6B4DFF),
-          ),
-          SizedBox(width: 8.w),
-          _buildStatCard(
-            "$online",
-            "Active",
-            Icons.fiber_manual_record_rounded,
-            const Color(0xFF10B981),
-            const Color(0xFFE8FDF2),
-            valueColor: const Color(0xFF10B981),
-          ),
-          SizedBox(width: 8.w),
-          _buildStatCard(
-            "$offline",
-            "Inactive",
-            Icons.access_time_rounded,
-            const Color(0xFFF59E0B),
-            const Color(0xFFFEF3C7),
-            valueColor: const Color(0xFF10B981),
-          ),
-          SizedBox(width: 8.w),
-          _buildStatCard(
-            "$newMembers",
-            "New This Month",
-            Icons.person_add_rounded,
-            const Color(0xFF3B82F6),
-            const Color(0xFFEFF6FF),
-            valueColor: const Color(0xFF2563EB),
-          ),
-        ],
-      );
-    });
-  }
-
-  Widget _buildStatCard(
-      String count, String label, IconData icon, Color iconColor, Color bgColor,
-      {Color? valueColor}) {
-    return Expanded(
-      child: Container(
-        padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 4.w),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16.r),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.03),
-              blurRadius: 10,
-              offset: const Offset(0, 3),
-            ),
-          ],
-          border: Border.all(color: Colors.grey.withOpacity(0.08)),
-        ),
-        child: Column(
-          children: [
-            Container(
-              width: 32.w,
-              height: 32.w,
-              decoration: BoxDecoration(
-                color: bgColor,
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                icon,
-                color: iconColor,
-                size: 16.sp,
-              ),
-            ),
-            SizedBox(height: 8.h),
-            Text(
-              count,
-              style: TextStyle(
-                fontSize: 16.sp,
-                fontWeight: FontWeight.w800,
-                color: valueColor ?? Colors.black87,
-                fontFamily: FontFamily.interBold,
-              ),
-            ),
-            SizedBox(height: 2.h),
-            Text(
-              label,
-              textAlign: TextAlign.center,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: 9.sp,
-                fontWeight: FontWeight.w600,
-                color: const Color(0xFF6B7280),
-                fontFamily: FontFamily.interMedium,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSectionHeader({
-    required String title,
-    required int count,
-    Widget? trailing,
-  }) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Row(
-          children: [
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: 14.5.sp,
-                fontWeight: FontWeight.w800,
-                color: Colors.black87,
-                fontFamily: FontFamily.interBold,
-              ),
-            ),
-            SizedBox(width: 8.w),
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.5.h),
-              decoration: BoxDecoration(
-                color: const Color(0xFFEDE9FE),
-                borderRadius: BorderRadius.circular(10.r),
-              ),
-              child: Text(
-                count.toString(),
-                style: TextStyle(
-                  fontSize: 11.5.sp,
-                  fontWeight: FontWeight.w700,
-                  color: const Color(0xFF6B4DFF),
-                  fontFamily: FontFamily.interBold,
-                ),
-              ),
-            ),
-          ],
-        ),
-        if (trailing != null) trailing,
-      ],
-    );
-  }
-
-  Widget _buildSortButton() {
-    return InkWell(
-      onTap: () {
-        setState(() {
-          _isAscending = !_isAscending;
-        });
-      },
-      borderRadius: BorderRadius.circular(8.r),
-      child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 4.h),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              _isAscending ? "A to Z" : "Z to A",
-              style: TextStyle(
-                fontSize: 12.sp,
-                fontWeight: FontWeight.w700,
-                color: const Color(0xFF6B4DFF),
-                fontFamily: FontFamily.interMedium,
-              ),
-            ),
-            SizedBox(width: 2.w),
-            Icon(
-              _isAscending
-                  ? Icons.arrow_upward_rounded
-                  : Icons.arrow_downward_rounded,
-              size: 15.sp,
-              color: const Color(0xFF6B4DFF),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildNoActiveCard() {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colors.grey.withOpacity(0.08)),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 32.w,
-            height: 32.w,
-            decoration: const BoxDecoration(
-              color: Color(0xFFF1F5F9),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              Icons.person_off_rounded,
-              color: const Color(0xFF94A3B8),
-              size: 16.sp,
-            ),
-          ),
-          SizedBox(width: 12.w),
-          Text(
-            "No members currently active",
-            style: TextStyle(
-              fontSize: 12.5.sp,
-              color: Colors.grey.shade500,
-              fontFamily: FontFamily.interMedium,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildMemberTile({
-    required OnlineMemberData member,
-    required bool isOnline,
-  }) {
-    final bool isActive = isOnline;
-    final String name = member.name?.trim().isNotEmpty == true
-        ? member.name!.trim()
-        : 'Member';
-    final String team = member.department?.trim().isNotEmpty == true
-        ? member.department!.trim()
-        : (member.mobileNo?.trim().isNotEmpty == true
-            ? member.mobileNo!.trim()
-            : 'FG Manpower');
-
-    final hasImage = member.profileImage != null &&
-        member.profileImage!.trim().isNotEmpty &&
-        member.profileImage!.toLowerCase() != 'null';
-
-    final String? imageUrl = hasImage
-        ? (member.profileImage!.startsWith('http')
-            ? member.profileImage!
-            : "${ConstRes.aImageBaseUrl}${member.profileImage}")
-        : null;
-
-    final String joinedDate = _formatJoinedDate(member.joinDate ?? member.lastSeen);
-
-    return Container(
-      margin: EdgeInsets.only(bottom: 10.h),
-      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: Colors.grey.withValues(alpha: 0.15)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withValues(alpha: 0.02),
             blurRadius: 10,
             offset: const Offset(0, 3),
           ),
         ],
-        border: Border.all(color: Colors.grey.withOpacity(0.08)),
       ),
-      child: Row(
+      child: TextField(
+        controller: controller.searchController,
+        onChanged: (val) => controller.searchAllMembers(val),
+        style: TextStyle(
+          fontSize: 14.sp,
+          fontFamily: FontFamily.interMedium,
+          color: Colors.black87,
+        ),
+        decoration: InputDecoration(
+          hintText: "Search members...",
+          hintStyle: TextStyle(
+            fontSize: 14.sp,
+            fontFamily: FontFamily.interRegular,
+            color: Colors.grey.shade400,
+          ),
+          prefixIcon: Icon(
+            Icons.search_rounded,
+            color: Colors.grey.shade400,
+            size: 22.sp,
+          ),
+          suffixIcon: Obx(
+            () => controller.searchQuery.value.isNotEmpty
+                ? IconButton(
+                    icon: Icon(Icons.close_rounded, size: 18.sp, color: Colors.grey),
+                    onPressed: () {
+                      controller.searchController.clear();
+                      controller.searchAllMembers('');
+                    },
+                  )
+                : const SizedBox.shrink(),
+          ),
+          border: InputBorder.none,
+          contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMetadataCards() {
+    return Obx(() {
+      return Row(
         children: [
-          Stack(
-            clipBehavior: Clip.none,
-            children: [
-              CircleAvatar(
-                radius: 22.r,
-                backgroundColor: const Color(0xFFEDE9FE),
-                backgroundImage:
-                    imageUrl != null ? NetworkImage(imageUrl) : null,
-                onBackgroundImageError:
-                    imageUrl != null ? (_, __) {} : null,
-                child: imageUrl == null
-                    ? Text(
-                        name.isNotEmpty ? name[0].toUpperCase() : 'M',
-                        style: TextStyle(
-                          color: const Color(0xFF6B4DFF),
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16.sp,
-                          fontFamily: FontFamily.interBold,
-                        ),
-                      )
-                    : null,
-              ),
-              Positioned(
-                right: 0,
-                bottom: 0,
-                child: Container(
-                  width: 12.w,
-                  height: 12.w,
-                  decoration: BoxDecoration(
-                    color: isActive
-                        ? const Color(0xFF10B981)
-                        : const Color(0xFF94A3B8),
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 2),
+          Expanded(
+            child: _buildMetaCard(
+              icon: Icons.people_alt_rounded,
+              iconColor: const Color(0xFF6B4DFF),
+              iconBgColor: const Color(0xFFEDE9FE),
+              count: controller.totalMembersCount.value,
+              countColor: const Color(0xFF6B4DFF),
+              title: "Total Members",
+            ),
+          ),
+          SizedBox(width: 8.w),
+          Expanded(
+            child: _buildMetaCard(
+              icon: Icons.circle,
+              iconColor: const Color(0xFF10B981),
+              iconBgColor: const Color(0xFFD1FAE5),
+              count: controller.activeMembersCount.value,
+              countColor: const Color(0xFF10B981),
+              title: "Active",
+              isDot: true,
+            ),
+          ),
+          SizedBox(width: 8.w),
+          Expanded(
+            child: _buildMetaCard(
+              icon: Icons.access_time_rounded,
+              iconColor: const Color(0xFFF59E0B),
+              iconBgColor: const Color(0xFFFEF3C7),
+              count: controller.inactiveMembersCount.value,
+              countColor: const Color(0xFFF59E0B),
+              title: "Inactive",
+            ),
+          ),
+          SizedBox(width: 8.w),
+          Expanded(
+            child: _buildMetaCard(
+              icon: Icons.person_add_rounded,
+              iconColor: const Color(0xFF3B82F6),
+              iconBgColor: const Color(0xFFDBEAFE),
+              count: controller.newMembersCount.value,
+              countColor: const Color(0xFF3B82F6),
+              title: "New This Month",
+            ),
+          ),
+        ],
+      );
+    });
+  }
+
+  Widget _buildMetaCard({
+    required IconData icon,
+    required Color iconColor,
+    required Color iconBgColor,
+    required int count,
+    required Color countColor,
+    required String title,
+    bool isDot = false,
+  }) {
+    return Container(
+      padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 6.w),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: Colors.grey.withValues(alpha: 0.1)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: EdgeInsets.all(isDot ? 6.r : 6.r),
+            decoration: BoxDecoration(
+              color: iconBgColor,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              icon,
+              size: isDot ? 12.sp : 16.sp,
+              color: iconColor,
+            ),
+          ),
+          SizedBox(height: 8.h),
+          Text(
+            count.toString(),
+            style: TextStyle(
+              fontSize: 18.sp,
+              fontWeight: FontWeight.w800,
+              fontFamily: FontFamily.interBold,
+              color: countColor,
+            ),
+          ),
+          SizedBox(height: 4.h),
+          Text(
+            title,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 10.sp,
+              fontFamily: FontFamily.interMedium,
+              color: Colors.grey.shade600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSectionHeader() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          "All Members",
+          style: TextStyle(
+            fontSize: 16.sp,
+            fontWeight: FontWeight.w700,
+            fontFamily: FontFamily.interBold,
+            color: Colors.black87,
+          ),
+        ),
+        Obx(() {
+          final isAsc = controller.isAllMembersAscending.value;
+          return InkWell(
+            onTap: () => controller.sortAllMembers(),
+            borderRadius: BorderRadius.circular(8.r),
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 4.h),
+              child: Row(
+                children: [
+                  Text(
+                    "Sort: Name (${isAsc ? 'A-Z' : 'Z-A'})",
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      fontWeight: FontWeight.w600,
+                      fontFamily: FontFamily.interSemiBold,
+                      color: const Color(0xFF6B4DFF),
+                    ),
                   ),
+                  SizedBox(width: 2.w),
+                  Icon(
+                    Icons.chevron_right_rounded,
+                    size: 16.sp,
+                    color: const Color(0xFF6B4DFF),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }),
+      ],
+    );
+  }
+
+  Widget _buildMemberList() {
+    return Obx(() {
+      if (controller.allMemberLoading.value && controller.allMemberList.isEmpty) {
+        return Padding(
+          padding: EdgeInsets.symmetric(vertical: 40.h),
+          child: const Center(
+            child: CircularProgressIndicator(color: Color(0xFF6B4DFF)),
+          ),
+        );
+      }
+
+      final list = controller.filteredAllMemberList;
+
+      if (list.isEmpty) {
+        return Container(
+          padding: EdgeInsets.symmetric(vertical: 40.h),
+          alignment: Alignment.center,
+          child: Column(
+            children: [
+              Icon(Icons.person_off_rounded, size: 48.sp, color: Colors.grey.shade300),
+              SizedBox(height: 12.h),
+              Text(
+                controller.searchQuery.value.isNotEmpty
+                    ? "No members match '${controller.searchQuery.value}'"
+                    : "No members found",
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  fontFamily: FontFamily.interMedium,
+                  color: Colors.grey.shade500,
                 ),
               ),
             ],
           ),
-          SizedBox(width: 12.w),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+        );
+      }
+
+      return ListView.separated(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: list.length,
+        separatorBuilder: (_, __) => SizedBox(height: 10.h),
+        itemBuilder: (_, index) {
+          final member = list[index];
+          return _buildMemberCard(member);
+        },
+      );
+    });
+  }
+
+  Widget _buildMemberCard(GroupMemberData member) {
+    final bool isOnline = member.effectiveIsOnline;
+    final String statusText = isOnline ? "Active" : "Inactive";
+    final Color statusColor = isOnline ? const Color(0xFF10B981) : const Color(0xFFF59E0B);
+
+    return InkWell(
+      onTap: () {
+        DialogBox().showRouteDetailsBottomSheet(
+          destination: LatLng(
+            member.location?.latitude ?? 0.0,
+            member.location?.longitude ?? 0.0,
+          ),
+          distance: 0,
+          userId: member.userId,
+          id: member.userId,
+          name: member.displayName,
+          imageUrl: member.profileImage,
+          status: isOnline,
+          lastSeen: member.lastSeen,
+          isGroupChat: false,
+          isLocationSharing: member.isLocationSharing ?? true,
+        );
+      },
+      borderRadius: BorderRadius.circular(16.r),
+      child: Container(
+        padding: EdgeInsets.all(12.r),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16.r),
+          border: Border.all(color: Colors.grey.withValues(alpha: 0.1)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.02),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Stack(
               children: [
-                Text(
-                  name,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w800,
-                    color: Colors.black87,
-                    fontFamily: FontFamily.interBold,
+                Container(
+                  width: 50.r,
+                  height: 50.r,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.grey.withValues(alpha: 0.15)),
+                  ),
+                  child: ClipOval(
+                    child: member.resolvedImageUrl.isNotEmpty
+                        ? CachedNetworkImage(
+                            imageUrl: member.resolvedImageUrl,
+                            fit: BoxFit.cover,
+                            placeholder: (_, __) => Container(
+                              color: Colors.grey.shade100,
+                              child: const Center(
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              ),
+                            ),
+                            errorWidget: (_, __, ___) => Icon(
+                              Icons.person,
+                              size: 26.sp,
+                              color: const Color(0xFF6B4DFF),
+                            ),
+                          )
+                        : Icon(
+                            Icons.person,
+                            size: 26.sp,
+                            color: const Color(0xFF6B4DFF),
+                          ),
                   ),
                 ),
-                SizedBox(height: 2.h),
-                Text(
-                  team,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 11.5.sp,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.grey.shade600,
-                    fontFamily: FontFamily.interRegular,
+                Positioned(
+                  bottom: 0,
+                  right: 0,
+                  child: Container(
+                    width: 13.r,
+                    height: 13.r,
+                    decoration: BoxDecoration(
+                      color: statusColor,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 2.r),
+                    ),
                   ),
-                ),
-                SizedBox(height: 2.h),
-                Row(
-                  children: [
-                    Container(
-                      width: 7.w,
-                      height: 7.w,
-                      decoration: BoxDecoration(
-                        color: isActive
-                            ? const Color(0xFF10B981)
-                            : const Color(0xFF94A3B8),
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    SizedBox(width: 5.w),
-                    Text(
-                      isActive ? "Active" : "Inactive",
-                      style: TextStyle(
-                        fontSize: 10.5.sp,
-                        fontWeight: FontWeight.w600,
-                        color: isActive
-                            ? const Color(0xFF10B981)
-                            : const Color(0xFF94A3B8),
-                        fontFamily: FontFamily.interMedium,
-                      ),
-                    ),
-                  ],
                 ),
               ],
             ),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                "Joined",
-                style: TextStyle(
-                  fontSize: 10.sp,
-                  color: Colors.grey.shade400,
-                  fontFamily: FontFamily.interRegular,
-                ),
-              ),
-              SizedBox(height: 2.h),
-              Text(
-                joinedDate,
-                style: TextStyle(
-                  fontSize: 11.5.sp,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.grey.shade700,
-                  fontFamily: FontFamily.interMedium,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildEmptySearchView(String query) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 64.w,
-            height: 64.w,
-            decoration: const BoxDecoration(
-              color: Color(0xFFEDE9FE),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              Icons.person_search_rounded,
-              color: const Color(0xFF6B4DFF),
-              size: 32.sp,
-            ),
-          ),
-          SizedBox(height: 14.h),
-          Text(
-            "No members match '$query'",
-            style: TextStyle(
-              fontSize: 15.sp,
-              fontWeight: FontWeight.w700,
-              color: Colors.black87,
-              fontFamily: FontFamily.interBold,
-            ),
-          ),
-          SizedBox(height: 6.h),
-          Text(
-            "Try searching with a different name or number",
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 12.sp,
-              color: Colors.grey.shade500,
-              fontFamily: FontFamily.interRegular,
-            ),
-          ),
-          SizedBox(height: 14.h),
-          TextButton.icon(
-            onPressed: controller.clearAllSearch,
-            icon: Icon(Icons.clear_all_rounded, size: 18.sp),
-            label: const Text("Clear Search"),
-            style: TextButton.styleFrom(
-              foregroundColor: const Color(0xFF6B4DFF),
-              textStyle: const TextStyle(
-                fontFamily: FontFamily.interBold,
-                fontWeight: FontWeight.w700,
+            SizedBox(width: 14.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    member.displayName,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 15.sp,
+                      fontWeight: FontWeight.w700,
+                      fontFamily: FontFamily.interBold,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  SizedBox(height: 3.h),
+                  Text(
+                    member.displayDepartment,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      fontFamily: FontFamily.interRegular,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
+                  SizedBox(height: 3.h),
+                  Row(
+                    children: [
+                      Container(
+                        width: 7.r,
+                        height: 7.r,
+                        decoration: BoxDecoration(
+                          color: statusColor,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      SizedBox(width: 5.w),
+                      Text(
+                        statusText,
+                        style: TextStyle(
+                          fontSize: 11.sp,
+                          fontWeight: FontWeight.w600,
+                          fontFamily: FontFamily.interSemiBold,
+                          color: statusColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildEmptyAllMembersView() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 64.w,
-            height: 64.w,
-            decoration: const BoxDecoration(
-              color: Color(0xFFEDE9FE),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              Icons.group_off_rounded,
-              color: const Color(0xFF6B4DFF),
-              size: 32.sp,
-            ),
-          ),
-          SizedBox(height: 14.h),
-          Text(
-            "No members available",
-            style: TextStyle(
-              fontSize: 15.sp,
-              fontWeight: FontWeight.w700,
-              color: Colors.black87,
-              fontFamily: FontFamily.interBold,
-            ),
-          ),
-          SizedBox(height: 6.h),
-          Text(
-            "Members in your groups will appear here",
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 12.sp,
-              color: Colors.grey.shade500,
-              fontFamily: FontFamily.interRegular,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSkeletonContent() {
-    return SingleChildScrollView(
-      physics: const NeverScrollableScrollPhysics(),
-      child: Column(
-        children: [
-          Container(
-            height: 48.h,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(14.r),
-            ),
-          ),
-          SizedBox(height: 14.h),
-          Row(
-            children: List.generate(
-              4,
-              (index) => Expanded(
-                child: Container(
-                  margin: EdgeInsets.symmetric(horizontal: 4.w),
-                  height: 70.h,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16.r),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  "Joined",
+                  style: TextStyle(
+                    fontSize: 11.sp,
+                    fontFamily: FontFamily.interRegular,
+                    color: Colors.grey.shade400,
                   ),
                 ),
-              ),
+                SizedBox(height: 3.h),
+                Text(
+                  member.formattedJoinedAt,
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.w600,
+                    fontFamily: FontFamily.interSemiBold,
+                    color: Colors.black87,
+                  ),
+                ),
+              ],
             ),
-          ),
-          SizedBox(height: 16.h),
-          ...List.generate(
-            6,
-            (index) => Container(
-              margin: EdgeInsets.only(bottom: 10.h),
-              height: 70.h,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16.r),
-              ),
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
-  }
-
-  String _formatJoinedDate(String? raw) {
-    if (raw == null ||
-        raw.trim().isEmpty ||
-        raw.trim().toLowerCase() == 'null' ||
-        raw.trim().toLowerCase() == 'online' ||
-        raw.trim().toLowerCase() == 'offline') {
-      return '--';
-    }
-    final trimmed = raw.trim();
-
-    // Check if numeric timestamp (seconds or milliseconds)
-    final numVal = int.tryParse(trimmed);
-    if (numVal != null && numVal > 100000000) {
-      try {
-        final dt = numVal > 10000000000
-            ? DateTime.fromMillisecondsSinceEpoch(numVal).toLocal()
-            : DateTime.fromMillisecondsSinceEpoch(numVal * 1000).toLocal();
-        const months = [
-          'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-          'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-        ];
-        return '${dt.day.toString().padLeft(2, '0')} ${months[dt.month - 1]} ${dt.year}';
-      } catch (_) {}
-    }
-
-    if (trimmed.contains('-') || trimmed.contains('/')) {
-      final sep = trimmed.contains('-') ? '-' : '/';
-      final parts = trimmed.split(sep);
-      if (parts.length == 3) {
-        if (parts[0].length <= 2 && parts[2].length == 4) {
-          final d = int.tryParse(parts[0]);
-          final m = int.tryParse(parts[1]);
-          final y = int.tryParse(parts[2]);
-          if (d != null && m != null && y != null && m >= 1 && m <= 12) {
-            const months = [
-              'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-              'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-            ];
-            return '${d.toString().padLeft(2, '0')} ${months[m - 1]} $y';
-          }
-        }
-      }
-    }
-
-    try {
-      final dt = DateTime.tryParse(trimmed);
-      if (dt != null) {
-        final local = dt.toLocal();
-        const months = [
-          'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-          'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-        ];
-        return '${local.day.toString().padLeft(2, '0')} ${months[local.month - 1]} ${local.year}';
-      }
-    } catch (_) {}
-
-    return trimmed;
-  }
-
-  String _formatJoinedOrLastSeen(String? raw) => _formatJoinedDate(raw);
-
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
   }
 }

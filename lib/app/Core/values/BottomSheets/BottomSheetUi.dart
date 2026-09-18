@@ -368,21 +368,14 @@ class BottomSheetUi {
                                       final String? rawImg =
                                           member.profileImage?.toString();
                                       final String? profileUrl = (rawImg !=
-                                                   null &&
-                                               rawImg.trim().isNotEmpty &&
-                                               rawImg.trim().toLowerCase() !=
-                                                   'null')
-                                           ? (rawImg.trim().startsWith('http://') ||
-                                                   rawImg.trim().startsWith('https://')
-                                               ? rawImg.trim()
-                                               : (ConstRes.aImageBaseUrl.endsWith('/') &&
-                                                       rawImg.trim().startsWith('/')
-                                                   ? "${ConstRes.aImageBaseUrl}${rawImg.trim().substring(1)}"
-                                                   : (!ConstRes.aImageBaseUrl.endsWith('/') &&
-                                                           !rawImg.trim().startsWith('/')
-                                                       ? "${ConstRes.aImageBaseUrl}/${rawImg.trim()}"
-                                                       : "${ConstRes.aImageBaseUrl}${rawImg.trim()}")))
-                                           : null;
+                                                  null &&
+                                              rawImg.trim().isNotEmpty &&
+                                              rawImg.toLowerCase() != 'null')
+                                          ? (rawImg.startsWith('http://') ||
+                                                  rawImg.startsWith('https://')
+                                              ? rawImg
+                                              : "${ConstRes.aImageBaseUrl}$rawImg")
+                                          : null;
 
                                       String getLastSeenText() {
                                         if (isGhostMode) {

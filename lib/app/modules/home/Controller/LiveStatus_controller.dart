@@ -2,98 +2,79 @@ import 'dart:developer';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Data/Repositories/TrackRepo.dart';
-import 'package:fgtracker/app/Model/ghost_member_model.dart';
-import 'package:fgtracker/app/Model/online_member_model.dart';
+import 'package:fgtracker/app/Model/group_member_model.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class LivesStatusController extends GetxController {
   static LivesStatusController get instance =>
-      Get.put(LivesStatusController());
+      Get.isRegistered<LivesStatusController>()
+          ? Get.find<LivesStatusController>()
+          : Get.put(LivesStatusController());
 
-  final TextEditingController searchController =
-  TextEditingController();
-
-  final RxList<OnlineMemberData> memberData =
-      <OnlineMemberData>[].obs;
-
-  final RxList<OnlineMemberData> currentOnlineMembers =
-      <OnlineMemberData>[].obs;
-
-  final RxList<OnlineMemberData> recentOnlineMembers =
-      <OnlineMemberData>[].obs;
-
-  final RxList<OnlineMemberData> filteredMembers =
-      <OnlineMemberData>[].obs;
-
+  // Search controllers
+  final TextEditingController searchController = TextEditingController();
   final RxString searchQuery = ''.obs;
 
-  final RxBool memberLoading = false.obs;
-  final RxBool memberLoadingMore = false.obs;
+  // -------------------------------------------------------------
+  // 1. ALL MEMBERS (filter=all)
+  // -------------------------------------------------------------
+  final RxList<GroupMemberData> allMemberList = <GroupMemberData>[].obs;
+  final RxList<GroupMemberData> filteredAllMemberList = <GroupMemberData>[].obs;
 
-  final RxString responseError = ''.obs;
-
-  final RxInt pagination = 0.obs;
-
-  final RxBool hasMoreMembers = true.obs;
-
-  final RxString memberFilter = 'online'.obs;
-
-  final RxList<GhostMemberData> privateMemberData =
-      <GhostMemberData>[].obs;
-
-  final RxBool privateMemberLoading = false.obs;
-  final RxBool privateMemberLoadingMore = false.obs;
-
-  final RxString privateResponseError = ''.obs;
-
-  final RxInt privatePagination = 0.obs;
-
-  final RxBool hasMorePrivateMembers = true.obs;
-
-  final RxList<OnlineMemberData> allMemberData =
-      <OnlineMemberData>[].obs;
-
-  final RxList<OnlineMemberData> allCurrentOnlineMembers =
-      <OnlineMemberData>[].obs;
-
-  final RxList<OnlineMemberData> allRecentOnlineMembers =
-      <OnlineMemberData>[].obs;
-
-  final RxList<OnlineMemberData> filteredAllMembers =
-      <OnlineMemberData>[].obs;
-
-  final RxList<OnlineMemberData> filteredCurrentOnlineMembers =
-      <OnlineMemberData>[].obs;
-
-  final RxList<OnlineMemberData> filteredRecentOnlineMembers =
-      <OnlineMemberData>[].obs;
-
-  final RxBool allMemberLoading = false.obs;
-  final RxBool allMemberLoadingMore = false.obs;
-
-  final RxString allResponseError = ''.obs;
-
-  final RxInt allPagination = 0.obs;
-
-  final RxBool hasMoreAllMembers = true.obs;
-
+  final Rx<MemberMetaData?> metaData = Rx<MemberMetaData?>(null);
   final RxInt totalMembersCount = 0.obs;
   final RxInt activeMembersCount = 0.obs;
   final RxInt inactiveMembersCount = 0.obs;
-  final RxInt privateMembersCount = 0.obs;
   final RxInt newMembersCount = 0.obs;
 
-  RxList<OnlineMemberData> get filtermember {
-    return filteredMembers;
-  }
+  final RxBool allMemberLoading = false.obs;
+  final RxBool allMemberLoadingMore = false.obs;
+  final RxString allResponseError = ''.obs;
+  final RxInt allCurrentPage = 1.obs;
+  final RxBool hasMoreAllMembers = true.obs;
+  final RxBool isAllMembersAscending = true.obs;
+
+  // -------------------------------------------------------------
+  // 2. ONLINE MEMBERS (filter=online)
+  // -------------------------------------------------------------
+  final RxList<GroupMemberData> onlineNowList = <GroupMemberData>[].obs;
+  final RxList<GroupMemberData> recentlyOnlineList = <GroupMemberData>[].obs;
+  final RxList<GroupMemberData> filteredOnlineNowList = <GroupMemberData>[].obs;
+  final RxList<GroupMemberData> filteredRecentlyOnlineList = <GroupMemberData>[].obs;
+
+  final RxBool onlineLoading = false.obs;
+  final RxBool onlineLoadingMore = false.obs;
+  final RxString onlineResponseError = ''.obs;
+  final RxInt onlineCurrentPage = 1.obs;
+  final RxBool hasMoreOnlineMembers = true.obs;
+
+  // -------------------------------------------------------------
+  // 3. PRIVATE MEMBERS (filter=private)
+  // -------------------------------------------------------------
+  final RxList<GroupMemberData> privateMemberList = <GroupMemberData>[].obs;
+  final RxList<GroupMemberData> filteredPrivateMemberList = <GroupMemberData>[].obs;
+
+  final RxBool privateLoading = false.obs;
+  final RxBool privateLoadingMore = false.obs;
+  final RxString privateResponseError = ''.obs;
+  final RxInt privateCurrentPage = 1.obs;
+  final RxBool hasMorePrivateMembers = true.obs;
+  final RxBool isMyPrivateModeOn = false.obs;
+
+  // Compatibility getters for legacy references
+  RxList<GroupMemberData> get memberData => onlineNowList;
+  RxList<GroupMemberData> get currentOnlineMembers => onlineNowList;
+  RxList<GroupMemberData> get recentOnlineMembers => recentlyOnlineList;
+  RxList<GroupMemberData> get privateMemberData => privateMemberList;
+  RxList<GroupMemberData> get allMemberData => allMemberList;
+  RxBool get memberLoading => onlineLoading;
+  RxBool get privateMemberLoading => privateLoading;
 
   @override
   void onInit() {
     super.onInit();
-
-    getGroupMember();
-    getPrivateMembers();
+    _loadMyPrivateStatus();
   }
 
   @override
@@ -102,239 +83,67 @@ class LivesStatusController extends GetxController {
     super.onClose();
   }
 
-  Future<void> getGroupMember() async {
-    if (memberLoading.value ||
-        memberLoadingMore.value) {
+  void _loadMyPrivateStatus() {
+    final bool? syncVal = Global.storageServices.getBoolSync(PrefConst.locationSharing);
+    if (syncVal != null) {
+      isMyPrivateModeOn.value = !syncVal;
       return;
     }
-
-    memberLoading.value = true;
-    responseError.value = '';
-
-    pagination.value = 0;
-    hasMoreMembers.value = true;
-
-    memberData.clear();
-    filteredMembers.clear();
-
-    try {
-      final OnlineMemberModel result =
-      await TrackRepo.getGroupMember(
-        page: '1',
-        filter: 'online',
-        limit: 20,
-      );
-
-      if (result.status != true) {
-        responseError.value =
-            result.message ?? 'Something went wrong';
-        return;
-      }
-
-      final List<OnlineMemberData> currentOnline =
-          result.data?.currentOnline ??
-              <OnlineMemberData>[];
-
-      final List<OnlineMemberData> recentOnline =
-          result.data?.recentOnline ??
-              <OnlineMemberData>[];
-
-      currentOnlineMembers.assignAll(currentOnline);
-      recentOnlineMembers.assignAll(recentOnline);
-
-      final List<OnlineMemberData> apiMembers = [
-        ...currentOnline,
-        ...recentOnline,
-      ];
-
-      memberData.assignAll(apiMembers);
-
-      pagination.value =
-          result.pagination?.currentPage ?? 1;
-
-      hasMoreMembers.value =
-          result.pagination?.hasNextPage ?? (apiMembers.length >= 20);
-
-      _applySearch();
-    } catch (error) {
-      responseError.value = error.toString();
-    } finally {
-      memberLoading.value = false;
+    final rawSharing = Global.storageServices.get(PrefConst.locationSharing);
+    if (rawSharing != null) {
+      final s = rawSharing.trim().toLowerCase();
+      isMyPrivateModeOn.value = (s == 'false' || s == '0');
     }
   }
 
-  Future<void> loadMoreMembers() async {
-    if (memberLoading.value ||
-        memberLoadingMore.value ||
-        !hasMoreMembers.value) {
-      return;
-    }
-
-    memberLoadingMore.value = true;
-
-    try {
-      final int nextPage =
-          pagination.value + 1;
-
-      final OnlineMemberModel result =
-      await TrackRepo.getGroupMember(
-        page: nextPage.toString(),
-        filter: 'online',
-        limit: 20,
-      );
-
-      if (result.status != true) {
-        hasMoreMembers.value = false;
-        return;
-      }
-
-      final List<OnlineMemberData> currentOnline =
-          result.data?.currentOnline ??
-              <OnlineMemberData>[];
-
-      final List<OnlineMemberData> recentOnline =
-          result.data?.recentOnline ??
-              <OnlineMemberData>[];
-
-      final List<OnlineMemberData> apiMembers = [
-        ...currentOnline,
-        ...recentOnline,
-      ];
-
-      if (apiMembers.isEmpty) {
-        hasMoreMembers.value = false;
-        return;
-      }
-
-      for (final OnlineMemberData member in currentOnline) {
-        if (member.userId == null) {
-          currentOnlineMembers.add(member);
-        } else if (!currentOnlineMembers.any((m) => m.userId == member.userId)) {
-          currentOnlineMembers.add(member);
-        }
-      }
-
-      for (final OnlineMemberData member in recentOnline) {
-        if (member.userId == null) {
-          recentOnlineMembers.add(member);
-        } else if (!recentOnlineMembers.any((m) => m.userId == member.userId)) {
-          recentOnlineMembers.add(member);
-        }
-      }
-
-      for (final OnlineMemberData member in apiMembers) {
-        if (member.userId == null) {
-          memberData.add(member);
-          continue;
-        }
-
-        final bool exists = memberData.any(
-              (OnlineMemberData existing) =>
-          existing.userId == member.userId,
-        );
-
-        if (!exists) {
-          memberData.add(member);
-        }
-      }
-
-      pagination.value =
-          result.pagination?.currentPage ??
-              nextPage;
-
-      hasMoreMembers.value =
-          result.pagination?.hasNextPage ?? (apiMembers.length >= 20);
-
-      _applySearch();
-    } catch (error) {
-      responseError.value = error.toString();
-    } finally {
-      memberLoadingMore.value = false;
-    }
-  }
-
-  Future<void> getAllMembers() async {
-    if (allMemberLoading.value ||
-        allMemberLoadingMore.value) {
-      log("⚠️ [LiveStatusController] getAllMembers skipped: already loading");
-      return;
-    }
-
-    log("🟢 [LiveStatusController] getAllMembers() started...");
+  // =============================================================
+  // ALL MEMBERS ACTIONS (filter=all)
+  // =============================================================
+  Future<void> getAllMembers({bool refresh = false}) async {
+    if (allMemberLoading.value || allMemberLoadingMore.value) return;
 
     allMemberLoading.value = true;
     allResponseError.value = '';
-
-    allPagination.value = 0;
+    allCurrentPage.value = 1;
     hasMoreAllMembers.value = true;
 
-    allMemberData.clear();
-    allCurrentOnlineMembers.clear();
-    allRecentOnlineMembers.clear();
-    filteredAllMembers.clear();
-    filteredCurrentOnlineMembers.clear();
-    filteredRecentOnlineMembers.clear();
-
     try {
-      final OnlineMemberModel result =
-      await TrackRepo.getGroupMember(
+      final GroupMemberModel result = await TrackRepo.getGroupMember(
         page: '1',
         filter: 'all',
         limit: 20,
       );
 
       if (result.status != true) {
-        log("❌ [LiveStatusController] getAllMembers failed: ${result.message}");
-        allResponseError.value =
-            result.message ?? 'Something went wrong';
+        allResponseError.value = result.message ?? 'Failed to load members';
         return;
       }
 
-      final List<OnlineMemberData> currentOnline =
-          result.data?.currentOnline ??
-              <OnlineMemberData>[];
+      final AllMember? allMember = result.data?.allMember;
+      if (allMember?.metaData != null) {
+        metaData.value = allMember!.metaData;
+        totalMembersCount.value = allMember.metaData?.totalMembers ?? 0;
+        activeMembersCount.value = allMember.metaData?.totalOnlineMembers ?? 0;
+        inactiveMembersCount.value = allMember.metaData?.totalOfflineMembers ?? 0;
+        newMembersCount.value = allMember.metaData?.totalNewMembers ?? 0;
+      }
 
-      final List<OnlineMemberData> recentOnline =
-          result.data?.recentOnline ??
-              <OnlineMemberData>[];
+      final List<GroupMemberData> list = allMember?.memberList ?? [];
+      allMemberList.assignAll(list);
+      _applyAllMembersFilter();
 
-      allCurrentOnlineMembers.assignAll(currentOnline);
-      allRecentOnlineMembers.assignAll(recentOnline);
-
-      final List<OnlineMemberData> members = [
-        ...currentOnline,
-        ...recentOnline,
-      ];
-
-      allMemberData.assignAll(members);
-
-      totalMembersCount.value =
-          result.metaData?.totalMembers ?? 0;
-
-      activeMembersCount.value =
-          result.metaData?.totalOnlineMembers ?? 0;
-
-      inactiveMembersCount.value =
-          result.metaData?.totalOfflineMembers ?? 0;
-
-      privateMembersCount.value =
-          result.metaData?.totalPrivateMembers ?? 0;
-
-      newMembersCount.value =
-          result.metaData?.totalNewMembers ?? 0;
-
-      allPagination.value =
-          result.pagination?.currentPage ?? 1;
-
-      hasMoreAllMembers.value =
-          result.pagination?.hasNextPage ?? (members.length >= 20);
-
-      _applyAllSearch();
-
-      log("🟢 [LiveStatusController] getAllMembers loaded: ${members.length} members (online: ${currentOnline.length}, recent: ${recentOnline.length}, total: ${totalMembersCount.value})");
-    } catch (error) {
-      log("❌ [LiveStatusController] getAllMembers error: $error");
-      allResponseError.value = error.toString();
+      final pagination = result.pagination;
+      if (pagination != null) {
+        hasMoreAllMembers.value = pagination.hasNextPage == true ||
+            (pagination.currentPage != null &&
+                pagination.totalPages != null &&
+                pagination.currentPage! < pagination.totalPages!);
+      } else {
+        hasMoreAllMembers.value = list.length >= 20;
+      }
+    } catch (e) {
+      log("❌ [LiveStatusController] getAllMembers error: $e");
+      allResponseError.value = e.toString();
     } finally {
       allMemberLoading.value = false;
     }
@@ -348,400 +157,351 @@ class LivesStatusController extends GetxController {
     }
 
     allMemberLoadingMore.value = true;
+    final nextPage = allCurrentPage.value + 1;
 
     try {
-      final int nextPage =
-          allPagination.value + 1;
-
-      final OnlineMemberModel result =
-      await TrackRepo.getGroupMember(
+      final GroupMemberModel result = await TrackRepo.getGroupMember(
         page: nextPage.toString(),
         filter: 'all',
         limit: 20,
       );
 
-      if (result.status != true) {
+      if (result.status == true) {
+        final List<GroupMemberData> newList = result.data?.allMember?.memberList ?? [];
+        if (newList.isNotEmpty) {
+          allCurrentPage.value = nextPage;
+          for (final item in newList) {
+            if (!allMemberList.any((e) => e.userId == item.userId)) {
+              allMemberList.add(item);
+            }
+          }
+          _applyAllMembersFilter();
+        }
+
+        final pagination = result.pagination;
+        if (pagination != null) {
+          hasMoreAllMembers.value = pagination.hasNextPage == true ||
+              (pagination.currentPage != null &&
+                  pagination.totalPages != null &&
+                  pagination.currentPage! < pagination.totalPages!);
+        } else {
+          hasMoreAllMembers.value = newList.length >= 20;
+        }
+      } else {
         hasMoreAllMembers.value = false;
-        return;
       }
-
-      final List<OnlineMemberData> currentOnline =
-          result.data?.currentOnline ??
-              <OnlineMemberData>[];
-
-      final List<OnlineMemberData> recentOnline =
-          result.data?.recentOnline ??
-              <OnlineMemberData>[];
-
-      final List<OnlineMemberData> members = [
-        ...currentOnline,
-        ...recentOnline,
-      ];
-
-      if (members.isEmpty) {
-        hasMoreAllMembers.value = false;
-        return;
-      }
-
-      for (final OnlineMemberData member in members) {
-        if (member.userId == null) {
-          allMemberData.add(member);
-          continue;
-        }
-
-        final bool exists = allMemberData.any(
-              (OnlineMemberData existing) =>
-          existing.userId == member.userId,
-        );
-
-        if (!exists) {
-          allMemberData.add(member);
-        }
-      }
-
-      for (final OnlineMemberData member in currentOnline) {
-        if (member.userId == null) {
-          allCurrentOnlineMembers.add(member);
-        } else if (!allCurrentOnlineMembers.any((m) => m.userId == member.userId)) {
-          allCurrentOnlineMembers.add(member);
-        }
-      }
-
-      for (final OnlineMemberData member in recentOnline) {
-        if (member.userId == null) {
-          allRecentOnlineMembers.add(member);
-        } else if (!allRecentOnlineMembers.any((m) => m.userId == member.userId)) {
-          allRecentOnlineMembers.add(member);
-        }
-      }
-
-      if (result.metaData != null) {
-        if (result.metaData!.totalMembers != null) {
-          totalMembersCount.value = result.metaData!.totalMembers!;
-        }
-        if (result.metaData!.totalOnlineMembers != null) {
-          activeMembersCount.value = result.metaData!.totalOnlineMembers!;
-        }
-        if (result.metaData!.totalOfflineMembers != null) {
-          inactiveMembersCount.value = result.metaData!.totalOfflineMembers!;
-        }
-        if (result.metaData!.totalPrivateMembers != null) {
-          privateMembersCount.value = result.metaData!.totalPrivateMembers!;
-        }
-        if (result.metaData!.totalNewMembers != null) {
-          newMembersCount.value = result.metaData!.totalNewMembers!;
-        }
-      }
-
-      allPagination.value =
-          result.pagination?.currentPage ??
-              nextPage;
-
-      hasMoreAllMembers.value =
-          result.pagination?.hasNextPage ?? (members.length >= 20);
-
-      _applyAllSearch();
-
-      log("🟢 [LiveStatusController] loadMoreAllMembers loaded page $nextPage with ${members.length} items");
-    } catch (error) {
-      log("❌ [LiveStatusController] loadMoreAllMembers error: $error");
-      allResponseError.value = error.toString();
+    } catch (e) {
+      log("❌ [LiveStatusController] loadMoreAllMembers error: $e");
     } finally {
       allMemberLoadingMore.value = false;
     }
   }
 
-  Future<void> getPrivateMembers() async {
-    if (privateMemberLoading.value ||
-        privateMemberLoadingMore.value) {
-      return;
+  void searchAllMembers(String query) {
+    searchQuery.value = query;
+    _applyAllMembersFilter();
+  }
+
+  void sortAllMembers({bool? ascending}) {
+    if (ascending != null) {
+      isAllMembersAscending.value = ascending;
+    } else {
+      isAllMembersAscending.value = !isAllMembersAscending.value;
+    }
+    _applyAllMembersFilter();
+  }
+
+  void _applyAllMembersFilter() {
+    final query = searchQuery.value.trim().toLowerCase();
+    List<GroupMemberData> list = List.from(allMemberList);
+
+    if (query.isNotEmpty) {
+      list = list.where((item) {
+        final name = item.displayName.toLowerCase();
+        final dept = item.displayDepartment.toLowerCase();
+        final phone = (item.phone ?? '').toLowerCase();
+        return name.contains(query) || dept.contains(query) || phone.contains(query);
+      }).toList();
     }
 
-    privateMemberLoading.value = true;
-    privateResponseError.value = '';
+    list.sort((a, b) {
+      final comp = a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase());
+      return isAllMembersAscending.value ? comp : -comp;
+    });
 
-    privatePagination.value = 1;
-    hasMorePrivateMembers.value = true;
+    filteredAllMemberList.assignAll(list);
+  }
 
-    privateMemberData.clear();
+  // =============================================================
+  // ONLINE MEMBERS ACTIONS (filter=online)
+  // =============================================================
+  Future<void> getOnlineMembers({bool refresh = false}) async {
+    if (onlineLoading.value || onlineLoadingMore.value) return;
+
+    onlineLoading.value = true;
+    onlineResponseError.value = '';
+    onlineCurrentPage.value = 1;
+    hasMoreOnlineMembers.value = true;
 
     try {
-      final GhostMemberModel result =
-      await TrackRepo.getPrivateMembers(
+      final GroupMemberModel result = await TrackRepo.getGroupMember(
         page: '1',
+        filter: 'online',
         limit: 20,
       );
 
       if (result.status != true) {
-        privateResponseError.value =
-            result.message ?? 'Something went wrong';
+        onlineResponseError.value = result.message ?? 'Failed to load online members';
         return;
       }
 
-      final List<GhostMemberData> members =
-      List<GhostMemberData>.from(
-        result.data ??
-            <GhostMemberData>[],
+      final List<GroupMemberData> active = result.data?.active ?? [];
+      final List<GroupMemberData> recent = result.data?.recentActive ?? [];
+
+      onlineNowList.assignAll(active);
+      recentlyOnlineList.assignAll(recent);
+
+      _applyOnlineFilter();
+
+      final pagination = result.pagination;
+      if (pagination != null) {
+        hasMoreOnlineMembers.value = pagination.hasNextPage == true ||
+            (pagination.currentPage != null &&
+                pagination.totalPages != null &&
+                pagination.currentPage! < pagination.totalPages!);
+      } else {
+        hasMoreOnlineMembers.value = (active.length + recent.length) >= 20;
+      }
+    } catch (e) {
+      log("❌ [LiveStatusController] getOnlineMembers error: $e");
+      onlineResponseError.value = e.toString();
+    } finally {
+      onlineLoading.value = false;
+    }
+  }
+
+  // Alias for legacy calls
+  Future<void> getGroupMember() => getOnlineMembers();
+  Future<void> loadMoreMembers() => loadMoreOnlineMembers();
+
+  Future<void> loadMoreOnlineMembers() async {
+    if (onlineLoading.value ||
+        onlineLoadingMore.value ||
+        !hasMoreOnlineMembers.value) {
+      return;
+    }
+
+    onlineLoadingMore.value = true;
+    final nextPage = onlineCurrentPage.value + 1;
+
+    try {
+      final GroupMemberModel result = await TrackRepo.getGroupMember(
+        page: nextPage.toString(),
+        filter: 'online',
+        limit: 20,
       );
 
-      privateMemberData.assignAll(members);
+      if (result.status == true) {
+        final List<GroupMemberData> newActive = result.data?.active ?? [];
+        final List<GroupMemberData> newRecent = result.data?.recentActive ?? [];
 
-      privatePagination.value =
-          result.pagination?.currentPage ?? 1;
+        if (newActive.isNotEmpty || newRecent.isNotEmpty) {
+          onlineCurrentPage.value = nextPage;
 
-      hasMorePrivateMembers.value =
-          result.pagination?.hasNextPage ??
-          (result.pagination?.totalPages != null
-              ? (result.pagination!.currentPage! < result.pagination!.totalPages!)
-              : (members.length >= 20));
+          for (final item in newActive) {
+            if (!onlineNowList.any((e) => e.userId == item.userId)) {
+              onlineNowList.add(item);
+            }
+          }
+          for (final item in newRecent) {
+            if (!recentlyOnlineList.any((e) => e.userId == item.userId)) {
+              recentlyOnlineList.add(item);
+            }
+          }
+          _applyOnlineFilter();
+        }
 
-      if (result.pagination?.totalRecords != null &&
-          result.pagination!.totalRecords! > 0) {
-        privateMembersCount.value = result.pagination!.totalRecords!;
+        final pagination = result.pagination;
+        if (pagination != null) {
+          hasMoreOnlineMembers.value = pagination.hasNextPage == true ||
+              (pagination.currentPage != null &&
+                  pagination.totalPages != null &&
+                  pagination.currentPage! < pagination.totalPages!);
+        } else {
+          hasMoreOnlineMembers.value = (newActive.length + newRecent.length) >= 20;
+        }
+      } else {
+        hasMoreOnlineMembers.value = false;
+      }
+    } catch (e) {
+      log("❌ [LiveStatusController] loadMoreOnlineMembers error: $e");
+    } finally {
+      onlineLoadingMore.value = false;
+    }
+  }
+
+  void searchOnlineMembers(String query) {
+    searchQuery.value = query;
+    _applyOnlineFilter();
+  }
+
+  void _applyOnlineFilter() {
+    final query = searchQuery.value.trim().toLowerCase();
+
+    if (query.isEmpty) {
+      filteredOnlineNowList.assignAll(onlineNowList);
+      filteredRecentlyOnlineList.assignAll(recentlyOnlineList);
+      return;
+    }
+
+    filteredOnlineNowList.assignAll(
+      onlineNowList.where((item) {
+        final name = item.displayName.toLowerCase();
+        final dept = item.displayDepartment.toLowerCase();
+        return name.contains(query) || dept.contains(query);
+      }),
+    );
+
+    filteredRecentlyOnlineList.assignAll(
+      recentlyOnlineList.where((item) {
+        final name = item.displayName.toLowerCase();
+        final dept = item.displayDepartment.toLowerCase();
+        return name.contains(query) || dept.contains(query);
+      }),
+    );
+  }
+
+  // =============================================================
+  // PRIVATE MEMBERS ACTIONS (filter=private)
+  // =============================================================
+  Future<void> getPrivateMembers({bool refresh = false}) async {
+    if (privateLoading.value || privateLoadingMore.value) return;
+
+    privateLoading.value = true;
+    privateResponseError.value = '';
+    privateCurrentPage.value = 1;
+    hasMorePrivateMembers.value = true;
+
+    try {
+      final GroupMemberModel result = await TrackRepo.getGroupMember(
+        page: '1',
+        filter: 'private',
+        limit: 20,
+      );
+
+      if (result.status != true) {
+        privateResponseError.value = result.message ?? 'Failed to load private members';
+        return;
       }
 
-      log("🟢 [LiveStatusController] getPrivateMembers loaded: ${members.length} members (total: ${privateMembersCount.value})");
-    } catch (error) {
-      log("❌ [LiveStatusController] getPrivateMembers error: $error");
-      privateResponseError.value =
-          error.toString();
+      final List<GroupMemberData> list = result.data?.private ?? [];
+      privateMemberList.assignAll(list);
+      _applyPrivateFilter();
+
+      final pagination = result.pagination;
+      if (pagination != null) {
+        hasMorePrivateMembers.value = pagination.hasNextPage == true ||
+            (pagination.currentPage != null &&
+                pagination.totalPages != null &&
+                pagination.currentPage! < pagination.totalPages!);
+      } else {
+        hasMorePrivateMembers.value = list.length >= 20;
+      }
+    } catch (e) {
+      log("❌ [LiveStatusController] getPrivateMembers error: $e");
+      privateResponseError.value = e.toString();
     } finally {
-      privateMemberLoading.value = false;
+      privateLoading.value = false;
     }
   }
 
   Future<void> loadMorePrivateMembers() async {
-    if (privateMemberLoading.value ||
-        privateMemberLoadingMore.value ||
+    if (privateLoading.value ||
+        privateLoadingMore.value ||
         !hasMorePrivateMembers.value) {
       return;
     }
 
-    privateMemberLoadingMore.value = true;
+    privateLoadingMore.value = true;
+    final nextPage = privateCurrentPage.value + 1;
 
     try {
-      final int nextPage =
-          privatePagination.value + 1;
-
-      final GhostMemberModel result =
-      await TrackRepo.getPrivateMembers(
+      final GroupMemberModel result = await TrackRepo.getGroupMember(
         page: nextPage.toString(),
+        filter: 'private',
         limit: 20,
       );
 
-      if (result.status != true) {
+      if (result.status == true) {
+        final List<GroupMemberData> newList = result.data?.private ?? [];
+        if (newList.isNotEmpty) {
+          privateCurrentPage.value = nextPage;
+          for (final item in newList) {
+            if (!privateMemberList.any((e) => e.userId == item.userId)) {
+              privateMemberList.add(item);
+            }
+          }
+          _applyPrivateFilter();
+        }
+
+        final pagination = result.pagination;
+        if (pagination != null) {
+          hasMorePrivateMembers.value = pagination.hasNextPage == true ||
+              (pagination.currentPage != null &&
+                  pagination.totalPages != null &&
+                  pagination.currentPage! < pagination.totalPages!);
+        } else {
+          hasMorePrivateMembers.value = newList.length >= 20;
+        }
+      } else {
         hasMorePrivateMembers.value = false;
-        return;
       }
-
-      final List<GhostMemberData> members =
-      List<GhostMemberData>.from(
-        result.data ??
-            <GhostMemberData>[],
-      );
-
-      if (members.isNotEmpty) {
-        final existingIds = privateMemberData
-            .where((e) => e.userId != null)
-            .map((e) => e.userId)
-            .toSet();
-        final newMembers = members
-            .where((m) => m.userId == null || !existingIds.contains(m.userId))
-            .toList();
-        privateMemberData.addAll(newMembers);
-      }
-
-      privatePagination.value =
-          result.pagination?.currentPage ??
-              nextPage;
-
-      hasMorePrivateMembers.value =
-          result.pagination?.hasNextPage ??
-          (result.pagination?.totalPages != null
-              ? (result.pagination!.currentPage! < result.pagination!.totalPages!)
-              : (members.length >= 20));
-
-      log("🟢 [LiveStatusController] loadMorePrivateMembers page $nextPage loaded ${members.length} items");
-    } catch (error) {
-      log("❌ [LiveStatusController] loadMorePrivateMembers error: $error");
-      privateResponseError.value =
-          error.toString();
+    } catch (e) {
+      log("❌ [LiveStatusController] loadMorePrivateMembers error: $e");
     } finally {
-      privateMemberLoadingMore.value = false;
+      privateLoadingMore.value = false;
     }
   }
 
-  Future<void> refreshPrivateMembers() async {
-    privateMemberLoading.value = false;
-    privateMemberLoadingMore.value = false;
-
-    await getPrivateMembers();
+  void searchPrivateMembers(String query) {
+    searchQuery.value = query;
+    _applyPrivateFilter();
   }
 
-  Future<void> loadMoreRecentCalls() async {
-    await loadMoreMembers();
-  }
-
-  void onSearchChanged(String value) {
-    searchQuery.value = value;
-    _applySearch();
-  }
-
-  void onAllSearchChanged(String value) {
-    searchQuery.value = value;
-    _applyAllSearch();
-  }
-
-  void searchMembers(String value) {
-    onSearchChanged(value);
-  }
-
-  void clearSearch() {
-    searchController.clear();
-    searchQuery.value = '';
-
-    filteredMembers.assignAll(
-      List<OnlineMemberData>.from(
-        memberData,
-      ),
-    );
-  }
-
-  void clearAllSearch() {
-    searchController.clear();
-    searchQuery.value = '';
-
-    filteredAllMembers.assignAll(
-      List<OnlineMemberData>.from(allMemberData),
-    );
-    filteredCurrentOnlineMembers.assignAll(
-      List<OnlineMemberData>.from(allCurrentOnlineMembers),
-    );
-    filteredRecentOnlineMembers.assignAll(
-      List<OnlineMemberData>.from(allRecentOnlineMembers),
-    );
-  }
-
-  void _applySearch() {
-    final String query =
-    searchQuery.value.trim().toLowerCase();
+  void _applyPrivateFilter() {
+    final query = searchQuery.value.trim().toLowerCase();
 
     if (query.isEmpty) {
-      filteredMembers.assignAll(
-        List<OnlineMemberData>.from(
-          memberData,
-        ),
-      );
+      filteredPrivateMemberList.assignAll(privateMemberList);
       return;
     }
 
-    final List<OnlineMemberData> result =
-    memberData.where(
-          (OnlineMemberData member) {
-        final String name =
-            member.name?.toLowerCase() ?? '';
-
-        final String mobile =
-            member.mobileNo?.toLowerCase() ?? '';
-
-        return name.contains(query) ||
-            mobile.contains(query);
-      },
-    ).toList();
-
-    filteredMembers.assignAll(result);
-  }
-
-  void _applyAllSearch() {
-    final String query =
-    searchQuery.value.trim().toLowerCase();
-
-    if (query.isEmpty) {
-      filteredAllMembers.assignAll(
-        List<OnlineMemberData>.from(allMemberData),
-      );
-      filteredCurrentOnlineMembers.assignAll(
-        List<OnlineMemberData>.from(allCurrentOnlineMembers),
-      );
-      filteredRecentOnlineMembers.assignAll(
-        List<OnlineMemberData>.from(allRecentOnlineMembers),
-      );
-      return;
-    }
-
-    bool matches(OnlineMemberData member) {
-      final String name = member.name?.toLowerCase() ?? '';
-      final String mobile = member.mobileNo?.toLowerCase() ?? '';
-      final String dept = member.department?.toLowerCase() ?? '';
-      return name.contains(query) ||
-          mobile.contains(query) ||
-          dept.contains(query);
-    }
-
-    filteredAllMembers.assignAll(
-      allMemberData.where(matches).toList(),
-    );
-    filteredCurrentOnlineMembers.assignAll(
-      allCurrentOnlineMembers.where(matches).toList(),
-    );
-    filteredRecentOnlineMembers.assignAll(
-      allRecentOnlineMembers.where(matches).toList(),
+    filteredPrivateMemberList.assignAll(
+      privateMemberList.where((item) {
+        final name = item.displayName.toLowerCase();
+        final dept = item.displayDepartment.toLowerCase();
+        return name.contains(query) || dept.contains(query);
+      }),
     );
   }
 
-  Future<void> refreshMembers() async {
-    memberLoading.value = false;
-    memberLoadingMore.value = false;
+  Future<bool> togglePrivateMode(bool enablePrivate) async {
+    try {
+      // locationSharing = !enablePrivate (if private mode is ON, locationSharing is FALSE)
+      final bool newLocationSharing = !enablePrivate;
+      final success = await TrackRepo.updateLocationSharing(newLocationSharing);
 
-    await getGroupMember();
-  }
-
-  Future<void> refreshAllMembers() async {
-    allMemberLoading.value = false;
-    allMemberLoadingMore.value = false;
-
-    await getAllMembers();
-  }
-
-  Future<void> changeFilter(String filter) async {
-    final bool isSame =
-        memberFilter.value == filter;
-
-    memberFilter.value = filter;
-
-    if (isSame && memberData.isNotEmpty) {
-      return;
+      if (success) {
+        isMyPrivateModeOn.value = enablePrivate;
+        Global.storageServices.setBool(PrefConst.locationSharing, newLocationSharing);
+        // Refresh private members list
+        getPrivateMembers(refresh: true);
+        return true;
+      }
+      return false;
+    } catch (e) {
+      log("❌ [LiveStatusController] togglePrivateMode error: $e");
+      return false;
     }
-
-    await getGroupMember();
-  }
-
-  int get onlineMembersCount {
-    return memberData
-        .where(
-          (OnlineMemberData member) =>
-      member.isOnline == 1 ||
-          member.online,
-    )
-        .length;
-  }
-
-  int get recentlyOnlineCount {
-    return memberData
-        .where(
-          (OnlineMemberData member) =>
-      member.isOnline != 1 &&
-          !member.online,
-    )
-        .length;
-  }
-
-  bool get isInitialLoading {
-    return memberLoading.value &&
-        memberData.isEmpty;
-  }
-
-  bool get isLoadingMore {
-    return memberLoadingMore.value;
   }
 }

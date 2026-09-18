@@ -15,8 +15,8 @@ import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:fgtracker/app/Model/group_member_model.dart';
 import '../../../Model/banner_model.dart';
-import '../../../Model/online_member_model.dart';
 
 class HomeController extends GetxController {
   RxBool ProfileData_loading = false.obs;
@@ -213,9 +213,10 @@ class HomeController extends GetxController {
         if (onlineRes.status == true && onlineRes.data != null) {
           final List<LiveLocationModel> memberLocs = [];
 
-          final List<OnlineMemberData> allMembers = [
-            ...onlineRes.data!.currentOnline,
-            ...onlineRes.data!.recentOnline,
+          final List<GroupMemberData> allMembers = [
+            ...(onlineRes.data!.allMember?.memberList ?? []),
+            ...(onlineRes.data!.active ?? []),
+            ...(onlineRes.data!.recentActive ?? []),
           ];
 
           for (final m in allMembers) {

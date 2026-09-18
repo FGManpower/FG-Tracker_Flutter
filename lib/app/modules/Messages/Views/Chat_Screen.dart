@@ -346,10 +346,14 @@ class ChatScreen extends GetView<MessageController> {
                         ),
                       ),
                       child: (userData.profileImage != null &&
-                              userData.profileImage.toString().isNotEmpty)
+                              userData.profileImage.toString().trim().isNotEmpty &&
+                              userData.profileImage.toString().trim().toLowerCase() != 'null')
                           ? ClipOval(
                               child: Image.network(
-                                "${ConstRes.aImageBaseUrl}${userData.profileImage}",
+                                (userData.profileImage.toString().trim().startsWith('http://') ||
+                                        userData.profileImage.toString().trim().startsWith('https://'))
+                                    ? userData.profileImage.toString().trim()
+                                    : "${ConstRes.aImageBaseUrl}${userData.profileImage.toString().trim()}",
                                 fit: BoxFit.cover,
                                 errorBuilder: (_, __, ___) => Icon(
                                   Icons.person,

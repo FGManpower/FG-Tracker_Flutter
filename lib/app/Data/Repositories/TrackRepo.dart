@@ -4,8 +4,7 @@ import 'package:fgtracker/app/Core/util/http/http_util.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Model/LocationDataRes.dart';
 import 'package:fgtracker/app/Model/UsersWithinRadiusRes.dart';
-import 'package:fgtracker/app/Model/ghost_member_model.dart';
-import 'package:fgtracker/app/Model/online_member_model.dart';
+import 'package:fgtracker/app/Model/group_member_model.dart';
 import 'dart:convert';
 import 'dart:developer';
 import 'package:flutter/foundation.dart';
@@ -146,7 +145,6 @@ class TrackRepo {
             isOnline: m.isOnline,
             lastSeen: m.lastSeen,
             locationSharing: m.locationSharing ?? true,
-            mobileNo: m.mobileNo,
             latitude: 0.0,
             longitude: 0.0,
           );
@@ -171,9 +169,9 @@ class TrackRepo {
     );
   }
 
-  static Future<OnlineMemberModel> getGroupMember({
+  static Future<GroupMemberModel> getGroupMember({
     String page = '1',
-    String filter = 'online',
+    String filter = 'all',
     int limit = 20,
   }) async {
     try {
@@ -182,106 +180,57 @@ class TrackRepo {
           '&page=$page'
           '&limit=$limit';
 
-      log("🟢 [TrackRepo] GET Group Members: $url");
-      debugPrint(
-        "🟢 [TrackRepo] GET Group Members: $url",
-      );
+      log("🟢 [TrackRepo] GET Group Members ($filter): $url");
+      debugPrint("🟢 [TrackRepo] GET Group Members ($filter): $url");
 
       final response = await HttpUtil().get(url);
 
-      final String responseString = response is Map || response is List
-          ? jsonEncode(response)
-          : response.toString();
-      log("🟢 [TrackRepo] Group Members Response: $responseString");
-      debugPrint("🟢 [TrackRepo] Group Members Response: $responseString");
-
       if (response is Map<String, dynamic>) {
-        return OnlineMemberModel.fromJson(response);
+        return GroupMemberModel.fromJson(response);
       }
 
       if (response is Map) {
-        return OnlineMemberModel.fromJson(
+        return GroupMemberModel.fromJson(
           Map<String, dynamic>.from(response),
         );
       }
 
       if (response is List) {
-        return OnlineMemberModel.fromJson({
+        return GroupMemberModel.fromJson({
           "status": true,
           "filter": filter,
-          "data": response,
+          "data": {
+            filter == 'all'
+                ? "allMember"
+                : (filter == 'private' ? "private" : "active"): response,
+          },
         });
       }
 
-      return OnlineMemberModel(
+      return GroupMemberModel(
         status: false,
         message: "Invalid response format",
-        data: OnlineMemberResponseData(
-          currentOnline: [],
-          recentOnline: [],
-        ),
       );
     } catch (e) {
       log("❌ [TrackRepo] getGroupMember Error: $e");
-      debugPrint(
-        "❌ [TrackRepo] getGroupMember Error: $e",
-      );
+      debugPrint("❌ [TrackRepo] getGroupMember Error: $e");
 
-      return OnlineMemberModel(
+      return GroupMemberModel(
         status: false,
         message: e.toString(),
-        data: OnlineMemberResponseData(
-          currentOnline: [],
-          recentOnline: [],
-        ),
       );
     }
   }
 
-  static Future<GhostMemberModel> getPrivateMembers({
+  static Future<GroupMemberModel> getPrivateMembers({
     String page = '1',
     int limit = 20,
   }) async {
-    try {
-      final String url = '${Urls.allGroupMembers}'
-          '?filter=private'
-          '&page=$page'
-          '&limit=$limit';
-
-      log("🟢 [TrackRepo] GET Private Members: $url");
-      debugPrint("🟢 [TrackRepo] GET Private Members: $url");
-
-      final response = await HttpUtil().get(url);
-
-      log("🟢 [TrackRepo] Private Members Response: $response");
-      debugPrint("🟢 [TrackRepo] Private Members Response: $response");
-
-      if (response is Map<String, dynamic>) {
-        return GhostMemberModel.fromJson(response);
-      }
-      if (response is Map) {
-        return GhostMemberModel.fromJson(
-          Map<String, dynamic>.from(response),
-        );
-      }
-      if (response is List) {
-        return GhostMemberModel.fromJson({
-          "status": true,
-          "filter": "private",
-          "data": response,
-        });
-      }
-
-      return GhostMemberModel.fromJson(response);
-    } catch (e) {
-      log("❌ [TrackRepo] getPrivateMembers error: $e");
-      debugPrint("❌ [TrackRepo] getPrivateMembers error: $e");
-      return GhostMemberModel(
-        status: false,
-        message: e.toString(),
-        data: [],
-      );
-    }
+    return getGroupMember(
+      page: page,
+      filter: 'private',
+      limit: limit,
+    );
   }
 
   static Future<bool> updateLocationSharing(
