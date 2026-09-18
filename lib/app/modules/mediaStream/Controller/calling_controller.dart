@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:developer';
 
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
+import 'package:fgtracker/app/Core/constant/urls.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Core/values/utility.dart';
 import 'package:fgtracker/app/modules/Track/Controller/TrackController.dart';
@@ -242,13 +243,9 @@ class CallingController extends GetxController {
           'urls': ['stun:stun.l.google.com:19302'],
         },
         {
-          'urls': [
-            'turn:89.116.23.2:3478?transport=udp',
-            'turn:89.116.23.2:3478?transport=tcp',
-            'turns:89.116.23.2:443?transport=tcp',
-          ],
-          'username': 'fgtracker',
-          'credential': 'FGM_Tracker@2025',
+          'urls': Urls.rtcUrl,
+          'username': Urls.rtcUserName,
+          'credential': Urls.rtcCredential,
         }
       ],
       'iceTransportPolicy': 'all',

@@ -41,7 +41,7 @@ class GroupCallControls extends StatelessWidget {
               iconColor: const Color(0xFF6E5CA4),
               borderColor: const Color(0xFFE9E5FE),
               onTap: () {
-                // controller.openMoreOptionsSheet
+                controller.openMoreSheet();
               },
             ),
 

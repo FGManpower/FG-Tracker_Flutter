@@ -66,7 +66,7 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
         CallEvent(
           sessionId: callIdToUuid(originalCallId),
           callerName: callData['callerName'],
-          callType: 1,
+          callType: callData['isVideo'] == true ? 1 : 0,
           opponentsIds: {int.parse(callData['callerId'])},
           callerId: int.parse(callData['callerId']),
           userInfo: userInfo,
@@ -110,15 +110,16 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     CallStateTracker.isIncomingCallScreenOpen = false;
     callEnded(sessionId);
     flutterLocalNotificationsPlugin.cancelAll();
-  } else if (message.data['screen_name'] == 'groupCallNotify') {
-    FlutterRingtonePlayer().play(
-      asAlarm: false,
-      fromAsset: Assets.music.incomingCall,
-    );
-    Future.delayed(const Duration(seconds: 10), () {
-      FlutterRingtonePlayer().stop();
-    });
   }
+  // else if (message.data['screen_name'] == 'groupCallNotify') {
+  //   FlutterRingtonePlayer().play(
+  //     asAlarm: false,
+  //     fromAsset: Assets.music.incomingCall,
+  //   );
+  //   Future.delayed(const Duration(seconds: 10), () {
+  //     FlutterRingtonePlayer().stop();
+  //   });
+  // }
 }
 
 @pragma('vm:entry-point')

@@ -224,7 +224,8 @@ class firebaseNotificationServices {
           Routes.IncomingCallScreen,
           arguments: {"callDetail": call},
         );
-      } else if (message.data['screen_name'] == 'groupCallNotify') {
+      }
+      // else if (message.data['screen_name'] == 'groupCallNotify') {
         // FlutterRingtonePlayer().stop();
         // if (CallStateTracker.isIncomingCallScreenOpen) return;
         //
@@ -248,28 +249,12 @@ class firebaseNotificationServices {
         //   },
         // );
         // flutterLocalNotificationsPlugin.cancelAll();
+      // }
 
 
 
-        if (
-            Platform.isAndroid) {
-          final callData = jsonDecode(message.data['callData']);
 
-          final Map<String, String> userInfo = callData.map<String, String>(
-                  (key, value) => MapEntry(key.toString(), value.toString()));
-          await ConnectycubeFlutterCallKit.showCallNotification(
-            CallEvent(
-              sessionId: callIdToUuid(callData['callId'].toString()),
-              callerName: callData['groupName'],
-              callType: callData['isVideo'] == true ? 1 : 0,
-              opponentsIds: {int.parse(callData['callerId'])},
-              callerId: int.parse(callData['callerId']),
-              userInfo: userInfo,
-            ),
-          );
-          CallSessionState.sessionId = callData['callId'].toString();
-        }
-      } else if (message.data['screen_name'] == "missedCall") {
+      else if (message.data['screen_name'] == "missedCall") {
         Get.toNamed(Routes.notificationScreen);
         // final callData = jsonDecode(message.data['callData']);
         // final bool isVideo = callData["isVideo"] == true;
@@ -337,15 +322,16 @@ class firebaseNotificationServices {
         callEnded(sessionId, type: "Notification-services");
         CallStateTracker.isIncomingCallScreenOpen = false;
         flutterLocalNotificationsPlugin.cancelAll();
-      } else if (message.data['screen_name'] == 'groupCallNotify') {
-        FlutterRingtonePlayer().play(
-          asAlarm: false,
-          fromAsset: Assets.music.incomingCall,
-        );
-        Future.delayed(const Duration(seconds: 10), () {
-          FlutterRingtonePlayer().stop();
-        });
       }
+      // else if (message.data['screen_name'] == 'groupCallNotify') {
+      //   FlutterRingtonePlayer().play(
+      //     asAlarm: false,
+      //     fromAsset: Assets.music.incomingCall,
+      //   );
+      //   Future.delayed(const Duration(seconds: 10), () {
+      //     FlutterRingtonePlayer().stop();
+      //   });
+      // }
     }
   }
 }
