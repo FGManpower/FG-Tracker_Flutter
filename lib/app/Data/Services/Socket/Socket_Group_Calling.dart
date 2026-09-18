@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:developer';
 import 'package:connectycube_flutter_call_kit/connectycube_flutter_call_kit.dart';
+import 'package:fgtracker/app/Core/constant/urls.dart' show Urls;
 import 'package:fgtracker/app/Core/global/launchedFromCall.dart';
 import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/Data/Services/CallStateTracker.dart';
@@ -49,13 +50,9 @@ class Socket_GroupCallService {
         'urls': ['stun:stun.l.google.com:19302']
       },
       {
-        'urls': [
-          'turn:89.116.23.2:3478?transport=udp',
-          'turn:89.116.23.2:3478?transport=tcp',
-          'turns:89.116.23.2:443?transport=tcp',
-        ],
-        'username': 'fgtracker',
-        'credential': 'FGM_Tracker@2025',
+        'urls': Urls.rtcUrl,
+        'username': Urls.rtcUserName,
+        'credential': Urls.rtcCredential,
       }
     ],
     'iceTransportPolicy': 'all',
@@ -64,11 +61,11 @@ class Socket_GroupCallService {
   void _log(String message) => log('[GroupCallService] $message');
 
   void _saveParticipantMeta(
-      String userId, {
-        String? name,
-        String? profileImage,
-        bool? isMuted,
-      }) {
+    String userId, {
+    String? name,
+    String? profileImage,
+    bool? isMuted,
+  }) {
     final existing = participantMeta[userId] ?? <String, dynamic>{};
     if (name != null && name.trim().isNotEmpty) {
       existing['name'] = name.trim();
@@ -143,7 +140,7 @@ class Socket_GroupCallService {
     });
   }
 
-  /// ✅ FIX: Waits for socket connection dynamically if launched from Terminated state
+  ///  FIX: Waits for socket connection dynamically if launched from Terminated state
   Future<bool> _ensureConnected({int timeoutSeconds = 10}) async {
     if (socket != null && socket!.connected) return true;
 
@@ -199,7 +196,6 @@ class Socket_GroupCallService {
     for (final e in events) {
       socket?.off(e);
     }
-
 
     socket?.on("group_call_started", (raw) {
       // _log(" group_call_started: $raw");
@@ -259,17 +255,17 @@ class Socket_GroupCallService {
       //
       // onIncomingCallReceived?.call(data);
     });
-    socket?.on("group_call_participant_joined", (raw) {
-      _log("👤 group_call_participant_joined: $raw");
-      if (raw == null) return;
 
+    socket?.on("group_call_participant_joined", (raw) {
+      _log("group_call_participant_joined: $raw");
+      if (raw == null) return;
       final data = Map<String, dynamic>.from(raw);
       final joinedUserId = data['userId']?.toString();
       if (joinedUserId == null || joinedUserId == _selfUserId) return;
 
       final name = (data['name'] ?? data['userName'] ?? '').toString();
       final profileImage =
-      (data['profileImage'] ?? data['userProfileImage'] ?? '').toString();
+          (data['profileImage'] ?? data['userProfileImage'] ?? '').toString();
 
       _saveParticipantMeta(
         joinedUserId,
@@ -306,7 +302,7 @@ class Socket_GroupCallService {
     });
 
     socket?.on("group_call_participant_left", (raw) async {
-      _log("👋 group_call_participant_left: $raw");
+      _log(" group_call_participant_left: $raw");
       final leftUserId = raw is Map ? raw['userId']?.toString() : null;
       if (leftUserId != null) {
         await _removeRemotePeer(leftUserId);
@@ -402,10 +398,10 @@ class Socket_GroupCallService {
   }
 
   Future<void> joinGroupCall(
-      String callId,
-      String groupId,
-      Function(bool success) onComplete,
-      ) async {
+    String callId,
+    String groupId,
+    Function(bool success) onComplete,
+  ) async {
     _log('emit join_group_call callId=$callId, groupId=$groupId');
     currentCallId = callId;
     currentGroupId = groupId;
@@ -414,7 +410,8 @@ class Socket_GroupCallService {
     bool connected = await _ensureConnected(timeoutSeconds: 8);
     if (!connected) {
       _log('Socket connection timed out during joinGroupCall');
-      Utils().fluttertoast("Unable to connect to call server. Please check your network.");
+      Utils().fluttertoast(
+          "Unable to connect to call server. Please check your network.");
       onComplete(false);
       return;
     }
@@ -446,7 +443,7 @@ class Socket_GroupCallService {
             uid,
             name: (p['name'] ?? p['userName'])?.toString(),
             profileImage:
-            (p['profileImage'] ?? p['userProfileImage'])?.toString(),
+                (p['profileImage'] ?? p['userProfileImage'])?.toString(),
             isMuted: p['isMuted'] == true,
           );
         }
@@ -486,11 +483,11 @@ class Socket_GroupCallService {
 
   void emitMute({required bool isMuted}) {
     if (currentCallId == null || currentGroupId == null) {
-      _log('⚠️ emitMute skipped: no active call');
+      _log(' emitMute skipped: no active call');
       return;
     }
 
-    _log('🚀 emit group_call_mute isMuted=$isMuted');
+    _log(' emit group_call_mute isMuted=$isMuted');
 
     if (_selfUserId != null) {
       _saveParticipantMeta(_selfUserId!, isMuted: isMuted);

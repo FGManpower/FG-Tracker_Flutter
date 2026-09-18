@@ -1,5 +1,3 @@
-
-
 import 'const_res.dart';
 export 'const_res.dart';
 
@@ -15,12 +13,17 @@ class Urls {
   static const String recentCallHistory = '${ConstRes.aBaseUrl}history'
       '';
   static const String allGroupMembers = '${ConstRes.aBaseUrl}all-group-members';
-  static const String usersWithinRadius = '${ConstRes.aBaseUrl}users-within-radius';
-  static const String userWithinRadiusFallback = '${ConstRes.aBaseUrl}user-within-radius';
+  static const String usersWithinRadius =
+      '${ConstRes.aBaseUrl}users-within-radius';
+  static const String userWithinRadiusFallback =
+      '${ConstRes.aBaseUrl}user-within-radius';
 
   ///------------------------ Params ------------------------///
-  static const String apiKeyName = 'apikey';
-  static const String fullName = 'fullname';
-  static const String instagram = 'instagram';
-
+  static const String rtcUserName = 'fgtracker';
+  static const String rtcCredential = 'FGM_Tracker@2025';
+  static const List rtcUrl = [
+    'turn:89.116.23.2:3478?transport=udp',
+    'turn:89.116.23.2:3478?transport=tcp',
+    'turns:89.116.23.2:443?transport=tcp',
+  ];
 }
