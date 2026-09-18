@@ -12,26 +12,26 @@ class PrivateChatResponse {
   });
 
   factory PrivateChatResponse.fromJson(
-      Map<String, dynamic> json,
-      ) {
+    Map<String, dynamic> json,
+  ) {
     return PrivateChatResponse(
       status: json['status'] as bool?,
       message: json['message'] as String?,
       pagination: json['pagination'] != null
           ? Pagination.fromJson(
-        Map<String, dynamic>.from(
-          json['pagination'],
-        ),
-      )
+              Map<String, dynamic>.from(
+                json['pagination'],
+              ),
+            )
           : null,
       data: json['data'] != null
           ? List<PrivateChatModel>.from(
-        (json['data'] as List).map(
-              (x) => PrivateChatModel.fromJson(
-            Map<String, dynamic>.from(x),
-          ),
-        ),
-      )
+              (json['data'] as List).map(
+                (x) => PrivateChatModel.fromJson(
+                  Map<String, dynamic>.from(x),
+                ),
+              ),
+            )
           : <PrivateChatModel>[],
     );
   }
@@ -64,8 +64,8 @@ class Pagination {
   });
 
   factory Pagination.fromJson(
-      Map<String, dynamic> json,
-      ) {
+    Map<String, dynamic> json,
+  ) {
     return Pagination(
       currentPage: _parseInt(json['currentPage']),
       perPage: _parseInt(json['perPage']),
@@ -125,15 +125,11 @@ class Pagination {
     if (value is String) {
       final normalized = value.toLowerCase().trim();
 
-      if (normalized == 'true' ||
-          normalized == 'yes' ||
-          normalized == '1') {
+      if (normalized == 'true' || normalized == 'yes' || normalized == '1') {
         return true;
       }
 
-      if (normalized == 'false' ||
-          normalized == 'no' ||
-          normalized == '0') {
+      if (normalized == 'false' || normalized == 'no' || normalized == '0') {
         return false;
       }
     }
@@ -177,11 +173,10 @@ class PrivateChatModel {
   });
 
   factory PrivateChatModel.fromJson(
-      Map<String, dynamic> json,
-      ) {
-    final user = json['user'] is Map
-        ? Map<String, dynamic>.from(json['user'])
-        : null;
+    Map<String, dynamic> json,
+  ) {
+    final user =
+        json['user'] is Map ? Map<String, dynamic>.from(json['user']) : null;
 
     final lastActivity = json['lastActivity'] is Map
         ? Map<String, dynamic>.from(json['lastActivity'])
@@ -192,7 +187,6 @@ class PrivateChatModel {
     );
 
     return PrivateChatModel(
-
       id: _parseInt(
         json['id'] ??
             json['chatId'] ??
@@ -200,7 +194,6 @@ class PrivateChatModel {
             json['conversationId'] ??
             json['conversation_id'],
       ),
-
       userId: _parseInt(
         json['userId'] ??
             json['user_id'] ??
@@ -208,8 +201,6 @@ class PrivateChatModel {
             user?['userId'] ??
             user?['user_id'],
       ),
-
-
       name: _readString(
         json,
         [
@@ -222,8 +213,6 @@ class PrivateChatModel {
           'full_name',
         ],
       ),
-
-
       role: _readString(
         json,
         [
@@ -234,72 +223,54 @@ class PrivateChatModel {
           'team_name',
         ],
       ),
-
-
       message: lastActivity != null
           ? _readString(
-        lastActivity,
-        [
-          'message',
-          'lastMessage',
-          'last_message',
-          'latestMessage',
-          'latest_message',
-          'msg',
-        ],
-      )
+              lastActivity,
+              [
+                'message',
+                'lastMessage',
+                'last_message',
+                'latestMessage',
+                'latest_message',
+                'msg',
+              ],
+            )
           : "",
-
-
       messageType: lastActivity?['messageType']?.toString(),
-
       time: lastActivity != null
           ? _readString(
-        lastActivity,
-        [
-          'timestamp',
-          'time',
-          'createdAt',
-          'created_at',
-          'updatedAt',
-          'updated_at',
-        ],
-      )
+              lastActivity,
+              [
+                'timestamp',
+                'time',
+                'createdAt',
+                'created_at',
+                'updatedAt',
+                'updated_at',
+              ],
+            )
           : "",
-
-
       unreadCount: _parseInt(
-        json['unreadCount'] ??
-            json['unread_count'] ??
-            json['unread'],
+        json['unreadCount'] ?? json['unread_count'] ?? json['unread'],
       ),
-
       status: json.containsKey('isOnline')
           ? (online == true ? "Online" : "Offline")
           : _readString(
-        json,
-        [
-          'status',
-          'userStatus',
-          'user_status',
-          'onlineStatus',
-          'online_status',
-        ],
-      ),
-
+              json,
+              [
+                'status',
+                'userStatus',
+                'user_status',
+                'onlineStatus',
+                'online_status',
+              ],
+            ),
       isGroup: _parseBool(
-        json['isGroup'] ??
-            json['is_group'] ??
-            json['group'],
+        json['isGroup'] ?? json['is_group'] ?? json['group'],
       ),
-
-
       isPinned: _parseBool(
-        json['isPinned'] ??
-            json['is_pinned'] ??
-            json['pinned'],
+        json['isPinned'] ?? json['is_pinned'] ?? json['pinned'],
       ),
-
       image: _readString(
         json,
         [
@@ -333,9 +304,9 @@ class PrivateChatModel {
   }
 
   static String? _readString(
-      Map<String, dynamic> json,
-      List<String> keys,
-      ) {
+    Map<String, dynamic> json,
+    List<String> keys,
+  ) {
     for (final key in keys) {
       final value = json[key];
 
@@ -400,7 +371,6 @@ class PrivateChatModel {
     return null;
   }
 
-
   static bool? _parseBool(dynamic value) {
     if (value == null) {
       return null;
@@ -417,15 +387,11 @@ class PrivateChatModel {
     if (value is String) {
       final normalized = value.toLowerCase().trim();
 
-      if (normalized == 'true' ||
-          normalized == 'yes' ||
-          normalized == '1') {
+      if (normalized == 'true' || normalized == 'yes' || normalized == '1') {
         return true;
       }
 
-      if (normalized == 'false' ||
-          normalized == 'no' ||
-          normalized == '0') {
+      if (normalized == 'false' || normalized == 'no' || normalized == '0') {
         return false;
       }
     }

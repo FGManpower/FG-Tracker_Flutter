@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:connectycube_flutter_call_kit/connectycube_flutter_call_kit.dart';
 import 'package:fgtracker/app/Core/global/launchedFromCall.dart';
 import 'package:fgtracker/app/Core/values/Utils.dart';
+import 'package:fgtracker/app/Data/Services/CallStateTracker.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:socket_io_client/socket_io_client.dart';
 import 'package:get/get.dart';
@@ -315,6 +316,7 @@ class Socket_GroupCallService {
     socket?.on("group_call_ended", (raw) async {
       _log(" group_call_ended: $raw");
       if (Get.currentRoute == Routes.groupIncomingCallScreen) {
+        CallStateTracker.isIncomingCallScreenOpen = false;
         Get.back();
       }
       onCallEnded?.call();

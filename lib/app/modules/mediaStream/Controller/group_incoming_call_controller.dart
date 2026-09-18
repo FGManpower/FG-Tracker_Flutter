@@ -1,4 +1,5 @@
 import 'package:fgtracker/app/Core/util/CallKit/callkit_service.dart';
+import 'package:fgtracker/app/Data/Services/CallStateTracker.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Group_Calling.dart';
 import 'package:get/get.dart';
 import '../../../routes/app_pages.dart';
@@ -72,7 +73,7 @@ class GroupIncomingCallController extends GetxController {
 
   void joinCall() {
     _stopRingtone();
-
+    CallStateTracker.isIncomingCallScreenOpen = false;
     Get.offNamed(
       Routes.groupCallingScreen,
       arguments: {

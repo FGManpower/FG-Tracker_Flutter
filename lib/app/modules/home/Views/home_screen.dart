@@ -47,11 +47,6 @@ class _HomeScreenState extends State<HomeScreen> {
       }
     });
     notificationServices.askPermission();
-    firebaseNotificationServices().getDiviceToken().then(
-      (value) {
-        debugPrint("token=>$value");
-      },
-    );
     SocketDashboardService.instance.init();
     requestCallPermissions();
   }
