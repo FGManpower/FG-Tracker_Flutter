@@ -1,19 +1,17 @@
 import 'package:fgtracker/app/Data/Repositories/GroupRepo.dart';
 import 'package:fgtracker/app/Data/Services/contact_services.dart';
 import 'package:fgtracker/app/Model/user_profileList_res.dart';
+import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:get/get.dart';
 
 class NewChatController extends GetxController {
   final ContactService _contactService = ContactService();
 
-  // All users fetched from backend
   var allUsers = <UserListData>[].obs;
 
-  // Contacts who have the app (Start a New Chat)
   var matchedUsers = <UserListData>[].obs;
   var filteredMatchedUsers = <UserListData>[].obs;
 
-  // Other users registered on tracker but not in device phonebook (Invite/Connect)
   var otherUsers = <UserListData>[].obs;
   var filteredOtherUsers = <UserListData>[].obs;
 
@@ -32,26 +30,54 @@ class NewChatController extends GetxController {
       contactLoading.value = true;
       responseError.value = "";
 
-      // 1. Fetch contact numbers from physical device
-      final contactNumbers = await _contactService.getMobileNumbers();
+      final List<Contact> deviceContacts = await _contactService.getContacts();
 
-      // 2. Fetch all users from backend tracker database
       final result = await GroupRepo.getAllUserData();
 
       if (result.status == true) {
         final List<UserListData> users = result.userData ?? [];
-        final Set<String> contactNumberSet = contactNumbers.map((num) => _normalizePhone(num)).toSet();
+
+        final Map<String, UserListData> registeredMap = {};
+        for (var user in users) {
+          final String norm = _normalizePhone(user.mobileNo ?? '');
+          if (norm.isNotEmpty) {
+            registeredMap[norm] = user;
+          }
+        }
 
         final List<UserListData> matched = [];
         final List<UserListData> unmatched = [];
+        final Set<String> processedPhones = {};
 
-        // Distribute backend users based on contact list matching
-        for (var user in users) {
-          final String normalizedUserPhone = _normalizePhone(user.mobileNo ?? '');
-          if (contactNumberSet.contains(normalizedUserPhone)) {
-            matched.add(user);
-          } else {
-            unmatched.add(user);
+        for (var contact in deviceContacts) {
+          for (var phone in contact.phones) {
+            final String normalized = _normalizePhone(phone.number);
+
+            if (normalized.length == 10 && !processedPhones.contains(normalized)) {
+              processedPhones.add(normalized);
+
+              final String contactDisplayName = contact.displayName.trim().isNotEmpty
+                  ? contact.displayName.trim()
+                  : phone.number;
+
+              if (registeredMap.containsKey(normalized)) {
+                final registeredUser = registeredMap[normalized]!;
+                matched.add(UserListData(
+                  userId: registeredUser.userId,
+                  name: contactDisplayName,
+                  mobileNo: phone.number,
+                  profileImage: registeredUser.profileImage,
+                ));
+              }
+              else {
+                unmatched.add(UserListData(
+                  userId: null,
+                  name: contactDisplayName,
+                  mobileNo: phone.number,
+                  profileImage: null,
+                ));
+              }
+            }
           }
         }
 
@@ -59,7 +85,6 @@ class NewChatController extends GetxController {
         matchedUsers.value = matched;
         otherUsers.value = unmatched;
 
-        // Apply active search filter
         filterContacts(searchQuery.value);
       } else {
         responseError.value = result.message ?? "Something went wrong";

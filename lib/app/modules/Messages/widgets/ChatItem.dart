@@ -44,7 +44,7 @@ class ChatBubble extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final currentUserId =
-    Global.storageServices.get(PrefConst.userId).toString();
+        Global.storageServices.get(PrefConst.userId).toString();
 
     final isSentByMe = message.senderId.toString() == currentUserId;
 
@@ -53,30 +53,30 @@ class ChatBubble extends StatelessWidget {
 
     final borderRadius = isSentByMe
         ? BorderRadius.only(
-      topLeft: Radius.circular(16.r),
-      topRight: Radius.circular(16.r),
-      bottomLeft: Radius.circular(16.r),
-      bottomRight: Radius.circular(4.r),
-    )
+            topLeft: Radius.circular(16.r),
+            topRight: Radius.circular(16.r),
+            bottomLeft: Radius.circular(16.r),
+            bottomRight: Radius.circular(4.r),
+          )
         : BorderRadius.only(
-      topLeft: Radius.circular(4.r),
-      topRight: Radius.circular(16.r),
-      bottomLeft: Radius.circular(16.r),
-      bottomRight: Radius.circular(16.r),
-    );
+            topLeft: Radius.circular(4.r),
+            topRight: Radius.circular(16.r),
+            bottomLeft: Radius.circular(16.r),
+            bottomRight: Radius.circular(16.r),
+          );
 
     return Container(
       margin: EdgeInsets.symmetric(vertical: 6.h),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment:
-        isSentByMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+            isSentByMe ? MainAxisAlignment.end : MainAxisAlignment.start,
         children: [
           Flexible(
             child: Builder(
               builder: (bubbleContext) {
                 return Obx(
-                      () => GestureDetector(
+                  () => GestureDetector(
                     onLongPress: () =>
                         _showMessageMenu(bubbleContext, isSentByMe),
                     child: AnimatedContainer(
@@ -90,10 +90,9 @@ class ChatBubble extends StatelessWidget {
                       ),
                       decoration: BoxDecoration(
                         color:
-                        controller.highlightedMessageId.value ==
-                            message.id
-                            ? Colors.yellow.withValues(alpha: .35)
-                            : bgColor,
+                            controller.highlightedMessageId.value == message.id
+                                ? Colors.yellow.withValues(alpha: .35)
+                                : bgColor,
                         borderRadius: borderRadius,
                         boxShadow: [
                           BoxShadow(
@@ -180,7 +179,7 @@ class ChatBubble extends StatelessWidget {
             (message.seenCount ?? 0) > 0 ? Icons.done_all : Icons.done,
             size: 14.sp,
             color:
-            (message.seenCount ?? 0) > 0 ? _purple : Colors.grey.shade500,
+                (message.seenCount ?? 0) > 0 ? _purple : Colors.grey.shade500,
           ),
         ],
       ],
@@ -209,10 +208,10 @@ class ChatBubble extends StatelessWidget {
   }
 
   Widget _buildTextContent(
-      MessageData message,
-      Color textColor,
-      bool isSentByMe,
-      ) {
+    MessageData message,
+    Color textColor,
+    bool isSentByMe,
+  ) {
     final query = controller.searchQuery.value;
     final content = message.content?.toString() ?? "";
 
@@ -267,12 +266,11 @@ class ChatBubble extends StatelessWidget {
   }
 
   Widget _buildMessageContent(
-      MessageData message,
-      Color textColor,
-      bool isSentByMe,
-      ) {
-    if (message.messageType == "image" ||
-        message.messageType == "image_text") {
+    MessageData message,
+    Color textColor,
+    bool isSentByMe,
+  ) {
+    if (message.messageType == "image" || message.messageType == "image_text") {
       final imagePart = message.content ?? "";
       final caption = message.caption ?? "";
 
@@ -309,11 +307,9 @@ class ChatBubble extends StatelessWidget {
 
       final videoPath = parts.isNotEmpty ? parts[0].trim() : "";
 
-      final rawThumbnailPath =
-      parts.length > 1 ? parts[1].trim() : "";
+      final rawThumbnailPath = parts.length > 1 ? parts[1].trim() : "";
 
-      final duration =
-      parts.length > 2 && parts[2].trim().isNotEmpty
+      final duration = parts.length > 2 && parts[2].trim().isNotEmpty
           ? parts[2].trim()
           : "--:--";
 
@@ -353,9 +349,8 @@ class ChatBubble extends StatelessWidget {
 
       final documentUrl = parts.isNotEmpty ? parts[0] : "";
 
-      String documentName = parts.length > 1
-          ? parts[1]
-          : documentUrl.split('/').last;
+      String documentName =
+          parts.length > 1 ? parts[1] : documentUrl.split('/').last;
 
       documentName = removeDuplicateExtension(documentName);
 
@@ -454,10 +449,18 @@ class ChatBubble extends StatelessWidget {
                     ),
                   ),
                   SizedBox(width: 6.w),
-                  Icon(
-                    Icons.download_rounded,
-                    color: _purple,
-                    size: 20.sp,
+                  Obx(
+                    () {
+                      final url = "${ConstRes.aImageBaseUrl}$documentUrl";
+
+                      return Icon(
+                        DocumentService.isDownloaded(url)
+                            ? Icons.download_done_rounded
+                            : Icons.download_rounded,
+                        color: _purple,
+                        size: 20.sp,
+                      );
+                    },
                   ),
                 ],
               ),
@@ -496,7 +499,6 @@ class ChatBubble extends StatelessWidget {
     }
   }
 
-
   String _buildMediaUrl(String path) {
     if (path.trim().isEmpty) {
       return "";
@@ -504,8 +506,7 @@ class ChatBubble extends StatelessWidget {
 
     final value = path.trim();
 
-    if (value.startsWith("http://") ||
-        value.startsWith("https://")) {
+    if (value.startsWith("http://") || value.startsWith("https://")) {
       return value;
     }
 
@@ -513,9 +514,9 @@ class ChatBubble extends StatelessWidget {
   }
 
   Widget _buildReplyPreview(
-      MessageData message,
-      bool isSentByMe,
-      ) {
+    MessageData message,
+    bool isSentByMe,
+  ) {
     if (message.replyId == null) {
       return const SizedBox.shrink();
     }
@@ -594,57 +595,43 @@ class ChatBubble extends StatelessWidget {
   }
 
   void _showMessageMenu(
-      BuildContext bubbleContext,
-      bool isSentByMe,
-      ) {
-    final isPinned =
-        controller.pinnedMessage.value?.id == message.id;
+    BuildContext bubbleContext,
+    bool isSentByMe,
+  ) {
+    final isPinned = controller.pinnedMessage.value?.id == message.id;
 
-    final isText =
-        message.messageType == "text" ||
-            message.messageType == "text_message" ||
-            (message.messageType ?? "").isEmpty;
+    final isText = message.messageType == "text" ||
+        message.messageType == "text_message" ||
+        (message.messageType ?? "").isEmpty;
 
-    final renderBox =
-    bubbleContext.findRenderObject() as RenderBox;
+    final renderBox = bubbleContext.findRenderObject() as RenderBox;
 
-    final position =
-    renderBox.localToGlobal(Offset.zero);
+    final position = renderBox.localToGlobal(Offset.zero);
 
     final size = renderBox.size;
 
-    final screenSize =
-        MediaQuery.of(bubbleContext).size;
+    final screenSize = MediaQuery.of(bubbleContext).size;
 
     const menuWidth = 220.0;
     const menuMargin = 8.0;
 
-    double left =
-        position.dx + size.width + menuMargin;
+    double left = position.dx + size.width + menuMargin;
 
-    if (left + menuWidth >
-        screenSize.width - menuMargin) {
-      left =
-          position.dx - menuWidth - menuMargin;
+    if (left + menuWidth > screenSize.width - menuMargin) {
+      left = position.dx - menuWidth - menuMargin;
     }
 
     left = left.clamp(
       menuMargin,
-      screenSize.width -
-          menuWidth -
-          menuMargin,
+      screenSize.width - menuWidth - menuMargin,
     );
 
     double top = position.dy;
 
     const menuHeight = 500.0;
 
-    if (top + menuHeight >
-        screenSize.height - menuMargin) {
-      top =
-          screenSize.height -
-              menuHeight -
-              menuMargin;
+    if (top + menuHeight > screenSize.height - menuMargin) {
+      top = screenSize.height - menuHeight - menuMargin;
     }
 
     if (top < menuMargin) {
@@ -673,20 +660,17 @@ class ChatBubble extends StatelessWidget {
                   width: menuWidth,
                   decoration: BoxDecoration(
                     color: const Color(0xFFF8F7FC),
-                    borderRadius:
-                    BorderRadius.circular(16.r),
+                    borderRadius: BorderRadius.circular(16.r),
                     boxShadow: [
                       BoxShadow(
-                        color:
-                        Colors.black.withOpacity(0.14),
+                        color: Colors.black.withOpacity(0.14),
                         blurRadius: 24,
                         offset: const Offset(0, 8),
                       ),
                     ],
                   ),
                   child: ClipRRect(
-                    borderRadius:
-                    BorderRadius.circular(16.r),
+                    borderRadius: BorderRadius.circular(16.r),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -699,7 +683,6 @@ class ChatBubble extends StatelessWidget {
                             controller.setReply(message);
                           },
                         ),
-
                         if (isText)
                           _menuTile(
                             icon: Icons.copy_rounded,
@@ -710,8 +693,7 @@ class ChatBubble extends StatelessWidget {
 
                               await Clipboard.setData(
                                 ClipboardData(
-                                  text:
-                                  message.content ?? "",
+                                  text: message.content ?? "",
                                 ),
                               );
 
@@ -720,7 +702,6 @@ class ChatBubble extends StatelessWidget {
                               );
                             },
                           ),
-
                         _menuTile(
                           icon: Icons.forward_rounded,
                           iconColor: _purple,
@@ -736,7 +717,6 @@ class ChatBubble extends StatelessWidget {
                             );
                           },
                         ),
-
                         if (isSentByMe && isText)
                           _menuTile(
                             icon: Icons.edit_rounded,
@@ -745,21 +725,15 @@ class ChatBubble extends StatelessWidget {
                             onTap: () {
                               Navigator.pop(ctx);
 
-                              controller
-                                  .startEditingMessage(
+                              controller.startEditingMessage(
                                 message,
                               );
                             },
                           ),
-
                         _menuTile(
                           icon: Icons.push_pin_rounded,
-                          iconColor: isPinned
-                              ? Colors.redAccent
-                              : _purple,
-                          title: isPinned
-                              ? "Unpin Message"
-                              : "Pin Message",
+                          iconColor: isPinned ? Colors.redAccent : _purple,
+                          title: isPinned ? "Unpin Message" : "Pin Message",
                           onTap: () {
                             Navigator.pop(ctx);
 
@@ -770,7 +744,6 @@ class ChatBubble extends StatelessWidget {
                             }
                           },
                         ),
-
                         Divider(
                           height: 1,
                           thickness: 1,
@@ -778,11 +751,9 @@ class ChatBubble extends StatelessWidget {
                           indent: 12,
                           endIndent: 12,
                         ),
-
                         if (isSentByMe)
                           _menuTile(
-                            icon:
-                            Icons.delete_outline_rounded,
+                            icon: Icons.delete_outline_rounded,
                             iconColor: Colors.redAccent,
                             title: "Delete for Everyone",
                             isDestructive: true,
@@ -795,7 +766,6 @@ class ChatBubble extends StatelessWidget {
                               );
                             },
                           ),
-
                         _menuTile(
                           icon: Icons.delete_rounded,
                           iconColor: Colors.redAccent,
@@ -863,11 +833,11 @@ class ChatBubble extends StatelessWidget {
   }
 
   Widget _buildHighlightedText(
-      String text,
-      String query, {
-        required TextStyle normalStyle,
-        required TextStyle highlightStyle,
-      }) {
+    String text,
+    String query, {
+    required TextStyle normalStyle,
+    required TextStyle highlightStyle,
+  }) {
     final lowerText = text.toLowerCase();
     final lowerQuery = query.toLowerCase();
 
@@ -876,8 +846,7 @@ class ChatBubble extends StatelessWidget {
     int start = 0;
 
     while (true) {
-      final index =
-      lowerText.indexOf(lowerQuery, start);
+      final index = lowerText.indexOf(lowerQuery, start);
 
       if (index == -1) {
         if (start < text.length) {
@@ -920,6 +889,7 @@ class ChatBubble extends StatelessWidget {
     );
   }
 }
+
 class GroupChatBubble extends StatelessWidget {
   final MessageData message;
   final BuildContext context;
@@ -972,7 +942,7 @@ class GroupChatBubble extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment:
-        isSentByMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+            isSentByMe ? MainAxisAlignment.end : MainAxisAlignment.start,
         children: [
           if (isGroup && !isSentByMe)
             Padding(
@@ -985,10 +955,9 @@ class GroupChatBubble extends StatelessWidget {
                   DialogBox().showRouteDetailsBottomSheet(
                     destination: const LatLng(0, 0),
                     distance: 0,
-                    userId:
-                    int.tryParse(
-                      message.senderId.toString(),
-                    ) ??
+                    userId: int.tryParse(
+                          message.senderId.toString(),
+                        ) ??
                         0,
                     groupId: groupId,
                     groupName: groupName,
@@ -997,50 +966,42 @@ class GroupChatBubble extends StatelessWidget {
                     status: true,
                     lastSeen: "",
                     isGroupChat: true,
-                    isLocationSharing:
-                    message.locationSharing ?? false,
+                    isLocationSharing: message.locationSharing ?? false,
                   );
                 },
                 child: CircleAvatar(
                   radius: 18.r,
                   backgroundColor: Colors.grey.shade200,
-                  backgroundImage:
-                  message.senderImage != null &&
-                      message.senderImage!.isNotEmpty
+                  backgroundImage: message.senderImage != null &&
+                          message.senderImage!.isNotEmpty
                       ? NetworkImage(
-                    "${ConstRes.aImageBaseUrl}${message.senderImage}",
-                  )
+                          "${ConstRes.aImageBaseUrl}${message.senderImage}",
+                        )
                       : null,
-                  child:
-                  (message.senderImage == null ||
-                      message.senderImage!.isEmpty)
+                  child: (message.senderImage == null ||
+                          message.senderImage!.isEmpty)
                       ? Icon(
-                    Icons.person,
-                    size: 18.sp,
-                    color: Colors.grey.shade500,
-                  )
+                          Icons.person,
+                          size: 18.sp,
+                          color: Colors.grey.shade500,
+                        )
                       : null,
                 ),
               ),
             ),
-
           Flexible(
             child: Builder(
               builder: (bubbleContext) {
                 return Obx(
-                      () => GestureDetector(
-                    onLongPress: () =>
-                        _showMessageMenu(
-                          bubbleContext,
-                          isSentByMe,
-                        ),
+                  () => GestureDetector(
+                    onLongPress: () => _showMessageMenu(
+                      bubbleContext,
+                      isSentByMe,
+                    ),
                     child: AnimatedContainer(
-                      duration:
-                      const Duration(milliseconds: 300),
+                      duration: const Duration(milliseconds: 300),
                       constraints: BoxConstraints(
-                        maxWidth:
-                        MediaQuery.of(context).size.width *
-                            0.75,
+                        maxWidth: MediaQuery.of(context).size.width * 0.75,
                       ),
                       padding: EdgeInsets.symmetric(
                         horizontal: 12.w,
@@ -1048,18 +1009,15 @@ class GroupChatBubble extends StatelessWidget {
                       ),
                       decoration: BoxDecoration(
                         color:
-                        controller.highlightedMessageId
-                            .value ==
-                            message.id
-                            ? Colors.yellow.withValues(
-                          alpha: .35,
-                        )
-                            : bgColor,
+                            controller.highlightedMessageId.value == message.id
+                                ? Colors.yellow.withValues(
+                                    alpha: .35,
+                                  )
+                                : bgColor,
                         borderRadius: borderRadius,
                         boxShadow: [
                           BoxShadow(
-                            color:
-                            Colors.black.withValues(
+                            color: Colors.black.withValues(
                               alpha: 0.04,
                             ),
                             blurRadius: 4,
@@ -1069,34 +1027,27 @@ class GroupChatBubble extends StatelessWidget {
                       ),
                       child: IntrinsicWidth(
                         child: Column(
-                          crossAxisAlignment:
-                          CrossAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             if (isGroup && !isSentByMe)
                               Padding(
-                                padding:
-                                EdgeInsets.only(
+                                padding: EdgeInsets.only(
                                   bottom: 4.h,
                                 ),
                                 child: Text(
-                                  message.senderName
-                                      ?.toString() ??
-                                      "",
+                                  message.senderName?.toString() ?? "",
                                   style: TextStyle(
                                     fontSize: 12.sp,
-                                    fontWeight:
-                                    FontWeight.w700,
+                                    fontWeight: FontWeight.w700,
                                     color: _purple,
                                   ),
                                 ),
                               ),
-
                             _buildReplyPreview(
                               message,
                               isSentByMe,
                             ),
-
                             if (_isPlainTextMessage(message))
                               _buildTextWithTime(
                                 message: message,
@@ -1111,8 +1062,7 @@ class GroupChatBubble extends StatelessWidget {
                               ),
                               SizedBox(height: 4.h),
                               Align(
-                                alignment:
-                                Alignment.centerRight,
+                                alignment: Alignment.centerRight,
                                 child: _buildTimeRow(
                                   isSentByMe,
                                 ),
@@ -1130,7 +1080,6 @@ class GroupChatBubble extends StatelessWidget {
         ],
       ),
     );
-
   }
 
   bool _isPlainTextMessage(MessageData message) {
@@ -1592,8 +1541,7 @@ class GroupChatBubble extends StatelessWidget {
         message.messageType == "text_message" ||
         (message.messageType ?? "").isEmpty;
 
-    final renderBox =
-    bubbleContext.findRenderObject() as RenderBox;
+    final renderBox = bubbleContext.findRenderObject() as RenderBox;
 
     final position = renderBox.localToGlobal(Offset.zero);
     final size = renderBox.size;
@@ -1639,7 +1587,6 @@ class GroupChatBubble extends StatelessWidget {
                 child: const SizedBox.expand(),
               ),
             ),
-
             Positioned(
               left: left,
               top: top,
@@ -1672,7 +1619,6 @@ class GroupChatBubble extends StatelessWidget {
                             controller.setReply(message);
                           },
                         ),
-
                         if (isText)
                           _menuTile(
                             icon: Icons.copy_rounded,
@@ -1690,7 +1636,6 @@ class GroupChatBubble extends StatelessWidget {
                               Utils().fluttertoast("Message copied");
                             },
                           ),
-
                         _menuTile(
                           icon: Icons.forward_rounded,
                           iconColor: _purple,
@@ -1706,7 +1651,6 @@ class GroupChatBubble extends StatelessWidget {
                             );
                           },
                         ),
-
                         if (isSentByMe && isText)
                           _menuTile(
                             icon: Icons.edit_rounded,
@@ -1717,14 +1661,10 @@ class GroupChatBubble extends StatelessWidget {
                               controller.startEditingMessage(message);
                             },
                           ),
-
                         _menuTile(
                           icon: Icons.push_pin_rounded,
-                          iconColor:
-                          isPinned ? Colors.redAccent : _purple,
-                          title: isPinned
-                              ? "Unpin Message"
-                              : "Pin Message",
+                          iconColor: isPinned ? Colors.redAccent : _purple,
+                          title: isPinned ? "Unpin Message" : "Pin Message",
                           onTap: () {
                             Navigator.pop(ctx);
 
@@ -1735,7 +1675,6 @@ class GroupChatBubble extends StatelessWidget {
                             }
                           },
                         ),
-
                         Divider(
                           height: 1,
                           thickness: 1,
@@ -1743,7 +1682,6 @@ class GroupChatBubble extends StatelessWidget {
                           indent: 12,
                           endIndent: 12,
                         ),
-
                         if (isSentByMe)
                           _menuTile(
                             icon: Icons.delete_outline_rounded,
@@ -1759,7 +1697,6 @@ class GroupChatBubble extends StatelessWidget {
                               );
                             },
                           ),
-
                         _menuTile(
                           icon: Icons.delete_rounded,
                           iconColor: Colors.redAccent,
@@ -1785,6 +1722,7 @@ class GroupChatBubble extends StatelessWidget {
       },
     );
   }
+
   Widget _menuTile({
     required IconData icon,
     required Color iconColor,

@@ -1,8 +1,5 @@
-// ignore_for_file: unused_import
-
 import 'dart:io';
 import 'dart:typed_data';
-
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:flutter/material.dart';
@@ -30,8 +27,6 @@ class VideoThumbnailWidget extends StatefulWidget {
 }
 
 class _VideoThumbnailWidgetState extends State<VideoThumbnailWidget> {
-
-
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -48,7 +43,7 @@ class _VideoThumbnailWidgetState extends State<VideoThumbnailWidget> {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              CNetworkImage(imageurl: "${ConstRes.aImageBaseUrl}${widget.thumbnail}"),
+              CNetworkImage(imageurl: widget.thumbnail),
               Container(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(

@@ -226,7 +226,7 @@ class _AllChatsBody extends StatelessWidget {
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           padding: EdgeInsets.zero,
-          itemCount: 6, // 6 dummy rows
+          itemCount: 6,
           separatorBuilder: (_, __) => Divider(
             color: Colors.grey.withValues(alpha: 0.12),
             height: 1,
@@ -653,15 +653,15 @@ class _AllChatsBody extends StatelessWidget {
           children: [
             reausabletext(
               time,
-              fontsize: 11.sp,
+              fontsize: 9.sp,
               color: const Color(0xFF6B4DFF),
               maxline: 1,
             ),
             SizedBox(height: 6.h),
             if (unreadCount > 0)
               Container(
-                width: 20.w,
-                height: 20.w,
+                width: 18.w,
+                height: 18.w,
                 alignment: Alignment.center,
                 decoration: const BoxDecoration(
                   color: Color(0xFF6B4DFF),
@@ -670,7 +670,7 @@ class _AllChatsBody extends StatelessWidget {
                 child: Text(
                   unreadCount.toString(),
                   style: TextStyle(
-                    fontSize: 10.sp,
+                    fontSize: 9.sp,
                     color: Colors.white,
                     fontFamily: FontFamily.interSemiBold,
                   ),

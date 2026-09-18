@@ -8,6 +8,7 @@ import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:fgtracker/gen/assets.gen.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:skeletonizer/skeletonizer.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../../../Model/MemberDataRes.dart';
 import '../../../routes/app_pages.dart';
@@ -48,6 +49,26 @@ class _NewChatScreenState extends State<NewChatScreen> {
     super.dispose();
   }
 
+  String _getInitials(String name) {
+    if (name.isEmpty) return "?";
+    List<String> parts = name.trim().split(RegExp(r'\s+'));
+    if (parts.length > 1 && parts[0].isNotEmpty && parts[1].isNotEmpty) {
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+    return parts[0][0].toUpperCase();
+  }
+
+  Color _getAvatarColor(String name) {
+    final colors = [
+      const Color(0xFF6B4DFF),
+      const Color(0xFF1ECB9F),
+      const Color(0xFFFF9F43),
+      const Color(0xFF00A2FF),
+      const Color(0xFFFF5252),
+    ];
+    return colors[name.hashCode.abs() % colors.length];
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -57,17 +78,16 @@ class _NewChatScreenState extends State<NewChatScreen> {
         child: Column(
           children: [
             Obx(() => AnimatedSize(
-                  duration: const Duration(milliseconds: 300),
-                  curve: Curves.easeInOut,
-                  alignment: Alignment.topCenter,
-                  child:
-                      (_isSearchCollapsed.value && !_showSearchInAppBar.value)
-                          ? const SizedBox(width: double.infinity)
-                          : _buildSearchBar(),
-                )),
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
+              alignment: Alignment.topCenter,
+              child:
+              (_isSearchCollapsed.value && !_showSearchInAppBar.value)
+                  ? const SizedBox(width: double.infinity)
+                  : _buildSearchBar(),
+            )),
             Expanded(
               child: Obx(() {
-                // 1. Error State
                 if (controller.responseError.value.isNotEmpty) {
                   return LostinternetConnection(
                     retry: () => controller.getRegisteredContacts(),
@@ -75,7 +95,6 @@ class _NewChatScreenState extends State<NewChatScreen> {
                   );
                 }
 
-                // 2. Loading State
                 if (controller.contactLoading.value) {
                   return _buildSkeletonList();
                 }
@@ -83,7 +102,6 @@ class _NewChatScreenState extends State<NewChatScreen> {
                 final direct = controller.filteredMatchedUsers;
                 final invite = controller.filteredOtherUsers;
 
-                // 3. Empty State
                 if (direct.isEmpty && invite.isEmpty) {
                   return Center(
                     child: Column(
@@ -115,7 +133,7 @@ class _NewChatScreenState extends State<NewChatScreen> {
                       SizedBox(height: 16.h),
                     ],
                     if (invite.isNotEmpty) ...[
-                      _buildSectionTitle("Invite to Chat (More Contacts)"),
+                      _buildSectionTitle("Invite to Chat (Unregistered Contacts)"),
                       _buildContactsCard(invite, isInvite: true),
                     ],
                   ],
@@ -166,6 +184,7 @@ class _NewChatScreenState extends State<NewChatScreen> {
     final String? avatar = user.profileImage;
     final bool hasAvatar = avatar != null && avatar.isNotEmpty;
     final String imageUrl = hasAvatar ? (ConstRes.aImageBaseUrl + avatar) : '';
+    final String displayName = user.name ?? 'Unknown User';
 
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
@@ -173,16 +192,15 @@ class _NewChatScreenState extends State<NewChatScreen> {
         children: [
           CircleAvatar(
             radius: 25.r,
-            backgroundColor: Colors.grey.shade200,
+            backgroundColor: hasAvatar ? Colors.grey.shade200 : _getAvatarColor(displayName),
             backgroundImage: hasAvatar ? NetworkImage(imageUrl) : null,
             child: !hasAvatar
                 ? reausabletext(
-                    (user.name?.isNotEmpty == true ? user.name![0] : '?')
-                        .toUpperCase(),
-                    fontsize: 16.sp,
-                    fontfamily: FontFamily.interBold,
-                    color: const Color(0xFF6B4DFF),
-                  )
+              _getInitials(displayName),
+              fontsize: 13.sp,
+              fontfamily: FontFamily.interBold,
+              color: Colors.white,
+            )
                 : null,
           ),
           SizedBox(width: 12.w),
@@ -191,7 +209,7 @@ class _NewChatScreenState extends State<NewChatScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 reausabletext(
-                  user.name ?? 'Unknown User',
+                  displayName,
                   fontsize: 14.sp,
                   fontfamily: FontFamily.interSemiBold,
                 ),
@@ -243,9 +261,20 @@ class _NewChatScreenState extends State<NewChatScreen> {
     );
   }
 
-  void _handleOnAction(UserListData user, {required bool isInvite}) {
+  void _handleOnAction(UserListData user, {required bool isInvite}) async {
     if (isInvite) {
-      Get.snackbar("Invite", "Invite link sent to ${user.name}");
+      final String playStoreLink = "https://play.google.com/store/apps/details?id=com.fg.fgtracker&hl=en";
+      final String appStoreLink = "https://apps.apple.com/app/id6470000000";
+
+      final String inviteMessage = "Hey ${user.name}! Join me on FG Tracker.\n\n"
+          "Download for Android: $playStoreLink\n\n"
+          "Download for iOS: $appStoreLink";
+
+      try {
+        await Share.share(inviteMessage);
+      } catch (e) {
+        Get.snackbar("Error", "Could not open share menu: $e");
+      }
     } else {
       final memberData = MemberData(
         userId: user.userId,
@@ -400,8 +429,9 @@ class _NewChatScreenState extends State<NewChatScreen> {
               ),
             ),
             Obx(() {
-              if (controller.searchQuery.value.isEmpty)
+              if (controller.searchQuery.value.isEmpty) {
                 return const SizedBox.shrink();
+              }
               return GestureDetector(
                 onTap: () {
                   _searchController.clear();
