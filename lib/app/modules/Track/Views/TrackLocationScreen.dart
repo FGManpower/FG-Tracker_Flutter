@@ -84,6 +84,8 @@ class _LocationTrackingPageState extends State<LocationTrackingPage> {
           BottomSheetUi().showMemberBottomSheet(
             context,
             members,
+            groupId: groupId,
+            groupName: groupName,
           );
         },
         onPressRefresh: () {

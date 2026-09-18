@@ -3,6 +3,7 @@ import 'dart:math' hide log;
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/Dialog/Common_dialog.dart';
+import 'package:fgtracker/app/Core/values/Dialog/DialogBox.dart';
 import 'package:fgtracker/app/Data/Repositories/TrackRepo.dart';
 import 'package:fgtracker/app/Model/GroupRes.dart';
 import 'package:fgtracker/app/Model/LocationDataRes.dart';
@@ -252,13 +253,85 @@ class TrackingController extends GetxController {
       retries++;
     }
 
+    LocationData? matchedUser;
+    for (final list in groupWiseUserData.values) {
+      for (final u in list) {
+        if (u.userId?.toString() == userId || u.id?.toString() == userId) {
+          matchedUser = u;
+          break;
+        }
+      }
+      if (matchedUser != null) break;
+    }
+
     final matchedMarker = markers.toList().firstWhereOrNull(
-          (m) => m.markerId.value == userId,
+          (m) =>
+              m.markerId.value == userId ||
+              (matchedUser != null &&
+                  m.markerId.value == matchedUser.userId?.toString()),
         );
 
     if (matchedMarker != null && mapController != null) {
       await mapController!.animateCamera(
-        CameraUpdate.newLatLngZoom(matchedMarker.position, 30.5),
+        CameraUpdate.newLatLngZoom(matchedMarker.position, 17.5),
+      );
+    } else if (matchedUser != null &&
+        matchedUser.latitude != null &&
+        matchedUser.longitude != null &&
+        matchedUser.latitude != 0.0 &&
+        mapController != null) {
+      await mapController!.animateCamera(
+        CameraUpdate.newLatLngZoom(
+          LatLng(matchedUser.latitude!, matchedUser.longitude!),
+          17.5,
+        ),
+      );
+    }
+
+    if (matchedUser != null) {
+      final myPos = locationService.currentPosition;
+      double dist = 0.0;
+      final LatLng destPos = matchedMarker?.position ??
+          LatLng(matchedUser.latitude ?? 0.0, matchedUser.longitude ?? 0.0);
+
+      if (myPos?.latitude != null &&
+          myPos?.longitude != null &&
+          destPos.latitude != 0.0 &&
+          destPos.longitude != 0.0) {
+        dist = _calculateDistance(
+          myPos!.latitude!,
+          myPos.longitude!,
+          destPos.latitude,
+          destPos.longitude,
+        );
+      }
+      final bool userOnline = Tracking().isOnline(
+        rawIsOnline: matchedUser.isOnline,
+        lastSeen: matchedUser.lastSeen,
+        thresholdMinutes: 5,
+      );
+      await Future.delayed(const Duration(milliseconds: 300));
+      DialogBox().showRouteDetailsBottomSheet(
+        destination: destPos,
+        distance: dist,
+        userId: int.tryParse(matchedUser.userId?.toString() ?? '') ??
+            int.tryParse(userId) ??
+            0,
+        groupId: int.tryParse(matchedUser.groupId?.toString() ?? '') ??
+            int.tryParse(groupId) ??
+            0,
+        id: int.tryParse(matchedUser.id?.toString() ?? ''),
+        name: matchedUser.name,
+        imageUrl: matchedUser.profileImage,
+        status: userOnline,
+        lastSeen: matchedUser.lastSeen,
+        groupName: "Group",
+        mobileNo: matchedUser.mobileNo?.toString(),
+        isCreator: matchedUser.isCreator == true ||
+            matchedUser.isCreator == 1 ||
+            matchedUser.isCreator == '1',
+        isGroupChat: true,
+        isLocationSharing: matchedUser.locationSharing != false,
       );
     } else {
       Get.snackbar(
@@ -451,10 +524,25 @@ class TrackingController extends GetxController {
     groupList.add(data);
     groupWiseUserData[groupId] = groupList;
 
+    final currentUserId =
+        Global.storageServices.get(PrefConst.userId)?.toString() ?? '';
+    final bool isMe = data.userId.toString() == currentUserId;
+
+    final String rawImg = profileImageUrl.trim();
+    final String fullProfileUrl = (rawImg.isEmpty || rawImg.toLowerCase() == 'null')
+        ? ""
+        : (rawImg.startsWith('http://') || rawImg.startsWith('https://')
+            ? rawImg
+            : (ConstRes.aImageBaseUrl.endsWith('/') && rawImg.startsWith('/')
+                ? "${ConstRes.aImageBaseUrl}${rawImg.substring(1)}"
+                : (!ConstRes.aImageBaseUrl.endsWith('/') && !rawImg.startsWith('/')
+                    ? "${ConstRes.aImageBaseUrl}/$rawImg"
+                    : "${ConstRes.aImageBaseUrl}$rawImg")));
+
     try {
-      if (profileImageUrl.isNotEmpty) {
+      if (fullProfileUrl.isNotEmpty && Get.context != null) {
         await precacheImage(
-          NetworkImage(ConstRes.aImageBaseUrl + profileImageUrl),
+          NetworkImage(fullProfileUrl),
           Get.context!,
         );
       }
@@ -464,8 +552,12 @@ class TrackingController extends GetxController {
     final newPosition = LatLng(data.latitude!, data.longitude!);
     final oldPosition = _markerPositions[data.userId.toString()] ?? newPosition;
 
-    final icon = await getCustomIcon(profileImageUrl, isOnline);
-
+    final icon = await getCustomIcon(
+      fullProfileUrl,
+      isOnline,
+      isMe: isMe,
+      name: data.name?.toString() ?? '',
+    );
 
     Marker markerBuilder(LatLng position) => Marker(
           markerId: MarkerId(data.userId.toString()),
@@ -473,7 +565,39 @@ class TrackingController extends GetxController {
           icon: icon,
           clusterManagerId: const ClusterManagerId(_clusterManagerId),
           onTap: () async {
-
+            final myPos = locationService.currentPosition;
+            double dist = 0.0;
+            if (myPos?.latitude != null && myPos?.longitude != null) {
+              dist = _calculateDistance(
+                myPos!.latitude!,
+                myPos.longitude!,
+                position.latitude,
+                position.longitude,
+              );
+            }
+            final bool userOnline = Tracking().isOnline(
+              rawIsOnline: data.isOnline,
+              lastSeen: data.lastSeen,
+              thresholdMinutes: 5,
+            );
+            DialogBox().showRouteDetailsBottomSheet(
+              destination: position,
+              distance: dist,
+              userId: int.tryParse(data.userId.toString()) ?? 0,
+              groupId: int.tryParse(data.groupId?.toString() ?? '') ?? 0,
+              id: int.tryParse(data.id?.toString() ?? ''),
+              name: data.name,
+              imageUrl: data.profileImage,
+              status: userOnline,
+              lastSeen: data.lastSeen,
+              groupName: "Group",
+              mobileNo: data.mobileNo?.toString(),
+              isCreator: data.isCreator == true ||
+                  data.isCreator == 1 ||
+                  data.isCreator == '1',
+              isGroupChat: true,
+              isLocationSharing: data.locationSharing != false,
+            );
           },
         );
 
@@ -681,7 +805,21 @@ class TrackingController extends GetxController {
                 separatorBuilder: (_, __) => const Divider(height: 1),
                 itemBuilder: (context, index) {
                   final user = users[index];
-                  final imageUrl = user.profileImage?.toString() ?? '';
+                  final rawUserImg = user.profileImage?.toString() ?? '';
+                  final String? profileUrl = (rawUserImg.isNotEmpty &&
+                          rawUserImg.toLowerCase() != 'null')
+                      ? (rawUserImg.startsWith('http://') ||
+                              rawUserImg.startsWith('https://')
+                          ? rawUserImg
+                          : (ConstRes.aImageBaseUrl.endsWith('/') &&
+                                  rawUserImg.startsWith('/')
+                              ? "${ConstRes.aImageBaseUrl}${rawUserImg.substring(1)}"
+                              : (!ConstRes.aImageBaseUrl.endsWith('/') &&
+                                      !rawUserImg.startsWith('/')
+                                  ? "${ConstRes.aImageBaseUrl}/$rawUserImg"
+                                  : "${ConstRes.aImageBaseUrl}$rawUserImg")))
+                      : null;
+
                   final bool isGhostMode = user.locationSharing == false;
                   final bool isOnline = Tracking().isOnline(
                     rawIsOnline: user.isOnline,
@@ -691,7 +829,7 @@ class TrackingController extends GetxController {
 
                   return ListTile(
                     contentPadding: const EdgeInsets.symmetric(
-                       horizontal: 8,
+                      horizontal: 8,
                       vertical: 4,
                     ),
                     leading: Stack(
@@ -706,12 +844,27 @@ class TrackingController extends GetxController {
                             backgroundColor: isGhostMode
                                 ? AppColors.textbordercolor
                                 : AppColors.appGreybackgroundcolor,
-                            backgroundImage: imageUrl.isNotEmpty
-                                ? NetworkImage(
-                                    ConstRes.aImageBaseUrl + imageUrl)
+                            backgroundImage: profileUrl != null
+                                ? NetworkImage(profileUrl)
                                 : null,
-                            child: imageUrl.isEmpty
-                                ? const Icon(Icons.person, color: AppColors.grey)
+                            child: profileUrl == null
+                                ? Text(
+                                    (user.name != null &&
+                                            user.name
+                                                .toString()
+                                                .trim()
+                                                .isNotEmpty)
+                                        ? user.name
+                                            .toString()
+                                            .trim()[0]
+                                            .toUpperCase()
+                                        : '?',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: AppColors.primaryElement,
+                                      fontSize: 16.sp,
+                                    ),
+                                  )
                                 : null,
                           ),
                         ),
@@ -724,9 +877,12 @@ class TrackingController extends GetxController {
                             decoration: BoxDecoration(
                               color: isGhostMode
                                   ? AppColors.grey
-                                  : (isOnline ? AppColors.primaryElementStatus : AppColors.darkRed),
+                                  : (isOnline
+                                      ? AppColors.primaryElementStatus
+                                      : AppColors.darkRed),
                               shape: BoxShape.circle,
-                              border: Border.all(color: AppColors.white, width: 2),
+                              border: Border.all(
+                                  color: AppColors.white, width: 2),
                             ),
                           ),
                         ),
@@ -740,7 +896,9 @@ class TrackingController extends GetxController {
                             style: TextStyle(
                               fontWeight: FontWeight.w600,
                               fontSize: 15,
-                              color: isGhostMode ? AppColors.grey : AppColors.primaryText,
+                              color: isGhostMode
+                                  ? AppColors.grey
+                                  : AppColors.primaryText,
                             ),
                           ),
                         ),
@@ -770,7 +928,8 @@ class TrackingController extends GetxController {
                           ? "Ghost Mode Enabled"
                           : isOnline
                               ? "Online"
-                              : user.lastSeen != null && user.lastSeen.toString().isNotEmpty
+                              : user.lastSeen != null &&
+                                      user.lastSeen.toString().isNotEmpty
                                   ? Tracking().getTimeAgo(
                                       Tracking.parseDateTime(user.lastSeen) ??
                                           DateTime.now(),
@@ -779,32 +938,72 @@ class TrackingController extends GetxController {
                       style: TextStyle(
                         color: isGhostMode
                             ? AppColors.grey
-                            : (isOnline ? AppColors.primaryElementStatus : AppColors.grey),
+                            : (isOnline
+                                ? AppColors.primaryElementStatus
+                                : AppColors.grey),
                         fontSize: 12,
                       ),
                     ),
                     onTap: () async {
-                      if (isGhostMode) {
-                        Get.snackbar(
-                          "Ghost Mode",
-                          "${user.name} is currently in Ghost Mode.",
-                          snackPosition: SnackPosition.BOTTOM,
-                        );
-                        return;
-                      }
-
                       Get.back();
 
-                      await Future.delayed(const Duration(milliseconds: 350));
+                      await Future.delayed(
+                          const Duration(milliseconds: 350));
 
-                      if (user.latitude != null && user.longitude != null) {
+                      final LatLng pos = (user.latitude != null &&
+                              user.longitude != null &&
+                              user.latitude != 0.0)
+                          ? LatLng(user.latitude!, user.longitude!)
+                          : const LatLng(0, 0);
+
+                      if (user.locationSharing != false &&
+                          pos.latitude != 0.0 &&
+                          mapController != null) {
                         await mapController?.animateCamera(
                           CameraUpdate.newLatLngZoom(
-                            LatLng(user.latitude!, user.longitude!),
-                            20.0,
+                            pos,
+                            17.5,
                           ),
                         );
                       }
+
+                      final myPos = locationService.currentPosition;
+                      double dist = 0.0;
+                      if (myPos?.latitude != null &&
+                          myPos?.longitude != null &&
+                          pos.latitude != 0.0) {
+                        dist = _calculateDistance(
+                          myPos!.latitude!,
+                          myPos.longitude!,
+                          pos.latitude,
+                          pos.longitude,
+                        );
+                      }
+
+                      await Future.delayed(
+                          const Duration(milliseconds: 250));
+                      DialogBox().showRouteDetailsBottomSheet(
+                        destination: pos,
+                        distance: dist,
+                        userId:
+                            int.tryParse(user.userId?.toString() ?? '') ??
+                                0,
+                        groupId:
+                            int.tryParse(user.groupId?.toString() ?? '') ??
+                                0,
+                        id: int.tryParse(user.id?.toString() ?? ''),
+                        name: user.name,
+                        imageUrl: user.profileImage,
+                        status: isOnline,
+                        lastSeen: user.lastSeen,
+                        groupName: "Group",
+                        mobileNo: user.mobileNo?.toString(),
+                        isCreator: user.isCreator == true ||
+                            user.isCreator == 1 ||
+                            user.isCreator == '1',
+                        isGroupChat: true,
+                        isLocationSharing: user.locationSharing != false,
+                      );
                     },
                   );
                 },

@@ -126,11 +126,13 @@ class GroupMessageController extends GetxController {
   void onInit() {
     super.onInit();
 
-    groupId = int.parse(arguments?["groupId"]);
+    groupId = arguments?["groupId"] is int
+        ? (arguments!["groupId"] as int)
+        : (int.tryParse(arguments?["groupId"]?.toString() ?? '0') ?? 0);
 
-    groupName = arguments?["groupName"] ?? "";
+    groupName = arguments?["groupName"]?.toString() ?? "";
 
-    groupImage = arguments?["groupImage"] ?? "";
+    groupImage = arguments?["groupImage"]?.toString() ?? "";
     print("isCreator = ${isCreator.value}");
 
     initializeGroupChat();
