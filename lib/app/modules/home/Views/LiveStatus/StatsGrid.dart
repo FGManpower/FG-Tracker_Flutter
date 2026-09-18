@@ -2,7 +2,7 @@ import 'package:fgtracker/app/Model/group_count_detail.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/modules/home/Controller/home_controller.dart';
 import 'package:fgtracker/app/modules/home/Views/LiveStatus/components/online_member.dart';
-import 'package:fgtracker/app/modules/home/Views/LiveStatus/components/total_groups.dart';
+import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -30,7 +30,7 @@ class StatsGrid extends StatelessWidget {
               value: detail.totalGroups.toString(),
               subtitle: "Total",
               onTap: () {
-                Get.to(() => totalGroup());
+                Get.toNamed(Routes.GroupsList);
               },
             ),
           ),
