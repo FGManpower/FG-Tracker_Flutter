@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:card_swiper/card_swiper.dart';
 import 'package:fgtracker/app/Core/theme/appTheme.dart';
 import 'package:fgtracker/app/Core/values/utility.dart';
@@ -91,33 +92,33 @@ class BannerUi extends StatelessWidget {
                   borderRadius: BorderRadius.circular(16.r),
                   child: Stack(
                     children: [
-                      // Background Image
                       Positioned.fill(
-                        child: Image.network(
-                          Utility.isNullEmptyOrFalse(banner.imageUrl)
-                              ? MyAppTheme.notFoundImg
-                              : banner.imageUrl.toString(),
-                          fit: BoxFit.cover,
-                          width: double.infinity,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Container(
-                              color: Colors.grey.shade300,
-                              child: const Center(
-                                child: Icon(Icons.broken_image, color: Colors.grey),
+                          child: CachedNetworkImage(
+                        imageUrl: Utility.isNullEmptyOrFalse(banner.imageUrl)
+                            ? MyAppTheme.notFoundImg
+                            : banner.imageUrl.toString(),
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                        placeholder: (context, url) {
+                          return Container(
+                            color: Colors.grey.shade100,
+                            child: const Center(
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                          );
+                        },
+                        errorWidget: (context, url, error) {
+                          return Container(
+                            color: Colors.grey.shade300,
+                            child: const Center(
+                              child: Icon(
+                                Icons.broken_image,
+                                color: Colors.grey,
                               ),
-                            );
-                          },
-                          loadingBuilder: (context, child, loadingProgress) {
-                            if (loadingProgress == null) return child;
-                            return Container(
-                              color: Colors.grey.shade100,
-                              child: const Center(
-                                child: CircularProgressIndicator(strokeWidth: 2),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
+                            ),
+                          );
+                        },
+                      )),
 
                       // if (index == 1)
                       //   Positioned(

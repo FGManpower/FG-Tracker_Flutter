@@ -289,17 +289,21 @@ class _NotificationBell extends StatelessWidget {
                 color: _Palette.bellInk,
               ),
             ),
+
             if (unread > 0)
               Positioned(
-                right: -2.w,
-                top: -2.h,
+                right: -4.w,
+                top: -4.h,
                 child: Container(
                   constraints: BoxConstraints(
-                    minWidth: 18.w,
-                    minHeight: 18.w,
+                    minWidth: 19.w,
+                    minHeight: 19.w,
                   ),
-                  padding:
-                  EdgeInsets.symmetric(horizontal: 4.w),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 4.w,
+                    vertical: 1.h,
+                  ),
+                  alignment: Alignment.center,
                   decoration: BoxDecoration(
                     color: _Palette.purple,
                     shape: BoxShape.circle,
@@ -309,23 +313,22 @@ class _NotificationBell extends StatelessWidget {
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color:
-                        _Palette.purple.withValues(alpha: 0.3),
+                        color: _Palette.purple.withValues(alpha: 0.3),
                         blurRadius: 4,
                         offset: const Offset(0, 2),
                       ),
                     ],
                   ),
-                  child: Center(
-                    child: Text(
-                      unread > 99 ? '99+' : '$unread',
-                      style: TextStyle(
-                        fontFamily: FontFamily.interSemiBold,
-                        color: Colors.white,
-                        fontSize: 11.sp,
-                        fontWeight: FontWeight.w700,
-                        height: 1,
-                      ),
+                  child: Text(
+                    unread > 99 ? '99+' : '$unread',
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    style: TextStyle(
+                      fontFamily: FontFamily.interSemiBold,
+                      color: Colors.white,
+                      fontSize: 10.sp,
+                      fontWeight: FontWeight.w700,
+                      height: 1.0,
                     ),
                   ),
                 ),

@@ -713,6 +713,7 @@ class ChatBubble extends StatelessWidget {
                               Routes.forwardMessageScreen,
                               arguments: {
                                 "message": message,
+                                "sourceType": "private",
                               },
                             );
                           },
@@ -1647,6 +1648,7 @@ class GroupChatBubble extends StatelessWidget {
                               Routes.forwardMessageScreen,
                               arguments: {
                                 "message": message,
+                                "sourceType": "group",
                               },
                             );
                           },

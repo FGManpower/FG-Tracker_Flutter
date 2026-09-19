@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fgtracker/app/Core/values/Dialog/DialogBox.dart';
 import 'package:fgtracker/app/Model/group_member_model.dart';
+import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/modules/home/Controller/LiveStatus_controller.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/cupertino.dart';
@@ -8,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
 class GhostMember extends StatefulWidget {
   const GhostMember({super.key});
@@ -23,6 +25,7 @@ class _GhostMemberState extends State<GhostMember> {
   @override
   void initState() {
     super.initState();
+
     controller = LivesStatusController.instance;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -34,6 +37,7 @@ class _GhostMemberState extends State<GhostMember> {
 
   void _onScroll() {
     if (!_scrollController.hasClients) return;
+
     final double currentPosition = _scrollController.position.pixels;
     final double maxPosition = _scrollController.position.maxScrollExtent;
 
@@ -119,7 +123,7 @@ class _GhostMemberState extends State<GhostMember> {
                     ),
                     SizedBox(height: 2.h),
                     Obx(
-                      () => Text(
+                          () => Text(
                         "${controller.privateMemberList.length} Active Sessions",
                         style: TextStyle(
                           fontSize: 12.sp,
@@ -135,44 +139,68 @@ class _GhostMemberState extends State<GhostMember> {
           ),
         ),
       ),
-      body: RefreshIndicator(
-        color: const Color(0xFF6B4DFF),
-        onRefresh: () async {
-          await controller.getPrivateMembers(refresh: true);
-        },
-        child: SingleChildScrollView(
-          controller: _scrollController,
-          physics: const AlwaysScrollableScrollPhysics(
-            parent: BouncingScrollPhysics(),
+      body: Column(
+        children: [
+          Padding(
+            padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 0),
+            child: _buildInvisibleTopCard(),
           ),
-          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildInvisibleTopCard(),
-              SizedBox(height: 20.h),
-              _buildSectionHeader(),
-              SizedBox(height: 12.h),
-              _buildPrivateMemberList(),
-              SizedBox(height: 20.h),
-              _buildBottomPriorityCard(),
-              Obx(() {
-                if (controller.privateLoadingMore.value) {
-                  return Padding(
-                    padding: EdgeInsets.symmetric(vertical: 16.h),
-                    child: const Center(
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2.5,
-                        color: Color(0xFF6B4DFF),
-                      ),
-                    ),
-                  );
-                }
-                return SizedBox(height: 24.h);
-              }),
-            ],
+          SizedBox(height: 16.h),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.w),
+            child: _buildSectionHeader(),
           ),
-        ),
+          SizedBox(height: 10.h),
+          Expanded(
+            child: Obx(() {
+              if (controller.privateResponseError.value.isNotEmpty &&
+                  controller.privateMemberList.isEmpty) {
+                return LostinternetConnection(
+                  retry: () async {
+                    await controller.getPrivateMembers(refresh: true);
+                  },
+                  messgae: controller.privateResponseError.value,
+                );
+              }
+
+              return RefreshIndicator(
+                color: const Color(0xFF6B4DFF),
+                onRefresh: () async {
+                  await controller.getPrivateMembers(refresh: true);
+                },
+                child: ListView(
+                  controller: _scrollController,
+                  physics: const AlwaysScrollableScrollPhysics(
+                    parent: BouncingScrollPhysics(),
+                  ),
+                  padding: EdgeInsets.fromLTRB(
+                    16.w,
+                    0,
+                    16.w,
+                    12.h,
+                  ),
+                  children: [
+                    _buildPrivateMemberList(),
+                    Obx(() {
+                      if (controller.privateLoadingMore.value) {
+                        return const _BottomSkeletonLoader();
+                      }
+
+                      return SizedBox(height: 12.h);
+                    }),
+                  ],
+                ),
+              );
+            }),
+          ),
+          SafeArea(
+            top: false,
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 10.h),
+              child: _buildBottomPriorityCard(),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -183,7 +211,9 @@ class _GhostMemberState extends State<GhostMember> {
       decoration: BoxDecoration(
         color: const Color(0xFFF4F1FF),
         borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(color: const Color(0xFF6B4DFF).withValues(alpha: 0.12)),
+        border: Border.all(
+          color: const Color(0xFF6B4DFF).withValues(alpha: 0.12),
+        ),
       ),
       child: Row(
         children: [
@@ -256,8 +286,11 @@ class _GhostMemberState extends State<GhostMember> {
         ),
         SizedBox(width: 8.w),
         Obx(
-          () => Container(
-            padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
+              () => Container(
+            padding: EdgeInsets.symmetric(
+              horizontal: 8.w,
+              vertical: 2.h,
+            ),
             decoration: BoxDecoration(
               color: const Color(0xFFEDE9FE),
               borderRadius: BorderRadius.circular(10.r),
@@ -278,50 +311,46 @@ class _GhostMemberState extends State<GhostMember> {
   }
 
   Widget _buildPrivateMemberList() {
-    return Obx(() {
-      if (controller.privateLoading.value && controller.privateMemberList.isEmpty) {
-        return Padding(
-          padding: EdgeInsets.symmetric(vertical: 40.h),
-          child: const Center(
-            child: CircularProgressIndicator(color: Color(0xFF6B4DFF)),
-          ),
-        );
-      }
+    if (controller.privateLoading.value &&
+        controller.privateMemberList.isEmpty) {
+      return const _PrivateMemberSkeletonList();
+    }
 
-      final list = controller.filteredPrivateMemberList;
+    final list = controller.filteredPrivateMemberList;
 
-      if (list.isEmpty) {
-        return Container(
-          padding: EdgeInsets.symmetric(vertical: 40.h),
-          alignment: Alignment.center,
-          child: Column(
-            children: [
-              Icon(Icons.shield_outlined, size: 48.sp, color: Colors.grey.shade300),
-              SizedBox(height: 12.h),
-              Text(
-                "No active private sessions",
-                style: TextStyle(
-                  fontSize: 14.sp,
-                  fontFamily: FontFamily.interMedium,
-                  color: Colors.grey.shade500,
-                ),
+    if (list.isEmpty) {
+      return Container(
+        padding: EdgeInsets.symmetric(vertical: 40.h),
+        alignment: Alignment.center,
+        child: Column(
+          children: [
+            Icon(
+              Icons.shield_outlined,
+              size: 48.sp,
+              color: Colors.grey.shade300,
+            ),
+            SizedBox(height: 12.h),
+            Text(
+              "No active private sessions",
+              style: TextStyle(
+                fontSize: 14.sp,
+                fontFamily: FontFamily.interMedium,
+                color: Colors.grey.shade500,
               ),
-            ],
-          ),
-        );
-      }
-
-      return ListView.separated(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        itemCount: list.length,
-        separatorBuilder: (_, __) => SizedBox(height: 10.h),
-        itemBuilder: (_, index) {
-          final member = list[index];
-          return _buildPrivateMemberCard(member);
-        },
+            ),
+          ],
+        ),
       );
-    });
+    }
+
+    return Column(
+      children: [
+        for (int index = 0; index < list.length; index++) ...[
+          _buildPrivateMemberCard(list[index]),
+          if (index < list.length - 1) SizedBox(height: 10.h),
+        ],
+      ],
+    );
   }
 
   Widget _buildPrivateMemberCard(GroupMemberData member) {
@@ -349,7 +378,9 @@ class _GhostMemberState extends State<GhostMember> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16.r),
-          border: Border.all(color: Colors.grey.withValues(alpha: 0.1)),
+          border: Border.all(
+            color: Colors.grey.withValues(alpha: 0.1),
+          ),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.02),
@@ -375,25 +406,27 @@ class _GhostMemberState extends State<GhostMember> {
                   child: ClipOval(
                     child: member.resolvedImageUrl.isNotEmpty
                         ? CachedNetworkImage(
-                            imageUrl: member.resolvedImageUrl,
-                            fit: BoxFit.cover,
-                            placeholder: (_, __) => Container(
-                              color: Colors.grey.shade100,
-                              child: const Center(
-                                child: CircularProgressIndicator(strokeWidth: 2),
-                              ),
-                            ),
-                            errorWidget: (_, __, ___) => Icon(
-                              Icons.person,
-                              size: 26.sp,
-                              color: const Color(0xFF6B4DFF),
-                            ),
-                          )
-                        : Icon(
-                            Icons.person,
-                            size: 26.sp,
-                            color: const Color(0xFF6B4DFF),
+                      imageUrl: member.resolvedImageUrl,
+                      fit: BoxFit.cover,
+                      placeholder: (_, __) => Container(
+                        color: Colors.grey.shade100,
+                        child: const Center(
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
                           ),
+                        ),
+                      ),
+                      errorWidget: (_, __, ___) => Icon(
+                        Icons.person,
+                        size: 26.sp,
+                        color: const Color(0xFF6B4DFF),
+                      ),
+                    )
+                        : Icon(
+                      Icons.person,
+                      size: 26.sp,
+                      color: const Color(0xFF6B4DFF),
+                    ),
                   ),
                 ),
                 Positioned(
@@ -404,7 +437,10 @@ class _GhostMemberState extends State<GhostMember> {
                     decoration: BoxDecoration(
                       color: const Color(0xFF6B4DFF),
                       shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 1.5.r),
+                      border: Border.all(
+                        color: Colors.white,
+                        width: 1.5.r,
+                      ),
                     ),
                     child: Icon(
                       Icons.lock_rounded,
@@ -474,7 +510,9 @@ class _GhostMemberState extends State<GhostMember> {
       decoration: BoxDecoration(
         color: const Color(0xFFF4F1FF),
         borderRadius: BorderRadius.circular(18.r),
-        border: Border.all(color: const Color(0xFF6B4DFF).withValues(alpha: 0.1)),
+        border: Border.all(
+          color: const Color(0xFF6B4DFF).withValues(alpha: 0.1),
+        ),
       ),
       child: Row(
         children: [
@@ -519,6 +557,100 @@ class _GhostMemberState extends State<GhostMember> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _PrivateMemberSkeletonList extends StatelessWidget {
+  const _PrivateMemberSkeletonList();
+
+  @override
+  Widget build(BuildContext context) {
+    return Skeletonizer(
+      enabled: true,
+      child: Column(
+        children: [
+          for (int i = 0; i < 5; i++) ...[
+            const _PrivateMemberSkeletonTile(),
+            if (i < 4) SizedBox(height: 10.h),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _PrivateMemberSkeletonTile extends StatelessWidget {
+  const _PrivateMemberSkeletonTile();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.all(12.r),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16.r),
+      ),
+      child: Row(
+        children: [
+          CircleAvatar(
+            radius: 25.r,
+            backgroundColor: Colors.grey.shade200,
+          ),
+          SizedBox(width: 14.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "Loading member name",
+                  style: TextStyle(
+                    fontSize: 15.sp,
+                    fontFamily: FontFamily.interBold,
+                  ),
+                ),
+                SizedBox(height: 4.h),
+                Text(
+                  "Private Mode is ON",
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    fontFamily: FontFamily.interRegular,
+                  ),
+                ),
+                SizedBox(height: 4.h),
+                Text(
+                  "Started at 12 Sep 2026",
+                  style: TextStyle(
+                    fontSize: 11.sp,
+                    fontFamily: FontFamily.interRegular,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _BottomSkeletonLoader extends StatelessWidget {
+  const _BottomSkeletonLoader();
+
+  @override
+  Widget build(BuildContext context) {
+    return Skeletonizer(
+      enabled: true,
+      child: Padding(
+        padding: EdgeInsets.only(top: 10.h),
+        child: Column(
+          children: [
+            const _PrivateMemberSkeletonTile(),
+            SizedBox(height: 10.h),
+            const _PrivateMemberSkeletonTile(),
+          ],
+        ),
       ),
     );
   }

@@ -7,6 +7,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:skeletonizer/skeletonizer.dart';
+
+import '../../../../../global_widget/common_widget.dart';
 
 class OnlineMember extends StatefulWidget {
   const OnlineMember({super.key});
@@ -17,12 +20,18 @@ class OnlineMember extends StatefulWidget {
 
 class _OnlineMemberState extends State<OnlineMember> {
   late final LivesStatusController controller;
+
   final ScrollController _scrollController = ScrollController();
+
   bool _showAllOnlineNow = false;
+
+  final RxBool _isSearchCollapsed = false.obs;
+  final RxBool _showSearchInAppBar = false.obs;
 
   @override
   void initState() {
     super.initState();
+
     controller = LivesStatusController.instance;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -34,9 +43,16 @@ class _OnlineMemberState extends State<OnlineMember> {
 
   void _onScroll() {
     if (!_scrollController.hasClients) return;
+
     final double currentPosition = _scrollController.position.pixels;
     final double maxPosition = _scrollController.position.maxScrollExtent;
 
+    if (currentPosition > 40 && !_isSearchCollapsed.value) {
+      _isSearchCollapsed.value = true;
+    } else if (currentPosition <= 40 && _isSearchCollapsed.value) {
+      _isSearchCollapsed.value = false;
+      _showSearchInAppBar.value = false;
+    }
     if (currentPosition >= maxPosition - 200) {
       controller.loadMoreOnlineMembers();
     }
@@ -44,6 +60,7 @@ class _OnlineMemberState extends State<OnlineMember> {
 
   @override
   void dispose() {
+    _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
     super.dispose();
   }
@@ -128,6 +145,7 @@ class _OnlineMemberState extends State<OnlineMember> {
                     Obx(() {
                       final total = controller.onlineNowList.length +
                           controller.recentlyOnlineList.length;
+
                       return Text(
                         "$total Members Online",
                         style: TextStyle(
@@ -140,58 +158,158 @@ class _OnlineMemberState extends State<OnlineMember> {
                   ],
                 ),
               ),
-            ],
-          ),
-        ),
-      ),
-      body: RefreshIndicator(
-        color: const Color(0xFF6366F1),
-        onRefresh: () async {
-          await controller.getOnlineMembers(refresh: true);
-        },
-        child: SingleChildScrollView(
-          controller: _scrollController,
-          physics: const AlwaysScrollableScrollPhysics(
-            parent: BouncingScrollPhysics(),
-          ),
-          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildSearchBar(),
-              SizedBox(height: 16.h),
-              _buildOnlineNowSection(),
-              SizedBox(height: 20.h),
-              _buildRecentlyOnlineSection(),
-              SizedBox(height: 20.h),
-              _buildBottomInfoCard(),
               Obx(() {
-                if (controller.onlineLoadingMore.value) {
-                  return Padding(
-                    padding: EdgeInsets.symmetric(vertical: 16.h),
-                    child: const Center(
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2.5,
-                        color: Color(0xFF6366F1),
-                      ),
-                    ),
-                  );
+                if (!_isSearchCollapsed.value) {
+                  return const SizedBox.shrink();
                 }
-                return SizedBox(height: 24.h);
+
+                return GestureDetector(
+                  onTap: () {
+                    _showSearchInAppBar.value = true;
+
+                    _scrollController.animateTo(
+                      0,
+                      duration: const Duration(milliseconds: 400),
+                      curve: Curves.easeOut,
+                    );
+                  },
+                  child: Container(
+                    margin: EdgeInsets.only(right: 4.w),
+                    padding: EdgeInsets.all(10.w),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.05),
+                          blurRadius: 8,
+                        ),
+                      ],
+                    ),
+                    child: Icon(
+                      Icons.search,
+                      size: 20.sp,
+                      color: const Color(0xFF6B4DFF),
+                    ),
+                  ),
+                );
               }),
             ],
           ),
         ),
       ),
+      body: Obx(() {
+        if (controller.onlineLoading.value &&
+            controller.onlineNowList.isEmpty &&
+            controller.recentlyOnlineList.isEmpty) {
+          return const _OnlineMemberSkeleton();
+        }
+
+        if (controller.onlineResponseError.value.isNotEmpty &&
+            controller.onlineNowList.isEmpty &&
+            controller.recentlyOnlineList.isEmpty) {
+          return LostinternetConnection(
+            retry: () async {
+              await controller.getOnlineMembers(
+                refresh: true,
+              );
+            },
+            messgae: controller.onlineResponseError.value,
+          );
+        }
+
+        return Column(
+          children: [
+            Obx(
+              () => AnimatedSize(
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeInOut,
+                alignment: Alignment.topCenter,
+                child: (_isSearchCollapsed.value && !_showSearchInAppBar.value)
+                    ? const SizedBox(
+                        width: double.infinity,
+                      )
+                    : _buildSearchBar(),
+              ),
+            ),
+            Expanded(
+              child: RefreshIndicator(
+                color: const Color(0xFF6366F1),
+                onRefresh: () async {
+                  await controller.getOnlineMembers(
+                    refresh: true,
+                  );
+                },
+                child: SingleChildScrollView(
+                  controller: _scrollController,
+                  physics: const AlwaysScrollableScrollPhysics(
+                    parent: BouncingScrollPhysics(),
+                  ),
+                  padding: EdgeInsets.fromLTRB(
+                    16.w,
+                    8.h,
+                    16.w,
+                    20.h,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildOnlineNowSection(),
+                      SizedBox(height: 20.h),
+                      _buildRecentlyOnlineSection(),
+                      SizedBox(height: 20.h),
+                      Obx(() {
+                        if (controller.onlineLoadingMore.value) {
+                          return Padding(
+                            padding: EdgeInsets.symmetric(
+                              vertical: 16.h,
+                            ),
+                            child: const Center(
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2.5,
+                                color: Color(0xFF6366F1),
+                              ),
+                            ),
+                          );
+                        }
+
+                        return const SizedBox.shrink();
+                      }),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            SafeArea(
+              top: false,
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(
+                  16.w,
+                  8.h,
+                  16.w,
+                  10.h,
+                ),
+                child: _buildBottomInfoCard(),
+              ),
+            ),
+          ],
+        );
+      }),
     );
   }
 
   Widget _buildSearchBar() {
     return Container(
+      margin: EdgeInsets.symmetric(
+        horizontal: 16.w,
+        vertical: 4.h,
+      ),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colors.grey.withValues(alpha: 0.15)),
+        border: Border.all(
+          color: Colors.grey.withValues(alpha: 0.15),
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.02),
@@ -223,7 +341,11 @@ class _OnlineMemberState extends State<OnlineMember> {
           suffixIcon: Obx(
             () => controller.searchQuery.value.isNotEmpty
                 ? IconButton(
-                    icon: Icon(Icons.close_rounded, size: 18.sp, color: Colors.grey),
+                    icon: Icon(
+                      Icons.close_rounded,
+                      size: 18.sp,
+                      color: Colors.grey,
+                    ),
                     onPressed: () {
                       controller.searchController.clear();
                       controller.searchOnlineMembers('');
@@ -232,7 +354,10 @@ class _OnlineMemberState extends State<OnlineMember> {
                 : const SizedBox.shrink(),
           ),
           border: InputBorder.none,
-          contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+          contentPadding: EdgeInsets.symmetric(
+            horizontal: 16.w,
+            vertical: 14.h,
+          ),
         ),
       ),
     );
@@ -258,7 +383,10 @@ class _OnlineMemberState extends State<OnlineMember> {
               ),
               SizedBox(width: 8.w),
               Container(
-                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
+                padding: EdgeInsets.symmetric(
+                  horizontal: 8.w,
+                  vertical: 2.h,
+                ),
                 decoration: BoxDecoration(
                   color: const Color(0xFFEDE9FE),
                   borderRadius: BorderRadius.circular(10.r),
@@ -283,7 +411,10 @@ class _OnlineMemberState extends State<OnlineMember> {
                   },
                   borderRadius: BorderRadius.circular(6.r),
                   child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 2.h),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 4.w,
+                      vertical: 2.h,
+                    ),
                     child: Row(
                       children: [
                         Text(
@@ -308,16 +439,11 @@ class _OnlineMemberState extends State<OnlineMember> {
             ],
           ),
           SizedBox(height: 10.h),
-          if (controller.onlineLoading.value && controller.onlineNowList.isEmpty)
-            Padding(
-              padding: EdgeInsets.symmetric(vertical: 24.h),
-              child: const Center(
-                child: CircularProgressIndicator(color: Color(0xFF6366F1)),
-              ),
-            )
-          else if (list.isEmpty)
+          if (list.isEmpty)
             Container(
-              padding: EdgeInsets.symmetric(vertical: 16.h),
+              padding: EdgeInsets.symmetric(
+                vertical: 16.h,
+              ),
               alignment: Alignment.center,
               child: Text(
                 "No members currently online",
@@ -332,11 +458,18 @@ class _OnlineMemberState extends State<OnlineMember> {
             ListView.separated(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              itemCount: _showAllOnlineNow || list.length <= 5 ? list.length : 5,
-              separatorBuilder: (_, __) => SizedBox(height: 8.h),
+              itemCount:
+                  _showAllOnlineNow || list.length <= 5 ? list.length : 5,
+              separatorBuilder: (_, __) => SizedBox(
+                height: 8.h,
+              ),
               itemBuilder: (_, index) {
                 final member = list[index];
-                return _buildMemberCard(member, isOnlineNow: true);
+
+                return _buildMemberCard(
+                  member,
+                  isOnlineNow: true,
+                );
               },
             ),
         ],
@@ -364,7 +497,10 @@ class _OnlineMemberState extends State<OnlineMember> {
               ),
               SizedBox(width: 8.w),
               Container(
-                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
+                padding: EdgeInsets.symmetric(
+                  horizontal: 8.w,
+                  vertical: 2.h,
+                ),
                 decoration: BoxDecoration(
                   color: const Color(0xFFEDE9FE),
                   borderRadius: BorderRadius.circular(10.r),
@@ -382,16 +518,11 @@ class _OnlineMemberState extends State<OnlineMember> {
             ],
           ),
           SizedBox(height: 10.h),
-          if (controller.onlineLoading.value && controller.recentlyOnlineList.isEmpty)
-            Padding(
-              padding: EdgeInsets.symmetric(vertical: 24.h),
-              child: const Center(
-                child: CircularProgressIndicator(color: Color(0xFF6366F1)),
-              ),
-            )
-          else if (list.isEmpty)
+          if (list.isEmpty)
             Container(
-              padding: EdgeInsets.symmetric(vertical: 16.h),
+              padding: EdgeInsets.symmetric(
+                vertical: 16.h,
+              ),
               alignment: Alignment.center,
               child: Text(
                 "No recently active members",
@@ -407,10 +538,16 @@ class _OnlineMemberState extends State<OnlineMember> {
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: list.length,
-              separatorBuilder: (_, __) => SizedBox(height: 8.h),
+              separatorBuilder: (_, __) => SizedBox(
+                height: 8.h,
+              ),
               itemBuilder: (_, index) {
                 final member = list[index];
-                return _buildMemberCard(member, isOnlineNow: false);
+
+                return _buildMemberCard(
+                  member,
+                  isOnlineNow: false,
+                );
               },
             ),
         ],
@@ -418,8 +555,12 @@ class _OnlineMemberState extends State<OnlineMember> {
     });
   }
 
-  Widget _buildMemberCard(GroupMemberData member, {required bool isOnlineNow}) {
-    final Color dotColor = isOnlineNow ? const Color(0xFF10B981) : const Color(0xFFA5B4FC);
+  Widget _buildMemberCard(
+    GroupMemberData member, {
+    required bool isOnlineNow,
+  }) {
+    final Color dotColor =
+        isOnlineNow ? const Color(0xFF10B981) : const Color(0xFFA5B4FC);
 
     return InkWell(
       onTap: () {
@@ -445,7 +586,9 @@ class _OnlineMemberState extends State<OnlineMember> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16.r),
-          border: Border.all(color: Colors.grey.withValues(alpha: 0.1)),
+          border: Border.all(
+            color: Colors.grey.withValues(alpha: 0.1),
+          ),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.02),
@@ -463,7 +606,9 @@ class _OnlineMemberState extends State<OnlineMember> {
                   height: 48.r,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    border: Border.all(color: Colors.grey.withValues(alpha: 0.15)),
+                    border: Border.all(
+                      color: Colors.grey.withValues(alpha: 0.15),
+                    ),
                   ),
                   child: ClipOval(
                     child: member.resolvedImageUrl.isNotEmpty
@@ -473,7 +618,9 @@ class _OnlineMemberState extends State<OnlineMember> {
                             placeholder: (_, __) => Container(
                               color: Colors.grey.shade100,
                               child: const Center(
-                                child: CircularProgressIndicator(strokeWidth: 2),
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
                               ),
                             ),
                             errorWidget: (_, __, ___) => Icon(
@@ -498,7 +645,10 @@ class _OnlineMemberState extends State<OnlineMember> {
                     decoration: BoxDecoration(
                       color: dotColor,
                       shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 2.r),
+                      border: Border.all(
+                        color: Colors.white,
+                        width: 2.r,
+                      ),
                     ),
                   ),
                 ),
@@ -533,12 +683,16 @@ class _OnlineMemberState extends State<OnlineMember> {
                   ),
                   SizedBox(height: 3.h),
                   Text(
-                    isOnlineNow ? "Online" : "Last seen ${member.formattedLastSeen}",
+                    isOnlineNow
+                        ? "Online"
+                        : "Last seen ${member.formattedLastSeen}",
                     style: TextStyle(
                       fontSize: 11.sp,
                       fontWeight: FontWeight.w500,
                       fontFamily: FontFamily.interMedium,
-                      color: isOnlineNow ? const Color(0xFF10B981) : Colors.grey.shade500,
+                      color: isOnlineNow
+                          ? const Color(0xFF10B981)
+                          : Colors.grey.shade500,
                     ),
                   ),
                 ],
@@ -556,7 +710,9 @@ class _OnlineMemberState extends State<OnlineMember> {
       decoration: BoxDecoration(
         color: const Color(0xFFF3F0FF),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: const Color(0xFF6366F1).withValues(alpha: 0.1)),
+        border: Border.all(
+          color: const Color(0xFF6366F1).withValues(alpha: 0.1),
+        ),
       ),
       child: Row(
         children: [
@@ -584,7 +740,10 @@ class _OnlineMemberState extends State<OnlineMember> {
                   decoration: BoxDecoration(
                     color: const Color(0xFF10B981),
                     shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 1.5),
+                    border: Border.all(
+                      color: Colors.white,
+                      width: 1.5,
+                    ),
                   ),
                 ),
               ),
@@ -612,6 +771,235 @@ class _OnlineMemberState extends State<OnlineMember> {
                     fontFamily: FontFamily.interRegular,
                     color: Colors.grey.shade700,
                     height: 1.3,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _OnlineMemberSkeleton extends StatelessWidget {
+  const _OnlineMemberSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Padding(
+          padding: EdgeInsets.fromLTRB(
+            16.w,
+            4.h,
+            16.w,
+            8.h,
+          ),
+          child: Skeletonizer(
+            enabled: true,
+            child: Container(
+              height: 50.h,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16.r),
+              ),
+              child: TextField(
+                enabled: false,
+                decoration: InputDecoration(
+                  hintText: "Search members...",
+                  prefixIcon: const Icon(
+                    Icons.search_rounded,
+                  ),
+                  border: InputBorder.none,
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 16.w,
+                    vertical: 14.h,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+        Expanded(
+          child: Skeletonizer(
+            enabled: true,
+            child: ListView(
+              physics: const NeverScrollableScrollPhysics(),
+              padding: EdgeInsets.fromLTRB(
+                16.w,
+                8.h,
+                16.w,
+                20.h,
+              ),
+              children: [
+                Padding(
+                  padding: EdgeInsets.only(
+                    top: 6.h,
+                    bottom: 10.h,
+                  ),
+                  child: Row(
+                    children: [
+                      Text(
+                        "Online Now",
+                        style: TextStyle(
+                          fontSize: 15.sp,
+                          fontFamily: FontFamily.interBold,
+                        ),
+                      ),
+                      SizedBox(width: 8.w),
+                      Container(
+                        width: 28.w,
+                        height: 20.h,
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade300,
+                          borderRadius: BorderRadius.circular(10.r),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                for (int i = 0; i < 5; i++) ...[
+                  const _OnlineMemberSkeletonTile(),
+                  if (i < 4) SizedBox(height: 8.h),
+                ],
+                SizedBox(height: 20.h),
+                Row(
+                  children: [
+                    Text(
+                      "Recently Online",
+                      style: TextStyle(
+                        fontSize: 15.sp,
+                        fontFamily: FontFamily.interBold,
+                      ),
+                    ),
+                    SizedBox(width: 8.w),
+                    Container(
+                      width: 28.w,
+                      height: 20.h,
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade300,
+                        borderRadius: BorderRadius.circular(10.r),
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 10.h),
+                for (int i = 0; i < 4; i++) ...[
+                  const _OnlineMemberSkeletonTile(),
+                  if (i < 3) SizedBox(height: 8.h),
+                ],
+              ],
+            ),
+          ),
+        ),
+        SafeArea(
+          top: false,
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(
+              16.w,
+              8.h,
+              16.w,
+              10.h,
+            ),
+            child: Skeletonizer(
+              enabled: true,
+              child: _buildSkeletonBottomCard(),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSkeletonBottomCard() {
+    return Container(
+      padding: EdgeInsets.all(16.r),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16.r),
+      ),
+      child: Row(
+        children: [
+          CircleAvatar(
+            radius: 22.r,
+            backgroundColor: Colors.grey.shade300,
+          ),
+          SizedBox(width: 14.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "People Online",
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    fontFamily: FontFamily.interBold,
+                  ),
+                ),
+                SizedBox(height: 4.h),
+                Text(
+                  "These members are active in the app right now and available to connect.",
+                  maxLines: 2,
+                  style: TextStyle(
+                    fontSize: 11.sp,
+                    fontFamily: FontFamily.interRegular,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _OnlineMemberSkeletonTile extends StatelessWidget {
+  const _OnlineMemberSkeletonTile();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.all(12.r),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16.r),
+      ),
+      child: Row(
+        children: [
+          CircleAvatar(
+            radius: 24.r,
+            backgroundColor: Colors.grey.shade300,
+          ),
+          SizedBox(width: 14.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "Loading member name",
+                  maxLines: 1,
+                  style: TextStyle(
+                    fontSize: 15.sp,
+                    fontFamily: FontFamily.interBold,
+                  ),
+                ),
+                SizedBox(height: 4.h),
+                Text(
+                  "Loading department",
+                  maxLines: 1,
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    fontFamily: FontFamily.interRegular,
+                  ),
+                ),
+                SizedBox(height: 4.h),
+                Text(
+                  "Online",
+                  style: TextStyle(
+                    fontSize: 11.sp,
+                    fontFamily: FontFamily.interMedium,
                   ),
                 ),
               ],

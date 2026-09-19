@@ -4,6 +4,7 @@ import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/util/http/http_util.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Model/ChatImageUploadResponse.dart';
+import 'package:fgtracker/app/Model/ForwardMessageModel.dart';
 import 'package:fgtracker/app/Model/GetMessage.dart';
 import 'package:fgtracker/app/Model/LocationDataRes.dart';
 import 'package:fgtracker/app/Model/PrivateChatModel.dart';
@@ -27,9 +28,11 @@ class MessageRepo {
 
   static Future<GetMessage> privateChatHistory({
     required String chatId,
+    int page = 1,
+    int limit = 50,
   }) async {
     final response = await HttpUtil().get(
-      "/private-chat/$chatId/messages",
+      "/private-chat/$chatId/messages?page=$page&limit=$limit",
     );
 
     return GetMessage.fromJson(response);
@@ -155,7 +158,7 @@ class MessageRepo {
 
   static Future<PrivateChatResponse> getPrivateChatList({
     int page = 1,
-    int limit = 10,
+    int limit = 1,
   }) async {
     final response = await HttpUtil().get(
       "/private-chat-list?page=$page&limit=$limit",
@@ -174,4 +177,35 @@ class MessageRepo {
 
     return GroupChatListResponse.fromJson(response);
   }
+
+  static Future<ForwardListResponse> getForwardList() async {
+    final response = await HttpUtil().get(
+      "/forward/list",
+    );
+
+    return ForwardListResponse.fromJson(response);
+  }
+
+  static Future<ForwardMessageResponse> forwardMessage({
+    required int messageId,
+    required String sourceType,
+    required List<ForwardTarget> targets,
+  }) async {
+    final data = {
+      "messageId": messageId,
+      "sourceType": sourceType,
+      "targets": targets.map((target) => target.toJson()).toList(),
+    };
+
+    final response = await HttpUtil().Authpost(
+      "/forward/message",
+      data: data,
+    );
+
+    return ForwardMessageResponse.fromJson(response);
+  }
+
+
+
+
 }

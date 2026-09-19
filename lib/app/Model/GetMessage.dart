@@ -4,6 +4,7 @@ class GetMessage {
   List<MessageData>? messageData;
   bool? isCreator;
   int? pinnedMessageId;
+  MessagePagination? pagination;
 
   GetMessage({
     this.status,
@@ -11,6 +12,7 @@ class GetMessage {
     this.messageData,
     this.isCreator,
     this.pinnedMessageId,
+    this.pagination,
   });
 
   GetMessage.fromJson(Map<String, dynamic> json) {
@@ -18,6 +20,12 @@ class GetMessage {
     message = json['message'];
     isCreator = json['isCreator'];
     pinnedMessageId = json['pinnedMessageId'];
+
+    if (json['pagination'] is Map) {
+      pagination = MessagePagination.fromJson(
+        Map<String, dynamic>.from(json['pagination']),
+      );
+    }
 
     final messages = json['MessageData'] ??
         json['messageData'] ??
@@ -51,11 +59,54 @@ class GetMessage {
     data['isCreator'] = isCreator;
     data['pinnedMessageId'] = pinnedMessageId;
 
+    if (pagination != null) {
+      data['pagination'] = pagination!.toJson();
+    }
+
     if (messageData != null) {
-      data['MessageData'] = messageData!.map((v) => v.toJson()).toList();
+      data['MessageData'] =
+          messageData!.map((v) => v.toJson()).toList();
     }
 
     return data;
+  }
+}
+
+class MessagePagination {
+  int? currentPage;
+  int? perPage;
+  int? totalRecords;
+  int? totalPages;
+  bool? hasNextPage;
+  bool? hasPreviousPage;
+
+  MessagePagination({
+    this.currentPage,
+    this.perPage,
+    this.totalRecords,
+    this.totalPages,
+    this.hasNextPage,
+    this.hasPreviousPage,
+  });
+
+  MessagePagination.fromJson(Map<String, dynamic> json) {
+    currentPage = json['currentPage'];
+    perPage = json['perPage'];
+    totalRecords = json['totalRecords'];
+    totalPages = json['totalPages'];
+    hasNextPage = json['hasNextPage'];
+    hasPreviousPage = json['hasPreviousPage'];
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'currentPage': currentPage,
+      'perPage': perPage,
+      'totalRecords': totalRecords,
+      'totalPages': totalPages,
+      'hasNextPage': hasNextPage,
+      'hasPreviousPage': hasPreviousPage,
+    };
   }
 }
 
@@ -131,7 +182,8 @@ class MessageData {
         json['replySenderName'] ??
         json['reply_sender_name'];
 
-    locationSharing = json['locationSharing'] ?? json['location_sharing'];
+    locationSharing =
+        json['locationSharing'] ?? json['location_sharing'];
   }
 
   Map<String, dynamic> toJson() {
