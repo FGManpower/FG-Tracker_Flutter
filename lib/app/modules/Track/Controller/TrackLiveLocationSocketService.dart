@@ -18,6 +18,7 @@ class LiveLocationSocketModel {
   final String address;
   final String? name;
   final String? profileImage;
+  final int? battery;
   final DateTime timestamp;
 
   LiveLocationSocketModel({
@@ -30,6 +31,7 @@ class LiveLocationSocketModel {
     this.address = '',
     this.name,
     this.profileImage,
+    this.battery,
     DateTime? timestamp,
   }) : timestamp = timestamp ?? DateTime.now();
 
@@ -76,6 +78,15 @@ class LiveLocationSocketModel {
       }
     }
 
+    final rawBattery = json['battery'] ??
+        json['batteryLevel'] ??
+        json['battery_level'] ??
+        json['batteryPercentage'] ??
+        json['percentage'];
+    final int? battery = rawBattery != null
+        ? int.tryParse(rawBattery.toString().replaceAll(RegExp(r'[^\d]'), ''))
+        : null;
+
     return LiveLocationSocketModel(
       userId: rawUserId,
       groupId: rawGroupId,
@@ -88,6 +99,7 @@ class LiveLocationSocketModel {
       profileImage:
           (json['profileImage'] ?? json['image'] ?? json['profile_image'])
               ?.toString(),
+      battery: battery,
     );
   }
 
@@ -104,13 +116,14 @@ class LiveLocationSocketModel {
       'address': address,
       if (name != null) 'name': name,
       if (profileImage != null) 'profileImage': profileImage,
+      if (battery != null) 'battery': battery,
       'timestamp': timestamp.toIso8601String(),
     };
   }
 
   @override
   String toString() {
-    return 'LiveLocationSocketModel(userId: $userId, groupId: $groupId, lat: $lat, lng: $lng, area: $area, city: $city, address: $address)';
+    return 'LiveLocationSocketModel(userId: $userId, groupId: $groupId, lat: $lat, lng: $lng, area: $area, city: $city, address: $address, battery: $battery)';
   }
 }
 

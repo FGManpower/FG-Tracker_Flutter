@@ -12,6 +12,7 @@ import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Model/LocationDataRes.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:skeletonizer/skeletonizer.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class TrackingScreen extends StatelessWidget {
   TrackingScreen({super.key});
@@ -174,29 +175,43 @@ class TrackingScreen extends StatelessWidget {
                   ),
                   child: Obx(() {
                     final isGroupTab = controller.selectedTabIndex.value == 1;
-                    return CustomScrollView(
-                      controller: scrollController,
-                      physics: const ClampingScrollPhysics(),
-                      slivers: [
-                        SliverToBoxAdapter(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              GestureDetector(
-                                onTap: _toggleSheet,
-                                behavior: HitTestBehavior.opaque,
-                                child: _buildDragHandle(),
-                              ),
-                              _buildCustomTabs(),
-                              SizedBox(height: 10.h),
-                            ],
-                          ),
+                    return RefreshIndicator(
+                      onRefresh: () async {
+                        if (isGroupTab) {
+                          await controller.fetchGroupData();
+                        } else {
+                          await controller.getUsersWithinRadius();
+                        }
+                      },
+                      color: const Color(0xFF4338CA),
+                      backgroundColor: Colors.white,
+                      displacement: 20.h,
+                      child: CustomScrollView(
+                        controller: scrollController,
+                        physics: const AlwaysScrollableScrollPhysics(
+                          parent: ClampingScrollPhysics(),
                         ),
-                        if (isGroupTab)
-                          _buildGroupSliverContent()
-                        else
-                          _buildLiveTrackingSliverContent(),
-                      ],
+                        slivers: [
+                          SliverToBoxAdapter(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                GestureDetector(
+                                  onTap: _toggleSheet,
+                                  behavior: HitTestBehavior.opaque,
+                                  child: _buildDragHandle(),
+                                ),
+                                _buildCustomTabs(),
+                                SizedBox(height: 10.h),
+                              ],
+                            ),
+                          ),
+                          if (isGroupTab)
+                            _buildGroupSliverContent()
+                          else
+                            _buildLiveTrackingSliverContent(),
+                        ],
+                      ),
                     );
                   }),
                 );
@@ -1376,13 +1391,91 @@ class TrackingScreen extends StatelessWidget {
         delegate: SliverChildListDelegate([
           _buildSearchBox("Search by name or group..."),
           SizedBox(height: 12.h),
-          Text(
-            "Live Members",
-            style: TextStyle(
-              fontSize: 15.sp,
-              fontWeight: FontWeight.w800,
-              color: const Color(0xFF1E1B4B),
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Text(
+                    "Live Members",
+                    style: TextStyle(
+                      fontSize: 15.sp,
+                      fontWeight: FontWeight.w800,
+                      color: const Color(0xFF1E1B4B),
+                    ),
+                  ),
+                  SizedBox(width: 8.w),
+                  Container(
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF4338CA).withOpacity(0.08),
+                      borderRadius: BorderRadius.circular(10.r),
+                    ),
+                    child: Obx(
+                      () => Text(
+                        "${controller.liveMembers.length} Live",
+                        style: TextStyle(
+                          fontSize: 10.5.sp,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF4338CA),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              Obx(() {
+                final bool loading = controller.isLoading.value;
+                return GestureDetector(
+                  onTap: loading
+                      ? null
+                      : () => controller.getUsersWithinRadius(),
+                  behavior: HitTestBehavior.opaque,
+                  child: Container(
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFEEF2FF),
+                      borderRadius: BorderRadius.circular(8.r),
+                      border: Border.all(
+                        color: const Color(0xFF4338CA).withOpacity(0.15),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        loading
+                            ? SizedBox(
+                                width: 12.sp,
+                                height: 12.sp,
+                                child: const CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    Color(0xFF4338CA),
+                                  ),
+                                ),
+                              )
+                            : Icon(
+                                Icons.refresh_rounded,
+                                size: 14.sp,
+                                color: const Color(0xFF4338CA),
+                              ),
+                        SizedBox(width: 4.w),
+                        Text(
+                          loading ? "Refreshing..." : "Refresh",
+                          style: TextStyle(
+                            fontSize: 11.sp,
+                            fontWeight: FontWeight.w700,
+                            color: const Color(0xFF4338CA),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }),
+            ],
           ),
           SizedBox(height: 8.h),
           if (controller.isLoading.value && controller.liveMembers.isEmpty)
@@ -1411,38 +1504,79 @@ class TrackingScreen extends StatelessWidget {
               child: Center(
                 child: Column(
                   children: [
-                    Icon(
-                      Icons.person_off_rounded,
-                      color: AppColors.primaryThreeElementText,
-                      size: 36.sp,
-                    ),
-                    SizedBox(height: 8.h),
-                    Text(
-                      controller.searchController.text.trim().isNotEmpty
-                          ? "No members match '${controller.searchController.text}'"
-                          : "No members found within ${controller.currentFormattedRadius}",
-                      style: TextStyle(
-                        color: AppColors.primarySecondaryElementText,
-                        fontSize: 13.sp,
+                    Container(
+                      padding: EdgeInsets.all(14.r),
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFF1F5F9),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.sensors_off_rounded,
+                        color: const Color(0xFF94A3B8),
+                        size: 32.sp,
                       ),
                     ),
                     SizedBox(height: 10.h),
+                    Text(
+                      controller.searchController.text.trim().isNotEmpty
+                          ? "No members match '${controller.searchController.text}'"
+                          : "No active members found within ${controller.currentFormattedRadius}",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: const Color(0xFF64748B),
+                        fontSize: 13.sp,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    Obx(() {
+                      if (controller.responseError.isNotEmpty) {
+                        return Padding(
+                          padding: EdgeInsets.only(top: 6.h),
+                          child: Text(
+                            controller.responseError.value,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: const Color(0xFFEF4444),
+                              fontSize: 11.sp,
+                            ),
+                          ),
+                        );
+                      }
+                      return const SizedBox.shrink();
+                    }),
+                    SizedBox(height: 14.h),
                     GestureDetector(
                       onTap: () => controller.getUsersWithinRadius(),
                       child: Container(
                         padding: EdgeInsets.symmetric(
-                            horizontal: 14.w, vertical: 6.h),
+                            horizontal: 16.w, vertical: 8.h),
                         decoration: BoxDecoration(
-                          color: AppColors.primaryElementLight,
-                          borderRadius: BorderRadius.circular(10.r),
+                          color: const Color(0xFF4338CA),
+                          borderRadius: BorderRadius.circular(12.r),
+                          boxShadow: [
+                            BoxShadow(
+                              color:
+                                  const Color(0xFF4338CA).withOpacity(0.2),
+                              blurRadius: 8.r,
+                              offset: Offset(0, 2.h),
+                            ),
+                          ],
                         ),
-                        child: Text(
-                          "Tap to Refresh",
-                          style: TextStyle(
-                            color: AppColors.primaryElement,
-                            fontSize: 12.sp,
-                            fontWeight: FontWeight.w700,
-                          ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.refresh_rounded,
+                                color: Colors.white, size: 16.sp),
+                            SizedBox(width: 6.w),
+                            Text(
+                              "Refresh Live Data",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 12.sp,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
@@ -1626,12 +1760,29 @@ class TrackingScreen extends StatelessWidget {
                 ),
                 child: ClipOval(
                   child: member.avatarUrl.isNotEmpty
-                      ? Image.network(
-                          member.avatarUrl,
+                      ? CachedNetworkImage(
+                          imageUrl: member.avatarUrl,
                           width: 44.w,
                           height: 44.w,
                           fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) =>
+                          placeholder: (context, url) => Container(
+                            width: 44.w,
+                            height: 44.w,
+                            color: AppColors.primaryElementLight,
+                            child: const Center(
+                              child: SizedBox(
+                                width: 14,
+                                height: 14,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 1.8,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    Color(0xFF4338CA),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          errorWidget: (context, url, error) =>
                               _placeholderAvatar(member.name),
                         )
                       : _placeholderAvatar(member.name),
@@ -1680,9 +1831,17 @@ class TrackingScreen extends StatelessWidget {
                     SizedBox(width: 3.w),
                     Expanded(
                       child: Text(
-                        member.location.isNotEmpty
+                        (member.location.isNotEmpty &&
+                                member.location != "Location unavailable" &&
+                                member.location != "Location" &&
+                                member.location != "Locating...")
                             ? member.location
-                            : "Location unavailable",
+                            : (member.latitude != null &&
+                                    member.longitude != null &&
+                                    member.latitude != 0.0 &&
+                                    member.longitude != 0.0
+                                ? "${member.latitude!.toStringAsFixed(4)}, ${member.longitude!.toStringAsFixed(4)}"
+                                : "Location unavailable"),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
@@ -1698,42 +1857,54 @@ class TrackingScreen extends StatelessWidget {
             ),
           ),
           SizedBox(width: 8.w),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                _formatDistance(member.distance),
-                style: TextStyle(
-                  color: const Color(0xFF4338CA),
-                  fontSize: 11.sp,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              SizedBox(height: 4.h),
-              Row(
-                mainAxisSize: MainAxisSize.min,
+          Builder(
+            builder: (context) {
+              final int? batteryVal = member.battery;
+              Color batteryColor;
+              if (batteryVal == null) {
+                batteryColor = const Color(0xFF94A3B8);
+              } else if (batteryVal > 50) {
+                batteryColor = const Color(0xFF10B981);
+              } else if (batteryVal >= 20) {
+                batteryColor = const Color(0xFFF59E0B);
+              } else {
+                batteryColor = const Color(0xFFEF4444);
+              }
+
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(
-                    _getBatteryIcon(member.battery ?? 100),
-                    color: member.battery != null
-                        ? const Color(0xFF4338CA)
-                        : const Color(0xFF94A3B8),
-                    size: 14.sp,
-                  ),
-                  SizedBox(width: 3.w),
                   Text(
-                    member.battery != null ? "${member.battery}%" : "--%",
+                    _formatDistance(member.distance),
                     style: TextStyle(
-                      color: member.battery != null
-                          ? const Color(0xFF4338CA)
-                          : const Color(0xFF94A3B8),
+                      color: const Color(0xFF4338CA),
                       fontSize: 11.sp,
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
+                  SizedBox(height: 4.h),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        _getBatteryIcon(batteryVal ?? 100),
+                        color: batteryColor,
+                        size: 14.sp,
+                      ),
+                      SizedBox(width: 3.w),
+                      Text(
+                        batteryVal != null ? "$batteryVal%" : "--%",
+                        style: TextStyle(
+                          color: batteryColor,
+                          fontSize: 11.sp,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
-              ),
-            ],
+              );
+            },
           ),
           SizedBox(width: 10.w),
           GestureDetector(
@@ -2268,7 +2439,7 @@ class TrackingScreen extends StatelessWidget {
     if (level >= 90) return Icons.battery_full_rounded;
     if (level >= 75) return Icons.battery_6_bar_rounded;
     if (level >= 50) return Icons.battery_4_bar_rounded;
-    if (level >= 30) return Icons.battery_2_bar_rounded;
+    if (level >= 20) return Icons.battery_2_bar_rounded;
     return Icons.battery_alert_rounded;
   }
 

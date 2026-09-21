@@ -417,13 +417,13 @@ class UsersWithinRadiusData {
     if (profileImage != null &&
         profileImage!.trim().isNotEmpty &&
         profileImage != "null") {
-      final img = profileImage!.trim();
+      final img = profileImage!.trim().replaceAll(r'\', '/');
       if (img.startsWith("http://") || img.startsWith("https://")) {
         avatar = img;
       } else {
-        final cleanBase = ConstRes.production.endsWith('/')
-            ? ConstRes.production
-            : '${ConstRes.production}/';
+        final cleanBase = ConstRes.aImageBaseUrl.endsWith('/')
+            ? ConstRes.aImageBaseUrl
+            : '${ConstRes.aImageBaseUrl}/';
         final cleanPath = img.startsWith('/') ? img.substring(1) : img;
         avatar = "$cleanBase$cleanPath";
       }
