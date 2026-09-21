@@ -38,6 +38,7 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_PHONE_CALL" />
     <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
     <uses-permission android:name="android.permission.READ_CONTACTS"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION" />
 
 
     <application
@@ -139,6 +140,19 @@
             android:name="com.connectycube.flutter.calls.CallService"
             android:exported="false"
             android:foregroundServiceType="phoneCall" />
+
+        <service
+            android:name="com.pravera.flutter_foreground_task.service.ForegroundService"
+            android:foregroundServiceType="mediaProjection|microphone"
+            android:exported="false" />
+
+        <!-- If you also declared com.cloudwebrtc.webrtc.ForegroundService, update it too -->
+        <service
+            android:name="com.cloudwebrtc.webrtc.ForegroundService"
+            android:foregroundServiceType="mediaProjection|microphone"
+            android:enabled="true"
+            android:exported="false" />
+
 
     </application>
 

@@ -8,6 +8,7 @@ import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Data/Services/CallStateTracker.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Group_Calling.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Walkie-Talkie-Service.dart';
+import 'package:fgtracker/app/Data/Services/screen_share_service.dart';
 import 'package:fgtracker/gen/assets.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -221,7 +222,7 @@ Future<void> main() async {
     groupWalkieInitialize(userId);
     Socket_GroupCallService.instance.init(userId.toString());
   }
-
+  ScreenShareForegroundService.init();
   runApp(const MyApp());
 }
 
