@@ -2246,12 +2246,36 @@ class TrackController extends GetxController {
         debugPrint(
             "📍 Loaded ${result.data!.length} users strictly from /users-within-radius (radius: $radiusParam)");
 
+        // Preserve already known battery or addresses from real-time socket
+        for (var incoming in result.data!) {
+          final existing = radiusUsers.firstWhereOrNull(
+              (u) => u.userId.toString() == incoming.userId.toString());
+          if (existing != null) {
+            if (incoming.battery == null && existing.battery != null) {
+              incoming.battery = existing.battery;
+            }
+            if ((incoming.location == null ||
+                    incoming.location!.isEmpty ||
+                    incoming.location == "Location unavailable") &&
+                existing.location != null &&
+                existing.location!.isNotEmpty &&
+                existing.location != "Location unavailable") {
+              incoming.location = existing.location;
+            }
+          }
+        }
+
         radiusUsers.assignAll(result.data!);
         await _resolveAllMembersAddresses();
       } else {
         debugPrint(
             "⚠️ /users-within-radius returned: ${result.message}");
-        radiusUsers.clear();
+        if (result.message != null && result.message!.isNotEmpty) {
+          responseError.value = result.message!;
+        }
+        if (radiusUsers.isEmpty) {
+          radiusUsers.clear();
+        }
       }
       _refreshMembersAndMap();
     } catch (e) {
