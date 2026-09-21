@@ -108,6 +108,9 @@ class MemberData {
   bool? isOnline;
   String? lastSeen;
   bool? locationSharing;
+  String? location;
+  String? department;
+  String? team;
 
   MemberData({
     this.id,
@@ -120,6 +123,9 @@ class MemberData {
     this.isOnline,
     this.lastSeen,
     this.locationSharing,
+    this.location,
+    this.department,
+    this.team,
   });
 
   static int? _parseInt(dynamic val) {
@@ -203,6 +209,10 @@ class MemberData {
         json['isLocationSharing'] ??
         user?['locationSharing'];
     locationSharing = _parseBool(rawLocSharing) ?? true;
+
+    location = (json['location'] ?? json['address'] ?? user?['location'])?.toString();
+    department = (json['department'] ?? json['dept'] ?? user?['department'])?.toString();
+    team = (json['team'] ?? json['groupName'] ?? json['group_name'] ?? user?['team'])?.toString();
   }
 
   Map<String, dynamic> toJson() {
@@ -217,6 +227,9 @@ class MemberData {
     data['isOnline'] = isOnline;
     data['lastSeen'] = lastSeen;
     data['locationSharing'] = locationSharing;
+    data['location'] = location;
+    data['department'] = department;
+    data['team'] = team;
     return data;
   }
 }

@@ -12,15 +12,26 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
+import 'package:fgtracker/app/Model/MemberDataRes.dart';
+import 'package:fgtracker/app/modules/mediaStream/Controller/calling_controller.dart';
+
 class UserProfileScreen extends StatefulWidget {
-  const UserProfileScreen({super.key});
+  final MemberData? userData;
+  const UserProfileScreen({super.key, this.userData});
 
   @override
   State<UserProfileScreen> createState() => _UserProfileScreenState();
 }
 
 class _UserProfileScreenState extends State<UserProfileScreen> {
-  final chatController = Get.find<MessageController>();
+  MessageController? get _chatController =>
+      Get.isRegistered<MessageController>()
+          ? Get.find<MessageController>()
+          : null;
+
+  MemberData get _member =>
+      widget.userData ??
+      (_chatController != null ? _chatController!.memberData : MemberData());
 
   static const Color _purple = Color(0xFF1E1466);
   static const Color _lightPurple = Color(0xFF5045B9);
@@ -30,7 +41,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   String get _myId => Global.storageServices.get(PrefConst.userId).toString();
 
   List<MessageData> get _mediaMessages {
-    return chatController.messageData.where((m) {
+    if (_chatController == null) return [];
+    return _chatController!.messageData.where((m) {
       final t = (m.messageType ?? "").toLowerCase();
       return t == "image" ||
           t == "image_text" ||
@@ -40,10 +52,11 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   }
 
   bool _isOnline() {
-    final userData = chatController.memberData;
-    if (userData.lastSeen == null || userData.lastSeen!.trim().isEmpty)
+    if (_member.isOnline == true) return true;
+    if (_member.lastSeen == null || _member.lastSeen!.trim().isEmpty) {
       return false;
-    final parsed = DateTime.tryParse(userData.lastSeen!.trim());
+    }
+    final parsed = DateTime.tryParse(_member.lastSeen!.trim());
     if (parsed == null) return false;
     try {
       return Tracking().getTimeAgo(parsed).toLowerCase() == "just now";
@@ -53,11 +66,11 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   }
 
   String _statusText() {
-    final userData = chatController.memberData;
     if (_isOnline()) return "Online";
-    if (userData.lastSeen == null || userData.lastSeen!.trim().isEmpty)
+    if (_member.lastSeen == null || _member.lastSeen!.trim().isEmpty) {
       return "Offline";
-    final parsed = DateTime.tryParse(userData.lastSeen!.trim());
+    }
+    final parsed = DateTime.tryParse(_member.lastSeen!.trim());
     if (parsed == null) return "Offline";
     try {
       return Tracking().getTimeAgo(parsed);
@@ -113,7 +126,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             _buildAboutCard(),
             SizedBox(height: 12.h),
 
-            // --- ALAG ALAG CARDS SECTION ---
+            // ---CARDS SECTION ---
             _buildNotificationsCard(),
             SizedBox(height: 8.h),
             _buildEncryptionCard(),
@@ -151,10 +164,17 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   }
 
   Widget _buildProfileHeader() {
-    final userData = chatController.memberData;
     final isOnline = _isOnline();
-    final img = userData.profileImage?.toString() ?? "";
-    final name = userData.name?.toString() ?? "Unknown";
+    final img = _member.profileImage?.toString() ?? "";
+    final name = _member.name?.toString() ?? "Member";
+    final String teamName = (_member.team != null &&
+            _member.team!.trim().isNotEmpty)
+        ? _member.team!.trim()
+        : ((_member.department != null && _member.department!.trim().isNotEmpty)
+            ? _member.department!.trim()
+            : (_member.groupId != null && _member.groupId != 0
+                ? "Group #${_member.groupId}"
+                : "FG Tracker Member"));
 
     return Column(
       children: [
@@ -175,7 +195,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               child: (img.isNotEmpty && img.toLowerCase() != 'null')
                   ? ClipOval(
                       child: Image.network(
-                        (img.startsWith('http://') || img.startsWith('https://'))
+                        (img.startsWith('http://') ||
+                                img.startsWith('https://'))
                             ? img
                             : "${ConstRes.aImageBaseUrl}$img",
                         fit: BoxFit.cover,
@@ -216,7 +237,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         ),
         SizedBox(height: 4.h),
         Text(
-          "Event Management Team",
+          teamName,
           style: TextStyle(
             fontSize: 13.sp,
             color: _lightPurple.withOpacity(0.8),
@@ -258,43 +279,72 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     );
   }
 
+  void _openChat() {
+    if (_chatController != null) {
+      Get.back();
+    } else {
+      Get.toNamed(
+        Routes.chatScreen,
+        arguments: {
+          "userData": _member,
+          "groupName": _member.name ?? "Chat",
+          "isCreator": false,
+          "type": "chatScreen",
+          "chatType": "private",
+          "groupId": _member.groupId ?? 0,
+        },
+      );
+    }
+  }
+
+  void _startCall({required bool isVideo}) {
+    if (_chatController != null) {
+      _chatController!.startCall(
+        context,
+        callerId: _myId,
+        remoteUserId: (_member.userId ?? "").toString(),
+        is_video: isVideo,
+        callerName: _member.name,
+      );
+      return;
+    }
+
+    if (Get.isRegistered<CallingController>()) {
+      Get.delete<CallingController>(force: true);
+    }
+    Get.toNamed(
+      Routes.callScreen,
+      arguments: {
+        "callerId": _myId,
+        "remoteUserId": (_member.userId ?? "").toString(),
+        "callerName": _member.name ?? "Member",
+        "callerProfile": _member.profileImage,
+        "offer": null,
+        "is_video": isVideo,
+        "callType": "outGoing",
+      },
+    );
+  }
+
   Widget _buildQuickActions(BuildContext context) {
     return Row(
       children: [
         _quickAction(
           icon: Icons.chat_bubble_rounded,
           label: "Message",
-          onTap: () {
-            Get.back();
-          },
+          onTap: _openChat,
         ),
         SizedBox(width: 10.w),
         _quickAction(
           icon: Icons.call,
           label: "Call",
-          onTap: () {
-            chatController.startCall(
-              context,
-              callerId: _myId,
-              remoteUserId: chatController.memberData.userId.toString(),
-              is_video: false,
-              callerName: chatController.memberData.name,
-            );
-          },
+          onTap: () => _startCall(isVideo: false),
         ),
         SizedBox(width: 10.w),
         _quickAction(
           icon: Icons.videocam_rounded,
           label: "Video Call",
-          onTap: () {
-            chatController.startCall(
-              context,
-              callerId: _myId,
-              remoteUserId: chatController.memberData.userId.toString(),
-              is_video: true,
-              callerName: chatController.memberData.name,
-            );
-          },
+          onTap: () => _startCall(isVideo: true),
         ),
       ],
     );
@@ -353,7 +403,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         children: [
           InkWell(
             onTap: () {
-              final all = chatController.messageData.where((m) {
+              final msgs = _chatController?.messageData ?? <MessageData>[];
+              final all = msgs.where((m) {
                 final t = (m.messageType ?? "").toLowerCase().trim();
                 if (t == "image" ||
                     t == "image_text" ||
@@ -471,21 +522,61 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   }
 
   Widget _buildAboutCard() {
+    final String phone = _member.mobileNo ?? "";
+    final String location = _member.location ?? "";
+
     return _whiteCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "About",
+            "Contact & Info",
             style: TextStyle(
               fontSize: 15.sp,
               fontWeight: FontWeight.w800,
               color: _purple,
             ),
           ),
-          SizedBox(height: 6.h),
+          if (phone.isNotEmpty) ...[
+            SizedBox(height: 10.h),
+            Row(
+              children: [
+                Icon(Icons.phone_rounded, color: _lightPurple, size: 18.sp),
+                SizedBox(width: 8.w),
+                Text(
+                  phone,
+                  style: TextStyle(
+                    fontSize: 13.5.sp,
+                    color: _purple,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ],
+          if (location.isNotEmpty) ...[
+            SizedBox(height: 8.h),
+            Row(
+              children: [
+                Icon(Icons.location_on_outlined,
+                    color: _lightPurple, size: 18.sp),
+                SizedBox(width: 8.w),
+                Expanded(
+                  child: Text(
+                    location,
+                    style: TextStyle(
+                      fontSize: 13.sp,
+                      color: Colors.grey.shade700,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+          SizedBox(height: 8.h),
           Text(
-            "Available for work and team communication.",
+            "Available for team communication.",
             style: TextStyle(
               fontSize: 13.sp,
               color: _purple.withOpacity(0.8),
@@ -496,7 +587,6 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       ),
     );
   }
-
 
   Widget _buildNotificationsCard() {
     return _whiteCard(
@@ -593,7 +683,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       icon: Icons.block_rounded,
       iconBgColor: const Color(0xFFFFF0F0),
       iconColor: Colors.redAccent,
-      title: "Block ${chatController.memberData.name}",
+      title: "Block ${_member.name ?? 'User'}",
       titleColor: Colors.redAccent,
       arrowColor: Colors.redAccent,
       onTap: () {
@@ -609,7 +699,6 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       },
     );
   }
-
 
   Widget _buildSingleTileCard({
     required IconData icon,

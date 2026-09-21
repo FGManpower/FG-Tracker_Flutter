@@ -17,13 +17,27 @@ class TrackRepo {
     required dynamic userLong,
     required dynamic radius,
   }) async {
+    int formattedRadius = 2000;
+    if (radius != null) {
+      final String raw = radius.toString().trim().toLowerCase();
+      final String clean = raw.replaceAll('km', '').replaceAll('m', '').trim();
+      final double? parsed = double.tryParse(clean);
+      if (parsed != null && parsed > 0) {
+        if (raw.contains('km') || parsed < 50) {
+          formattedRadius = (parsed * 1000).round();
+        } else {
+          formattedRadius = parsed.round();
+        }
+      }
+    }
+
     final queryParams = {
       "userId": userId,
       "userLat": userLat,
       "userLong": userLong,
       "lat": userLat,
       "long": userLong,
-      "radius": radius,
+      "radius": formattedRadius,
     };
 
     dynamic response;

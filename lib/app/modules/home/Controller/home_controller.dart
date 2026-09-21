@@ -40,6 +40,7 @@ class HomeController extends GetxController {
     SocketDashboardService.instance.init();
     _listenGroupCount();
     _listenLiveLocations();
+    refreshGroupCount();
     fetchBanners();
   }
 
@@ -47,12 +48,61 @@ class HomeController extends GetxController {
     _groupCountSubscription?.cancel();
     _groupCountSubscription =
         SocketDashboardService.instance.groupCountStream.listen((data) {
-      groupCount.value = GroupCountDetail.fromJson(data);
+      if (data != null) {
+        try {
+          final incoming = GroupCountDetail.fromJson(data);
+          groupCount.value = groupCount.value.copyWith(
+            totalGroups: incoming.totalGroups > 0 ? incoming.totalGroups : groupCount.value.totalGroups,
+            totalMembers: incoming.totalMembers > 0 ? incoming.totalMembers : groupCount.value.totalMembers,
+            activeMembers: incoming.activeMembers > 0 ? incoming.activeMembers : groupCount.value.activeMembers,
+            locationDisabledMembers: incoming.locationDisabledMembers > 0
+                ? incoming.locationDisabledMembers
+                : groupCount.value.locationDisabledMembers,
+          );
+        } catch (e) {
+          debugPrint("❌ [HomeController] Error parsing groupCount: $e");
+        }
+      }
     });
   }
 
   void refreshGroupCount() {
     SocketDashboardService.instance.requestGroupCount();
+    fetchDashboardCountsApi();
+  }
+
+  Future<void> fetchDashboardCountsApi() async {
+    try {
+      // 1. Check all members metadata
+      final res = await TrackRepo.getGroupMember(page: '1', filter: 'all');
+      if (res.status == true) {
+        final meta = res.data?.allMember?.metaData;
+        if (meta != null) {
+          final int totalM = meta.totalMembers ?? groupCount.value.totalMembers;
+          final int activeM = meta.totalOnlineMembers ?? groupCount.value.activeMembers;
+          final int ghostM = meta.totalPrivateMembers ?? groupCount.value.locationDisabledMembers;
+          groupCount.value = groupCount.value.copyWith(
+            totalMembers: totalM > 0 ? totalM : groupCount.value.totalMembers,
+            activeMembers: activeM > 0 ? activeM : groupCount.value.activeMembers,
+            locationDisabledMembers: ghostM > 0 ? ghostM : groupCount.value.locationDisabledMembers,
+          );
+        }
+      }
+
+      // 2. Fetch private members to ensure exact ghost mode count matches inner screen
+      final privateRes = await TrackRepo.getGroupMember(page: '1', filter: 'private');
+      if (privateRes.status == true) {
+        final int privateCount = privateRes.pagination?.totalRecords ??
+            (privateRes.data?.private?.length ?? 0);
+        if (privateCount > 0 || groupCount.value.locationDisabledMembers == 0) {
+          groupCount.value = groupCount.value.copyWith(
+            locationDisabledMembers: privateCount,
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint("❌ [HomeController] fetchDashboardCountsApi error: $e");
+    }
   }
 
   Future<void> getProfileData() async {

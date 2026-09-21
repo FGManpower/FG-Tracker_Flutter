@@ -57,6 +57,7 @@ class UserData {
   String? gender;
   dynamic isOnline;
   String? lastSeen;
+  String? get fullName => name;
 
   UserData(
       {this.userId,

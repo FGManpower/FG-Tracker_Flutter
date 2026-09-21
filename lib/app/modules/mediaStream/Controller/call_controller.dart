@@ -7,6 +7,7 @@ import 'package:fgtracker/app/Model/user_profileList_res.dart';
 import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart' hide navigator;
+import 'package:permission_handler/permission_handler.dart';
 
 class CallController extends GetxController {
   static CallController get instance => Get.isRegistered<CallController>()
@@ -25,6 +26,8 @@ class CallController extends GetxController {
   final RxBool contactLoading = false.obs;
   final RxBool isSearching = false.obs;
   final RxString responseError = "".obs;
+  final RxBool isContactPermissionGranted = false.obs;
+  final RxBool hasAllowedContacts = false.obs;
 
   var allUserProfileData = <UserListData>[].obs;
   var filteredUsers = <UserListData>[].obs;
@@ -47,7 +50,7 @@ class CallController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    getRegisteredContacts();
+    checkContactPermission();
     loadGroups();
     getRecentCall();
 
@@ -134,6 +137,37 @@ class CallController extends GetxController {
     debugPrint("Calling Number: ${dialNumber.value}");
   }
 
+  Future<void> checkContactPermission() async {
+    try {
+      final status = await Permission.contacts.status;
+      final bool granted = status.isGranted;
+      isContactPermissionGranted.value = granted;
+      if (granted) {
+        hasAllowedContacts.value = true;
+        await getRegisteredContacts();
+      }
+    } catch (e) {
+      debugPrint("Error checking contact permission: $e");
+    }
+  }
+
+  Future<void> requestContactPermission() async {
+    try {
+      final status = await Permission.contacts.request();
+      if (status.isGranted) {
+        isContactPermissionGranted.value = true;
+        hasAllowedContacts.value = true;
+        await getRegisteredContacts();
+      } else if (status.isPermanentlyDenied) {
+        openAppSettings();
+      } else {
+        isContactPermissionGranted.value = false;
+      }
+    } catch (e) {
+      debugPrint("Error requesting contact permission: $e");
+    }
+  }
+
   Future<void> getRegisteredContacts() async {
     try {
       contactLoading.value = true;
@@ -141,11 +175,7 @@ class CallController extends GetxController {
 
       final contactNumbers = await _contactService.getMobileNumbers();
 
-      if (contactNumbers.isEmpty) {
-        allUserProfileData.clear();
-        filteredUsers.clear();
-        return;
-      }
+      isContactPermissionGranted.value = true;
 
       final result = await GroupRepo.getAllUserData();
 
@@ -158,8 +188,11 @@ class CallController extends GetxController {
           return contactNumberSet.contains(mobileNo);
         }).toList();
 
-        allUserProfileData.value = matchedUsers;
-        filteredUsers.value = matchedUsers;
+        // If contact book matched server users, show them; otherwise fallback to users
+        final finalUsers = matchedUsers.isNotEmpty ? matchedUsers : users;
+
+        allUserProfileData.value = finalUsers;
+        filteredUsers.value = finalUsers;
       } else {
         responseError.value = result.message ?? "Something went wrong";
       }
@@ -207,7 +240,7 @@ class CallController extends GetxController {
   }
 
   Future<void> refreshContacts() async {
-    await getRegisteredContacts();
+    await checkContactPermission();
   }
 
   // =========================================================================

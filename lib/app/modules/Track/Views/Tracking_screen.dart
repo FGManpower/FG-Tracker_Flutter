@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import '../Controller/Track_controller.dart';
+import '../Controller/TrackController.dart';
 import 'package:fgtracker/app/Core/values/colors.dart';
 import 'package:fgtracker/app/Model/MemberModel.dart';
 import 'package:fgtracker/app/Model/GroupRes.dart';
@@ -1277,8 +1277,6 @@ class TrackingScreen extends StatelessWidget {
     );
   }
 
-
-
   Widget _buildCustomTabs() {
     final isLive = controller.selectedTabIndex.value == 0;
     return Container(
@@ -1593,14 +1591,8 @@ class TrackingScreen extends StatelessWidget {
               ),
             ),
           );
-          if (_sheetController.isAttached) {
-            _sheetController.animateTo(
-              0.11,
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeOutCubic,
-            );
-          }
         }
+        controller.showMemberProfileFromMemberModel(member);
       },
       child: Container(
       margin: EdgeInsets.only(bottom: 10.h),

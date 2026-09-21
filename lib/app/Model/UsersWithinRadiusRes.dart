@@ -114,19 +114,54 @@ class UsersWithinRadiusData {
   }
 
   UsersWithinRadiusData.fromJson(Map<String, dynamic> json) {
-    userId = json['userId'] ?? json['UserId'] ?? json['id'] ?? json['user_id'] ?? json['_id'];
+    final user = json['user'] is Map
+        ? (json['user'] as Map)
+        : (json['userData'] is Map
+            ? (json['userData'] as Map)
+            : (json['member'] is Map
+                ? (json['member'] as Map)
+                : (json['userDetails'] is Map
+                    ? (json['userDetails'] as Map)
+                    : (json['User'] is Map ? (json['User'] as Map) : null))));
+
+    userId = json['userId'] ??
+        json['UserId'] ??
+        json['id'] ??
+        json['user_id'] ??
+        json['_id'] ??
+        user?['userId'] ??
+        user?['UserId'] ??
+        user?['id'] ??
+        user?['user_id'] ??
+        user?['_id'];
 
     // Resolve name
-    String? resolvedName =
-        (json['name'] ?? json['Name'] ?? json['fullname'] ?? json['fullName'])
-            ?.toString();
-    if (resolvedName == null || resolvedName.trim().isEmpty) {
-      final fn =
-          (json['firstName'] ?? json['first_name'] ?? '')?.toString().trim() ??
-              '';
-      final ln =
-          (json['lastName'] ?? json['last_name'] ?? '')?.toString().trim() ??
-              '';
+    String? resolvedName = (json['name'] ??
+            json['Name'] ??
+            json['fullname'] ??
+            json['fullName'] ??
+            user?['name'] ??
+            user?['Name'] ??
+            user?['fullName'] ??
+            user?['fullname'])
+        ?.toString();
+    if (resolvedName == null || resolvedName.trim().isEmpty || resolvedName.trim().toLowerCase() == 'null') {
+      final fn = (json['firstName'] ??
+              json['first_name'] ??
+              user?['firstName'] ??
+              user?['first_name'] ??
+              '')
+          ?.toString()
+          .trim() ??
+          '';
+      final ln = (json['lastName'] ??
+              json['last_name'] ??
+              user?['lastName'] ??
+              user?['last_name'] ??
+              '')
+          ?.toString()
+          .trim() ??
+          '';
       final fCap = fn.isNotEmpty ? (fn[0].toUpperCase() + fn.substring(1)) : '';
       final lCap = ln.isNotEmpty ? (ln[0].toUpperCase() + ln.substring(1)) : '';
       final combined = '$fCap $lCap'.trim();
@@ -142,13 +177,24 @@ class UsersWithinRadiusData {
             json['mobileNo'] ??
             json['MobileNo'] ??
             json['mobile'] ??
-            json['phone'])
+            json['phone'] ??
+            user?['mobileNumber'] ??
+            user?['mobile_number'] ??
+            user?['mobileNo'] ??
+            user?['phone'])
         ?.toString();
     profileImage = (json['ProfileImage'] ??
             json['profileImage'] ??
             json['image'] ??
-            json['profile_image'])
-        ?.toString();
+            json['avatar'] ??
+            json['profile_image'] ??
+            user?['ProfileImage'] ??
+            user?['profileImage'] ??
+            user?['image'] ??
+            user?['avatar'] ??
+            user?['profile_image'])
+        ?.toString()
+        .trim();
 
     // Support nested location object or flat coordinates
     if (json['location'] is Map) {

@@ -30,7 +30,12 @@ class SocketDashboardService extends GetxService {
   bool get isConnected => _socket?.connected ?? false;
 
   void init() {
-    if (_socket != null) return;
+    if (_socket != null) {
+      if (isConnected) {
+        requestGroupCount();
+      }
+      return;
+    }
 
     _socket = io(
       '${ConstRes.socketUrl}/dashboard',
@@ -55,8 +60,13 @@ class SocketDashboardService extends GetxService {
     });
 
     _socket!.on('group_dashboard_counts', (data) {
+      log('📡 [DashboardSocket] group_dashboard_counts received: $data');
       if (!_groupCountController.isClosed) {
-        _groupCountController.add(data['data']);
+        dynamic payload = data;
+        if (data is Map && data.containsKey('data') && data['data'] != null) {
+          payload = data['data'];
+        }
+        _groupCountController.add(payload);
       }
     });
 

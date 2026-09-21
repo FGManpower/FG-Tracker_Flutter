@@ -1043,3 +1043,5 @@ class GroupMessageController extends GetxController {
     super.onClose();
   }
 }
+
+typedef GroupChatController = GroupMessageController;

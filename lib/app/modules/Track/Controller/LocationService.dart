@@ -11,7 +11,6 @@ import 'package:get/get.dart';
 import 'package:location/location.dart';
 
 import 'package:geocoding/geocoding.dart' hide Location;
-import 'package:fgtracker/app/modules/Track/Controller/Track_controller.dart';
 import '../../../Core/values/Context_Utility.dart';
 import 'TrackController.dart';
 

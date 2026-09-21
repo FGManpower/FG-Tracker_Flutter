@@ -117,6 +117,8 @@ class LocationData {
   bool? locationSharing;
   dynamic mobileNo;
   dynamic role;
+  dynamic location;
+  dynamic team;
 
   LocationData({
     this.id,
@@ -132,6 +134,8 @@ class LocationData {
     this.locationSharing,
     this.mobileNo,
     this.role,
+    this.location,
+    this.team,
   });
 
   static double? _parseDouble(dynamic val) {
@@ -248,6 +252,12 @@ class LocationData {
         user?['phone'];
 
     role = json['role'] ?? user?['role'] ?? json['designation'];
+    if (json['location'] is String) {
+      location = json['location'];
+    } else if (json['address'] is String) {
+      location = json['address'];
+    }
+    team = json['team'] ?? json['groupName'] ?? json['group_name'];
   }
 
   Map<String, dynamic> toJson() {

@@ -8,8 +8,12 @@ import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 
+import 'package:fgtracker/app/Core/constant/pref_res.dart';
+import 'package:fgtracker/app/Core/values/global.dart';
+import 'package:fgtracker/app/Core/values/Dialog/DialogBox.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
@@ -129,6 +133,7 @@ class _MapSectionState extends State<MapSection> {
               title: 'You',
               snippet: 'Current Location',
             ),
+            onTap: _showCurrentUserDetails,
           ),
         );
       }
@@ -143,13 +148,14 @@ class _MapSectionState extends State<MapSection> {
       final List<Future<void>> iconTasks = [];
       for (final member in locations) {
         final String cacheKey =
-            '${member.userId}_${member.profileImage}_${member.isOnline}';
+            '${member.userId}_${member.profileImage}_${member.isOnline}_${member.fullName}';
         if (!_markerIconCache.containsKey(cacheKey)) {
           iconTasks.add(() async {
             try {
               final custom = await getCustomIcon(
                 member.profileImage,
                 member.isOnline,
+                name: member.fullName,
               );
               _markerIconCache[cacheKey] = custom;
             } catch (_) {}
@@ -159,11 +165,19 @@ class _MapSectionState extends State<MapSection> {
 
       if (myLocation != null) {
         final String myImg = controller.userData.value.profileImage ?? '';
-        final String cacheKey = 'me_$myImg';
+        final String myName = controller.userData.value.name ??
+            Global.storageServices.get(PrefConst.userName)?.toString() ??
+            'You';
+        final String cacheKey = 'me_${myImg}_$myName';
         if (!_markerIconCache.containsKey(cacheKey)) {
           iconTasks.add(() async {
             try {
-              final custom = await getCustomIcon(myImg, true, isMe: true);
+              final custom = await getCustomIcon(
+                myImg,
+                true,
+                isMe: true,
+                name: myName,
+              );
               _markerIconCache[cacheKey] = custom;
             } catch (_) {}
           }());
@@ -222,6 +236,7 @@ class _MapSectionState extends State<MapSection> {
                   title: 'You',
                   snippet: 'Current Location',
                 ),
+                onTap: _showCurrentUserDetails,
               ),
             );
           }
@@ -386,75 +401,67 @@ class _MapSectionState extends State<MapSection> {
   }
 
   void _showMemberDetails(
-      LiveLocationModel member,
-      ) {
-    Get.bottomSheet(
-      Container(
-        padding: EdgeInsets.all(20.w),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(
-            top: Radius.circular(22),
-          ),
-        ),
-        child: SafeArea(
-          child: Row(
-            children: [
-              CircleAvatar(
-                radius: 30.r,
-                backgroundColor: const Color(0xFFE8E8FF),
-                backgroundImage: member.profileImage.isNotEmpty
-                    ? NetworkImage(
-                  getProfileImageUrl(
-                    member.profileImage,
-                  ),
-                )
-                    : null,
-                child: member.profileImage.isEmpty
-                    ? Icon(
-                  Icons.person,
-                  size: 32.sp,
-                  color: const Color(0xFF6B4DFF),
-                )
-                    : null,
-              ),
-              SizedBox(width: 14.w),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    reausabletext(
-                      member.fullName,
-                      fontsize: 16.sp,
-                      fontfamily: FontFamily.interBold,
-                    ),
-                    SizedBox(height: 5.h),
-                    Row(
-                      children: [
-                        Container(
-                          width: 9.w,
-                          height: 9.w,
-                          decoration: BoxDecoration(
-                            color: member.isOnline ? Colors.green : Colors.red,
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                        SizedBox(width: 5.w),
-                        reausabletext(
-                          member.isOnline ? 'Online' : 'Offline',
-                          fontsize: 12.sp,
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-      isScrollControlled: true,
+    LiveLocationModel member,
+  ) {
+    double distanceInKm = 0.0;
+    if (controller.currentLocation.value != null &&
+        member.latitude != 0.0 &&
+        member.longitude != 0.0) {
+      final myLoc = controller.currentLocation.value!;
+      final distanceInMeters = Geolocator.distanceBetween(
+        myLoc.latitude,
+        myLoc.longitude,
+        member.latitude,
+        member.longitude,
+      );
+      distanceInKm = distanceInMeters / 1000.0;
+    }
+
+    final int? battery = member.battery != null
+        ? int.tryParse(member.battery.toString())
+        : null;
+
+    DialogBox().showRouteDetailsBottomSheet(
+      destination: LatLng(member.latitude, member.longitude),
+      distance: distanceInKm,
+      userId: member.userId,
+      id: member.userId,
+      name: member.fullName,
+      imageUrl: member.profileImage,
+      status: member.isOnline,
+      phone: member.phone,
+      location: member.address,
+      team: member.team,
+      battery: battery,
+      isGroupChat: false,
+      isLocationSharing: true,
+    );
+  }
+
+  void _showCurrentUserDetails() {
+    final LatLng? myLocation = controller.currentLocation.value;
+    if (myLocation == null) return;
+    final myData = controller.userData.value;
+    final myId = int.tryParse(Global.storageServices.get(PrefConst.userId)?.toString() ?? '') ?? myData.userId;
+    final myName = Global.storageServices.get(PrefConst.userName)?.toString() ??
+        myData.name ??
+        'You';
+    final myImg = Global.storageServices.get(PrefConst.profileImage)?.toString() ??
+        myData.profileImage;
+    final myPhone = Global.storageServices.get(PrefConst.userPhone)?.toString() ??
+        myData.mobileNo;
+
+    DialogBox().showRouteDetailsBottomSheet(
+      destination: myLocation,
+      distance: 0.0,
+      userId: myId,
+      id: myId,
+      name: myName,
+      imageUrl: myImg,
+      status: true,
+      phone: myPhone,
+      isGroupChat: false,
+      isLocationSharing: true,
     );
   }
 

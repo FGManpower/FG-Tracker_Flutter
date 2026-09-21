@@ -28,6 +28,9 @@ class _CallScreenState extends State<CallScreen>
     _tabController.addListener(() {
       if (!_tabController.indexIsChanging) {
         controller.switchTab(_tabController.index);
+        if (_tabController.index != 0 && controller.isDialPadOpen.value) {
+          controller.isDialPadOpen.value = false;
+        }
       }
     });
     controller.loadGroups();
@@ -66,17 +69,22 @@ class _CallScreenState extends State<CallScreen>
                 ),
               ],
             ),
-            const Positioned(
+            Positioned(
               left: 0,
               right: 0,
               bottom: 0,
-              child: CallDialPad(),
+              child: Obx(() {
+                if (controller.selectedTab.value != 0) {
+                  return const SizedBox.shrink();
+                }
+                return const CallDialPad();
+              }),
             ),
           ],
         ),
       ),
       floatingActionButton: Obx(() {
-        if (controller.isDialPadOpen.value) {
+        if (controller.selectedTab.value != 0 || controller.isDialPadOpen.value) {
           return const SizedBox.shrink();
         }
         return const _QuickCallActionButton();
@@ -230,7 +238,12 @@ class _CallScreenState extends State<CallScreen>
         ),
         child: TabBar(
           controller: _tabController,
-          onTap: controller.switchTab,
+          onTap: (index) {
+            controller.switchTab(index);
+            if (index != 0 && controller.isDialPadOpen.value) {
+              controller.isDialPadOpen.value = false;
+            }
+          },
           indicator: BoxDecoration(
             color: const Color(0xFF4818F0),
             borderRadius: BorderRadius.circular(13.r),

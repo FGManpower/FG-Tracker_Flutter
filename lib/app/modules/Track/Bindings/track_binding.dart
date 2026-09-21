@@ -1,6 +1,5 @@
 import 'package:fgtracker/app/modules/Track/Controller/SearchController.dart';
 import 'package:fgtracker/app/modules/Track/Controller/TrackController.dart';
-import 'package:fgtracker/app/modules/Track/Controller/Track_controller.dart';
 import 'package:fgtracker/app/modules/Track/Controller/TrackLiveLocationSocketService.dart';
 import 'package:get/get.dart';
 
