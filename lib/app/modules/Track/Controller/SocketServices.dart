@@ -39,7 +39,6 @@ class SocketService extends GetxService {
     _socket?.onError((err) => log("Socket error: $err"));
   }
 
-
   void joinGroup({required String groupId, required String userId}) {
     if (!connectedGroupIds.contains(groupId)) {
       _socket?.emit("join-group", {
@@ -50,7 +49,6 @@ class SocketService extends GetxService {
       log(" Joined group $groupId");
     }
   }
-
 
   void leaveGroup({required String groupId, required String userId}) {
     _socket?.emit("leave-group", {
@@ -105,14 +103,14 @@ class SocketService extends GetxService {
           if (cleanCity != null) "city": cleanCity,
         };
         _socket?.emit("send-location", payload);
-        log("📡 [SocketService] Emitted send-location to group $groupId: $payload");
+        log("[SocketService] Emitted send-location to group $groupId: $payload");
       }
     }
   }
 
   void onGroupLocationUpdate(Function(dynamic) callback) {
     _socket?.on("group-location-update", (data) {
-      log("📡 [SocketService] group-location-update received: $data");
+      log("[SocketService] group-location-update received: $data");
       if (data is List) {
         for (var item in data) {
           if (item is Map &&
@@ -136,7 +134,7 @@ class SocketService extends GetxService {
 
   void onSendLocation(Function(dynamic) callback) {
     _socket?.on("send-location", (data) {
-      log("📡 [SocketService] send-location received: $data");
+      log("[SocketService] send-location received: $data");
       if (data is List) {
         for (var item in data) {
           if (item is Map &&
@@ -157,8 +155,6 @@ class SocketService extends GetxService {
   void onSendLocationOff() {
     _socket?.off("send-location");
   }
-
-
 
   void onUserLeft(Function(String userId) callback) {
     _socket?.on("user-left", (data) {
@@ -184,7 +180,7 @@ class SocketService extends GetxService {
 
   void allSocketEventLogger() {
     _socket?.onAny((event, data) {
-      log("📦 Received event: $event => $data");
+      log("Received event: $event => $data");
     });
   }
 
@@ -203,13 +199,11 @@ class SocketService extends GetxService {
         "groupId": groupId,
       });
       connectedGroupIds.remove(groupId);
-      log("🗑️ Deleted group: $groupId");
+      log("Deleted group: $groupId");
     } else {
       log("Cannot delete group. Socket not connected.");
     }
   }
-
-
 
   @override
   void onClose() {

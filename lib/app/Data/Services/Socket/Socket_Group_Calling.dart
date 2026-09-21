@@ -24,6 +24,10 @@ class Socket_GroupCallService {
   String? currentGroupId;
 
   MediaStream? localStream;
+
+  /// Current outgoing video track (camera OR screen)
+  MediaStreamTrack? activeVideoTrack;
+
   final Map<String, RTCPeerConnection> _peers = {};
   final Map<String, RTCVideoRenderer> remoteRenderers = {};
   final Map<String, List<RTCIceCandidate>> _pendingIce = {};
@@ -38,6 +42,10 @@ class Socket_GroupCallService {
   Function(String userId)? onParticipantRejected;
   Function(String userId, bool isMuted)? onParticipantMuteChanged;
   Function(Map<String, dynamic> data)? onIncomingCallReceived;
+
+  // Screen share callbacks
+  Function(String userId)? onScreenShareStarted;
+  Function(String userId)? onScreenShareStopped;
 
   bool _listenersBound = false;
   bool _isDisposed = false;
@@ -61,11 +69,11 @@ class Socket_GroupCallService {
   void _log(String message) => log('[GroupCallService] $message');
 
   void _saveParticipantMeta(
-    String userId, {
-    String? name,
-    String? profileImage,
-    bool? isMuted,
-  }) {
+      String userId, {
+        String? name,
+        String? profileImage,
+        bool? isMuted,
+      }) {
     final existing = participantMeta[userId] ?? <String, dynamic>{};
     if (name != null && name.trim().isNotEmpty) {
       existing['name'] = name.trim();
@@ -140,11 +148,10 @@ class Socket_GroupCallService {
     });
   }
 
-  ///  FIX: Waits for socket connection dynamically if launched from Terminated state
+  /// Waits for socket connection dynamically if launched from Terminated state
   Future<bool> _ensureConnected({int timeoutSeconds = 10}) async {
     if (socket != null && socket!.connected) return true;
 
-    // Ensure _selfUserId is available from storage if null
     if (_selfUserId == null || _selfUserId!.isEmpty) {
       final storedId = Global.storageServices.get(PrefConst.userId)?.toString();
       if (storedId != null && storedId.isNotEmpty) {
@@ -192,68 +199,16 @@ class Socket_GroupCallService {
       "group_call_answer",
       "group_call_ice",
       "group_call_ended",
+      // screen share
+      "group_call_screen_share_started",
+      "group_call_screen_share_stopped",
     ];
     for (final e in events) {
       socket?.off(e);
     }
 
     socket?.on("group_call_started", (raw) {
-      // _log(" group_call_started: $raw");
-      // if (raw == null) return;
-      //
-      // final Map<String, dynamic> data = raw is Map && raw['data'] is Map
-      //     ? Map<String, dynamic>.from(raw['data'])
-      //     : Map<String, dynamic>.from(raw);
-      //
-      // final callerId = (data['callerId'] ?? data['userId'])?.toString();
-      // if (callerId == null || callerId == _selfUserId) {
-      //   _log('Ignore self/invalid group_call_started');
-      //   return;
-      // }
-      //
-      // final callerName = (data['name'] ??
-      //     data['callerName'] ??
-      //     'Someone')
-      //     .toString();
-      // final callerProfile = (data['profileImage'] ??
-      //     data['callerProfileImage'] ??
-      //     '')
-      //     .toString();
-      //
-      // currentCallId = data['callId']?.toString();
-      // currentGroupId = data['groupId']?.toString();
-      //
-      // _saveParticipantMeta(
-      //   callerId,
-      //   name: callerName,
-      //   profileImage: callerProfile,
-      //   isMuted: false,
-      // );
-      //
-      // final currentRoute = Get.currentRoute;
-      // if (currentRoute == Routes.groupCallingScreen ||
-      //     currentRoute == Routes.groupIncomingCallScreen) {
-      //   _log('Already in call UI, skip navigation');
-      //   return;
-      // }
-      //
-      // Get.toNamed(
-      //   Routes.groupIncomingCallScreen,
-      //   arguments: {
-      //     "callId": data['callId']?.toString(),
-      //     "groupId": data['groupId']?.toString() ?? "",
-      //     "groupName": (data['groupName'] ?? "Group Call").toString(),
-      //     "callerName": callerName,
-      //     "groupProfile": (data['groupProfile'] ?? callerProfile).toString(),
-      //     "callerProfileImage": callerProfile,
-      //     "activeMemberCount": 1,
-      //     "totalMemberCount": data['totalMembers'] ?? 0,
-      //     "isVideo": data['isVideo'] == true,
-      //     "callType": "incoming",
-      //   },
-      // );
-      //
-      // onIncomingCallReceived?.call(data);
+      // kept commented as in your current file
     });
 
     socket?.on("group_call_participant_joined", (raw) {
@@ -265,7 +220,7 @@ class Socket_GroupCallService {
 
       final name = (data['name'] ?? data['userName'] ?? '').toString();
       final profileImage =
-          (data['profileImage'] ?? data['userProfileImage'] ?? '').toString();
+      (data['profileImage'] ?? data['userProfileImage'] ?? '').toString();
 
       _saveParticipantMeta(
         joinedUserId,
@@ -318,6 +273,27 @@ class Socket_GroupCallService {
       onCallEnded?.call();
       await endCallLocalCleanup(navigate: true);
       CallSessionState.reset();
+    });
+
+    // ===================== SCREEN SHARE LISTEN =====================
+    socket?.on("group_call_screen_share_started", (raw) {
+      _log("🖥️ group_call_screen_share_started: $raw");
+      if (raw == null) return;
+      final data = Map<String, dynamic>.from(raw);
+      final userId = data['userId']?.toString();
+      if (userId == null || userId == _selfUserId) return;
+      onScreenShareStarted?.call(userId);
+      onParticipantsUpdated?.call();
+    });
+
+    socket?.on("group_call_screen_share_stopped", (raw) {
+      _log("🖥️ group_call_screen_share_stopped: $raw");
+      if (raw == null) return;
+      final data = Map<String, dynamic>.from(raw);
+      final userId = data['userId']?.toString();
+      if (userId == null || userId == _selfUserId) return;
+      onScreenShareStopped?.call(userId);
+      onParticipantsUpdated?.call();
     });
 
     socket?.on("group_call_offer", (data) async {
@@ -398,15 +374,14 @@ class Socket_GroupCallService {
   }
 
   Future<void> joinGroupCall(
-    String callId,
-    String groupId,
-    Function(bool success) onComplete,
-  ) async {
+      String callId,
+      String groupId,
+      Function(bool success) onComplete,
+      ) async {
     _log('emit join_group_call callId=$callId, groupId=$groupId');
     currentCallId = callId;
     currentGroupId = groupId;
 
-    // ✅ Ensures socket is connected even from Terminated Cold-Start
     bool connected = await _ensureConnected(timeoutSeconds: 8);
     if (!connected) {
       _log('Socket connection timed out during joinGroupCall');
@@ -443,7 +418,7 @@ class Socket_GroupCallService {
             uid,
             name: (p['name'] ?? p['userName'])?.toString(),
             profileImage:
-                (p['profileImage'] ?? p['userProfileImage'])?.toString(),
+            (p['profileImage'] ?? p['userProfileImage'])?.toString(),
             isMuted: p['isMuted'] == true,
           );
         }
@@ -504,6 +479,75 @@ class Socket_GroupCallService {
     );
   }
 
+  // ============================================================
+  // SCREEN SHARE EMIT
+  // ============================================================
+
+  /// Emit: start_group_screen_share
+  /// Params: callId, groupId
+  void emitStartScreenShare() {
+    if (currentCallId == null || currentGroupId == null) {
+      _log('emitStartScreenShare skipped: no active call');
+      return;
+    }
+
+    _log('🖥️ emit start_group_screen_share');
+    socket?.emitWithAck(
+      "start_group_screen_share",
+      {
+        "callId": int.tryParse(currentCallId!) ?? currentCallId,
+        "groupId": int.tryParse(currentGroupId!) ?? currentGroupId,
+      },
+      ack: (r) => _log('start_group_screen_share ACK: $r'),
+    );
+  }
+
+  /// Emit: stop_group_screen_share
+  /// Params: callId, groupId
+  void emitStopScreenShare() {
+    if (currentCallId == null || currentGroupId == null) {
+      _log('emitStopScreenShare skipped: no active call');
+      return;
+    }
+
+    _log('🖥️ emit stop_group_screen_share');
+    socket?.emitWithAck(
+      "stop_group_screen_share",
+      {
+        "callId": int.tryParse(currentCallId!) ?? currentCallId,
+        "groupId": int.tryParse(currentGroupId!) ?? currentGroupId,
+      },
+      ack: (r) => _log('stop_group_screen_share ACK: $r'),
+    );
+  }
+
+  /// Replace camera track with screen track (or back to camera)
+  /// without renegotiation restart.
+  Future<void> replaceVideoTrack(MediaStreamTrack newTrack) async {
+    activeVideoTrack = newTrack;
+    _log('🔄 replaceVideoTrack kind=${newTrack.kind}');
+
+    for (final entry in _peers.entries) {
+      final pc = entry.value;
+      try {
+        final senders = await pc.getSenders();
+        final videoSender =
+        senders.firstWhereOrNull((s) => s.track?.kind == 'video');
+
+        if (videoSender != null) {
+          await videoSender.replaceTrack(newTrack);
+          _log('✅ track replaced for peer ${entry.key}');
+        } else if (localStream != null) {
+          // if no video sender exists yet, add it
+          await pc.addTrack(newTrack, localStream!);
+          _log('➕ video track added for peer ${entry.key}');
+        }
+      } catch (e) {
+        _log('❌ replaceVideoTrack error for ${entry.key}: $e');
+      }
+    }
+  }
+
   void leaveGroupCall() {
     if (currentCallId == null || currentGroupId == null) return;
     _log('🚀 emit leave_group_call');
@@ -542,8 +586,16 @@ class Socket_GroupCallService {
     final pc = await createPeerConnection(_rtcConfig);
 
     if (localStream != null) {
-      for (final track in localStream!.getTracks()) {
+      // audio always from localStream
+      for (final track in localStream!.getAudioTracks()) {
         await pc.addTrack(track, localStream!);
+      }
+
+      // video: prefer activeVideoTrack (screen/camera), fallback to local video
+      final videoTrack =
+          activeVideoTrack ?? localStream!.getVideoTracks().firstOrNull;
+      if (videoTrack != null) {
+        await pc.addTrack(videoTrack, localStream!);
       }
     }
 
@@ -726,6 +778,7 @@ class Socket_GroupCallService {
       await localStream?.dispose();
     } catch (_) {}
     localStream = null;
+    activeVideoTrack = null;
 
     currentCallId = null;
     currentGroupId = null;

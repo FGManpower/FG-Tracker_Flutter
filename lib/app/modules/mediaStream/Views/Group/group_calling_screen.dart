@@ -6,8 +6,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import '../../../../../gen/fonts.gen.dart';
 
-
-
 class GroupCallingScreen extends GetView<GroupCallingController> {
   const GroupCallingScreen({super.key});
 
@@ -32,7 +30,8 @@ class GroupCallingScreen extends GetView<GroupCallingController> {
               left: 0,
               right: 0,
               child: Container(
-                padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
+                padding:
+                    EdgeInsets.only(top: MediaQuery.of(context).padding.top),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
@@ -83,15 +82,15 @@ class GroupCallingScreen extends GetView<GroupCallingController> {
                   ),
                   SizedBox(height: 2.h),
                   Obx(() => Text(
-                    "${controller.activeParticipants.length} in call · ${controller.totalMemberCount} members",
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 13.sp,
-                      fontFamily: FontFamily.interRegular,
-                      color: Colors.white70,
-                    ),
-                  )),
+                        "${controller.activeParticipants.length} in call · ${controller.totalMemberCount} members",
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 13.sp,
+                          fontFamily: FontFamily.interRegular,
+                          color: Colors.white70,
+                        ),
+                      )),
                   SizedBox(height: 6.h),
                   Row(
                     mainAxisSize: MainAxisSize.min,
@@ -106,15 +105,15 @@ class GroupCallingScreen extends GetView<GroupCallingController> {
                       ),
                       SizedBox(width: 6.w),
                       Obx(() => Text(
-                        controller.callStatus.value == "Connected"
-                            ? controller.formattedDuration
-                            : "${controller.callStatus.value}...",
-                        style: TextStyle(
-                          fontSize: 13.sp,
-                          fontFamily: FontFamily.interMedium,
-                          color: Colors.greenAccent,
-                        ),
-                      )),
+                            controller.callStatus.value == "Connected"
+                                ? controller.formattedDuration
+                                : "${controller.callStatus.value}...",
+                            style: TextStyle(
+                              fontSize: 13.sp,
+                              fontFamily: FontFamily.interMedium,
+                              color: Colors.greenAccent,
+                            ),
+                          )),
                     ],
                   ),
                 ],
@@ -125,7 +124,8 @@ class GroupCallingScreen extends GetView<GroupCallingController> {
             width: 44.w,
             child: IconButton(
               padding: EdgeInsets.zero,
-              icon: const Icon(Icons.people_outline, color: Colors.white, size: 28),
+              icon: const Icon(Icons.people_outline,
+                  color: Colors.white, size: 28),
               onPressed: controller.openParticipantsSheet,
             ),
           ),

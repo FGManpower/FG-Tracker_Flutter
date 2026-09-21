@@ -9,7 +9,6 @@ import '../../../Core/values/utility.dart';
 import '../../../global_widget/common_widget.dart';
 import '../../../Model/group_call_participant.dart';
 
-
 class GroupParticipantsSheet {
   static void show(GroupCallingController controller) {
     Get.bottomSheet(
@@ -236,6 +235,7 @@ class _InCallChip extends StatelessWidget {
 
 class GroupCallMoreSheet {
   static void show({
+    required RxBool isScreenSharing,
     required VoidCallback onShareScreen,
     required VoidCallback onSendMessage,
   }) {
@@ -254,9 +254,8 @@ class GroupCallMoreSheet {
                 width: 40.w,
                 height: 4.h,
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade400,
-                  borderRadius: BorderRadius.circular(10.r),
-                ),
+                    color: Colors.grey.shade400,
+                    borderRadius: BorderRadius.circular(10.r)),
               ),
             ),
             SizedBox(height: 20.h),
@@ -267,26 +266,34 @@ class GroupCallMoreSheet {
               ),
               child: Column(
                 children: [
-                  ListTile(
-                    leading: const Icon(Icons.screen_share_outlined,
-                        color: Color(0xFF6E5CA4)),
-                    title: reausabletext(
-                      "Share screen",
-                      fontsize: 14,
-                      fontfamily: FontFamily.interMedium,
+                  Obx(() => ListTile( // Wrap in Obx to dynamically update text
+                    leading: Icon(
+                      isScreenSharing.value
+                          ? Icons.stop_screen_share_outlined
+                          : Icons.screen_share_outlined,
+                      color: isScreenSharing.value ? Colors.red : const Color(0xFF6E5CA4),
                     ),
-                    trailing:
-                    const Icon(Icons.chevron_right, color: Colors.grey),
+                    title: Text(
+                      isScreenSharing.value ? "Stop sharing" : "Share screen",
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        fontFamily: FontFamily.interMedium,
+                        color: isScreenSharing.value ? Colors.red : Colors.black,
+                      ),
+                    ),
+                    trailing: const Icon(Icons.chevron_right, color: Colors.grey),
                     onTap: onShareScreen,
-                  ),
+                  )),
                   const Divider(height: 1, indent: 50),
                   ListTile(
                     leading: const Icon(Icons.chat_bubble_outline,
                         color: Color(0xFF6E5CA4)),
-                    title: reausabletext(
+                    title: Text(
                       "Send message",
-                      fontsize: 14,
-                      fontfamily: FontFamily.interMedium,
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        fontFamily: FontFamily.interMedium,
+                      ),
                     ),
                     trailing:
                     const Icon(Icons.chevron_right, color: Colors.grey),
@@ -306,11 +313,13 @@ class GroupCallMoreSheet {
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(30.r),
                 ),
-                child: reausabletext(
+                child: Text(
                   "Cancel",
-                  fontsize: 14,
-                  fontfamily: FontFamily.interSemiBold,
-                  color: const Color(0xFF1E1147),
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    fontFamily: FontFamily.interSemiBold,
+                    color: const Color(0xFF1E1147),
+                  ),
                 ),
               ),
             ),

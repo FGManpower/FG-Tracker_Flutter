@@ -89,8 +89,6 @@ class LocationService extends GetxService {
   }
 
 
-
-
   void _listenToLocationUpdates(String userId) {
     _positionStream?.cancel();
     _positionStream = _location.onLocationChanged.listen((location) async {
@@ -110,7 +108,7 @@ class LocationService extends GetxService {
       String? area;
       String? city;
 
-      // 1. Pull from TrackController if already resolved
+
       if (Get.isRegistered<TrackController>()) {
         final trackCtrl = Get.find<TrackController>();
         if (trackCtrl.currentLocationName.value != "Locating..." &&
