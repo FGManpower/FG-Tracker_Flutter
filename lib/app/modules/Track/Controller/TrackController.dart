@@ -1389,6 +1389,9 @@ class TrackController extends GetxController {
       if (resolvedAddress.isNotEmpty) {
         prev.location = resolvedAddress;
       }
+      if (data.battery != null) {
+        prev.battery = data.battery;
+      }
       _resolveAddressForUser(prev);
     } else {
       String? fallbackName = (data.name != null && data.name!.trim().isNotEmpty && data.name!.trim().toLowerCase() != 'member')
@@ -1447,6 +1450,7 @@ class TrackController extends GetxController {
         lastSeen: nowIso,
         team: selectedGroupName.value,
         location: resolvedAddress.isNotEmpty ? resolvedAddress : null,
+        battery: data.battery,
       );
       radiusUsers.add(newUser);
       _resolveAddressForUser(newUser);
