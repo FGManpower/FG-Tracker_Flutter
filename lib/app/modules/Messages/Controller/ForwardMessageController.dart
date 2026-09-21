@@ -98,8 +98,8 @@ class ForwardMessageController extends GetxController {
     if (targetId == null) return false;
 
     return selectedDestinations.any(
-          (selected) =>
-      selected.type == destination.type && selected.targetId == targetId,
+      (selected) =>
+          selected.type == destination.type && selected.targetId == targetId,
     );
   }
 
@@ -109,8 +109,8 @@ class ForwardMessageController extends GetxController {
     if (targetId == null) return;
 
     final index = selectedDestinations.indexWhere(
-          (selected) =>
-      selected.type == destination.type && selected.targetId == targetId,
+      (selected) =>
+          selected.type == destination.type && selected.targetId == targetId,
     );
 
     if (index != -1) {
@@ -166,10 +166,10 @@ class ForwardMessageController extends GetxController {
           .where((destination) => destination.targetId != null)
           .map(
             (destination) => ForwardTarget(
-          type: destination.isGroup ? "group" : "private",
-          userId: destination.targetId!,
-        ),
-      )
+              type: destination.isGroup ? "group" : "private",
+              userId: destination.targetId!,
+            ),
+          )
           .toList();
 
       final response = await MessageRepo.forwardMessage(
@@ -207,16 +207,15 @@ class ForwardMessageController extends GetxController {
     }
   }
 
-
   void _replaceStackWithChatList({required bool instant}) {
     Get.offUntil(
       GetPageRoute(
         page: () => ChatListScreen(),
         transition: instant ? Transition.noTransition : null,
         transitionDuration:
-        instant ? Duration.zero : const Duration(milliseconds: 300),
+            instant ? Duration.zero : const Duration(milliseconds: 300),
       ),
-          (route) => route.isFirst,
+      (route) => route.isFirst,
     );
   }
 
@@ -233,7 +232,7 @@ class ForwardMessageController extends GetxController {
     await Future.delayed(const Duration(milliseconds: 50));
 
     Get.to(
-          () => ChatScreen(),
+      () => ChatScreen(),
       arguments: {
         "userData": userData,
       },

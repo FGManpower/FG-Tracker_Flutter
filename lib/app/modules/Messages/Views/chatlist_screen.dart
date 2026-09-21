@@ -7,11 +7,16 @@ import 'package:get/get.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import '../../../Core/constant/const_res.dart';
 import '../../../Core/util/chatutil.dart';
+import '../../../routes/app_pages.dart';
+import '../../Safe_Zone/views/safe_zone_view.dart';
+import '../../Safe_Zone/views/safety_dashboard_view.dart';
+import '../../Track/Views/Tracking_screen.dart';
 import '../Controller/MessageController.dart';
 import '../Controller/chat_list_controller.dart';
 import '../widgets/custom_dropdown_menu.dart';
 import 'Chat_Screen.dart';
 import 'new_chat_screen.dart';
+
 
 class ChatListScreen extends StatelessWidget {
   ChatListScreen({super.key});
@@ -23,15 +28,34 @@ class ChatListScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFFF8F7FF),
       appBar: _buildAppBar(),
-      body: _AllChatsBody(controller: controller),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => Get.to(() => const NewChatScreen()),
-        backgroundColor: const Color(0xFF6B4DFF),
-        shape: const CircleBorder(),
-        child: const Icon(
-          Icons.chat_bubble_outline,
-          color: Colors.white,
-        ),
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: _AllChatsBody(controller: controller),
+          ),
+
+          Positioned(
+            right: 16.w,
+            bottom: 170.h,
+            child: FloatingActionButton(
+              onPressed: () => Get.to(() => const NewChatScreen()),
+              backgroundColor: const Color(0xFF6B4DFF),
+              shape: const CircleBorder(),
+              elevation: 4,
+              child: const Icon(
+                Icons.chat_bubble_outline,
+                color: Colors.white,
+              ),
+            ),
+          ),
+
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: _buildQuickCommunication(context),
+          ),
+        ],
       ),
     );
   }
@@ -47,7 +71,7 @@ class ChatListScreen extends StatelessWidget {
         children: [
           _circleIcon(
             Icons.arrow_back,
-            () => Get.back(),
+                () => Get.back(),
           ),
           SizedBox(width: 12.w),
           Expanded(
@@ -65,14 +89,14 @@ class ChatListScreen extends StatelessWidget {
                   "Stay connected with your team",
                   fontsize: 11.sp,
                   fontweight: const FontWeight(500),
-                  color: Colors.grey.shade700,
+                  color: const Color(0xFF6B4DFF),
                 ),
               ],
             ),
           ),
           _circleIcon(
             Icons.more_vert,
-            () {},
+                () {},
           ),
         ],
       ),
@@ -80,9 +104,9 @@ class ChatListScreen extends StatelessWidget {
   }
 
   Widget _circleIcon(
-    IconData icon,
-    VoidCallback onTap,
-  ) {
+      IconData icon,
+      VoidCallback onTap,
+      ) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -109,6 +133,156 @@ class ChatListScreen extends StatelessWidget {
       ),
     );
   }
+
+  Widget _buildQuickCommunication(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.only(top: 10.h, bottom: 15.h, left: 8.w, right: 8.w),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8F7FF),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          reausabletext(
+            "Quick Communication",
+            fontsize: 12.sp,
+            fontfamily: FontFamily.interBold,
+            color: const Color(0xFF1B1B50),
+          ),
+          reausabletext(
+            "Connect with your team instantly",
+            fontsize: 10.sp,
+            color: const Color(0xFF6B4DFF),
+            fontweight: FontWeight.w500,
+          ),
+          SizedBox(height: 12.h),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _quickCommCard(
+                icon: Icons.speaker_phone_rounded,
+                title: "Walkie",
+                subtitle: "Push to Talk",
+                onTap: () {
+                  Get.toNamed(Routes.WalkieGroupSelect);
+                },
+              ),
+
+              _quickCommCard(
+                icon: Icons.location_on,
+                title: "Tracking",
+                subtitle: "Live Location",
+                onTap: () {
+                  Get.toNamed(Routes.TrackingScreen);
+                },
+              ),
+
+              _quickCommCard(
+                icon: Icons.people_alt_rounded,
+                title: "Groups",
+                subtitle: "Team Chats",
+                onTap: () {
+                  Get.toNamed(Routes.totalGroup);
+                },
+              ),
+
+              _quickCommCard(
+                icon: Icons.verified_user_rounded,
+                title: "Safe Zone",
+                subtitle: "Safety & Alerts",
+                onTap: () {
+                  Get.toNamed(Routes.SafetyDashboard);                },
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _quickCommCard({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+    bool isNewChat = false,
+  }) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          margin: EdgeInsets.symmetric(horizontal: 4.w),
+          padding: EdgeInsets.symmetric(
+            vertical: 6.h,
+            horizontal: 2.w,
+          ),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16.r),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.025),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Transform.translate(
+                offset: Offset(0, isNewChat ? -3.h : 0),
+                child: Container(
+                  width: 38.w,
+                  height: 38.w,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: const Color(0xFFE9E7FF),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF6B4DFF).withOpacity(0.12),
+                        blurRadius: 12,
+                        spreadRadius: 1,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Center(
+                    child: Icon(
+                      icon,
+                      color: const Color(0xFF5B50E8),
+                      size: 24.sp,
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(height: 8.h),
+              Center(
+                child: reausabletext(
+                  title,
+                  fontsize: 10.sp,
+                  fontfamily: FontFamily.interBold,
+                  color: const Color(0xFF1B1B50),
+                  maxline: 1,
+                ),
+              ),
+              SizedBox(height: 2.h),
+              Center(
+                child: reausabletext(
+                  subtitle,
+                  fontsize: 8.sp,
+                  fontfamily: FontFamily.interMedium,
+                  color: const Color(0xFF6B4DFF).withOpacity(0.58),
+                  maxline: 1,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class _AllChatsBody extends StatelessWidget {
@@ -130,21 +304,17 @@ class _AllChatsBody extends StatelessWidget {
           children: [
             _sectionTitle(
               "All Chats",
-              // showDropdown: true,
             ),
             Obx(() {
-              // 1. Loading State (Skeleton)
               if (controller.isLoading.value &&
                   controller.privateChats.isEmpty) {
                 return _buildSkeletonList();
               }
 
-              // 2. Empty State
               if (controller.privateChats.isEmpty) {
                 return _emptyChats();
               }
 
-              // 3. Data State
               return Container(
                 margin: EdgeInsets.symmetric(
                   horizontal: 16.w,
@@ -198,12 +368,14 @@ class _AllChatsBody extends StatelessWidget {
                 ),
               );
             }),
-            SizedBox(height: 100.h),
+
+            SizedBox(height: 150.h),
           ],
         ),
       ),
     );
   }
+
 
   Widget _buildSkeletonList() {
     return Skeletonizer(
@@ -287,6 +459,7 @@ class _AllChatsBody extends StatelessWidget {
   }
 
   Widget _emptyChats() {
+    // ... same as your previous code ...
     return Container(
       margin: EdgeInsets.symmetric(
         horizontal: 16.w,
@@ -326,37 +499,13 @@ class _AllChatsBody extends StatelessWidget {
     );
   }
 
-  Widget _emptySection(String text) {
-    return Padding(
-      padding: EdgeInsets.symmetric(
-        horizontal: 16.w,
-      ),
-      child: Container(
-        width: double.infinity,
-        padding: EdgeInsets.symmetric(
-          vertical: 18.h,
-        ),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16.r),
-        ),
-        child: Center(
-          child: reausabletext(
-            text,
-            fontsize: 11.sp,
-            color: Colors.grey.shade600,
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget _sectionTitle(
       String title, {
         bool showViewAll = false,
         int? badgeCount,
         bool showDropdown = false,
       }) {
+    // ... same as your previous code ...
     final bool isPinned = title == "Pinned Chats 📌";
 
     return Padding(
@@ -418,85 +567,6 @@ class _AllChatsBody extends StatelessWidget {
     );
   }
 
-  Widget _chatTile({
-    required BuildContext context,
-    required String name,
-    required String role,
-    required String msg,
-    required String time,
-    int unreadCount = 0,
-    Color? statusColor,
-    bool isGroup = false,
-    bool isPinned = false,
-    String? image,
-  }) {
-    Offset tapPos = Offset.zero;
-
-    return GestureDetector(
-      onTapDown: (d) {
-        tapPos = d.globalPosition;
-      },
-      onTap: () async {
-        final chat = controller.privateChats.firstWhere(
-              (item) => item.name == name && item.image == image,
-          orElse: () => controller.privateChats.first,
-        );
-
-        if (chat.userId == null) {
-          return;
-        }
-
-        await Get.to(
-              () => ChatScreen(),
-          arguments: {
-            "userData": MemberData(
-              userId: chat.userId,
-              name: chat.name,
-              profileImage: chat.image,
-              groupId: 0,
-            ),
-          },
-          binding: BindingsBuilder(() {
-            Get.put(MessageController());
-          }),
-        );
-
-      },
-      onLongPress: () => _showChatOptions(context, tapPos),
-      child: Container(
-        margin: EdgeInsets.symmetric(
-          horizontal: 16.w,
-          vertical: 6.h,
-        ),
-        padding: EdgeInsets.all(12.w),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16.r),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(
-                alpha: 0.03,
-              ),
-              blurRadius: 10,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: _chatRowContent(
-          name: name,
-          role: role,
-          msg: msg,
-          time: time,
-          unreadCount: unreadCount,
-          statusColor: statusColor,
-          isGroup: isGroup,
-          isPinned: isPinned,
-          image: image,
-        ),
-      ),
-    );
-  }
-
   Widget _chatRow({
     required BuildContext context,
     required String name,
@@ -508,6 +578,7 @@ class _AllChatsBody extends StatelessWidget {
     bool isGroup = false,
     String? image,
   }) {
+    // ... same as your previous code ...
     Offset tapPos = Offset.zero;
 
     return GestureDetector(
@@ -572,6 +643,7 @@ class _AllChatsBody extends StatelessWidget {
     bool isPinned = false,
     String? image,
   }) {
+    // ... same as your previous code ...
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -631,7 +703,7 @@ class _AllChatsBody extends StatelessWidget {
             children: [
               reausabletext(
                 name.isEmpty ? "Unknown User" : name,
-                fontsize: 14.sp,
+                fontsize: 12.sp,
                 fontfamily: FontFamily.interBold,
                 color: Colors.black87,
                 maxline: 1,
@@ -639,7 +711,7 @@ class _AllChatsBody extends StatelessWidget {
               SizedBox(height: 4.h),
               reausabletext(
                 msg.isEmpty ? "" : msg,
-                fontsize: 12.sp,
+                fontsize: 10.sp,
                 fontfamily: FontFamily.interMedium,
                 color: const Color(0xFF6B4DFF),
                 maxline: 1,
@@ -696,6 +768,7 @@ class _AllChatsBody extends StatelessWidget {
       BuildContext context,
       Offset position,
       ) {
+    // ... same as your previous code ...
     CustomDropdownMenu.show(
       context: context,
       position: position,
@@ -737,65 +810,33 @@ class _AllChatsBody extends StatelessWidget {
   }
 
   Color? _statusColor(String? status) {
+    // ... same as your previous code ...
     final value = (status ?? "").toLowerCase().trim();
-
-    if (value == "online" || value == "active" || value == "available") {
-      return Colors.green;
-    }
-
-    if (value == "away" || value == "busy") {
-      return Colors.orange;
-    }
-
-    if (value == "offline" || value == "inactive") {
-      return Colors.grey;
-    }
-
-    if (value == "dnd" ||
-        value == "do_not_disturb" ||
-        value == "do not disturb") {
-      return Colors.red;
-    }
-
+    if (value == "online" || value == "active" || value == "available") return Colors.green;
+    if (value == "away" || value == "busy") return Colors.orange;
+    if (value == "offline" || value == "inactive") return Colors.grey;
+    if (value == "dnd" || value == "do_not_disturb" || value == "do not disturb") return Colors.red;
     return null;
   }
 
   String _formatChatTime(String value) {
-    if (value.isEmpty) {
-      return "";
-    }
-
+    if (value.isEmpty) return "";
     final parsed = DateTime.tryParse(value);
-
-    if (parsed == null) {
-      return value;
-    }
-
+    if (parsed == null) return value;
     final local = parsed.toLocal();
     final now = DateTime.now();
     final difference = now.difference(local);
 
-    if (difference.inMinutes < 1) {
-      return "Just now";
-    }
-    if (difference.inHours < 1) {
-      return "${difference.inMinutes} min";
-    }
+    if (difference.inMinutes < 1) return "Just now";
+    if (difference.inHours < 1) return "${difference.inMinutes} min";
     if (difference.inDays == 0) {
       final hour = local.hour % 12 == 0 ? 12 : local.hour % 12;
-
       final minute = local.minute.toString().padLeft(2, '0');
-
       final period = local.hour >= 12 ? "PM" : "AM";
-
       return "$hour:$minute $period";
     }
-    if (difference.inDays == 1) {
-      return "Yesterday";
-    }
-    if (difference.inDays < 7) {
-      return "${difference.inDays} days";
-    }
+    if (difference.inDays == 1) return "Yesterday";
+    if (difference.inDays < 7) return "${difference.inDays} days";
     return "${local.day}/${local.month}/${local.year}";
   }
 }

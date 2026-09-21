@@ -111,6 +111,32 @@ class ChatBubble extends StatelessWidget {
                               message,
                               isSentByMe,
                             ),
+
+                            if (message.isForwarded == true)
+                              Padding(
+                                padding: EdgeInsets.only(bottom: 5.h),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.forward_rounded,
+                                      size: 14.sp,
+                                      color: Colors.grey.shade600,
+                                    ),
+                                    SizedBox(width: 4.w),
+                                    Text(
+                                      "Forwarded",
+                                      style: TextStyle(
+                                        fontSize: 10.sp,
+                                        fontStyle: FontStyle.italic,
+                                        color: Colors.grey.shade600,
+                                        fontFamily: FontFamily.interMedium,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+
                             if (_isPlainTextMessage(message))
                               _buildTextWithTime(
                                 message: message,
