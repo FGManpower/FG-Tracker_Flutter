@@ -31,6 +31,11 @@ abstract class Routes {
   static const SOSScreen = _Paths.SOSScreen;
   static const groupCallingScreen = _Paths.groupCallingScreen;
   static const groupIncomingCallScreen = _Paths.groupIncomingCallScreen;
+  static const trackingScreen = _Paths.trackingScreen;
+  static const safeZoneScreen = _Paths.safeZoneScreen;
+  static const SafetyDashboard = _Paths.SafetyDashboard;
+  static const TrackingScreen = _Paths.TrackingScreen;
+  static const totalGroup = _Paths.totalGroup;
 
 
 
@@ -68,5 +73,10 @@ abstract class _Paths {
   static const SOSScreen = '/sos';
   static const groupCallingScreen = '/groupCallingScreen';
   static const groupIncomingCallScreen = '/groupIncomingCallScreen';
+  static const trackingScreen = '/trackingScreen';
+  static const safeZoneScreen = '/safeZoneScreen';
+  static const SafetyDashboard = '/safety-dashboard';
+  static const TrackingScreen = '/tracking-screen';
+  static const totalGroup = '/total-group';
 
 }

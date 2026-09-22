@@ -65,42 +65,38 @@ class OTPScreen extends GetView<OtpController> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             SizedBox(height: isKeyboardOpen ? 18.h : 85.h),
-                            // Top Header: OTP Verification + compact Shield & Background Effect (all inside scroll view)
                             SizedBox(
                               width: double.infinity,
                               child: Stack(
                                 clipBehavior: Clip.none,
                                 children: [
-                                  // Top-right background effect & Shield Icon (compact size)
                                   if (!isKeyboardOpen)
                                     Positioned(
-                                      top: -15.h,
-                                      right: -10.w,
+                                      top: -25.h,
+                                      right: -35.w,
                                       child: SizedBox(
-                                        width: 155.w,
-                                        height: 155.h,
+                                        width: 270.w,
+                                        height: 270.h,
                                         child: Stack(
                                           alignment: Alignment.center,
                                           children: [
-                                            // Background effect (arcs + world map)
                                             Positioned(
-                                              top: 0,
-                                              right: 0,
-                                              width: 150.w,
-                                              height: 150.h,
+                                              top: -25.h,
+                                              right: -20.w,
+                                              width: 200.w,
+                                              height: 310.h,
                                               child: Opacity(
                                                 opacity: 0.85,
                                                 child: _buildAuthWatermarkImage(),
                                               ),
                                             ),
-                                            // 3D Shield Icon on top of the effect
                                             Positioned(
-                                              top: 20.h,
-                                              right: 5.w,
+                                              top: 25.h,
+                                              right: -5.w,
                                               child: Image.asset(
                                                 Assets.images.shelidIcon.path,
-                                                width: 110.w,
-                                                height: 110.h,
+                                                width: 195.w,
+                                                height: 195.h,
                                                 fit: BoxFit.contain,
                                               ),
                                             ),
@@ -108,7 +104,6 @@ class OTPScreen extends GetView<OtpController> {
                                         ),
                                       ),
                                     ),
-                                  // Left-side OTP text
                                   Padding(
                                     padding:
                                         EdgeInsets.symmetric(horizontal: 4.w),

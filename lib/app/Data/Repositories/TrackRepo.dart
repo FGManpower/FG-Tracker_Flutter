@@ -5,7 +5,6 @@ import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Model/LocationDataRes.dart';
 import 'package:fgtracker/app/Model/UsersWithinRadiusRes.dart';
 import 'package:fgtracker/app/Model/group_member_model.dart';
-import 'dart:convert';
 import 'dart:developer';
 import 'package:flutter/foundation.dart';
 import 'GroupRepo.dart';

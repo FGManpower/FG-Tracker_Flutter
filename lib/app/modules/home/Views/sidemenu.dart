@@ -40,7 +40,6 @@ class Sidemenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Refresh backend profile data on opening drawer to get fresh status
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (controller.userData.value.userId == null) {
         controller.getProfileData();
@@ -232,42 +231,6 @@ class Sidemenu extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                       ),
                       SizedBox(height: 6.h),
-                      Row(
-                        children: [
-                          Container(
-                            width: 8.w,
-                            height: 8.w,
-                            decoration: BoxDecoration(
-                              color: isOnline
-                                  ? const Color(0xFF00D26A)
-                                  : const Color(0xFF9E9E9E),
-                              shape: BoxShape.circle,
-                              boxShadow: isOnline
-                                  ? [
-                                      BoxShadow(
-                                        color: const Color(0xFF00D26A)
-                                            .withValues(alpha: 0.6),
-                                        blurRadius: 6,
-                                        spreadRadius: 1,
-                                      ),
-                                    ]
-                                  : null,
-                            ),
-                          ),
-                          SizedBox(width: 6.w),
-                          Text(
-                            isOnline ? "Online" : "Offline",
-                            style: TextStyle(
-                              color: isOnline
-                                  ? Colors.white.withValues(alpha: 0.95)
-                                  : Colors.white.withValues(alpha: 0.70),
-                              fontSize: 12.5.sp,
-                              fontFamily: FontFamily.interMedium,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ],
-                      ),
                     ],
                   ),
                 ),
@@ -280,7 +243,6 @@ class Sidemenu extends StatelessWidget {
   }
 
   bool _isUserOnline(UserData user) {
-    // 1. Check UserData model from backend (/getProfile)
     if (user.isOnline != null) {
       if (user.isOnline is bool) return user.isOnline as bool;
       if (user.isOnline is num) return user.isOnline == 1;
@@ -289,14 +251,12 @@ class Sidemenu extends StatelessWidget {
       if (s == '0' || s == 'false' || s == 'offline') return false;
     }
 
-    // 2. Check lastSeen from backend UserData
     if (user.lastSeen != null && user.lastSeen!.isNotEmpty) {
       if (Tracking().isOnline(lastSeen: user.lastSeen, thresholdMinutes: 5)) {
         return true;
       }
     }
 
-    // 3. Check if user is present in liveLocations from backend/socket
     final myId = user.userId ??
         int.tryParse(
             Global.storageServices.get(PrefConst.userId)?.toString() ?? '');
@@ -308,7 +268,6 @@ class Sidemenu extends StatelessWidget {
         return member.isOnline;
       }
 
-      // 4. Check LivesStatusController if loaded
       if (Get.isRegistered<LivesStatusController>()) {
         final groupMember = LivesStatusController.instance.memberData
             .firstWhereOrNull((m) => m.userId == myId);
@@ -318,7 +277,6 @@ class Sidemenu extends StatelessWidget {
       }
     }
 
-    // 5. Fallback to socket connection status
     return SocketDashboardService.instance.isConnected;
   }
 
@@ -327,7 +285,7 @@ class Sidemenu extends StatelessWidget {
       isImageCroppable: true,
       onImageSelect: (path) async {
         if (Utility.isNotNullEmptyOrFalse(path)) {
-          Navigator.pop(context); // Close "Choose an Option" bottom sheet
+          Navigator.pop(context);
           localPickedImage.value = path;
           await _uploadProfileImage(context, path);
         }

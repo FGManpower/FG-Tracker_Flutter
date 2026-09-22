@@ -64,34 +64,31 @@ class LoginPage extends GetView<Login_Controller> {
                                   // Top-right background effect & Location Pin (compact size)
                                   if (!isKeyboardOpen)
                                     Positioned(
-                                      top: -15.h,
-                                      right: -10.w,
+                                      top: -25.h,
+                                      right: -35.w,
                                       child: SizedBox(
-                                        width: 155.w,
-                                        height: 155.h,
+                                        width: 245.w,
+                                        height: 245.h,
                                         child: Stack(
                                           alignment: Alignment.center,
                                           children: [
-                                            // Background effect (arcs + world map)
                                             Positioned(
-                                              top: 0,
-                                              right: 0,
-                                              width: 150.w,
-                                              height: 150.h,
+                                              top: -30.h,
+                                              right: -20.w,
+                                              width: 230.w,
+                                              height: 310.h,
                                               child: Opacity(
                                                 opacity: 0.85,
-                                                child:
-                                                    _buildAuthWatermarkImage(),
+                                                child: _buildAuthWatermarkImage(),
                                               ),
                                             ),
-                                            // 3D Location Icon on top of the effect
                                             Positioned(
-                                              top: 20.h,
-                                              right: 5.w,
+                                              top: 32.h,
+                                              right: 18.w,
                                               child: Image.asset(
                                                 Assets.images.loctionIcon.path,
-                                                width: 110.w,
-                                                height: 110.h,
+                                                width: 185.w,
+                                                height: 185.h,
                                                 fit: BoxFit.contain,
                                               ),
                                             ),
@@ -420,12 +417,12 @@ class LoginPage extends GetView<Login_Controller> {
           ),
         ),
         Positioned(
-          right: 4.w,
-          top: -22.h,
+          right: 8.w,
+          top: -29.h,
           child: Image.asset(
             Assets.images.lock3d.path,
-            height: 64.h,
-            width: 64.w,
+            height: 90.h,
+            width: 90.w,
             fit: BoxFit.contain,
           ),
         ),

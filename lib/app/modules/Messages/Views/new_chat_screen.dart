@@ -77,15 +77,24 @@ class _NewChatScreenState extends State<NewChatScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            Obx(() => AnimatedSize(
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeInOut,
-              alignment: Alignment.topCenter,
-              child:
-              (_isSearchCollapsed.value && !_showSearchInAppBar.value)
-                  ? const SizedBox(width: double.infinity)
-                  : _buildSearchBar(),
-            )),
+            Obx(() {
+              final hasData = controller.matchedUsers.isNotEmpty ||
+                  controller.otherUsers.isNotEmpty;
+
+              if (!hasData && controller.searchQuery.value.isEmpty) {
+                return const SizedBox.shrink();
+              }
+
+              return AnimatedSize(
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeInOut,
+                alignment: Alignment.topCenter,
+                child:
+                (_isSearchCollapsed.value && !_showSearchInAppBar.value)
+                    ? const SizedBox(width: double.infinity)
+                    : _buildSearchBar(),
+              );
+            }),
             Expanded(
               child: Obx(() {
                 if (controller.responseError.value.isNotEmpty) {

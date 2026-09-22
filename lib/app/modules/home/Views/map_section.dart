@@ -678,16 +678,7 @@ class _MapSectionState extends State<MapSection> {
     );
   }
 
-  Widget _loadingView() {
-    return Container(
-      color: const Color(0xFFF0F4F8),
-      child: const Center(
-        child: CircularProgressIndicator(
-          color: Color(0xFF6B4DFF),
-        ),
-      ),
-    );
-  }
+
 
   Widget _membersCountView(
     HomeController homeController,
@@ -733,35 +724,6 @@ class _MapSectionState extends State<MapSection> {
     });
   }
 
-  Widget _radiusBadge() {
-    return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: 9.w,
-        vertical: 7.h,
-      ),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10.r),
-        border: Border.all(
-          color: Colors.grey.withValues(alpha: 0.2),
-        ),
-      ),
-      child: Row(
-        children: [
-          Icon(
-            Icons.my_location,
-            size: 15.sp,
-            color: const Color(0xFF6B4DFF),
-          ),
-          SizedBox(width: 5.w),
-          reausabletext(
-            'Radius: 2 km',
-            fontsize: 11.sp,
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _mapButton({
     required IconData icon,

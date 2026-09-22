@@ -1311,6 +1311,8 @@ PODS:
     - Flutter
   - flutter_contacts (0.0.1):
     - Flutter
+  - flutter_foreground_task (0.0.1):
+    - Flutter
   - flutter_image_compress_common (1.0.0):
     - Flutter
     - SDWebImage
@@ -1591,6 +1593,7 @@ DEPENDENCIES:
   - Flutter (from `Flutter`)
   - flutter_compass (from `.symlinks/plugins/flutter_compass/ios`)
   - flutter_contacts (from `.symlinks/plugins/flutter_contacts/ios`)
+  - flutter_foreground_task (from `.symlinks/plugins/flutter_foreground_task/ios`)
   - flutter_image_compress_common (from `.symlinks/plugins/flutter_image_compress_common/ios`)
   - flutter_local_notifications (from `.symlinks/plugins/flutter_local_notifications/ios`)
   - flutter_pdfview (from `.symlinks/plugins/flutter_pdfview/ios`)
@@ -1694,6 +1697,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/flutter_compass/ios"
   flutter_contacts:
     :path: ".symlinks/plugins/flutter_contacts/ios"
+  flutter_foreground_task:
+    :path: ".symlinks/plugins/flutter_foreground_task/ios"
   flutter_image_compress_common:
     :path: ".symlinks/plugins/flutter_image_compress_common/ios"
   flutter_local_notifications:
@@ -1788,6 +1793,7 @@ SPEC CHECKSUMS:
   Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
   flutter_compass: b236ab69b61545cce89fd58527f401a7587d5cc1
   flutter_contacts: 5383945387e7ca37cf963d4be57c21f2fc15ca9f
+  flutter_foreground_task: ff24d2fb1aefdcde8ed192e8b0574348aab3a30e
   flutter_image_compress_common: 11d5dcfb36f4ded92320bfa896261813a073240e
   flutter_local_notifications: ad39620c743ea4c15127860f4b5641649a988100
   flutter_pdfview: 4fbfbd0590f63153fbd492a54997c5e5be010458

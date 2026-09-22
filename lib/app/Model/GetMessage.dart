@@ -131,6 +131,8 @@ class MessageData {
   dynamic replyType;
   dynamic replySenderName;
   dynamic locationSharing;
+  dynamic isForwarded;
+  dynamic forwardedFromMessageId;
 
   MessageData({
     this.id,
@@ -153,6 +155,8 @@ class MessageData {
     this.replySenderName,
     this.thumbnail,
     this.locationSharing,
+    this.isForwarded,
+    this.forwardedFromMessageId,
   });
 
   MessageData.fromJson(Map<String, dynamic> json) {
@@ -184,6 +188,9 @@ class MessageData {
 
     locationSharing =
         json['locationSharing'] ?? json['location_sharing'];
+
+    isForwarded = json['isForwarded'];
+    forwardedFromMessageId = json['forwardedFromMessageId'];
   }
 
   Map<String, dynamic> toJson() {
@@ -209,6 +216,8 @@ class MessageData {
     data['reply_type'] = replyType;
     data['reply_sender_name'] = replySenderName;
     data['locationSharing'] = locationSharing;
+    data['isForwarded'] = isForwarded;
+    data['forwardedFromMessageId'] = forwardedFromMessageId;
 
     return data;
   }

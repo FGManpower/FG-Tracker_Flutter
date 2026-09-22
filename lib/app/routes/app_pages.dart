@@ -25,11 +25,15 @@ import '../modules/Group/Views/QRScanScreen.dart';
 import '../modules/Messages/Bindings/ForwardMessageBinding.dart';
 import '../modules/Messages/Views/Chat_Screen.dart';
 import '../modules/Messages/Views/ForwardMessageScreen.dart';
+import '../modules/Safe_Zone/views/safe_zone_view.dart';
+import '../modules/Safe_Zone/views/safety_dashboard_view.dart';
+import '../modules/Track/Views/Tracking_screen.dart';
 import '../modules/Walkie-talkie/Views/walkie_group_select_screen.dart';
 import '../modules/Track/Views/Search_Members.dart';
 import '../modules/Track/Views/TrackLocationScreen.dart';
 import '../modules/Walkie-talkie/WalkieTalkieScreen.dart';
 
+import '../modules/home/Views/LiveStatus/components/total_groups.dart';
 import '../modules/mediaStream/Bindings/group_call_binding.dart';
 import '../modules/mediaStream/Bindings/group_incoming_call_binding.dart';
 import '../modules/mediaStream/Views/Group/group_calling_screen.dart';
@@ -236,5 +240,27 @@ class AppPages {
       transition: Transition.downToUp,
       transitionDuration: const Duration(milliseconds: 500),
     ),
+
+    GetPage(
+      name: Routes.SafetyDashboard,
+      page: () => SafetyDashboardView(),
+      transition: Transition.rightToLeft,
+      transitionDuration: const Duration(milliseconds: 400),
+    ),
+
+    GetPage(
+      name: Routes.TrackingScreen,
+      page: () => TrackingScreen(),
+      transition: Transition.rightToLeft,
+      transitionDuration: const Duration(milliseconds: 400),
+    ),
+
+    GetPage(
+      name: Routes.totalGroup,
+      page: () => const totalGroup(),
+      transition: Transition.rightToLeft,
+      transitionDuration: const Duration(milliseconds: 400),
+    ),
+
   ];
 }
