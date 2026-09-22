@@ -198,26 +198,82 @@ class NotificationScreen extends StatelessWidget {
   }
 
   Widget _buildNotificationCard(dynamic item) {
-    final profileImage = item?.data?["memberData"]?["ProfileImage"];
+    final data = item?.data;
+
+    final String screenName = data?["screen_name"]?.toString() ?? "";
+
     final bool isUnread = item?.isRead == false;
 
     IconData leadingIcon = Icons.notifications;
     Color iconColor = primaryPurple;
     Color iconBgColor = primaryPurple.withOpacity(0.1);
 
-    if (item?.type == "chat" || item?.data?["screen_name"] == "chatScreen") {
+    String? profileImage;
+
+    if (screenName == "chatScreen" || item?.type == "chat") {
       leadingIcon = Icons.chat_bubble_outline_rounded;
       iconColor = primaryPurple;
       iconBgColor = primaryPurple.withOpacity(0.1);
-    } else if (item?.type == "missed_call" ||
-        item?.data?["screen_name"] == "incomingCall") {
-      leadingIcon = Icons.phone_callback_rounded;
-      iconColor = const Color(0xffFF8C00);
-      iconBgColor = const Color(0xffFF8C00).withOpacity(0.1);
-    } else if (item?.data?["screen_name"] == "groupChatScreen") {
+
+      final memberData = data?["memberData"];
+
+      if (memberData is Map) {
+        profileImage = memberData["ProfileImage"]?.toString();
+
+        if (profileImage == null ||
+            profileImage!.trim().isEmpty ||
+            profileImage == "null") {
+          profileImage = memberData["profileImage"]?.toString();
+        }
+      }
+    } else if (screenName == "groupChatScreen") {
       leadingIcon = Icons.people_alt_outlined;
       iconColor = primaryPurple;
       iconBgColor = primaryPurple.withOpacity(0.1);
+
+      profileImage = data?["groupImage"]?.toString();
+
+      if (profileImage == null ||
+          profileImage!.trim().isEmpty ||
+          profileImage == "null") {
+        profileImage = data?["groupData"]?["groupImage"]?.toString();
+      }
+
+      if (profileImage == null ||
+          profileImage!.trim().isEmpty ||
+          profileImage == "null") {
+        profileImage = data?["groupData"]?["profileImage"]?.toString();
+      }
+    } else if (screenName == "incomingCall" || item?.type == "missed_call") {
+      leadingIcon = Icons.phone_callback_rounded;
+      iconColor = const Color(0xffFF8C00);
+      iconBgColor = const Color(0xffFF8C00).withOpacity(0.1);
+
+      final callData = data?["callData"];
+
+      if (callData is Map) {
+        profileImage = callData["callerImage"]?.toString();
+
+        if (profileImage == null ||
+            profileImage!.trim().isEmpty ||
+            profileImage == "null") {
+          profileImage = callData["profileImage"]?.toString();
+        }
+
+        if (profileImage == null ||
+            profileImage!.trim().isEmpty ||
+            profileImage == "null") {
+          profileImage = callData["callerProfileImage"]?.toString();
+        }
+      }
+    }
+
+    if (profileImage != null) {
+      profileImage = profileImage!.trim();
+
+      if (profileImage!.isEmpty || profileImage == "null") {
+        profileImage = null;
+      }
     }
 
     return GestureDetector(
@@ -229,14 +285,38 @@ class NotificationScreen extends StatelessWidget {
                   await controller.markAsRead(item.id!);
                 }
 
-                final data = item.data;
-                if (data == null) return;
+                final notificationData = item.data;
 
-                if (data["screen_name"] == "chatScreen") {
-                  if (data["memberData"] == null) return;
+                if (notificationData == null) return;
+
+                if (notificationData["screen_name"] == "chatScreen") {
+                  if (notificationData["memberData"] == null) {
+                    return;
+                  }
 
                   final memberData = MemberData.fromJson(
-                    Map<String, dynamic>.from(data["memberData"]),
+                    Map<String, dynamic>.from(
+                      notificationData["memberData"],
+                    ),
+                  );
+
+                  debugPrint(
+                    "========== NOTIFICATION CHAT ==========",
+                  );
+                  debugPrint(
+                    "userId => ${memberData.userId}",
+                  );
+                  debugPrint(
+                    "name => ${memberData.name}",
+                  );
+                  debugPrint(
+                    "profileImage => ${memberData.profileImage}",
+                  );
+                  debugPrint(
+                    "groupId => ${memberData.groupId}",
+                  );
+                  debugPrint(
+                    "========================================",
                   );
 
                   Get.toNamed(
@@ -247,18 +327,36 @@ class NotificationScreen extends StatelessWidget {
                       "type": "chatScreen",
                     },
                   );
-                } else if (data["screen_name"] == "groupChatScreen") {
+                } else if (notificationData["screen_name"] ==
+                    "groupChatScreen") {
+                  final groupId = int.tryParse(
+                    item.groupId?.toString() ?? "",
+                  );
+
+                  if (groupId == null) {
+                    debugPrint(
+                      "Invalid groupId => ${item.groupId}",
+                    );
+                    return;
+                  }
+
                   Get.toNamed(
                     Routes.groupChatScreen,
                     arguments: {
-                      "groupId": int.parse(item.groupId.toString()).toString(),
-                      "groupName": item.data?['groupName'].toString(),
-                      "groupImage": "",
+                      "groupId": groupId.toString(),
+                      "groupName":
+                          notificationData["groupName"]?.toString() ?? "",
+                      "groupImage":
+                          notificationData["groupImage"]?.toString() ?? "",
                     },
                   );
-                } else if (data["screen_name"] == "incomingCall" ||
+                } else if (notificationData["screen_name"] == "incomingCall" ||
                     item.type == "missed_call") {
-                  final bool isVideo = data['callData']["isVideo"] == true;
+                  final callData = notificationData["callData"];
+
+                  if (callData is! Map) return;
+
+                  final bool isVideo = callData["isVideo"] == true;
 
                   Get.toNamed(
                     Routes.callScreen,
@@ -266,8 +364,10 @@ class NotificationScreen extends StatelessWidget {
                       "callerId": Global.storageServices
                           .get(PrefConst.userId)
                           .toString(),
-                      "remoteUserId": data['callData']["callerId"].toString(),
-                      "callerName": data['callData']["callerName"] ?? "",
+                      "remoteUserId": callData["callerId"].toString(),
+                      "callerName": callData["callerName"] ?? "",
+                      "callerImage":
+                          callData["callerImage"] ?? callData["profileImage"],
                       "offer": null,
                       "is_video": isVideo,
                       "callType": "outGoing",
@@ -275,12 +375,17 @@ class NotificationScreen extends StatelessWidget {
                   );
                 }
               } catch (e) {
-                debugPrint("Notification Error => $e");
+                debugPrint(
+                  "Notification Error => $e",
+                );
               }
             },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 250),
-        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+        padding: EdgeInsets.symmetric(
+          horizontal: 16.w,
+          vertical: 12.h,
+        ),
         decoration: BoxDecoration(
           gradient: isUnread
               ? const LinearGradient(
@@ -322,16 +427,30 @@ class NotificationScreen extends StatelessWidget {
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(14.r),
-                child: profileImage != null
+                child: profileImage != null && profileImage!.isNotEmpty
                     ? Image.network(
-                        "${ConstRes.aImageBaseUrl}$profileImage",
+                        profileImage!.startsWith(
+                                  "http://",
+                                ) ||
+                                profileImage!.startsWith(
+                                  "https://",
+                                )
+                            ? profileImage!
+                            : "${ConstRes.aImageBaseUrl}$profileImage",
                         fit: BoxFit.cover,
                         errorBuilder: (context, error, stackTrace) {
-                          return Icon(leadingIcon,
-                              color: iconColor, size: 22.sp);
+                          return Icon(
+                            leadingIcon,
+                            color: iconColor,
+                            size: 22.sp,
+                          );
                         },
                       )
-                    : Icon(leadingIcon, color: iconColor, size: 22.sp),
+                    : Icon(
+                        leadingIcon,
+                        color: iconColor,
+                        size: 22.sp,
+                      ),
               ),
             ),
             SizedBox(width: 14.w),
@@ -341,11 +460,11 @@ class NotificationScreen extends StatelessWidget {
                 children: [
                   SizedBox(height: 2.h),
                   Text(
-                    item?.title ?? "Loading...",
+                    item?.title ?? "Loading notification details",
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      fontSize: 14.5.sp,
+                      fontSize: 14.sp,
                       fontWeight: isUnread ? FontWeight.w800 : FontWeight.w700,
                       color: textDark,
                     ),
@@ -375,7 +494,9 @@ class NotificationScreen extends StatelessWidget {
                   children: [
                     Text(
                       item != null
-                          ? controller.formatTime(item.createdAt ?? "")
+                          ? controller.formatTime(
+                              item.createdAt ?? "",
+                            )
                           : "...",
                       style: TextStyle(
                         fontSize: 11.sp,

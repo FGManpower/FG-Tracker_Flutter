@@ -68,7 +68,7 @@ class HomeController extends GetxController {
 
   void refreshGroupCount() {
     SocketDashboardService.instance.requestGroupCount();
-    fetchDashboardCountsApi();
+    // fetchDashboardCountsApi();
   }
 
   Future<void> fetchDashboardCountsApi() async {
