@@ -100,16 +100,16 @@ Future<BitmapDescriptor> getCustomIcon(
     // Preload image if URL is present
     ui.Image? avatarImage;
     if (formattedUrl.isNotEmpty) {
-      avatarImage = await _fetchAndDecodeImage(formattedUrl, 160);
+      avatarImage = await _fetchAndDecodeImage(formattedUrl, 200);
     }
 
-    // Canvas dimensions (crisp high-density 110 x 140)
-    const double canvasWidth = 110.0;
-    const double canvasHeight = 140.0;
-    const double cx = canvasWidth / 2; // 55.0
-    final double cy = isMe ? 52.0 : 46.0;
-    const double headRadius = 34.0;
-    final double tipY = canvasHeight - 6.0; // 134.0
+    // Canvas dimensions (crisp high-density 140 x 175 - larger for clear map visibility)
+    const double canvasWidth = 140.0;
+    const double canvasHeight = 175.0;
+    const double cx = canvasWidth / 2; // 70.0
+    final double cy = isMe ? 65.0 : 58.0;
+    const double headRadius = 42.0;
+    final double tipY = canvasHeight - 8.0; // 167.0
 
     final recorder = ui.PictureRecorder();
     final canvas = Canvas(recorder);
@@ -120,7 +120,7 @@ Future<BitmapDescriptor> getCustomIcon(
 
     // Left curve from tip up to circle tangent
     teardropPath.cubicTo(
-      cx - 4.0, tipY - 26.0,
+      cx - 5.0, tipY - 32.0,
       cx - headRadius * 1.04, cy + headRadius * 0.50,
       cx - headRadius, cy,
     );
@@ -135,13 +135,13 @@ Future<BitmapDescriptor> getCustomIcon(
     // Right curve back down to bottom tip
     teardropPath.cubicTo(
       cx + headRadius * 1.04, cy + headRadius * 0.50,
-      cx + 4.0, tipY - 26.0,
+      cx + 5.0, tipY - 32.0,
       cx, tipY,
     );
     teardropPath.close();
 
     // 1. Drop shadow for map depth
-    canvas.drawShadow(teardropPath, Colors.black.withOpacity(0.38), 5.0, true);
+    canvas.drawShadow(teardropPath, Colors.black.withOpacity(0.38), 6.0, true);
 
     // 2. Solid Purple Fill (matches screenshot)
     final pinColor = isMe ? const Color(0xFF654CE8) : const Color(0xFF755FE2);
@@ -152,8 +152,8 @@ Future<BitmapDescriptor> getCustomIcon(
         ..style = PaintingStyle.fill,
     );
 
-    // 3. Avatar dimensions inside pin head
-    const double avatarRadius = 24.5;
+    // 3. Avatar dimensions inside pin head (enlarged for crisp recognition)
+    const double avatarRadius = 31.0;
     final Offset avatarCenter = Offset(cx, cy);
 
     // Draw user photo or fallback initials
@@ -203,7 +203,7 @@ Future<BitmapDescriptor> getCustomIcon(
           text: initials,
           style: TextStyle(
             color: Colors.white,
-            fontSize: initials.length > 2 ? 12.0 : 15.0,
+            fontSize: initials.length > 2 ? 14.0 : 18.0,
             fontWeight: FontWeight.w800,
             letterSpacing: 0.5,
           ),
@@ -223,15 +223,15 @@ Future<BitmapDescriptor> getCustomIcon(
     // 4. White circular border around avatar photo
     canvas.drawCircle(
       avatarCenter,
-      avatarRadius + 1.2,
+      avatarRadius + 1.5,
       Paint()
         ..color = Colors.white
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 2.6,
+        ..strokeWidth = 3.0,
     );
 
-    // 5. Curved accent ring & dot at top-right (from screenshot)
-    const double arcRadius = avatarRadius + 3.8;
+    // 5. Curved accent ring & dot at top-right
+    const double arcRadius = avatarRadius + 4.5;
     const Color accentColor = Color(0xFFFF4858); // Coral red accent
 
     canvas.drawArc(
@@ -242,7 +242,7 @@ Future<BitmapDescriptor> getCustomIcon(
       Paint()
         ..color = accentColor
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 2.0
+        ..strokeWidth = 2.4
         ..strokeCap = StrokeCap.round,
     );
 
@@ -253,22 +253,22 @@ Future<BitmapDescriptor> getCustomIcon(
 
     canvas.drawCircle(
       Offset(dotX, dotY),
-      4.0,
+      4.8,
       Paint()..color = Colors.white,
     );
     canvas.drawCircle(
       Offset(dotX, dotY),
-      2.6,
+      3.0,
       Paint()..color = accentColor,
     );
 
     // 6. Optional "YOU" badge for current user pin
     if (isMe) {
-      const double badgeWidth = 38.0;
-      const double badgeHeight = 16.0;
+      const double badgeWidth = 44.0;
+      const double badgeHeight = 18.0;
       final badgeRRect = RRect.fromRectAndRadius(
         Rect.fromCenter(
-          center: Offset(cx, 11.0),
+          center: Offset(cx, 13.0),
           width: badgeWidth,
           height: badgeHeight,
         ),

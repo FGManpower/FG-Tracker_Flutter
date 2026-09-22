@@ -566,7 +566,6 @@ class SafetyDashboardView extends StatelessWidget {
             final alert = controller.recentAlerts[index];
             final bool isZone = alert.isZone;
 
-            // 👈 YAHAN InkWell ADD KIYA HAI BOTTOM SHEET OPEN KARNE KE LIYE
             return InkWell(
               onTap: () {
                 if (isZone) {

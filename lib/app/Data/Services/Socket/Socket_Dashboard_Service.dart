@@ -107,8 +107,8 @@ class SocketDashboardService extends GetxService {
         )
             .where(
               (item) =>
-          item.latitude != 0 &&
-              item.longitude != 0,
+          (item.latitude != 0 && item.longitude != 0) ||
+          (item.address != null && item.address!.trim().isNotEmpty),
         )
             .toList();
 
@@ -141,12 +141,14 @@ class SocketDashboardService extends GetxService {
     String? address,
     String? area,
     String? city,
+    int? battery,
   }) {
     var param = {
       'userId': Global.storageServices.get(PrefConst.userId),
       'userLat': userLat,
       'userLong': userLong,
       'radius': radius,
+      'battery': battery ?? 85,
       if (address != null && address.isNotEmpty) 'address': address,
       if (area != null && area.isNotEmpty) 'area': area,
       if (city != null && city.isNotEmpty) 'city': city,

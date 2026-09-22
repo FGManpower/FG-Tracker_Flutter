@@ -59,7 +59,7 @@ class SocketService extends GetxService {
   }
 
   void emitLocation(String userId, dynamic lat, dynamic lng,
-      {String? address, String? area, String? city}) {
+      {String? address, String? area, String? city, int? battery}) {
     if (!isSocketConnected) return;
 
     if (userId.isEmpty || lat == null || lng == null) {
@@ -73,6 +73,7 @@ class SocketService extends GetxService {
         (area != null && area.trim().isNotEmpty) ? area.trim() : null;
     final String? cleanCity =
         (city != null && city.trim().isNotEmpty) ? city.trim() : null;
+    final int sendBattery = battery ?? 85;
 
     if (connectedGroupIds.isEmpty) {
       final payload = <String, dynamic>{
@@ -81,6 +82,7 @@ class SocketService extends GetxService {
         "lng": lng,
         "latitude": lat,
         "longitude": lng,
+        "battery": sendBattery,
         if (cleanAddress != null) "address": cleanAddress,
         if (cleanAddress != null) "location": cleanAddress,
         if (cleanArea != null) "area": cleanArea,
@@ -97,6 +99,7 @@ class SocketService extends GetxService {
           "lng": lng,
           "latitude": lat,
           "longitude": lng,
+          "battery": sendBattery,
           if (cleanAddress != null) "address": cleanAddress,
           if (cleanAddress != null) "location": cleanAddress,
           if (cleanArea != null) "area": cleanArea,

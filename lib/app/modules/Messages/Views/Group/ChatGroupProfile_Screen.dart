@@ -405,7 +405,7 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
           if (media.isNotEmpty) ...[
             SizedBox(height: 12.h),
             SizedBox(
-              height: 100.h, // Height badha di gayi
+              height: 100.h,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 itemCount: media.length,

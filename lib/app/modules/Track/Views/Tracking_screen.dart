@@ -19,8 +19,7 @@ class TrackingScreen extends StatelessWidget {
 
   final TrackController controller = Get.put(TrackController());
   final Rx<MapType> _mapType = MapType.normal.obs;
-  final DraggableScrollableController _sheetController =
-      DraggableScrollableController();
+  final DraggableScrollableController _sheetController = DraggableScrollableController();
   final RxDouble _sheetExtent = 0.11.obs;
 
   void _toggleSheet() {
@@ -1375,16 +1374,6 @@ class TrackingScreen extends StatelessWidget {
   }
 
   Widget _buildLiveTrackingSliverContent() {
-    final query = controller.searchController.text.trim().toLowerCase();
-    final List<MemberModel> membersToDisplay = query.isEmpty
-        ? controller.liveMembers.toList()
-        : controller.liveMembers
-            .where((m) =>
-                m.name.toLowerCase().contains(query) ||
-                m.team.toLowerCase().contains(query) ||
-                m.location.toLowerCase().contains(query))
-            .toList();
-
     return SliverPadding(
       padding: EdgeInsets.symmetric(horizontal: 16.w),
       sliver: SliverList(
@@ -1478,59 +1467,69 @@ class TrackingScreen extends StatelessWidget {
             ],
           ),
           SizedBox(height: 8.h),
-          if (controller.isLoading.value && controller.liveMembers.isEmpty)
-            Skeletonizer(
-              enabled: true,
-              child: Column(
-                children: List.generate(
-                  3,
-                  (index) => _memberCard(
-                    MemberModel(
-                      userId: index,
-                      name: "Member Name Placeholder",
-                      team: "Operations Team",
-                      location: "Area Name, City",
-                      distance: "1.2 km away",
-                      battery: 85,
-                      avatarUrl: "",
+          Obx(() {
+            final query = controller.searchController.text.trim().toLowerCase();
+            final List<MemberModel> membersToDisplay = query.isEmpty
+                ? controller.liveMembers.toList()
+                : controller.liveMembers
+                    .where((m) =>
+                        m.name.toLowerCase().contains(query) ||
+                        m.team.toLowerCase().contains(query) ||
+                        m.location.toLowerCase().contains(query))
+                    .toList();
+
+            if (controller.isLoading.value && controller.liveMembers.isEmpty) {
+              return Skeletonizer(
+                enabled: true,
+                child: Column(
+                  children: List.generate(
+                    3,
+                    (index) => _memberCard(
+                      MemberModel(
+                        userId: index,
+                        name: "Member Name Placeholder",
+                        team: "Operations Team",
+                        location: "Area Name, City",
+                        distance: "1.2 km away",
+                        battery: 85,
+                        avatarUrl: "",
+                      ),
                     ),
                   ),
                 ),
-              ),
-            )
-          else if (membersToDisplay.isEmpty)
-            Padding(
-              padding: EdgeInsets.symmetric(vertical: 24.h),
-              child: Center(
-                child: Column(
-                  children: [
-                    Container(
-                      padding: EdgeInsets.all(14.r),
-                      decoration: const BoxDecoration(
-                        color: Color(0xFFF1F5F9),
-                        shape: BoxShape.circle,
+              );
+            } else if (membersToDisplay.isEmpty) {
+              return Padding(
+                padding: EdgeInsets.symmetric(vertical: 24.h),
+                child: Center(
+                  child: Column(
+                    children: [
+                      Container(
+                        padding: EdgeInsets.all(14.r),
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFF1F5F9),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.sensors_off_rounded,
+                          color: const Color(0xFF94A3B8),
+                          size: 32.sp,
+                        ),
                       ),
-                      child: Icon(
-                        Icons.sensors_off_rounded,
-                        color: const Color(0xFF94A3B8),
-                        size: 32.sp,
+                      SizedBox(height: 10.h),
+                      Text(
+                        controller.searchController.text.trim().isNotEmpty
+                            ? "No members match '${controller.searchController.text}'"
+                            : "No active members found within ${controller.currentFormattedRadius}",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: const Color(0xFF64748B),
+                          fontSize: 13.sp,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
-                    ),
-                    SizedBox(height: 10.h),
-                    Text(
-                      controller.searchController.text.trim().isNotEmpty
-                          ? "No members match '${controller.searchController.text}'"
-                          : "No active members found within ${controller.currentFormattedRadius}",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: const Color(0xFF64748B),
-                        fontSize: 13.sp,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    Obx(() {
-                      if (controller.responseError.isNotEmpty) {
-                        return Padding(
+                      if (controller.responseError.isNotEmpty)
+                        Padding(
                           padding: EdgeInsets.only(top: 6.h),
                           child: Text(
                             controller.responseError.value,
@@ -1540,52 +1539,54 @@ class TrackingScreen extends StatelessWidget {
                               fontSize: 11.sp,
                             ),
                           ),
-                        );
-                      }
-                      return const SizedBox.shrink();
-                    }),
-                    SizedBox(height: 14.h),
-                    GestureDetector(
-                      onTap: () => controller.getUsersWithinRadius(),
-                      child: Container(
-                        padding: EdgeInsets.symmetric(
-                            horizontal: 16.w, vertical: 8.h),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF4338CA),
-                          borderRadius: BorderRadius.circular(12.r),
-                          boxShadow: [
-                            BoxShadow(
-                              color:
-                                  const Color(0xFF4338CA).withOpacity(0.2),
-                              blurRadius: 8.r,
-                              offset: Offset(0, 2.h),
-                            ),
-                          ],
                         ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.refresh_rounded,
-                                color: Colors.white, size: 16.sp),
-                            SizedBox(width: 6.w),
-                            Text(
-                              "Refresh Live Data",
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 12.sp,
-                                fontWeight: FontWeight.w700,
+                      SizedBox(height: 14.h),
+                      GestureDetector(
+                        onTap: () => controller.getUsersWithinRadius(),
+                        child: Container(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 16.w, vertical: 8.h),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF4338CA),
+                            borderRadius: BorderRadius.circular(12.r),
+                            boxShadow: [
+                              BoxShadow(
+                                color:
+                                    const Color(0xFF4338CA).withOpacity(0.2),
+                                blurRadius: 8.r,
+                                offset: Offset(0, 2.h),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.refresh_rounded,
+                                  color: Colors.white, size: 16.sp),
+                              SizedBox(width: 6.w),
+                              Text(
+                                "Refresh Live Data",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12.sp,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            )
-          else
-            ...membersToDisplay.map((m) => _memberCard(m)),
+              );
+            } else {
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                children: membersToDisplay.map((m) => _memberCard(m)).toList(),
+              );
+            }
+          }),
           SizedBox(height: 6.h),
           _buildBottomShareButton(),
           SizedBox(height: 24.h),
@@ -1595,8 +1596,6 @@ class TrackingScreen extends StatelessWidget {
   }
 
   Widget _buildGroupSliverContent() {
-    final bool isGroupLoading = controller.isGroupLoading.value;
-
     return SliverPadding(
       padding: EdgeInsets.symmetric(horizontal: 16.w),
       sliver: SliverList(
@@ -1614,8 +1613,8 @@ class TrackingScreen extends StatelessWidget {
                   color: const Color(0xFF1E1B4B),
                 ),
               ),
-              Skeletonizer(
-                enabled: isGroupLoading,
+              Obx(() => Skeletonizer(
+                enabled: controller.isGroupLoading.value,
                 child: Text(
                   "${controller.filteredGroups.length} Groups",
                   style: TextStyle(
@@ -1624,44 +1623,52 @@ class TrackingScreen extends StatelessWidget {
                     color: const Color(0xFF4338CA),
                   ),
                 ),
-              ),
+              )),
             ],
           ),
           SizedBox(height: 8.h),
-          if (isGroupLoading && controller.filteredGroups.isEmpty)
-            Skeletonizer(
-              enabled: true,
-              child: Column(
-                children: List.generate(
-                  4,
-                  (index) => _groupCard(
-                    GroupsResData(
-                      id: index,
-                      groupName: "Loading Group Name",
-                      groupDesc: "Group description placeholder",
-                      groupCode: "FG-00$index",
+          Obx(() {
+            final bool isGroupLoading = controller.isGroupLoading.value;
+            if (isGroupLoading && controller.filteredGroups.isEmpty) {
+              return Skeletonizer(
+                enabled: true,
+                child: Column(
+                  children: List.generate(
+                    4,
+                    (index) => _groupCard(
+                      GroupsResData(
+                        id: index,
+                        groupName: "Loading Group Name",
+                        groupDesc: "Group description placeholder",
+                        groupCode: "FG-00$index",
+                      ),
                     ),
                   ),
                 ),
-              ),
-            )
-          else if (controller.filteredGroups.isEmpty)
-            Padding(
-              padding: EdgeInsets.symmetric(vertical: 30.h),
-              child: Center(
-                child: Text(
-                  controller.groupError.isNotEmpty
-                      ? controller.groupError.value
-                      : "No groups found",
-                  style: TextStyle(
-                    color: AppColors.primaryThreeElementText,
-                    fontSize: 13.sp,
+              );
+            } else if (controller.filteredGroups.isEmpty) {
+              return Padding(
+                padding: EdgeInsets.symmetric(vertical: 30.h),
+                child: Center(
+                  child: Text(
+                    controller.groupError.isNotEmpty
+                        ? controller.groupError.value
+                        : "No groups found",
+                    style: TextStyle(
+                      color: AppColors.primaryThreeElementText,
+                      fontSize: 13.sp,
+                    ),
                   ),
                 ),
-              ),
-            )
-          else
-            ...controller.filteredGroups.map((g) => _groupCard(g)),
+              );
+            } else {
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                children:
+                    controller.filteredGroups.map((g) => _groupCard(g)).toList(),
+              );
+            }
+          }),
           SizedBox(height: 24.h),
         ]),
       ),
@@ -1710,24 +1717,20 @@ class TrackingScreen extends StatelessWidget {
     );
   }
 
+  void _zoomToMemberFromList(MemberModel member) {
+    if (_sheetController.isAttached) {
+      _sheetController.animateTo(
+        0.11,
+        duration: const Duration(milliseconds: 320),
+        curve: Curves.easeOutCubic,
+      );
+    }
+    controller.zoomToMember(member);
+  }
+
   Widget _memberCard(MemberModel member) {
     return GestureDetector(
-      onTap: () {
-        if (member.latitude != null &&
-            member.longitude != null &&
-            member.latitude != 0.0 &&
-            member.longitude != 0.0) {
-          controller.mapController?.animateCamera(
-            CameraUpdate.newCameraPosition(
-              CameraPosition(
-                target: LatLng(member.latitude!, member.longitude!),
-                zoom: 17.0,
-              ),
-            ),
-          );
-        }
-        controller.showMemberProfileFromMemberModel(member);
-      },
+      onTap: () => _zoomToMemberFromList(member),
       child: Container(
       margin: EdgeInsets.only(bottom: 10.h),
       padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
@@ -1745,7 +1748,9 @@ class TrackingScreen extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Stack(
+          GestureDetector(
+            onTap: () => controller.showMemberProfileFromMemberModel(member),
+            child: Stack(
             clipBehavior: Clip.none,
             children: [
               Container(
@@ -1804,6 +1809,7 @@ class TrackingScreen extends StatelessWidget {
                 ),
               ),
             ],
+          ),
           ),
           SizedBox(width: 12.w),
           Expanded(
@@ -1908,28 +1914,7 @@ class TrackingScreen extends StatelessWidget {
           ),
           SizedBox(width: 10.w),
           GestureDetector(
-            onTap: () {
-              if (member.latitude != null &&
-                  member.longitude != null &&
-                  member.latitude != 0.0 &&
-                  member.longitude != 0.0) {
-                controller.mapController?.animateCamera(
-                  CameraUpdate.newCameraPosition(
-                    CameraPosition(
-                      target: LatLng(member.latitude!, member.longitude!),
-                      zoom: 17.0,
-                    ),
-                  ),
-                );
-                if (_sheetController.isAttached) {
-                  _sheetController.animateTo(
-                    0.11,
-                    duration: const Duration(milliseconds: 300),
-                    curve: Curves.easeOutCubic,
-                  );
-                }
-              }
-            },
+            onTap: () => _zoomToMemberFromList(member),
             child: Container(
               width: 36.w,
               height: 36.w,

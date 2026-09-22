@@ -888,7 +888,7 @@ class DialogBox {
                 },
                 borderRadius: BorderRadius.circular(50.r),
                 child: Stack(
-                  alignment: Alignment.bottomRight,
+                  clipBehavior: Clip.none,
                   children: [
                     Container(
                       width: 95.r,
@@ -908,17 +908,21 @@ class DialogBox {
                         ),
                       ),
                     ),
-                    Container(
-                      height: 20.w,
-                      width: 20.w,
-                      decoration: BoxDecoration(
-                        color: isLocationSharing == false
-                            ? Colors.grey
-                            : (isOnline
-                                ? const Color(0xFF10B981)
-                                : const Color(0xffFF6B6B)),
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 2.5),
+                    Positioned(
+                      bottom: 5.r,
+                      right: 5.r,
+                      child: Container(
+                        height: 18.r,
+                        width: 18.r,
+                        decoration: BoxDecoration(
+                          color: isLocationSharing == false
+                              ? Colors.grey
+                              : (isOnline
+                                  ? const Color(0xFF10B981)
+                                  : const Color(0xffFF6B6B)),
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 2.5),
+                        ),
                       ),
                     ),
                   ],
@@ -990,36 +994,6 @@ class DialogBox {
                     color: Colors.grey.shade600,
                   ),
                 ),
-              if (effectiveTeam.isNotEmpty) ...[
-                SizedBox(height: 6.h),
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 3.h),
-                  decoration: BoxDecoration(
-                    color: ToggleThemeData.darkPurple.withValues(alpha: 0.08),
-                    borderRadius: BorderRadius.circular(12.r),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.groups_rounded,
-                          size: 14.sp, color: ToggleThemeData.darkPurple),
-                      SizedBox(width: 4.w),
-                      Flexible(
-                        child: Text(
-                          effectiveTeam,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 11.5.sp,
-                            color: ToggleThemeData.darkPurple,
-                            fontFamily: FontFamily.interSemiBold,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
               SizedBox(height: 14.h),
               Container(
                 width: double.infinity,
@@ -1031,36 +1005,6 @@ class DialogBox {
                 ),
                 child: Column(
                   children: [
-                    if (resolvedPhone != null && resolvedPhone.isNotEmpty) ...[
-                      InkWell(
-                        onTap: () async {
-                          final Uri telUri = Uri.parse("tel:$resolvedPhone");
-                          if (await canLaunchUrl(telUri)) {
-                            await launchUrl(telUri);
-                          }
-                        },
-                        child: Row(
-                          children: [
-                            Icon(Icons.phone_outlined,
-                                color: ToggleThemeData.darkPurple, size: 18.sp),
-                            SizedBox(width: 10.w),
-                            Expanded(
-                              child: Text(
-                                resolvedPhone,
-                                style: TextStyle(
-                                  fontSize: 13.5.sp,
-                                  color: Colors.black87,
-                                  fontFamily: FontFamily.interMedium,
-                                ),
-                              ),
-                            ),
-                            Icon(Icons.call,
-                                size: 16.sp, color: const Color(0xFF10B981)),
-                          ],
-                        ),
-                      ),
-                      Divider(height: 16.h, color: Colors.grey.shade200),
-                    ],
                     if (resolvedLocation != null && resolvedLocation.isNotEmpty) ...[
                       Row(
                         children: [
