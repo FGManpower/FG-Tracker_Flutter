@@ -190,7 +190,6 @@ class GroupParticipantGrid extends StatelessWidget {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              // -------- Video / Avatar --------
               Obx(() {
                 final isVideoOn = participant.isVideoOn.value;
                 final rendererReady = participant.renderer != null &&
@@ -267,7 +266,7 @@ class GroupParticipantGrid extends StatelessWidget {
 =======
               }),
 
-              // -------- Bottom gradient --------
+
               Align(
                 alignment: Alignment.bottomCenter,
                 child: Container(
@@ -285,7 +284,6 @@ class GroupParticipantGrid extends StatelessWidget {
                 ),
               ),
 
-              // -------- Sharing badge (top) --------
               if (sharing)
                 Positioned(
                   top: isFullScreen ? 100.h : 10.h,
@@ -324,7 +322,7 @@ class GroupParticipantGrid extends StatelessWidget {
                 ),
 >>>>>>> 1c1f1c71a8d0d65b5af4d04e4bd6c55c3663dafe
 
-              // -------- View full screen CTA --------
+
               if (sharing && !isFullScreen)
                 Positioned(
                   left: 10.w,
@@ -364,7 +362,6 @@ class GroupParticipantGrid extends StatelessWidget {
                   ),
                 ),
 
-              // -------- Name chip --------
               if (!isFullScreen)
                 Positioned(
                   left: 12.w,
@@ -386,7 +383,6 @@ class GroupParticipantGrid extends StatelessWidget {
                   ),
                 ),
 
-              // -------- Mute / speaking --------
               if (!isFullScreen)
                 Positioned(
                   right: 12.w,
