@@ -23,6 +23,8 @@ import '../../../global_widget/common_widget.dart';
 import 'AudioPlayerWidget.dart';
 import 'ContactBubbleWidget.dart';
 import 'LocationBubbleWidget.dart';
+import '../../Attendance/models/attendance_poll_model.dart';
+import '../../Attendance/widgets/attendance_chat_card.dart';
 import 'message_Widgets.dart';
 
 class ChatBubble extends StatelessWidget {
@@ -75,32 +77,43 @@ class ChatBubble extends StatelessWidget {
           Flexible(
             child: Builder(
               builder: (bubbleContext) {
-                return Obx(
-                  () => GestureDetector(
+                return Obx(() {
+                  final isAttendance = message.messageType == "attendance";
+
+                  return GestureDetector(
                     onLongPress: () =>
                         _showMessageMenu(bubbleContext, isSentByMe),
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 300),
                       constraints: BoxConstraints(
-                        maxWidth: MediaQuery.of(context).size.width * 0.75,
+                        maxWidth: isAttendance
+                            ? MediaQuery.of(context).size.width * 0.88
+                            : MediaQuery.of(context).size.width * 0.75,
                       ),
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 12.w,
-                        vertical: 8.h,
-                      ),
+                      padding: isAttendance
+                          ? EdgeInsets.zero
+                          : EdgeInsets.symmetric(
+                              horizontal: 12.w,
+                              vertical: 8.h,
+                            ),
                       decoration: BoxDecoration(
-                        color:
-                            controller.highlightedMessageId.value == message.id
+                        color: isAttendance
+                            ? Colors.transparent
+                            : (controller.highlightedMessageId.value == message.id
                                 ? Colors.yellow.withValues(alpha: .35)
-                                : bgColor,
-                        borderRadius: borderRadius,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.04),
-                            blurRadius: 4,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
+                                : bgColor),
+                        borderRadius: isAttendance
+                            ? BorderRadius.circular(20.r)
+                            : borderRadius,
+                        boxShadow: isAttendance
+                            ? []
+                            : [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.04),
+                                  blurRadius: 4,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
                       ),
                       child: IntrinsicWidth(
                         child: Column(
@@ -159,9 +172,9 @@ class ChatBubble extends StatelessWidget {
                         ),
                       ),
                     ),
-                  ),
-                );
-              },
+                  );
+              });
+            },
             ),
           ),
         ],
@@ -513,6 +526,19 @@ class ChatBubble extends StatelessWidget {
         content: message.content,
         isSentByMe: isSentByMe,
         textColor: textColor,
+      );
+    } else if (message.messageType == "attendance") {
+      final isCreator = controller is GroupMessageController
+          ? (controller as GroupMessageController).isCreator.value
+          : false;
+
+      final pollData = AttendancePollData.fromRawJson(
+        message.content?.toString() ?? "",
+      );
+
+      return AttendanceChatCard(
+        pollData: pollData,
+        isAdmin: isCreator,
       );
     } else {
       return _buildTextContent(

@@ -27,14 +27,14 @@ class TrackingScreen extends StatelessWidget {
     if (_sheetController.isAttached) {
       if (_sheetExtent.value < 0.25) {
         _sheetController.animateTo(
-          0.58,
-          duration: const Duration(milliseconds: 300),
+          0.52,
+          duration: const Duration(milliseconds: 250),
           curve: Curves.easeOutCubic,
         );
       } else {
         _sheetController.animateTo(
           0.11,
-          duration: const Duration(milliseconds: 300),
+          duration: const Duration(milliseconds: 250),
           curve: Curves.easeOutCubic,
         );
       }
@@ -262,9 +262,10 @@ class TrackingScreen extends StatelessWidget {
               controller: _sheetController,
               initialChildSize: 0.11,
               minChildSize: 0.11,
-              maxChildSize: 0.58,
+              maxChildSize: 0.52,
               snap: true,
-              snapSizes: const [0.11, 0.58],
+              snapSizes: const [0.11, 0.52],
+              snapAnimationDuration: const Duration(milliseconds: 250),
               builder: (context, scrollController) {
                 return Container(
                   clipBehavior: Clip.antiAlias,
@@ -295,8 +296,8 @@ class TrackingScreen extends StatelessWidget {
                       displacement: 20.h,
                       child: CustomScrollView(
                         controller: scrollController,
-                        physics: const AlwaysScrollableScrollPhysics(
-                          parent: ClampingScrollPhysics(),
+                        physics: const BouncingScrollPhysics(
+                          parent: AlwaysScrollableScrollPhysics(),
                         ),
                         slivers: [
                           SliverToBoxAdapter(
@@ -650,8 +651,8 @@ class TrackingScreen extends StatelessWidget {
         FocusScope.of(context).unfocus();
         if (_sheetController.isAttached) {
           _sheetController.animateTo(
-            0.58,
-            duration: const Duration(milliseconds: 300),
+            0.52,
+            duration: const Duration(milliseconds: 250),
             curve: Curves.easeOutCubic,
           );
         }
@@ -1414,14 +1415,17 @@ class TrackingScreen extends StatelessWidget {
   }
 
   Widget _buildDragHandle() {
-    return Center(
+    return Container(
+      width: double.infinity,
+      color: Colors.transparent,
+      padding: EdgeInsets.symmetric(vertical: 8.h),
+      alignment: Alignment.center,
       child: Container(
-        margin: EdgeInsets.only(top: 8.h, bottom: 4.h),
         width: 44.w,
-        height: 4.h,
+        height: 4.5.h,
         decoration: BoxDecoration(
           color: const Color(0xFF94A3B8).withValues(alpha: 0.4),
-          borderRadius: BorderRadius.circular(2.r),
+          borderRadius: BorderRadius.circular(3.r),
         ),
       ),
     );
@@ -1442,7 +1446,16 @@ class TrackingScreen extends StatelessWidget {
         children: [
           Expanded(
             child: GestureDetector(
-              onTap: () => controller.selectTab(0),
+              onTap: () {
+                controller.selectTab(0);
+                if (_sheetController.isAttached && _sheetExtent.value < 0.25) {
+                  _sheetController.animateTo(
+                    0.52,
+                    duration: const Duration(milliseconds: 250),
+                    curve: Curves.easeOutCubic,
+                  );
+                }
+              },
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
                 decoration: BoxDecoration(
@@ -1474,7 +1487,16 @@ class TrackingScreen extends StatelessWidget {
           ),
           Expanded(
             child: GestureDetector(
-              onTap: () => controller.selectTab(1),
+              onTap: () {
+                controller.selectTab(1);
+                if (_sheetController.isAttached && _sheetExtent.value < 0.25) {
+                  _sheetController.animateTo(
+                    0.52,
+                    duration: const Duration(milliseconds: 250),
+                    curve: Curves.easeOutCubic,
+                  );
+                }
+              },
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
                 decoration: BoxDecoration(
@@ -1613,7 +1635,7 @@ class TrackingScreen extends StatelessWidget {
                         m.location.toLowerCase().contains(query))
                     .toList();
 
-            if (controller.isLoading.value && controller.liveMembers.isEmpty) {
+            if (controller.isLoading.value) {
               return Skeletonizer(
                 enabled: true,
                 child: Column(
@@ -1857,7 +1879,7 @@ class TrackingScreen extends StatelessWidget {
     if (_sheetController.isAttached) {
       _sheetController.animateTo(
         0.11,
-        duration: const Duration(milliseconds: 320),
+        duration: const Duration(milliseconds: 250),
         curve: Curves.easeOutCubic,
       );
     }
@@ -2178,7 +2200,7 @@ class TrackingScreen extends StatelessWidget {
         if (_sheetController.isAttached) {
           _sheetController.animateTo(
             0.11,
-            duration: const Duration(milliseconds: 300),
+            duration: const Duration(milliseconds: 250),
             curve: Curves.easeOutCubic,
           );
         }
@@ -2548,8 +2570,9 @@ class TrackingScreen extends StatelessWidget {
       return "Nearby";
     }
     if (distance.contains("away")) return distance;
-    if (distance.contains("km") || distance.contains(" m"))
+    if (distance.contains("km") || distance.contains(" m")) {
       return "$distance away";
+    }
     final cleaned = distance.replaceAll(RegExp(r'[^\d.]'), '');
     final numVal = double.tryParse(cleaned);
     if (numVal != null) {

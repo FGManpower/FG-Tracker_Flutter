@@ -1,10 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
 import '../../../config/themes_data.dart';
 import '../../../global_widget/common_widget.dart';
+import '../../../routes/app_pages.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
+import 'attendance_sheet.dart';
 
 class ChatBottomSheet {
+  static Future<void> showCreateAttendance(
+    BuildContext context, {
+    List<dynamic>? groupMembers,
+    VoidCallback? onCreated,
+  }) {
+    return showAttendanceSheet(
+      context: context,
+      groupMembers: groupMembers,
+      onCreated: onCreated,
+    );
+  }
   static Future<void> showCallOptions(
       BuildContext context, {
         VoidCallback? onAudioCall,
@@ -85,6 +99,7 @@ class ChatBottomSheet {
         required VoidCallback onDocument,
         required VoidCallback onLocation,
         required VoidCallback onContact,
+        VoidCallback? onAttendance,
       }) async {
     return showModalBottomSheet(
       context: context,
@@ -199,6 +214,20 @@ class ChatBottomSheet {
                     bgColor: const Color(0xFFF0EBFF),
                     title: "Contact",
                     onTap: onContact,
+                  ),
+                  _attachmentItem(
+                    icon: Icons.event_available_rounded,
+                    iconColor: const Color(0xFF7B61FF),
+                    bgColor: const Color(0xFFF0EBFF),
+                    title: "Attendance",
+                    onTap: () {
+                      Navigator.pop(sheetContext);
+                      if (onAttendance != null) {
+                        onAttendance();
+                      } else {
+                        showAttendanceSheet(context: context);
+                      }
+                    },
                   ),
                 ],
               ),

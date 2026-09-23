@@ -806,13 +806,16 @@ class _AllChatsBody extends StatelessWidget {
   Color? _statusColor(String? status) {
     // ... same as your previous code ...
     final value = (status ?? "").toLowerCase().trim();
-    if (value == "online" || value == "active" || value == "available")
+    if (value == "online" || value == "active" || value == "available") {
       return Colors.green;
+    }
     if (value == "away" || value == "busy") return Colors.orange;
     if (value == "offline" || value == "inactive") return Colors.grey;
     if (value == "dnd" ||
         value == "do_not_disturb" ||
-        value == "do not disturb") return Colors.red;
+        value == "do not disturb") {
+      return Colors.red;
+    }
     return null;
   }
 

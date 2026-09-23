@@ -1122,7 +1122,7 @@ class TrackController extends GetxController {
   final RxBool isSearchDropdownOpen = false.obs;
 
   RxInt selectedTabIndex = 0.obs;
-  RxBool isLoading = false.obs;
+  RxBool isLoading = true.obs;
   RxString responseError = "".obs;
 
   RxDouble currentLat = 0.0.obs;
@@ -1176,6 +1176,7 @@ class TrackController extends GetxController {
   void onInit() {
     super.onInit();
 
+    isLoading.value = true;
     // 0. Ensure lists start clean so only /users-within-radius API populates live tracking
     radiusUsers.clear();
     liveMembers.clear();
@@ -1524,21 +1525,28 @@ class TrackController extends GetxController {
         }
       }
 
-      final newUser = UsersWithinRadiusData(
-        userId: data.userId,
-        name: fallbackName ?? "Member",
-        profileImage: fallbackImg,
-        mobileNo: fallbackPhone,
-        latitude: data.lat,
-        longitude: data.lng,
-        isOnline: true,
-        lastSeen: nowIso,
-        team: selectedGroupName.value,
-        location: resolvedAddress.isNotEmpty ? resolvedAddress : null,
-        battery: data.battery,
-      );
-      radiusUsers.add(newUser);
-      _resolveAddressForUser(newUser);
+      _knownUserCoordinates[userIdStr] = LatLng(data.lat, data.lng);
+
+      if (!isLoading.value &&
+          fallbackName != null &&
+          fallbackName.trim().isNotEmpty &&
+          fallbackName.trim().toLowerCase() != 'member') {
+        final newUser = UsersWithinRadiusData(
+          userId: data.userId,
+          name: fallbackName,
+          profileImage: fallbackImg,
+          mobileNo: fallbackPhone,
+          latitude: data.lat,
+          longitude: data.lng,
+          isOnline: true,
+          lastSeen: nowIso,
+          team: selectedGroupName.value,
+          location: resolvedAddress.isNotEmpty ? resolvedAddress : null,
+          battery: data.battery,
+        );
+        radiusUsers.add(newUser);
+        _resolveAddressForUser(newUser);
+      }
     }
 
     if (selectedGroupId.value.isNotEmpty &&
@@ -1631,21 +1639,28 @@ class TrackController extends GetxController {
             }
             _resolveAddressForUser(prev);
           } else {
-            final newUser = UsersWithinRadiusData(
-              userId: userId,
-              name: item['name']?.toString() ?? "Member",
-              latitude: lat,
-              longitude: lng,
-              isOnline: true,
-              lastSeen: nowIso,
-              team: selectedGroupName.value,
-              location: addr,
-              battery: item['battery'] ??
-                  item['batteryLevel'] ??
-                  item['battery_level'],
-            );
-            radiusUsers.add(newUser);
-            _resolveAddressForUser(newUser);
+            _knownUserCoordinates[userId.toString()] = LatLng(lat, lng);
+            final String? itemName = item['name']?.toString();
+            if (!isLoading.value &&
+                itemName != null &&
+                itemName.trim().isNotEmpty &&
+                itemName.trim().toLowerCase() != 'member') {
+              final newUser = UsersWithinRadiusData(
+                userId: userId,
+                name: itemName.trim(),
+                latitude: lat,
+                longitude: lng,
+                isOnline: true,
+                lastSeen: nowIso,
+                team: selectedGroupName.value,
+                location: addr,
+                battery: item['battery'] ??
+                    item['batteryLevel'] ??
+                    item['battery_level'],
+              );
+              radiusUsers.add(newUser);
+              _resolveAddressForUser(newUser);
+            }
           }
           if (isGroupMode.value) {
             final gIdx = groupModeUsers
@@ -1721,20 +1736,24 @@ class TrackController extends GetxController {
         }
         _resolveAddressForUser(prev);
       } else {
-        final newUser = UsersWithinRadiusData(
-          userId: su.userId,
-          name: su.fullName,
-          profileImage: su.profileImage,
-          latitude: lat != 0.0 ? lat : null,
-          longitude: lng != 0.0 ? lng : null,
-          isOnline: true,
-          battery: su.battery,
-          lastSeen: nowIso,
-          team: selectedGroupName.value,
-          location: suAddress,
-        );
-        radiusUsers.add(newUser);
-        _resolveAddressForUser(newUser);
+        if (!isLoading.value &&
+            su.fullName.trim().isNotEmpty &&
+            su.fullName.trim().toLowerCase() != "member") {
+          final newUser = UsersWithinRadiusData(
+            userId: su.userId,
+            name: su.fullName,
+            profileImage: su.profileImage,
+            latitude: lat != 0.0 ? lat : null,
+            longitude: lng != 0.0 ? lng : null,
+            isOnline: true,
+            battery: su.battery,
+            lastSeen: nowIso,
+            team: selectedGroupName.value,
+            location: suAddress,
+          );
+          radiusUsers.add(newUser);
+          _resolveAddressForUser(newUser);
+        }
       }
     }
     _refreshMembersAndMap();
@@ -2879,6 +2898,11 @@ class TrackController extends GetxController {
       filteredGroups.value = groupList;
       fetchGroupData();
     } else {
+      isGroupMode.value = false;
+      selectedGroupName.value = "";
+      selectedGroupId.value = "";
+      selectedGroupProfile.value = "";
+      groupModeUsers.clear();
       liveMembers.value = allFetchedMembers;
     }
     updateMapMarkersAndCircle();

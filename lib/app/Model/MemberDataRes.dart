@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:get/get.dart';
 
 class MemberDataRes {
   bool? status;

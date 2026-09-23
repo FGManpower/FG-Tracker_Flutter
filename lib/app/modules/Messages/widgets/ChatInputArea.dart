@@ -437,6 +437,13 @@ class _ChatInputAreaState extends State<ChatInputArea> {
                                           Navigator.pop(context);
                                           widget.onContactSelected();
                                         },
+                                        onAttendance: () {
+                                          Navigator.pop(context);
+                                          ChatBottomSheet.showCreateAttendance(
+                                            context,
+                                            groupMembers: widget.groupMembers,
+                                          );
+                                        },
                                       );
                                     },
                                     child: Padding(
