@@ -6,101 +6,124 @@ import '../../../Data/Repositories/Notification_Repo.dart';
 import '../../../Model/notification_model.dart';
 
 class NotificationController extends GetxController {
-  RxList<NotificationModel> notifications = <NotificationModel>[].obs;
+  final RxList<NotificationModel> notifications =
+      <NotificationModel>[].obs;
 
-  RxList<NotificationModel> filteredNotifications = <NotificationModel>[].obs;
+  final RxList<NotificationModel> filteredNotifications =
+      <NotificationModel>[].obs;
 
-  RxInt unreadCount = 0.obs;
+  final RxInt unreadCount = 0.obs;
 
-  RxBool isLoading = false.obs;
+  final RxBool isLoading = false.obs;
 
-  RxString selectedFilter = "all".obs;
+  final RxString responseError = "".obs;
+
+  final RxString selectedFilter = "all".obs;
 
   @override
   void onInit() {
     super.onInit();
+    refreshNotifications();
+  }
 
-    getUnreadCount();
+  Future<void> refreshNotifications() async {
+    responseError.value = "";
+
+    notifications.clear();
+    filteredNotifications.clear();
+
+    selectedFilter.value = "all";
+
+    await Future.wait([
+      getNotifications(),
+      getUnreadCount(),
+    ]);
   }
 
   Future<void> getNotifications() async {
     try {
       isLoading.value = true;
+      responseError.value = "";
 
       final result = await NotificationRepo.getNotifications();
 
       notifications.value = result;
 
       applyFilter();
-    } catch (e) {
-      log("Notification Error: $e");
+    } catch (e, stackTrace) {
+      log(
+        "Notification Error: $e",
+        stackTrace: stackTrace,
+      );
+
+      notifications.clear();
+      filteredNotifications.clear();
+
+      responseError.value = _getErrorMessage(e);
     } finally {
       isLoading.value = false;
     }
   }
 
   void applyFilter() {
-
-
     if (selectedFilter.value == "all") {
-
       filteredNotifications.value = notifications;
-
     } else if (selectedFilter.value == "unread") {
-
-
       filteredNotifications.value = notifications
           .where(
             (e) => e.isRead == false,
-          )
+      )
           .toList();
 
-      print("Unread Notifications : ${filteredNotifications.length}");
+      log(
+        "Unread Notifications : ${filteredNotifications.length}",
+      );
     } else if (selectedFilter.value == "chat") {
-      print("===========FILTER : CHAT============");
+      log("=========== FILTER : CHAT ============");
 
       filteredNotifications.value = notifications
           .where(
             (e) => e.type == "chat",
-          )
+      )
           .toList();
 
-      print("Chat Notifications : ${filteredNotifications.length}");
+      log(
+        "Chat Notifications : ${filteredNotifications.length}",
+      );
     } else if (selectedFilter.value == "call") {
-      print("===========FILTER : CALL============");
+      log("=========== FILTER : CALL ============");
 
       filteredNotifications.value = notifications
           .where(
             (e) =>
-                e.type == "voice_call" ||
-                e.type == "video_call" ||
-                e.type == "missed_call",
-          )
+        e.type == "voice_call" ||
+            e.type == "video_call" ||
+            e.type == "missed_call",
+      )
           .toList();
-
-    } else if (selectedFilter.value == "clear_history") {
-      clearAllNotifications();
-
-      filteredNotifications.clear();
     }
-
   }
 
   Future<void> getUnreadCount() async {
     try {
-      unreadCount.value = await NotificationRepo.getUnreadCount();
-    } catch (e) {
-      log("Unread Count Error: $e");
+      unreadCount.value =
+      await NotificationRepo.getUnreadCount();
+    } catch (e, stackTrace) {
+      log(
+        "Unread Count Error: $e",
+        stackTrace: stackTrace,
+      );
     }
   }
 
   Future<void> markAsRead(int id) async {
     try {
-      bool success = await NotificationRepo.markAsRead(id);
+      final bool success =
+      await NotificationRepo.markAsRead(id);
 
       if (success) {
-        int index = notifications.indexWhere(
-          (e) => e.id == id,
+        final int index = notifications.indexWhere(
+              (e) => e.id == id,
         );
 
         if (index != -1) {
@@ -111,19 +134,23 @@ class NotificationController extends GetxController {
           applyFilter();
         }
 
-        getUnreadCount();
+        await getUnreadCount();
       }
-    } catch (e) {
-      log("Mark Read Error: $e");
+    } catch (e, stackTrace) {
+      log(
+        "Mark Read Error: $e",
+        stackTrace: stackTrace,
+      );
     }
   }
 
   Future<void> markAllAsRead() async {
     try {
-      bool success = await NotificationRepo.markAllAsRead();
+      final bool success =
+      await NotificationRepo.markAllAsRead();
 
       if (success) {
-        for (var item in notifications) {
+        for (final item in notifications) {
           item.isRead = true;
         }
 
@@ -133,17 +160,22 @@ class NotificationController extends GetxController {
 
         unreadCount.value = 0;
       }
-    } catch (e) {
-      log("Mark All Error: $e");
+    } catch (e, stackTrace) {
+      log(
+        "Mark All Error: $e",
+        stackTrace: stackTrace,
+      );
     }
   }
 
   Future<void> clearAllNotifications() async {
     try {
-      final response = await NotificationRepo.clearAllNotifications();
+      final response =
+      await NotificationRepo.clearAllNotifications();
 
       if (response) {
         notifications.clear();
+        filteredNotifications.clear();
 
         unreadCount.value = 0;
 
@@ -153,8 +185,11 @@ class NotificationController extends GetxController {
           snackPosition: SnackPosition.BOTTOM,
         );
       }
-    } catch (e) {
-      log(e.toString());
+    } catch (e, stackTrace) {
+      log(
+        "Clear Notification Error: $e",
+        stackTrace: stackTrace,
+      );
     }
   }
 
@@ -164,11 +199,13 @@ class NotificationController extends GetxController {
     }
 
     try {
-      final notificationTime = DateTime.parse(date).toLocal();
+      final notificationTime =
+      DateTime.parse(date).toLocal();
 
       final now = DateTime.now();
 
-      final difference = now.difference(notificationTime);
+      final difference =
+      now.difference(notificationTime);
 
       if (difference.inSeconds < 60) {
         return "Just now";
@@ -190,9 +227,21 @@ class NotificationController extends GetxController {
         return "${difference.inDays} days ago";
       }
 
-      return "${notificationTime.day}/${notificationTime.month}/${notificationTime.year}";
+      return "${notificationTime.day}/"
+          "${notificationTime.month}/"
+          "${notificationTime.year}";
     } catch (e) {
       return "";
     }
+  }
+
+  String _getErrorMessage(dynamic error) {
+    final String message = error.toString().trim();
+
+    if (message.isEmpty) {
+      return "Something went wrong. Please try again.";
+    }
+
+    return message;
   }
 }

@@ -11,7 +11,6 @@ import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-
 import 'package:fgtracker/app/Model/MemberDataRes.dart';
 import 'package:fgtracker/app/modules/mediaStream/Controller/calling_controller.dart';
 
@@ -31,13 +30,12 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
   MemberData get _member =>
       widget.userData ??
-      (_chatController != null ? _chatController!.memberData : MemberData());
+          (_chatController != null ? _chatController!.memberData : MemberData());
 
   static const Color _purple = Color(0xFF1E1466);
   static const Color _lightPurple = Color(0xFF5045B9);
   static const Color _bg = Color(0xFFF4F3F8);
   final RxBool notificationsOn = false.obs;
-
   String get _myId => Global.storageServices.get(PrefConst.userId).toString();
 
   List<MessageData> get _mediaMessages {
@@ -126,12 +124,11 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             _buildAboutCard(),
             SizedBox(height: 12.h),
 
-            // ---CARDS SECTION ---
-            _buildNotificationsCard(),
+            // _buildNotificationsCard(),
             SizedBox(height: 8.h),
             _buildEncryptionCard(),
             SizedBox(height: 8.h),
-            _buildFavoritesCard(),
+            // _buildFavoritesCard(),
             SizedBox(height: 8.h),
             _buildClearChatCard(),
             SizedBox(height: 8.h),
@@ -168,13 +165,13 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     final img = _member.profileImage?.toString() ?? "";
     final name = _member.name?.toString() ?? "Member";
     final String teamName = (_member.team != null &&
-            _member.team!.trim().isNotEmpty)
+        _member.team!.trim().isNotEmpty)
         ? _member.team!.trim()
         : ((_member.department != null && _member.department!.trim().isNotEmpty)
-            ? _member.department!.trim()
-            : (_member.groupId != null && _member.groupId != 0
-                ? "Group #${_member.groupId}"
-                : "FG Tracker Member"));
+        ? _member.department!.trim()
+        : (_member.groupId != null && _member.groupId != 0
+        ? "Group #${_member.groupId}"
+        : "FG Tracker Member"));
 
     return Column(
       children: [
@@ -194,19 +191,19 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               ),
               child: (img.isNotEmpty && img.toLowerCase() != 'null')
                   ? ClipOval(
-                      child: Image.network(
-                        (img.startsWith('http://') ||
-                                img.startsWith('https://'))
-                            ? img
-                            : "${ConstRes.aImageBaseUrl}$img",
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => Icon(
-                          Icons.person,
-                          color: Colors.white,
-                          size: 45.sp,
-                        ),
-                      ),
-                    )
+                child: Image.network(
+                  (img.startsWith('http://') ||
+                      img.startsWith('https://'))
+                      ? img
+                      : "${ConstRes.aImageBaseUrl}$img",
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => Icon(
+                    Icons.person,
+                    color: Colors.white,
+                    size: 45.sp,
+                  ),
+                ),
+              )
                   : Icon(Icons.person, color: Colors.white, size: 45.sp),
             ),
             if (isOnline)
@@ -259,7 +256,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                 width: 8.w,
                 decoration: BoxDecoration(
                   color:
-                      isOnline ? const Color(0xFF2BB673) : Colors.grey.shade500,
+                  isOnline ? const Color(0xFF2BB673) : Colors.grey.shade500,
                   shape: BoxShape.circle,
                 ),
               ),
@@ -491,11 +488,11 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                       color: const Color(0xFFF3F1FB),
                       child: thumb.isNotEmpty
                           ? Image.network(
-                              thumb,
-                              fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) =>
-                                  _mediaPlaceholder(type),
-                            )
+                        thumb,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) =>
+                            _mediaPlaceholder(type),
+                      )
                           : _mediaPlaceholder(type),
                     ),
                   );
@@ -606,22 +603,22 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             ),
           ),
           Obx(() => _settingTile(
-                icon: Icons.notifications_rounded,
-                iconBgColor: const Color(0xFFF3F1FB),
-                iconColor: _lightPurple,
-                title: "Mute notifications",
-                trailing: Transform.scale(
-                  scale: 0.85,
-                  child: Switch(
-                    value: notificationsOn.value,
-                    activeColor: Colors.white,
-                    activeTrackColor: _lightPurple,
-                    inactiveThumbColor: Colors.white,
-                    inactiveTrackColor: Colors.grey.shade300,
-                    onChanged: (v) => notificationsOn.value = v,
-                  ),
-                ),
-              )),
+            icon: Icons.notifications_rounded,
+            iconBgColor: const Color(0xFFF3F1FB),
+            iconColor: _lightPurple,
+            title: "Mute notifications",
+            trailing: Transform.scale(
+              scale: 0.85,
+              child: Switch(
+                value: notificationsOn.value,
+                activeColor: Colors.white,
+                activeTrackColor: _lightPurple,
+                inactiveThumbColor: Colors.white,
+                inactiveTrackColor: Colors.grey.shade300,
+                onChanged: (v) => notificationsOn.value = v,
+              ),
+            ),
+          )),
           _divider(),
           _settingTile(
             icon: Icons.music_note_rounded,
@@ -729,7 +726,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     return Container(
       width: double.infinity,
       padding:
-          padding ?? EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+      padding ?? EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(14.r),
@@ -746,12 +743,12 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   }
 
   Widget _divider() => Divider(
-        height: 1,
-        thickness: 1,
-        color: Colors.grey.shade100,
-        indent: 62.w,
-        endIndent: 14.w,
-      );
+    height: 1,
+    thickness: 1,
+    color: Colors.grey.shade100,
+    indent: 62.w,
+    endIndent: 14.w,
+  );
   Widget _settingTile({
     required IconData icon,
     required Color iconColor,
