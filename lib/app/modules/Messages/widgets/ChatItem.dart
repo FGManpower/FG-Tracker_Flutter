@@ -23,6 +23,8 @@ import '../../../global_widget/common_widget.dart';
 import 'AudioPlayerWidget.dart';
 import 'ContactBubbleWidget.dart';
 import 'LocationBubbleWidget.dart';
+import '../../Attendance/models/attendance_poll_model.dart';
+import '../../Attendance/widgets/attendance_chat_card.dart';
 import 'message_Widgets.dart';
 
 class ChatBubble extends StatelessWidget {
@@ -44,7 +46,7 @@ class ChatBubble extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final currentUserId =
-        Global.storageServices.get(PrefConst.userId).toString();
+    Global.storageServices.get(PrefConst.userId).toString();
 
     final isSentByMe = message.senderId.toString() == currentUserId;
 
@@ -53,48 +55,59 @@ class ChatBubble extends StatelessWidget {
 
     final borderRadius = isSentByMe
         ? BorderRadius.only(
-            topLeft: Radius.circular(16.r),
-            topRight: Radius.circular(16.r),
-            bottomLeft: Radius.circular(16.r),
-            bottomRight: Radius.circular(4.r),
-          )
+      topLeft: Radius.circular(16.r),
+      topRight: Radius.circular(16.r),
+      bottomLeft: Radius.circular(16.r),
+      bottomRight: Radius.circular(4.r),
+    )
         : BorderRadius.only(
-            topLeft: Radius.circular(4.r),
-            topRight: Radius.circular(16.r),
-            bottomLeft: Radius.circular(16.r),
-            bottomRight: Radius.circular(16.r),
-          );
+      topLeft: Radius.circular(4.r),
+      topRight: Radius.circular(16.r),
+      bottomLeft: Radius.circular(16.r),
+      bottomRight: Radius.circular(16.r),
+    );
 
     return Container(
       margin: EdgeInsets.symmetric(vertical: 6.h),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment:
-            isSentByMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+        isSentByMe ? MainAxisAlignment.end : MainAxisAlignment.start,
         children: [
           Flexible(
             child: Builder(
               builder: (bubbleContext) {
-                return Obx(
-                  () => GestureDetector(
+                return Obx(() {
+                  final isAttendance = message.messageType == "attendance";
+
+                  return GestureDetector(
                     onLongPress: () =>
                         _showMessageMenu(bubbleContext, isSentByMe),
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 300),
                       constraints: BoxConstraints(
-                        maxWidth: MediaQuery.of(context).size.width * 0.75,
+                        maxWidth: isAttendance
+                            ? MediaQuery.of(context).size.width * 0.88
+                            : MediaQuery.of(context).size.width * 0.75,
                       ),
-                      padding: EdgeInsets.symmetric(
+                      padding: isAttendance
+                          ? EdgeInsets.zero
+                          : EdgeInsets.symmetric(
                         horizontal: 12.w,
                         vertical: 8.h,
                       ),
                       decoration: BoxDecoration(
-                        color:
-                            controller.highlightedMessageId.value == message.id
-                                ? Colors.yellow.withValues(alpha: .35)
-                                : bgColor,
-                        borderRadius: borderRadius,
-                        boxShadow: [
+                        color: isAttendance
+                            ? Colors.transparent
+                            : (controller.highlightedMessageId.value == message.id
+                            ? Colors.yellow.withValues(alpha: .35)
+                            : bgColor),
+                        borderRadius: isAttendance
+                            ? BorderRadius.circular(20.r)
+                            : borderRadius,
+                        boxShadow: isAttendance
+                            ? []
+                            : [
                           BoxShadow(
                             color: Colors.black.withValues(alpha: 0.04),
                             blurRadius: 4,
@@ -111,7 +124,6 @@ class ChatBubble extends StatelessWidget {
                               message,
                               isSentByMe,
                             ),
-
                             if (message.isForwarded == true)
                               Padding(
                                 padding: EdgeInsets.only(bottom: 5.h),
@@ -136,7 +148,6 @@ class ChatBubble extends StatelessWidget {
                                   ],
                                 ),
                               ),
-
                             if (_isPlainTextMessage(message))
                               _buildTextWithTime(
                                 message: message,
@@ -161,8 +172,8 @@ class ChatBubble extends StatelessWidget {
                         ),
                       ),
                     ),
-                  ),
-                );
+                  );
+                });
               },
             ),
           ),
@@ -205,7 +216,7 @@ class ChatBubble extends StatelessWidget {
             (message.seenCount ?? 0) > 0 ? Icons.done_all : Icons.done,
             size: 14.sp,
             color:
-                (message.seenCount ?? 0) > 0 ? _purple : Colors.grey.shade500,
+            (message.seenCount ?? 0) > 0 ? _purple : Colors.grey.shade500,
           ),
         ],
       ],
@@ -234,10 +245,10 @@ class ChatBubble extends StatelessWidget {
   }
 
   Widget _buildTextContent(
-    MessageData message,
-    Color textColor,
-    bool isSentByMe,
-  ) {
+      MessageData message,
+      Color textColor,
+      bool isSentByMe,
+      ) {
     final query = controller.searchQuery.value;
     final content = message.content?.toString() ?? "";
 
@@ -292,10 +303,10 @@ class ChatBubble extends StatelessWidget {
   }
 
   Widget _buildMessageContent(
-    MessageData message,
-    Color textColor,
-    bool isSentByMe,
-  ) {
+      MessageData message,
+      Color textColor,
+      bool isSentByMe,
+      ) {
     if (message.messageType == "image" || message.messageType == "image_text") {
       final imagePart = message.content ?? "";
       final caption = message.caption ?? "";
@@ -376,7 +387,7 @@ class ChatBubble extends StatelessWidget {
       final documentUrl = parts.isNotEmpty ? parts[0] : "";
 
       String documentName =
-          parts.length > 1 ? parts[1] : documentUrl.split('/').last;
+      parts.length > 1 ? parts[1] : documentUrl.split('/').last;
 
       documentName = removeDuplicateExtension(documentName);
 
@@ -476,7 +487,7 @@ class ChatBubble extends StatelessWidget {
                   ),
                   SizedBox(width: 6.w),
                   Obx(
-                    () {
+                        () {
                       final url = "${ConstRes.aImageBaseUrl}$documentUrl";
 
                       return Icon(
@@ -516,6 +527,19 @@ class ChatBubble extends StatelessWidget {
         isSentByMe: isSentByMe,
         textColor: textColor,
       );
+    } else if (message.messageType == "attendance") {
+      final isCreator = controller is GroupMessageController
+          ? (controller as GroupMessageController).isCreator.value
+          : false;
+
+      final pollData = AttendancePollData.fromRawJson(
+        message.content?.toString() ?? "",
+      );
+
+      return AttendanceChatCard(
+        pollData: pollData,
+        isAdmin: isCreator,
+      );
     } else {
       return _buildTextContent(
         message,
@@ -540,9 +564,9 @@ class ChatBubble extends StatelessWidget {
   }
 
   Widget _buildReplyPreview(
-    MessageData message,
-    bool isSentByMe,
-  ) {
+      MessageData message,
+      bool isSentByMe,
+      ) {
     if (message.replyId == null) {
       return const SizedBox.shrink();
     }
@@ -621,9 +645,9 @@ class ChatBubble extends StatelessWidget {
   }
 
   void _showMessageMenu(
-    BuildContext bubbleContext,
-    bool isSentByMe,
-  ) {
+      BuildContext bubbleContext,
+      bool isSentByMe,
+      ) {
     final isPinned = controller.pinnedMessage.value?.id == message.id;
 
     final isText = message.messageType == "text" ||
@@ -666,7 +690,7 @@ class ChatBubble extends StatelessWidget {
 
     showDialog(
       context: bubbleContext,
-      barrierColor: Colors.black.withOpacity(0.18),
+      barrierColor: Colors.black.withValues(alpha: 0.18),
       builder: (ctx) {
         return Stack(
           children: [
@@ -689,7 +713,7 @@ class ChatBubble extends StatelessWidget {
                     borderRadius: BorderRadius.circular(16.r),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.14),
+                        color: Colors.black.withValues(alpha: 0.14),
                         blurRadius: 24,
                         offset: const Offset(0, 8),
                       ),
@@ -860,11 +884,11 @@ class ChatBubble extends StatelessWidget {
   }
 
   Widget _buildHighlightedText(
-    String text,
-    String query, {
-    required TextStyle normalStyle,
-    required TextStyle highlightStyle,
-  }) {
+      String text,
+      String query, {
+        required TextStyle normalStyle,
+        required TextStyle highlightStyle,
+      }) {
     final lowerText = text.toLowerCase();
     final lowerQuery = query.toLowerCase();
 
@@ -942,7 +966,7 @@ class GroupChatBubble extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final currentUserId =
-        Global.storageServices.get(PrefConst.userId).toString();
+    Global.storageServices.get(PrefConst.userId).toString();
 
     final isSentByMe = message.senderId.toString() == currentUserId;
 
@@ -952,24 +976,24 @@ class GroupChatBubble extends StatelessWidget {
 
     final borderRadius = isSentByMe
         ? BorderRadius.only(
-            topLeft: Radius.circular(16.r),
-            topRight: Radius.circular(16.r),
-            bottomLeft: Radius.circular(16.r),
-            bottomRight: Radius.circular(4.r),
-          )
+      topLeft: Radius.circular(16.r),
+      topRight: Radius.circular(16.r),
+      bottomLeft: Radius.circular(16.r),
+      bottomRight: Radius.circular(4.r),
+    )
         : BorderRadius.only(
-            topLeft: Radius.circular(4.r),
-            topRight: Radius.circular(16.r),
-            bottomLeft: Radius.circular(16.r),
-            bottomRight: Radius.circular(16.r),
-          );
+      topLeft: Radius.circular(4.r),
+      topRight: Radius.circular(16.r),
+      bottomLeft: Radius.circular(16.r),
+      bottomRight: Radius.circular(16.r),
+    );
 
     return Container(
       margin: EdgeInsets.symmetric(vertical: 6.h),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment:
-            isSentByMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+        isSentByMe ? MainAxisAlignment.end : MainAxisAlignment.start,
         children: [
           if (isGroup && !isSentByMe)
             Padding(
@@ -983,8 +1007,8 @@ class GroupChatBubble extends StatelessWidget {
                     destination: const LatLng(0, 0),
                     distance: 0,
                     userId: int.tryParse(
-                          message.senderId.toString(),
-                        ) ??
+                      message.senderId.toString(),
+                    ) ??
                         0,
                     groupId: groupId,
                     groupName: groupName,
@@ -1000,18 +1024,18 @@ class GroupChatBubble extends StatelessWidget {
                   radius: 18.r,
                   backgroundColor: Colors.grey.shade200,
                   backgroundImage: message.senderImage != null &&
-                          message.senderImage!.isNotEmpty
+                      message.senderImage!.isNotEmpty
                       ? NetworkImage(
-                          "${ConstRes.aImageBaseUrl}${message.senderImage}",
-                        )
+                    "${ConstRes.aImageBaseUrl}${message.senderImage}",
+                  )
                       : null,
                   child: (message.senderImage == null ||
-                          message.senderImage!.isEmpty)
+                      message.senderImage!.isEmpty)
                       ? Icon(
-                          Icons.person,
-                          size: 18.sp,
-                          color: Colors.grey.shade500,
-                        )
+                    Icons.person,
+                    size: 18.sp,
+                    color: Colors.grey.shade500,
+                  )
                       : null,
                 ),
               ),
@@ -1020,7 +1044,7 @@ class GroupChatBubble extends StatelessWidget {
             child: Builder(
               builder: (bubbleContext) {
                 return Obx(
-                  () => GestureDetector(
+                      () => GestureDetector(
                     onLongPress: () => _showMessageMenu(
                       bubbleContext,
                       isSentByMe,
@@ -1036,11 +1060,11 @@ class GroupChatBubble extends StatelessWidget {
                       ),
                       decoration: BoxDecoration(
                         color:
-                            controller.highlightedMessageId.value == message.id
-                                ? Colors.yellow.withValues(
-                                    alpha: .35,
-                                  )
-                                : bgColor,
+                        controller.highlightedMessageId.value == message.id
+                            ? Colors.yellow.withValues(
+                          alpha: .35,
+                        )
+                            : bgColor,
                         borderRadius: borderRadius,
                         boxShadow: [
                           BoxShadow(
@@ -1167,10 +1191,10 @@ class GroupChatBubble extends StatelessWidget {
   }
 
   Widget _buildTextContent(
-    MessageData message,
-    Color textColor,
-    bool isSentByMe,
-  ) {
+      MessageData message,
+      Color textColor,
+      bool isSentByMe,
+      ) {
     final query = controller.searchQuery.value;
     final content = message.content?.toString() ?? "";
 
@@ -1221,11 +1245,11 @@ class GroupChatBubble extends StatelessWidget {
   }
 
   Widget _buildHighlightedText(
-    String text,
-    String query, {
-    required TextStyle normalStyle,
-    required TextStyle highlightStyle,
-  }) {
+      String text,
+      String query, {
+        required TextStyle normalStyle,
+        required TextStyle highlightStyle,
+      }) {
     final lowerText = text.toLowerCase();
     final lowerQuery = query.toLowerCase();
     final List<InlineSpan> spans = [];
@@ -1325,10 +1349,10 @@ class GroupChatBubble extends StatelessWidget {
   }
 
   Widget _buildMessageContent(
-    MessageData message,
-    Color textColor,
-    bool isSentByMe,
-  ) {
+      MessageData message,
+      Color textColor,
+      bool isSentByMe,
+      ) {
     if (message.messageType == "image" || message.messageType == "image_text") {
       final imagePart = message.content ?? "";
       final caption = message.caption ?? "";
@@ -1398,7 +1422,7 @@ class GroupChatBubble extends StatelessWidget {
       final parts = message.content?.split("||") ?? [];
       final documentUrl = parts.isNotEmpty ? parts[0] : "";
       String documentName =
-          parts.length > 1 ? parts[1] : documentUrl.split('/').last;
+      parts.length > 1 ? parts[1] : documentUrl.split('/').last;
       documentName = removeDuplicateExtension(documentName);
       final extension = documentName.split('.').last.toLowerCase();
       final fileSize = parts.length > 2 ? parts[2] : "";
@@ -1547,7 +1571,7 @@ class GroupChatBubble extends StatelessWidget {
     if (message.seenBy is! List) return false;
 
     final currentUserId =
-        Global.storageServices.get(PrefConst.userId).toString();
+    Global.storageServices.get(PrefConst.userId).toString();
 
     final recipientIds = controller.groupMembers
         .where((member) => member.userId.toString() != currentUserId)
@@ -1603,7 +1627,7 @@ class GroupChatBubble extends StatelessWidget {
 
     showDialog(
       context: bubbleContext,
-      barrierColor: Colors.black.withOpacity(0.18),
+      barrierColor: Colors.black.withValues(alpha: 0.18),
       builder: (ctx) {
         return Stack(
           children: [
@@ -1626,7 +1650,7 @@ class GroupChatBubble extends StatelessWidget {
                     borderRadius: BorderRadius.circular(16.r),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.14),
+                        color: Colors.black.withValues(alpha: 0.14),
                         blurRadius: 24,
                         offset: const Offset(0, 8),
                       ),

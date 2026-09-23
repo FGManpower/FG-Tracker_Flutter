@@ -10,6 +10,7 @@ import 'package:get/get.dart';
 import '../../Messages/Views/chatlist_screen.dart';
 import '../../Safe_Zone/views/safety_dashboard_view.dart';
 import 'LiveStatus/components/total_groups.dart';
+
 class QuickActionsSection extends StatelessWidget {
   const QuickActionsSection({super.key});
 
@@ -55,7 +56,7 @@ class QuickActionsSection extends StatelessWidget {
             _QuickActionCard(
               "Chatting",
               Icons.message_outlined,
-              onTap: () => Get.to(() =>  ChatListScreen()),
+              onTap: () => Get.to(() => ChatListScreen()),
             ),
             _QuickActionCard(
               "Group Chat",
@@ -65,7 +66,7 @@ class QuickActionsSection extends StatelessWidget {
             _QuickActionCard(
               "Safe Zone",
               Icons.verified_user_rounded,
-              onTap: () => Get.to(() =>  SafetyDashboardView()),
+              onTap: () => Get.to(() => SafetyDashboardView()),
             ),
           ],
         ),

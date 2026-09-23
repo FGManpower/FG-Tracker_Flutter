@@ -7,8 +7,6 @@ import 'package:fgtracker/app/Core/constant/BottomSheet/ChatBottomSheet.dart';
 import 'package:fgtracker/app/Core/util/file_helper.dart';
 import 'package:fgtracker/app/Data/Services/file_services.dart';
 import 'package:fgtracker/app/Model/LocationDataRes.dart';
-import 'package:fgtracker/app/config/themes_data.dart';
-import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/modules/Messages/Controller/GroupChatController.dart';
 import 'package:fgtracker/app/modules/Messages/Controller/VoiceRecordController.dart';
 import 'package:fgtracker/app/modules/Messages/widgets/mentionList_item.dart';
@@ -438,6 +436,13 @@ class _ChatInputAreaState extends State<ChatInputArea> {
                                         onContact: () async {
                                           Navigator.pop(context);
                                           widget.onContactSelected();
+                                        },
+                                        onAttendance: () {
+                                          Navigator.pop(context);
+                                          ChatBottomSheet.showCreateAttendance(
+                                            context,
+                                            groupMembers: widget.groupMembers,
+                                          );
                                         },
                                       );
                                     },

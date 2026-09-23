@@ -17,7 +17,6 @@ import '../widgets/custom_dropdown_menu.dart';
 import 'Chat_Screen.dart';
 import 'new_chat_screen.dart';
 
-
 class ChatListScreen extends StatelessWidget {
   ChatListScreen({super.key});
 
@@ -33,7 +32,6 @@ class ChatListScreen extends StatelessWidget {
           Positioned.fill(
             child: _AllChatsBody(controller: controller),
           ),
-
           Positioned(
             right: 16.w,
             bottom: 170.h,
@@ -48,7 +46,6 @@ class ChatListScreen extends StatelessWidget {
               ),
             ),
           ),
-
           Positioned(
             left: 0,
             right: 0,
@@ -136,7 +133,7 @@ class ChatListScreen extends StatelessWidget {
 
   Widget _buildQuickCommunication(BuildContext context) {
     return Container(
-      padding: EdgeInsets.only(top: 10.h, bottom: 20.h, left: 8.w, right: 8.w),
+      padding: EdgeInsets.only(top: 10.h, bottom: 15.h, left: 8.w, right: 8.w),
       decoration: BoxDecoration(
         color: const Color(0xFFF8F7FF),
       ),
@@ -168,7 +165,6 @@ class ChatListScreen extends StatelessWidget {
                   Get.toNamed(Routes.WalkieGroupSelect);
                 },
               ),
-
               _quickCommCard(
                 icon: Icons.location_on,
                 title: "Tracking",
@@ -177,7 +173,6 @@ class ChatListScreen extends StatelessWidget {
                   Get.toNamed(Routes.TrackingScreen);
                 },
               ),
-
               _quickCommCard(
                 icon: Icons.people_alt_rounded,
                 title: "Groups",
@@ -186,13 +181,13 @@ class ChatListScreen extends StatelessWidget {
                   Get.toNamed(Routes.totalGroup);
                 },
               ),
-
               _quickCommCard(
                 icon: Icons.verified_user_rounded,
                 title: "Safe Zone",
                 subtitle: "Safety & Alerts",
                 onTap: () {
-                  Get.toNamed(Routes.SafetyDashboard);                },
+                  Get.toNamed(Routes.SafetyDashboard);
+                },
               ),
             ],
           ),
@@ -222,7 +217,7 @@ class ChatListScreen extends StatelessWidget {
             borderRadius: BorderRadius.circular(16.r),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.025),
+                color: Colors.black.withValues(alpha: 0.025),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
@@ -241,7 +236,7 @@ class ChatListScreen extends StatelessWidget {
                     color: const Color(0xFFE9E7FF),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFF6B4DFF).withOpacity(0.12),
+                        color: const Color(0xFF6B4DFF).withValues(alpha: 0.12),
                         blurRadius: 12,
                         spreadRadius: 1,
                         offset: const Offset(0, 4),
@@ -273,7 +268,7 @@ class ChatListScreen extends StatelessWidget {
                   subtitle,
                   fontsize: 8.sp,
                   fontfamily: FontFamily.interMedium,
-                  color: const Color(0xFF6B4DFF).withOpacity(0.58),
+                  color: const Color(0xFF6B4DFF).withValues(alpha: 0.58),
                   maxline: 1,
                 ),
               ),
@@ -368,14 +363,12 @@ class _AllChatsBody extends StatelessWidget {
                 ),
               );
             }),
-
             SizedBox(height: 150.h),
           ],
         ),
       ),
     );
   }
-
 
   Widget _buildSkeletonList() {
     return Skeletonizer(
@@ -421,9 +414,11 @@ class _AllChatsBody extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Container(width: 120.w, height: 14.h, color: Colors.grey),
+                        Container(
+                            width: 120.w, height: 14.h, color: Colors.grey),
                         SizedBox(height: 6.h),
-                        Container(width: 180.w, height: 12.h, color: Colors.grey),
+                        Container(
+                            width: 180.w, height: 12.h, color: Colors.grey),
                       ],
                     ),
                   ),
@@ -609,7 +604,6 @@ class _AllChatsBody extends StatelessWidget {
             Get.put(MessageController());
           }),
         );
-
       },
       onLongPress: () => _showChatOptions(context, tapPos),
       child: Container(
@@ -812,10 +806,16 @@ class _AllChatsBody extends StatelessWidget {
   Color? _statusColor(String? status) {
     // ... same as your previous code ...
     final value = (status ?? "").toLowerCase().trim();
-    if (value == "online" || value == "active" || value == "available") return Colors.green;
+    if (value == "online" || value == "active" || value == "available") {
+      return Colors.green;
+    }
     if (value == "away" || value == "busy") return Colors.orange;
     if (value == "offline" || value == "inactive") return Colors.grey;
-    if (value == "dnd" || value == "do_not_disturb" || value == "do not disturb") return Colors.red;
+    if (value == "dnd" ||
+        value == "do_not_disturb" ||
+        value == "do not disturb") {
+      return Colors.red;
+    }
     return null;
   }
 
