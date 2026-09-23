@@ -24,7 +24,6 @@ class GroupCallingScreen extends GetView<GroupCallingController> {
         backgroundColor: const Color(0xFF0F0B29),
         body: Stack(
           children: [
-
             Positioned.fill(
               child: Obx(() {
                 final fullUserId = controller.fullScreenShareUserId.value;
@@ -59,6 +58,7 @@ class GroupCallingScreen extends GetView<GroupCallingController> {
                 );
               }),
             ),
+
             Obx(() {
               if (controller.fullScreenShareUserId.value != null) {
                 return const SizedBox.shrink();
