@@ -653,7 +653,7 @@ class _AllChatsBody extends StatelessWidget {
                       image.startsWith("http://") ||
                               image.startsWith("https://")
                           ? image
-                          : "${ConstRes.production}$image",
+                          : "${ConstRes.development}$image",
                     )
                   : null,
               child: isGroup
