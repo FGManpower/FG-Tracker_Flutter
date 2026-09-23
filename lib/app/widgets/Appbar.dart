@@ -255,7 +255,6 @@ class _NotificationBell extends StatelessWidget {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: () async {
-
         Get.toNamed(Routes.notificationScreen);
       },
       child: Obx(() {

@@ -7,13 +7,21 @@ import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Model/MemberDataRes.dart';
+import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/modules/Notification/Controller/Notification_Controller.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 
-class NotificationScreen extends StatelessWidget {
-  NotificationScreen({super.key});
+class NotificationScreen extends StatefulWidget {
+  const NotificationScreen({super.key});
 
-  final controller = Get.put(NotificationController());
+  @override
+  State<NotificationScreen> createState() =>
+      _NotificationScreenState();
+}
+
+class _NotificationScreenState
+    extends State<NotificationScreen> {
+  late final NotificationController controller;
 
   final List<Map<String, dynamic>> filters = [
     {
@@ -39,6 +47,19 @@ class NotificationScreen extends StatelessWidget {
   final Color primaryPurple = const Color(0xff5736F5);
 
   @override
+  void initState() {
+    super.initState();
+
+    controller = Get.isRegistered<NotificationController>()
+        ? Get.find<NotificationController>()
+        : Get.put(NotificationController());
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      controller.refreshNotifications();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: bgColor,
@@ -53,8 +74,11 @@ class NotificationScreen extends StatelessWidget {
           child: Row(
             children: [
               IconButton(
-                key: null,
-                icon: Icon(Icons.arrow_back, color: primaryPurple, size: 24.sp),
+                icon: Icon(
+                  Icons.arrow_back,
+                  color: primaryPurple,
+                  size: 24.sp,
+                ),
                 onPressed: () => Navigator.pop(context),
               ),
               SizedBox(width: 4.w),
@@ -79,101 +103,156 @@ class NotificationScreen extends StatelessWidget {
           SizedBox(height: 16.h),
           Expanded(
             child: Obx(() {
-              return Skeletonizer(
-                enabled: controller.isLoading.value,
-                child: controller.filteredNotifications.isEmpty
-                    ? _emptyWidget()
-                    : ListView.separated(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 16.w,
-                          vertical: 4.h,
-                        ),
-                        physics: const BouncingScrollPhysics(),
-                        itemCount: controller.isLoading.value
-                            ? 8
-                            : controller.filteredNotifications.length,
-                        separatorBuilder: (context, index) =>
-                            SizedBox(height: 12.h),
-                        itemBuilder: (context, index) {
-                          final item = controller.isLoading.value
-                              ? null
-                              : controller.filteredNotifications[index];
+              if (controller.isLoading.value) {
+                return const _NotificationSkeletonList();
+              }
 
-                          return _buildNotificationCard(item);
-                        },
+              if (controller.responseError.value.isNotEmpty &&
+                  controller.filteredNotifications.isEmpty) {
+                return LostinternetConnection(
+                  retry: controller.refreshNotifications,
+                  messgae: controller.responseError.value,
+                );
+              }
+
+              if (controller.filteredNotifications.isEmpty) {
+                return RefreshIndicator(
+                  color: primaryPurple,
+                  onRefresh:
+                  controller.refreshNotifications,
+                  child: ListView(
+                    physics:
+                    const AlwaysScrollableScrollPhysics(),
+                    children: [
+                      SizedBox(
+                        height: 300.h,
+                        child: _emptyWidget(),
                       ),
+                    ],
+                  ),
+                );
+              }
+
+              return RefreshIndicator(
+                color: primaryPurple,
+                onRefresh: controller.refreshNotifications,
+                child: ListView.separated(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 16.w,
+                    vertical: 4.h,
+                  ),
+                  physics:
+                  const AlwaysScrollableScrollPhysics(),
+                  itemCount:
+                  controller.filteredNotifications.length,
+                  separatorBuilder: (context, index) =>
+                      SizedBox(height: 12.h),
+                  itemBuilder: (context, index) {
+                    final item = controller
+                        .filteredNotifications[index];
+
+                    return _buildNotificationCard(item);
+                  },
+                ),
               );
             }),
           ),
         ],
       ),
-      bottomNavigationBar: SafeArea(
-        child: GestureDetector(
-          onTap: () {
-            controller.selectedFilter.value = "clear_history";
-            controller.applyFilter();
-            controller.selectedFilter.value = "all";
-          },
-          child: Container(
-            margin: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 12.h),
-            padding: EdgeInsets.symmetric(vertical: 12.h),
-            decoration: BoxDecoration(
-              color: primaryPurple.withOpacity(0.08),
-              borderRadius: BorderRadius.circular(12.r),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.delete_outline_rounded,
-                  color: primaryPurple,
-                  size: 18.sp,
-                ),
-                SizedBox(width: 8.w),
-                Text(
-                  "Clear all notifications",
-                  style: TextStyle(
+      bottomNavigationBar: Obx(() {
+        if (controller.isLoading.value ||
+            (controller.responseError.value.isNotEmpty &&
+                controller.filteredNotifications.isEmpty)) {
+          return const SizedBox.shrink();
+        }
+
+        return SafeArea(
+          child: GestureDetector(
+            onTap: () async {
+              await controller.clearAllNotifications();
+
+              controller.selectedFilter.value = "all";
+              controller.applyFilter();
+            },
+            child: Container(
+              margin: EdgeInsets.fromLTRB(
+                16.w,
+                8.h,
+                16.w,
+                12.h,
+              ),
+              padding: EdgeInsets.symmetric(
+                vertical: 12.h,
+              ),
+              decoration: BoxDecoration(
+                color: primaryPurple.withOpacity(0.08),
+                borderRadius: BorderRadius.circular(12.r),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.delete_outline_rounded,
                     color: primaryPurple,
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w600,
+                    size: 18.sp,
                   ),
-                ),
-              ],
+                  SizedBox(width: 8.w),
+                  Text(
+                    "Clear all notifications",
+                    style: TextStyle(
+                      color: primaryPurple,
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
-      ),
-    );
+        );
+      }),    );
   }
 
   Widget _buildFilterTabs() {
     return SizedBox(
       height: 33.h,
       child: ListView.separated(
-        padding: EdgeInsets.symmetric(horizontal: 16.w),
+        padding: EdgeInsets.symmetric(
+          horizontal: 16.w,
+        ),
         scrollDirection: Axis.horizontal,
         physics: const BouncingScrollPhysics(),
         itemCount: filters.length,
-        separatorBuilder: (_, __) => SizedBox(width: 10.w),
+        separatorBuilder: (_, __) =>
+            SizedBox(width: 10.w),
         itemBuilder: (context, index) {
           final filter = filters[index];
 
           return Obx(() {
             final isSelected =
-                controller.selectedFilter.value == filter["value"];
+                controller.selectedFilter.value ==
+                    filter["value"];
 
             return GestureDetector(
               onTap: () {
-                controller.selectedFilter.value = filter["value"];
+                controller.selectedFilter.value =
+                filter["value"];
+
                 controller.applyFilter();
               },
               child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
+                duration:
+                const Duration(milliseconds: 200),
                 alignment: Alignment.center,
-                padding: EdgeInsets.symmetric(horizontal: 24.w),
+                padding: EdgeInsets.symmetric(
+                  horizontal: 24.w,
+                ),
                 decoration: BoxDecoration(
-                  color: isSelected ? primaryPurple : Colors.white,
-                  borderRadius: BorderRadius.circular(24.r),
+                  color: isSelected
+                      ? primaryPurple
+                      : Colors.white,
+                  borderRadius:
+                  BorderRadius.circular(24.r),
                   border: Border.all(
                     color: isSelected
                         ? Colors.transparent
@@ -186,7 +265,9 @@ class NotificationScreen extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 13.sp,
                     fontWeight: FontWeight.w600,
-                    color: isSelected ? Colors.white : textDark,
+                    color: isSelected
+                        ? Colors.white
+                        : textDark,
                   ),
                 ),
               ),
@@ -200,70 +281,101 @@ class NotificationScreen extends StatelessWidget {
   Widget _buildNotificationCard(dynamic item) {
     final data = item?.data;
 
-    final String screenName = data?["screen_name"]?.toString() ?? "";
+    final String screenName =
+        data?["screen_name"]?.toString() ?? "";
 
     final bool isUnread = item?.isRead == false;
 
     IconData leadingIcon = Icons.notifications;
     Color iconColor = primaryPurple;
-    Color iconBgColor = primaryPurple.withOpacity(0.1);
+    Color iconBgColor =
+    primaryPurple.withOpacity(0.1);
 
     String? profileImage;
 
-    if (screenName == "chatScreen" || item?.type == "chat") {
-      leadingIcon = Icons.chat_bubble_outline_rounded;
+    if (screenName == "chatScreen" ||
+        item?.type == "chat") {
+      leadingIcon =
+          Icons.chat_bubble_outline_rounded;
+
       iconColor = primaryPurple;
-      iconBgColor = primaryPurple.withOpacity(0.1);
+
+      iconBgColor =
+          primaryPurple.withOpacity(0.1);
 
       final memberData = data?["memberData"];
 
       if (memberData is Map) {
-        profileImage = memberData["ProfileImage"]?.toString();
+        profileImage =
+            memberData["ProfileImage"]?.toString();
 
         if (profileImage == null ||
             profileImage!.trim().isEmpty ||
             profileImage == "null") {
-          profileImage = memberData["profileImage"]?.toString();
+          profileImage =
+              memberData["profileImage"]?.toString();
         }
       }
-    } else if (screenName == "groupChatScreen") {
-      leadingIcon = Icons.people_alt_outlined;
+    } else if (screenName ==
+        "groupChatScreen") {
+      leadingIcon =
+          Icons.people_alt_outlined;
+
       iconColor = primaryPurple;
-      iconBgColor = primaryPurple.withOpacity(0.1);
 
-      profileImage = data?["groupImage"]?.toString();
+      iconBgColor =
+          primaryPurple.withOpacity(0.1);
+
+      profileImage =
+          data?["groupImage"]?.toString();
 
       if (profileImage == null ||
           profileImage!.trim().isEmpty ||
           profileImage == "null") {
-        profileImage = data?["groupData"]?["groupImage"]?.toString();
+        profileImage =
+            data?["groupData"]?["groupImage"]
+                ?.toString();
       }
 
       if (profileImage == null ||
           profileImage!.trim().isEmpty ||
           profileImage == "null") {
-        profileImage = data?["groupData"]?["profileImage"]?.toString();
+        profileImage =
+            data?["groupData"]?["profileImage"]
+                ?.toString();
       }
-    } else if (screenName == "incomingCall" || item?.type == "missed_call") {
-      leadingIcon = Icons.phone_callback_rounded;
-      iconColor = const Color(0xffFF8C00);
-      iconBgColor = const Color(0xffFF8C00).withOpacity(0.1);
+    } else if (screenName ==
+        "incomingCall" ||
+        item?.type == "missed_call") {
+      leadingIcon =
+          Icons.phone_callback_rounded;
+
+      iconColor =
+      const Color(0xffFF8C00);
+
+      iconBgColor =
+          const Color(0xffFF8C00)
+              .withOpacity(0.1);
 
       final callData = data?["callData"];
 
       if (callData is Map) {
-        profileImage = callData["callerImage"]?.toString();
+        profileImage =
+            callData["callerImage"]?.toString();
 
         if (profileImage == null ||
             profileImage!.trim().isEmpty ||
             profileImage == "null") {
-          profileImage = callData["profileImage"]?.toString();
+          profileImage =
+              callData["profileImage"]?.toString();
         }
 
         if (profileImage == null ||
             profileImage!.trim().isEmpty ||
             profileImage == "null") {
-          profileImage = callData["callerProfileImage"]?.toString();
+          profileImage =
+              callData["callerProfileImage"]
+                  ?.toString();
         }
       }
     }
@@ -271,117 +383,142 @@ class NotificationScreen extends StatelessWidget {
     if (profileImage != null) {
       profileImage = profileImage!.trim();
 
-      if (profileImage!.isEmpty || profileImage == "null") {
+      if (profileImage!.isEmpty ||
+          profileImage == "null") {
         profileImage = null;
       }
     }
 
     return GestureDetector(
-      onTap: item == null
-          ? null
-          : () async {
-              try {
-                if (item.id != null) {
-                  await controller.markAsRead(item.id!);
-                }
+      onTap: () async {
+        try {
+          if (item.id != null) {
+            await controller.markAsRead(item.id!);
+          }
 
-                final notificationData = item.data;
+          final notificationData = item.data;
 
-                if (notificationData == null) return;
+          if (notificationData == null) {
+            return;
+          }
 
-                if (notificationData["screen_name"] == "chatScreen") {
-                  if (notificationData["memberData"] == null) {
-                    return;
-                  }
+          if (notificationData["screen_name"] ==
+              "chatScreen") {
+            if (notificationData["memberData"] ==
+                null) {
+              return;
+            }
 
-                  final memberData = MemberData.fromJson(
-                    Map<String, dynamic>.from(
-                      notificationData["memberData"],
-                    ),
-                  );
+            final memberData =
+            MemberData.fromJson(
+              Map<String, dynamic>.from(
+                notificationData["memberData"],
+              ),
+            );
 
-                  debugPrint(
-                    "========== NOTIFICATION CHAT ==========",
-                  );
-                  debugPrint(
-                    "userId => ${memberData.userId}",
-                  );
-                  debugPrint(
-                    "name => ${memberData.name}",
-                  );
-                  debugPrint(
-                    "profileImage => ${memberData.profileImage}",
-                  );
-                  debugPrint(
-                    "groupId => ${memberData.groupId}",
-                  );
-                  debugPrint(
-                    "========================================",
-                  );
+            debugPrint(
+              "========== NOTIFICATION CHAT ==========",
+            );
 
-                  Get.toNamed(
-                    Routes.chatScreen,
-                    arguments: {
-                      "userData": memberData,
-                      "groupName": "Test",
-                      "type": "chatScreen",
-                    },
-                  );
-                } else if (notificationData["screen_name"] ==
-                    "groupChatScreen") {
-                  final groupId = int.tryParse(
-                    item.groupId?.toString() ?? "",
-                  );
+            debugPrint(
+              "userId => ${memberData.userId}",
+            );
 
-                  if (groupId == null) {
-                    debugPrint(
-                      "Invalid groupId => ${item.groupId}",
-                    );
-                    return;
-                  }
+            debugPrint(
+              "name => ${memberData.name}",
+            );
 
-                  Get.toNamed(
-                    Routes.groupChatScreen,
-                    arguments: {
-                      "groupId": groupId.toString(),
-                      "groupName":
-                          notificationData["groupName"]?.toString() ?? "",
-                      "groupImage":
-                          notificationData["groupImage"]?.toString() ?? "",
-                    },
-                  );
-                } else if (notificationData["screen_name"] == "incomingCall" ||
-                    item.type == "missed_call") {
-                  final callData = notificationData["callData"];
+            debugPrint(
+              "profileImage => ${memberData.profileImage}",
+            );
 
-                  if (callData is! Map) return;
+            debugPrint(
+              "groupId => ${memberData.groupId}",
+            );
 
-                  final bool isVideo = callData["isVideo"] == true;
+            debugPrint(
+              "========================================",
+            );
 
-                  Get.toNamed(
-                    Routes.callScreen,
-                    arguments: {
-                      "callerId": Global.storageServices
-                          .get(PrefConst.userId)
-                          .toString(),
-                      "remoteUserId": callData["callerId"].toString(),
-                      "callerName": callData["callerName"] ?? "",
-                      "callerImage":
-                          callData["callerImage"] ?? callData["profileImage"],
-                      "offer": null,
-                      "is_video": isVideo,
-                      "callType": "outGoing",
-                    },
-                  );
-                }
-              } catch (e) {
-                debugPrint(
-                  "Notification Error => $e",
-                );
-              }
-            },
+            Get.toNamed(
+              Routes.chatScreen,
+              arguments: {
+                "userData": memberData,
+                "groupName": "Test",
+                "type": "chatScreen",
+              },
+            );
+          } else if (notificationData[
+          "screen_name"] ==
+              "groupChatScreen") {
+            final groupId = int.tryParse(
+              item.groupId?.toString() ?? "",
+            );
+
+            if (groupId == null) {
+              debugPrint(
+                "Invalid groupId => ${item.groupId}",
+              );
+              return;
+            }
+
+            Get.toNamed(
+              Routes.groupChatScreen,
+              arguments: {
+                "groupId": groupId.toString(),
+                "groupName":
+                notificationData["groupName"]
+                    ?.toString() ??
+                    "",
+                "groupImage":
+                notificationData["groupImage"]
+                    ?.toString() ??
+                    "",
+              },
+            );
+          } else if (notificationData[
+          "screen_name"] ==
+              "incomingCall" ||
+              item.type == "missed_call") {
+            final callData =
+            notificationData["callData"];
+
+            if (callData is! Map) {
+              return;
+            }
+
+            final bool isVideo =
+                callData["isVideo"] == true;
+
+            Get.toNamed(
+              Routes.callScreen,
+              arguments: {
+                "callerId":
+                Global.storageServices
+                    .get(PrefConst.userId)
+                    .toString(),
+                "remoteUserId":
+                callData["callerId"].toString(),
+                "callerName":
+                callData["callerName"] ?? "",
+                "callerImage":
+                callData["callerImage"] ??
+                    callData["profileImage"],
+                "offer": null,
+                "is_video": isVideo,
+                "callType": "outGoing",
+              },
+            );
+          }
+        } catch (e) {
+          debugPrint(
+            "Notification Error => $e",
+          );
+        }
+      },
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 250),
+        duration:
+        const Duration(milliseconds: 250),
         padding: EdgeInsets.symmetric(
           horizontal: 16.w,
           vertical: 12.h,
@@ -389,95 +526,122 @@ class NotificationScreen extends StatelessWidget {
         decoration: BoxDecoration(
           gradient: isUnread
               ? const LinearGradient(
-                  colors: [
-                    Color(0xffF5F2FF),
-                    Color(0xffFFFFFF),
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                )
+            colors: [
+              Color(0xffF5F2FF),
+              Color(0xffFFFFFF),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          )
               : null,
-          color: isUnread ? null : Colors.white,
-          borderRadius: BorderRadius.circular(16.r),
+          color:
+          isUnread ? null : Colors.white,
+          borderRadius:
+          BorderRadius.circular(16.r),
           border: Border.all(
             color: isUnread
-                ? primaryPurple.withOpacity(0.22)
-                : Colors.grey.withOpacity(0.10),
+                ? primaryPurple
+                .withOpacity(0.22)
+                : Colors.grey
+                .withOpacity(0.10),
             width: 1,
           ),
           boxShadow: [
             BoxShadow(
               color: isUnread
-                  ? primaryPurple.withOpacity(0.06)
-                  : Colors.black.withOpacity(0.02),
-              blurRadius: isUnread ? 14 : 10,
-              offset: const Offset(0, 2),
+                  ? primaryPurple
+                  .withOpacity(0.06)
+                  : Colors.black
+                  .withOpacity(0.02),
+              blurRadius:
+              isUnread ? 14 : 10,
+              offset:
+              const Offset(0, 2),
             ),
           ],
         ),
         child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment:
+          CrossAxisAlignment.start,
           children: [
             Container(
               width: 48.w,
               height: 48.w,
               decoration: BoxDecoration(
                 color: iconBgColor,
-                borderRadius: BorderRadius.circular(14.r),
+                borderRadius:
+                BorderRadius.circular(14.r),
               ),
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(14.r),
-                child: profileImage != null && profileImage!.isNotEmpty
+                borderRadius:
+                BorderRadius.circular(14.r),
+                child: profileImage != null &&
+                    profileImage!.isNotEmpty
                     ? Image.network(
-                        profileImage!.startsWith(
-                                  "http://",
-                                ) ||
-                                profileImage!.startsWith(
-                                  "https://",
-                                )
-                            ? profileImage!
-                            : "${ConstRes.aImageBaseUrl}$profileImage",
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Icon(
-                            leadingIcon,
-                            color: iconColor,
-                            size: 22.sp,
-                          );
-                        },
+                  profileImage!.startsWith(
+                    "http://",
+                  ) ||
+                      profileImage!
+                          .startsWith(
+                        "https://",
                       )
+                      ? profileImage!
+                      : "${ConstRes.aImageBaseUrl}$profileImage",
+                  fit: BoxFit.cover,
+                  errorBuilder:
+                      (
+                      context,
+                      error,
+                      stackTrace,
+                      ) {
+                    return Icon(
+                      leadingIcon,
+                      color: iconColor,
+                      size: 22.sp,
+                    );
+                  },
+                )
                     : Icon(
-                        leadingIcon,
-                        color: iconColor,
-                        size: 22.sp,
-                      ),
+                  leadingIcon,
+                  color: iconColor,
+                  size: 22.sp,
+                ),
               ),
             ),
             SizedBox(width: 14.w),
             Expanded(
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment:
+                CrossAxisAlignment.start,
                 children: [
                   SizedBox(height: 2.h),
                   Text(
-                    item?.title ?? "Loading notification details",
+                    item?.title ??
+                        "Loading notification details",
                     maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                    overflow:
+                    TextOverflow.ellipsis,
                     style: TextStyle(
                       fontSize: 14.sp,
-                      fontWeight: isUnread ? FontWeight.w800 : FontWeight.w700,
+                      fontWeight: isUnread
+                          ? FontWeight.w800
+                          : FontWeight.w700,
                       color: textDark,
                     ),
                   ),
                   SizedBox(height: 6.h),
                   Text(
-                    item?.body ?? "Loading notification details",
+                    item?.body ??
+                        "Loading notification details",
                     maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
+                    overflow:
+                    TextOverflow.ellipsis,
                     style: TextStyle(
                       fontSize: 12.sp,
-                      color: const Color(0xff6A6A8B),
-                      fontWeight: FontWeight.w500,
+                      color:
+                      const Color(0xff6A6A8B),
+                      fontWeight:
+                      FontWeight.w500,
                       height: 1.4,
                     ),
                   ),
@@ -486,22 +650,25 @@ class NotificationScreen extends StatelessWidget {
             ),
             SizedBox(width: 10.w),
             Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
+              crossAxisAlignment:
+              CrossAxisAlignment.end,
               children: [
                 SizedBox(height: 4.h),
                 Row(
-                  mainAxisSize: MainAxisSize.min,
+                  mainAxisSize:
+                  MainAxisSize.min,
                   children: [
                     Text(
-                      item != null
-                          ? controller.formatTime(
-                              item.createdAt ?? "",
-                            )
-                          : "...",
+                      controller.formatTime(
+                        item.createdAt ?? "",
+                      ),
                       style: TextStyle(
                         fontSize: 11.sp,
-                        fontWeight: FontWeight.w500,
-                        color: const Color(0xff6A6A8B),
+                        fontWeight:
+                        FontWeight.w500,
+                        color: const Color(
+                          0xff6A6A8B,
+                        ),
                       ),
                     ),
                     SizedBox(width: 8.w),
@@ -509,12 +676,18 @@ class NotificationScreen extends StatelessWidget {
                       Container(
                         width: 8.w,
                         height: 8.w,
-                        decoration: BoxDecoration(
+                        decoration:
+                        BoxDecoration(
                           color: primaryPurple,
-                          shape: BoxShape.circle,
+                          shape:
+                          BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
-                              color: primaryPurple.withOpacity(0.35),
+                              color:
+                              primaryPurple
+                                  .withOpacity(
+                                0.35,
+                              ),
                               blurRadius: 4,
                             ),
                           ],
@@ -535,7 +708,8 @@ class NotificationScreen extends StatelessWidget {
   Widget _emptyWidget() {
     return Center(
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisAlignment:
+        MainAxisAlignment.center,
         children: [
           Icon(
             Icons.notifications_none_rounded,
@@ -557,6 +731,115 @@ class NotificationScreen extends StatelessWidget {
             style: TextStyle(
               fontSize: 13.sp,
               color: Colors.grey,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _NotificationSkeletonList
+    extends StatelessWidget {
+  const _NotificationSkeletonList();
+
+  @override
+  Widget build(BuildContext context) {
+    return Skeletonizer(
+      enabled: true,
+      child: ListView.separated(
+        padding: EdgeInsets.symmetric(
+          horizontal: 16.w,
+          vertical: 4.h,
+        ),
+        physics:
+        const NeverScrollableScrollPhysics(),
+        itemCount: 8,
+        separatorBuilder: (_, __) =>
+            SizedBox(height: 12.h),
+        itemBuilder: (_, __) {
+          return const _NotificationSkeletonCard();
+        },
+      ),
+    );
+  }
+}
+
+class _NotificationSkeletonCard
+    extends StatelessWidget {
+  const _NotificationSkeletonCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: 16.w,
+        vertical: 12.h,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius:
+        BorderRadius.circular(16.r),
+        border: Border.all(
+          color:
+          Colors.grey.withOpacity(0.10),
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment:
+        CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 48.w,
+            height: 48.w,
+            decoration: BoxDecoration(
+              color: Colors.grey.shade200,
+              borderRadius:
+              BorderRadius.circular(14.r),
+            ),
+          ),
+          SizedBox(width: 14.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment:
+              CrossAxisAlignment.start,
+              children: [
+                SizedBox(height: 2.h),
+                Text(
+                  "Loading notification",
+                  maxLines: 1,
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    fontWeight:
+                    FontWeight.w700,
+                  ),
+                ),
+                SizedBox(height: 6.h),
+                Text(
+                  "Loading notification details",
+                  maxLines: 2,
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    fontWeight:
+                    FontWeight.w500,
+                  ),
+                ),
+                SizedBox(height: 6.h),
+                Text(
+                  "Loading notification details",
+                  maxLines: 1,
+                  style: TextStyle(
+                    fontSize: 11.sp,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          SizedBox(width: 10.w),
+          Text(
+            "...",
+            style: TextStyle(
+              fontSize: 11.sp,
             ),
           ),
         ],
