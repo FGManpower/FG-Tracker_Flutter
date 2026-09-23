@@ -57,6 +57,7 @@ class GroupCallingController extends GetxController {
       <GroupCallParticipant>[].obs;
 
   webrtc.RTCVideoRenderer localRenderer = webrtc.RTCVideoRenderer();
+  final RxBool isScreenShareExpanded = true.obs;
 
   void _log(String message) => log('[GroupCallingController] $message');
 
@@ -261,6 +262,7 @@ class GroupCallingController extends GetxController {
 
     if (isScreenSharing.value) {
       isScreenSharing.value = false;
+      isScreenShareExpanded.value = true;
       screenSharingUsers.remove(myUserId);
       Socket_GroupCallService.instance.emitStopScreenShare();
 
@@ -291,6 +293,7 @@ class GroupCallingController extends GetxController {
             await navigator.mediaDevices.getDisplayMedia({'video': true});
 
         isScreenSharing.value = true;
+        isScreenShareExpanded.value = true;
         screenSharingUsers.add(myUserId);
 
         Socket_GroupCallService.instance.emitStartScreenShare();

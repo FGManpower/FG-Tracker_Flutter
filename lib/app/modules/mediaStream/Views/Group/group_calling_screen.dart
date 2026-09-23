@@ -44,6 +44,8 @@ class GroupCallingScreen extends GetView<GroupCallingController> {
                 return GroupParticipantGrid(
                   participants: controller.activeParticipants.toList(),
                   isVideoMode: controller.isVideo,
+                  isScreenShareExpanded:
+                  controller.isScreenShareExpanded.value,
                   screenSharingUserIds: controller.screenSharingUsers
                       .map((e) => e.toString().trim())
                       .toSet(),
@@ -54,6 +56,14 @@ class GroupCallingScreen extends GetView<GroupCallingController> {
                   },
                   onViewScreenShare: (userId) {
                     controller.openFullScreenShare(userId);
+                  },
+                  onZoomOut: () {
+
+                    if( controller.isScreenShareExpanded.value){
+                      controller.isScreenShareExpanded.value = false;
+                    }else{
+                      controller.isScreenShareExpanded.value = true;
+                    }
                   },
                 );
               }),
