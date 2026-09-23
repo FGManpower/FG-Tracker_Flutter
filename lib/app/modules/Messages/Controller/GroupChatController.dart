@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 import 'dart:typed_data';
@@ -443,6 +444,62 @@ class GroupMessageController extends GetxController {
       log("GROUP SEND ERROR => $e");
     } finally {
       isSending.value = false;
+    }
+  }
+
+  void sendAttendanceMessage({
+    required String question,
+    required String date,
+    required int totalMembers,
+  }) {
+    try {
+      final pollMap = {
+        "id": "att_${DateTime.now().millisecondsSinceEpoch}",
+        "question": question,
+        "date": date,
+        "creatorName": "Rahul Verma",
+        "totalMembers": totalMembers,
+        "presentCount": 2,
+        "absentCount": 1,
+        "respondedCount": 2,
+        "responses": [
+          {
+            "userId": "1",
+            "userName": "Rahul Verma",
+            "status": "Present",
+            "time": "09:15 AM",
+          },
+          {
+            "userId": "2",
+            "userName": "Divesh Shinde",
+            "status": "Present",
+            "time": "09:20 AM",
+          },
+        ],
+      };
+
+      final content = jsonEncode(pollMap);
+
+      final newMsg = MessageData(
+        id: DateTime.now().millisecondsSinceEpoch,
+        content: content,
+        messageType: "attendance",
+        senderName: "Rahul Verma",
+        timestamp: DateTime.now().toIso8601String(),
+      );
+
+      _messages.add(newMsg);
+      updateMessageStream();
+
+      socketService.sendGroupMessage(
+        groupId: groupId,
+        content: content,
+        messageType: "attendance",
+      );
+
+      scrollToBottom();
+    } catch (e) {
+      log("SEND ATTENDANCE ERROR: $e");
     }
   }
 

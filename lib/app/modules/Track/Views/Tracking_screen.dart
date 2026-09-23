@@ -19,21 +19,22 @@ class TrackingScreen extends StatelessWidget {
 
   final TrackController controller = Get.put(TrackController());
   final Rx<MapType> _mapType = MapType.normal.obs;
-  final DraggableScrollableController _sheetController = DraggableScrollableController();
+  final DraggableScrollableController _sheetController =
+  DraggableScrollableController();
   final RxDouble _sheetExtent = 0.11.obs;
 
   void _toggleSheet() {
     if (_sheetController.isAttached) {
       if (_sheetExtent.value < 0.25) {
         _sheetController.animateTo(
-          0.58,
-          duration: const Duration(milliseconds: 300),
+          0.52,
+          duration: const Duration(milliseconds: 250),
           curve: Curves.easeOutCubic,
         );
       } else {
         _sheetController.animateTo(
           0.11,
-          duration: const Duration(milliseconds: 300),
+          duration: const Duration(milliseconds: 250),
           curve: Curves.easeOutCubic,
         );
       }
@@ -58,7 +59,7 @@ class TrackingScreen extends StatelessWidget {
               final double extent = _sheetExtent.value;
               final double screenH = MediaQuery.of(context).size.height;
               final double progress =
-                  ((extent - 0.11) / (0.58 - 0.11)).clamp(0.0, 1.0);
+              ((extent - 0.11) / (0.58 - 0.11)).clamp(0.0, 1.0);
               final double mapOffsetY = -progress * (screenH * 0.18);
 
               return Transform.translate(
@@ -80,7 +81,7 @@ class TrackingScreen extends StatelessWidget {
                   mapType: _mapType.value,
                   gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>{
                     Factory<OneSequenceGestureRecognizer>(
-                      () => EagerGestureRecognizer(),
+                          () => EagerGestureRecognizer(),
                     ),
                   },
                   onMapCreated: controller.onMapCreated,
@@ -122,7 +123,7 @@ class TrackingScreen extends StatelessWidget {
             final double topTop = topBarBottom + 6.h;
 
             final double progress =
-                ((_sheetExtent.value - 0.11) / (0.58 - 0.11)).clamp(0.0, 1.0);
+            ((_sheetExtent.value - 0.11) / (0.58 - 0.11)).clamp(0.0, 1.0);
 
             // Smooth interpolation between vertical center (when map is big) and top (when sheet expands)
             final double currentTop =
@@ -145,6 +146,113 @@ class TrackingScreen extends StatelessWidget {
             );
           }),
 
+          // ── Group Mode Overlay on Map (Profile photo shown, group name removed) ──
+          Obx(() {
+            if (!controller.isGroupMode.value) return const SizedBox.shrink();
+            final String rawGroupImg = controller.selectedGroupProfile.value;
+            final String? groupImg =
+            rawGroupImg.isNotEmpty && rawGroupImg.toLowerCase() != 'null'
+                ? (rawGroupImg.startsWith("http")
+                ? rawGroupImg
+                : "${ConstRes.aImageBaseUrl}$rawGroupImg")
+                : null;
+
+            return Positioned(
+              bottom:
+              (_sheetExtent.value * MediaQuery.of(context).size.height) +
+                  12.h,
+              right: 16.w,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    GestureDetector(
+                      onTap: () {
+                        controller.fitAllMembers();
+                      },
+                      child: Container(
+                        width: 48.w,
+                        height: 48.w,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.white,
+                          border: Border.all(
+                            color: const Color(0xFF4338CA),
+                            width: 2.5,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFF4338CA)
+                                  .withValues(alpha: 0.35),
+                              blurRadius: 10.r,
+                              offset: Offset(0, 3.h),
+                            ),
+                          ],
+                        ),
+                        padding: EdgeInsets.all(2.5.w),
+                        child: ClipOval(
+                          child: groupImg != null
+                              ? Image.network(
+                            groupImg,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) =>
+                                Container(
+                                  color: const Color(0xFFEEF2FF),
+                                  child: Icon(
+                                    Icons.groups_rounded,
+                                    color: const Color(0xFF4338CA),
+                                    size: 22.sp,
+                                  ),
+                                ),
+                          )
+                              : Container(
+                            color: const Color(0xFFEEF2FF),
+                            child: Icon(
+                              Icons.groups_rounded,
+                              color: const Color(0xFF4338CA),
+                              size: 22.sp,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      top: -2.h,
+                      right: -2.w,
+                      child: GestureDetector(
+                        onTap: () {
+                          controller.clearGroupMode();
+                        },
+                        behavior: HitTestBehavior.opaque,
+                        child: Container(
+                          padding: EdgeInsets.all(3.5.r),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFEF4444),
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.white, width: 1.5),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.2),
+                                blurRadius: 4.r,
+                                offset: Offset(0, 1.h),
+                              ),
+                            ],
+                          ),
+                          child: Icon(
+                            Icons.close_rounded,
+                            color: Colors.white,
+                            size: 11.sp,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }),
+
           NotificationListener<DraggableScrollableNotification>(
             onNotification: (notification) {
               _sheetExtent.value = notification.extent;
@@ -154,19 +262,20 @@ class TrackingScreen extends StatelessWidget {
               controller: _sheetController,
               initialChildSize: 0.11,
               minChildSize: 0.11,
-              maxChildSize: 0.58,
+              maxChildSize: 0.52,
               snap: true,
-              snapSizes: const [0.11, 0.58],
+              snapSizes: const [0.11, 0.52],
+              snapAnimationDuration: const Duration(milliseconds: 250),
               builder: (context, scrollController) {
                 return Container(
                   clipBehavior: Clip.antiAlias,
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius:
-                        BorderRadius.vertical(top: Radius.circular(28.r)),
+                    BorderRadius.vertical(top: Radius.circular(28.r)),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.08),
+                        color: Colors.black.withValues(alpha: 0.08),
                         blurRadius: 18.r,
                         offset: Offset(0, -3.h),
                       ),
@@ -187,8 +296,8 @@ class TrackingScreen extends StatelessWidget {
                       displacement: 20.h,
                       child: CustomScrollView(
                         controller: scrollController,
-                        physics: const AlwaysScrollableScrollPhysics(
-                          parent: ClampingScrollPhysics(),
+                        physics: const BouncingScrollPhysics(
+                          parent: AlwaysScrollableScrollPhysics(),
                         ),
                         slivers: [
                           SliverToBoxAdapter(
@@ -270,7 +379,7 @@ class TrackingScreen extends StatelessWidget {
         border: Border.all(color: const Color(0xFFE2E8F0)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 14.r,
             offset: Offset(0, 3.h),
           ),
@@ -354,16 +463,16 @@ class TrackingScreen extends StatelessWidget {
     final query = controller.searchQuery.value.trim().toLowerCase();
     final matchingMembers = controller.allFetchedMembers
         .where((m) =>
-            m.name.toLowerCase().contains(query) ||
-            m.team.toLowerCase().contains(query) ||
-            m.location.toLowerCase().contains(query))
+    m.name.toLowerCase().contains(query) ||
+        m.team.toLowerCase().contains(query) ||
+        m.location.toLowerCase().contains(query))
         .toList();
 
     final matchingGroups = controller.groupList
         .where((g) =>
-            (g.groupName ?? "").toLowerCase().contains(query) ||
-            (g.groupDesc ?? "").toLowerCase().contains(query) ||
-            (g.groupCode ?? "").toLowerCase().contains(query))
+    (g.groupName ?? "").toLowerCase().contains(query) ||
+        (g.groupDesc ?? "").toLowerCase().contains(query) ||
+        (g.groupCode ?? "").toLowerCase().contains(query))
         .toList();
 
     final bool hasNoResults = matchingMembers.isEmpty && matchingGroups.isEmpty;
@@ -377,7 +486,7 @@ class TrackingScreen extends StatelessWidget {
         border: Border.all(color: const Color(0xFFE2E8F0)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.12),
+            color: Colors.black.withValues(alpha: 0.12),
             blurRadius: 18.r,
             offset: Offset(0, 6.h),
           ),
@@ -387,66 +496,67 @@ class TrackingScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(16.r),
         child: hasNoResults
             ? Padding(
-                padding: EdgeInsets.symmetric(vertical: 24.h, horizontal: 16.w),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.person_search_rounded,
-                      color: const Color(0xFF94A3B8),
-                      size: 32.sp,
-                    ),
-                    SizedBox(height: 8.h),
-                    Text(
-                      "No members or groups matching\n'${controller.searchQuery.value}'",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 12.5.sp,
-                        color: const Color(0xFF64748B),
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              )
-            : ListView(
-                padding: EdgeInsets.symmetric(vertical: 6.h),
-                shrinkWrap: true,
-                children: [
-                  if (matchingMembers.isNotEmpty) ...[
-                    Padding(
-                      padding: EdgeInsets.fromLTRB(14.w, 6.h, 14.w, 4.h),
-                      child: Text(
-                        "MEMBERS (${matchingMembers.length})",
-                        style: TextStyle(
-                          fontSize: 10.5.sp,
-                          fontWeight: FontWeight.w700,
-                          color: const Color(0xFF6366F1),
-                          letterSpacing: 0.6,
-                        ),
-                      ),
-                    ),
-                    ...matchingMembers.map((m) => _searchMemberItem(context, m)),
-                  ],
-                  if (matchingGroups.isNotEmpty) ...[
-                    if (matchingMembers.isNotEmpty)
-                      Divider(height: 12.h, color: const Color(0xFFF1F5F9)),
-                    Padding(
-                      padding: EdgeInsets.fromLTRB(14.w, 6.h, 14.w, 4.h),
-                      child: Text(
-                        "GROUPS (${matchingGroups.length})",
-                        style: TextStyle(
-                          fontSize: 10.5.sp,
-                          fontWeight: FontWeight.w700,
-                          color: const Color(0xFF6366F1),
-                          letterSpacing: 0.6,
-                        ),
-                      ),
-                    ),
-                    ...matchingGroups.map((g) => _searchGroupItem(context, g)),
-                  ],
-                ],
+          padding: EdgeInsets.symmetric(vertical: 24.h, horizontal: 16.w),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.person_search_rounded,
+                color: const Color(0xFF94A3B8),
+                size: 32.sp,
               ),
+              SizedBox(height: 8.h),
+              Text(
+                "No members or groups matching\n'${controller.searchQuery.value}'",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 12.5.sp,
+                  color: const Color(0xFF64748B),
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        )
+            : ListView(
+          padding: EdgeInsets.symmetric(vertical: 6.h),
+          shrinkWrap: true,
+          children: [
+            if (matchingMembers.isNotEmpty) ...[
+              Padding(
+                padding: EdgeInsets.fromLTRB(14.w, 6.h, 14.w, 4.h),
+                child: Text(
+                  "MEMBERS (${matchingMembers.length})",
+                  style: TextStyle(
+                    fontSize: 10.5.sp,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF6366F1),
+                    letterSpacing: 0.6,
+                  ),
+                ),
+              ),
+              ...matchingMembers
+                  .map((m) => _searchMemberItem(context, m)),
+            ],
+            if (matchingGroups.isNotEmpty) ...[
+              if (matchingMembers.isNotEmpty)
+                Divider(height: 12.h, color: const Color(0xFFF1F5F9)),
+              Padding(
+                padding: EdgeInsets.fromLTRB(14.w, 6.h, 14.w, 4.h),
+                child: Text(
+                  "GROUPS (${matchingGroups.length})",
+                  style: TextStyle(
+                    fontSize: 10.5.sp,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF6366F1),
+                    letterSpacing: 0.6,
+                  ),
+                ),
+              ),
+              ...matchingGroups.map((g) => _searchGroupItem(context, g)),
+            ],
+          ],
+        ),
       ),
     );
   }
@@ -470,10 +580,10 @@ class TrackingScreen extends StatelessWidget {
                   radius: 18.r,
                   backgroundColor: const Color(0xFFEEF2FF),
                   backgroundImage:
-                      m.avatarUrl.isNotEmpty ? NetworkImage(m.avatarUrl) : null,
+                  m.avatarUrl.isNotEmpty ? NetworkImage(m.avatarUrl) : null,
                   child: m.avatarUrl.isEmpty
                       ? Icon(Icons.person,
-                          size: 20.sp, color: const Color(0xFF4338CA))
+                      size: 20.sp, color: const Color(0xFF4338CA))
                       : null,
                 ),
                 Positioned(
@@ -541,8 +651,8 @@ class TrackingScreen extends StatelessWidget {
         FocusScope.of(context).unfocus();
         if (_sheetController.isAttached) {
           _sheetController.animateTo(
-            0.58,
-            duration: const Duration(milliseconds: 300),
+            0.52,
+            duration: const Duration(milliseconds: 250),
             curve: Curves.easeOutCubic,
           );
         }
@@ -626,7 +736,7 @@ class TrackingScreen extends StatelessWidget {
         ),
         SizedBox(height: 10.h),
         Obx(
-          () => _mapActionButton(
+              () => _mapActionButton(
             icon: Icons.refresh_rounded,
             isLoading: controller.isLoading.value,
             onTap: () => controller.getUsersWithinRadius(),
@@ -654,7 +764,7 @@ class TrackingScreen extends StatelessWidget {
           border: Border.all(color: const Color(0xFFE2E8F0)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.08),
+              color: Colors.black.withValues(alpha: 0.08),
               blurRadius: 10.r,
               offset: Offset(0, 2.h),
             ),
@@ -663,19 +773,19 @@ class TrackingScreen extends StatelessWidget {
         child: Center(
           child: isLoading
               ? SizedBox(
-                  width: 18.w,
-                  height: 18.w,
-                  child: const CircularProgressIndicator(
-                    strokeWidth: 2.2,
-                    valueColor:
-                        AlwaysStoppedAnimation<Color>(Color(0xFF4338CA)),
-                  ),
-                )
+            width: 18.w,
+            height: 18.w,
+            child: const CircularProgressIndicator(
+              strokeWidth: 2.2,
+              valueColor:
+              AlwaysStoppedAnimation<Color>(Color(0xFF4338CA)),
+            ),
+          )
               : Icon(
-                  icon,
-                  color: const Color(0xFF4338CA),
-                  size: 20.sp,
-                ),
+            icon,
+            color: const Color(0xFF4338CA),
+            size: 20.sp,
+          ),
         ),
       ),
     );
@@ -710,7 +820,7 @@ class TrackingScreen extends StatelessWidget {
         },
         itemBuilder: (ctx) => [
           ...presets.map(
-            (p) {
+                (p) {
               final bool isSelected = currentVal == p["value"];
               return PopupMenuItem<String>(
                 value: p["value"],
@@ -722,7 +832,7 @@ class TrackingScreen extends StatelessWidget {
                       p["label"]!,
                       style: TextStyle(
                         fontWeight:
-                            isSelected ? FontWeight.w800 : FontWeight.w500,
+                        isSelected ? FontWeight.w800 : FontWeight.w500,
                         fontSize: 13.sp,
                         color: isSelected
                             ? const Color(0xFF4338CA)
@@ -764,7 +874,7 @@ class TrackingScreen extends StatelessWidget {
                           : "Custom",
                       style: TextStyle(
                         fontWeight:
-                            isCustom ? FontWeight.w800 : FontWeight.w500,
+                        isCustom ? FontWeight.w800 : FontWeight.w500,
                         fontSize: 13.sp,
                         color: isCustom
                             ? const Color(0xFF4338CA)
@@ -792,7 +902,7 @@ class TrackingScreen extends StatelessWidget {
             border: Border.all(color: const Color(0xFFE2E8F0)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.08),
+                color: Colors.black.withValues(alpha: 0.08),
                 blurRadius: 10.r,
                 offset: Offset(0, 2.h),
               ),
@@ -866,7 +976,7 @@ class TrackingScreen extends StatelessWidget {
           borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.12),
+              color: Colors.black.withValues(alpha: 0.12),
               blurRadius: 20.r,
               offset: Offset(0, -4.h),
             ),
@@ -897,7 +1007,7 @@ class TrackingScreen extends StatelessWidget {
                       Container(
                         padding: EdgeInsets.all(7.w),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF4338CA).withOpacity(0.1),
+                          color: const Color(0xFF4338CA).withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(10.r),
                         ),
                         child: Icon(
@@ -969,8 +1079,8 @@ class TrackingScreen extends StatelessWidget {
                             borderRadius: BorderRadius.circular(6.r),
                             boxShadow: [
                               BoxShadow(
-                                color:
-                                    const Color(0xFF4338CA).withOpacity(0.3),
+                                color: const Color(0xFF4338CA)
+                                    .withValues(alpha: 0.3),
                                 blurRadius: 6.r,
                                 offset: Offset(0, 2.h),
                               ),
@@ -988,8 +1098,7 @@ class TrackingScreen extends StatelessWidget {
                       );
                     }),
                     Obx(() {
-                      final double sliderValue =
-                          selectedIndex.value.toDouble();
+                      final double sliderValue = selectedIndex.value.toDouble();
 
                       return SliderTheme(
                         data: SliderThemeData(
@@ -997,7 +1106,7 @@ class TrackingScreen extends StatelessWidget {
                           inactiveTrackColor: Colors.grey.shade200,
                           thumbColor: Colors.white,
                           overlayColor:
-                              const Color(0xFF4338CA).withOpacity(0.1),
+                          const Color(0xFF4338CA).withValues(alpha: 0.1),
                           trackHeight: 3.h,
                           thumbShape: RoundSliderThumbShape(
                             enabledThumbRadius: 9.r,
@@ -1069,10 +1178,10 @@ class TrackingScreen extends StatelessWidget {
                     Container(
                       padding: EdgeInsets.all(8.w),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF4338CA).withOpacity(0.08),
+                        color: const Color(0xFF4338CA).withValues(alpha: 0.08),
                         shape: BoxShape.circle,
                         border: Border.all(
-                          color: const Color(0xFF4338CA).withOpacity(0.3),
+                          color: const Color(0xFF4338CA).withValues(alpha: 0.3),
                           width: 1,
                         ),
                       ),
@@ -1097,7 +1206,7 @@ class TrackingScreen extends StatelessWidget {
                           ),
                           SizedBox(height: 2.h),
                           Obx(
-                            () => Text(
+                                () => Text(
                               controller.currentLocationName.value.isNotEmpty
                                   ? controller.currentLocationName.value
                                   : "Current Location",
@@ -1177,11 +1286,10 @@ class TrackingScreen extends StatelessWidget {
                     child: GestureDetector(
                       onTap: () {
                         final double selectedMeters =
-                            radiusOptions[selectedIndex.value];
+                        radiusOptions[selectedIndex.value];
                         final double inKm = selectedMeters / 1000.0;
-                        final String kmString = inKm == inKm.toInt()
-                            ? "${inKm.toInt()}"
-                            : "$inKm";
+                        final String kmString =
+                        inKm == inKm.toInt() ? "${inKm.toInt()}" : "$inKm";
                         controller.updateRadius(kmString);
                         Get.back();
                       },
@@ -1192,8 +1300,8 @@ class TrackingScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(12.r),
                           boxShadow: [
                             BoxShadow(
-                              color:
-                                  const Color(0xFF4338CA).withOpacity(0.25),
+                              color: const Color(0xFF4338CA)
+                                  .withValues(alpha: 0.25),
                               blurRadius: 8.r,
                               offset: Offset(0, 3.h),
                             ),
@@ -1224,68 +1332,100 @@ class TrackingScreen extends StatelessWidget {
   Widget _buildLiveMembersPill() {
     return GestureDetector(
       onTap: controller.fitAllMembers,
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(14.r),
-          border: Border.all(color: const Color(0xFFE2E8F0)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.08),
-              blurRadius: 10.r,
-              offset: Offset(0, 3.h),
+      child: Obx(() {
+        final bool isGroup = controller.isGroupMode.value;
+        final int count = isGroup
+            ? controller.groupModeUsers.length
+            : controller.liveMembers.length;
+        final String groupName = controller.selectedGroupName.value;
+
+        return AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(14.r),
+            border: Border.all(
+              color: isGroup
+                  ? const Color(0xFF4338CA).withValues(alpha: 0.35)
+                  : const Color(0xFFE2E8F0),
             ),
-          ],
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.person_rounded,
-              size: 18.sp,
-              color: const Color(0xFF4338CA),
-            ),
-            SizedBox(width: 6.w),
-            Obx(
-              () {
-                final count = controller.liveMembers.length;
-                return Text(
-                  "$count Members Live",
-                  style: TextStyle(
-                    fontSize: 12.5.sp,
-                    fontWeight: FontWeight.w800,
-                    color: const Color(0xFF1E1B4B),
+            boxShadow: [
+              BoxShadow(
+                color: isGroup
+                    ? const Color(0xFF4338CA).withValues(alpha: 0.12)
+                    : Colors.black.withValues(alpha: 0.08),
+                blurRadius: 10.r,
+                offset: Offset(0, 3.h),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                isGroup ? Icons.groups_rounded : Icons.person_rounded,
+                size: 18.sp,
+                color: const Color(0xFF4338CA),
+              ),
+              SizedBox(width: 6.w),
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    isGroup
+                        ? "$count Member${count == 1 ? '' : 's'}"
+                        : "$count Members Live",
+                    style: TextStyle(
+                      fontSize: 12.5.sp,
+                      fontWeight: FontWeight.w800,
+                      color: const Color(0xFF1E1B4B),
+                    ),
                   ),
-                );
-              },
-            ),
-            Container(
-              height: 16.h,
-              width: 1.w,
-              color: const Color(0xFFE2E8F0),
-              margin: EdgeInsets.symmetric(horizontal: 10.w),
-            ),
-            Icon(
-              Icons.bar_chart_rounded,
-              size: 18.sp,
-              color: const Color(0xFF4338CA),
-            ),
-          ],
-        ),
-      ),
+                  if (isGroup && groupName.isNotEmpty)
+                    Text(
+                      groupName,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 10.sp,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF4338CA),
+                      ),
+                    ),
+                ],
+              ),
+              Container(
+                height: 16.h,
+                width: 1.w,
+                color: const Color(0xFFE2E8F0),
+                margin: EdgeInsets.symmetric(horizontal: 10.w),
+              ),
+              Icon(
+                isGroup ? Icons.my_location_rounded : Icons.bar_chart_rounded,
+                size: 18.sp,
+                color: const Color(0xFF4338CA),
+              ),
+            ],
+          ),
+        );
+      }),
     );
   }
 
   Widget _buildDragHandle() {
-    return Center(
+    return Container(
+      width: double.infinity,
+      color: Colors.transparent,
+      padding: EdgeInsets.symmetric(vertical: 8.h),
+      alignment: Alignment.center,
       child: Container(
-        margin: EdgeInsets.only(top: 8.h, bottom: 4.h),
         width: 44.w,
-        height: 4.h,
+        height: 4.5.h,
         decoration: BoxDecoration(
-          color: const Color(0xFF94A3B8).withOpacity(0.4),
-          borderRadius: BorderRadius.circular(2.r),
+          color: const Color(0xFF94A3B8).withValues(alpha: 0.4),
+          borderRadius: BorderRadius.circular(3.r),
         ),
       ),
     );
@@ -1306,7 +1446,16 @@ class TrackingScreen extends StatelessWidget {
         children: [
           Expanded(
             child: GestureDetector(
-              onTap: () => controller.selectTab(0),
+              onTap: () {
+                controller.selectTab(0);
+                if (_sheetController.isAttached && _sheetExtent.value < 0.25) {
+                  _sheetController.animateTo(
+                    0.52,
+                    duration: const Duration(milliseconds: 250),
+                    curve: Curves.easeOutCubic,
+                  );
+                }
+              },
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
                 decoration: BoxDecoration(
@@ -1338,7 +1487,16 @@ class TrackingScreen extends StatelessWidget {
           ),
           Expanded(
             child: GestureDetector(
-              onTap: () => controller.selectTab(1),
+              onTap: () {
+                controller.selectTab(1);
+                if (_sheetController.isAttached && _sheetExtent.value < 0.25) {
+                  _sheetController.animateTo(
+                    0.52,
+                    duration: const Duration(milliseconds: 250),
+                    curve: Curves.easeOutCubic,
+                  );
+                }
+              },
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
                 decoration: BoxDecoration(
@@ -1396,13 +1554,13 @@ class TrackingScreen extends StatelessWidget {
                   SizedBox(width: 8.w),
                   Container(
                     padding:
-                        EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
+                    EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF4338CA).withOpacity(0.08),
+                      color: const Color(0xFF4338CA).withValues(alpha: 0.08),
                       borderRadius: BorderRadius.circular(10.r),
                     ),
                     child: Obx(
-                      () => Text(
+                          () => Text(
                         "${controller.liveMembers.length} Live",
                         style: TextStyle(
                           fontSize: 10.5.sp,
@@ -1417,18 +1575,17 @@ class TrackingScreen extends StatelessWidget {
               Obx(() {
                 final bool loading = controller.isLoading.value;
                 return GestureDetector(
-                  onTap: loading
-                      ? null
-                      : () => controller.getUsersWithinRadius(),
+                  onTap:
+                  loading ? null : () => controller.getUsersWithinRadius(),
                   behavior: HitTestBehavior.opaque,
                   child: Container(
                     padding:
-                        EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                    EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
                     decoration: BoxDecoration(
                       color: const Color(0xFFEEF2FF),
                       borderRadius: BorderRadius.circular(8.r),
                       border: Border.all(
-                        color: const Color(0xFF4338CA).withOpacity(0.15),
+                        color: const Color(0xFF4338CA).withValues(alpha: 0.15),
                       ),
                     ),
                     child: Row(
@@ -1436,20 +1593,20 @@ class TrackingScreen extends StatelessWidget {
                       children: [
                         loading
                             ? SizedBox(
-                                width: 12.sp,
-                                height: 12.sp,
-                                child: const CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                    Color(0xFF4338CA),
-                                  ),
-                                ),
-                              )
+                          width: 12.sp,
+                          height: 12.sp,
+                          child: const CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Color(0xFF4338CA),
+                            ),
+                          ),
+                        )
                             : Icon(
-                                Icons.refresh_rounded,
-                                size: 14.sp,
-                                color: const Color(0xFF4338CA),
-                              ),
+                          Icons.refresh_rounded,
+                          size: 14.sp,
+                          color: const Color(0xFF4338CA),
+                        ),
                         SizedBox(width: 4.w),
                         Text(
                           loading ? "Refreshing..." : "Refresh",
@@ -1472,19 +1629,19 @@ class TrackingScreen extends StatelessWidget {
             final List<MemberModel> membersToDisplay = query.isEmpty
                 ? controller.liveMembers.toList()
                 : controller.liveMembers
-                    .where((m) =>
-                        m.name.toLowerCase().contains(query) ||
-                        m.team.toLowerCase().contains(query) ||
-                        m.location.toLowerCase().contains(query))
-                    .toList();
+                .where((m) =>
+            m.name.toLowerCase().contains(query) ||
+                m.team.toLowerCase().contains(query) ||
+                m.location.toLowerCase().contains(query))
+                .toList();
 
-            if (controller.isLoading.value && controller.liveMembers.isEmpty) {
+            if (controller.isLoading.value) {
               return Skeletonizer(
                 enabled: true,
                 child: Column(
                   children: List.generate(
                     3,
-                    (index) => _memberCard(
+                        (index) => _memberCard(
                       MemberModel(
                         userId: index,
                         name: "Member Name Placeholder",
@@ -1551,8 +1708,8 @@ class TrackingScreen extends StatelessWidget {
                             borderRadius: BorderRadius.circular(12.r),
                             boxShadow: [
                               BoxShadow(
-                                color:
-                                    const Color(0xFF4338CA).withOpacity(0.2),
+                                color: const Color(0xFF4338CA)
+                                    .withValues(alpha: 0.2),
                                 blurRadius: 8.r,
                                 offset: Offset(0, 2.h),
                               ),
@@ -1635,7 +1792,7 @@ class TrackingScreen extends StatelessWidget {
                 child: Column(
                   children: List.generate(
                     4,
-                    (index) => _groupCard(
+                        (index) => _groupCard(
                       GroupsResData(
                         id: index,
                         groupName: "Loading Group Name",
@@ -1664,8 +1821,9 @@ class TrackingScreen extends StatelessWidget {
             } else {
               return Column(
                 mainAxisSize: MainAxisSize.min,
-                children:
-                    controller.filteredGroups.map((g) => _groupCard(g)).toList(),
+                children: controller.filteredGroups
+                    .map((g) => _groupCard(g))
+                    .toList(),
               );
             }
           }),
@@ -1721,7 +1879,7 @@ class TrackingScreen extends StatelessWidget {
     if (_sheetController.isAttached) {
       _sheetController.animateTo(
         0.11,
-        duration: const Duration(milliseconds: 320),
+        duration: const Duration(milliseconds: 250),
         curve: Curves.easeOutCubic,
       );
     }
@@ -1732,219 +1890,219 @@ class TrackingScreen extends StatelessWidget {
     return GestureDetector(
       onTap: () => _zoomToMemberFromList(member),
       child: Container(
-      margin: EdgeInsets.only(bottom: 10.h),
-      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: const Color(0xFFF1F5F9)),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF1E2046).withOpacity(0.04),
-            blurRadius: 10.r,
-            offset: Offset(0, 2.h),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          GestureDetector(
-            onTap: () => controller.showMemberProfileFromMemberModel(member),
-            child: Stack(
-            clipBehavior: Clip.none,
-            children: [
-              Container(
-                width: 44.w,
-                height: 44.w,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: const Color(0xFF6366F1).withOpacity(0.3),
-                    width: 1.5.w,
-                  ),
-                ),
-                child: ClipOval(
-                  child: member.avatarUrl.isNotEmpty
-                      ? CachedNetworkImage(
-                          imageUrl: member.avatarUrl,
+        margin: EdgeInsets.only(bottom: 10.h),
+        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16.r),
+          border: Border.all(color: const Color(0xFFF1F5F9)),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF1E2046).withValues(alpha: 0.04),
+              blurRadius: 10.r,
+              offset: Offset(0, 2.h),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            GestureDetector(
+              onTap: () => controller.showMemberProfileFromMemberModel(member),
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Container(
+                    width: 44.w,
+                    height: 44.w,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: const Color(0xFF6366F1).withValues(alpha: 0.3),
+                        width: 1.5.w,
+                      ),
+                    ),
+                    child: ClipOval(
+                      child: member.avatarUrl.isNotEmpty
+                          ? CachedNetworkImage(
+                        imageUrl: member.avatarUrl,
+                        width: 44.w,
+                        height: 44.w,
+                        fit: BoxFit.cover,
+                        placeholder: (context, url) => Container(
                           width: 44.w,
                           height: 44.w,
-                          fit: BoxFit.cover,
-                          placeholder: (context, url) => Container(
-                            width: 44.w,
-                            height: 44.w,
-                            color: AppColors.primaryElementLight,
-                            child: const Center(
-                              child: SizedBox(
-                                width: 14,
-                                height: 14,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 1.8,
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                    Color(0xFF4338CA),
-                                  ),
+                          color: AppColors.primaryElementLight,
+                          child: const Center(
+                            child: SizedBox(
+                              width: 14,
+                              height: 14,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 1.8,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  Color(0xFF4338CA),
                                 ),
                               ),
                             ),
                           ),
-                          errorWidget: (context, url, error) =>
-                              _placeholderAvatar(member.name),
-                        )
-                      : _placeholderAvatar(member.name),
-                ),
-              ),
-              Positioned(
-                bottom: 0,
-                right: 0,
-                child: Container(
-                  width: 11.w,
-                  height: 11.w,
-                  decoration: BoxDecoration(
-                    color: member.isOnline
-                        ? const Color(0xFF10B981)
-                        : const Color(0xFF94A3B8),
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 2.w),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          ),
-          SizedBox(width: 12.w),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  member.name,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontWeight: FontWeight.w800,
-                    fontSize: 14.sp,
-                    color: const Color(0xFF1E1B4B),
-                  ),
-                ),
-                SizedBox(height: 3.h),
-                Row(
-                  children: [
-                    Icon(
-                      Icons.location_on_rounded,
-                      color: const Color(0xFF4338CA),
-                      size: 13.sp,
-                    ),
-                    SizedBox(width: 3.w),
-                    Expanded(
-                      child: Text(
-                        (member.location.isNotEmpty &&
-                                member.location != "Location unavailable" &&
-                                member.location != "Location" &&
-                                member.location != "Locating...")
-                            ? member.location
-                            : (member.latitude != null &&
-                                    member.longitude != null &&
-                                    member.latitude != 0.0 &&
-                                    member.longitude != 0.0
-                                ? "${member.latitude!.toStringAsFixed(4)}, ${member.longitude!.toStringAsFixed(4)}"
-                                : "Location unavailable"),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: const Color(0xFF64748B),
-                          fontSize: 11.sp,
-                          fontWeight: FontWeight.w500,
                         ),
+                        errorWidget: (context, url, error) =>
+                            _placeholderAvatar(member.name),
+                      )
+                          : _placeholderAvatar(member.name),
+                    ),
+                  ),
+                  Positioned(
+                    bottom: 0,
+                    right: 0,
+                    child: Container(
+                      width: 11.w,
+                      height: 11.w,
+                      decoration: BoxDecoration(
+                        color: member.isOnline
+                            ? const Color(0xFF10B981)
+                            : const Color(0xFF94A3B8),
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 2.w),
                       ),
                     ),
-                  ],
-                ),
-              ],
+                  ),
+                ],
+              ),
             ),
-          ),
-          SizedBox(width: 8.w),
-          Builder(
-            builder: (context) {
-              final int? batteryVal = member.battery;
-              Color batteryColor;
-              if (batteryVal == null) {
-                batteryColor = const Color(0xFF94A3B8);
-              } else if (batteryVal > 50) {
-                batteryColor = const Color(0xFF10B981);
-              } else if (batteryVal >= 20) {
-                batteryColor = const Color(0xFFF59E0B);
-              } else {
-                batteryColor = const Color(0xFFEF4444);
-              }
-
-              return Column(
+            SizedBox(width: 12.w),
+            Expanded(
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    _formatDistance(member.distance),
+                    member.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      color: const Color(0xFF4338CA),
-                      fontSize: 11.sp,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 14.sp,
+                      color: const Color(0xFF1E1B4B),
                     ),
                   ),
-                  SizedBox(height: 4.h),
+                  SizedBox(height: 3.h),
                   Row(
-                    mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(
-                        _getBatteryIcon(batteryVal ?? 100),
-                        color: batteryColor,
-                        size: 14.sp,
+                        Icons.location_on_rounded,
+                        color: const Color(0xFF4338CA),
+                        size: 13.sp,
                       ),
                       SizedBox(width: 3.w),
-                      Text(
-                        batteryVal != null ? "$batteryVal%" : "--%",
-                        style: TextStyle(
-                          color: batteryColor,
-                          fontSize: 11.sp,
-                          fontWeight: FontWeight.w700,
+                      Expanded(
+                        child: Text(
+                          (member.location.isNotEmpty &&
+                              member.location != "Location unavailable" &&
+                              member.location != "Location" &&
+                              member.location != "Locating...")
+                              ? member.location
+                              : (member.latitude != null &&
+                              member.longitude != null &&
+                              member.latitude != 0.0 &&
+                              member.longitude != 0.0
+                              ? "${member.latitude!.toStringAsFixed(4)}, ${member.longitude!.toStringAsFixed(4)}"
+                              : "Location unavailable"),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: const Color(0xFF64748B),
+                            fontSize: 11.sp,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                       ),
                     ],
                   ),
                 ],
-              );
-            },
-          ),
-          SizedBox(width: 10.w),
-          GestureDetector(
-            onTap: () => _zoomToMemberFromList(member),
-            child: Container(
-              width: 36.w,
-              height: 36.w,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.circle,
-                border: Border.all(color: const Color(0xFFE2E8F0)),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
-                    blurRadius: 6.r,
-                    offset: Offset(0, 2.h),
-                  ),
-                ],
               ),
-              child: Transform.rotate(
-                angle: -0.4,
-                child: Icon(
-                  Icons.near_me_rounded,
-                  color: const Color(0xFF4338CA),
-                  size: 17.sp,
+            ),
+            SizedBox(width: 8.w),
+            Builder(
+              builder: (context) {
+                final int? batteryVal = member.battery;
+                Color batteryColor;
+                if (batteryVal == null) {
+                  batteryColor = const Color(0xFF94A3B8);
+                } else if (batteryVal > 50) {
+                  batteryColor = const Color(0xFF10B981);
+                } else if (batteryVal >= 20) {
+                  batteryColor = const Color(0xFFF59E0B);
+                } else {
+                  batteryColor = const Color(0xFFEF4444);
+                }
+
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      _formatDistance(member.distance),
+                      style: TextStyle(
+                        color: const Color(0xFF4338CA),
+                        fontSize: 11.sp,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    SizedBox(height: 4.h),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          _getBatteryIcon(batteryVal ?? 100),
+                          color: batteryColor,
+                          size: 14.sp,
+                        ),
+                        SizedBox(width: 3.w),
+                        Text(
+                          batteryVal != null ? "$batteryVal%" : "--%",
+                          style: TextStyle(
+                            color: batteryColor,
+                            fontSize: 11.sp,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                );
+              },
+            ),
+            SizedBox(width: 10.w),
+            GestureDetector(
+              onTap: () => _zoomToMemberFromList(member),
+              child: Container(
+                width: 36.w,
+                height: 36.w,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.04),
+                      blurRadius: 6.r,
+                      offset: Offset(0, 2.h),
+                    ),
+                  ],
+                ),
+                child: Transform.rotate(
+                  angle: -0.4,
+                  child: Icon(
+                    Icons.near_me_rounded,
+                    color: const Color(0xFF4338CA),
+                    size: 17.sp,
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
-    ),
-  );
-}
+    );
+  }
 
   Widget _buildBottomShareButton() {
     return GestureDetector(
@@ -2003,7 +2161,7 @@ class TrackingScreen extends StatelessWidget {
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.06),
+                    color: Colors.black.withValues(alpha: 0.06),
                     blurRadius: 8.r,
                     offset: Offset(0, 2.h),
                   ),
@@ -2023,28 +2181,29 @@ class TrackingScreen extends StatelessWidget {
 
   Widget _groupCard(GroupsResData group) {
     final String? profileUrl =
-        group.groupProfile != null && group.groupProfile!.isNotEmpty
-            ? (group.groupProfile!.startsWith("http")
-                ? group.groupProfile!
-                : "${ConstRes.aImageBaseUrl}${group.groupProfile}")
-            : null;
+    group.groupProfile != null && group.groupProfile!.isNotEmpty
+        ? (group.groupProfile!.startsWith("http")
+        ? group.groupProfile!
+        : "${ConstRes.aImageBaseUrl}${group.groupProfile}")
+        : null;
 
     return GestureDetector(
       onTap: () {
         final int gId = group.id is int
             ? (group.id as int)
             : (int.tryParse(group.id?.toString() ?? '0') ?? 0);
-        Get.toNamed(
-          Routes.LocationTracking,
-          arguments: {
-            "groupId": gId,
-            "groupName": group.groupName ?? "Group",
-          },
-        )?.then((value) {
-          if (value == true) {
-            controller.fetchGroupData();
-          }
-        });
+        // Update selected group state (sets isGroupMode = true)
+        controller.selectGroup(group);
+        // Load group members as isolated markers on the main map
+        controller.fetchGroupLocationData(gId.toString());
+        // Collapse sheet to reveal the map with the group and member profiles
+        if (_sheetController.isAttached) {
+          _sheetController.animateTo(
+            0.11,
+            duration: const Duration(milliseconds: 250),
+            curve: Curves.easeOutCubic,
+          );
+        }
       },
       child: Container(
         margin: EdgeInsets.only(bottom: 10.h),
@@ -2055,7 +2214,7 @@ class TrackingScreen extends StatelessWidget {
           border: Border.all(color: const Color(0xFFF1F5F9)),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF1E2046).withOpacity(0.02),
+              color: const Color(0xFF1E2046).withValues(alpha: 0.02),
               blurRadius: 8.r,
               offset: Offset(0, 2.h),
             ),
@@ -2071,14 +2230,14 @@ class TrackingScreen extends StatelessWidget {
                 shape: BoxShape.circle,
                 image: profileUrl != null
                     ? DecorationImage(
-                        image: NetworkImage(profileUrl),
-                        fit: BoxFit.cover,
-                      )
+                  image: NetworkImage(profileUrl),
+                  fit: BoxFit.cover,
+                )
                     : null,
               ),
               child: profileUrl == null
                   ? Icon(Icons.groups_rounded,
-                      color: AppColors.primaryElement, size: 21.sp)
+                  color: AppColors.primaryElement, size: 21.sp)
                   : null,
             ),
             SizedBox(width: 12.w),
@@ -2126,8 +2285,8 @@ class TrackingScreen extends StatelessWidget {
                     (group.groupDesc != null && group.groupDesc!.isNotEmpty)
                         ? group.groupDesc!
                         : (group.groupCode != null
-                            ? "Code: ${group.groupCode}"
-                            : "No description"),
+                        ? "Code: ${group.groupCode}"
+                        : "No description"),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
@@ -2161,7 +2320,7 @@ class TrackingScreen extends StatelessWidget {
                   },
                   child: Container(
                     padding:
-                        EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+                    EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
                     decoration: BoxDecoration(
                       color: AppColors.primaryElementLight,
                       borderRadius: BorderRadius.circular(10.r),
@@ -2210,7 +2369,7 @@ class TrackingScreen extends StatelessWidget {
           border: Border.all(color: const Color(0xFFE2E8F0)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
+              color: Colors.black.withValues(alpha: 0.04),
               blurRadius: 8.r,
               offset: Offset(0, 2.h),
             ),
@@ -2226,7 +2385,7 @@ class TrackingScreen extends StatelessWidget {
       context: context,
       barrierDismissible: true,
       barrierLabel: "Tracking Help",
-      barrierColor: Colors.black.withOpacity(0.35),
+      barrierColor: Colors.black.withValues(alpha: 0.35),
       transitionDuration: const Duration(milliseconds: 200),
       pageBuilder: (ctx, anim1, anim2) {
         return SafeArea(
@@ -2248,7 +2407,7 @@ class TrackingScreen extends StatelessWidget {
                         borderRadius: BorderRadius.circular(12.r),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.12),
+                            color: Colors.black.withValues(alpha: 0.12),
                             blurRadius: 10.r,
                             offset: Offset(0, 2.h),
                           ),
@@ -2272,7 +2431,7 @@ class TrackingScreen extends StatelessWidget {
                         borderRadius: BorderRadius.circular(16.r),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.12),
+                            color: Colors.black.withValues(alpha: 0.12),
                             blurRadius: 20.r,
                             offset: Offset(0, 6.h),
                           ),
@@ -2311,21 +2470,21 @@ class TrackingScreen extends StatelessWidget {
                             icon: Icons.location_on_rounded,
                             title: "What is Live Tracking?",
                             subtitle:
-                                "Track team's real-time location on the map.",
+                            "Track team's real-time location on the map.",
                           ),
                           SizedBox(height: 11.h),
                           _helpItem(
                             icon: Icons.groups_rounded,
                             title: "How to Add Group?",
                             subtitle:
-                                "Create a group to track multiple members.",
+                            "Create a group to track multiple members.",
                           ),
                           SizedBox(height: 11.h),
                           _helpItem(
                             icon: Icons.gps_fixed_rounded,
                             title: "What is Tracking Radius?",
                             subtitle:
-                                "Set the area to find nearby members on the map.",
+                            "Set the area to find nearby members on the map.",
                           ),
                         ],
                       ),
@@ -2411,7 +2570,9 @@ class TrackingScreen extends StatelessWidget {
       return "Nearby";
     }
     if (distance.contains("away")) return distance;
-    if (distance.contains("km") || distance.contains(" m")) return "$distance away";
+    if (distance.contains("km") || distance.contains(" m")) {
+      return "$distance away";
+    }
     final cleaned = distance.replaceAll(RegExp(r'[^\d.]'), '');
     final numVal = double.tryParse(cleaned);
     if (numVal != null) {
@@ -2437,14 +2598,15 @@ class TrackingScreen extends StatelessWidget {
       alignment: Alignment.center,
       child: initial.isNotEmpty
           ? Text(
-              initial,
-              style: TextStyle(
-                color: AppColors.primaryElement,
-                fontWeight: FontWeight.w700,
-                fontSize: 16.sp,
-              ),
-            )
+        initial,
+        style: TextStyle(
+          color: AppColors.primaryElement,
+          fontWeight: FontWeight.w700,
+          fontSize: 16.sp,
+        ),
+      )
           : Icon(Icons.person, color: AppColors.primaryElement, size: 22.sp),
     );
   }
 }
+
