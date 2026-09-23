@@ -133,7 +133,7 @@ class ChatListScreen extends StatelessWidget {
 
   Widget _buildQuickCommunication(BuildContext context) {
     return Container(
-      padding: EdgeInsets.only(top: 10.h, bottom: 15.h, left: 8.w, right: 8.w),
+      padding: EdgeInsets.only(top: 10.h, bottom: 20.h, left: 8.w, right: 8.w),
       decoration: BoxDecoration(
         color: const Color(0xFFF8F7FF),
       ),

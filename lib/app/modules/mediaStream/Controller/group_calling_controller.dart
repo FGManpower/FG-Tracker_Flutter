@@ -280,6 +280,10 @@ class GroupCallingController extends GetxController {
           cameraTrack.enabled = false;
         }
       }
+
+      if (fullScreenShareUserId.value == myUserId) {
+        closeFullScreenShare();
+      }
     } else {
       try {
         await ScreenShareForegroundService.start(groupName: groupName);
@@ -556,12 +560,25 @@ class GroupCallingController extends GetxController {
         isVideoOn.value;
   }
 
-  void switchCamera() {
-    if (!isVideo || isScreenSharing.value) return;
-    isFrontCamera.value = !isFrontCamera.value;
-    Socket_GroupCallService.instance.localStream
-        ?.getVideoTracks()
-        .forEach((t) => t.switchCamera());
+  Future<void> switchCamera() async {
+    if (!isVideo || !isVideoOn.value || isScreenSharing.value) return;
+
+    try {
+      final videoTrack = Socket_GroupCallService.instance.localStream
+          ?.getVideoTracks()
+          .firstOrNull;
+
+      if (videoTrack != null) {
+        await webrtc.Helper.switchCamera(videoTrack);
+        isFrontCamera.value = !isFrontCamera.value;
+        _log("Switched camera. Front camera: ${isFrontCamera.value}");
+      } else {
+        _log("No active video track found to switch");
+      }
+    } catch (e) {
+      _log("Error switching camera: $e");
+      Utils().fluttertoast("Unable to switch camera");
+    }
   }
 
   Future<void> toggleSpeaker() async {
@@ -625,6 +642,38 @@ class GroupCallingController extends GetxController {
       memberDataLoading.value = false;
     }
   }
+
+
+  final RxnString fullScreenShareUserId = RxnString();
+
+  bool isUserScreenSharing(dynamic userId) {
+    if (userId == null) return false;
+    final targetId = userId.toString().trim();
+
+    if (screenSharingUsers.map((e) => e.toString().trim()).contains(targetId)) {
+      return true;
+    }
+
+    final myUserId = Global.storageServices.get(PrefConst.userId)?.toString().trim();
+    if (targetId == myUserId && isScreenSharing.value) {
+      return true;
+    }
+    return false;
+  }
+
+  void openFullScreenShare(dynamic userId) {
+    if (userId == null) return;
+    final idStr = userId.toString().trim();
+    if (idStr.isEmpty) return;
+    _log("Opening full screen share for userId: $idStr");
+    fullScreenShareUserId.value = idStr;
+  }
+
+  void closeFullScreenShare() {
+    _log("Closing full screen share");
+    fullScreenShareUserId.value = null;
+  }
+
 
   @override
   void onClose() {

@@ -115,76 +115,92 @@ class _GroupTile extends StatelessWidget {
 
   final GroupsResData group;
 
+  void _openGroup() {
+    Get.toNamed(
+      Routes.groupChatScreen,
+      arguments: {
+        "groupId": group.id.toString(),
+        "groupName": group.groupName ?? "",
+        "groupImage": group.groupProfile ?? "",
+        "groupCode": group.groupCode ?? "",
+        "isCreator": group.isCreator?.toString() ?? "false",
+        "isActive": group.isActive?.toString() ?? "false",
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final String groupName = group.groupName ?? "No Name Group";
     final int memberCount = group.memberCount ?? 0;
 
-    return Row(
-      children: [
-        Container(
-          width: 42.w,
-          height: 42.w,
-          decoration: const BoxDecoration(
-            color: Color(0xFFF1F0FE),
-            shape: BoxShape.circle,
+    return GestureDetector(
+      onTap: _openGroup,
+      child: Row(
+        children: [
+          Container(
+            width: 42.w,
+            height: 42.w,
+            decoration: const BoxDecoration(
+              color: Color(0xFFF1F0FE),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.groups_rounded,
+              size: 20.sp,
+              color: const Color(0xFF4818F0),
+            ),
           ),
-          child: Icon(
-            Icons.groups_rounded,
-            size: 20.sp,
-            color: const Color(0xFF4818F0),
-          ),
-        ),
-        SizedBox(width: 12.w),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                groupName,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 14.sp,
-                  fontFamily: FontFamily.interSemiBold,
-                  color: const Color(0xFF1E1B4B),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  groupName,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    fontFamily: FontFamily.interSemiBold,
+                    color: const Color(0xFF1E1B4B),
+                  ),
                 ),
-              ),
-              SizedBox(height: 3.h),
-              Text(
-                "$memberCount Members",
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 11.sp,
-                  color: const Color(0xFF6B4DFF),
-                  fontFamily: FontFamily.interMedium,
+                SizedBox(height: 3.h),
+                Text(
+                  "$memberCount Members",
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 11.sp,
+                    color: const Color(0xFF6B4DFF),
+                    fontFamily: FontFamily.interMedium,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-        SizedBox(width: 8.w),
-        CallActionChip(
-          icon: Icons.videocam_rounded,
-          onTap: () => _initiateGroupCall(
-            group: group,
-            isVideo: true,
+          SizedBox(width: 8.w),
+          CallActionChip(
+            icon: Icons.videocam_rounded,
+            onTap: () => _initiateGroupCall(
+              group: group,
+              isVideo: true,
+            ),
           ),
-        ),
-        SizedBox(width: 8.w),
-        CallActionChip(
-          icon: Icons.call_rounded,
-          onTap: () => _initiateGroupCall(
-            group: group,
-            isVideo: false,
+          SizedBox(width: 8.w),
+          CallActionChip(
+            icon: Icons.call_rounded,
+            onTap: () => _initiateGroupCall(
+              group: group,
+              isVideo: false,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
-
 class _GroupListSkeleton extends StatelessWidget {
   const _GroupListSkeleton();
 
