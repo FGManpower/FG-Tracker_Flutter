@@ -69,7 +69,7 @@ class _HomeScreenState extends State<HomeScreen> {
     await trackingController.loadLocationSharing();
     await SocketService.instance.init(ConstRes.socketUrl);
     trackingController.initializeLocation();
-    await controller.startLiveLocationSession();
+    // await controller.startLiveLocationSession();
   }
 
   @override

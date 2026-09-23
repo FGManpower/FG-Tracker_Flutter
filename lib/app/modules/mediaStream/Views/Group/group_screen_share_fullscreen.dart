@@ -23,7 +23,6 @@ class GroupScreenShareFullScreen extends StatelessWidget {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          // 1. WebRTC Screen Share Stream with Pinch-to-Zoom
           Obx(() {
             final renderer = participant.renderer;
             final isVideoOn = participant.isVideoOn.value;
@@ -34,14 +33,15 @@ class GroupScreenShareFullScreen extends StatelessWidget {
             if (hasStream && isVideoOn) {
               return InteractiveViewer(
                 minScale: 1.0,
-                maxScale: 4.0, // Allows users to pinch-to-zoom into screen share
+                maxScale:
+                    4.0,
                 child: SizedBox.expand(
                   child: RTCVideoView(
                     renderer,
                     key: ValueKey(
                         'fs_video_${participant.userId}_${renderer.textureId}'),
                     objectFit:
-                    RTCVideoViewObjectFit.RTCVideoViewObjectFitContain,
+                        RTCVideoViewObjectFit.RTCVideoViewObjectFitContain,
                     mirror: false,
                   ),
                 ),
