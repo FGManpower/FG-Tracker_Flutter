@@ -1,5 +1,3 @@
-import 'package:fgtracker/app/Core/constant/pref_res.dart';
-import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Model/GroupRes.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/modules/mediaStream/Widget/call_widget.dart';
@@ -33,7 +31,7 @@ class CallGroupsTab extends StatelessWidget {
       if (groups.isEmpty) {
         return _EmptyState(
           message:
-              controller.groups.isEmpty ? "No groups yet" : "No groups found",
+          controller.groups.isEmpty ? "No groups yet" : "No groups found",
         );
       }
       return RefreshIndicator(
@@ -49,7 +47,7 @@ class CallGroupsTab extends StatelessWidget {
                 borderRadius: BorderRadius.circular(20.r),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.02),
+                    color: Colors.black.withValues(alpha: 0.02),
                     blurRadius: 10,
                     offset: const Offset(0, 2),
                   ),
@@ -293,3 +291,4 @@ class _EmptyState extends StatelessWidget {
     );
   }
 }
+
