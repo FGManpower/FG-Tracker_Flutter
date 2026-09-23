@@ -152,7 +152,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           borderRadius: BorderRadius.circular(12.r),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
+              color: Colors.black.withValues(alpha: 0.04),
               blurRadius: 6,
               offset: const Offset(0, 2),
             ),
@@ -240,7 +240,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           teamName,
           style: TextStyle(
             fontSize: 13.sp,
-            color: _lightPurple.withOpacity(0.8),
+            color: _lightPurple.withValues(alpha: 0.8),
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -365,7 +365,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             borderRadius: BorderRadius.circular(14.r),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.03),
+                color: Colors.black.withValues(alpha: 0.03),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
@@ -579,7 +579,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             "Available for team communication.",
             style: TextStyle(
               fontSize: 13.sp,
-              color: _purple.withOpacity(0.8),
+              color: _purple.withValues(alpha: 0.8),
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -614,7 +614,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                   scale: 0.85,
                   child: Switch(
                     value: notificationsOn.value,
-                    activeColor: Colors.white,
+                    activeThumbColor: Colors.white,
                     activeTrackColor: _lightPurple,
                     inactiveThumbColor: Colors.white,
                     inactiveTrackColor: Colors.grey.shade300,
@@ -735,7 +735,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         borderRadius: BorderRadius.circular(14.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.025),
+            color: Colors.black.withValues(alpha: 0.025),
             blurRadius: 8,
             offset: const Offset(0, 1),
           ),

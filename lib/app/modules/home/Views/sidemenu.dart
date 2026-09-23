@@ -2,7 +2,6 @@ import 'dart:developer';
 import 'dart:io';
 
 import 'package:dio/dio.dart' as dio;
-import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/constant/urls.dart';
 import 'package:fgtracker/app/Core/theme/AppText.dart';
@@ -140,10 +139,19 @@ class Sidemenu extends StatelessWidget {
                         Get.toNamed(Routes.Register, arguments: {
                           "type": "Update",
                           'userData': user,
-                          'email': (user.email != null && user.email!.trim().isNotEmpty && user.email != "null")
+                          'email': (user.email != null &&
+                                  user.email!.trim().isNotEmpty &&
+                                  user.email != "null")
                               ? user.email!.trim()
-                              : (Global.storageServices.get(PrefConst.userEmail)?.toString() ?? ""),
-                          'mobNo': user.mobileNo ?? Global.storageServices.get(PrefConst.userPhone)?.toString() ?? "",
+                              : (Global.storageServices
+                                      .get(PrefConst.userEmail)
+                                      ?.toString() ??
+                                  ""),
+                          'mobNo': user.mobileNo ??
+                              Global.storageServices
+                                  .get(PrefConst.userPhone)
+                                  ?.toString() ??
+                              "",
                         });
                       },
                       child: Container(
@@ -307,7 +315,8 @@ class Sidemenu extends StatelessWidget {
         formMap['Email'] = user.email;
         formMap['email'] = user.email;
       } else {
-        final savedEmail = Global.storageServices.get(PrefConst.userEmail)?.toString();
+        final savedEmail =
+            Global.storageServices.get(PrefConst.userEmail)?.toString();
         if (Utility.isNotNullEmptyOrFalse(savedEmail)) {
           formMap['Email'] = savedEmail;
           formMap['email'] = savedEmail;
@@ -427,10 +436,19 @@ class Sidemenu extends StatelessWidget {
               Get.toNamed(Routes.Register, arguments: {
                 "type": "Update",
                 'userData': controller.userData.value,
-                'email': (controller.userData.value.email != null && controller.userData.value.email!.trim().isNotEmpty && controller.userData.value.email != "null")
+                'email': (controller.userData.value.email != null &&
+                        controller.userData.value.email!.trim().isNotEmpty &&
+                        controller.userData.value.email != "null")
                     ? controller.userData.value.email!.trim()
-                    : (Global.storageServices.get(PrefConst.userEmail)?.toString() ?? ""),
-                'mobNo': controller.userData.value.mobileNo ?? Global.storageServices.get(PrefConst.userPhone)?.toString() ?? "",
+                    : (Global.storageServices
+                            .get(PrefConst.userEmail)
+                            ?.toString() ??
+                        ""),
+                'mobNo': controller.userData.value.mobileNo ??
+                    Global.storageServices
+                        .get(PrefConst.userPhone)
+                        ?.toString() ??
+                    "",
               });
             },
           ),
@@ -731,4 +749,3 @@ class _WaveHeaderClipper extends CustomClipper<Path> {
   @override
   bool shouldReclip(CustomClipper<Path> oldClipper) => false;
 }
-

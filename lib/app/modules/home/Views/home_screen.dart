@@ -10,7 +10,6 @@ import 'package:fgtracker/app/modules/home/Controller/home_controller.dart';
 import 'package:fgtracker/app/modules/home/Home_Widget/bannerUi.dart';
 import 'package:fgtracker/app/modules/home/Views/LiveStatus/StatsGrid.dart';
 import 'package:fgtracker/app/modules/home/Views/bottom_actions_bar.dart';
-import 'package:fgtracker/app/modules/home/Views/map_section.dart';
 import 'package:fgtracker/app/modules/home/Views/quick_actions_section.dart';
 import 'package:fgtracker/app/modules/home/Views/sidemenu.dart';
 import 'package:fgtracker/app/widgets/Appbar.dart';

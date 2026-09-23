@@ -1,6 +1,4 @@
 import 'dart:async';
-import 'dart:ui';
-
 
 import 'package:fgtracker/app/config/themes_data.dart';
 import 'package:flutter/material.dart';
@@ -29,7 +27,6 @@ class MyCustomPullToRefresh extends StatelessWidget {
   final Widget child;
   Function()? onTapCallback;
   Function()? onTap2Callback;
-
 
   MyCustomPullToRefresh({
     super.key,

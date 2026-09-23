@@ -38,7 +38,8 @@ class LocationDataRes {
       return;
     }
 
-    final rawStatus = json['status'] ?? json['success'] ?? json['statusCode'] ?? json['code'];
+    final rawStatus =
+        json['status'] ?? json['success'] ?? json['statusCode'] ?? json['code'];
     status = rawStatus == true ||
         rawStatus == 1 ||
         rawStatus == '1' ||
@@ -59,7 +60,7 @@ class LocationDataRes {
         json['results'];
 
     if (list is Map) {
-      final mapData = list as Map;
+      final mapData = list;
       list = mapData['members'] ??
           mapData['groupMembers'] ??
           mapData['group_members'] ??
@@ -164,7 +165,10 @@ class LocationData {
         user?['userId'] ??
         user?['user_id'] ??
         user?['id'];
-    groupId = json['groupId'] ?? json['group_id'] ?? json['GroupId'] ?? user?['groupId'];
+    groupId = json['groupId'] ??
+        json['group_id'] ??
+        json['GroupId'] ??
+        user?['groupId'];
 
     if (json['location'] is Map) {
       final loc = json['location'] as Map;

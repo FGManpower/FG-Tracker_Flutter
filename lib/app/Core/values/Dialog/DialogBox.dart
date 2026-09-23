@@ -1042,26 +1042,7 @@ class DialogBox {
                             ),
                           ),
                         ),
-                        if (resolvedBattery != null && resolvedBattery > 0) ...[
-                          Icon(
-                            resolvedBattery > 20
-                                ? Icons.battery_5_bar_rounded
-                                : Icons.battery_alert_rounded,
-                            size: 16.sp,
-                            color: resolvedBattery > 20
-                                ? const Color(0xFF10B981)
-                                : Colors.orange,
-                          ),
-                          SizedBox(width: 4.w),
-                          Text(
-                            "$resolvedBattery%",
-                            style: TextStyle(
-                              fontSize: 12.sp,
-                              color: Colors.grey.shade700,
-                              fontFamily: FontFamily.interMedium,
-                            ),
-                          ),
-                        ],
+
                       ],
                     ),
                   ],

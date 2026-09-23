@@ -25,7 +25,6 @@ import '../modules/Group/Views/QRScanScreen.dart';
 import '../modules/Messages/Bindings/ForwardMessageBinding.dart';
 import '../modules/Messages/Views/Chat_Screen.dart';
 import '../modules/Messages/Views/ForwardMessageScreen.dart';
-import '../modules/Safe_Zone/views/safe_zone_view.dart';
 import '../modules/Safe_Zone/views/safety_dashboard_view.dart';
 import '../modules/Track/Views/Tracking_screen.dart';
 import '../modules/Walkie-talkie/Views/walkie_group_select_screen.dart';
@@ -225,7 +224,6 @@ class AppPages {
       transitionDuration: const Duration(milliseconds: 400),
     ),
 
-
     GetPage(
       name: Routes.groupCallingScreen,
       page: () => const GroupCallingScreen(),
@@ -261,6 +259,5 @@ class AppPages {
       transition: Transition.rightToLeft,
       transitionDuration: const Duration(milliseconds: 400),
     ),
-
   ];
 }

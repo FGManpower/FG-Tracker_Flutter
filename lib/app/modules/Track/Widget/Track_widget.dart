@@ -54,8 +54,7 @@ Future<ui.Image?> _fetchAndDecodeImage(String url, int targetSize) async {
     if (bytes == null) {
       final uri = Uri.tryParse(url);
       if (uri == null || !uri.hasScheme) return null;
-      final response =
-          await http.get(uri).timeout(const Duration(seconds: 4));
+      final response = await http.get(uri).timeout(const Duration(seconds: 4));
       if (response.statusCode == 200 && response.bodyBytes.isNotEmpty) {
         bytes = response.bodyBytes;
         MarkerCache.byteCache[url] = bytes;
@@ -120,9 +119,12 @@ Future<BitmapDescriptor> getCustomIcon(
 
     // Left curve from tip up to circle tangent
     teardropPath.cubicTo(
-      cx - 5.0, tipY - 32.0,
-      cx - headRadius * 1.04, cy + headRadius * 0.50,
-      cx - headRadius, cy,
+      cx - 5.0,
+      tipY - 32.0,
+      cx - headRadius * 1.04,
+      cy + headRadius * 0.50,
+      cx - headRadius,
+      cy,
     );
 
     // Arc across the top circle
@@ -134,14 +136,18 @@ Future<BitmapDescriptor> getCustomIcon(
 
     // Right curve back down to bottom tip
     teardropPath.cubicTo(
-      cx + headRadius * 1.04, cy + headRadius * 0.50,
-      cx + 5.0, tipY - 32.0,
-      cx, tipY,
+      cx + headRadius * 1.04,
+      cy + headRadius * 0.50,
+      cx + 5.0,
+      tipY - 32.0,
+      cx,
+      tipY,
     );
     teardropPath.close();
 
     // 1. Drop shadow for map depth
-    canvas.drawShadow(teardropPath, Colors.black.withOpacity(0.38), 6.0, true);
+    canvas.drawShadow(
+        teardropPath, Colors.black.withValues(alpha: 0.38), 6.0, true);
 
     // 2. Solid Purple Fill (matches screenshot)
     final pinColor = isMe ? const Color(0xFF654CE8) : const Color(0xFF755FE2);
@@ -370,8 +376,8 @@ class MarkerWidget extends StatelessWidget {
             boxShadow: [
               BoxShadow(
                 color: online
-                    ? const Color(0xFF10B981).withOpacity(0.35)
-                    : Colors.black.withOpacity(0.12),
+                    ? const Color(0xFF10B981).withValues(alpha: 0.35)
+                    : Colors.black.withValues(alpha: 0.12),
                 blurRadius: 6,
                 spreadRadius: 1,
                 offset: const Offset(0, 1),

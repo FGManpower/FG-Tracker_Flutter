@@ -32,7 +32,8 @@ class MemberDataRes {
       return;
     }
 
-    final rawStatus = json['status'] ?? json['success'] ?? json['statusCode'] ?? json['code'];
+    final rawStatus =
+        json['status'] ?? json['success'] ?? json['statusCode'] ?? json['code'];
     status = rawStatus == true ||
         rawStatus == 1 ||
         rawStatus == '1' ||
@@ -53,7 +54,7 @@ class MemberDataRes {
         json['results'];
 
     if (list is Map) {
-      final mapData = list as Map;
+      final mapData = list;
       list = mapData['members'] ??
           mapData['groupMembers'] ??
           mapData['group_members'] ??
@@ -210,9 +211,15 @@ class MemberData {
         user?['locationSharing'];
     locationSharing = _parseBool(rawLocSharing) ?? true;
 
-    location = (json['location'] ?? json['address'] ?? user?['location'])?.toString();
-    department = (json['department'] ?? json['dept'] ?? user?['department'])?.toString();
-    team = (json['team'] ?? json['groupName'] ?? json['group_name'] ?? user?['team'])?.toString();
+    location =
+        (json['location'] ?? json['address'] ?? user?['location'])?.toString();
+    department =
+        (json['department'] ?? json['dept'] ?? user?['department'])?.toString();
+    team = (json['team'] ??
+            json['groupName'] ??
+            json['group_name'] ??
+            user?['team'])
+        ?.toString();
   }
 
   Map<String, dynamic> toJson() {

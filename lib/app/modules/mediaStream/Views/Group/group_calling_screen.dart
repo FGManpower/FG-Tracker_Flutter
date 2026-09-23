@@ -36,7 +36,10 @@ class GroupCallingScreen extends GetView<GroupCallingController> {
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                    colors: [Colors.black.withOpacity(0.7), Colors.transparent],
+                    colors: [
+                      Colors.black.withValues(alpha: 0.7),
+                      Colors.transparent
+                    ],
                   ),
                 ),
                 child: _buildHeader(),

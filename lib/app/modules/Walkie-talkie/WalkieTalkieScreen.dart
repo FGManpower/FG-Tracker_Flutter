@@ -101,21 +101,22 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
 
     _rippleWorker =
         everAll([controller.activeSpeakerId, controller.audioState], (_) {
-          final isTalking = controller.isTalking;
-          final hasActive = controller.hasActiveSpeaker;
-          _log('Ripple worker check: isTalking=$isTalking, hasActiveSpeaker=$hasActive');
+      final isTalking = controller.isTalking;
+      final hasActive = controller.hasActiveSpeaker;
+      _log(
+          'Ripple worker check: isTalking=$isTalking, hasActiveSpeaker=$hasActive');
 
-          if (isTalking || hasActive) {
-            if (!_rippleController.isAnimating) {
-              _log('Starting ripple animation loop');
-              _rippleController.repeat();
-            }
-          } else {
-            _log('Stopping ripple animation loop');
-            _rippleController.stop();
-            _rippleController.reset();
-          }
-        });
+      if (isTalking || hasActive) {
+        if (!_rippleController.isAnimating) {
+          _log('Starting ripple animation loop');
+          _rippleController.repeat();
+        }
+      } else {
+        _log('Stopping ripple animation loop');
+        _rippleController.stop();
+        _rippleController.reset();
+      }
+    });
 
     _pulseWorker = ever(controller.isPressed, (bool pressed) {
       _log('Pulse worker triggered. PTT Button pressed state: $pressed');
@@ -247,7 +248,8 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
     double newOffset = _startY - currentY;
     if (newOffset < 0) newOffset = 0;
 
-    _log('PTT Drag moving upwards -> offset: ${newOffset.toStringAsFixed(1)}px / $_lockThreshold px');
+    _log(
+        'PTT Drag moving upwards -> offset: ${newOffset.toStringAsFixed(1)}px / $_lockThreshold px');
     controller.setDragOffset(newOffset);
 
     if (newOffset >= _lockThreshold) {
@@ -345,7 +347,8 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
               final bool isLandscapeWide = constraints.maxWidth >= 720 &&
                   constraints.maxWidth > constraints.maxHeight;
 
-              _log('Device orientation metrics: isLandscapeWide=$isLandscapeWide, maxWidth=${constraints.maxWidth}');
+              _log(
+                  'Device orientation metrics: isLandscapeWide=$isLandscapeWide, maxWidth=${constraints.maxWidth}');
 
               return Column(
                 children: [
@@ -360,12 +363,12 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                       child: isLandscapeWide
                           ? _buildWideLayout(constraints)
                           : Center(
-                        child: ConstrainedBox(
-                          constraints:
-                          const BoxConstraints(maxWidth: 520),
-                          child: _buildPortraitLayout(constraints),
-                        ),
-                      ),
+                              child: ConstrainedBox(
+                                constraints:
+                                    const BoxConstraints(maxWidth: 520),
+                                child: _buildPortraitLayout(constraints),
+                              ),
+                            ),
                     ),
                   ),
                 ],
@@ -424,7 +427,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                 borderRadius: BorderRadius.circular(28.r),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.03),
+                    color: Colors.black.withValues(alpha: 0.03),
                     blurRadius: 16,
                     offset: const Offset(0, 4),
                   ),
@@ -490,7 +493,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
               borderRadius: BorderRadius.circular(14.r),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.04),
+                  color: Colors.black.withValues(alpha: 0.04),
                   blurRadius: 10,
                   offset: const Offset(0, 2),
                 )
@@ -543,7 +546,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 10,
             offset: const Offset(0, 2),
           )
@@ -589,7 +592,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
         borderRadius: BorderRadius.circular(20.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 16,
             offset: const Offset(0, 4),
           )
@@ -690,15 +693,14 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(16.r),
-                    border: Border.all(
-                        color: const Color(0xFFE2E8F0), width: 1.2),
+                    border:
+                        Border.all(color: const Color(0xFFE2E8F0), width: 1.2),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(Icons.info_outline_rounded,
-                          color: _primaryPurple,
-                          size: 13.sp.clamp(12.0, 15.0)),
+                          color: _primaryPurple, size: 13.sp.clamp(12.0, 15.0)),
                       SizedBox(width: 4.w),
                       Text(
                         "Info",
@@ -770,7 +772,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
 
                 return Container(
                   padding:
-                  EdgeInsets.symmetric(horizontal: 10.w, vertical: 7.h),
+                      EdgeInsets.symmetric(horizontal: 10.w, vertical: 7.h),
                   decoration: BoxDecoration(
                     color: isSpeaking
                         ? const Color(0xFFF3F0FF)
@@ -778,7 +780,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                     borderRadius: BorderRadius.circular(12.r),
                     border: Border.all(
                       color: isSpeaking
-                          ? _primaryPurple.withOpacity(0.4)
+                          ? _primaryPurple.withValues(alpha: 0.4)
                           : Colors.transparent,
                       width: 1.2,
                     ),
@@ -799,7 +801,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                                 color: isMuted ? _mutedRed : _activeGreen,
                                 shape: BoxShape.circle,
                                 border:
-                                Border.all(color: Colors.white, width: 1.5),
+                                    Border.all(color: Colors.white, width: 1.5),
                               ),
                             ),
                           ),
@@ -824,8 +826,8 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                               isSpeaking
                                   ? "Speaking..."
                                   : (isAdmin
-                                  ? "Admin"
-                                  : (isMuted ? "Muted" : "Online")),
+                                      ? "Admin"
+                                      : (isMuted ? "Muted" : "Online")),
                               style: TextStyle(
                                 color: isSpeaking
                                     ? _primaryPurple
@@ -933,12 +935,12 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                       ),
                       SizedBox(height: 2.h),
                       Obx(() => Text(
-                        "${controller.totalParticipants.value > 0 ? controller.totalParticipants.value : 8} Members Online",
-                        style: TextStyle(
-                          color: _textSecondary,
-                          fontSize: 12.sp,
-                        ),
-                      )),
+                            "${controller.totalParticipants.value > 0 ? controller.totalParticipants.value : 8} Members Online",
+                            style: TextStyle(
+                              color: _textSecondary,
+                              fontSize: 12.sp,
+                            ),
+                          )),
                     ],
                   ),
                 ),
@@ -1012,46 +1014,45 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
   }
 
   List<WalkieParticipant> get _fallbackMembers => [
-    WalkieParticipant(
-      userId: '1',
-      name: 'Arjun',
-      image:
-      'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150',
-      isSpeaking: false,
-    ),
-    WalkieParticipant(
-      userId: '2',
-      name: 'Priya',
-      image:
-      'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150',
-      isSpeaking: true,
-    ),
-    WalkieParticipant(
-      userId: '3',
-      name: 'Rohit',
-      image:
-      'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
-      isSpeaking: false,
-    ),
-    WalkieParticipant(
-      userId: '4',
-      name: 'Imran',
-      image:
-      'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=150',
-      isSpeaking: false,
-    ),
-  ];
+        WalkieParticipant(
+          userId: '1',
+          name: 'Arjun',
+          image:
+              'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150',
+          isSpeaking: false,
+        ),
+        WalkieParticipant(
+          userId: '2',
+          name: 'Priya',
+          image:
+              'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150',
+          isSpeaking: true,
+        ),
+        WalkieParticipant(
+          userId: '3',
+          name: 'Rohit',
+          image:
+              'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
+          isSpeaking: false,
+        ),
+        WalkieParticipant(
+          userId: '4',
+          name: 'Imran',
+          image:
+              'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=150',
+          isSpeaking: false,
+        ),
+      ];
 
   Widget _buildMemberAvatar(
-      WalkieParticipant p, {
-        required int index,
-        required bool isFallback,
-      }) {
+    WalkieParticipant p, {
+    required int index,
+    required bool isFallback,
+  }) {
     final isSpeaking = p.isSpeaking;
     final isMuted = p.isMuted;
-    final isAdmin = isFallback
-        ? index == 0
-        : (args?['adminId'] == p.userId || index == 0);
+    final isAdmin =
+        isFallback ? index == 0 : (args?['adminId'] == p.userId || index == 0);
     final isOtherGroup = isFallback && index == 2;
 
     return SizedBox(
@@ -1085,7 +1086,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                     shape: BoxShape.circle,
                     border: Border.all(
                       color: isSpeaking
-                          ? _primaryPurple.withOpacity(0.3)
+                          ? _primaryPurple.withValues(alpha: 0.3)
                           : Colors.transparent,
                       width: 1.5,
                     ),
@@ -1160,34 +1161,34 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
               ),
             )
           else if (isOtherGroup)
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.people_alt_rounded,
-                      size: 8.5.sp, color: _textSecondary),
-                  SizedBox(width: 2.w),
-                  Text(
-                    "In Other",
-                    style: TextStyle(
-                      color: _textSecondary,
-                      fontSize: 8.sp,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              )
-            else if (isMuted)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.people_alt_rounded,
+                    size: 8.5.sp, color: _textSecondary),
+                SizedBox(width: 2.w),
                 Text(
-                  "Muted",
-                  maxLines: 1,
+                  "In Other",
                   style: TextStyle(
-                    color: _mutedRed,
-                    fontSize: 9.5.sp.clamp(8.5, 11.0),
-                    fontWeight: FontWeight.w600,
+                    color: _textSecondary,
+                    fontSize: 8.sp,
+                    fontWeight: FontWeight.w500,
                   ),
-                )
-              else
-                SizedBox(height: 12.h.clamp(10.0, 14.0)),
+                ),
+              ],
+            )
+          else if (isMuted)
+            Text(
+              "Muted",
+              maxLines: 1,
+              style: TextStyle(
+                color: _mutedRed,
+                fontSize: 9.5.sp.clamp(8.5, 11.0),
+                fontWeight: FontWeight.w600,
+              ),
+            )
+          else
+            SizedBox(height: 12.h.clamp(10.0, 14.0)),
         ],
       ),
     );
@@ -1201,10 +1202,10 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
 
         final double availableStackH = (totalH - 76.0).clamp(180.0, 480.0);
         final double buttonSize =
-        (availableStackH * (isWide ? 0.46 : 0.50)).clamp(120.0, 175.0);
+            (availableStackH * (isWide ? 0.46 : 0.50)).clamp(120.0, 175.0);
         final double maxRingRadius = math.min(availableStackH, totalW);
         final double lockTargetTop =
-        math.max(6.0, ((availableStackH - buttonSize) / 2) - 76.0);
+            math.max(6.0, ((availableStackH - buttonSize) / 2) - 76.0);
 
         return Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -1219,7 +1220,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                 borderRadius: BorderRadius.circular(20.r),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
+                    color: Colors.black.withValues(alpha: 0.04),
                     blurRadius: 10,
                     offset: const Offset(0, 2),
                   )
@@ -1229,26 +1230,26 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Obx(() => Container(
-                    width: 8.r.clamp(7.0, 9.0),
-                    height: 8.r.clamp(7.0, 9.0),
-                    decoration: BoxDecoration(
-                      color: controller.isConnected.value
-                          ? _activeGreen
-                          : _mutedRed,
-                      shape: BoxShape.circle,
-                    ),
-                  )),
+                        width: 8.r.clamp(7.0, 9.0),
+                        height: 8.r.clamp(7.0, 9.0),
+                        decoration: BoxDecoration(
+                          color: controller.isConnected.value
+                              ? _activeGreen
+                              : _mutedRed,
+                          shape: BoxShape.circle,
+                        ),
+                      )),
                   SizedBox(width: 8.w.clamp(6.0, 10.0)),
                   Obx(() => Text(
-                    controller.isConnected.value
-                        ? "You are Connected"
-                        : "Connecting...",
-                    style: TextStyle(
-                      color: _textDark,
-                      fontSize: 12.sp.clamp(11.0, 13.5),
-                      fontWeight: FontWeight.w600,
-                    ),
-                  )),
+                        controller.isConnected.value
+                            ? "You are Connected"
+                            : "Connecting...",
+                        style: TextStyle(
+                          color: _textDark,
+                          fontSize: 12.sp.clamp(11.0, 13.5),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      )),
                 ],
               ),
             ),
@@ -1266,7 +1267,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: _primaryPurple.withOpacity(0.025),
+                        color: _primaryPurple.withValues(alpha: 0.025),
                         width: 1.2,
                       ),
                     ),
@@ -1277,7 +1278,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: _primaryPurple.withOpacity(0.04),
+                        color: _primaryPurple.withValues(alpha: 0.04),
                         width: 1.2,
                       ),
                     ),
@@ -1288,7 +1289,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: _primaryPurple.withOpacity(0.06),
+                        color: _primaryPurple.withValues(alpha: 0.06),
                         width: 1.2,
                       ),
                     ),
@@ -1299,7 +1300,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: _primaryPurple.withOpacity(0.08),
+                        color: _primaryPurple.withValues(alpha: 0.08),
                         width: 1.2,
                       ),
                     ),
@@ -1315,7 +1316,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                           alignment: Alignment.center,
                           children: List.generate(4, (i) {
                             final progress =
-                            ((_rippleController.value + i * 0.25) % 1.0);
+                                ((_rippleController.value + i * 0.25) % 1.0);
                             final rippleSize = buttonSize * 0.85 +
                                 (progress * (buttonSize * 1.25));
                             final opacity = (1 - progress).clamp(0.0, 1.0);
@@ -1325,8 +1326,8 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 border: Border.all(
-                                  color:
-                                  _primaryPurple.withOpacity(opacity * 0.25),
+                                  color: _primaryPurple.withValues(
+                                      alpha: opacity * 0.25),
                                   width: 1.5,
                                 ),
                               ),
@@ -1346,7 +1347,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                         borderRadius: BorderRadius.circular(18.r),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.04),
+                            color: Colors.black.withValues(alpha: 0.04),
                             blurRadius: 8,
                             offset: const Offset(0, 2),
                           ),
@@ -1370,7 +1371,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                           Transform.translate(
                             offset: const Offset(0, -8),
                             child: Icon(Icons.keyboard_arrow_up_rounded,
-                                color: _lightPurple.withOpacity(0.5),
+                                color: _lightPurple.withValues(alpha: 0.5),
                                 size: 18.sp.clamp(16.0, 20.0)),
                           ),
                         ],
@@ -1390,7 +1391,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                         borderRadius: BorderRadius.circular(14.r),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
+                            color: Colors.black.withValues(alpha: 0.05),
                             blurRadius: 8,
                             offset: const Offset(0, 2),
                           ),
@@ -1415,7 +1416,8 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                     return Listener(
                       behavior: HitTestBehavior.opaque,
                       onPointerDown: (PointerDownEvent event) {
-                        _log('Raw pointer down at screen coordinates Dy: ${event.position.dy}');
+                        _log(
+                            'Raw pointer down at screen coordinates Dy: ${event.position.dy}');
                         _startY = event.position.dy;
                         _onPTTPressed();
                       },
@@ -1430,7 +1432,8 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                         }
                       },
                       onPointerCancel: (PointerCancelEvent event) {
-                        _log('⚠️ Warning: Raw touch input canceled by iOS gesture recognizer.');
+                        _log(
+                            '⚠️ Warning: Raw touch input canceled by iOS gesture recognizer.');
                         if (!controller.isSelfLocked.value) {
                           controller.setDragOffset(0.0);
                           _onPTTReleased();
@@ -1472,7 +1475,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                             borderRadius: BorderRadius.circular(20.r),
                             boxShadow: [
                               BoxShadow(
-                                color: _primaryPurple.withOpacity(0.35),
+                                color: _primaryPurple.withValues(alpha: 0.35),
                                 blurRadius: 10,
                                 offset: const Offset(0, 4),
                               ),
@@ -1486,13 +1489,13 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                                   size: 13.sp.clamp(11.0, 15.0)),
                               SizedBox(width: 6.w.clamp(4.0, 8.0)),
                               Obx(() => Text(
-                                "Auto-unlock in ${controller.lockRemainingSeconds.value}s",
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 11.5.sp.clamp(10.5, 13.0),
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              )),
+                                    "Auto-unlock in ${controller.lockRemainingSeconds.value}s",
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 11.5.sp.clamp(10.5, 13.0),
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  )),
                             ],
                           ),
                         ),
@@ -1514,8 +1517,8 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                     isMuted
                         ? Icons.headphones_rounded
                         : isSelfLocked
-                        ? Icons.lock_rounded
-                        : Icons.volume_up_rounded,
+                            ? Icons.lock_rounded
+                            : Icons.volume_up_rounded,
                     color: isMuted ? _mutedRed : _primaryPurple,
                     size: 15.sp.clamp(13.0, 17.0),
                   ),
@@ -1524,8 +1527,8 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                     isMuted
                         ? "Listening Only"
                         : isSelfLocked
-                        ? "Locked — Tap mic to stop"
-                        : "Release to Stop",
+                            ? "Locked — Tap mic to stop"
+                            : "Release to Stop",
                     style: TextStyle(
                       color: isMuted ? _mutedRed : _primaryPurple,
                       fontSize: 12.sp.clamp(11.0, 13.5),
@@ -1548,7 +1551,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
       height: s,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: Colors.grey.withOpacity(0.12),
+        color: Colors.grey.withValues(alpha: 0.12),
       ),
       padding: EdgeInsets.all((s * 0.05).clamp(5.0, 8.0)),
       child: Container(
@@ -1601,10 +1604,10 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
           height: size,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: _primaryPurple.withOpacity(0.08),
+            color: _primaryPurple.withValues(alpha: 0.08),
             boxShadow: [
               BoxShadow(
-                color: _primaryPurple.withOpacity(0.25),
+                color: _primaryPurple.withValues(alpha: 0.25),
                 blurRadius: 32,
                 spreadRadius: 3,
                 offset: const Offset(0, 6),
@@ -1636,10 +1639,10 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                     isLocked
                         ? Icons.lock_rounded
                         : isSelfLocked
-                        ? Icons.lock_open_rounded
-                        : isBusy
-                        ? Icons.mic_off_rounded
-                        : Icons.mic_rounded,
+                            ? Icons.lock_open_rounded
+                            : isBusy
+                                ? Icons.mic_off_rounded
+                                : Icons.mic_rounded,
                     color: Colors.white,
                     size: (size * 0.28).clamp(36.0, 52.0),
                   ),
@@ -1648,8 +1651,8 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                     isSelfLocked
                         ? "Tap to Unlock"
                         : isTalking
-                        ? "Talking..."
-                        : "Hold to Talk",
+                            ? "Talking..."
+                            : "Hold to Talk",
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: (size * 0.075).clamp(11.0, 14.0),
@@ -1676,7 +1679,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
         borderRadius: BorderRadius.circular(18.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 10,
             offset: const Offset(0, 2),
           )
@@ -1724,13 +1727,13 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
             ),
           ),
           Obx(() => CupertinoSwitch(
-            value: controller.isMuted.value,
-            activeTrackColor: _primaryPurple,
-            onChanged: (v) async {
-              _log('User changed toggle mute value: $v');
-              await GroupWalkieService.instance.toggleMute();
-            },
-          )),
+                value: controller.isMuted.value,
+                activeTrackColor: _primaryPurple,
+                onChanged: (v) async {
+                  _log('User changed toggle mute value: $v');
+                  await GroupWalkieService.instance.toggleMute();
+                },
+              )),
         ],
       ),
     );
@@ -1764,13 +1767,13 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                     borderRadius: BorderRadius.circular(18.r),
                     border: Border.all(
                       color: isSpeaker || isBluetooth
-                          ? _primaryPurple.withOpacity(0.3)
+                          ? _primaryPurple.withValues(alpha: 0.3)
                           : Colors.transparent,
                       width: 1.2,
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.03),
+                        color: Colors.black.withValues(alpha: 0.03),
                         blurRadius: 10,
                         offset: const Offset(0, 2),
                       )
@@ -1843,7 +1846,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                   borderRadius: BorderRadius.circular(18.r),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.03),
+                      color: Colors.black.withValues(alpha: 0.03),
                       blurRadius: 10,
                       offset: const Offset(0, 2),
                     )
@@ -1883,13 +1886,13 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
     final isIOS = Platform.isIOS;
     final phoneLabel = isIOS ? "iPhone" : "Phone";
     final phoneIcon =
-    isIOS ? Icons.phone_iphone_rounded : Icons.phone_android_rounded;
+        isIOS ? Icons.phone_iphone_rounded : Icons.phone_android_rounded;
 
     showModalBottomSheet(
       context: effectiveContext,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      barrierColor: Colors.black.withOpacity(0.35),
+      barrierColor: Colors.black.withValues(alpha: 0.35),
       builder: (sheetContext) {
         return SafeArea(
           child: Center(
@@ -1905,7 +1908,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                   borderRadius: BorderRadius.circular(24.r),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.08),
+                      color: Colors.black.withValues(alpha: 0.08),
                       blurRadius: 24,
                       offset: const Offset(0, 8),
                     ),
@@ -1977,7 +1980,8 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                         trailingIcon: phoneIcon,
                         isSelected: currentRoute == WalkieAudioRoute.earpiece,
                         onTap: () async {
-                          _log('User changed audio route to: EARPIECE / RECEIVER');
+                          _log(
+                              'User changed audio route to: EARPIECE / RECEIVER');
                           HapticFeedback.mediumImpact();
                           Navigator.of(sheetContext).pop();
                           await controller.setRoute(WalkieAudioRoute.earpiece);
@@ -2004,7 +2008,8 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                         isEnabled: hasBT,
                         onTap: () async {
                           if (!hasBT) {
-                            _log('Warning: Attempted to switch to Bluetooth but no device is active.');
+                            _log(
+                                'Warning: Attempted to switch to Bluetooth but no device is active.');
                             Get.snackbar(
                               "Bluetooth",
                               "No Bluetooth audio device connected. Please pair your Bluetooth headset in settings.",
@@ -2094,10 +2099,10 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                 width: 24.w.clamp(20.0, 28.0),
                 child: isSelected
                     ? Icon(
-                  Icons.check_rounded,
-                  color: _primaryPurple,
-                  size: 20.sp.clamp(18.0, 23.0),
-                )
+                        Icons.check_rounded,
+                        color: _primaryPurple,
+                        size: 20.sp.clamp(18.0, 23.0),
+                      )
                     : const SizedBox.shrink(),
               ),
               SizedBox(width: 10.w.clamp(8.0, 14.0)),
@@ -2114,7 +2119,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                             : (isSelected ? _primaryPurple : _textDark),
                         fontSize: 15.sp.clamp(14.0, 16.5),
                         fontWeight:
-                        isSelected ? FontWeight.w700 : FontWeight.w500,
+                            isSelected ? FontWeight.w700 : FontWeight.w500,
                       ),
                     ),
                     if (subtitle != null) ...[
@@ -2123,7 +2128,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                         subtitle,
                         style: TextStyle(
                           color: isSelected
-                              ? _primaryPurple.withOpacity(0.8)
+                              ? _primaryPurple.withValues(alpha: 0.8)
                               : _textSecondary,
                           fontSize: 11.5.sp.clamp(10.5, 12.5),
                           fontWeight: FontWeight.w400,
@@ -2136,7 +2141,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
               Icon(
                 trailingIcon,
                 color: !isEnabled
-                    ? _slateGray.withOpacity(0.5)
+                    ? _slateGray.withValues(alpha: 0.5)
                     : (isSelected ? _primaryPurple : _textSecondary),
                 size: 22.sp.clamp(19.0, 25.0),
               ),
@@ -2163,7 +2168,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
       AlertDialog(
         backgroundColor: _cardWhite,
         shape:
-        RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
         title: Text(
           "Exit Walkie?",
           style: TextStyle(

@@ -58,9 +58,9 @@ class GroupIncomingCallScreen extends GetView<GroupIncomingCallController> {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
+        color: Colors.white.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(30.r),
-        border: Border.all(color: Colors.white.withOpacity(0.2)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -313,7 +313,7 @@ class _SlideUpJoinButtonState extends State<_SlideUpJoinButton>
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 color: const Color(0xFF9880FA)
-                                    .withOpacity((1.12 - v) * 0.35),
+                                    .withValues(alpha: (1.12 - v) * 0.35),
                               ),
                             ),
                             Container(
@@ -323,7 +323,7 @@ class _SlideUpJoinButtonState extends State<_SlideUpJoinButton>
                                 shape: BoxShape.circle,
                                 border: Border.all(
                                   color: const Color(0xFF9880FA)
-                                      .withOpacity((1.12 - v) * 0.5),
+                                      .withValues(alpha: (1.12 - v) * 0.5),
                                   width: 2,
                                 ),
                               ),
@@ -377,7 +377,8 @@ class _SlideUpJoinButtonState extends State<_SlideUpJoinButton>
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
-                              color: const Color(0xFF9880FA).withOpacity(0.45),
+                              color: const Color(0xFF9880FA)
+                                  .withValues(alpha: 0.45),
                               blurRadius: 18,
                               spreadRadius: 2,
                             ),

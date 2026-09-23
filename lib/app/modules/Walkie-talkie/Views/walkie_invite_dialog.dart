@@ -4,8 +4,6 @@ import 'package:fgtracker/app/modules/Walkie-talkie/WalkieTalkieScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
-import '../../../../gen/assets.gen.dart';
 import '../../../routes/app_pages.dart';
 
 class WalkieInviteDialog {
@@ -237,7 +235,8 @@ class _BannerInviteWidgetState extends State<_BannerInviteWidget>
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: _btnRejectBg,
-              border: Border.all(color: _primaryPurple.withValues(alpha: 0.3), width: 1),
+              border: Border.all(
+                  color: _primaryPurple.withValues(alpha: 0.3), width: 1),
             ),
             child: Icon(
               Icons.speaker_phone_rounded,
@@ -285,19 +284,19 @@ class _BannerInviteWidgetState extends State<_BannerInviteWidget>
               color: isGradient ? null : bgColor,
               gradient: isGradient
                   ? const LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [Color(0xFF8B5CF6), Color(0xFF6366F1)],
-              )
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [Color(0xFF8B5CF6), Color(0xFF6366F1)],
+                    )
                   : null,
               boxShadow: isGradient
                   ? [
-                BoxShadow(
-                  color: const Color(0xFF8B5CF6).withValues(alpha: 0.4),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
-                )
-              ]
+                      BoxShadow(
+                        color: const Color(0xFF8B5CF6).withValues(alpha: 0.4),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      )
+                    ]
                   : null,
             ),
             child: Icon(icon, color: iconColor, size: 22.sp),

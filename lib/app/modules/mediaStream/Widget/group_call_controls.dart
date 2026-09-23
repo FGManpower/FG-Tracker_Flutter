@@ -15,11 +15,11 @@ class GroupCallControls extends StatelessWidget {
       margin: EdgeInsets.fromLTRB(16.w, 0, 16.w, 16.h),
       padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 14.h),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.95),
+        color: Colors.white.withValues(alpha: 0.95),
         borderRadius: BorderRadius.circular(28.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 16,
             offset: const Offset(0, 4),
           ),
@@ -44,17 +44,17 @@ class GroupCallControls extends StatelessWidget {
                 controller.openMoreSheet();
               },
             ),
-
             if (isVideo)
               _ControlItem(
-                icon: isVideoOn ? Icons.videocam_rounded : Icons.videocam_off_rounded,
+                icon: isVideoOn
+                    ? Icons.videocam_rounded
+                    : Icons.videocam_off_rounded,
                 label: isVideoOn ? "Camera on" : "Camera off",
                 bgColor: Colors.white,
                 iconColor: const Color(0xFF6E5CA4),
                 borderColor: const Color(0xFFE9E5FE),
                 onTap: controller.toggleCamera,
               ),
-
             _ControlItem(
               icon: Icons.call_end_rounded,
               label: "End call",
@@ -64,7 +64,6 @@ class GroupCallControls extends StatelessWidget {
               iconSize: 28,
               onTap: controller.endCall,
             ),
-
             _ControlItem(
               icon: isAudioOn ? Icons.mic_rounded : Icons.mic_off_rounded,
               label: isAudioOn ? "Mute" : "Unmute",
@@ -73,9 +72,10 @@ class GroupCallControls extends StatelessWidget {
               borderColor: const Color(0xFFE9E5FE),
               onTap: controller.toggleMic,
             ),
-
             _ControlItem(
-              icon: isSpeakerOn ? Icons.volume_up_rounded : Icons.volume_off_rounded,
+              icon: isSpeakerOn
+                  ? Icons.volume_up_rounded
+                  : Icons.volume_off_rounded,
               label: "Speaker",
               bgColor: Colors.white,
               iconColor: const Color(0xFF6E5CA4),
@@ -129,19 +129,19 @@ class _ControlItem extends StatelessWidget {
                   : null,
               boxShadow: bgColor == const Color(0xFFFF3B30)
                   ? [
-                BoxShadow(
-                  color: const Color(0xFFFF3B30).withOpacity(0.35),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                ),
-              ]
+                      BoxShadow(
+                        color: const Color(0xFFFF3B30).withValues(alpha: 0.35),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ]
                   : [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.04),
-                  blurRadius: 6,
-                  offset: const Offset(0, 2),
-                ),
-              ],
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.04),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
             ),
             child: Icon(icon, color: iconColor, size: iconSize.sp),
           ),

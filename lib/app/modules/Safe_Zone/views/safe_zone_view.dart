@@ -10,7 +10,7 @@ import '../Widgets/safe_common_widgets.dart';
 import '../controller/safe_zone_controller.dart';
 
 class SafeZoneView extends StatelessWidget {
-  const SafeZoneView({Key? key}) : super(key: key);
+  const SafeZoneView({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -21,9 +21,10 @@ class SafeZoneView extends StatelessWidget {
       appBar: SafeAppBar(
         title: "Safe Zone",
         subtitle:
-        "Define a safe area. Get alerts if someone\nsteps outside the safe zone.",
+            "Define a safe area. Get alerts if someone\nsteps outside the safe zone.",
         onInfoTap: () => _showSafeZoneHelp(context),
-      ),      body: Column(
+      ),
+      body: Column(
         children: [
           SizedBox(height: 5.h),
           SafeTabBar(controller: controller.tabController),
@@ -41,7 +42,8 @@ class SafeZoneView extends StatelessWidget {
     );
   }
 
-  Widget _buildIndividualTab(BuildContext context, SafeZoneController controller) {
+  Widget _buildIndividualTab(
+      BuildContext context, SafeZoneController controller) {
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
       padding: EdgeInsets.all(16.w),
@@ -52,10 +54,10 @@ class SafeZoneView extends StatelessWidget {
             title: "1. Select Member",
             innerCard: true,
             child: Obx(() => SafeMemberCard(
-              name: controller.selectedIndividualMember.value,
-              phone: controller.memberPhone.value,
-              showContainer: false,
-            )),
+                  name: controller.selectedIndividualMember.value,
+                  phone: controller.memberPhone.value,
+                  showContainer: false,
+                )),
           ),
           SizedBox(height: 16.h),
           SafeCard(
@@ -67,7 +69,6 @@ class SafeZoneView extends StatelessWidget {
           SizedBox(height: 16.h),
           _buildCombinedRadiusLocationCard(controller, isGroup: false),
           SizedBox(height: 16.h),
-
           GestureDetector(
             onTap: () => showSafeZoneAlertSheet(context),
             child: SafeCard(
@@ -100,9 +101,9 @@ class SafeZoneView extends StatelessWidget {
             title: "1. Select Group",
             innerCard: true,
             child: Obx(() => SafeGroupCard(
-              groupName: controller.selectedGroup.value,
-              showContainer: false,
-            )),
+                  groupName: controller.selectedGroup.value,
+                  showContainer: false,
+                )),
           ),
           SizedBox(height: 16.h),
           SafeCard(
@@ -114,7 +115,6 @@ class SafeZoneView extends StatelessWidget {
           SizedBox(height: 16.h),
           _buildCombinedRadiusLocationCard(controller, isGroup: true),
           SizedBox(height: 16.h),
-
           GestureDetector(
             onTap: () => showSafeZoneAlertSheet(context),
             child: SafeCard(
@@ -144,7 +144,8 @@ class SafeZoneView extends StatelessWidget {
           final LatLng pos = controller.selectedLocation.value;
           final double radius = isGroup
               ? controller.radiusOptions[controller.groupRadiusIndex.value]
-              : controller.radiusOptions[controller.individualRadiusIndex.value];
+              : controller
+                  .radiusOptions[controller.individualRadiusIndex.value];
 
           final List<LatLng> points = _calculateCirclePoints(pos, radius);
 
@@ -152,7 +153,7 @@ class SafeZoneView extends StatelessWidget {
             Polygon(
               polygonId: PolygonId('safe_zone_fill_$radius'),
               points: points,
-              fillColor: SafeColors.primary.withOpacity(0.18),
+              fillColor: SafeColors.primary.withValues(alpha: 0.18),
               strokeColor: Colors.transparent,
               strokeWidth: 0,
             ),
@@ -197,7 +198,6 @@ class SafeZoneView extends StatelessWidget {
             polylines: dashedPolyline,
           );
         }),
-
         Obx(() {
           if (controller.suggestions.isEmpty) return const SizedBox.shrink();
 
@@ -213,7 +213,7 @@ class SafeZoneView extends StatelessWidget {
                 border: Border.all(color: Colors.grey.shade200, width: 1),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.12),
+                    color: Colors.black.withValues(alpha: 0.12),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   ),
@@ -231,7 +231,8 @@ class SafeZoneView extends StatelessWidget {
                     final suggestion = controller.suggestions[index];
                     return ListTile(
                       dense: true,
-                      contentPadding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 2.h),
+                      contentPadding:
+                          EdgeInsets.symmetric(horizontal: 14.w, vertical: 2.h),
                       leading: Icon(
                         Icons.location_on_rounded,
                         color: SafeColors.primary,
@@ -260,6 +261,7 @@ class SafeZoneView extends StatelessWidget {
       ],
     );
   }
+
   List<LatLng> _calculateCirclePoints(LatLng center, double radiusInMeters) {
     final List<LatLng> points = [];
     const int numberOfPoints = 120;
@@ -271,8 +273,8 @@ class SafeZoneView extends StatelessWidget {
 
     for (int i = 0; i < numberOfPoints; i++) {
       final double bearing = (i * 360 / numberOfPoints) * pi / 180;
-      final double pointLatRad = asin(sin(latRad) * cos(d) +
-          cos(latRad) * sin(d) * cos(bearing));
+      final double pointLatRad =
+          asin(sin(latRad) * cos(d) + cos(latRad) * sin(d) * cos(bearing));
       final double pointLngRad = lngRad +
           atan2(sin(bearing) * sin(d) * cos(latRad),
               cos(d) - sin(latRad) * sin(pointLatRad));
@@ -286,9 +288,9 @@ class SafeZoneView extends StatelessWidget {
   }
 
   Widget _buildCombinedRadiusLocationCard(
-      SafeZoneController controller, {
-        required bool isGroup,
-      }) {
+    SafeZoneController controller, {
+    required bool isGroup,
+  }) {
     return SafeCard(
       title: "3. Set Safe Zone Radius",
       gapAfterTitle: 16,
@@ -311,8 +313,8 @@ class SafeZoneView extends StatelessWidget {
                     duration: const Duration(milliseconds: 150),
                     alignment: Alignment(alignX, 0),
                     child: Container(
-                      padding: EdgeInsets.symmetric(
-                          horizontal: 12.w, vertical: 5.h),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 12.w, vertical: 5.h),
                       decoration: BoxDecoration(
                         color: SafeColors.primary,
                         borderRadius: BorderRadius.circular(6.r),
@@ -326,8 +328,8 @@ class SafeZoneView extends StatelessWidget {
                 }),
                 Obx(() {
                   final double sliderValue = (isGroup
-                      ? controller.groupRadiusIndex.value
-                      : controller.individualRadiusIndex.value)
+                          ? controller.groupRadiusIndex.value
+                          : controller.individualRadiusIndex.value)
                       .toDouble();
 
                   return SliderTheme(
@@ -335,7 +337,7 @@ class SafeZoneView extends StatelessWidget {
                       activeTrackColor: SafeColors.primary,
                       inactiveTrackColor: Colors.grey.shade200,
                       thumbColor: Colors.white,
-                      overlayColor: SafeColors.primary.withOpacity(0.1),
+                      overlayColor: SafeColors.primary.withValues(alpha: 0.1),
                       trackHeight: 3.h,
                       thumbShape: RoundSliderThumbShape(
                           enabledThumbRadius: 9.r, elevation: 2),
@@ -355,8 +357,7 @@ class SafeZoneView extends StatelessWidget {
                   padding: EdgeInsets.symmetric(horizontal: 6.w),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children:
-                    controller.radiusOptions.asMap().entries.map((e) {
+                    children: controller.radiusOptions.asMap().entries.map((e) {
                       return Obx(() {
                         final activeIndex = isGroup
                             ? controller.groupRadiusIndex.value
@@ -376,7 +377,7 @@ class SafeZoneView extends StatelessWidget {
                                   ? SafeColors.primary
                                   : Colors.grey.shade600,
                               fontweight:
-                              isActive ? FontWeight.bold : FontWeight.w500,
+                                  isActive ? FontWeight.bold : FontWeight.w500,
                             ),
                           ],
                         );
@@ -394,10 +395,11 @@ class SafeZoneView extends StatelessWidget {
                 Container(
                   padding: EdgeInsets.all(8.w),
                   decoration: BoxDecoration(
-                    color: SafeColors.primary.withOpacity(0.08),
+                    color: SafeColors.primary.withValues(alpha: 0.08),
                     shape: BoxShape.circle,
                     border: Border.all(
-                        color: SafeColors.primary.withOpacity(0.3), width: 1),
+                        color: SafeColors.primary.withValues(alpha: 0.3),
+                        width: 1),
                   ),
                   child: Icon(Icons.shield_outlined,
                       color: SafeColors.primary, size: 20.sp),
@@ -437,9 +439,9 @@ class SafeZoneView extends StatelessWidget {
                     Obx(() {
                       final radius = isGroup
                           ? controller
-                          .radiusOptions[controller.groupRadiusIndex.value]
+                              .radiusOptions[controller.groupRadiusIndex.value]
                           : controller.radiusOptions[
-                      controller.individualRadiusIndex.value];
+                              controller.individualRadiusIndex.value];
                       return reausabletext(
                         controller.formatRadius(radius),
                         fontsize: 15,
@@ -455,7 +457,7 @@ class SafeZoneView extends StatelessWidget {
           if (isGroup) ...[
             SizedBox(height: 10.h),
             SafeInnerCard(
-              color: SafeColors.primary.withOpacity(0.06),
+              color: SafeColors.primary.withValues(alpha: 0.06),
               child: Row(
                 children: [
                   Icon(Icons.group_outlined,
@@ -482,8 +484,8 @@ class SafeZoneView extends StatelessWidget {
       children: [
         Container(
           padding: EdgeInsets.all(10.w),
-          decoration:
-          BoxDecoration(color: Colors.green.shade50, shape: BoxShape.circle),
+          decoration: BoxDecoration(
+              color: Colors.green.shade50, shape: BoxShape.circle),
           child: Icon(Icons.gpp_good_rounded, color: Colors.green, size: 24.sp),
         ),
         SizedBox(width: 12.w),
@@ -536,7 +538,7 @@ class SafeZoneView extends StatelessWidget {
       context: context,
       barrierDismissible: true,
       barrierLabel: "Safe Zone Help",
-      barrierColor: Colors.black.withOpacity(0.45),
+      barrierColor: Colors.black.withValues(alpha: 0.45),
       transitionDuration: const Duration(milliseconds: 180),
       pageBuilder: (context, animation, secondaryAnimation) {
         return SafeArea(
@@ -549,26 +551,23 @@ class SafeZoneView extends StatelessWidget {
                   color: Colors.transparent,
                   child: Container(
                     width: screenWidth * 0.485,
-
                     padding: const EdgeInsets.fromLTRB(
                       16,
                       14,
                       14,
                       14,
                     ),
-
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(18),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.12),
+                          color: Colors.black.withValues(alpha: 0.12),
                           blurRadius: 20,
                           offset: const Offset(0, 6),
                         ),
                       ],
                     ),
-
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -581,39 +580,32 @@ class SafeZoneView extends StatelessWidget {
                             color: const Color(0xff10205C),
                           ),
                         ),
-
                         const SizedBox(height: 15),
-
                         _helpItem(
                           icon: Icons.location_on_rounded,
                           title: "What is Safe Zone?",
                           description:
-                          "Set a specific area on the map and get alerts if the member steps outside the safe zone.",
+                              "Set a specific area on the map and get alerts if the member steps outside the safe zone.",
                         ),
-
                         const SizedBox(height: 13),
-
                         _helpItem(
                           icon: Icons.groups_rounded,
                           title: "How to Create Safe Zone?",
                           description:
-                          "Select a member, choose a location on the map and set the radius.",
+                              "Select a member, choose a location on the map and set the radius.",
                         ),
-
                         const SizedBox(height: 13),
-
                         _helpItem(
                           icon: Icons.gps_fixed_rounded,
                           title: "What is Safe Zone Radius?",
                           description:
-                          "Set the area radius (500 m, 1 km, 2 km or 5 km) according to your need.",
+                              "Set the area radius (500 m, 1 km, 2 km or 5 km) according to your need.",
                         ),
                       ],
-                    ),                  ),
+                    ),
+                  ),
                 ),
               ),
-
-
               Positioned(
                 top: 56,
                 right: 28,
@@ -627,11 +619,11 @@ class SafeZoneView extends StatelessWidget {
         );
       },
       transitionBuilder: (
-          context,
-          animation,
-          secondaryAnimation,
-          child,
-          ) {
+        context,
+        animation,
+        secondaryAnimation,
+        child,
+      ) {
         return FadeTransition(
           opacity: CurvedAnimation(
             parent: animation,
@@ -653,6 +645,7 @@ class SafeZoneView extends StatelessWidget {
       },
     );
   }
+
   Widget _helpItem({
     required IconData icon,
     required String title,
@@ -674,9 +667,7 @@ class SafeZoneView extends StatelessWidget {
             size: 17,
           ),
         ),
-
         const SizedBox(width: 8),
-
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -690,9 +681,7 @@ class SafeZoneView extends StatelessWidget {
                   color: Color(0xff10205C),
                 ),
               ),
-
               const SizedBox(height: 2),
-
               Text(
                 description,
                 style: const TextStyle(
@@ -708,7 +697,6 @@ class SafeZoneView extends StatelessWidget {
       ],
     );
   }
-
 }
 
 class _HelpArrowPainter extends CustomPainter {

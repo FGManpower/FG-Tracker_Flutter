@@ -10,7 +10,7 @@ import '../controller/safety_dashboard_controller.dart';
 import '../Widgets/safe_common_widgets.dart';
 
 class SafetyDashboardView extends StatelessWidget {
-   SafetyDashboardView({Key? key}) : super(key: key);
+  SafetyDashboardView({super.key});
 
   final Color _textColorDark = const Color(0xFF1A1A2C);
   final Color _textColorGrey = const Color(0xFF7A7A8C);
@@ -24,19 +24,19 @@ class SafetyDashboardView extends StatelessWidget {
   final notificationController = Get.find<NotificationController>();
 
   List<BoxShadow> get _cardShadow => [
-    BoxShadow(
-      color: const Color(0xFF6B4DFF).withOpacity(0.04),
-      blurRadius: 20,
-      spreadRadius: 2,
-      offset: const Offset(0, 6),
-    )
-  ];
+        BoxShadow(
+          color: const Color(0xFF6B4DFF).withValues(alpha: 0.04),
+          blurRadius: 20,
+          spreadRadius: 2,
+          offset: const Offset(0, 6),
+        )
+      ];
 
   Widget _circleIconBg(
-      Widget child, {
-        required Color bgColor,
-        double size = 56,
-      }) {
+    Widget child, {
+    required Color bgColor,
+    double size = 56,
+  }) {
     return Container(
       width: size.w,
       height: size.w,
@@ -45,7 +45,7 @@ class SafetyDashboardView extends StatelessWidget {
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 10,
             offset: const Offset(0, 3),
           ),
@@ -75,7 +75,7 @@ class SafetyDashboardView extends StatelessWidget {
               title: "Safe Zone",
               tag: "Area Protection",
               desc:
-              "Define a safe geographic area for your team. Get instant alerts if someone steps outside the safe zone.",
+                  "Define a safe geographic area for your team. Get instant alerts if someone steps outside the safe zone.",
               image: Assets.icons.safeZone.image(
                 height: 40.w,
                 width: 40.w,
@@ -88,7 +88,7 @@ class SafetyDashboardView extends StatelessWidget {
               title: "Safe Route",
               tag: "Route Protection",
               desc:
-              "Set predefined routes for your team members. Get alerts if someone deviates from the safe route.",
+                  "Set predefined routes for your team members. Get alerts if someone deviates from the safe route.",
               image: Assets.icons.safeRoute.image(
                 height: 40.w,
                 width: 40.w,
@@ -191,7 +191,6 @@ class SafetyDashboardView extends StatelessWidget {
                       color: _primaryColor,
                       size: 22.sp,
                     ),
-
                     if (count > 0)
                       Positioned(
                         top: -5.h,
@@ -381,11 +380,11 @@ class SafetyDashboardView extends StatelessWidget {
               width: 34.w,
               height: 34.w,
               decoration: BoxDecoration(
-                color: const Color(0xFF6B4DFF).withOpacity(0.06),
+                color: const Color(0xFF6B4DFF).withValues(alpha: 0.06),
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Colors.black.withValues(alpha: 0.05),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   )
@@ -404,8 +403,8 @@ class SafetyDashboardView extends StatelessWidget {
   }
 
   Widget _buildQuickOverviewCard(
-      SafetyDashboardController controller,
-      ) {
+    SafetyDashboardController controller,
+  ) {
     return Container(
       padding: EdgeInsets.symmetric(
         vertical: 12.h,
@@ -439,7 +438,7 @@ class SafetyDashboardView extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Obx(
-                              () => Text(
+                          () => Text(
                             controller.safeNowCount.value.toString(),
                             style: TextStyle(
                               fontFamily: 'Inter',
@@ -501,7 +500,7 @@ class SafetyDashboardView extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Obx(
-                              () => Text(
+                          () => Text(
                             controller.alertsCount.value
                                 .toString()
                                 .padLeft(2, '0'),
@@ -582,15 +581,15 @@ class SafetyDashboardView extends StatelessWidget {
                     _circleIconBg(
                       isZone
                           ? Assets.icons.safeZoneAlart.image(
-                        height: 34.w,
-                        width: 34.w,
-                        fit: BoxFit.contain,
-                      )
+                              height: 34.w,
+                              width: 34.w,
+                              fit: BoxFit.contain,
+                            )
                           : Assets.icons.safeRoute.image(
-                        height: 34.w,
-                        width: 34.w,
-                        fit: BoxFit.contain,
-                      ),
+                              height: 34.w,
+                              width: 34.w,
+                              fit: BoxFit.contain,
+                            ),
                       bgColor: isZone ? _zoneAlertIconBg : _routeAlertIconBg,
                       size: 44,
                     ),

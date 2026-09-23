@@ -111,7 +111,6 @@ class ChatBubble extends StatelessWidget {
                               message,
                               isSentByMe,
                             ),
-
                             if (message.isForwarded == true)
                               Padding(
                                 padding: EdgeInsets.only(bottom: 5.h),
@@ -136,7 +135,6 @@ class ChatBubble extends StatelessWidget {
                                   ],
                                 ),
                               ),
-
                             if (_isPlainTextMessage(message))
                               _buildTextWithTime(
                                 message: message,
@@ -666,7 +664,7 @@ class ChatBubble extends StatelessWidget {
 
     showDialog(
       context: bubbleContext,
-      barrierColor: Colors.black.withOpacity(0.18),
+      barrierColor: Colors.black.withValues(alpha: 0.18),
       builder: (ctx) {
         return Stack(
           children: [
@@ -689,7 +687,7 @@ class ChatBubble extends StatelessWidget {
                     borderRadius: BorderRadius.circular(16.r),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.14),
+                        color: Colors.black.withValues(alpha: 0.14),
                         blurRadius: 24,
                         offset: const Offset(0, 8),
                       ),
@@ -1603,7 +1601,7 @@ class GroupChatBubble extends StatelessWidget {
 
     showDialog(
       context: bubbleContext,
-      barrierColor: Colors.black.withOpacity(0.18),
+      barrierColor: Colors.black.withValues(alpha: 0.18),
       builder: (ctx) {
         return Stack(
           children: [
@@ -1626,7 +1624,7 @@ class GroupChatBubble extends StatelessWidget {
                     borderRadius: BorderRadius.circular(16.r),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.14),
+                        color: Colors.black.withValues(alpha: 0.14),
                         blurRadius: 24,
                         offset: const Offset(0, 8),
                       ),

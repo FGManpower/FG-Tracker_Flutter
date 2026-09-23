@@ -355,7 +355,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
               final bool isToggled = activeToggles[groupId] ?? false;
               return CupertinoSwitch(
                 value: isToggled,
-                activeColor: const Color(0xFF6B4DFF),
+                activeTrackColor: const Color(0xFF6B4DFF),
                 onChanged: (bool value) {
                   activeToggles[groupId] = value;
                 },

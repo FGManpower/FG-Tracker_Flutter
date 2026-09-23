@@ -7,8 +7,6 @@ import 'package:fgtracker/app/Core/constant/BottomSheet/ChatBottomSheet.dart';
 import 'package:fgtracker/app/Core/util/file_helper.dart';
 import 'package:fgtracker/app/Data/Services/file_services.dart';
 import 'package:fgtracker/app/Model/LocationDataRes.dart';
-import 'package:fgtracker/app/config/themes_data.dart';
-import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/modules/Messages/Controller/GroupChatController.dart';
 import 'package:fgtracker/app/modules/Messages/Controller/VoiceRecordController.dart';
 import 'package:fgtracker/app/modules/Messages/widgets/mentionList_item.dart';
@@ -239,10 +237,10 @@ class _ChatInputAreaState extends State<ChatInputArea> {
                                       stream: voiceController.amplitudeStream,
                                       barBuilder: (animation, amplitude) =>
                                           WaveFormBar(
-                                            animation: animation,
-                                            amplitude: amplitude,
-                                            color: _purple,
-                                          ),
+                                        animation: animation,
+                                        amplitude: amplitude,
+                                        color: _purple,
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -273,7 +271,7 @@ class _ChatInputAreaState extends State<ChatInputArea> {
                             GestureDetector(
                               onTap: () async {
                                 final path =
-                                await voiceController.stopRecording();
+                                    await voiceController.stopRecording();
                                 if (path != null) {
                                   widget.onVoiceSend!(path);
                                 }
@@ -358,8 +356,8 @@ class _ChatInputAreaState extends State<ChatInputArea> {
                                         onGallery: () async {
                                           Navigator.pop(context);
                                           final List<XFile> mediaFiles =
-                                          await FileServices()
-                                              .pickMultipleMediaFromGallery();
+                                              await FileServices()
+                                                  .pickMultipleMediaFromGallery();
                                           if (mediaFiles.isEmpty) return;
                                           final List<File> images = [];
                                           final List<String> videos = [];
@@ -474,29 +472,29 @@ class _ChatInputAreaState extends State<ChatInputArea> {
                               onTap: widget.isSending.value
                                   ? null
                                   : () {
-                                if (isEditing) {
-                                  final newText =
-                                  widget.textController.text.trim();
-                                  if (newText.isEmpty) return;
-                                  if (widget.messageController != null) {
-                                    widget.messageController!
-                                        .updateEditedMessage(
-                                      newText: newText,
-                                    );
-                                  } else if (widget
-                                      .groupMessageController !=
-                                      null) {
-                                    widget.groupMessageController!
-                                        .updateEditedMessage(
-                                      newText: newText,
-                                    );
-                                  }
-                                  widget.textController.clear();
-                                  widget.messageText.value = "";
-                                } else {
-                                  widget.onSend();
-                                }
-                              },
+                                      if (isEditing) {
+                                        final newText =
+                                            widget.textController.text.trim();
+                                        if (newText.isEmpty) return;
+                                        if (widget.messageController != null) {
+                                          widget.messageController!
+                                              .updateEditedMessage(
+                                            newText: newText,
+                                          );
+                                        } else if (widget
+                                                .groupMessageController !=
+                                            null) {
+                                          widget.groupMessageController!
+                                              .updateEditedMessage(
+                                            newText: newText,
+                                          );
+                                        }
+                                        widget.textController.clear();
+                                        widget.messageText.value = "";
+                                      } else {
+                                        widget.onSend();
+                                      }
+                                    },
                               child: CircleAvatar(
                                 radius: 24.r,
                                 backgroundColor: _purple,
@@ -589,7 +587,7 @@ class _ChatInputAreaState extends State<ChatInputArea> {
             return Expanded(
               child: Padding(
                 padding:
-                EdgeInsets.only(right: index < displayCount - 1 ? 8.w : 0),
+                    EdgeInsets.only(right: index < displayCount - 1 ? 8.w : 0),
                 child: AspectRatio(
                   aspectRatio: 1,
                   child: Stack(
@@ -693,7 +691,7 @@ class _ChatInputAreaState extends State<ChatInputArea> {
             return Expanded(
               child: Padding(
                 padding:
-                EdgeInsets.only(right: index < displayCount - 1 ? 8.w : 0),
+                    EdgeInsets.only(right: index < displayCount - 1 ? 8.w : 0),
                 child: AspectRatio(
                   aspectRatio: 1,
                   child: Stack(
@@ -763,7 +761,7 @@ class _ChatInputAreaState extends State<ChatInputArea> {
                       ),
                       Obx(() {
                         final isUploading =
-                        widget.uploadingVideoIndexes.contains(index);
+                            widget.uploadingVideoIndexes.contains(index);
                         if (!isUploading) return const SizedBox();
 
                         final progress =
@@ -786,7 +784,7 @@ class _ChatInputAreaState extends State<ChatInputArea> {
                                         strokeWidth: 3,
                                         backgroundColor: Colors.white24,
                                         valueColor:
-                                        const AlwaysStoppedAnimation<Color>(
+                                            const AlwaysStoppedAnimation<Color>(
                                           Colors.white,
                                         ),
                                       ),
@@ -827,7 +825,7 @@ class _ChatInputAreaState extends State<ChatInputArea> {
                         ),
                       Obx(() {
                         final isUploading =
-                        widget.uploadingVideoIndexes.contains(index);
+                            widget.uploadingVideoIndexes.contains(index);
                         if (isUploading) return const SizedBox();
 
                         return Positioned(

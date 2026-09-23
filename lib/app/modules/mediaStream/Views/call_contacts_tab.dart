@@ -55,7 +55,8 @@ class _CallContactsTabState extends State<CallContactsTab> {
       }
 
       // 4. Permission is granted, but no matched registered contacts found
-      if (controller.allUserProfileData.isEmpty || controller.filteredUsers.isEmpty) {
+      if (controller.allUserProfileData.isEmpty ||
+          controller.filteredUsers.isEmpty) {
         return RefreshIndicator(
           color: const Color(0xFF4818F0),
           onRefresh: controller.refreshContacts,
@@ -125,12 +126,12 @@ class _CallContactsTabState extends State<CallContactsTab> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(18.r),
         border: Border.all(
-          color: const Color(0xFF6B4DFF).withOpacity(0.18),
+          color: const Color(0xFF6B4DFF).withValues(alpha: 0.18),
           width: 1.2,
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF4818F0).withOpacity(0.04),
+            color: const Color(0xFF4818F0).withValues(alpha: 0.04),
             blurRadius: 14,
             offset: const Offset(0, 4),
           ),
@@ -210,7 +211,7 @@ class _CallContactsTabState extends State<CallContactsTab> {
                 borderRadius: BorderRadius.circular(20.r),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF4818F0).withOpacity(0.3),
+                    color: const Color(0xFF4818F0).withValues(alpha: 0.3),
                     blurRadius: 8,
                     offset: const Offset(0, 3),
                   ),
@@ -243,7 +244,8 @@ class _CallContactsTabState extends State<CallContactsTab> {
   }
 
   /// List of Contact Cards (Exact Screenshot 1)
-  Widget _buildContactsListUi({List<UserListData>? contactData, bool isLoading = false}) {
+  Widget _buildContactsListUi(
+      {List<UserListData>? contactData, bool isLoading = false}) {
     final bool loading = isLoading || contactData == null;
     final int count = loading ? 8 : contactData.length;
 
@@ -281,11 +283,9 @@ class _CallContactsTabState extends State<CallContactsTab> {
                           callerId: Global.storageServices
                               .get(PrefConst.userId)
                               .toString(),
-                          remoteUserId:
-                              contactData[index].userId.toString(),
+                          remoteUserId: contactData[index].userId.toString(),
                           is_video: false,
-                          callerName:
-                              contactData[index].name.toString(),
+                          callerName: contactData[index].name.toString(),
                         );
                       },
                       onTapVideo: () {
@@ -294,11 +294,9 @@ class _CallContactsTabState extends State<CallContactsTab> {
                           callerId: Global.storageServices
                               .get(PrefConst.userId)
                               .toString(),
-                          remoteUserId:
-                              contactData[index].userId.toString(),
+                          remoteUserId: contactData[index].userId.toString(),
                           is_video: true,
-                          callerName:
-                              contactData[index].name.toString(),
+                          callerName: contactData[index].name.toString(),
                         );
                       },
                     ),
@@ -401,9 +399,8 @@ class _ContactCard extends StatelessWidget {
             width: 11.w,
             height: 11.w,
             decoration: BoxDecoration(
-              color: isOnline
-                  ? const Color(0xFF10B981)
-                  : const Color(0xFF94A3B8),
+              color:
+                  isOnline ? const Color(0xFF10B981) : const Color(0xFF94A3B8),
               shape: BoxShape.circle,
               border: Border.all(color: Colors.white, width: 2.w),
             ),
@@ -430,7 +427,7 @@ class _ContactCard extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF1E1B4B).withOpacity(0.03),
+            color: const Color(0xFF1E1B4B).withValues(alpha: 0.03),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),

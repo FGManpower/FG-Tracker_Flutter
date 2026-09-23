@@ -36,8 +36,8 @@ class IncomingCallScreen extends GetView<IncomingCallController> {
 
         final Color textColor = isVideo ? Colors.white : audioText;
         final Color sideBtnBg = isVideo
-            ? Colors.white.withOpacity(0.18)
-            : const Color(0xFF9E92BA).withOpacity(0.85);
+            ? Colors.white.withValues(alpha: 0.18)
+            : const Color(0xFF9E92BA).withValues(alpha: 0.85);
 
         return WillPopScope(
           onWillPop: () async => false,
@@ -69,9 +69,9 @@ class IncomingCallScreen extends GetView<IncomingCallController> {
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
                         colors: [
-                          Colors.black.withOpacity(0.55),
-                          Colors.black.withOpacity(0.30),
-                          Colors.black.withOpacity(0.70),
+                          Colors.black.withValues(alpha: 0.55),
+                          Colors.black.withValues(alpha: 0.30),
+                          Colors.black.withValues(alpha: 0.70),
                         ],
                       ),
                     ),
@@ -87,8 +87,8 @@ class IncomingCallScreen extends GetView<IncomingCallController> {
                         ),
                         decoration: BoxDecoration(
                           color: isVideo
-                              ? Colors.white.withOpacity(0.08)
-                              : Colors.white.withOpacity(0.55),
+                              ? Colors.white.withValues(alpha: 0.08)
+                              : Colors.white.withValues(alpha: 0.55),
                           borderRadius: BorderRadius.circular(30.r),
                           border: Border.all(
                             color: isVideo ? Colors.white24 : Colors.white,
@@ -133,11 +133,11 @@ class IncomingCallScreen extends GetView<IncomingCallController> {
                             padding: EdgeInsets.all(4.r),
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              color:
-                                  Colors.white.withOpacity(isVideo ? 0.9 : 1),
+                              color: Colors.white
+                                  .withValues(alpha: isVideo ? 0.9 : 1),
                               boxShadow: [
                                 BoxShadow(
-                                  color: primaryPurple.withOpacity(0.22),
+                                  color: primaryPurple.withValues(alpha: 0.22),
                                   blurRadius: 22,
                                   spreadRadius: 2,
                                 ),
@@ -172,7 +172,7 @@ class IncomingCallScreen extends GetView<IncomingCallController> {
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(20.r),
                             border: Border.all(color: Colors.white38),
-                            color: Colors.white.withOpacity(0.06),
+                            color: Colors.white.withValues(alpha: 0.06),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
@@ -197,7 +197,7 @@ class IncomingCallScreen extends GetView<IncomingCallController> {
                         Icons.keyboard_double_arrow_up_rounded,
                         color: isVideo
                             ? Colors.white38
-                            : primaryPurple.withOpacity(0.45),
+                            : primaryPurple.withValues(alpha: 0.45),
                         size: 34.sp,
                       ),
                       SizedBox(height: 6.h),
@@ -206,7 +206,7 @@ class IncomingCallScreen extends GetView<IncomingCallController> {
                         style: TextStyle(
                           color: isVideo
                               ? Colors.white54
-                              : primaryPurple.withOpacity(0.7),
+                              : primaryPurple.withValues(alpha: 0.7),
                           fontSize: 12.sp,
                           fontFamily: FontFamily.interMedium,
                         ),
@@ -268,7 +268,7 @@ class IncomingCallScreen extends GetView<IncomingCallController> {
         ),
         BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-          child: Container(color: Colors.black.withOpacity(0.25)),
+          child: Container(color: Colors.black.withValues(alpha: 0.25)),
         ),
       ],
     );
@@ -281,7 +281,7 @@ class IncomingCallScreen extends GetView<IncomingCallController> {
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         border: Border.all(
-          color: primaryPurple.withOpacity(opacity),
+          color: primaryPurple.withValues(alpha: opacity),
           width: 1.6,
         ),
       ),
@@ -408,9 +408,9 @@ class _SlideUpAnswerButtonState extends State<_SlideUpAnswerButton>
                           begin: Alignment.bottomCenter,
                           end: Alignment.topCenter,
                           colors: [
-                            _purpleSoft.withOpacity(0.0),
-                            _purpleSoft.withOpacity(0.35),
-                            _purpleSoft.withOpacity(0.0),
+                            _purpleSoft.withValues(alpha: 0.0),
+                            _purpleSoft.withValues(alpha: 0.35),
+                            _purpleSoft.withValues(alpha: 0.0),
                           ],
                         ),
                       ),
@@ -435,8 +435,8 @@ class _SlideUpAnswerButtonState extends State<_SlideUpAnswerButton>
                                   width: 80.r * v,
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
-                                    color: _purpleSoft
-                                        .withOpacity((1.12 - v) * 0.35),
+                                    color: _purpleSoft.withValues(
+                                        alpha: (1.12 - v) * 0.35),
                                   ),
                                 ),
                                 Container(
@@ -445,8 +445,8 @@ class _SlideUpAnswerButtonState extends State<_SlideUpAnswerButton>
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
                                     border: Border.all(
-                                      color: _purpleSoft
-                                          .withOpacity((1.12 - v) * 0.5),
+                                      color: _purpleSoft.withValues(
+                                          alpha: (1.12 - v) * 0.5),
                                       width: 2,
                                     ),
                                   ),
@@ -502,7 +502,7 @@ class _SlideUpAnswerButtonState extends State<_SlideUpAnswerButton>
                               shape: BoxShape.circle,
                               boxShadow: [
                                 BoxShadow(
-                                  color: _purpleSoft.withOpacity(0.45),
+                                  color: _purpleSoft.withValues(alpha: 0.45),
                                   blurRadius: 18,
                                   spreadRadius: 2,
                                 ),

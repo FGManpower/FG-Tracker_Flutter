@@ -29,7 +29,8 @@ class GroupParticipantGrid extends StatelessWidget {
       return _buildTile(participants[0], isFullScreen: true);
     } else if (count == 2) {
       return Padding(
-        padding: EdgeInsets.only(left: 16.w, right: 16.w, top: 90.h, bottom: 140.h),
+        padding:
+            EdgeInsets.only(left: 16.w, right: 16.w, top: 90.h, bottom: 140.h),
         child: Column(
           children: [
             Expanded(child: _buildTile(participants[0], isFullScreen: false)),
@@ -40,7 +41,8 @@ class GroupParticipantGrid extends StatelessWidget {
       );
     } else {
       return GridView.builder(
-        padding: EdgeInsets.only(left: 16.w, right: 16.w, top: 90.h, bottom: 140.h),
+        padding:
+            EdgeInsets.only(left: 16.w, right: 16.w, top: 90.h, bottom: 140.h),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
           crossAxisSpacing: 10.w,
@@ -63,7 +65,8 @@ class GroupParticipantGrid extends StatelessWidget {
     }
   }
 
-  Widget _buildTile(GroupCallParticipant participant, {required bool isFullScreen}) {
+  Widget _buildTile(GroupCallParticipant participant,
+      {required bool isFullScreen}) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(isFullScreen ? 0 : 15.r),
       child: Container(
@@ -76,8 +79,8 @@ class GroupParticipantGrid extends StatelessWidget {
           children: [
             Obx(() {
               final isVideoOn = participant.isVideoOn.value;
-              final rendererReady =
-                  participant.renderer != null && participant.renderer!.textureId != null;
+              final rendererReady = participant.renderer != null &&
+                  participant.renderer!.textureId != null;
 
               if (isVideoMode && isVideoOn && rendererReady) {
                 return RTCVideoView(
@@ -92,7 +95,6 @@ class GroupParticipantGrid extends StatelessWidget {
                 isFullScreen: isFullScreen,
               );
             }),
-
             Align(
               alignment: Alignment.bottomCenter,
               child: Container(
@@ -102,33 +104,34 @@ class GroupParticipantGrid extends StatelessWidget {
                     begin: Alignment.bottomCenter,
                     end: Alignment.topCenter,
                     colors: [
-                      Colors.black.withOpacity(isFullScreen ? 0.8 : 0.7),
+                      Colors.black.withValues(alpha: isFullScreen ? 0.8 : 0.7),
                       Colors.transparent
                     ],
                   ),
                 ),
               ),
             ),
-
             if (!isFullScreen)
               Positioned(
                 left: 16.w,
                 bottom: 10.h,
                 child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
                   decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.4),
+                    color: Colors.black.withValues(alpha: 0.4),
                     borderRadius: BorderRadius.circular(8.r),
                   ),
                   child: reausabletext(
-                    participant.isLocal ? "${participant.name} (You)" : participant.name.toString(),
+                    participant.isLocal
+                        ? "${participant.name} (You)"
+                        : participant.name.toString(),
                     fontsize: 13,
                     fontfamily: FontFamily.interSemiBold,
                     color: Colors.white,
                   ),
                 ),
               ),
-
             if (!isFullScreen)
               Positioned(
                 right: 16.w,
@@ -141,16 +144,17 @@ class GroupParticipantGrid extends StatelessWidget {
                     return Container(
                       padding: EdgeInsets.all(6.r),
                       decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.5),
+                        color: Colors.black.withValues(alpha: 0.5),
                         shape: BoxShape.circle,
                       ),
-                      child: Icon(Icons.mic_off, color: Colors.white, size: 16.sp),
+                      child:
+                          Icon(Icons.mic_off, color: Colors.white, size: 16.sp),
                     );
                   }
                   return Container(
                     padding: EdgeInsets.all(6.r),
                     decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.3),
+                      color: Colors.black.withValues(alpha: 0.3),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
@@ -167,7 +171,8 @@ class GroupParticipantGrid extends StatelessWidget {
     );
   }
 
-  Widget _buildFallback(GroupCallParticipant participant, {required bool cameraOff, required bool isFullScreen}) {
+  Widget _buildFallback(GroupCallParticipant participant,
+      {required bool cameraOff, required bool isFullScreen}) {
     final imageUrl = Utility.isNullEmptyOrFalse(participant.profileImage)
         ? MyAppTheme.ProfilenotFoundImg
         : ConstRes.aImageBaseUrl + (participant.profileImage ?? '');
@@ -176,7 +181,6 @@ class GroupParticipantGrid extends StatelessWidget {
       fit: StackFit.expand,
       children: [
         Container(color: const Color(0xFF1E1147)),
-
         Center(
           child: CircleAvatar(
             radius: isFullScreen ? 75.r : 45.r,
@@ -184,11 +188,11 @@ class GroupParticipantGrid extends StatelessWidget {
             backgroundImage: NetworkImage(imageUrl),
             onBackgroundImageError: (_, __) {},
             child: Utility.isNullEmptyOrFalse(participant.profileImage)
-                ? Icon(Icons.person, color: Colors.white, size: isFullScreen ? 80.r : 50.r)
+                ? Icon(Icons.person,
+                    color: Colors.white, size: isFullScreen ? 80.r : 50.r)
                 : null,
           ),
         ),
-
         if (cameraOff)
           Positioned(
             top: isFullScreen ? 120.h : 10.h,
@@ -196,7 +200,7 @@ class GroupParticipantGrid extends StatelessWidget {
             child: Container(
               padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.6),
+                color: Colors.black.withValues(alpha: 0.6),
                 borderRadius: BorderRadius.circular(8.r),
               ),
               child: Row(

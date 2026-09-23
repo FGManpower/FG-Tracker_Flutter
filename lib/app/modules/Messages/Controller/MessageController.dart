@@ -698,7 +698,6 @@ class MessageController extends GetxController with WidgetsBindingObserver {
           replySender: replyMessage.value?.senderName,
         );
       }
-    } catch (e) {
     } finally {
       isUploadingVideo.value = false;
       clearReply();
@@ -1228,7 +1227,6 @@ class MessageController extends GetxController with WidgetsBindingObserver {
       );
 
       if (result.status == true) {
-
         final olderMessages = result.messageData ?? [];
 
         if (olderMessages.isNotEmpty) {

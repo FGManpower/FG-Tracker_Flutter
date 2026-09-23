@@ -19,8 +19,7 @@ class ContactProfileScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF4F5FA),
-      extendBodyBehindAppBar:
-          true,
+      extendBodyBehindAppBar: true,
       appBar: _buildAppBar(),
       body: Stack(
         children: [
@@ -35,8 +34,8 @@ class ContactProfileScreen extends StatelessWidget {
                   center: const Alignment(-0.5, -0.8),
                   radius: 1.2,
                   colors: [
-                    const Color(0xFFE2DDFD).withOpacity(0.9),
-                    const Color(0xFFF4F5FA).withOpacity(0.0),
+                    const Color(0xFFE2DDFD).withValues(alpha: 0.9),
+                    const Color(0xFFF4F5FA).withValues(alpha: 0.0),
                   ],
                 ),
               ),
@@ -63,7 +62,7 @@ class ContactProfileScreen extends StatelessWidget {
         ],
       ),
       bottomNavigationBar:
-      _buildBottomActionsCard(context, name, phone, avatar),
+          _buildBottomActionsCard(context, name, phone, avatar),
     );
   }
 
@@ -82,7 +81,7 @@ class ContactProfileScreen extends StatelessWidget {
             borderRadius: BorderRadius.circular(12.r),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: Colors.black.withValues(alpha: 0.05),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               )
@@ -205,7 +204,7 @@ class ContactProfileScreen extends StatelessWidget {
           borderRadius: BorderRadius.circular(16.r),
           boxShadow: [
             BoxShadow(
-                color: Colors.black.withOpacity(0.02),
+                color: Colors.black.withValues(alpha: 0.02),
                 blurRadius: 10,
                 offset: const Offset(0, 4))
           ],
@@ -216,7 +215,7 @@ class ContactProfileScreen extends StatelessWidget {
               width: 42.w,
               height: 42.w,
               decoration: BoxDecoration(
-                color: const Color(0xFF4818F0).withOpacity(0.08),
+                color: const Color(0xFF4818F0).withValues(alpha: 0.08),
                 shape: BoxShape.circle,
               ),
               child: Icon(icon, color: const Color(0xFF4818F0), size: 22.sp),
@@ -231,7 +230,9 @@ class ContactProfileScreen extends StatelessWidget {
         ),
       ),
     );
-  }  Widget _buildContactInfo(String phone) {
+  }
+
+  Widget _buildContactInfo(String phone) {
     return _cardWrapper(
       child: Column(
         children: [
@@ -298,7 +299,7 @@ class ContactProfileScreen extends StatelessWidget {
             width: 36.w,
             height: 36.w,
             decoration: BoxDecoration(
-                color: color.withOpacity(0.1), shape: BoxShape.circle),
+                color: color.withValues(alpha: 0.1), shape: BoxShape.circle),
             child: Icon(icon, color: color, size: 18.sp),
           ),
           SizedBox(width: 12.w),
@@ -349,7 +350,7 @@ class ContactProfileScreen extends StatelessWidget {
             topLeft: Radius.circular(20.r), topRight: Radius.circular(20.r)),
         boxShadow: [
           BoxShadow(
-              color: Colors.black.withOpacity(0.03),
+              color: Colors.black.withValues(alpha: 0.03),
               blurRadius: 10,
               offset: const Offset(0, -4))
         ],
@@ -372,6 +373,7 @@ class ContactProfileScreen extends StatelessWidget {
       ),
     );
   }
+
   Widget _buildBottomActionsCard(
       BuildContext context, String name, String phone, String? avatar) {
     return Container(
@@ -382,7 +384,7 @@ class ContactProfileScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(20.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 10,
             offset: const Offset(0, 4),
           )
@@ -391,14 +393,14 @@ class ContactProfileScreen extends StatelessWidget {
       child: Row(
         children: [
           Expanded(
-            child: _bottomAction(
-                Icons.star_rounded, "Add to Favorites", const Color(0xFF4818F0)),
+            child: _bottomAction(Icons.star_rounded, "Add to Favorites",
+                const Color(0xFF4818F0)),
           ),
           // Vertical Divider
           Container(width: 1, height: 36.h, color: const Color(0xFFE8E8EE)),
           Expanded(
-            child: _bottomAction(Icons.person_add_alt_1_rounded, "Share Contact",
-                const Color(0xFF4818F0)),
+            child: _bottomAction(Icons.person_add_alt_1_rounded,
+                "Share Contact", const Color(0xFF4818F0)),
           ),
           // Vertical Divider
           Container(width: 1, height: 36.h, color: const Color(0xFFE8E8EE)),
@@ -406,8 +408,8 @@ class ContactProfileScreen extends StatelessWidget {
             child: _bottomAction(
                 Icons.edit_rounded, "Edit Contact", const Color(0xFF4818F0),
                 onTap: () {
-                  _showEditBottomSheet(context, name, phone, avatar);
-                }),
+              _showEditBottomSheet(context, name, phone, avatar);
+            }),
           ),
           // Vertical Divider
           Container(width: 1, height: 36.h, color: const Color(0xFFE8E8EE)),
@@ -438,9 +440,8 @@ class ContactProfileScreen extends StatelessWidget {
               style: TextStyle(
                 fontSize: 10.sp,
                 fontFamily: FontFamily.interMedium,
-                color: color == const Color(0xFFEF4444)
-                    ? color
-                    : Colors.black87,
+                color:
+                    color == const Color(0xFFEF4444) ? color : Colors.black87,
               ),
             ),
           ],
@@ -448,6 +449,7 @@ class ContactProfileScreen extends StatelessWidget {
       ),
     );
   }
+
   void _showEditBottomSheet(
       BuildContext context, String name, String phone, String? avatar) {
     Get.bottomSheet(
@@ -469,7 +471,6 @@ class ContactProfileScreen extends StatelessWidget {
                     color: Colors.grey.shade300,
                     borderRadius: BorderRadius.circular(10.r))),
             SizedBox(height: 20.h),
-
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -496,7 +497,6 @@ class ContactProfileScreen extends StatelessWidget {
               ],
             ),
             SizedBox(height: 24.h),
-
             Stack(
               alignment: Alignment.bottomRight,
               children: [
@@ -508,12 +508,12 @@ class ContactProfileScreen extends StatelessWidget {
                       : NetworkImage(ConstRes.aImageBaseUrl + avatar!),
                   child: Utility.isNullEmptyOrFalse(avatar)
                       ? Text(
-                    name.isNotEmpty ? name[0].toUpperCase() : '?',
-                    style: TextStyle(
-                        fontSize: 30.sp,
-                        color: const Color(0xFF4818F0),
-                        fontFamily: FontFamily.interBold),
-                  )
+                          name.isNotEmpty ? name[0].toUpperCase() : '?',
+                          style: TextStyle(
+                              fontSize: 30.sp,
+                              color: const Color(0xFF4818F0),
+                              fontFamily: FontFamily.interBold),
+                        )
                       : null,
                 ),
                 Container(
@@ -523,7 +523,8 @@ class ContactProfileScreen extends StatelessWidget {
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                            color: Colors.black.withOpacity(0.1), blurRadius: 5)
+                            color: Colors.black.withValues(alpha: 0.1),
+                            blurRadius: 5)
                       ]),
                   child: Icon(Icons.camera_alt_rounded,
                       size: 16.sp, color: const Color(0xFF6B4DFF)),
@@ -531,17 +532,14 @@ class ContactProfileScreen extends StatelessWidget {
               ],
             ),
             SizedBox(height: 24.h),
-
             _bottomSheetTextField("Full Name", name, Icons.person_rounded),
             SizedBox(height: 16.h),
             _bottomSheetTextField("Mobile Number", phone, Icons.call_rounded),
             SizedBox(height: 16.h),
-            _bottomSheetTextField(
-                "Location", "Mumbai, Maharashtra, India", Icons.location_on_rounded,
+            _bottomSheetTextField("Location", "Mumbai, Maharashtra, India",
+                Icons.location_on_rounded,
                 isDropdown: true),
-
             SizedBox(height: 24.h),
-
             Container(
               width: double.infinity,
               padding: EdgeInsets.symmetric(vertical: 11.h),
@@ -576,8 +574,7 @@ class ContactProfileScreen extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
         Padding(
-          padding: EdgeInsets.only(
-              bottom: 8.h),
+          padding: EdgeInsets.only(bottom: 8.h),
           child: _iconWrapper(icon),
         ),
         SizedBox(width: 12.w),
@@ -627,7 +624,7 @@ class ContactProfileScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(20.r),
         boxShadow: [
           BoxShadow(
-              color: Colors.black.withOpacity(0.03),
+              color: Colors.black.withValues(alpha: 0.03),
               blurRadius: 10,
               offset: const Offset(0, 4))
         ],
@@ -690,7 +687,7 @@ class ContactProfileScreen extends StatelessWidget {
       width: 36.w,
       height: 36.w,
       decoration: BoxDecoration(
-        color: const Color(0xFF4818F0).withOpacity(0.08),
+        color: const Color(0xFF4818F0).withValues(alpha: 0.08),
         shape: BoxShape.circle,
       ),
       child: Icon(icon, color: const Color(0xFF4818F0), size: 18.sp),

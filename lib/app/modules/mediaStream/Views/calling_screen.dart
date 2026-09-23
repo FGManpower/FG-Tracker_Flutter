@@ -48,7 +48,7 @@ class CallingScreen extends StatelessWidget {
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
                           colors: [
-                            Colors.black.withOpacity(0.55),
+                            Colors.black.withValues(alpha: 0.55),
                             Colors.transparent,
                           ],
                         ),
@@ -66,7 +66,7 @@ class CallingScreen extends StatelessWidget {
                           begin: Alignment.bottomCenter,
                           end: Alignment.topCenter,
                           colors: [
-                            Colors.black.withOpacity(0.55),
+                            Colors.black.withValues(alpha: 0.55),
                             Colors.transparent,
                           ],
                         ),
@@ -114,7 +114,7 @@ class CallingScreen extends StatelessWidget {
   Widget _buildTopInfo(CallingController c, {required bool isVideo}) {
     final Color textColor = isVideo ? Colors.white : darkText;
     final Color subColor =
-        isVideo ? Colors.white70 : primaryPurple.withOpacity(0.9);
+        isVideo ? Colors.white70 : primaryPurple.withValues(alpha: 0.9);
 
     final bool isOutgoing = c.args["callType"] == "outGoing";
 
@@ -160,7 +160,9 @@ class CallingScreen extends StatelessWidget {
                 Text(
                   startTime,
                   style: TextStyle(
-                    color: isVideo ? Colors.white70 : darkText.withOpacity(0.5),
+                    color: isVideo
+                        ? Colors.white70
+                        : darkText.withValues(alpha: 0.5),
                     fontSize: 11.5.sp,
                     fontFamily: FontFamily.interRegular,
                   ),
@@ -181,10 +183,11 @@ class CallingScreen extends StatelessWidget {
           height: 150.h,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(14.r),
-            border: Border.all(color: Colors.white.withOpacity(0.85), width: 2),
+            border: Border.all(
+                color: Colors.white.withValues(alpha: 0.85), width: 2),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.25),
+                color: Colors.black.withValues(alpha: 0.25),
                 blurRadius: 12,
                 offset: const Offset(0, 6),
               ),
@@ -211,7 +214,7 @@ class CallingScreen extends StatelessWidget {
             child: Container(
               padding: EdgeInsets.all(6.r),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.92),
+                color: Colors.white.withValues(alpha: 0.92),
                 shape: BoxShape.circle,
               ),
               child: Icon(Icons.cameraswitch_rounded,
@@ -255,7 +258,6 @@ class CallingScreen extends StatelessWidget {
                         ),
                       ),
                       SizedBox(height: 8.h),
-
                       Container(
                         margin: EdgeInsets.fromLTRB(12.w, 6.h, 12.w, 12.h),
                         decoration: BoxDecoration(
@@ -275,7 +277,6 @@ class CallingScreen extends StatelessWidget {
                               ),
                               _sheetDivider(),
                             ],
-
                             _sheetTile(
                               icon: Icons.present_to_all_rounded,
                               title: "Share screen",
@@ -291,7 +292,6 @@ class CallingScreen extends StatelessWidget {
                               },
                             ),
                             _sheetDivider(),
-
                             _sheetTile(
                               icon: Icons.chat_bubble_outline_rounded,
                               title: "Send message",
@@ -312,9 +312,7 @@ class CallingScreen extends StatelessWidget {
                     ],
                   ),
                 ),
-
                 SizedBox(height: 10.h),
-
                 SizedBox(
                   width: double.infinity,
                   child: Material(
@@ -347,6 +345,7 @@ class CallingScreen extends StatelessWidget {
       },
     );
   }
+
   Widget _sheetDivider() {
     return Divider(
       height: 1,
@@ -384,7 +383,7 @@ class CallingScreen extends StatelessWidget {
             ),
             Icon(
               Icons.chevron_right_rounded,
-              color: primaryPurple.withOpacity(0.7),
+              color: primaryPurple.withValues(alpha: 0.7),
               size: 24.sp,
             ),
           ],
@@ -404,15 +403,15 @@ class CallingScreen extends StatelessWidget {
               padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 14.h),
               decoration: BoxDecoration(
                 color: isVideo
-                    ? Colors.white.withOpacity(0.14)
-                    : Colors.white.withOpacity(0.72),
+                    ? Colors.white.withValues(alpha: 0.14)
+                    : Colors.white.withValues(alpha: 0.72),
                 borderRadius: BorderRadius.circular(28.r),
                 border: Border.all(
-                  color: Colors.white.withOpacity(isVideo ? 0.22 : 0.9),
+                  color: Colors.white.withValues(alpha: isVideo ? 0.22 : 0.9),
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.08),
+                    color: Colors.black.withValues(alpha: 0.08),
                     blurRadius: 16,
                     offset: const Offset(0, 6),
                   ),
@@ -525,8 +524,8 @@ class CallingScreen extends StatelessWidget {
     final Color baseIcon =
         iconColor ?? (isVideo ? Colors.white : primaryPurple);
     final Color bg = isVideo
-        ? Colors.white.withOpacity(active ? 0.28 : 0.14)
-        : Colors.white.withOpacity(active ? 0.95 : 0.85);
+        ? Colors.white.withValues(alpha: active ? 0.28 : 0.14)
+        : Colors.white.withValues(alpha: active ? 0.95 : 0.85);
 
     return Column(
       mainAxisSize: MainAxisSize.min,

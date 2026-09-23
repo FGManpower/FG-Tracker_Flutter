@@ -27,7 +27,7 @@ class MediaLinksDocsScreen extends StatelessWidget {
         appBar: AppBar(
           backgroundColor: Colors.white,
           elevation: 1,
-          shadowColor: _purple.withOpacity(0.1),
+          shadowColor: _purple.withValues(alpha: 0.1),
           centerTitle: false,
           iconTheme: const IconThemeData(color: _purple),
           title: Text(
@@ -50,7 +50,7 @@ class MediaLinksDocsScreen extends StatelessWidget {
                 indicatorColor: _purple,
                 indicatorWeight: 3,
                 labelStyle:
-                TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600),
+                    TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600),
                 tabs: [
                   Tab(text: m > 0 ? "Media ($m)" : "Media"),
                   Tab(text: l > 0 ? "Links ($l)" : "Links"),
@@ -71,7 +71,6 @@ class MediaLinksDocsScreen extends StatelessWidget {
     );
   }
 }
-
 
 class _MediaTab extends StatelessWidget {
   final MediaLinksDocsController controller;
@@ -110,17 +109,15 @@ class _MediaTab extends StatelessWidget {
                       cacheWidth: 250,
                       gaplessPlayback: true,
                       errorBuilder: (_, __, ___) => Icon(
-                        isVideo
-                            ? Icons.videocam_rounded
-                            : Icons.image_rounded,
-                        color: _purple.withOpacity(0.4),
+                        isVideo ? Icons.videocam_rounded : Icons.image_rounded,
+                        color: _purple.withValues(alpha: 0.4),
                         size: 28.sp,
                       ),
                     )
                   else
                     Icon(
                       isVideo ? Icons.videocam_rounded : Icons.image_rounded,
-                      color: _purple.withOpacity(0.4),
+                      color: _purple.withValues(alpha: 0.4),
                       size: 28.sp,
                     ),
                   if (isVideo)
@@ -151,7 +148,6 @@ class _MediaTab extends StatelessWidget {
     mainAxisSpacing: 4.w,
   );
 }
-
 
 class _LinksTab extends StatelessWidget {
   final MediaLinksDocsController controller;
@@ -207,7 +203,6 @@ class _LinksTab extends StatelessWidget {
   }
 }
 
-
 class _DocsTab extends StatelessWidget {
   final MediaLinksDocsController controller;
   const _DocsTab({required this.controller});
@@ -220,8 +215,7 @@ class _DocsTab extends StatelessWidget {
       final list = controller.docList;
       if (list.isEmpty) {
         return const _Empty(
-            icon: Icons.insert_drive_file_outlined,
-            text: "No documents found");
+            icon: Icons.insert_drive_file_outlined, text: "No documents found");
       }
       return ListView.builder(
         padding: EdgeInsets.all(12.w),
@@ -324,7 +318,7 @@ class ImageGalleryScreen extends StatelessWidget {
                             fit: BoxFit.contain,
                             gaplessPlayback: true,
                             loadingBuilder: (_, child, p) =>
-                            p == null ? child : const SizedBox(),
+                                p == null ? child : const SizedBox(),
                             errorBuilder: (_, __, ___) => Icon(
                               Icons.broken_image_rounded,
                               color: Colors.white54,
@@ -381,21 +375,21 @@ class ImageGalleryScreen extends StatelessWidget {
                         ),
                         const Spacer(),
                         Obx(() => Container(
-                          padding: EdgeInsets.symmetric(
-                              horizontal: 10.w, vertical: 4.h),
-                          decoration: BoxDecoration(
-                            color: Colors.black38,
-                            borderRadius: BorderRadius.circular(12.r),
-                          ),
-                          child: Text(
-                            "${c.currentIndex.value + 1}/${images.length}",
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 13.sp,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        )),
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 10.w, vertical: 4.h),
+                              decoration: BoxDecoration(
+                                color: Colors.black38,
+                                borderRadius: BorderRadius.circular(12.r),
+                              ),
+                              child: Text(
+                                "${c.currentIndex.value + 1}/${images.length}",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 13.sp,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            )),
                       ],
                     ),
                   ),

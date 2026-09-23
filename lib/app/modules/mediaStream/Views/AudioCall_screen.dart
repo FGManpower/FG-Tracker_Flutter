@@ -22,8 +22,8 @@ class AudiocallScreen extends StatelessWidget {
     final String imageUrl = Utility.isNullEmptyOrFalse(profilePath)
         ? MyAppTheme.ProfilenotFoundImg
         : (profilePath.startsWith('http')
-        ? profilePath
-        : ConstRes.aImageBaseUrl + profilePath);
+            ? profilePath
+            : ConstRes.aImageBaseUrl + profilePath);
 
     final bool isOutgoing = controller.args["callType"] == "outGoing";
 
@@ -35,7 +35,7 @@ class AudiocallScreen extends StatelessWidget {
           Text(
             isOutgoing ? "Calling" : "Call From",
             style: TextStyle(
-              color: primaryPurple.withOpacity(0.85),
+              color: primaryPurple.withValues(alpha: 0.85),
               fontSize: 14.sp,
               fontFamily: FontFamily.interMedium,
             ),
@@ -78,13 +78,13 @@ class AudiocallScreen extends StatelessWidget {
                       Icon(
                         Icons.access_time_rounded,
                         size: 13.sp,
-                        color: primaryPurple.withOpacity(0.7),
+                        color: primaryPurple.withValues(alpha: 0.7),
                       ),
                       SizedBox(width: 4.w),
                       Text(
                         startTime,
                         style: TextStyle(
-                          color: darkText.withOpacity(0.55),
+                          color: darkText.withValues(alpha: 0.55),
                           fontSize: 12.sp,
                           fontFamily: FontFamily.interRegular,
                         ),
@@ -96,14 +96,12 @@ class AudiocallScreen extends StatelessWidget {
             );
           }),
           SizedBox(height: 30.h),
-
           Stack(
             alignment: Alignment.center,
             children: [
               _ring(240.r, 0.15),
               _ring(190.r, 0.25),
               _ring(145.r, 0.40),
-
               Container(
                 width: 120.r,
                 height: 120.r,
@@ -112,7 +110,7 @@ class AudiocallScreen extends StatelessWidget {
                   color: Colors.white,
                   boxShadow: [
                     BoxShadow(
-                      color: primaryPurple.withOpacity(0.25),
+                      color: primaryPurple.withValues(alpha: 0.25),
                       blurRadius: 20,
                       spreadRadius: 4,
                     ),
@@ -135,11 +133,8 @@ class AudiocallScreen extends StatelessWidget {
               ),
             ],
           ),
-
           SizedBox(height: 35.h),
-
           _AudioWave(),
-
           const Spacer(),
         ],
       ),
@@ -153,7 +148,7 @@ class AudiocallScreen extends StatelessWidget {
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         border: Border.all(
-          color: primaryPurple.withOpacity(opacity),
+          color: primaryPurple.withValues(alpha: opacity),
           width: 1.5,
         ),
       ),
@@ -171,15 +166,15 @@ class _AudioWave extends StatelessWidget {
       children: heights
           .map(
             (h) => Container(
-          margin: EdgeInsets.symmetric(horizontal: 3.5.w),
-          width: 4.5.w,
-          height: h.h,
-          decoration: BoxDecoration(
-            color: const Color(0xFF7B58FF).withOpacity(0.85),
-            borderRadius: BorderRadius.circular(8.r),
-          ),
-        ),
-      )
+              margin: EdgeInsets.symmetric(horizontal: 3.5.w),
+              width: 4.5.w,
+              height: h.h,
+              decoration: BoxDecoration(
+                color: const Color(0xFF7B58FF).withValues(alpha: 0.85),
+                borderRadius: BorderRadius.circular(8.r),
+              ),
+            ),
+          )
           .toList(),
     );
   }

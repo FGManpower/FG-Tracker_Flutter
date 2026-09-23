@@ -123,7 +123,7 @@ class _GhostMemberState extends State<GhostMember> {
                     ),
                     SizedBox(height: 2.h),
                     Obx(
-                          () => Text(
+                      () => Text(
                         "${controller.privateMemberList.length} Active Sessions",
                         style: TextStyle(
                           fontSize: 12.sp,
@@ -261,7 +261,7 @@ class _GhostMemberState extends State<GhostMember> {
           Obx(() {
             return CupertinoSwitch(
               value: controller.isMyPrivateModeOn.value,
-              activeColor: const Color(0xFF6B4DFF),
+              activeTrackColor: const Color(0xFF6B4DFF),
               onChanged: (val) {
                 controller.togglePrivateMode(val);
               },
@@ -286,7 +286,7 @@ class _GhostMemberState extends State<GhostMember> {
         ),
         SizedBox(width: 8.w),
         Obx(
-              () => Container(
+          () => Container(
             padding: EdgeInsets.symmetric(
               horizontal: 8.w,
               vertical: 2.h,
@@ -406,27 +406,27 @@ class _GhostMemberState extends State<GhostMember> {
                   child: ClipOval(
                     child: member.resolvedImageUrl.isNotEmpty
                         ? CachedNetworkImage(
-                      imageUrl: member.resolvedImageUrl,
-                      fit: BoxFit.cover,
-                      placeholder: (_, __) => Container(
-                        color: Colors.grey.shade100,
-                        child: const Center(
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                          ),
-                        ),
-                      ),
-                      errorWidget: (_, __, ___) => Icon(
-                        Icons.person,
-                        size: 26.sp,
-                        color: const Color(0xFF6B4DFF),
-                      ),
-                    )
+                            imageUrl: member.resolvedImageUrl,
+                            fit: BoxFit.cover,
+                            placeholder: (_, __) => Container(
+                              color: Colors.grey.shade100,
+                              child: const Center(
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              ),
+                            ),
+                            errorWidget: (_, __, ___) => Icon(
+                              Icons.person,
+                              size: 26.sp,
+                              color: const Color(0xFF6B4DFF),
+                            ),
+                          )
                         : Icon(
-                      Icons.person,
-                      size: 26.sp,
-                      color: const Color(0xFF6B4DFF),
-                    ),
+                            Icons.person,
+                            size: 26.sp,
+                            color: const Color(0xFF6B4DFF),
+                          ),
                   ),
                 ),
                 Positioned(

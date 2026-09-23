@@ -118,7 +118,7 @@ class NotificationScreen extends StatelessWidget {
             margin: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 12.h),
             padding: EdgeInsets.symmetric(vertical: 12.h),
             decoration: BoxDecoration(
-              color: primaryPurple.withOpacity(0.08),
+              color: primaryPurple.withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: Row(
@@ -177,7 +177,7 @@ class NotificationScreen extends StatelessWidget {
                   border: Border.all(
                     color: isSelected
                         ? Colors.transparent
-                        : Colors.grey.withOpacity(0.2),
+                        : Colors.grey.withValues(alpha: 0.2),
                     width: 1,
                   ),
                 ),
@@ -203,21 +203,21 @@ class NotificationScreen extends StatelessWidget {
 
     IconData leadingIcon = Icons.notifications;
     Color iconColor = primaryPurple;
-    Color iconBgColor = primaryPurple.withOpacity(0.1);
+    Color iconBgColor = primaryPurple.withValues(alpha: 0.1);
 
     if (item?.type == "chat" || item?.data?["screen_name"] == "chatScreen") {
       leadingIcon = Icons.chat_bubble_outline_rounded;
       iconColor = primaryPurple;
-      iconBgColor = primaryPurple.withOpacity(0.1);
+      iconBgColor = primaryPurple.withValues(alpha: 0.1);
     } else if (item?.type == "missed_call" ||
         item?.data?["screen_name"] == "incomingCall") {
       leadingIcon = Icons.phone_callback_rounded;
       iconColor = const Color(0xffFF8C00);
-      iconBgColor = const Color(0xffFF8C00).withOpacity(0.1);
+      iconBgColor = const Color(0xffFF8C00).withValues(alpha: 0.1);
     } else if (item?.data?["screen_name"] == "groupChatScreen") {
       leadingIcon = Icons.people_alt_outlined;
       iconColor = primaryPurple;
-      iconBgColor = primaryPurple.withOpacity(0.1);
+      iconBgColor = primaryPurple.withValues(alpha: 0.1);
     }
 
     return GestureDetector(
@@ -296,15 +296,15 @@ class NotificationScreen extends StatelessWidget {
           borderRadius: BorderRadius.circular(16.r),
           border: Border.all(
             color: isUnread
-                ? primaryPurple.withOpacity(0.22)
-                : Colors.grey.withOpacity(0.10),
+                ? primaryPurple.withValues(alpha: 0.22)
+                : Colors.grey.withValues(alpha: 0.10),
             width: 1,
           ),
           boxShadow: [
             BoxShadow(
               color: isUnread
-                  ? primaryPurple.withOpacity(0.06)
-                  : Colors.black.withOpacity(0.02),
+                  ? primaryPurple.withValues(alpha: 0.06)
+                  : Colors.black.withValues(alpha: 0.02),
               blurRadius: isUnread ? 14 : 10,
               offset: const Offset(0, 2),
             ),
@@ -393,7 +393,7 @@ class NotificationScreen extends StatelessWidget {
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
-                              color: primaryPurple.withOpacity(0.35),
+                              color: primaryPurple.withValues(alpha: 0.35),
                               blurRadius: 4,
                             ),
                           ],

@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -92,7 +91,7 @@ class SosController extends GetxController {
 
         final matchedUsers = users.where((user) {
           String mobileNo =
-          (user.mobileNo ?? '').replaceAll(RegExp(r'[^0-9]'), '');
+              (user.mobileNo ?? '').replaceAll(RegExp(r'[^0-9]'), '');
 
           if (mobileNo.startsWith('91') && mobileNo.length > 10) {
             mobileNo = mobileNo.substring(2);
@@ -114,7 +113,8 @@ class SosController extends GetxController {
   }
 
   Future<void> pickImageFromCamera() async {
-    final XFile? pickedFile = await _picker.pickImage(source: ImageSource.camera);
+    final XFile? pickedFile =
+        await _picker.pickImage(source: ImageSource.camera);
     if (pickedFile != null) {
       imagePath.value = pickedFile.path;
     }
@@ -188,7 +188,7 @@ class SosController extends GetxController {
                   GestureDetector(
                     onTap: () => Navigator.pop(ctx),
                     child:
-                    Icon(Icons.close, color: Colors.black54, size: 20.sp),
+                        Icon(Icons.close, color: Colors.black54, size: 20.sp),
                   ),
                 ],
               ),

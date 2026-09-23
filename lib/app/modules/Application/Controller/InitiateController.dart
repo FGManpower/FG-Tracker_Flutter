@@ -1,6 +1,4 @@
 import 'dart:async';
-import 'package:fgtracker/app/Core/deep_Link/Context_Utility.dart';
-import 'package:fgtracker/app/Data/Services/NotificationServices.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../Core/constant/pref_res.dart';

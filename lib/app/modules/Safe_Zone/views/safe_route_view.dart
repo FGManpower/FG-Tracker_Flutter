@@ -9,7 +9,7 @@ import '../Widgets/safe_common_widgets.dart';
 import '../controller/safe_route_controller.dart';
 
 class SafeRouteView extends StatelessWidget {
-  const SafeRouteView({Key? key}) : super(key: key);
+  const SafeRouteView({super.key});
 
   Color get primary => SafeColors.primary;
 
@@ -158,7 +158,7 @@ class SafeRouteView extends StatelessWidget {
             child: Container(
               padding: EdgeInsets.all(8.w),
               decoration: BoxDecoration(
-                color: primary.withOpacity(0.08),
+                color: primary.withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(8.r),
               ),
               child: Icon(Icons.swap_horiz, color: primary, size: 16.sp),
@@ -323,7 +323,7 @@ class SafeRouteView extends StatelessWidget {
                         margin: EdgeInsets.only(bottom: 8.h),
                         padding: EdgeInsets.all(10.w),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.95),
+                          color: Colors.white.withValues(alpha: 0.95),
                           border: Border.all(
                             color: selected ? primary : SafeColors.border,
                             width: selected ? 1.5 : 1,
@@ -331,7 +331,7 @@ class SafeRouteView extends StatelessWidget {
                           borderRadius: BorderRadius.circular(12.r),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.06),
+                              color: Colors.black.withValues(alpha: 0.06),
                               blurRadius: 6,
                               offset: const Offset(0, 2),
                             )
@@ -368,7 +368,7 @@ class SafeRouteView extends StatelessWidget {
                                 padding: EdgeInsets.symmetric(
                                     horizontal: 6.w, vertical: 2.h),
                                 decoration: BoxDecoration(
-                                  color: primary.withOpacity(0.12),
+                                  color: primary.withValues(alpha: 0.12),
                                   borderRadius: BorderRadius.circular(4.r),
                                 ),
                                 child: reausabletext("Recommended",
@@ -395,7 +395,8 @@ class SafeRouteView extends StatelessWidget {
                 borderRadius: BorderRadius.circular(8.r),
                 boxShadow: [
                   BoxShadow(
-                      color: Colors.black.withOpacity(0.08), blurRadius: 4)
+                      color: Colors.black.withValues(alpha: 0.08),
+                      blurRadius: 4)
                 ],
               ),
               child: Column(
@@ -486,7 +487,7 @@ class SafeRouteView extends StatelessWidget {
                     activeTrackColor: primary,
                     inactiveTrackColor: Colors.grey.shade200,
                     thumbColor: Colors.white,
-                    overlayColor: primary.withOpacity(0.1),
+                    overlayColor: primary.withValues(alpha: 0.1),
                     trackHeight: 3.h,
                     thumbShape: RoundSliderThumbShape(
                       enabledThumbRadius: 9.r,
@@ -536,7 +537,7 @@ class SafeRouteView extends StatelessWidget {
           if (!isGroup) ...[
             SizedBox(height: 12.h),
             SafeInnerCard(
-              color: primary.withOpacity(0.05),
+              color: primary.withValues(alpha: 0.05),
               child: Row(
                 children: [
                   Icon(Icons.shield_outlined, size: 18.sp, color: primary),
@@ -573,9 +574,9 @@ class SafeRouteView extends StatelessWidget {
   }
 
   Widget _buildPreviewContent(
-      SafeRouteController c, {
-        required bool isGroup,
-      }) {
+    SafeRouteController c, {
+    required bool isGroup,
+  }) {
     return Obx(() {
       final r = c.selectedRoute;
       final dev = c.deviationFor(isGroup: isGroup);
@@ -642,7 +643,7 @@ class SafeRouteView extends StatelessWidget {
               width: 50.w,
               height: 50.w,
               decoration: BoxDecoration(
-                color: primary.withOpacity(0.08),
+                color: primary.withValues(alpha: 0.08),
                 shape: BoxShape.circle,
               ),
               alignment: Alignment.center,
@@ -707,11 +708,11 @@ class SafeRouteView extends StatelessWidget {
   }
 
   Widget _previewRow(
-      String label,
-      String value, {
-        Color? dot,
-        String? suffix,
-      }) {
+    String label,
+    String value, {
+    Color? dot,
+    String? suffix,
+  }) {
     return Padding(
       padding: EdgeInsets.only(bottom: 4.h),
       child: Row(
@@ -751,9 +752,7 @@ class SafeRouteView extends StatelessWidget {
                     text: value,
                     style: TextStyle(
                       fontSize: 8.5.sp,
-                      color: label.contains("Route")
-                          ? primary
-                          : Colors.black87,
+                      color: label.contains("Route") ? primary : Colors.black87,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -775,7 +774,6 @@ class SafeRouteView extends StatelessWidget {
     );
   }
 
-
   void _showSafeRouteHelp(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
 
@@ -783,7 +781,7 @@ class SafeRouteView extends StatelessWidget {
       context: context,
       barrierDismissible: true,
       barrierLabel: "Safe Route Help",
-      barrierColor: Colors.black.withOpacity(0.45),
+      barrierColor: Colors.black.withValues(alpha: 0.45),
       transitionDuration: const Duration(milliseconds: 180),
       pageBuilder: (context, animation, secondaryAnimation) {
         return SafeArea(
@@ -807,7 +805,7 @@ class SafeRouteView extends StatelessWidget {
                       borderRadius: BorderRadius.circular(18),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.12),
+                          color: Colors.black.withValues(alpha: 0.12),
                           blurRadius: 20,
                           offset: const Offset(0, 6),
                         ),
@@ -825,32 +823,26 @@ class SafeRouteView extends StatelessWidget {
                             color: Color(0xff10205C),
                           ),
                         ),
-
                         const SizedBox(height: 15),
-
                         _routeHelpItem(
                           icon: Icons.location_on_rounded,
                           title: "What is Safe Route?",
                           description:
-                          "Set a start and destination location to create a safe travel route for your team member.",
+                              "Set a start and destination location to create a safe travel route for your team member.",
                         ),
-
                         const SizedBox(height: 13),
-
                         _routeHelpItem(
                           icon: Icons.sync_alt_rounded,
                           title: "How to Create Safe Route?",
                           description:
-                          "Select the member, choose start and destination locations, pick the best route and set a deviation limit.",
+                              "Select the member, choose start and destination locations, pick the best route and set a deviation limit.",
                         ),
-
                         const SizedBox(height: 13),
-
                         _routeHelpItem(
                           icon: Icons.shield_outlined,
                           title: "What is Deviation Limit?",
                           description:
-                          "Set the allowed distance a member can move away from the selected route. You’ll get an alert if they exceed this limit.",
+                              "Set the allowed distance a member can move away from the selected route. You’ll get an alert if they exceed this limit.",
                         ),
                       ],
                     ),
@@ -872,11 +864,11 @@ class SafeRouteView extends StatelessWidget {
         );
       },
       transitionBuilder: (
-          context,
-          animation,
-          secondaryAnimation,
-          child,
-          ) {
+        context,
+        animation,
+        secondaryAnimation,
+        child,
+      ) {
         return FadeTransition(
           opacity: CurvedAnimation(
             parent: animation,
@@ -920,9 +912,7 @@ class SafeRouteView extends StatelessWidget {
             size: 17,
           ),
         ),
-
         const SizedBox(width: 8),
-
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -936,9 +926,7 @@ class SafeRouteView extends StatelessWidget {
                   color: Color(0xff10205C),
                 ),
               ),
-
               const SizedBox(height: 2),
-
               Text(
                 description,
                 style: const TextStyle(
@@ -955,6 +943,7 @@ class SafeRouteView extends StatelessWidget {
     );
   }
 }
+
 class _HelpArrowPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {

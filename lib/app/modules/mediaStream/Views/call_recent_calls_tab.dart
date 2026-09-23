@@ -125,7 +125,7 @@ class _CallRecentCallsTabState extends State<CallRecentCallsTab> {
                   borderRadius: BorderRadius.circular(20.r),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.02),
+                      color: Colors.black.withValues(alpha: 0.02),
                       blurRadius: 10,
                       offset: const Offset(0, 2),
                     ),
@@ -144,8 +144,7 @@ class _CallRecentCallsTabState extends State<CallRecentCallsTab> {
                         ),
                       InkWell(
                         onTap: () {
-                          final isGroup =
-                              entry.value[i]['isGroup'] == 'true';
+                          final isGroup = entry.value[i]['isGroup'] == 'true';
                           if (isGroup) {
                             final gId = entry.value[i]['groupId'] ??
                                 entry.value[i]['callerId'];
@@ -191,13 +190,13 @@ class _CallRecentCallsTabState extends State<CallRecentCallsTab> {
                                 GroupCallService.instance.startGroupCall(
                                   context,
                                   groupId: gId,
-                                  groupName: entry.value[i]['name'] ??
-                                      "Group Call",
+                                  groupName:
+                                      entry.value[i]['name'] ?? "Group Call",
                                   groupProfile: entry.value[i]['avatar'],
                                   isVideo: isVideo,
-                                  memberCount: int.tryParse(
-                                          entry.value[i]['memberCount'] ??
-                                              '0') ??
+                                  memberCount: int.tryParse(entry.value[i]
+                                              ['memberCount'] ??
+                                          '0') ??
                                       0,
                                 );
                               } else {
@@ -369,9 +368,8 @@ class _RecentCallTile extends StatelessWidget {
         ),
         SizedBox(width: 10.w),
         CallActionChip(
-          icon: callType == "video"
-              ? Icons.videocam_rounded
-              : Icons.call_rounded,
+          icon:
+              callType == "video" ? Icons.videocam_rounded : Icons.call_rounded,
           onTap: () {
             onCallTap(callType);
           },
@@ -383,7 +381,8 @@ class _RecentCallTile extends StatelessWidget {
   String _formatDisplayTime(String raw) {
     final String trimmed = raw.trim();
     final String cleaned = trimmed
-        .replaceAll(RegExp(r'^(today|yesterday),?\s*', caseSensitive: false), '')
+        .replaceAll(
+            RegExp(r'^(today|yesterday),?\s*', caseSensitive: false), '')
         .trim();
     return cleaned.isNotEmpty ? cleaned : trimmed;
   }
