@@ -10,6 +10,7 @@ import '../Controller/calling_controller.dart';
 class CallingScreen extends StatelessWidget {
   final controller = Get.put(CallingController());
   CallingScreen({super.key});
+
   static const Color primaryPurple = Color(0xFF7B58FF);
   static const Color darkText = Color(0xFF0F0B4C);
 
@@ -19,7 +20,7 @@ class CallingScreen extends StatelessWidget {
       canPop: false,
       child: GetBuilder<CallingController>(
         builder: (c) {
-          final bool isVideo = c.is_video;
+          final bool isVideo = c.is_video || c.isVideoCall.value;
 
           return Scaffold(
             backgroundColor: Colors.black,
@@ -82,7 +83,7 @@ class CallingScreen extends StatelessWidget {
                         if (isVideo) _buildTopInfo(c, isVideo: true),
                         if (!isVideo)
                           Expanded(
-                            child: AudiocallScreen(controller: controller),
+                            child: AudiocallScreen(controller: c),
                           )
                         else
                           const Spacer(),
@@ -224,7 +225,7 @@ class CallingScreen extends StatelessWidget {
   }
 
   void _openMoreSheet(BuildContext context, CallingController c) {
-    final bool isVideo = c.is_video;
+    final bool isVideo = c.is_video || c.isVideoCall.value;
 
     showModalBottomSheet(
       context: context,
@@ -255,7 +256,6 @@ class CallingScreen extends StatelessWidget {
                         ),
                       ),
                       SizedBox(height: 8.h),
-
                       Container(
                         margin: EdgeInsets.fromLTRB(12.w, 6.h, 12.w, 12.h),
                         decoration: BoxDecoration(
@@ -264,7 +264,7 @@ class CallingScreen extends StatelessWidget {
                         ),
                         child: Column(
                           children: [
-                            if (!isVideo) ...[
+                            if (isVideo) ...[
                               _sheetTile(
                                 icon: Icons.cameraswitch_rounded,
                                 title: "Switch camera",
@@ -275,13 +275,11 @@ class CallingScreen extends StatelessWidget {
                               ),
                               _sheetDivider(),
                             ],
-
                             _sheetTile(
                               icon: Icons.present_to_all_rounded,
                               title: "Share screen",
                               onTap: () {
                                 Navigator.pop(ctx);
-                                // TODO: c.startScreenShare();
                                 Get.snackbar(
                                   "Share screen",
                                   "Coming soon",
@@ -291,13 +289,11 @@ class CallingScreen extends StatelessWidget {
                               },
                             ),
                             _sheetDivider(),
-
                             _sheetTile(
                               icon: Icons.chat_bubble_outline_rounded,
                               title: "Send message",
                               onTap: () {
                                 Navigator.pop(ctx);
-                                // TODO: open chat
                                 Get.snackbar(
                                   "Send message",
                                   "Coming soon",
@@ -312,9 +308,7 @@ class CallingScreen extends StatelessWidget {
                     ],
                   ),
                 ),
-
                 SizedBox(height: 10.h),
-
                 SizedBox(
                   width: double.infinity,
                   child: Material(
@@ -347,6 +341,7 @@ class CallingScreen extends StatelessWidget {
       },
     );
   }
+
   Widget _sheetDivider() {
     return Divider(
       height: 1,
@@ -421,7 +416,6 @@ class CallingScreen extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  // ★ 3 dots → bottom sheet
                   _ctrl(
                     icon: Icons.more_horiz_rounded,
                     label: "More",
@@ -442,7 +436,7 @@ class CallingScreen extends StatelessWidget {
                     children: [
                       GestureDetector(
                         onTap: () {
-                          if (controller.callStatus.value != "Connected") {
+                          if (c.callStatus.value != "Connected") {
                             c.missedCall();
                           } else {
                             c.endCall();
@@ -502,7 +496,7 @@ class CallingScreen extends StatelessWidget {
                       isVideo: isVideo,
                       iconColor: primaryPurple,
                       onTap: () {
-                        // optional upgrade to video
+                        c.upgradeToVideoCall();
                       },
                     ),
                 ],

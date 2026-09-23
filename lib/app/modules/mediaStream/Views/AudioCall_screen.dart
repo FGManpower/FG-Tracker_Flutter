@@ -27,123 +27,164 @@ class AudiocallScreen extends StatelessWidget {
 
     final bool isOutgoing = controller.args["callType"] == "outGoing";
 
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 24.w),
-      child: Column(
-        children: [
-          SizedBox(height: 10.h),
-          Text(
-            isOutgoing ? "Calling" : "Call From",
-            style: TextStyle(
-              color: primaryPurple.withOpacity(0.85),
-              fontSize: 14.sp,
-              fontFamily: FontFamily.interMedium,
+    return Obx(() {
+
+      final upgrading = controller.isUpgradingToVideo.value;
+      final alreadyVideo = controller.isVideoCall.value;
+
+      return Padding(
+        padding: EdgeInsets.symmetric(horizontal: 24.w),
+        child: Column(
+          children: [
+            SizedBox(height: 10.h),
+            Text(
+              isOutgoing ? "Calling" : "Call From",
+              style: TextStyle(
+                color: primaryPurple.withOpacity(0.85),
+                fontSize: 14.sp,
+                fontFamily: FontFamily.interMedium,
+              ),
             ),
-          ),
-          SizedBox(height: 6.h),
-          Text(
-            "${controller.args["callerName"] ?? ""}",
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: darkText,
-              fontSize: 28.sp,
-              fontFamily: FontFamily.interSemiBold,
-              fontWeight: FontWeight.w700,
+            SizedBox(height: 6.h),
+            Text(
+              "${controller.args["callerName"] ?? ""}",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: darkText,
+                fontSize: 28.sp,
+                fontFamily: FontFamily.interSemiBold,
+                fontWeight: FontWeight.w700,
+              ),
             ),
-          ),
-          SizedBox(height: 8.h),
-          Obx(() {
-            final waiting = controller.formattedDuration == "00:00";
-            final startTime = controller.callStartTime.value;
-            return Column(
-              mainAxisSize: MainAxisSize.min,
+            SizedBox(height: 8.h),
+            Obx(() {
+              final waiting = controller.formattedDuration == "00:00";
+              final startTime = controller.callStartTime.value;
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    waiting
+                        ? "${controller.callStatus.value}..."
+                        : controller.formattedDuration,
+                    style: TextStyle(
+                      color: primaryPurple,
+                      fontSize: 15.sp,
+                      fontFamily: FontFamily.interMedium,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  if (startTime.isNotEmpty) ...[
+                    SizedBox(height: 4.h),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.access_time_rounded,
+                            size: 13.sp,
+                            color: primaryPurple.withOpacity(0.7)),
+                        SizedBox(width: 4.w),
+                        Text(
+                          startTime,
+                          style: TextStyle(
+                            color: darkText.withOpacity(0.55),
+                            fontSize: 12.sp,
+                            fontFamily: FontFamily.interRegular,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ],
+              );
+            }),
+            SizedBox(height: 30.h),
+            Stack(
+              alignment: Alignment.center,
               children: [
-                Text(
-                  waiting
-                      ? "${controller.callStatus.value}..."
-                      : controller.formattedDuration,
-                  style: TextStyle(
-                    color: primaryPurple,
-                    fontSize: 15.sp,
-                    fontFamily: FontFamily.interMedium,
-                    fontWeight: FontWeight.w600,
+                _ring(240.r, 0.15),
+                _ring(190.r, 0.25),
+                _ring(145.r, 0.40),
+                Container(
+                  width: 120.r,
+                  height: 120.r,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white,
+                    boxShadow: [
+                      BoxShadow(
+                        color: primaryPurple.withOpacity(0.25),
+                        blurRadius: 20,
+                        spreadRadius: 4,
+                      ),
+                    ],
+                  ),
+                  padding: EdgeInsets.all(4.r),
+                  child: ClipOval(
+                    child: Image.network(
+                      imageUrl,
+                      width: 112.r,
+                      height: 112.r,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => Icon(
+                        Icons.person,
+                        size: 55.sp,
+                        color: primaryPurple,
+                      ),
+                    ),
                   ),
                 ),
-                if (startTime.isNotEmpty) ...[
-                  SizedBox(height: 4.h),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+              ],
+            ),
+            SizedBox(height: 35.h),
+            _AudioWave(),
+            SizedBox(height: 28.h),
+            if (!alreadyVideo)
+              GestureDetector(
+                onTap: upgrading ? null : controller.upgradeToVideoCall,
+                child: Container(
+                  padding:
+                  EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
+                  decoration: BoxDecoration(
+                    color: primaryPurple.withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(30.r),
+                    border: Border.all(
+                      color: primaryPurple.withOpacity(0.35),
+                    ),
+                  ),
+                  child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(
-                        Icons.access_time_rounded,
-                        size: 13.sp,
-                        color: primaryPurple.withOpacity(0.7),
-                      ),
-                      SizedBox(width: 4.w),
+                      if (upgrading)
+                        SizedBox(
+                          width: 18.r,
+                          height: 18.r,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: primaryPurple,
+                          ),
+                        )
+                      else
+                        Icon(Icons.videocam_rounded,
+                            color: primaryPurple, size: 22.sp),
+                      SizedBox(width: 10.w),
                       Text(
-                        startTime,
+                        upgrading ? "Switching to video..." : "Switch to Video",
                         style: TextStyle(
-                          color: darkText.withOpacity(0.55),
-                          fontSize: 12.sp,
-                          fontFamily: FontFamily.interRegular,
+                          color: primaryPurple,
+                          fontSize: 14.sp,
+                          fontFamily: FontFamily.interSemiBold,
                         ),
                       ),
                     ],
                   ),
-                ],
-              ],
-            );
-          }),
-          SizedBox(height: 30.h),
-
-          Stack(
-            alignment: Alignment.center,
-            children: [
-              _ring(240.r, 0.15),
-              _ring(190.r, 0.25),
-              _ring(145.r, 0.40),
-
-              Container(
-                width: 120.r,
-                height: 120.r,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white,
-                  boxShadow: [
-                    BoxShadow(
-                      color: primaryPurple.withOpacity(0.25),
-                      blurRadius: 20,
-                      spreadRadius: 4,
-                    ),
-                  ],
-                ),
-                padding: EdgeInsets.all(4.r),
-                child: ClipOval(
-                  child: Image.network(
-                    imageUrl,
-                    width: 112.r,
-                    height: 112.r,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => Icon(
-                      Icons.person,
-                      size: 55.sp,
-                      color: primaryPurple,
-                    ),
-                  ),
                 ),
               ),
-            ],
-          ),
 
-          SizedBox(height: 35.h),
-
-          _AudioWave(),
-
-          const Spacer(),
-        ],
-      ),
-    );
+            const Spacer(),
+          ],
+        ),
+      );
+    });
   }
 
   Widget _ring(double size, double opacity) {

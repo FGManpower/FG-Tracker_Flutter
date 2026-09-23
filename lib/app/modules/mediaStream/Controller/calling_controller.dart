@@ -3,6 +3,7 @@ import 'dart:developer';
 
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/constant/urls.dart';
+import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Core/values/utility.dart';
 import 'package:fgtracker/app/modules/Track/Controller/TrackController.dart';
@@ -52,6 +53,9 @@ class CallingController extends GetxController {
   Timer? missedCallTimer;
   var missCallDurationSeconds = 40.obs;
 
+  final RxBool isVideoCall = false.obs;
+  final RxBool isUpgradingToVideo = false.obs;
+
   @override
   void onInit() {
     callerId = args["callerId"]?.toString() ?? "";
@@ -67,7 +71,7 @@ class CallingController extends GetxController {
     if (callId == null && args["sessionId"] != null) {
       callId = args["sessionId"];
     }
-
+    isVideoCall.value = is_video == true;
     localRenderer.initialize();
     remoteRenderer.initialize();
 
@@ -95,6 +99,152 @@ class CallingController extends GetxController {
     super.onInit();
   }
 
+  Future<void> upgradeToVideoCall() async {
+    if (isVideoCall.value || isUpgradingToVideo.value) return;
+    if (peer == null || localStream == null) {
+      Utils().fluttertoast("Call not ready");
+      return;
+    }
+
+    try {
+      isUpgradingToVideo.value = true;
+      final videoStream = await navigator.mediaDevices.getUserMedia({
+        'audio': false,
+        'video': {
+          'facingMode': isFrontCamera ? 'user' : 'environment',
+          'width': {'ideal': 640},
+          'height': {'ideal': 480},
+        },
+      });
+
+      final videoTrack = videoStream.getVideoTracks().firstOrNull;
+      if (videoTrack == null) {
+        throw Exception("No video track available");
+      }
+      await localStream!.addTrack(videoTrack);
+      await peer!.addTrack(videoTrack, localStream!);
+
+      localRenderer.srcObject = localStream;
+      isVideoOn = true;
+      is_video = true;
+      isVideoCall.value = true;
+
+      final myUserId =
+      Global.storageServices.get(PrefConst.userId).toString();
+      final isCaller = myUserId == callerId.toString();
+
+      if (isCaller || args["callType"] == "outGoing") {
+        final offer = await peer!.createOffer({
+          'offerToReceiveAudio': true,
+          'offerToReceiveVideo': true,
+        });
+        await peer!.setLocalDescription(offer);
+
+        socket?.emit("upgradeToVideo", {
+          "callId": callId,
+          "remoteUserId": remoteUserId,
+          "sdpOffer": offer.toMap(),
+          "callerId": myUserId,
+        });
+      } else {
+        socket?.emit("requestVideoUpgrade", {
+          "callId": callId,
+          "remoteUserId": callerId,
+          "callerId": myUserId,
+        });
+      }
+
+      callStatus.value = "Video connecting";
+      update();
+    } catch (e) {
+      log("upgradeToVideoCall error: $e");
+      isVideoCall.value = false;
+      is_video = false;
+    } finally {
+      isUpgradingToVideo.value = false;
+    }
+  }
+
+
+  void _listenVideoUpgradeEvents() {
+    socket?.off("upgradeToVideo");
+    socket?.off("upgradeToVideoAnswer");
+    socket?.off("requestVideoUpgrade");
+
+    // Remote peer started upgrade → set remote offer + send answer
+    socket?.on("upgradeToVideo", (data) async {
+      try {
+        if (peer == null) return;
+        final sdp = data["sdpOffer"];
+        if (sdp == null) return;
+
+        await peer!.setRemoteDescription(
+          RTCSessionDescription(sdp["sdp"], sdp["type"]),
+        );
+
+        // Ensure we also have local camera if not yet
+        if (!isVideoCall.value) {
+          final videoStream = await navigator.mediaDevices.getUserMedia({
+            'audio': false,
+            'video': {
+              'facingMode': isFrontCamera ? 'user' : 'environment',
+            },
+          });
+          final videoTrack = videoStream.getVideoTracks().firstOrNull;
+          if (videoTrack != null) {
+            await localStream?.addTrack(videoTrack);
+            await peer!.addTrack(videoTrack, localStream!);
+            localRenderer.srcObject = localStream;
+          }
+        }
+
+        final answer = await peer!.createAnswer({
+          'offerToReceiveAudio': true,
+          'offerToReceiveVideo': true,
+        });
+        await peer!.setLocalDescription(answer);
+
+        socket?.emit("upgradeToVideoAnswer", {
+          "callId": callId,
+          "remoteUserId": data["callerId"],
+          "sdpAnswer": answer.toMap(),
+        });
+
+        is_video = true;
+        isVideoOn = true;
+        isVideoCall.value = true;
+        callStatus.value = "Connected";
+        update();
+      } catch (e) {
+        log("upgradeToVideo handler error: $e");
+      }
+    });
+
+    socket?.on("upgradeToVideoAnswer", (data) async {
+      try {
+        if (peer == null) return;
+        final sdp = data["sdpAnswer"];
+        if (sdp == null) return;
+
+        await peer!.setRemoteDescription(
+          RTCSessionDescription(sdp["sdp"], sdp["type"]),
+        );
+
+        is_video = true;
+        isVideoOn = true;
+        isVideoCall.value = true;
+        callStatus.value = "Connected";
+        update();
+      } catch (e) {
+        log("upgradeToVideoAnswer error: $e");
+      }
+    });
+
+
+    socket?.on("requestVideoUpgrade", (data) async {
+      await upgradeToVideoCall();
+    });
+  }
   void _listenForCallEvents() {
     socket?.off("callRejected");
     socket?.off("callEnded");
@@ -103,6 +253,7 @@ class CallingController extends GetxController {
     socket?.off("callCreated");
     socket?.off("newCall");
     socket?.off("sdpOfferFromCaller");
+    _listenVideoUpgradeEvents();
 
 
     socket?.on("sdpOfferFromCaller", (data) async {
@@ -210,6 +361,8 @@ class CallingController extends GetxController {
       fetchCallDetail();
       startMissedCallTimer();
     });
+
+    _listenVideoUpgradeEvents();
   }
 
   void resetPeer() {
@@ -434,18 +587,22 @@ class CallingController extends GetxController {
   }
 
   void toggleCamera() {
-    if (is_video == false) return;
+    if (!isVideoCall.value) return;
     isVideoOn = !isVideoOn;
     localStream?.getVideoTracks().forEach((t) => t.enabled = isVideoOn);
     update();
   }
 
   void switchCamera() {
-    if (is_video == false) return;
+    if (!isVideoCall.value || !isVideoOn) return;
     isFrontCamera = !isFrontCamera;
-    localStream?.getVideoTracks().forEach((t) => t.switchCamera());
+    localStream?.getVideoTracks().forEach((t) {
+      Helper.switchCamera(t);
+    });
     update();
   }
+
+
 
   Future<void> enableSpeaker() async {
     await Helper.setSpeakerphoneOn(true);
