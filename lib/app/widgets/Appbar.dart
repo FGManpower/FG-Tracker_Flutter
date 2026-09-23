@@ -12,6 +12,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
+import '../modules/home/Views/LiveStatus/components/ghost_member.dart';
+
 class _Palette {
   static const Color ink = Color(0xFF10153D);
   static const Color muted = Color(0xFF59639A);
@@ -170,7 +172,9 @@ class _WelcomeTitle extends StatelessWidget {
 }
 
 class _LocationStatus extends StatelessWidget {
-  const _LocationStatus({required this.trackingController});
+  const _LocationStatus({
+    required this.trackingController,
+  });
 
   final TrackingController trackingController;
 
@@ -180,28 +184,31 @@ class _LocationStatus extends StatelessWidget {
       final bool isSharing =
           trackingController.isLocationSharing.value;
 
+      final Color dotColor = isSharing
+          ? const Color(0xFF16A765)
+          : const Color(0xFFE53935);
+
+      final Color backgroundColor = isSharing
+          ? const Color(0xFFEAF8EF)
+          : const Color(0xFFFFEEEE);
+
+      final Color borderColor = isSharing
+          ? const Color(0xFFD5EFDE)
+          : const Color(0xFFF5D0D0);
+
       return GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: () {
-          trackingController.toggleLocationSharing(!isSharing);
+          Get.to(() => const GhostMember());
         },
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          curve: Curves.easeOut,
-          height: 30.h,
-          padding: EdgeInsets.only(
-            left: 7.w,
-            right: 3.w,
-          ),
+        child: Container(
+          height: 31.h,
+          padding: EdgeInsets.symmetric(horizontal: 11.w),
           decoration: BoxDecoration(
-            color: isSharing
-                ? _Palette.pillLive
-                : _Palette.pillPrivate,
-            borderRadius: BorderRadius.circular(16.r),
+            color: backgroundColor,
+            borderRadius: BorderRadius.circular(18.r),
             border: Border.all(
-              color: isSharing
-                  ? _Palette.pillBorderLive
-                  : _Palette.pillBorderPrivate,
+              color: borderColor,
               width: 1,
             ),
           ),
@@ -209,41 +216,24 @@ class _LocationStatus extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                width: 5.w,
-                height: 5.w,
+                width: 8.w,
+                height: 8.w,
                 decoration: BoxDecoration(
+                  color: dotColor,
                   shape: BoxShape.circle,
-                  color: isSharing
-                      ? _Palette.green
-                      : _Palette.dotPrivate,
                 ),
               ),
-              SizedBox(width: 5.w),
+
+              SizedBox(width: 7.w),
+
               Text(
                 isSharing ? 'Live' : 'Private',
                 style: TextStyle(
                   fontFamily: FontFamily.interSemiBold,
-                  fontSize: 9.5.sp,
+                  fontSize: 12.sp,
                   fontWeight: FontWeight.w600,
-                  color: isSharing
-                      ? _Palette.textLive
-                      : _Palette.textPrivate,
+                  color: Colors.black,
                   height: 1,
-                ),
-              ),
-              SizedBox(
-                width: 30.w,
-                height: 24.h,
-                child: IgnorePointer(
-                  child: Transform.scale(
-                    scale: 0.48,
-                    child: CupertinoSwitch(
-                      value: isSharing,
-                      activeTrackColor: const Color(0xFF21B866),
-                      thumbColor: Colors.white,
-                      onChanged: (_) {},
-                    ),
-                  ),
                 ),
               ),
             ],
@@ -264,7 +254,10 @@ class _NotificationBell extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onTap: () => Get.toNamed(Routes.notificationScreen),
+      onTap: () async {
+
+        Get.toNamed(Routes.notificationScreen);
+      },
       child: Obx(() {
         final int unread =
             notificationController.unreadCount.value;
@@ -306,7 +299,7 @@ class _NotificationBell extends StatelessWidget {
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
                     color: _Palette.purple,
-                    shape: BoxShape.circle,
+                    borderRadius: BorderRadius.circular(10.r),
                     border: Border.all(
                       color: Colors.white,
                       width: 1.5.w,
@@ -323,6 +316,7 @@ class _NotificationBell extends StatelessWidget {
                     unread > 99 ? '99+' : '$unread',
                     textAlign: TextAlign.center,
                     maxLines: 1,
+                    overflow: TextOverflow.visible,
                     style: TextStyle(
                       fontFamily: FontFamily.interSemiBold,
                       color: Colors.white,

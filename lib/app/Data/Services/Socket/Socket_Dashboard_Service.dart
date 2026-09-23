@@ -132,6 +132,8 @@ class SocketDashboardService extends GetxService {
         'userId': Global.storageServices.get(PrefConst.userId),
       },
     );
+
+
   }
 
   void requestLiveLocation({

@@ -65,11 +65,10 @@ class _HomeScreenState extends State<HomeScreen> {
       autoFetchLocation: true,
     );
     await controller.getProfileData();
-    await groupController.getGroupData();
     await trackingController.loadLocationSharing();
     await SocketService.instance.init(ConstRes.socketUrl);
     trackingController.initializeLocation();
-    await controller.startLiveLocationSession();
+    // await controller.startLiveLocationSession();
   }
 
   @override

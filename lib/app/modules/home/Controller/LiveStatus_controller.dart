@@ -6,19 +6,17 @@ import 'package:fgtracker/app/Model/group_member_model.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../Track/Controller/TrackController.dart';
+
 class LivesStatusController extends GetxController {
   static LivesStatusController get instance =>
       Get.isRegistered<LivesStatusController>()
           ? Get.find<LivesStatusController>()
           : Get.put(LivesStatusController());
 
-  // Search controllers
   final TextEditingController searchController = TextEditingController();
   final RxString searchQuery = ''.obs;
 
-  // -------------------------------------------------------------
-  // 1. ALL MEMBERS (filter=all)
-  // -------------------------------------------------------------
   final RxList<GroupMemberData> allMemberList = <GroupMemberData>[].obs;
   final RxList<GroupMemberData> filteredAllMemberList = <GroupMemberData>[].obs;
 
@@ -35,13 +33,11 @@ class LivesStatusController extends GetxController {
   final RxBool hasMoreAllMembers = true.obs;
   final RxBool isAllMembersAscending = true.obs;
 
-  // -------------------------------------------------------------
-  // 2. ONLINE MEMBERS (filter=online)
-  // -------------------------------------------------------------
   final RxList<GroupMemberData> onlineNowList = <GroupMemberData>[].obs;
   final RxList<GroupMemberData> recentlyOnlineList = <GroupMemberData>[].obs;
   final RxList<GroupMemberData> filteredOnlineNowList = <GroupMemberData>[].obs;
-  final RxList<GroupMemberData> filteredRecentlyOnlineList = <GroupMemberData>[].obs;
+  final RxList<GroupMemberData> filteredRecentlyOnlineList =
+      <GroupMemberData>[].obs;
 
   final RxBool onlineLoading = false.obs;
   final RxBool onlineLoadingMore = false.obs;
@@ -49,11 +45,9 @@ class LivesStatusController extends GetxController {
   final RxInt onlineCurrentPage = 1.obs;
   final RxBool hasMoreOnlineMembers = true.obs;
 
-  // -------------------------------------------------------------
-  // 3. PRIVATE MEMBERS (filter=private)
-  // -------------------------------------------------------------
   final RxList<GroupMemberData> privateMemberList = <GroupMemberData>[].obs;
-  final RxList<GroupMemberData> filteredPrivateMemberList = <GroupMemberData>[].obs;
+  final RxList<GroupMemberData> filteredPrivateMemberList =
+      <GroupMemberData>[].obs;
 
   final RxBool privateLoading = false.obs;
   final RxBool privateLoadingMore = false.obs;
@@ -62,7 +56,6 @@ class LivesStatusController extends GetxController {
   final RxBool hasMorePrivateMembers = true.obs;
   final RxBool isMyPrivateModeOn = false.obs;
 
-  // Compatibility getters for legacy references
   RxList<GroupMemberData> get memberData => onlineNowList;
   RxList<GroupMemberData> get currentOnlineMembers => onlineNowList;
   RxList<GroupMemberData> get recentOnlineMembers => recentlyOnlineList;
@@ -84,7 +77,8 @@ class LivesStatusController extends GetxController {
   }
 
   void _loadMyPrivateStatus() {
-    final bool? syncVal = Global.storageServices.getBoolSync(PrefConst.locationSharing);
+    final bool? syncVal =
+        Global.storageServices.getBoolSync(PrefConst.locationSharing);
     if (syncVal != null) {
       isMyPrivateModeOn.value = !syncVal;
       return;
@@ -96,9 +90,6 @@ class LivesStatusController extends GetxController {
     }
   }
 
-  // =============================================================
-  // ALL MEMBERS ACTIONS (filter=all)
-  // =============================================================
   Future<void> getAllMembers({bool refresh = false}) async {
     if (allMemberLoading.value || allMemberLoadingMore.value) return;
 
@@ -124,7 +115,8 @@ class LivesStatusController extends GetxController {
         metaData.value = allMember!.metaData;
         totalMembersCount.value = allMember.metaData?.totalMembers ?? 0;
         activeMembersCount.value = allMember.metaData?.totalOnlineMembers ?? 0;
-        inactiveMembersCount.value = allMember.metaData?.totalOfflineMembers ?? 0;
+        inactiveMembersCount.value =
+            allMember.metaData?.totalOfflineMembers ?? 0;
         newMembersCount.value = allMember.metaData?.totalNewMembers ?? 0;
       }
 
@@ -167,7 +159,8 @@ class LivesStatusController extends GetxController {
       );
 
       if (result.status == true) {
-        final List<GroupMemberData> newList = result.data?.allMember?.memberList ?? [];
+        final List<GroupMemberData> newList =
+            result.data?.allMember?.memberList ?? [];
         if (newList.isNotEmpty) {
           allCurrentPage.value = nextPage;
           for (final item in newList) {
@@ -220,21 +213,21 @@ class LivesStatusController extends GetxController {
         final name = item.displayName.toLowerCase();
         final dept = item.displayDepartment.toLowerCase();
         final phone = (item.phone ?? '').toLowerCase();
-        return name.contains(query) || dept.contains(query) || phone.contains(query);
+        return name.contains(query) ||
+            dept.contains(query) ||
+            phone.contains(query);
       }).toList();
     }
 
     list.sort((a, b) {
-      final comp = a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase());
+      final comp =
+          a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase());
       return isAllMembersAscending.value ? comp : -comp;
     });
 
     filteredAllMemberList.assignAll(list);
   }
 
-  // =============================================================
-  // ONLINE MEMBERS ACTIONS (filter=online)
-  // =============================================================
   Future<void> getOnlineMembers({bool refresh = false}) async {
     if (onlineLoading.value || onlineLoadingMore.value) return;
 
@@ -251,7 +244,8 @@ class LivesStatusController extends GetxController {
       );
 
       if (result.status != true) {
-        onlineResponseError.value = result.message ?? 'Failed to load online members';
+        onlineResponseError.value =
+            result.message ?? 'Failed to load online members';
         return;
       }
 
@@ -280,7 +274,6 @@ class LivesStatusController extends GetxController {
     }
   }
 
-  // Alias for legacy calls
   Future<void> getGroupMember() => getOnlineMembers();
   Future<void> loadMoreMembers() => loadMoreOnlineMembers();
 
@@ -328,7 +321,8 @@ class LivesStatusController extends GetxController {
                   pagination.totalPages != null &&
                   pagination.currentPage! < pagination.totalPages!);
         } else {
-          hasMoreOnlineMembers.value = (newActive.length + newRecent.length) >= 20;
+          hasMoreOnlineMembers.value =
+              (newActive.length + newRecent.length) >= 20;
         }
       } else {
         hasMoreOnlineMembers.value = false;
@@ -371,9 +365,6 @@ class LivesStatusController extends GetxController {
     );
   }
 
-  // =============================================================
-  // PRIVATE MEMBERS ACTIONS (filter=private)
-  // =============================================================
   Future<void> getPrivateMembers({bool refresh = false}) async {
     if (privateLoading.value || privateLoadingMore.value) return;
 
@@ -390,7 +381,8 @@ class LivesStatusController extends GetxController {
       );
 
       if (result.status != true) {
-        privateResponseError.value = result.message ?? 'Failed to load private members';
+        privateResponseError.value =
+            result.message ?? 'Failed to load private members';
         return;
       }
 
@@ -487,17 +479,29 @@ class LivesStatusController extends GetxController {
 
   Future<bool> togglePrivateMode(bool enablePrivate) async {
     try {
-      // locationSharing = !enablePrivate (if private mode is ON, locationSharing is FALSE)
       final bool newLocationSharing = !enablePrivate;
+
       final success = await TrackRepo.updateLocationSharing(newLocationSharing);
 
       if (success) {
         isMyPrivateModeOn.value = enablePrivate;
-        Global.storageServices.setBool(PrefConst.locationSharing, newLocationSharing);
-        // Refresh private members list
-        getPrivateMembers(refresh: true);
+
+        Global.storageServices.setBool(
+          PrefConst.locationSharing,
+          newLocationSharing,
+        );
+
+        if (Get.isRegistered<TrackingController>()) {
+          final trackingController = Get.find<TrackingController>();
+
+          trackingController.isLocationSharing.value = newLocationSharing;
+        }
+
+        await getPrivateMembers(refresh: true);
+
         return true;
       }
+
       return false;
     } catch (e) {
       log("❌ [LiveStatusController] togglePrivateMode error: $e");

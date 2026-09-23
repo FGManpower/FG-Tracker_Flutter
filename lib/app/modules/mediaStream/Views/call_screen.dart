@@ -28,7 +28,8 @@ class _CallScreenState extends State<CallScreen>
     _tabController.addListener(() {
       if (!_tabController.indexIsChanging) {
         controller.switchTab(_tabController.index);
-        if (_tabController.index != 0 && controller.isDialPadOpen.value) {
+        if (_tabController.index != 1 &&
+            controller.isDialPadOpen.value) {
           controller.isDialPadOpen.value = false;
         }
       }
@@ -74,7 +75,7 @@ class _CallScreenState extends State<CallScreen>
               right: 0,
               bottom: 0,
               child: Obx(() {
-                if (controller.selectedTab.value != 0) {
+                if (controller.selectedTab.value != 1) {
                   return const SizedBox.shrink();
                 }
                 return const CallDialPad();
@@ -84,7 +85,11 @@ class _CallScreenState extends State<CallScreen>
         ),
       ),
       floatingActionButton: Obx(() {
+<<<<<<< HEAD
         if (controller.selectedTab.value != 0 ||
+=======
+        if (controller.selectedTab.value != 1 ||
+>>>>>>> 1c1f1c71a8d0d65b5af4d04e4bd6c55c3663dafe
             controller.isDialPadOpen.value) {
           return const SizedBox.shrink();
         }
@@ -241,7 +246,7 @@ class _CallScreenState extends State<CallScreen>
           controller: _tabController,
           onTap: (index) {
             controller.switchTab(index);
-            if (index != 0 && controller.isDialPadOpen.value) {
+            if (index != 1 && controller.isDialPadOpen.value) {
               controller.isDialPadOpen.value = false;
             }
           },

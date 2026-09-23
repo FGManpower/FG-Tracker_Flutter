@@ -20,7 +20,6 @@ class NotificationController extends GetxController {
   void onInit() {
     super.onInit();
 
-    getNotifications();
     getUnreadCount();
   }
 
