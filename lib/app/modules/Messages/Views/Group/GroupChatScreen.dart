@@ -11,9 +11,7 @@ import 'package:fgtracker/app/widgets/PinnedMessageBanner.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../Core/constant/const_res.dart';
-
 import 'package:get/get.dart';
-
 import '../../Controller/GroupChatController.dart';
 import '../ContactPickerPage.dart';
 import '../LocationPickerPage.dart';

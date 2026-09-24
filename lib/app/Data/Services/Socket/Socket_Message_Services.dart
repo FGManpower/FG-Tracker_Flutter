@@ -963,6 +963,104 @@ class SocketMessageService extends GetxService {
     }
   }
 
+  void pinPrivateChat({
+    required String userId,
+    required String chatId,
+  }) {
+    if (!isPrivateChatListSocketConnected) {
+      log("PIN PRIVATE CHAT => SOCKET NOT CONNECTED");
+      return;
+    }
+
+    final payload = {
+      "userId": userId,
+      "chatId": chatId,
+    };
+
+    log("📌 PIN PRIVATE CHAT => $payload");
+
+    _privateChatListSocket!.emit(
+      "pin_private_chat",
+      payload,
+    );
+  }
+
+  void unpinPrivateChat({
+    required String userId,
+    required String chatId,
+  }) {
+    if (!isPrivateChatListSocketConnected) {
+      log("UNPIN PRIVATE CHAT => SOCKET NOT CONNECTED");
+      return;
+    }
+
+    final payload = {
+      "userId": userId,
+      "chatId": chatId,
+    };
+
+    log("📌 UNPIN PRIVATE CHAT => $payload");
+
+    _privateChatListSocket!.emit(
+      "unpin_private_chat",
+      payload,
+    );
+  }
+
+  void mutePrivateChat({
+    required String userId,
+    required String chatId,
+    String? mutedUntil,
+  }) {
+    if (!isPrivateChatListSocketConnected) {
+      log("MUTE PRIVATE CHAT => SOCKET NOT CONNECTED");
+      return;
+    }
+
+    final payload = {
+      "userId": userId,
+      "chatId": chatId,
+      "mutedUntil": mutedUntil,
+    };
+
+    log("🔇 MUTE PRIVATE CHAT => $payload");
+
+    _privateChatListSocket!.emit(
+      "mute_private_chat",
+      payload,
+    );
+  }
+
+  void unmutePrivateChat({
+    required String userId,
+    required String chatId,
+  }) {
+    if (!isPrivateChatListSocketConnected) {
+      log("UNMUTE PRIVATE CHAT => SOCKET NOT CONNECTED");
+      return;
+    }
+
+    final payload = {
+      "userId": userId,
+      "chatId": chatId,
+    };
+
+    log("🔔 UNMUTE PRIVATE CHAT => $payload");
+
+    _privateChatListSocket!.emit(
+      "unmute_private_chat",
+      payload,
+    );
+  }
+
+
+
+
+
+
+
+
+
   void disconnectSocket() {
     _socket?.disconnect();
     _socket?.dispose();

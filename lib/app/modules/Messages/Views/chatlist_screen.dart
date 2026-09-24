@@ -1,19 +1,22 @@
+import 'package:fgtracker/app/Model/MemberDataRes.dart';
+import 'package:fgtracker/app/Model/PrivateChatModel.dart';
+import 'package:fgtracker/app/global_widget/common_widget.dart';
+import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:skeletonizer/skeletonizer.dart';
-
-import 'package:fgtracker/app/Core/constant/const_res.dart';
-import 'package:fgtracker/app/Core/util/chatutil.dart';
-import 'package:fgtracker/app/Model/MemberDataRes.dart';
-import 'package:fgtracker/app/global_widget/common_widget.dart';
-import 'package:fgtracker/app/modules/Messages/Controller/MessageController.dart';
-import 'package:fgtracker/app/modules/Messages/Controller/chat_list_controller.dart';
-import 'package:fgtracker/app/modules/Messages/Views/Chat_Screen.dart';
-import 'package:fgtracker/app/modules/Messages/Views/new_chat_screen.dart';
-import 'package:fgtracker/app/modules/Messages/widgets/custom_dropdown_menu.dart';
-import 'package:fgtracker/app/routes/app_pages.dart';
-import 'package:fgtracker/gen/fonts.gen.dart';
+import '../../../Core/constant/const_res.dart';
+import '../../../Core/util/chatutil.dart';
+import '../../../routes/app_pages.dart';
+import '../../Safe_Zone/views/safe_zone_view.dart';
+import '../../Safe_Zone/views/safety_dashboard_view.dart';
+import '../../Track/Views/Tracking_screen.dart';
+import '../Controller/MessageController.dart';
+import '../Controller/chat_list_controller.dart';
+import '../widgets/custom_dropdown_menu.dart';
+import 'Chat_Screen.dart';
+import 'new_chat_screen.dart';
 
 class ChatListScreen extends StatelessWidget {
   ChatListScreen({super.key});
@@ -83,7 +86,7 @@ class ChatListScreen extends StatelessWidget {
                 reausabletext(
                   "Stay connected with your team",
                   fontsize: 11.sp,
-                  fontweight: FontWeight.w500,
+                  fontweight: const FontWeight(500),
                   color: const Color(0xFF6B4DFF),
                 ),
               ],
@@ -139,17 +142,23 @@ class ChatListScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          reausabletext(
-            "Quick Communication",
-            fontsize: 12.sp,
-            fontfamily: FontFamily.interBold,
-            color: const Color(0xFF1B1B50),
+          Padding(
+            padding: EdgeInsets.only(left: 8.w),
+            child: reausabletext(
+              "Quick Communication",
+              fontsize: 12.sp,
+              fontfamily: FontFamily.interBold,
+              color: const Color(0xFF1B1B50),
+            ),
           ),
-          reausabletext(
-            "Connect with your team instantly",
-            fontsize: 10.sp,
-            color: const Color(0xFF6B4DFF),
-            fontweight: FontWeight.w500,
+          Padding(
+            padding: EdgeInsets.only(left: 8.w),
+            child: reausabletext(
+              "Connect with your team instantly",
+              fontsize: 10.sp,
+              color: const Color(0xFF6B4DFF),
+              fontweight: FontWeight.w500,
+            ),
           ),
           SizedBox(height: 12.h),
           Row(
@@ -346,6 +355,7 @@ class _AllChatsBody extends StatelessWidget {
 
                     return _chatRow(
                       context: context,
+                      chat: chat,
                       name: chat.name ?? "Unknown User",
                       role: chat.role ?? "",
                       msg: ChatUtil.formatLastMessage(chat.message),
@@ -564,6 +574,7 @@ class _AllChatsBody extends StatelessWidget {
     required BuildContext context,
     required String name,
     required String role,
+    required PrivateChatModel chat,
     required String msg,
     required String time,
     int unreadCount = 0,
@@ -603,7 +614,11 @@ class _AllChatsBody extends StatelessWidget {
           }),
         );
       },
-      onLongPress: () => _showChatOptions(context, tapPos),
+      onLongPress: () => _showChatOptions(
+        context,
+        tapPos,
+        chat,
+      ),
       child: Container(
         color: Colors.transparent,
         padding: EdgeInsets.symmetric(
@@ -618,6 +633,8 @@ class _AllChatsBody extends StatelessWidget {
           unreadCount: unreadCount,
           statusColor: statusColor,
           isGroup: isGroup,
+          isPinned: chat.isPinned == true,
+          isMuted: chat.isMuted == true,
           image: image,
         ),
       ),
@@ -633,9 +650,9 @@ class _AllChatsBody extends StatelessWidget {
     Color? statusColor,
     bool isGroup = false,
     bool isPinned = false,
+    bool isMuted = false,
     String? image,
   }) {
-    // ... same as your previous code ...
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -693,12 +710,37 @@ class _AllChatsBody extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              reausabletext(
-                name.isEmpty ? "Unknown User" : name,
-                fontsize: 12.sp,
-                fontfamily: FontFamily.interBold,
-                color: Colors.black87,
-                maxline: 1,
+              Row(
+                children: [
+                  Flexible(
+                    child: reausabletext(
+                      name.isEmpty ? "Unknown User" : name,
+                      fontsize: 12.sp,
+                      fontfamily: FontFamily.interBold,
+                      color: Colors.black87,
+                      maxline: 1,
+                    ),
+                  ),
+                  if (isPinned) ...[
+                    SizedBox(width: 5.w),
+                    Transform.rotate(
+                      angle: 0.5,
+                      child: Icon(
+                        Icons.push_pin_rounded,
+                        size: 14.sp,
+                        color: const Color(0xFF6B4DFF),
+                      ),
+                    ),
+                  ],
+                  if (isMuted) ...[
+                    SizedBox(width: 5.w),
+                    Icon(
+                      Icons.notifications_off_rounded,
+                      size: 14.sp,
+                      color: Colors.grey,
+                    ),
+                  ],
+                ],
               ),
               SizedBox(height: 4.h),
               reausabletext(
@@ -746,9 +788,7 @@ class _AllChatsBody extends StatelessWidget {
         ),
         SizedBox(width: 16.w),
         Icon(
-          isPinned
-              ? Icons.keyboard_arrow_down_rounded
-              : Icons.chevron_right_rounded,
+          Icons.chevron_right_rounded,
           size: 20.sp,
           color: const Color(0xFF6B4DFF),
         ),
@@ -759,22 +799,38 @@ class _AllChatsBody extends StatelessWidget {
   void _showChatOptions(
     BuildContext context,
     Offset position,
+    PrivateChatModel chat,
   ) {
-    // ... same as your previous code ...
+    final bool isPinned = chat.isPinned == true;
+    final bool isMuted = chat.isMuted == true;
     CustomDropdownMenu.show(
       context: context,
       position: position,
       width: 210,
       items: [
         DropdownMenuItemData(
-          icon: Icons.push_pin_outlined,
-          title: "Pin Chat",
-          onTap: () {},
+          icon: isPinned ? Icons.push_pin : Icons.push_pin_outlined,
+          title: isPinned ? "Unpin Chat" : "Pin Chat",
+          onTap: () {
+            if (isPinned) {
+              controller.unpinChat(chat);
+            } else {
+              controller.pinChat(chat);
+            }
+          },
         ),
         DropdownMenuItemData(
-          icon: Icons.notifications_off_outlined,
-          title: "Mute Notifications",
-          onTap: () {},
+          icon: isMuted
+              ? Icons.notifications_active_outlined
+              : Icons.notifications_off_outlined,
+          title: isMuted ? "Unmute Notifications" : "Mute Notifications",
+          onTap: () {
+            if (isMuted) {
+              controller.unmuteChat(chat);
+            } else {
+              _showMuteOptions(context, chat);
+            }
+          },
         ),
         DropdownMenuItemData(
           icon: Icons.mark_email_unread_outlined,
@@ -837,4 +893,223 @@ class _AllChatsBody extends StatelessWidget {
     if (difference.inDays < 7) return "${difference.inDays} days";
     return "${local.day}/${local.month}/${local.year}";
   }
+
+  void _showMuteOptions(
+      BuildContext context,
+      PrivateChatModel chat,
+      ) {
+    String selectedOption = "1_hour";
+
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              backgroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14.r),
+              ),
+              titlePadding: EdgeInsets.fromLTRB(
+                20.w,
+                18.h,
+                20.w,
+                4.h,
+              ),
+              contentPadding: EdgeInsets.fromLTRB(
+                20.w,
+                0,
+                20.w,
+                2.h,
+              ),
+              actionsPadding: EdgeInsets.fromLTRB(
+                12.w,
+                0,
+                12.w,
+                6.h,
+              ),
+              title: reausabletext(
+                "Mute notifications",
+                fontsize: 20.sp,
+                fontfamily: FontFamily.interSemiBold,
+                color: Colors.black87,
+                maxline: 1,
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(height: 3.h),
+                  reausabletext(
+                    "Choose how long you want to pause notifications.",
+                    fontsize: 13.sp,
+                    fontfamily: FontFamily.interRegular,
+                    color: Colors.black,
+                    maxline: 2,
+                  ),
+                  SizedBox(height: 8.h),
+                  _muteDialogOption(
+                    title: "1 hour",
+                    value: "1_hour",
+                    groupValue: selectedOption,
+                    onChanged: (value) {
+                      setState(() {
+                        selectedOption = value;
+                      });
+                    },
+                  ),
+                  _muteDialogOption(
+                    title: "8 hours",
+                    value: "8_hours",
+                    groupValue: selectedOption,
+                    onChanged: (value) {
+                      setState(() {
+                        selectedOption = value;
+                      });
+                    },
+                  ),
+                  _muteDialogOption(
+                    title: "Until tomorrow",
+                    value: "until_tomorrow",
+                    groupValue: selectedOption,
+                    onChanged: (value) {
+                      setState(() {
+                        selectedOption = value;
+                      });
+                    },
+                  ),
+                  _muteDialogOption(
+                    title: "Until I turn it back on",
+                    value: "always",
+                    groupValue: selectedOption,
+                    onChanged: (value) {
+                      setState(() {
+                        selectedOption = value;
+                      });
+                    },
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(dialogContext);
+                  },
+                  child: reausabletext(
+                    "Cancel",
+                    fontsize: 14.sp,
+                    fontfamily: FontFamily.interSemiBold,
+                    color: const Color(0xFF8080EE),
+                  ),
+                ),
+                TextButton(
+                  onPressed: () {
+                    String? mutedUntil;
+
+                    if (selectedOption == "1_hour") {
+                      mutedUntil = DateTime.now()
+                          .add(const Duration(hours: 1))
+                          .toIso8601String();
+                    } else if (selectedOption == "8_hours") {
+                      mutedUntil = DateTime.now()
+                          .add(const Duration(hours: 8))
+                          .toIso8601String();
+                    } else if (selectedOption == "until_tomorrow") {
+                      final tomorrow = DateTime.now().add(
+                        const Duration(days: 1),
+                      );
+
+                      mutedUntil = DateTime(
+                        tomorrow.year,
+                        tomorrow.month,
+                        tomorrow.day,
+                        8,
+                        0,
+                      ).toIso8601String();
+                    } else {
+                      mutedUntil = null;
+                    }
+
+                    Navigator.pop(dialogContext);
+
+                    controller.muteChat(
+                      chat,
+                      mutedUntil: mutedUntil,
+                    );
+                  },
+                  child: reausabletext(
+                    "OK",
+                    fontsize: 14.sp,
+                    fontfamily: FontFamily.interSemiBold,
+                    color: const Color(0xFF8080EE),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _muteDialogOption({
+    required String title,
+    required String value,
+    required String groupValue,
+    required ValueChanged<String> onChanged,
+  }) {
+    final bool selected = value == groupValue;
+
+    return InkWell(
+      onTap: () {
+        onChanged(value);
+      },
+      borderRadius: BorderRadius.circular(8.r),
+      child: Padding(
+        padding: EdgeInsets.symmetric(vertical: 4.h),
+        child: Row(
+          children: [
+            Container(
+              width: 20.w,
+              height: 20.w,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: selected
+                      ? const Color(0xFF8080EE)
+                      : Colors.black45,
+                  width: 2,
+                ),
+              ),
+              child: selected
+                  ? Center(
+                child: Container(
+                  width: 10.w,
+                  height: 10.w,
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Color(0xFF8080EE),
+                  ),
+                ),
+              )
+                  : null,
+            ),
+            SizedBox(width: 14.w),
+            Expanded(
+              child: reausabletext(
+                title,
+                fontsize: 14.sp,
+                fontfamily: FontFamily.interRegular,
+                color: Colors.black87,
+                maxline: 1,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+
 }
