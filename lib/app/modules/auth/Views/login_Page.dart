@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:country_code_picker/country_code_picker.dart';
 import 'package:fgtracker/app/Core/values/colors.dart';
 import 'package:fgtracker/app/modules/auth/Controller/login_controller.dart';
@@ -28,12 +26,12 @@ class LoginPage extends GetView<Login_Controller> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Color(0xFF7664F6),
-              Color(0xFF8F7EF8),
-              Color(0xFFD6CEFD),
-              Color(0xFFF3F1FE),
+              Color(0xFF7E7DE8),
+              Color(0xFF8E8DF0),
+              Color(0xFFCFCBFA),
+              Color(0xFFEEEDFD),
             ],
-            stops: [0.0, 0.35, 0.72, 1.0],
+            stops: [0.0, 0.35, 0.68, 1.0],
           ),
         ),
         child: Center(
@@ -45,7 +43,9 @@ class LoginPage extends GetView<Login_Controller> {
                   return SingleChildScrollView(
                     keyboardDismissBehavior:
                         ScrollViewKeyboardDismissBehavior.onDrag,
-                    physics: const AlwaysScrollableScrollPhysics(),
+                    physics: isKeyboardOpen
+                        ? const ClampingScrollPhysics()
+                        : const NeverScrollableScrollPhysics(),
                     child: ConstrainedBox(
                       constraints:
                           BoxConstraints(minHeight: constraints.maxHeight),
@@ -64,33 +64,31 @@ class LoginPage extends GetView<Login_Controller> {
                                   // Top-right background effect & Location Pin (compact size)
                                   if (!isKeyboardOpen)
                                     Positioned(
-                                      top: -15.h,
-                                      right: -10.w,
+                                      top: -25.h,
+                                      right: -35.w,
                                       child: SizedBox(
-                                        width: 155.w,
-                                        height: 155.h,
+                                        width: 245.w,
+                                        height: 245.h,
                                         child: Stack(
                                           alignment: Alignment.center,
                                           children: [
-                                            // Background effect (arcs + world map)
                                             Positioned(
-                                              top: 0,
-                                              right: 0,
-                                              width: 150.w,
-                                              height: 150.h,
+                                              top: -30.h,
+                                              right: -20.w,
+                                              width: 230.w,
+                                              height: 310.h,
                                               child: Opacity(
                                                 opacity: 0.85,
                                                 child: _buildAuthWatermarkImage(),
                                               ),
                                             ),
-                                            // 3D Location Icon on top of the effect
                                             Positioned(
-                                              top: 20.h,
-                                              right: 5.w,
+                                              top: 32.h,
+                                              right: 18.w,
                                               child: Image.asset(
                                                 Assets.images.loctionIcon.path,
-                                                width: 110.w,
-                                                height: 110.h,
+                                                width: 185.w,
+                                                height: 185.h,
                                                 fit: BoxFit.contain,
                                               ),
                                             ),
@@ -122,7 +120,7 @@ class LoginPage extends GetView<Login_Controller> {
                                           width: 42.w,
                                           height: 3.5.h,
                                           decoration: BoxDecoration(
-                                            color: const Color(0xFF5D47F1),
+                                            color: AppColors.authIconBar,
                                             borderRadius:
                                                 BorderRadius.circular(2.r),
                                           ),
@@ -165,12 +163,11 @@ class LoginPage extends GetView<Login_Controller> {
                                   ),
                                   decoration: BoxDecoration(
                                     color: AppColors.white,
-                                    borderRadius:
-                                        BorderRadius.circular(30.r),
+                                    borderRadius: BorderRadius.circular(30.r),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: const Color(0xFF4B3FDD)
-                                            .withValues(alpha: 0.12),
+                                        color: AppColors.authGradientTop
+                                            .withValues(alpha: 0.14),
                                         blurRadius: 28,
                                         spreadRadius: 1,
                                         offset: const Offset(0, 10),
@@ -183,7 +180,7 @@ class LoginPage extends GetView<Login_Controller> {
                                       Text(
                                         "Log In",
                                         style: TextStyle(
-                                          color: Colors.black,
+                                          color: AppColors.authTextNavy,
                                           fontSize: 24.sp,
                                           fontWeight: FontWeight.bold,
                                           fontFamily: FontFamily.interBold,
@@ -193,7 +190,7 @@ class LoginPage extends GetView<Login_Controller> {
                                       Text(
                                         "to Continue",
                                         style: TextStyle(
-                                          color: const Color(0xFF5D47F1),
+                                          color: AppColors.authGradientTop,
                                           fontSize: 16.sp,
                                           fontWeight: FontWeight.w600,
                                           fontFamily: FontFamily.interBold,
@@ -211,21 +208,18 @@ class LoginPage extends GetView<Login_Controller> {
                                               () => controller.mobileErrorText
                                                       .value.isNotEmpty
                                                   ? Padding(
-                                                      padding:
-                                                          EdgeInsets.only(
-                                                              left: 10.w,
-                                                              top: 8.h),
+                                                      padding: EdgeInsets.only(
+                                                          left: 10.w, top: 8.h),
                                                       child: Text(
                                                         controller
                                                             .mobileErrorText
                                                             .value,
                                                         style: TextStyle(
-                                                          color: AppColors
-                                                              .darkRed,
+                                                          color:
+                                                              AppColors.darkRed,
                                                           fontSize: 12.sp,
-                                                          fontFamily:
-                                                              FontFamily
-                                                                  .interMedium,
+                                                          fontFamily: FontFamily
+                                                              .interMedium,
                                                         ),
                                                       ),
                                                     )
@@ -234,8 +228,7 @@ class LoginPage extends GetView<Login_Controller> {
                                             SizedBox(height: 24.h),
                                             AuthGradientButton(
                                               label: "Log In to Continue",
-                                              onTap: () =>
-                                                  controller.login(),
+                                              onTap: () => controller.login(),
                                             ),
                                           ],
                                         ),
@@ -249,15 +242,14 @@ class LoginPage extends GetView<Login_Controller> {
                                     child: Icon(
                                       Icons.person_outline_rounded,
                                       size: 34.sp,
-                                      color: const Color(0xFF5D47F1),
+                                      color: AppColors.authGradientTop,
                                     ),
                                   ),
                                 ),
                               ],
                             ),
                             SizedBox(height: 24.h),
-                            if (!isKeyboardOpen)
-                              _buildBottomSecurityBadge(),
+                            if (!isKeyboardOpen) _buildBottomSecurityBadge(),
                             SizedBox(height: 35.h),
                           ],
                         ),
@@ -281,7 +273,7 @@ class LoginPage extends GetView<Login_Controller> {
         color: AppColors.white,
         borderRadius: BorderRadius.circular(30.r),
         border: Border.all(
-          color: const Color(0xFFDCD6FD),
+          color: AppColors.authMainLavender,
           width: 1.2,
         ),
       ),
@@ -292,7 +284,7 @@ class LoginPage extends GetView<Login_Controller> {
             width: 105.w,
             child: CountryCodePicker(
               onChanged: (country) {
-                controller.selectedDialCode = country.dialCode ?? '+91';
+                controller.selectedDialCode.value = country.dialCode ?? '+91';
               },
               initialSelection: 'IN',
               favorite: const ['+91', 'IN'],
@@ -301,7 +293,7 @@ class LoginPage extends GetView<Login_Controller> {
               flagWidth: 20.sp,
               textStyle: TextStyle(
                 fontSize: 14.sp,
-                color: Colors.black87,
+                color: AppColors.authTextNavy,
                 fontWeight: FontWeight.w600,
                 fontFamily: FontFamily.interMedium,
               ),
@@ -314,51 +306,51 @@ class LoginPage extends GetView<Login_Controller> {
           Container(
             height: 24.h,
             width: 1.w,
-            color: const Color(0xFFDCD6FD),
-          ),
-          SizedBox(width: 10.w),
-          Icon(
-            Icons.call_rounded,
-            size: 18.sp,
-            color: const Color(0xFF5D47F1),
+            color: AppColors.authMainLavender,
           ),
           SizedBox(width: 8.w),
           Expanded(
             child: Center(
-              child: TextFormField(
-                focusNode: controller.phoneFocusNode,
-                inputFormatters: [
-                  FilteringTextInputFormatter.digitsOnly,
-                ],
-                style: TextStyle(
-                  fontSize: 14.5.sp,
-                  fontFamily: FontFamily.interMedium,
-                  color: Colors.black,
-                ),
-                controller: controller.mobNoController,
-                keyboardType: TextInputType.phone,
-                textInputAction: TextInputAction.done,
-                maxLength: 15,
-                decoration: InputDecoration(
-                  counterText: '',
-                  border: InputBorder.none,
-                  enabledBorder: InputBorder.none,
-                  focusedBorder: InputBorder.none,
-                  hintText: 'Enter Mobile Number',
-                  hintStyle: TextStyle(
-                    fontSize: 13.5.sp,
-                    color: const Color(0xFF9E9EAF),
-                    fontFamily: FontFamily.interRegular,
+              child: Obx(
+                () => TextFormField(
+                  focusNode: controller.phoneFocusNode,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                    LengthLimitingTextInputFormatter(
+                      controller.selectedDialCode.value == '+91' ? 10 : 15,
+                    ),
+                  ],
+                  style: TextStyle(
+                    fontSize: 14.5.sp,
+                    fontFamily: FontFamily.interMedium,
+                    color: AppColors.authTextNavy,
                   ),
-                  isDense: true,
-                  contentPadding: EdgeInsets.zero,
+                  controller: controller.mobNoController,
+                  keyboardType: TextInputType.phone,
+                  textInputAction: TextInputAction.done,
+                  maxLength:
+                      controller.selectedDialCode.value == '+91' ? 10 : 15,
+                  decoration: InputDecoration(
+                    counterText: '',
+                    border: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    hintText: 'Enter Mobile Number',
+                    hintStyle: TextStyle(
+                      fontSize: 13.5.sp,
+                      color: const Color(0xFF9E9EAF),
+                      fontFamily: FontFamily.interRegular,
+                    ),
+                    isDense: true,
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                  onChanged: (value) {
+                    controller.checkAndDismissKeyboard(value);
+                  },
+                  onFieldSubmitted: (_) {
+                    controller.phoneFocusNode.unfocus();
+                  },
                 ),
-                onChanged: (value) {
-                  controller.checkAndDismissKeyboard(value);
-                },
-                onFieldSubmitted: (_) {
-                  controller.phoneFocusNode.unfocus();
-                },
               ),
             ),
           ),
@@ -385,7 +377,7 @@ class LoginPage extends GetView<Login_Controller> {
             borderRadius: BorderRadius.circular(25.r),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF4B3FDD).withValues(alpha: 0.08),
+                color: AppColors.authGradientTop.withValues(alpha: 0.10),
                 blurRadius: 15,
                 offset: const Offset(0, 5),
               ),
@@ -396,14 +388,14 @@ class LoginPage extends GetView<Login_Controller> {
             children: [
               Icon(
                 Icons.verified_rounded,
-                color: const Color(0xFF5D47F1),
+                color: AppColors.authGradientTop,
                 size: 24.sp,
               ),
               SizedBox(width: 8.w),
               RichText(
                 text: TextSpan(
                   style: TextStyle(
-                    color: Colors.black87,
+                    color: AppColors.authTextNavy,
                     fontSize: 12.sp,
                     fontFamily: FontFamily.interMedium,
                   ),
@@ -412,7 +404,7 @@ class LoginPage extends GetView<Login_Controller> {
                     TextSpan(
                       text: "100% ",
                       style: TextStyle(
-                        color: const Color(0xFF5D47F1),
+                        color: AppColors.authGradientTop,
                         fontWeight: FontWeight.bold,
                         fontFamily: FontFamily.interBold,
                       ),
@@ -425,12 +417,12 @@ class LoginPage extends GetView<Login_Controller> {
           ),
         ),
         Positioned(
-          right: 4.w,
-          top: -22.h,
+          right: 8.w,
+          top: -29.h,
           child: Image.asset(
             Assets.images.lock3d.path,
-            height: 64.h,
-            width: 64.w,
+            height: 90.h,
+            width: 90.w,
             fit: BoxFit.contain,
           ),
         ),
@@ -439,16 +431,7 @@ class LoginPage extends GetView<Login_Controller> {
   }
 
   static Widget _buildAuthWatermarkImage() {
-    final file = File(r"c:\projects\assets\images\auth_arc_bg.png");
-    if (file.existsSync()) {
-      return Image.file(
-        file,
-        fit: BoxFit.contain,
-        alignment: Alignment.topRight,
-      );
-    }
-    return Image.asset(
-      'assets/images/auth_arc_bg.png',
+    return Assets.images.authArcBg.image(
       fit: BoxFit.contain,
       alignment: Alignment.topRight,
       errorBuilder: (_, __, ___) => const SizedBox.shrink(),

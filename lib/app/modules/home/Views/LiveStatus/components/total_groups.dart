@@ -1,173 +1,553 @@
 import 'package:fgtracker/app/Core/values/colorPool.dart';
-import 'package:fgtracker/app/Model/GroupRes.dart';
-import 'package:fgtracker/app/global_widget/common_widget.dart';
+import 'package:fgtracker/app/Model/GroupChatListModel.dart';
+import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
+import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:skeletonizer/skeletonizer.dart';
+import '../../../Controller/total_group_controller.dart';
 
 class totalGroup extends StatelessWidget {
   const totalGroup({super.key});
-
   @override
   Widget build(BuildContext context) {
+    final controller = Get.put(TotalGroupController());
+
     return Scaffold(
+      backgroundColor: const Color(0xFFF7F8FC),
       appBar: AppBar(
-        leading: InkWell(
-            onTap: () {
-              Get.back();
-            },
-            child: Icon(Icons.arrow_back_ios,size: 20.sp,)),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leadingWidth: 60.w,
+        leading: Padding(
+          padding: EdgeInsets.only(left: 16.w),
+          child: InkWell(
+            onTap: () => Get.back(),
+            borderRadius: BorderRadius.circular(12.r),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(14.r),
+                border: Border.all(
+                  color: Colors.grey.withOpacity(0.12),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.03),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Icon(
+                Icons.arrow_back_rounded,
+                size: 20.sp,
+                color: Colors.black87,
+              ),
+            ),
+          ),
+        ),
+        title: Obx(
+          () => Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "Groups",
+                style: TextStyle(
+                  fontSize: 18.sp,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.black87,
+                  fontFamily: FontFamily.interBold,
+                ),
+              ),
+              SizedBox(height: 2.h),
+              Text(
+                "${controller.groupList.length} Groups",
+                style: TextStyle(
+                  fontSize: 12.sp,
+                  color: Colors.grey.shade600,
+                  fontFamily: FontFamily.interRegular,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
       body: Padding(
-        padding:  EdgeInsets.symmetric(horizontal: 15.w),
+        padding: EdgeInsets.symmetric(
+          horizontal: 16.w,
+          vertical: 10.h,
+        ),
         child: Column(
           children: [
-
-
-            Padding(
-              padding:  EdgeInsets.only(bottom: 10.h),
-              child: TextField(
-                // controller: _searchController,
-                // onChanged: (value) => _searchQuery.value = value,
-                decoration: InputDecoration(
-                  hintText: "Search groups",
-                  hintStyle: TextStyle(
-                    fontSize: 13.sp,
-                    color: Colors.grey,
-                    fontFamily: FontFamily.interRegular,
+            Container(
+              height: 48.h,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(14.r),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.03),
+                    blurRadius: 10,
+                    offset: const Offset(0, 2),
                   ),
-                  fillColor: Colors.white,
-                  filled: true,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8.sp),
-                    borderSide: BorderSide(
-                      color:  Colors.grey.shade400,
-                      width: 1.w,
+                ],
+                border: Border.all(
+                  color: Colors.grey.withOpacity(0.12),
+                ),
+              ),
+              child: Obx(
+                () => TextField(
+                  controller: controller.searchController,
+                  decoration: InputDecoration(
+                    hintText: "Search groups...",
+                    hintStyle: TextStyle(
+                      fontSize: 13.5.sp,
+                      color: Colors.grey.shade400,
+                      fontFamily: FontFamily.interRegular,
                     ),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8.sp),
-                    borderSide: BorderSide(
-                      color:  Colors.grey.shade400,
-                      width: 1.w,
+                    prefixIcon: Icon(
+                      Icons.search_rounded,
+                      size: 20.sp,
+                      color: Colors.grey.shade400,
                     ),
-                  ),
-
-
-                  isDense: true,
-                  suffixIcon: GestureDetector(
-                    onTap: () {
-                      // _searchController.clear();
-                      // _searchQuery.value = '';
-                    },
-                    child: Icon(
-                      Icons.close,
-                      size: 16.sp,
-                      color: Colors.grey,
+                    border: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 16.w,
+                      vertical: 14.h,
                     ),
+                    suffixIcon: controller.searchText.value.isNotEmpty
+                        ? GestureDetector(
+                            onTap: controller.clearSearch,
+                            child: Icon(
+                              Icons.close_rounded,
+                              size: 18.sp,
+                              color: Colors.grey.shade400,
+                            ),
+                          )
+                        : null,
                   ),
                 ),
               ),
             ),
+            SizedBox(height: 16.h),
             Expanded(
-              child: ListView.builder(
-                itemCount: 5,
-                scrollDirection: Axis.vertical,
-                itemBuilder: (context, index) => apiGroupCard(GroupsResData(
-                  id: 1,
-                  groupCode: "44343",
-                  groupDesc: "As Dev",
-                  groupName: "FG Manpower",
-                  groupProfile: "",
-                  // isActive: t,
-                  // isCreator: ,
-                  memberCount: 1,
-                ),index),),
+              child: Obx(() {
+                if (controller.isLoading.value &&
+                    controller.groupList.isEmpty) {
+                  return _buildGroupList(
+                    controller: controller,
+                    isLoading: true,
+                  );
+                }
+
+                if (controller.hasError.value && controller.groupList.isEmpty) {
+                  return Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.error_outline_rounded,
+                          size: 45.sp,
+                          color: Colors.grey.shade400,
+                        ),
+                        SizedBox(height: 10.h),
+                        Text(
+                          controller.errorMessage.value.isNotEmpty
+                              ? controller.errorMessage.value
+                              : "Something went wrong",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 13.sp,
+                            color: Colors.grey.shade600,
+                            fontFamily: FontFamily.interRegular,
+                          ),
+                        ),
+                        SizedBox(height: 12.h),
+                        ElevatedButton(
+                          onPressed: controller.refreshGroups,
+                          child: const Text("Retry"),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
+                final groups = controller.filteredGroupList;
+
+                if (groups.isEmpty) {
+                  return RefreshIndicator(
+                    onRefresh: controller.refreshGroups,
+                    child: ListView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      children: [
+                        SizedBox(
+                          height: 250.h,
+                          child: Center(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  controller.searchText.value.isNotEmpty
+                                      ? Icons.search_off_rounded
+                                      : Icons.groups_outlined,
+                                  size: 45.sp,
+                                  color: Colors.grey.shade400,
+                                ),
+                                SizedBox(height: 10.h),
+                                Text(
+                                  controller.searchText.value.isNotEmpty
+                                      ? "No groups found"
+                                      : "No groups available",
+                                  style: TextStyle(
+                                    fontSize: 13.sp,
+                                    color: Colors.grey.shade600,
+                                    fontFamily: FontFamily.interRegular,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
+                return RefreshIndicator(
+                  onRefresh: controller.refreshGroups,
+                  child: _buildGroupList(
+                    controller: controller,
+                    data: groups,
+                  ),
+                );
+              }),
             ),
           ],
         ),
-      )
+      ),
     );
   }
 
-  Widget apiGroupCard(GroupsResData group, int index) {
+  Widget _buildGroupList({
+    required TotalGroupController controller,
+    List<GroupChatData>? data,
+    bool isLoading = false,
+  }) {
+    final List<GroupChatData>? items = isLoading ? null : data;
+
+    final int itemCount = items?.length ?? 6;
+
+    return Skeletonizer(
+      enabled: items == null,
+      child: ListView.separated(
+        controller: controller.scrollController,
+        padding: EdgeInsets.only(bottom: 8.h),
+        itemCount: itemCount,
+        separatorBuilder: (_, __) => SizedBox(height: 12.h),
+        physics: const AlwaysScrollableScrollPhysics(
+          parent: BouncingScrollPhysics(),
+        ),
+        itemBuilder: (context, index) {
+          if (items == null) {
+            return const _GroupCardSkeleton();
+          }
+
+          return apiGroupCard(
+            items[index],
+            index,
+            controller,
+          );
+        },
+      ),
+    );
+  }
+
+  Widget apiGroupCard(
+    GroupChatData group,
+    int index,
+    TotalGroupController controller,
+  ) {
     final colors = colorPool[index % colorPool.length];
 
+    final String groupName = controller.getGroupName(group);
+    final String description = controller.getGroupDescription(group);
+    final int memberCount = controller.getMemberCount(group);
+    final int unreadCount = controller.getUnreadCount(group);
+    final String groupDate = controller.getGroupDate(group);
+
     return Padding(
-      padding:  EdgeInsets.only(top:7.h),
+      padding: EdgeInsets.only(bottom: 0.h),
       child: InkWell(
         onTap: () {
+          final gId = group.groupId?.toString() ?? '';
+          if (gId.isEmpty) return;
 
+          String groupCode = '';
+          String isCreator = 'false';
+          String isActive = 'true';
+          String profileImg = group.groupProfile ?? '';
+
+          if (Get.isRegistered<GroupController>()) {
+            final gc = Get.find<GroupController>();
+            final matched = gc.groupData.firstWhereOrNull(
+              (g) => g.id == group.groupId,
+            );
+            if (matched != null) {
+              groupCode = matched.groupCode ?? '';
+              isCreator = (matched.isCreator ?? false).toString();
+              isActive = (matched.isActive ?? true).toString();
+              if (profileImg.isEmpty && matched.groupProfile != null) {
+                profileImg = matched.groupProfile!;
+              }
+            }
+          }
+
+          Get.toNamed(
+            Routes.groupChatScreen,
+            arguments: {
+              "groupId": gId,
+              "groupName": groupName,
+              "groupProfile": profileImg,
+              "groupImage": profileImg,
+              "groupCode": groupCode,
+              "isCreator": isCreator,
+              "isActive": isActive,
+            },
+          )?.then((_) {
+            controller.getGroupChatList(refresh: true);
+          });
         },
-        borderRadius: BorderRadius.circular(16.r),
+        borderRadius: BorderRadius.circular(20.r),
         child: Container(
-          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
+          padding: EdgeInsets.symmetric(
+            horizontal: 14.w,
+            vertical: 14.h,
+          ),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(16.r),
+            borderRadius: BorderRadius.circular(20.r),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.04),
+                color: Colors.black.withOpacity(0.03),
                 blurRadius: 10,
                 offset: const Offset(0, 3),
               ),
             ],
-            border: Border.all(color: Colors.grey.withOpacity(0.08)),
+            border: Border.all(
+              color: Colors.grey.withOpacity(0.08),
+            ),
           ),
           child: Row(
             children: [
               Container(
-                width: 44.w,
-                height: 44.w,
+                width: 48.w,
+                height: 48.w,
                 decoration: BoxDecoration(
                   color: colors['bg'],
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
-                  Icons.groups,
+                  Icons.groups_rounded,
                   color: colors['icon'],
-                  size: 22.sp,
+                  size: 24.sp,
                 ),
               ),
-              SizedBox(width: 12.w),
+              SizedBox(width: 14.w),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    reausabletext(
-                      group.groupName ?? "No Name Group",
-                      fontsize: 14.sp,
-                      fontfamily: FontFamily.interSemiBold,
-                      color: Colors.black87,
+                    Text(
+                      groupName,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 14.5.sp,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.black87,
+                        fontFamily: FontFamily.interBold,
+                      ),
                     ),
-                    SizedBox(height: 4.h),
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.people_alt_outlined,
-                          size: 12.sp,
-                          color: Colors.grey,
-                        ),
-                        SizedBox(width: 4.w),
-                        reausabletext(
-                          "${group.memberCount ?? 0} Members",
-                          fontsize: 11.sp,
-                          color: Colors.grey,
-                        ),
-                      ],
+                    SizedBox(height: 3.h),
+                    Text(
+                      "$memberCount Members",
+                      style: TextStyle(
+                        fontSize: 11.5.sp,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF6B4DFF),
+                        fontFamily: FontFamily.interMedium,
+                      ),
                     ),
+                    if (description.isNotEmpty) ...[
+                      SizedBox(height: 3.h),
+                      Text(
+                        description,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 11.sp,
+                          color: Colors.grey.shade600,
+                          fontFamily: FontFamily.interRegular,
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),
-              Icon(
-                Icons.arrow_forward_ios,
-                size: 18.sp,
-                color: const Color(0xFF6B4DFF),
+              SizedBox(width: 10.w),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  if (groupDate.isNotEmpty)
+                    Text(
+                      groupDate,
+                      style: TextStyle(
+                        fontSize: 10.5.sp,
+                        color: Colors.grey.shade500,
+                        fontFamily: FontFamily.interRegular,
+                      ),
+                    ),
+                  SizedBox(height: 8.h),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (unreadCount > 0)
+                        Container(
+                          constraints: BoxConstraints(
+                            minWidth: 20.w,
+                            minHeight: 20.w,
+                          ),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 5.w,
+                          ),
+                          decoration: const BoxDecoration(
+                            color: Color(0xFF6B4DFF),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Center(
+                            child: Text(
+                              unreadCount > 99 ? "99+" : unreadCount.toString(),
+                              style: TextStyle(
+                                fontSize: 10.sp,
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      if (unreadCount > 0) SizedBox(width: 8.w),
+                      Icon(
+                        Icons.arrow_forward_ios_rounded,
+                        size: 14.sp,
+                        color: Colors.grey.shade400,
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _GroupCardSkeleton extends StatelessWidget {
+  const _GroupCardSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: 14.w,
+        vertical: 14.h,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20.r),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+        border: Border.all(
+          color: Colors.grey.withOpacity(0.08),
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 48.w,
+            height: 48.w,
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+            ),
+          ),
+          SizedBox(width: 14.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "Group Name Placeholder",
+                  style: TextStyle(
+                    fontSize: 14.5.sp,
+                    fontWeight: FontWeight.w800,
+                    fontFamily: FontFamily.interBold,
+                  ),
+                ),
+                SizedBox(height: 5.h),
+                Text(
+                  "12 Members",
+                  style: TextStyle(
+                    fontSize: 11.5.sp,
+                    fontWeight: FontWeight.w600,
+                    fontFamily: FontFamily.interMedium,
+                  ),
+                ),
+                SizedBox(height: 4.h),
+                Text(
+                  "Last message placeholder",
+                  style: TextStyle(
+                    fontSize: 11.sp,
+                    fontFamily: FontFamily.interRegular,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          SizedBox(width: 10.w),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                "Yesterday",
+                style: TextStyle(
+                  fontSize: 10.5.sp,
+                  fontFamily: FontFamily.interRegular,
+                ),
+              ),
+              SizedBox(height: 8.h),
+              Container(
+                width: 20.w,
+                height: 20.w,
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

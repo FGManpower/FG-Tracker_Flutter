@@ -15,4 +15,6 @@ class PrefConst {
   static const String incomingCall = "incomingCall";
   static const String introStatus = "IntroStatus";
   static const String locationSharing = "locationSharing";
+  static const String userEmail = "userEmail";
+  static const String userPhone = "userPhone";
 }

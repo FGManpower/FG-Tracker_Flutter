@@ -4,10 +4,13 @@ import 'package:fgtracker/gen/assets.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import '../../../routes/app_pages.dart';
+import '../../Notification/Controller/Notification_Controller.dart';
 import '../controller/safety_dashboard_controller.dart';
+import '../Widgets/safe_common_widgets.dart';
 
 class SafetyDashboardView extends StatelessWidget {
-  const SafetyDashboardView({Key? key}) : super(key: key);
+   SafetyDashboardView({Key? key}) : super(key: key);
 
   final Color _textColorDark = const Color(0xFF1A1A2C);
   final Color _textColorGrey = const Color(0xFF7A7A8C);
@@ -18,21 +21,22 @@ class SafetyDashboardView extends StatelessWidget {
   final Color _alertIconBg = const Color(0xFFFCE9E9);
   final Color _zoneAlertIconBg = const Color(0xFFFCE6E6);
   final Color _routeAlertIconBg = const Color(0xFFFDF0E1);
+  final notificationController = Get.find<NotificationController>();
 
   List<BoxShadow> get _cardShadow => [
-        BoxShadow(
-          color: const Color(0xFF6B4DFF).withOpacity(0.04),
-          blurRadius: 20,
-          spreadRadius: 2,
-          offset: const Offset(0, 6),
-        )
-      ];
+    BoxShadow(
+      color: const Color(0xFF6B4DFF).withOpacity(0.04),
+      blurRadius: 20,
+      spreadRadius: 2,
+      offset: const Offset(0, 6),
+    )
+  ];
 
   Widget _circleIconBg(
-    Widget child, {
-    required Color bgColor,
-    double size = 56,
-  }) {
+      Widget child, {
+        required Color bgColor,
+        double size = 56,
+      }) {
     return Container(
       width: size.w,
       height: size.w,
@@ -71,7 +75,7 @@ class SafetyDashboardView extends StatelessWidget {
               title: "Safe Zone",
               tag: "Area Protection",
               desc:
-                  "Define a safe geographic area for your team. Get instant alerts if someone steps outside the safe zone.",
+              "Define a safe geographic area for your team. Get instant alerts if someone steps outside the safe zone.",
               image: Assets.icons.safeZone.image(
                 height: 40.w,
                 width: 40.w,
@@ -84,7 +88,7 @@ class SafetyDashboardView extends StatelessWidget {
               title: "Safe Route",
               tag: "Route Protection",
               desc:
-                  "Set predefined routes for your team members. Get alerts if someone deviates from the safe route.",
+              "Set predefined routes for your team members. Get alerts if someone deviates from the safe route.",
               image: Assets.icons.safeRoute.image(
                 height: 40.w,
                 width: 40.w,
@@ -161,40 +165,72 @@ class SafetyDashboardView extends StatelessWidget {
         ),
       ),
       actions: [
-        Center(
-          child: Container(
-            margin: EdgeInsets.only(right: 16.w),
-            width: 40.w,
-            height: 40.w,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12.r),
-              boxShadow: _cardShadow,
-            ),
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                Icon(
-                  Icons.notifications_none_rounded,
-                  color: _primaryColor,
-                  size: 22.sp,
+        Obx(() {
+          final count = notificationController.unreadCount.value;
+
+          return Center(
+            child: GestureDetector(
+              onTap: () {
+                Get.toNamed(Routes.notificationScreen);
+              },
+              child: Container(
+                margin: EdgeInsets.only(right: 16.w),
+                width: 40.w,
+                height: 40.w,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12.r),
+                  boxShadow: _cardShadow,
                 ),
-                Positioned(
-                  top: 10.h,
-                  right: 10.w,
-                  child: Container(
-                    width: 6.w,
-                    height: 6.w,
-                    decoration: const BoxDecoration(
-                      color: Colors.red,
-                      shape: BoxShape.circle,
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  alignment: Alignment.center,
+                  children: [
+                    Icon(
+                      Icons.notifications_none_rounded,
+                      color: _primaryColor,
+                      size: 22.sp,
                     ),
-                  ),
+
+                    if (count > 0)
+                      Positioned(
+                        top: -5.h,
+                        right: -5.w,
+                        child: Container(
+                          constraints: BoxConstraints(
+                            minWidth: 18.w,
+                            minHeight: 18.w,
+                          ),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 4.w,
+                            vertical: 2.h,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.red,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: Colors.white,
+                              width: 1.5,
+                            ),
+                          ),
+                          child: Center(
+                            child: Text(
+                              count > 99 ? "99+" : count.toString(),
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 9.sp,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
-              ],
+              ),
             ),
-          ),
-        ),
+          );
+        }),
       ],
     );
   }
@@ -223,9 +259,7 @@ class SafetyDashboardView extends StatelessWidget {
               fit: BoxFit.contain,
             ),
           ),
-
           SizedBox(width: 10.w),
-
           Expanded(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -258,6 +292,7 @@ class SafetyDashboardView extends StatelessWidget {
       ),
     );
   }
+
   Widget _buildSectionTitle(String title) {
     return Text(
       title,
@@ -369,8 +404,8 @@ class SafetyDashboardView extends StatelessWidget {
   }
 
   Widget _buildQuickOverviewCard(
-    SafetyDashboardController controller,
-  ) {
+      SafetyDashboardController controller,
+      ) {
     return Container(
       padding: EdgeInsets.symmetric(
         vertical: 12.h,
@@ -404,7 +439,7 @@ class SafetyDashboardView extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Obx(
-                          () => Text(
+                              () => Text(
                             controller.safeNowCount.value.toString(),
                             style: TextStyle(
                               fontFamily: 'Inter',
@@ -466,7 +501,7 @@ class SafetyDashboardView extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Obx(
-                          () => Text(
+                              () => Text(
                             controller.alertsCount.value
                                 .toString()
                                 .padLeft(2, '0'),
@@ -531,100 +566,109 @@ class SafetyDashboardView extends StatelessWidget {
             final alert = controller.recentAlerts[index];
             final bool isZone = alert.isZone;
 
-            return Padding(
-              padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 16.w),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  _circleIconBg(
-                    isZone
-                        ? Assets.icons.safeZoneAlart.image(
-                            height: 34.w,
-                            width: 34.w,
-                            fit: BoxFit.contain,
-                          )
-                        : Assets.icons.safeRoute.image(
-                            height: 34.w,
-                            width: 34.w,
-                            fit: BoxFit.contain,
+            return InkWell(
+              onTap: () {
+                if (isZone) {
+                  showSafeZoneAlertSheet(context);
+                } else {
+                  showSafeRouteAlertSheet(context);
+                }
+              },
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 16.w),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    _circleIconBg(
+                      isZone
+                          ? Assets.icons.safeZoneAlart.image(
+                        height: 34.w,
+                        width: 34.w,
+                        fit: BoxFit.contain,
+                      )
+                          : Assets.icons.safeRoute.image(
+                        height: 34.w,
+                        width: 34.w,
+                        fit: BoxFit.contain,
+                      ),
+                      bgColor: isZone ? _zoneAlertIconBg : _routeAlertIconBg,
+                      size: 44,
+                    ),
+                    SizedBox(width: 12.w),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            alert.type,
+                            style: TextStyle(
+                              fontFamily: 'Inter',
+                              fontSize: 12.sp,
+                              fontWeight: FontWeight.w700,
+                              color: _textColorDark,
+                            ),
                           ),
-                    bgColor: isZone ? _zoneAlertIconBg : _routeAlertIconBg,
-                    size: 44,
-                  ),
-                  SizedBox(width: 12.w),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                          SizedBox(height: 4.h),
+                          Text(
+                            alert.desc,
+                            style: TextStyle(
+                              fontFamily: 'Inter',
+                              fontSize: 10.sp,
+                              fontWeight: FontWeight.w600,
+                              color: _textColorGrey,
+                            ),
+                          ),
+                          SizedBox(height: 4.h),
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.location_on,
+                                size: 12.sp,
+                                color: Colors.grey,
+                              ),
+                              SizedBox(width: 4.w),
+                              Expanded(
+                                child: Text(
+                                  alert.location,
+                                  style: TextStyle(
+                                    fontFamily: 'Inter',
+                                    fontSize: 11.sp,
+                                    fontWeight: FontWeight.w500,
+                                    color: _textColorGrey,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(width: 8.w),
+                    Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          alert.type,
+                          alert.time,
                           style: TextStyle(
                             fontFamily: 'Inter',
-                            fontSize: 12.sp,
-                            fontWeight: FontWeight.w700,
-                            color: _textColorDark,
-                          ),
-                        ),
-                        SizedBox(height: 4.h),
-                        Text(
-                          alert.desc,
-                          style: TextStyle(
-                            fontFamily: 'Inter',
-                            fontSize: 10.sp,
+                            fontSize: 11.sp,
                             fontWeight: FontWeight.w600,
                             color: _textColorGrey,
                           ),
                         ),
-                        SizedBox(height: 4.h),
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.location_on,
-                              size: 12.sp,
-                              color: Colors.grey,
-                            ),
-                            SizedBox(width: 4.w),
-                            Expanded(
-                              child: Text(
-                                alert.location,
-                                style: TextStyle(
-                                  fontFamily: 'Inter',
-                                  fontSize: 11.sp,
-                                  fontWeight: FontWeight.w500,
-                                  color: _textColorGrey,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ],
+                        SizedBox(width: 8.w),
+                        Icon(
+                          Icons.arrow_forward_ios_rounded,
+                          size: 14.sp,
+                          color: Colors.grey.shade400,
                         ),
                       ],
                     ),
-                  ),
-                  SizedBox(width: 8.w),
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        alert.time,
-                        style: TextStyle(
-                          fontFamily: 'Inter',
-                          fontSize: 11.sp,
-                          fontWeight: FontWeight.w600,
-                          color: _textColorGrey,
-                        ),
-                      ),
-                      SizedBox(width: 8.w),
-                      Icon(
-                        Icons.arrow_forward_ios_rounded,
-                        size: 14.sp,
-                        color: Colors.grey.shade400,
-                      ),
-                    ],
-                  ),
-                ],
+                  ],
+                ),
               ),
             );
           },

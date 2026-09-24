@@ -11,18 +11,54 @@ class GroupCountDetail {
     this.locationDisabledMembers = 0,
   });
 
+  static int _parseInt(dynamic val) {
+    if (val == null) return 0;
+    if (val is num) return val.toInt();
+    return int.tryParse(val.toString()) ?? 0;
+  }
+
   factory GroupCountDetail.fromJson(dynamic json) {
-    final Map<String, dynamic> data =
-    json is Map<String, dynamic> && json.containsKey('data')
-        ? json['data'] as Map<String, dynamic>
-        : json as Map<String, dynamic>;
+    if (json == null || json is! Map) {
+      return const GroupCountDetail();
+    }
+
+    final dynamic rawData = (json.containsKey('data') && json['data'] is Map)
+        ? json['data']
+        : json;
+
+    final Map<String, dynamic> data = Map<String, dynamic>.from(rawData as Map);
 
     return GroupCountDetail(
-      totalGroups: (data['totalGroups'] as num?)?.toInt() ?? 0,
-      totalMembers: (data['totalMembers'] as num?)?.toInt() ?? 0,
-      activeMembers: (data['activeMembers'] as num?)?.toInt() ?? 0,
-      locationDisabledMembers:
-      (data['locationDisabledMembers'] as num?)?.toInt() ?? 0,
+      totalGroups: _parseInt(
+        data['totalGroups'] ??
+            data['total_groups'] ??
+            data['groupsCount'] ??
+            data['groups'],
+      ),
+      totalMembers: _parseInt(
+        data['totalMembers'] ??
+            data['total_members'] ??
+            data['membersCount'] ??
+            data['members'],
+      ),
+      activeMembers: _parseInt(
+        data['activeMembers'] ??
+            data['active_members'] ??
+            data['totalOnlineMembers'] ??
+            data['onlineMembers'] ??
+            data['online'],
+      ),
+      locationDisabledMembers: _parseInt(
+        data['locationDisabledMembers'] ??
+            data['totalPrivateMembers'] ??
+            data['privateMembers'] ??
+            data['ghostMembers'] ??
+            data['ghostModeMembers'] ??
+            data['ghostCount'] ??
+            data['location_disabled_members'] ??
+            data['locationDisabled'] ??
+            data['private'],
+      ),
     );
   }
 

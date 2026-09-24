@@ -13,14 +13,16 @@ class Login_Controller extends GetxController {
   final loginKey = GlobalKey<FormState>();
 
   RxBool isLoading = false.obs;
-  String selectedDialCode = '+91';
+  final selectedDialCode = '+91'.obs;
 
   final mobileErrorText = ''.obs;
   late FocusNode phoneFocusNode;
 
   void checkAndDismissKeyboard(String value) {
-    mobileErrorText.value = '';
-    if (selectedDialCode == '+91' && value.trim().length >= 10) {
+    if (mobileErrorText.value.isNotEmpty) {
+      mobileErrorText.value = '';
+    }
+    if (selectedDialCode.value == '+91' && value.trim().length >= 10) {
       phoneFocusNode.unfocus();
     } else if (value.trim().length >= 12) {
       phoneFocusNode.unfocus();
@@ -33,6 +35,18 @@ class Login_Controller extends GetxController {
     if (number.isEmpty) {
       mobileErrorText.value = AppText.mobNOIsRqrd;
       return false;
+    }
+
+    if (selectedDialCode.value == '+91') {
+      if (number.length != 10) {
+        mobileErrorText.value = "Please enter a valid 10-digit mobile number";
+        return false;
+      }
+    } else {
+      if (number.length < 7 || number.length > 15) {
+        mobileErrorText.value = "Please enter a valid mobile number";
+        return false;
+      }
     }
 
     mobileErrorText.value = '';
@@ -50,8 +64,8 @@ class Login_Controller extends GetxController {
     try {
       Loading().showloading();
       dynamic param = {
-        "MobileNo": mobNoController.text,
-        "countryCode": selectedDialCode,
+        "MobileNo": mobNoController.text.trim(),
+        "countryCode": selectedDialCode.value,
       };
 
       var result = await AuthRepo.login(param);
@@ -59,8 +73,8 @@ class Login_Controller extends GetxController {
         Loading().dismissloading();
 
         Get.toNamed(Routes.OTPScreen, arguments: {
-          "mobNo": mobNoController.text,
-          "countryCode": selectedDialCode,
+          "mobNo": mobNoController.text.trim(),
+          "countryCode": selectedDialCode.value,
         });
       } else {
         Loading().dismissloading();

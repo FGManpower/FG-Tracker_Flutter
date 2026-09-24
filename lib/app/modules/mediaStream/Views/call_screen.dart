@@ -1,12 +1,13 @@
-import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/modules/mediaStream/Views/call_contacts_tab.dart';
 import 'package:fgtracker/app/modules/mediaStream/Views/call_groups_tab.dart';
-import 'package:fgtracker/app/modules/mediaStream/Views/call_recent_calls_tab.dart';
-import 'package:fgtracker/app/modules/mediaStream/controller/call_controller.dart';
+import 'package:fgtracker/app/modules/mediaStream/Controller/call_controller.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+
+import '../Widget/call_dial_pad.dart';
+import 'call_recent_calls_tab.dart';
 
 class CallScreen extends StatefulWidget {
   const CallScreen({super.key});
@@ -27,6 +28,10 @@ class _CallScreenState extends State<CallScreen>
     _tabController.addListener(() {
       if (!_tabController.indexIsChanging) {
         controller.switchTab(_tabController.index);
+        if (_tabController.index != 1 &&
+            controller.isDialPadOpen.value) {
+          controller.isDialPadOpen.value = false;
+        }
       }
     });
     controller.loadGroups();
@@ -34,7 +39,6 @@ class _CallScreenState extends State<CallScreen>
 
   @override
   void dispose() {
-
     _tabController.dispose();
     super.dispose();
   }
@@ -42,54 +46,109 @@ class _CallScreenState extends State<CallScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F4FB),
+      backgroundColor: const Color(0xFFF6F7FB),
       body: SafeArea(
-        child: Column(
+        child: Stack(
           children: [
-            _buildAppBar(),
-            SizedBox(height: 10.h),
-            _buildSearchBar(),
-            SizedBox(height: 12.h),
-            _buildTabBar(),
-            SizedBox(height: 12.h),
-            Expanded(
-              child: TabBarView(
-                controller: _tabController,
-                children: [
-                  CallRecentCallsTab(),
-                  CallContactsTab(),
-                  CallGroupsTab(),
-                ],
-
-              ),
+            Column(
+              children: [
+                _buildAppBar(),
+                SizedBox(height: 8.h),
+                _buildSearchBar(),
+                SizedBox(height: 12.h),
+                _buildTabBar(),
+                SizedBox(height: 8.h),
+                Expanded(
+                  child: TabBarView(
+                    controller: _tabController,
+                    children: [
+                      const CallRecentCallsTab(),
+                      const CallContactsTab(),
+                      CallGroupsTab(),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: Obx(() {
+                if (controller.selectedTab.value != 1) {
+                  return const SizedBox.shrink();
+                }
+                return const CallDialPad();
+              }),
             ),
           ],
         ),
       ),
-      floatingActionButton: const _QuickCallActionButton(),
+      floatingActionButton: Obx(() {
+        if (controller.selectedTab.value != 1 ||
+            controller.isDialPadOpen.value) {
+          return const SizedBox.shrink();
+        }
+        return const _QuickCallActionButton();
+      }),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 
   Widget _buildAppBar() {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+      padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 4.h),
       child: Row(
         children: [
-          _RoundIconButton(
-            icon: Icons.arrow_back_ios_new,
+          GestureDetector(
             onTap: () => Get.back(),
-          ),
-          SizedBox(width: 12.w),
-          Expanded(
-            child: reausabletext(
-              "Audio / Video Call",
-              fontsize: 14.sp,
-              fontfamily: FontFamily.interBold,
-              color: Colors.black87,
+            child: Container(
+              width: 40.w,
+              height: 40.w,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12.r),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.04),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Icon(
+                Icons.arrow_back_ios_new_rounded,
+                size: 16.sp,
+                color: const Color(0xFF4818F0),
+              ),
             ),
           ),
-
+          SizedBox(width: 14.w),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                "Call",
+                style: TextStyle(
+                  fontSize: 19.sp,
+                  fontFamily: FontFamily.interBold,
+                  color: const Color(0xFF1E1B4B),
+                  height: 1.15,
+                ),
+              ),
+              SizedBox(height: 2.h),
+              Text(
+                "Audio / Video Call",
+                style: TextStyle(
+                  fontSize: 11.5.sp,
+                  fontFamily: FontFamily.interRegular,
+                  color: const Color(0xFF6B4DFF),
+                  height: 1.15,
+                ),
+              ),
+            ],
+          ),
         ],
       ),
     );
@@ -105,31 +164,41 @@ class _CallScreenState extends State<CallScreen>
           color: Colors.white,
           borderRadius: BorderRadius.circular(14.r),
           border: Border.all(
-            color: const Color(0xFF6B4DFF).withValues(alpha: 0.16),
+            color: const Color(0xFF6B4DFF).withOpacity(0.14),
           ),
         ),
         child: Row(
           children: [
-            Icon(Icons.search, size: 18.sp, color: const Color(0xFF6B4DFF)),
-            SizedBox(width: 8.w),
+            Icon(
+              Icons.search_rounded,
+              size: 20.sp,
+              color: const Color(0xFF6B4DFF),
+            ),
+            SizedBox(width: 10.w),
             Expanded(
               child: TextField(
                 controller: controller.searchController,
                 onChanged: controller.onSearchChanged,
+                onTap: () {
+                  if (controller.isDialPadOpen.value) {
+                    controller.isDialPadOpen.value = false;
+                  }
+                },
                 style: TextStyle(
                   fontSize: 13.sp,
                   fontFamily: FontFamily.interRegular,
-                  color: Colors.black87,
+                  color: const Color(0xFF1E1B4B),
                 ),
                 decoration: InputDecoration(
                   hintText: "Search contacts or groups",
                   hintStyle: TextStyle(
                     fontSize: 13.sp,
-                    color: Colors.grey,
+                    color: const Color(0xFF94A3B8),
                     fontFamily: FontFamily.interRegular,
                   ),
                   border: InputBorder.none,
                   isDense: true,
+                  contentPadding: EdgeInsets.zero,
                 ),
               ),
             ),
@@ -156,49 +225,54 @@ class _CallScreenState extends State<CallScreen>
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 16.w),
       child: Container(
-        height: 45.h,
-        // padding: EdgeInsets.all(4.w),
+        height: 46.h,
+        padding: EdgeInsets.all(3.w),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(15.r),
+          borderRadius: BorderRadius.circular(16.r),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
-              blurRadius: 8,
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 10,
+              offset: const Offset(0, 2),
             ),
           ],
         ),
         child: TabBar(
           controller: _tabController,
-          onTap: controller.switchTab,
+          onTap: (index) {
+            controller.switchTab(index);
+            if (index != 1 && controller.isDialPadOpen.value) {
+              controller.isDialPadOpen.value = false;
+            }
+          },
           indicator: BoxDecoration(
             color: const Color(0xFF4818F0),
-            borderRadius: BorderRadius.circular(15.r),
+            borderRadius: BorderRadius.circular(13.r),
           ),
           indicatorSize: TabBarIndicatorSize.tab,
-          indicatorPadding: EdgeInsets.symmetric(horizontal: 0.w),
           dividerColor: Colors.transparent,
           labelColor: Colors.white,
-          unselectedLabelColor: const Color(0xFF6B4DFF),
+          unselectedLabelColor: const Color(0xFF4818F0),
           labelStyle: TextStyle(
-            fontSize: 9.sp,
+            fontSize: 12.sp,
             fontFamily: FontFamily.interSemiBold,
           ),
           unselectedLabelStyle: TextStyle(
-            fontSize: 9.sp,
+            fontSize: 12.sp,
             fontFamily: FontFamily.interSemiBold,
           ),
           tabs: [
-            callTab(
-              icon: Icons.history_rounded,
+            _buildTab(
+              icon: Icons.access_time_rounded,
               title: "Recent",
             ),
-            callTab(
-              icon: Icons.person_rounded,
+            _buildTab(
+              icon: Icons.person_outline_rounded,
               title: "Contacts",
             ),
-            callTab(
-              icon: Icons.groups_rounded,
+            _buildTab(
+              icon: Icons.groups_outlined,
               title: "Groups",
             ),
           ],
@@ -206,55 +280,16 @@ class _CallScreenState extends State<CallScreen>
       ),
     );
   }
-}
 
-Widget callTab({
-  required String title,
-  required IconData icon,
-}) {
-  return Tab(
-    // height: 45.h,
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        reausableIcon(icon: icon, size: 15),
-        SizedBox(
-          width: 5.4,
-        ),
-        reausabletext(
-          title,
-          fontsize: 13,
-          fontfamily: FontFamily.interBold,
-        ),
-      ],
-    ),
-  );
-}
-
-class _RoundIconButton extends StatelessWidget {
-  const _RoundIconButton({required this.icon, this.onTap});
-
-  final IconData icon;
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 40.w,
-        height: 40.w,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12.r),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
-              blurRadius: 8,
-            ),
-          ],
-        ),
-        child: Icon(icon, size: 18.sp, color: Colors.black87),
+  Widget _buildTab({required String title, required IconData icon}) {
+    return Tab(
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, size: 16.sp),
+          SizedBox(width: 6.w),
+          Text(title),
+        ],
       ),
     );
   }
@@ -265,21 +300,29 @@ class _QuickCallActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 58.w,
-      height: 58.w,
-      decoration: BoxDecoration(
-        color: const Color(0xFF4818F0),
-        borderRadius: BorderRadius.circular(18.r),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF4818F0).withValues(alpha: 0.4),
-            blurRadius: 14,
-            offset: const Offset(0, 6),
-          ),
-        ],
+    final callController = CallController.instance;
+    return GestureDetector(
+      onTap: callController.toggleDialPad,
+      child: Container(
+        width: 56.w,
+        height: 56.w,
+        decoration: BoxDecoration(
+          color: const Color(0xFF4818F0),
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF4818F0).withOpacity(0.4),
+              blurRadius: 18,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: Icon(
+          Icons.apps_rounded,
+          size: 26.sp,
+          color: Colors.white,
+        ),
       ),
-      child: Icon(Icons.apps_rounded, size: 26.sp, color: Colors.white),
     );
   }
 }

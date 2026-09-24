@@ -32,14 +32,26 @@ class UserListData {
   String? profileImage;
   String? name;
   String? mobileNo;
+  bool? isOnline;
 
-  UserListData({this.userId, this.profileImage, this.name, this.mobileNo});
+  UserListData({
+    this.userId,
+    this.profileImage,
+    this.name,
+    this.mobileNo,
+    this.isOnline,
+  });
 
   UserListData.fromJson(Map<String, dynamic> json) {
-    userId = json['UserId'];
-    profileImage = json['ProfileImage'];
-    name = json['Name'];
-    mobileNo = json['MobileNo'];
+    userId = json['UserId'] ?? json['userId'] ?? json['id'];
+    profileImage = json['ProfileImage'] ?? json['profileImage'] ?? json['image'];
+    name = json['Name'] ?? json['name'];
+    mobileNo = json['MobileNo'] ?? json['mobileNo'] ?? json['phone'];
+    isOnline = json['isOnline'] == true ||
+        json['is_online'] == true ||
+        json['online'] == true ||
+        (json['isOnline']?.toString() == '1') ||
+        (json['is_online']?.toString() == '1');
   }
 
   Map<String, dynamic> toJson() {
@@ -48,6 +60,7 @@ class UserListData {
     data['ProfileImage'] = profileImage;
     data['Name'] = name;
     data['MobileNo'] = mobileNo;
+    data['isOnline'] = isOnline;
     return data;
   }
 }

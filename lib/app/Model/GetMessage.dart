@@ -4,8 +4,15 @@ class GetMessage {
   List<MessageData>? messageData;
   bool? isCreator;
   int? pinnedMessageId;
+  MessagePagination? pagination;
 
-  GetMessage({this.status, this.message, this.messageData, this.isCreator,  this.pinnedMessageId,
+  GetMessage({
+    this.status,
+    this.message,
+    this.messageData,
+    this.isCreator,
+    this.pinnedMessageId,
+    this.pagination,
   });
 
   GetMessage.fromJson(Map<String, dynamic> json) {
@@ -13,24 +20,93 @@ class GetMessage {
     message = json['message'];
     isCreator = json['isCreator'];
     pinnedMessageId = json['pinnedMessageId'];
-    if (json['MessageData'] != null) {
+
+    if (json['pagination'] is Map) {
+      pagination = MessagePagination.fromJson(
+        Map<String, dynamic>.from(json['pagination']),
+      );
+    }
+
+    final messages = json['MessageData'] ??
+        json['messageData'] ??
+        json['messages'] ??
+        json['data'];
+
+    if (messages is List) {
       messageData = <MessageData>[];
-      json['MessageData'].forEach((v) {
-        messageData!.add(MessageData.fromJson(v));
-      });
+
+      for (final item in messages) {
+        if (item is Map<String, dynamic>) {
+          messageData!.add(
+            MessageData.fromJson(item),
+          );
+        } else if (item is Map) {
+          messageData!.add(
+            MessageData.fromJson(
+              Map<String, dynamic>.from(item),
+            ),
+          );
+        }
+      }
     }
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
+
     data['status'] = status;
     data['message'] = message;
     data['isCreator'] = isCreator;
     data['pinnedMessageId'] = pinnedMessageId;
-    if (messageData != null) {
-      data['MessageData'] = messageData!.map((v) => v.toJson()).toList();
+
+    if (pagination != null) {
+      data['pagination'] = pagination!.toJson();
     }
+
+    if (messageData != null) {
+      data['MessageData'] =
+          messageData!.map((v) => v.toJson()).toList();
+    }
+
     return data;
+  }
+}
+
+class MessagePagination {
+  int? currentPage;
+  int? perPage;
+  int? totalRecords;
+  int? totalPages;
+  bool? hasNextPage;
+  bool? hasPreviousPage;
+
+  MessagePagination({
+    this.currentPage,
+    this.perPage,
+    this.totalRecords,
+    this.totalPages,
+    this.hasNextPage,
+    this.hasPreviousPage,
+  });
+
+  MessagePagination.fromJson(Map<String, dynamic> json) {
+    currentPage = json['currentPage'];
+    perPage = json['perPage'];
+    totalRecords = json['totalRecords'];
+    totalPages = json['totalPages'];
+    hasNextPage = json['hasNextPage'];
+    hasPreviousPage = json['hasPreviousPage'];
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'currentPage': currentPage,
+      'perPage': perPage,
+      'totalRecords': totalRecords,
+      'totalPages': totalPages,
+      'hasNextPage': hasNextPage,
+      'hasPreviousPage': hasPreviousPage,
+    };
   }
 }
 
@@ -55,28 +131,33 @@ class MessageData {
   dynamic replyType;
   dynamic replySenderName;
   dynamic locationSharing;
+  dynamic isForwarded;
+  dynamic forwardedFromMessageId;
 
-  MessageData(
-      {this.id,
-      this.senderId,
-      this.receiverId,
-      this.messageType,
-      this.content,
-      this.timestamp,
-      this.seenCount,
-      this.senderImage,
-        this.seenBy,
-        this.edited,
-        this.isEdited,
-        this.editedAt,
-        this.senderName,
-      this.caption,
-      this.replyId,
-      this.replyMessage,
-      this.replyType,
-      this.replySenderName,
-      this.thumbnail,
-      this.locationSharing});
+  MessageData({
+    this.id,
+    this.senderId,
+    this.receiverId,
+    this.messageType,
+    this.content,
+    this.timestamp,
+    this.seenCount,
+    this.seenBy,
+    this.senderImage,
+    this.edited,
+    this.isEdited,
+    this.editedAt,
+    this.senderName,
+    this.caption,
+    this.replyId,
+    this.replyMessage,
+    this.replyType,
+    this.replySenderName,
+    this.thumbnail,
+    this.locationSharing,
+    this.isForwarded,
+    this.forwardedFromMessageId,
+  });
 
   MessageData.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -84,7 +165,7 @@ class MessageData {
     receiverId = json['receiverId'];
     messageType = json['messageType'];
     content = json['content'];
-    timestamp = json['timestamp'];
+    timestamp = json['timestamp'] ?? json['createdAt'];
     seenCount = json['seenCount'];
     seenBy = json['seenBy'];
     edited = json['edited'];
@@ -93,18 +174,28 @@ class MessageData {
     senderName = json['senderName'];
     senderImage = json['senderImage'];
     thumbnail = json['thumbnail'];
-    caption = json["caption"];
-    replyId = json["replyId"] ?? json["reply_id"];
-    replyMessage = json["replyMessage"] ?? json["reply_message"];
-    replyType = json["replyType"] ?? json["reply_type"];
-    locationSharing = json["locationSharing"] ?? json["locationSharing"];
-    replySenderName = json["replySender"] ??
-        json["replySenderName"] ??
-        json["reply_sender_name"];
+    caption = json['caption'];
+
+    replyId = json['replyId'] ?? json['reply_id'];
+
+    replyMessage = json['replyMessage'] ?? json['reply_message'];
+
+    replyType = json['replyType'] ?? json['reply_type'];
+
+    replySenderName = json['replySender'] ??
+        json['replySenderName'] ??
+        json['reply_sender_name'];
+
+    locationSharing =
+        json['locationSharing'] ?? json['location_sharing'];
+
+    isForwarded = json['isForwarded'];
+    forwardedFromMessageId = json['forwardedFromMessageId'];
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
+
     data['id'] = id;
     data['senderId'] = senderId;
     data['receiverId'] = receiverId;
@@ -125,6 +216,8 @@ class MessageData {
     data['reply_type'] = replyType;
     data['reply_sender_name'] = replySenderName;
     data['locationSharing'] = locationSharing;
+    data['isForwarded'] = isForwarded;
+    data['forwardedFromMessageId'] = forwardedFromMessageId;
 
     return data;
   }

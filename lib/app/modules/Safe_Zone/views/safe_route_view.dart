@@ -18,14 +18,15 @@ class SafeRouteView extends StatelessWidget {
     final controller = Get.put(SafeRouteController());
 
     return Scaffold(
-      backgroundColor: SafeColors.bg, // #F5F3FF lavender
-      appBar: const SafeAppBar(
+      backgroundColor: SafeColors.bg,
+      appBar: SafeAppBar(
         title: "Safe Route",
         subtitle: "Set a safe route for your team member.",
+        onInfoTap: () => _showSafeRouteHelp(context),
       ),
       body: Column(
         children: [
-          SizedBox(height: 8.h),
+          SizedBox(height: 5.h),
           SafeTabBar(controller: controller.tabController),
           SizedBox(height: 4.h),
           Expanded(
@@ -42,7 +43,6 @@ class SafeRouteView extends StatelessWidget {
     );
   }
 
-  // ================= INDIVIDUAL =================
   Widget _buildIndividualTab(SafeRouteController c) {
     return SingleChildScrollView(
       padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 16.w),
@@ -54,10 +54,10 @@ class SafeRouteView extends StatelessWidget {
             title: "1. Select Member",
             innerCard: true,
             child: Obx(() => SafeMemberCard(
-              name: c.selectedMember.value,
-              phone: c.memberPhone.value,
-              showContainer: false,
-            )),
+                  name: c.selectedMember.value,
+                  phone: c.memberPhone.value,
+                  showContainer: false,
+                )),
           ),
           SizedBox(height: 16.h),
           SafeCard(
@@ -89,7 +89,6 @@ class SafeRouteView extends StatelessWidget {
     );
   }
 
-  // ================= GROUP =================
   Widget _buildGroupTab(SafeRouteController c) {
     return SingleChildScrollView(
       padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 16.w),
@@ -101,9 +100,9 @@ class SafeRouteView extends StatelessWidget {
             title: "1. Select Group",
             innerCard: true,
             child: Obx(() => SafeGroupCard(
-              groupName: c.selectedGroup.value,
-              showContainer: false,
-            )),
+                  groupName: c.selectedGroup.value,
+                  showContainer: false,
+                )),
           ),
           SizedBox(height: 16.h),
           SafeCard(
@@ -142,16 +141,15 @@ class SafeRouteView extends StatelessWidget {
     );
   }
 
-  // ================= START / DEST =================
   Widget _buildStartDestRow(SafeRouteController c) {
     return Row(
       children: [
         Expanded(
           child: Obx(() => SafeLocationInput(
-            label: "Start Location",
-            value: c.startLocation.value,
-            dotColor: Colors.green,
-          )),
+                label: "Start Location",
+                value: c.startLocation.value,
+                dotColor: Colors.green,
+              )),
         ),
         Padding(
           padding: EdgeInsets.symmetric(horizontal: 6.w),
@@ -169,16 +167,15 @@ class SafeRouteView extends StatelessWidget {
         ),
         Expanded(
           child: Obx(() => SafeLocationInput(
-            label: "Destination",
-            value: c.destinationLocation.value,
-            dotColor: Colors.red,
-          )),
+                label: "Destination",
+                value: c.destinationLocation.value,
+                dotColor: Colors.red,
+              )),
         ),
       ],
     );
   }
 
-  // ================= GROUP MEMBERS =================
   Widget _buildGroupMembersRow(SafeRouteController c) {
     return SizedBox(
       height: 80.h,
@@ -221,7 +218,7 @@ class SafeRouteView extends StatelessWidget {
                               color: m.dot,
                               shape: BoxShape.circle,
                               border:
-                              Border.all(color: Colors.white, width: 1.5),
+                                  Border.all(color: Colors.white, width: 1.5),
                             ),
                           ),
                         )
@@ -260,7 +257,6 @@ class SafeRouteView extends StatelessWidget {
     );
   }
 
-  // ================= FULL MAP + OVERLAY ROUTES =================
   Widget _buildFullMapWithRoutes(SafeRouteController c,
       {required bool isGroup}) {
     return Container(
@@ -280,7 +276,7 @@ class SafeRouteView extends StatelessWidget {
               return GoogleMap(
                 key: ValueKey('route_map_${isGroup}_$selectedId'),
                 initialCameraPosition:
-                CameraPosition(target: c.startLatLng, zoom: 12.2),
+                    CameraPosition(target: c.startLatLng, zoom: 12.2),
                 zoomControlsEnabled: false,
                 myLocationButtonEnabled: false,
                 mapToolbarEnabled: false,
@@ -351,9 +347,8 @@ class SafeRouteView extends StatelessWidget {
                                       ? Icons.radio_button_checked
                                       : Icons.radio_button_off,
                                   size: 14.sp,
-                                  color: selected
-                                      ? primary
-                                      : Colors.grey.shade400,
+                                  color:
+                                      selected ? primary : Colors.grey.shade400,
                                 ),
                                 SizedBox(width: 4.w),
                                 reausabletext(r.name,
@@ -441,12 +436,11 @@ class SafeRouteView extends StatelessWidget {
     );
   }
 
-  // ================= DEVIATION SLIDER =================
   Widget _buildDeviationSliderCard(
-      SafeRouteController c, {
-        required bool isGroup,
-        required String stepTitle,
-      }) {
+    SafeRouteController c, {
+    required bool isGroup,
+    required String stepTitle,
+  }) {
     return SafeCard(
       title: stepTitle,
       subtitle: "Set how much deviation is allowed from the selected route.",
@@ -465,8 +459,7 @@ class SafeRouteView extends StatelessWidget {
               duration: const Duration(milliseconds: 150),
               alignment: Alignment(alignX, 0),
               child: Container(
-                padding:
-                EdgeInsets.symmetric(horizontal: 12.w, vertical: 5.h),
+                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 5.h),
                 decoration: BoxDecoration(
                   color: primary,
                   borderRadius: BorderRadius.circular(6.r),
@@ -480,31 +473,40 @@ class SafeRouteView extends StatelessWidget {
           }),
           Obx(() {
             final sliderValue = (isGroup
-                ? c.groupDeviationIndex.value
-                : c.individualDeviationIndex.value)
+                    ? c.groupDeviationIndex.value
+                    : c.individualDeviationIndex.value)
                 .toDouble();
-            return SliderTheme(
-              data: SliderThemeData(
-                activeTrackColor: primary,
-                inactiveTrackColor: Colors.grey.shade200,
-                thumbColor: Colors.white,
-                overlayColor: primary.withOpacity(0.1),
-                trackHeight: 3.h,
-                thumbShape: RoundSliderThumbShape(
-                    enabledThumbRadius: 9.r, elevation: 2),
-              ),
-              child: Slider(
-                value: sliderValue,
-                min: 0,
-                max: 5,
-                divisions: 5,
-                onChanged: (val) =>
-                    c.onDeviationSlider(val, isGroup: isGroup),
+
+            return Transform.translate(
+              offset: Offset(-5.w, 0),
+              child: SizedBox(
+                width: double.infinity + 20.w,
+                child: SliderTheme(
+                  data: SliderThemeData(
+                    activeTrackColor: primary,
+                    inactiveTrackColor: Colors.grey.shade200,
+                    thumbColor: Colors.white,
+                    overlayColor: primary.withOpacity(0.1),
+                    trackHeight: 3.h,
+                    thumbShape: RoundSliderThumbShape(
+                      enabledThumbRadius: 9.r,
+                      elevation: 2,
+                    ),
+                  ),
+                  child: Slider(
+                    value: sliderValue,
+                    min: 0,
+                    max: 5,
+                    divisions: 5,
+                    onChanged: (val) =>
+                        c.onDeviationSlider(val, isGroup: isGroup),
+                  ),
+                ),
               ),
             );
           }),
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: 6.w),
+            padding: EdgeInsets.symmetric(horizontal: 8.w),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: c.deviationOptions.asMap().entries.map((e) {
@@ -522,7 +524,7 @@ class SafeRouteView extends StatelessWidget {
                         c.formatDeviation(e.value),
                         fontsize: 10,
                         fontweight:
-                        isActive ? FontWeight.bold : FontWeight.w500,
+                            isActive ? FontWeight.bold : FontWeight.w500,
                         color: isActive ? primary : Colors.grey.shade600,
                       ),
                     ],
@@ -545,11 +547,11 @@ class SafeRouteView extends StatelessWidget {
                       return RichText(
                         text: TextSpan(
                           style:
-                          TextStyle(fontSize: 11.sp, color: Colors.black87),
+                              TextStyle(fontSize: 11.sp, color: Colors.black87),
                           children: [
                             const TextSpan(
                                 text:
-                                "Alert will be triggered if the member deviates more than "),
+                                    "Alert will be triggered if the member deviates more than "),
                             TextSpan(
                               text: "$v ",
                               style: TextStyle(
@@ -570,103 +572,188 @@ class SafeRouteView extends StatelessWidget {
     );
   }
 
-  // ================= PREVIEW =================
-  Widget _buildPreviewContent(SafeRouteController c, {required bool isGroup}) {
+  Widget _buildPreviewContent(
+      SafeRouteController c, {
+        required bool isGroup,
+      }) {
     return Obx(() {
       final r = c.selectedRoute;
       final dev = c.deviationFor(isGroup: isGroup);
 
       if (isGroup) {
         final m = c.groupMembers[c.selectedGroupMemberIndex.value];
+
         return Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  _previewRow("Group", "${c.selectedGroup.value} (12 Members)",
-                      dot: Colors.green),
-                  _previewRow("Route (${m.name})",
+              child: Padding(
+                padding: EdgeInsets.only(top: 2.h),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _previewRow(
+                      "Group",
+                      "${c.selectedGroup.value} (12 Members)",
+                      dot: Colors.green,
+                    ),
+                    _previewRow(
+                      "Route (${m.name})",
                       "${m.start} → ${m.end} (${r.name})",
-                      dot: Colors.red),
-                  _previewRow("Distance", "${r.distanceKm} km",
-                      suffix: "Est. Time : ${r.etaMin} min"),
-                  _previewRow("Deviation Limit", c.formatDeviation(dev)),
-                ],
+                      dot: Colors.red,
+                    ),
+                    _previewRow(
+                      "Distance",
+                      "${r.distanceKm} km",
+                      suffix: "Est. Time : ${r.etaMin} min",
+                    ),
+                    _previewRow(
+                      "Deviation Limit",
+                      c.formatDeviation(dev),
+                    ),
+                  ],
+                ),
               ),
             ),
             SizedBox(width: 4.w),
-            Assets.icons.safeRoute.image(
-              width: 115.w,
-              height: 95.h,
-              fit: BoxFit.contain,
+            SizedBox(
+              width: 88.w,
+              height: 76.h,
+              child: Align(
+                alignment: Alignment.topRight,
+                child: Assets.icons.singleSafeRoute.image(
+                  width: 88.w,
+                  height: 76.h,
+                  fit: BoxFit.contain,
+                ),
+              ),
             ),
           ],
         );
       }
 
       return Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: 58.w,
-            height: 58.w,
-            decoration: BoxDecoration(
-                color: primary.withOpacity(0.08), shape: BoxShape.circle),
-            alignment: Alignment.center,
-            child:
-            Icon(Icons.headset_mic_outlined, color: primary, size: 27.sp),
+          Padding(
+            padding: EdgeInsets.only(top: 10.h),
+            child: Container(
+              width: 50.w,
+              height: 50.w,
+              decoration: BoxDecoration(
+                color: primary.withOpacity(0.08),
+                shape: BoxShape.circle,
+              ),
+              alignment: Alignment.center,
+              child: Icon(
+                Icons.headset_mic_outlined,
+                color: primary,
+                size: 26.sp,
+              ),
+            ),
           ),
-          SizedBox(width: 12.w),
+          SizedBox(width: 8.w),
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _previewRow("Start", c.startLocation.value, dot: Colors.green),
-                _previewRow("Destination", c.destinationLocation.value,
-                    dot: Colors.red),
-                _previewRow("Selected Route", "${r.name} (Recommended)"),
-                _previewRow("Distance", "${r.distanceKm} km",
-                    suffix: "Est. Time: ${r.etaMin} min"),
-                _previewRow("Deviation Limit", c.formatDeviation(dev)),
-              ],
+            child: Padding(
+              padding: EdgeInsets.only(top: 2.h),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _previewRow(
+                    "Start",
+                    c.startLocation.value,
+                    dot: Colors.green,
+                  ),
+                  _previewRow(
+                    "Destination",
+                    c.destinationLocation.value,
+                    dot: Colors.red,
+                  ),
+                  _previewRow(
+                    "Selected Route",
+                    "${r.name} (Recommended)",
+                  ),
+                  _previewRow(
+                    "Distance",
+                    "${r.distanceKm} km",
+                    suffix: "Est. Time: ${r.etaMin} min",
+                  ),
+                  _previewRow(
+                    "Deviation Limit",
+                    c.formatDeviation(dev),
+                  ),
+                ],
+              ),
             ),
           ),
           SizedBox(width: 3.w),
-          Assets.icons.singleSafeRoute.image(
-            width: 100.w,
-            fit: BoxFit.contain,
+          SizedBox(
+            width: 88.w,
+            height: 76.h,
+            child: Align(
+              alignment: Alignment.topRight,
+              child: Assets.icons.singleSafeRoute.image(
+                width: 88.w,
+                height: 76.h,
+                fit: BoxFit.contain,
+              ),
+            ),
           ),
         ],
       );
     });
   }
 
-  Widget _previewRow(String label, String value, {Color? dot, String? suffix}) {
+  Widget _previewRow(
+      String label,
+      String value, {
+        Color? dot,
+        String? suffix,
+      }) {
     return Padding(
-      padding: EdgeInsets.only(bottom: 5.h),
+      padding: EdgeInsets.only(bottom: 4.h),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (dot != null)
-            Padding(
-              padding: EdgeInsets.only(top: 4.h, right: 6.w),
-              child: Icon(Icons.circle, size: 6.sp, color: dot),
+            SizedBox(
+              width: 13.w,
+              child: Padding(
+                padding: EdgeInsets.only(top: 4.h),
+                child: Icon(
+                  Icons.circle,
+                  size: 6.sp,
+                  color: dot,
+                ),
+              ),
             ),
-          reausabletext("$label : ",
-              fontsize: 10, color: Colors.black87, fontweight: FontWeight.w500),
-          Flexible(
+          SizedBox(
+            width: 70.w,
+            child: reausabletext(
+              "$label :",
+              fontsize: 8.5,
+              color: Colors.black87,
+              fontweight: FontWeight.w500,
+              maxline: 2,
+              textoverflow: TextOverflow.visible,
+            ),
+          ),
+          SizedBox(width: 2.w),
+          Expanded(
             child: RichText(
+              softWrap: true,
+              overflow: TextOverflow.visible,
               text: TextSpan(
                 children: [
                   TextSpan(
                     text: value,
                     style: TextStyle(
-                      fontSize: 10.sp,
-                      color: label.contains("Route") ? primary : Colors.black87,
+                      fontSize: 8.5.sp,
+                      color: label.contains("Route")
+                          ? primary
+                          : Colors.black87,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -674,9 +761,10 @@ class SafeRouteView extends StatelessWidget {
                     TextSpan(
                       text: "  |  $suffix",
                       style: TextStyle(
-                          fontSize: 10.sp,
-                          color: Colors.black87,
-                          fontWeight: FontWeight.w500),
+                        fontSize: 8.5.sp,
+                        color: Colors.black87,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                 ],
               ),
@@ -685,5 +773,206 @@ class SafeRouteView extends StatelessWidget {
         ],
       ),
     );
+  }
+
+
+  void _showSafeRouteHelp(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+
+    showGeneralDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierLabel: "Safe Route Help",
+      barrierColor: Colors.black.withOpacity(0.45),
+      transitionDuration: const Duration(milliseconds: 180),
+      pageBuilder: (context, animation, secondaryAnimation) {
+        return SafeArea(
+          child: Stack(
+            children: [
+              Positioned(
+                top: 64,
+                right: 5,
+                child: Material(
+                  color: Colors.transparent,
+                  child: Container(
+                    width: screenWidth * 0.485,
+                    padding: const EdgeInsets.fromLTRB(
+                      16,
+                      14,
+                      14,
+                      14,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(18),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.12),
+                          blurRadius: 20,
+                          offset: const Offset(0, 6),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "Safe Route Help",
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w800,
+                            color: Color(0xff10205C),
+                          ),
+                        ),
+
+                        const SizedBox(height: 15),
+
+                        _routeHelpItem(
+                          icon: Icons.location_on_rounded,
+                          title: "What is Safe Route?",
+                          description:
+                          "Set a start and destination location to create a safe travel route for your team member.",
+                        ),
+
+                        const SizedBox(height: 13),
+
+                        _routeHelpItem(
+                          icon: Icons.sync_alt_rounded,
+                          title: "How to Create Safe Route?",
+                          description:
+                          "Select the member, choose start and destination locations, pick the best route and set a deviation limit.",
+                        ),
+
+                        const SizedBox(height: 13),
+
+                        _routeHelpItem(
+                          icon: Icons.shield_outlined,
+                          title: "What is Deviation Limit?",
+                          description:
+                          "Set the allowed distance a member can move away from the selected route. You’ll get an alert if they exceed this limit.",
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
+              // Arrow
+              Positioned(
+                top: 56,
+                right: 28,
+                child: CustomPaint(
+                  size: const Size(16, 9),
+                  painter: _HelpArrowPainter(),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+      transitionBuilder: (
+          context,
+          animation,
+          secondaryAnimation,
+          child,
+          ) {
+        return FadeTransition(
+          opacity: CurvedAnimation(
+            parent: animation,
+            curve: Curves.easeOut,
+          ),
+          child: SlideTransition(
+            position: Tween<Offset>(
+              begin: const Offset(0.04, -0.02),
+              end: Offset.zero,
+            ).animate(
+              CurvedAnimation(
+                parent: animation,
+                curve: Curves.easeOut,
+              ),
+            ),
+            child: child,
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _routeHelpItem({
+    required IconData icon,
+    required String title,
+    required String description,
+  }) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: 28,
+          height: 28,
+          decoration: const BoxDecoration(
+            color: Color(0xffF0EEFF),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(
+            icon,
+            color: SafeColors.primary,
+            size: 17,
+          ),
+        ),
+
+        const SizedBox(width: 8),
+
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 10,
+                  height: 1.1,
+                  fontWeight: FontWeight.w800,
+                  color: Color(0xff10205C),
+                ),
+              ),
+
+              const SizedBox(height: 2),
+
+              Text(
+                description,
+                style: const TextStyle(
+                  fontSize: 8,
+                  height: 1.25,
+                  fontWeight: FontWeight.w500,
+                  color: Color(0xff59658A),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+class _HelpArrowPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.fill;
+
+    final path = Path()
+      ..moveTo(0, size.height)
+      ..lineTo(size.width / 2, 0)
+      ..lineTo(size.width, size.height)
+      ..close();
+
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+    return false;
   }
 }

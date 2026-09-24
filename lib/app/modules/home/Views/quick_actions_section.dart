@@ -9,7 +9,7 @@ import 'package:get/get.dart';
 
 import '../../Messages/Views/chatlist_screen.dart';
 import '../../Safe_Zone/views/safety_dashboard_view.dart';
-
+import 'LiveStatus/components/total_groups.dart';
 
 class QuickActionsSection extends StatelessWidget {
   const QuickActionsSection({super.key});
@@ -42,10 +42,15 @@ class QuickActionsSection extends StatelessWidget {
               Icons.call,
               onTap: () => Get.to(() => CallScreen()),
             ),
+            // _QuickActionCard(
+            //   "Walkie Talkie",
+            //   Icons.settings_cell,
+            //   onTap: () => Get.toNamed(Routes.WalkieGroupSelect),
+            // ),
             _QuickActionCard(
               "Walkie Talkie",
               Icons.settings_cell,
-              onTap: () => Get.toNamed(Routes.WalkieGroupSelect),
+              onTap: () => Get.toNamed(Routes.walkieTalkieTrialDetails),
             ),
             _QuickActionCard(
               "Tracking",
@@ -56,17 +61,17 @@ class QuickActionsSection extends StatelessWidget {
             _QuickActionCard(
               "Chatting",
               Icons.message_outlined,
-              onTap: () => Get.to(() => const ChatListScreen()),
+              onTap: () => Get.to(() => ChatListScreen()),
             ),
             _QuickActionCard(
               "Group Chat",
               Icons.groups,
-              onTap: () => Get.toNamed(Routes.GroupsList),
+              onTap: () => Get.to(() => const totalGroup()),
             ),
             _QuickActionCard(
               "Safe Zone",
               Icons.verified_user_rounded,
-              onTap: () => Get.to(() => const SafetyDashboardView()),
+              onTap: () => Get.to(() => SafetyDashboardView()),
             ),
           ],
         ),

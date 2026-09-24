@@ -1,4 +1,5 @@
 import 'package:fgtracker/app/global_widget/common_widget.dart';
+import 'package:fgtracker/gen/assets.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -69,11 +70,11 @@ class About extends StatelessWidget {
               alignment: WrapAlignment.center,
               children: [
                 _buildStoreColumn(
-                  imagePath: 'assets/images/playstore.jpeg',
+                  imagePath: Assets.images.playstore.path,
                   linkText: "https://rb.gy/6e5p5u",
                 ),
                 _buildStoreColumn(
-                  imagePath: 'assets/images/playstore.jpeg',
+                  imagePath: Assets.images.playstore.path,
                   linkText: "https://rb.gy/6e5p5u",
                 ),
               ],

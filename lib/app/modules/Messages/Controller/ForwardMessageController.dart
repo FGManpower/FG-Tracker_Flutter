@@ -1,24 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../../Data/Repositories/GetMessageRepo.dart';
 import '../../../Model/GetMessage.dart';
-import '../../../Model/GroupRes.dart';
-import '../../../Model/user_profileList_res.dart';
-import '../../../modules/Group/controller/search_controller.dart';
-import '../../Group/controller/Group_Controller.dart';
-import '../../../Data/Services/Socket/Socket_Message_Services.dart';
+import '../../../Model/ForwardMessageModel.dart';
+import '../../../Model/MemberDataRes.dart';
+import '../Views/Chat_Screen.dart';
+import '../Views/ChatList_Screen.dart';
+import 'MessageController.dart';
 
 class ForwardMessageController extends GetxController {
   late MessageData message;
-  late SearchUserController userController;
-  late GroupController groupController;
-  final TextEditingController searchController = TextEditingController();
-  final RxList<UserListData> filteredUsers = <UserListData>[].obs;
-  final RxList<GroupsResData> filteredGroups = <GroupsResData>[].obs;
-  final RxList<UserListData> selectedUsers = <UserListData>[].obs;
 
-  final RxList<GroupsResData> selectedGroups = <GroupsResData>[].obs;
+  final TextEditingController searchController = TextEditingController();
+
+  final RxList<ForwardDestination> destinations = <ForwardDestination>[].obs;
+  final RxList<ForwardDestination> filteredDestinations =
+      <ForwardDestination>[].obs;
+  final RxList<ForwardDestination> selectedDestinations =
+      <ForwardDestination>[].obs;
+
   final RxBool isLoading = false.obs;
+  final RxBool isForwarding = false.obs;
+  late String sourceType;
+  final RxString responseError = ''.obs;
 
   @override
   void onInit() {
@@ -32,133 +37,108 @@ class ForwardMessageController extends GetxController {
     }
 
     message = arguments["message"] as MessageData;
+    sourceType = arguments["sourceType"] ?? "private";
 
-    userController = Get.isRegistered<SearchUserController>()
-        ? Get.find<SearchUserController>()
-        : Get.put(SearchUserController());
-
-    groupController = Get.isRegistered<GroupController>()
-        ? Get.find<GroupController>()
-        : Get.put(GroupController());
-    loadData();
+    loadForwardList();
   }
 
-  Future<void> loadData() async {
+  Future<void> loadForwardList() async {
     try {
       isLoading.value = true;
-      if (userController.allUserProfileData.isEmpty) {
-        await userController.getRegisteredContacts();
+      responseError.value = '';
+
+      final response = await MessageRepo.getForwardList();
+
+      if (response.status == false) {
+        responseError.value =
+            response.message ?? "Unable to load forward list.";
+        destinations.clear();
+        filteredDestinations.clear();
+        return;
       }
-      if (groupController.groupData.isEmpty) {
-        await groupController.getGroupData();
-      }
-      filteredUsers.assignAll(
-        userController.allUserProfileData,
-      );
-      final groups = <GroupsResData>[
-        ...groupController.groupData,
-      ];
-      filteredGroups.assignAll(groups);
+
+      destinations.assignAll(response.destinations);
+      filteredDestinations.assignAll(response.destinations);
     } catch (e) {
-      debugPrint(
-        "ForwardMessageController loadData error: $e",
-      );
+      responseError.value = "Unable to load forward list.";
+      destinations.clear();
+      filteredDestinations.clear();
     } finally {
       isLoading.value = false;
     }
+  }
+
+  Future<void> refreshForwardList() async {
+    await loadForwardList();
   }
 
   void search(String value) {
     final query = value.trim().toLowerCase();
 
     if (query.isEmpty) {
-      filteredUsers.assignAll(
-        userController.allUserProfileData,
-      );
-
-      filteredGroups.assignAll([
-        ...groupController.groupData,
-      ]);
-
+      filteredDestinations.assignAll(destinations);
       return;
     }
 
-    filteredUsers.assignAll(
-      userController.allUserProfileData.where((user) {
-        final name = (user.name ?? "").toLowerCase();
-
-        final mobile = (user.mobileNo ?? "").toLowerCase();
-
-        return name.contains(query) || mobile.contains(query);
-      }).toList(),
-    );
-
-    final groups = <GroupsResData>[
-      ...groupController.groupData,
-    ];
-
-    filteredGroups.assignAll(
-      groups.where((group) {
-        final groupName = (group.groupName ?? "").toLowerCase();
-
-        return groupName.contains(query);
+    filteredDestinations.assignAll(
+      destinations.where((destination) {
+        return destination.displayName.toLowerCase().contains(query);
       }).toList(),
     );
   }
 
   void clearSearch() {
     searchController.clear();
-
-    filteredUsers.assignAll(
-      userController.allUserProfileData,
-    );
-
-    filteredGroups.assignAll([
-      ...groupController.groupData,
-    ]);
+    filteredDestinations.assignAll(destinations);
   }
 
-  bool isUserSelected(UserListData user) {
-    return selectedUsers.any(
-      (selected) => selected.userId.toString() == user.userId.toString(),
+  bool isSelected(ForwardDestination destination) {
+    final targetId = destination.targetId;
+
+    if (targetId == null) return false;
+
+    return selectedDestinations.any(
+      (selected) =>
+          selected.type == destination.type && selected.targetId == targetId,
     );
   }
 
-  void toggleUser(UserListData user) {
-    final index = selectedUsers.indexWhere(
-      (selected) => selected.userId.toString() == user.userId.toString(),
-    );
+  void toggleDestination(ForwardDestination destination) {
+    final targetId = destination.targetId;
 
-    if (index != -1) {
-      selectedUsers.removeAt(index);
-    } else {
-      selectedUsers.add(user);
-    }
-  }
+    if (targetId == null) return;
 
-  bool isGroupSelected(GroupsResData group) {
-    return selectedGroups.any(
-      (selected) => selected.id == group.id,
-    );
-  }
-
-  void toggleGroup(GroupsResData group) {
-    final index = selectedGroups.indexWhere(
-      (selected) => selected.id == group.id,
+    final index = selectedDestinations.indexWhere(
+      (selected) =>
+          selected.type == destination.type && selected.targetId == targetId,
     );
 
     if (index != -1) {
-      selectedGroups.removeAt(index);
+      selectedDestinations.removeAt(index);
     } else {
-      selectedGroups.add(group);
+      selectedDestinations.add(destination);
     }
   }
 
-  int get selectedCount => selectedUsers.length + selectedGroups.length;
+  int get selectedCount => selectedDestinations.length;
 
-  bool get hasSelection => selectedCount > 0;
+  bool get hasSelection => selectedDestinations.isNotEmpty;
+
+  List<ForwardDestination> get users {
+    return filteredDestinations
+        .where((destination) => !destination.isGroup)
+        .toList();
+  }
+
+  List<ForwardDestination> get groups {
+    return filteredDestinations
+        .where((destination) => destination.isGroup)
+        .toList();
+  }
 
   Future<void> forwardMessage() async {
+    if (isForwarding.value) return;
+
     if (!hasSelection) {
       Get.snackbar(
         "Select Destination",
@@ -168,48 +148,98 @@ class ForwardMessageController extends GetxController {
       return;
     }
 
+    if (message.id == null) {
+      Get.snackbar(
+        "Error",
+        "Message ID is missing.",
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return;
+    }
+
     try {
-      isLoading.value = true;
+      isForwarding.value = true;
 
-      final socketService = SocketMessageService.instance;
+      final selected = List<ForwardDestination>.from(selectedDestinations);
 
-      for (final user in selectedUsers) {
-        final receiverId = user.userId?.toString();
+      final targets = selected
+          .where((destination) => destination.targetId != null)
+          .map(
+            (destination) => ForwardTarget(
+              type: destination.isGroup ? "group" : "private",
+              userId: destination.targetId!,
+            ),
+          )
+          .toList();
 
-        if (receiverId == null || receiverId.isEmpty) {
-          continue;
-        }
+      final response = await MessageRepo.forwardMessage(
+        messageId: message.id!,
+        sourceType: sourceType,
+        targets: targets,
+      );
 
-        socketService.forwardMessage(
-          messageId: message.id!,
-          receiverId: receiverId,
-          groupId: null,
+      if (response.status == false) {
+        Get.snackbar(
+          "Error",
+          response.message ?? "Unable to forward message.",
+          snackPosition: SnackPosition.BOTTOM,
         );
+        return;
       }
 
-      // Forward to selected groups
-      for (final group in selectedGroups) {
-        final groupId = group.id;
+      final bool isSinglePerson = selected.length == 1 &&
+          !selected.first.isGroup &&
+          selected.first.targetId != null;
 
-        if (groupId == null) {
-          continue;
-        }
-
-        socketService.forwardMessage(
-          messageId: message.id!,
-          receiverId: null,
-          groupId: groupId,
-        );
+      if (isSinglePerson) {
+        await _openPrivateChat(selected.first);
+      } else {
+        _replaceStackWithChatList(instant: false);
       }
     } catch (e) {
       Get.snackbar(
         "Error",
-        "Unable to send forward request.",
+        "Unable to forward message.",
         snackPosition: SnackPosition.BOTTOM,
       );
     } finally {
-      isLoading.value = false;
+      isForwarding.value = false;
     }
+  }
+
+  void _replaceStackWithChatList({required bool instant}) {
+    Get.offUntil(
+      GetPageRoute(
+        page: () => ChatListScreen(),
+        transition: instant ? Transition.noTransition : null,
+        transitionDuration:
+            instant ? Duration.zero : const Duration(milliseconds: 300),
+      ),
+      (route) => route.isFirst,
+    );
+  }
+
+  Future<void> _openPrivateChat(ForwardDestination destination) async {
+    final userData = MemberData(
+      userId: destination.targetId!,
+      name: destination.displayName,
+      profileImage: destination.displayImage,
+      groupId: 0,
+    );
+
+    _replaceStackWithChatList(instant: true);
+
+    await Future.delayed(const Duration(milliseconds: 50));
+
+    Get.to(
+      () => ChatScreen(),
+      arguments: {
+        "userData": userData,
+      },
+      binding: BindingsBuilder(() {
+        Get.put(MessageController());
+      }),
+    );
   }
 
   @override

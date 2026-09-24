@@ -15,7 +15,7 @@ class SosScreen extends GetView<SosController> {
       backgroundColor: const Color(0xFFFAFAFA),
       appBar: AppBar(
         backgroundColor: const Color(0xFFFAFAFA),
-        scrolledUnderElevation: 0, // Scroll hone par color change ya elevation rokne ke liye
+        scrolledUnderElevation: 0,
         elevation: 0,
         leading: Padding(
           padding: EdgeInsets.only(left: 12.w),

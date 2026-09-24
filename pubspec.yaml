@@ -3,7 +3,7 @@ description: "A new Flutter project."
 
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
-version: 1.8.0
+version: 1.8.1
 
 environment:
   sdk: ^3.6.1
@@ -27,9 +27,10 @@ dependencies:
   image_picker: ^1.1.2
   shared_preferences: ^2.5.3
   flutter_svg: ^2.0.17
-  firebase_messaging: ^16.5.0
-  firebase_core: ^4.13.0
+  firebase_messaging: ^16.7.0
+  firebase_core: ^4.15.0
   flutter_local_notifications: ^17.2.1
+  awesome_notifications: ^0.10.0
   pretty_dio_logger:
   fluttertoast: ^8.2.10
   cached_network_image: ^3.2.1
@@ -37,7 +38,6 @@ dependencies:
   skeletonizer: ^2.0.1
   url_launcher: ^6.3.2
   google_mlkit_barcode_scanning: ^0.15.0
-  qr_code_scanner_plus: ^2.1.2
   permission_handler: ^12.0.0+1
   image_cropper: ^12.2.1
   liquid_pull_to_refresh: ^3.0.1
@@ -58,7 +58,7 @@ dependencies:
   flutter_compass: ^0.8.1
   geocoding: ^4.0.0
   camera: ^0.10.5+7
-  cloud_firestore: ^6.6.0
+  cloud_firestore: ^6.10.0
   googleapis_auth: ^2.0.0
   shorebird_code_push: ^2.0.3
   flutter_ringtone_player: ^4.0.0+4
@@ -92,6 +92,7 @@ dependencies:
   scrollable_positioned_list: ^0.3.8
   emoji_picker_flutter: ^3.1.0
   flutter_linkify: ^6.0.0
+  flutter_foreground_task: ^11.0.3
 
 
 dependency_overrides:

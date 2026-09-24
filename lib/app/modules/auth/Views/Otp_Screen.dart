@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:fgtracker/app/Core/values/colors.dart';
 import 'package:fgtracker/app/modules/auth/Controller/OtpController.dart';
 import 'package:fgtracker/app/modules/auth/Auth_Widget/hexagon_badge.dart';
@@ -38,12 +36,12 @@ class OTPScreen extends GetView<OtpController> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Color(0xFF7664F6),
-              Color(0xFF8F7EF8),
-              Color(0xFFD6CEFD),
-              Color(0xFFF3F1FE),
+              Color(0xFF7E7DE8),
+              Color(0xFF8E8DF0),
+              Color(0xFFCFCBFA),
+              Color(0xFFEEEDFD),
             ],
-            stops: [0.0, 0.35, 0.72, 1.0],
+            stops: [0.0, 0.35, 0.68, 1.0],
           ),
         ),
         child: Center(
@@ -55,7 +53,9 @@ class OTPScreen extends GetView<OtpController> {
                   return SingleChildScrollView(
                     keyboardDismissBehavior:
                         ScrollViewKeyboardDismissBehavior.onDrag,
-                    physics: const AlwaysScrollableScrollPhysics(),
+                    physics: isKeyboardOpen
+                        ? const ClampingScrollPhysics()
+                        : const NeverScrollableScrollPhysics(),
                     child: ConstrainedBox(
                       constraints:
                           BoxConstraints(minHeight: constraints.maxHeight),
@@ -65,42 +65,38 @@ class OTPScreen extends GetView<OtpController> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             SizedBox(height: isKeyboardOpen ? 18.h : 85.h),
-                            // Top Header: OTP Verification + compact Shield & Background Effect (all inside scroll view)
                             SizedBox(
                               width: double.infinity,
                               child: Stack(
                                 clipBehavior: Clip.none,
                                 children: [
-                                  // Top-right background effect & Shield Icon (compact size)
                                   if (!isKeyboardOpen)
                                     Positioned(
-                                      top: -15.h,
-                                      right: -10.w,
+                                      top: -25.h,
+                                      right: -35.w,
                                       child: SizedBox(
-                                        width: 155.w,
-                                        height: 155.h,
+                                        width: 270.w,
+                                        height: 270.h,
                                         child: Stack(
                                           alignment: Alignment.center,
                                           children: [
-                                            // Background effect (arcs + world map)
                                             Positioned(
-                                              top: 0,
-                                              right: 0,
-                                              width: 150.w,
-                                              height: 150.h,
+                                              top: -25.h,
+                                              right: -20.w,
+                                              width: 200.w,
+                                              height: 310.h,
                                               child: Opacity(
                                                 opacity: 0.85,
                                                 child: _buildAuthWatermarkImage(),
                                               ),
                                             ),
-                                            // 3D Shield Icon on top of the effect
                                             Positioned(
-                                              top: 20.h,
-                                              right: 5.w,
+                                              top: 25.h,
+                                              right: -5.w,
                                               child: Image.asset(
                                                 Assets.images.shelidIcon.path,
-                                                width: 110.w,
-                                                height: 110.h,
+                                                width: 195.w,
+                                                height: 195.h,
                                                 fit: BoxFit.contain,
                                               ),
                                             ),
@@ -108,7 +104,6 @@ class OTPScreen extends GetView<OtpController> {
                                         ),
                                       ),
                                     ),
-                                  // Left-side OTP text
                                   Padding(
                                     padding:
                                         EdgeInsets.symmetric(horizontal: 4.w),
@@ -432,16 +427,7 @@ class OTPScreen extends GetView<OtpController> {
   }
 
   static Widget _buildAuthWatermarkImage() {
-    final file = File(r"c:\projects\assets\images\auth_arc_bg.png");
-    if (file.existsSync()) {
-      return Image.file(
-        file,
-        fit: BoxFit.contain,
-        alignment: Alignment.topRight,
-      );
-    }
-    return Image.asset(
-      'assets/images/auth_arc_bg.png',
+    return Assets.images.authArcBg.image(
       fit: BoxFit.contain,
       alignment: Alignment.topRight,
       errorBuilder: (_, __, ___) => const SizedBox.shrink(),

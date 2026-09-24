@@ -169,16 +169,11 @@ class OtpController extends GetxController {
         Loading().dismissloading();
 
         try {
-          if (result.data!.userId != null) {}
+
           if (result.data!.userId != null) {
             SignallingService.instance.init(
               websocketUrl: ConstRes.socketUrl,
               selfCallerID: result.data!.userId.toString(),
-            );
-
-            GroupWalkieService.instance.init(
-              websocketUrl: ConstRes.socketUrl,
-              selfUserId: result.data!.userId.toString(),
             );
 
             GroupWalkieService.instance.init(

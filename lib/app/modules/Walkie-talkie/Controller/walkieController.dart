@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Walkie-Talkie-Service.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -44,6 +45,10 @@ class GroupWalkieController extends GetxController {
 
   final isSpeakerOn = true.obs;
   final audioRoute = WalkieAudioRoute.speaker.obs;
+  final hasBluetooth = false.obs;
+  final bluetoothName = "Bluetooth".obs;
+  final hasHeadset = false.obs;
+  final headsetName = "Headset".obs;
 
   final isMuted = false.obs;
   final isSelfLocked = false.obs;
@@ -93,6 +98,10 @@ class GroupWalkieController extends GetxController {
     super.onInit();
     audioRoute.value = GroupWalkieService.instance.audioRoute.value;
     isSpeakerOn.value = GroupWalkieService.instance.isSpeakerOn;
+    hasBluetooth.value = GroupWalkieService.instance.hasBluetoothDevice.value;
+    bluetoothName.value = GroupWalkieService.instance.bluetoothDeviceName.value;
+    hasHeadset.value = GroupWalkieService.instance.hasHeadsetDevice.value;
+    headsetName.value = GroupWalkieService.instance.headsetDeviceName.value;
     isMuted.value = GroupWalkieService.instance.isMuted;
     isConnected.value = GroupWalkieService.instance.socket?.connected ?? false;
   }
@@ -114,6 +123,22 @@ class GroupWalkieController extends GetxController {
     isSpeakerOn.value = route == WalkieAudioRoute.speaker;
   }
 
+  void updateAvailableRoutes({
+    required bool hasBt,
+    required String btName,
+    required bool hasHeadset,
+    required String headsetName,
+  }) {
+    hasBluetooth.value = hasBt;
+    bluetoothName.value = btName.isNotEmpty ? btName : "Bluetooth";
+    this.hasHeadset.value = hasHeadset;
+    this.headsetName.value = headsetName.isNotEmpty ? headsetName : "Headset";
+  }
+
+  Future<void> setRoute(WalkieAudioRoute route) async {
+    await GroupWalkieService.instance.setAudioRoute(route);
+  }
+
   void setConnected(bool value) {
     isConnected.value = value;
   }
@@ -133,7 +158,9 @@ class GroupWalkieController extends GetxController {
       case WalkieAudioRoute.headset:
         return Icons.headphones_rounded;
       case WalkieAudioRoute.earpiece:
-        return Icons.phone_in_talk_rounded;
+        return Platform.isIOS
+            ? Icons.phone_iphone_rounded
+            : Icons.phone_android_rounded;
       case WalkieAudioRoute.speaker:
       default:
         return Icons.volume_up_rounded;
@@ -143,11 +170,13 @@ class GroupWalkieController extends GetxController {
   String get audioRouteLabel {
     switch (audioRoute.value) {
       case WalkieAudioRoute.bluetooth:
-        return "Bluetooth";
+        return bluetoothName.value.isNotEmpty
+            ? bluetoothName.value
+            : "Bluetooth";
       case WalkieAudioRoute.headset:
-        return "Headset";
+        return headsetName.value.isNotEmpty ? headsetName.value : "Headset";
       case WalkieAudioRoute.earpiece:
-        return "Earpiece";
+        return Platform.isIOS ? "iPhone" : "Phone";
       case WalkieAudioRoute.speaker:
       default:
         return "Speaker";

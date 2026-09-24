@@ -55,12 +55,10 @@ class _GroupsListScreenState extends State<GroupsListScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F5FB),
-      // 🎯 Using AppBar exactly with the previous _buildHeader UI
       appBar: _buildAppBar(),
       body: SafeArea(
         child: Column(
           children: [
-            // 🎯 Animated Container (AnimatedSize) for Search Bar
             Obx(() => AnimatedSize(
               duration: const Duration(milliseconds: 300),
               curve: Curves.easeInOut,
@@ -127,7 +125,7 @@ class _GroupsListScreenState extends State<GroupsListScreen> {
                     await groupController.getGroupData();
                   },
                   child: ListView.separated(
-                    controller: _scrollController, // 🎯 Attach controller here
+                    controller: _scrollController,
                     padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 5.h),
                     physics: const AlwaysScrollableScrollPhysics(
                         parent: BouncingScrollPhysics()),

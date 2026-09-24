@@ -1,4 +1,6 @@
+import 'package:fgtracker/app/Core/constant/notification_holder.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Walkie-Talkie-Service.dart';
+import 'package:fgtracker/app/modules/Walkie-talkie/WalkieTalkieScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -7,74 +9,27 @@ import '../../../../gen/assets.gen.dart';
 import '../../../routes/app_pages.dart';
 
 class WalkieInviteDialog {
-  static bool _isShowing = false;
-
   static void show({
     required String groupId,
     required String groupName,
     required String speakerName,
     required String speakerImage,
-  }) {
-    if (_isShowing) return;
-    _isShowing = true;
-
-    try {
-      FlutterRingtonePlayer().play(
-        fromAsset: Assets.music.ringing,
-        looping: true,
-        volume: 1.0,
-        asAlarm: false,
-      );
-    } catch (_) {}
-
-    Get.generalDialog(
-      barrierColor: Colors.black.withValues(alpha: 0.4),
-      barrierDismissible: true,
-      barrierLabel: 'WalkieInvite',
-      transitionDuration: const Duration(milliseconds: 400),
-      pageBuilder: (context, animation, secondaryAnimation) {
-        return Align(
-          alignment: Alignment.topCenter,
-          child: SafeArea(
-            child: Material(
-              color: Colors.transparent,
-              child: _BannerInviteWidget(
-                groupId: groupId,
-                groupName: groupName,
-                speakerName: speakerName,
-                speakerImage: speakerImage,
-              ),
-            ),
-          ),
-        );
+  }) async {
+    if (WalkieLaunchTracker.fromWalkieCall) return;
+    if (GroupWalkieService.instance.currentGroupId != null) {
+      await GroupWalkieService.instance.leaveGroup();
+    }
+    Get.to(
+      () => const GroupWalkieScreen(),
+      routeName: Routes.groupWalkieScreen,
+      arguments: {
+        "groupId": groupId,
+        "groupName": groupName,
+        "speakerName": speakerName,
+        "speakerImage": speakerImage,
+        "autoOpened": true,
       },
-      transitionBuilder: (context, anim, secondaryAnim, child) {
-        return SlideTransition(
-          position: Tween<Offset>(
-            begin: const Offset(0, -1.2),
-            end: Offset.zero,
-          ).animate(CurvedAnimation(
-            parent: anim,
-            curve: Curves.easeOutBack,
-          )),
-          child: FadeTransition(
-            opacity: anim,
-            child: child,
-          ),
-        );
-      },
-    ).then((_) {
-      _isShowing = false;
-      try {
-        FlutterRingtonePlayer().stop();
-      } catch (_) {}
-    });
-
-    Future.delayed(const Duration(seconds: 15), () {
-      if (_isShowing && Get.isDialogOpen == true) {
-        Get.back();
-      }
-    });
+    );
   }
 }
 

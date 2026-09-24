@@ -2,15 +2,14 @@ import 'package:fgtracker/app/Core/values/Dialog/Common_dialog.dart';
 import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/Core/values/loading.dart';
 import 'package:fgtracker/app/Data/Repositories/GroupRepo.dart';
-import 'package:fgtracker/app/modules/Group/Views/QrScreen.dart';
-
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
-
 import 'package:location/location.dart';
 
 import '../../../Data/Services/LocationPermission.dart';
+import '../Views/QRScanScreen.dart';
 import '../controller/Group_Controller.dart';
+import '../controller/QrScanController.dart';
 
 class JoinGroupController extends GetxController {
   GlobalKey<FormState> joinGroupKey = GlobalKey<FormState>();
@@ -18,17 +17,20 @@ class JoinGroupController extends GetxController {
   var responseError = "".obs;
 
   Future<void> scanQRCodeFromCamera() async {
-    QrCodeBottomSheet(groupName: '', groupCode: '',);  }
+    Get.back();
+    Get.put(QRScanController());
+    Get.to(() => QRScanScreen());
+  }
 
   Future<bool> joinGroup(
-    BuildContext context, {
-    required GroupController groupController,
-    required String groupCode,
-    bool validateForm = true,
-    String? type,
-  }) async {
+      BuildContext context, {
+        required GroupController groupController,
+        required String groupCode,
+        bool validateForm = true,
+        String? type,
+      }) async {
     final hasPermission =
-        await LocationPermissions().handleLocationPermission();
+    await LocationPermissions().handleLocationPermission();
     if (!hasPermission) {
       CommonDialog.errorMessage(
           "Location permission is required to join a group.");
@@ -58,8 +60,6 @@ class JoinGroupController extends GetxController {
           Navigator.pop(context);
         }
         groupController.getGroupData();
-        // final service = TrackingService.instance;
-        // await service.init();
         return true;
       } else {
         CommonDialog.errorMessage(result.message);

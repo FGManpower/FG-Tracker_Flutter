@@ -62,7 +62,7 @@
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Your location is used to share your real-time position with group members on the map during active tracking sessions.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>Need microphone access for audio calls</string>
+	<string>Need microphone access for audio calls and stream live voice over the walkie-talkie channel</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>We need access to save QR codes to your gallery.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
@@ -71,12 +71,13 @@
 	<true/>
 	<key>UIBackgroundModes</key>
 	<array>
-		<string>location</string>
 		<string>remote-notification</string>
 		<string>audio</string>
 		<string>voip</string>
 		<string>processing</string>
 		<string>fetch</string>
+		<string>push-to-talk</string>
+		<string>location</string>
 	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>

@@ -39,7 +39,6 @@ class SocketService extends GetxService {
     _socket?.onError((err) => log("Socket error: $err"));
   }
 
-
   void joinGroup({required String groupId, required String userId}) {
     if (!connectedGroupIds.contains(groupId)) {
       _socket?.emit("join-group", {
@@ -51,7 +50,6 @@ class SocketService extends GetxService {
     }
   }
 
-
   void leaveGroup({required String groupId, required String userId}) {
     _socket?.emit("leave-group", {
       "groupId": groupId,
@@ -61,7 +59,7 @@ class SocketService extends GetxService {
   }
 
   void emitLocation(String userId, dynamic lat, dynamic lng,
-      {String? address, String? area, String? city}) {
+      {String? address, String? area, String? city, int? battery}) {
     if (!isSocketConnected) return;
 
     if (userId.isEmpty || lat == null || lng == null) {
@@ -69,43 +67,53 @@ class SocketService extends GetxService {
       return;
     }
 
+    final String? cleanAddress =
+        (address != null && address.trim().isNotEmpty) ? address.trim() : null;
+    final String? cleanArea =
+        (area != null && area.trim().isNotEmpty) ? area.trim() : null;
+    final String? cleanCity =
+        (city != null && city.trim().isNotEmpty) ? city.trim() : null;
+    final int sendBattery = battery ?? 85;
+
     if (connectedGroupIds.isEmpty) {
-      final payload = {
+      final payload = <String, dynamic>{
         "userId": userId,
         "lat": lat,
         "lng": lng,
         "latitude": lat,
         "longitude": lng,
-        if (address != null && address.isNotEmpty) "address": address,
-        if (address != null && address.isNotEmpty) "location": address,
-        if (area != null && area.isNotEmpty) "area": area,
-        if (city != null && city.isNotEmpty) "city": city,
+        "battery": sendBattery,
+        if (cleanAddress != null) "address": cleanAddress,
+        if (cleanAddress != null) "location": cleanAddress,
+        if (cleanArea != null) "area": cleanArea,
+        if (cleanCity != null) "city": cleanCity,
       };
       _socket?.emit("send-location", payload);
       log("📡 [SocketService] Emitted send-location (broadcast): $payload");
     } else {
       for (String groupId in connectedGroupIds) {
-        final payload = {
+        final payload = <String, dynamic>{
           "userId": userId,
           "groupId": groupId,
           "lat": lat,
           "lng": lng,
           "latitude": lat,
           "longitude": lng,
-          if (address != null && address.isNotEmpty) "address": address,
-          if (address != null && address.isNotEmpty) "location": address,
-          if (area != null && area.isNotEmpty) "area": area,
-          if (city != null && city.isNotEmpty) "city": city,
+          "battery": sendBattery,
+          if (cleanAddress != null) "address": cleanAddress,
+          if (cleanAddress != null) "location": cleanAddress,
+          if (cleanArea != null) "area": cleanArea,
+          if (cleanCity != null) "city": cleanCity,
         };
         _socket?.emit("send-location", payload);
-        log("📡 [SocketService] Emitted send-location to group $groupId: $payload");
+        log("[SocketService] Emitted send-location to group $groupId: $payload");
       }
     }
   }
 
   void onGroupLocationUpdate(Function(dynamic) callback) {
     _socket?.on("group-location-update", (data) {
-      log("📡 [SocketService] group-location-update received: $data");
+      log("[SocketService] group-location-update received: $data");
       if (data is List) {
         for (var item in data) {
           if (item is Map &&
@@ -127,7 +135,29 @@ class SocketService extends GetxService {
     _socket?.off("group-location-update");
   }
 
+  void onSendLocation(Function(dynamic) callback) {
+    _socket?.on("send-location", (data) {
+      log("[SocketService] send-location received: $data");
+      if (data is List) {
+        for (var item in data) {
+          if (item is Map &&
+              item["userId"].toString() !=
+                  Global.storageServices.get(PrefConst.userId).toString()) {
+            callback(item);
+          }
+        }
+      } else if (data is Map) {
+        if (data["userId"].toString() !=
+            Global.storageServices.get(PrefConst.userId).toString()) {
+          callback(data);
+        }
+      }
+    });
+  }
 
+  void onSendLocationOff() {
+    _socket?.off("send-location");
+  }
 
   void onUserLeft(Function(String userId) callback) {
     _socket?.on("user-left", (data) {
@@ -153,7 +183,7 @@ class SocketService extends GetxService {
 
   void allSocketEventLogger() {
     _socket?.onAny((event, data) {
-      log("📦 Received event: $event => $data");
+      log("Received event: $event => $data");
     });
   }
 
@@ -172,13 +202,11 @@ class SocketService extends GetxService {
         "groupId": groupId,
       });
       connectedGroupIds.remove(groupId);
-      log("🗑️ Deleted group: $groupId");
+      log("Deleted group: $groupId");
     } else {
       log("Cannot delete group. Socket not connected.");
     }
   }
-
-
 
   @override
   void onClose() {

@@ -7,19 +7,24 @@ import '../../../global_widget/common_widget.dart';
 
 class SafeColors {
   static const Color primary = Color(0xFF5A3EFE);
-  /// Light lavender scaffold bg (Figma)
   static const Color bg = Color(0xFFF5F3FF);
   static const Color cardBg = Colors.white;
+  static const Color cardOuter = Color(0xFFF8F7FD);
   static const Color searchBg = Color(0xFFF5F6FA);
   static const Color border = Color(0xFFE8E6F0);
 }
 
-// ---------------- APP BAR ----------------
 class SafeAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
   final String subtitle;
-  const SafeAppBar({Key? key, required this.title, required this.subtitle})
-      : super(key: key);
+  final VoidCallback? onInfoTap;
+
+  const SafeAppBar({
+    Key? key,
+    required this.title,
+    required this.subtitle,
+    this.onInfoTap,
+  }) : super(key: key);
 
   @override
   Size get preferredSize => Size.fromHeight(64.h);
@@ -32,6 +37,7 @@ class SafeAppBar extends StatelessWidget implements PreferredSizeWidget {
       scrolledUnderElevation: 0,
       centerTitle: false,
       leadingWidth: 56.w,
+
       leading: Padding(
         padding: EdgeInsets.only(left: 16.w),
         child: GestureDetector(
@@ -41,13 +47,19 @@ class SafeAppBar extends StatelessWidget implements PreferredSizeWidget {
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(12.r),
-              border: Border.all(color: SafeColors.border),
+              border: Border.all(
+                color: SafeColors.border,
+              ),
             ),
-            child: Icon(Icons.arrow_back_ios_new,
-                color: Colors.black, size: 16.sp),
+            child: Icon(
+              Icons.arrow_back_ios_new,
+              color: Colors.black,
+              size: 16.sp,
+            ),
           ),
         ),
       ),
+
       title: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -66,19 +78,21 @@ class SafeAppBar extends StatelessWidget implements PreferredSizeWidget {
           ),
         ],
       ),
+
       actions: [
         IconButton(
-          icon: Icon(Icons.info_outline,
-              color: SafeColors.primary, size: 22.sp),
-          onPressed: () {},
+          icon: Icon(
+            Icons.info_outline,
+            color: SafeColors.primary,
+            size: 22.sp,
+          ),
+          onPressed: onInfoTap,
         ),
         SizedBox(width: 8.w),
       ],
     );
   }
 }
-
-// ---------------- TAB BAR ----------------
 class SafeTabBar extends StatelessWidget {
   final TabController controller;
   const SafeTabBar({Key? key, required this.controller}) : super(key: key);
@@ -86,9 +100,8 @@ class SafeTabBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 48.h,
+      height: 40.h,
       margin: EdgeInsets.symmetric(horizontal: 16.w),
-      padding: EdgeInsets.all(4.w),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(14.r),
@@ -132,21 +145,12 @@ class SafeTabBar extends StatelessWidget {
   }
 }
 
-// ---------------- OUTER + INNER NESTED CARD ----------------
-/// Figma pattern:
-/// ┌─ Outer white card ──────────────┐
-/// │  Title                           │
-/// │  ┌─ Inner white card ─────────┐ │
-/// │  │  child                      │ │
-/// │  └─────────────────────────────┘ │
-/// └──────────────────────────────────┘
 class SafeCard extends StatelessWidget {
   final String title;
   final String? subtitle;
   final Widget child;
   final double gapAfterTitle;
   final EdgeInsetsGeometry? padding;
-  /// true = child ko inner white bordered card me wrap karo
   final bool innerCard;
   final EdgeInsetsGeometry? innerPadding;
 
@@ -169,7 +173,7 @@ class SafeCard extends StatelessWidget {
       padding: innerPadding ??
           EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: SafeColors.cardBg,
         borderRadius: BorderRadius.circular(12.r),
         border: Border.all(color: SafeColors.border),
       ),
@@ -181,7 +185,7 @@ class SafeCard extends StatelessWidget {
       width: double.infinity,
       padding: padding ?? EdgeInsets.all(14.w),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: SafeColors.cardOuter,
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(color: SafeColors.border),
       ),
@@ -210,7 +214,6 @@ class SafeCard extends StatelessWidget {
   }
 }
 
-/// Reusable inner white card (jab SafeCard ke andar manually nested chahiye)
 class SafeInnerCard extends StatelessWidget {
   final Widget child;
   final EdgeInsetsGeometry? padding;
@@ -230,7 +233,7 @@ class SafeInnerCard extends StatelessWidget {
       padding:
       padding ?? EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
       decoration: BoxDecoration(
-        color: color ?? Colors.white,
+        color: color ?? SafeColors.cardBg,
         borderRadius: BorderRadius.circular(12.r),
         border: Border.all(color: SafeColors.border),
       ),
@@ -239,7 +242,6 @@ class SafeInnerCard extends StatelessWidget {
   }
 }
 
-// ---------------- MEMBER ROW ----------------
 class SafeMemberCard extends StatelessWidget {
   final String name;
   final String phone;
@@ -288,11 +290,11 @@ class SafeMemberCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               reausabletext(name,
-                  fontsize: 14,
+                  fontsize: 12,
                   fontfamily: FontFamily.interSemiBold,
                   color: Colors.black),
               SizedBox(height: 2.h),
-              reausabletext(phone, fontsize: 12, color: Colors.grey),
+              reausabletext(phone, fontsize: 10, color: Colors.grey),
             ],
           ),
         ),
@@ -307,7 +309,7 @@ class SafeMemberCard extends StatelessWidget {
       child: Container(
         padding: EdgeInsets.all(12.w),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: SafeColors.cardBg,
           borderRadius: BorderRadius.circular(14.r),
           border: Border.all(color: SafeColors.border),
         ),
@@ -317,7 +319,6 @@ class SafeMemberCard extends StatelessWidget {
   }
 }
 
-// ---------------- GROUP CARD ----------------
 class SafeGroupCard extends StatelessWidget {
   final String groupName;
   final int totalMembers;
@@ -427,7 +428,7 @@ class SafeGroupCard extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(14.w),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: SafeColors.cardBg,
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(color: SafeColors.border),
       ),
@@ -436,7 +437,6 @@ class SafeGroupCard extends StatelessWidget {
   }
 }
 
-// ---------------- MAP CARD ----------------
 class SafeMapCard extends StatelessWidget {
   final TextEditingController searchController;
   final ValueChanged<String> onSearchSubmit;
@@ -448,6 +448,7 @@ class SafeMapCard extends StatelessWidget {
   final Set<Marker> markers;
   final Set<Circle> circles;
   final Set<Polyline> polylines;
+  final Set<Polygon> polygons;
   final CameraPosition initialCamera;
   final Key? mapKey;
   final bool showSearchBar;
@@ -467,6 +468,7 @@ class SafeMapCard extends StatelessWidget {
     this.markers = const {},
     this.circles = const {},
     this.polylines = const {},
+    this.polygons = const {},
     this.mapKey,
     this.showSearchBar = true,
     this.showContainer = true,
@@ -481,29 +483,34 @@ class SafeMapCard extends StatelessWidget {
           Container(
             height: 40.h,
             decoration: BoxDecoration(
-              color: SafeColors.searchBg,
+              color: Colors.white,
               borderRadius: BorderRadius.circular(12.r),
               border: Border.all(color: SafeColors.border),
             ),
             child: Row(
               children: [
                 SizedBox(width: 12.w),
-                Icon(Icons.search, color: Colors.grey.shade500, size: 20.sp),
+                Icon(Icons.search, color: Colors.grey.shade500, size: 25.sp),
                 SizedBox(width: 8.w),
                 Expanded(
                   child: TextField(
                     controller: searchController,
                     onSubmitted: onSearchSubmit,
+                    textAlignVertical: TextAlignVertical.center,
                     style: TextStyle(
-                        fontSize: 13.sp,
-                        color: Colors.black87,
-                        fontWeight: FontWeight.w500),
+                      fontSize: 13.sp,
+                      color: Colors.black87,
+                      fontWeight: FontWeight.w500,
+                    ),
                     decoration: InputDecoration(
                       hintText: "Search Location...",
                       hintStyle: TextStyle(
-                          fontSize: 12.sp, color: Colors.grey.shade400),
+                        fontSize: 12.sp,
+                        color: Colors.grey.shade600,
+                      ),
                       border: InputBorder.none,
-                      contentPadding: EdgeInsets.only(bottom: 4.h),
+                      isDense: true,
+                      contentPadding: EdgeInsets.zero,
                     ),
                   ),
                 ),
@@ -534,6 +541,7 @@ class SafeMapCard extends StatelessWidget {
                   markers: markers,
                   circles: circles,
                   polylines: polylines,
+                  polygons: polygons,
                 ),
                 Positioned(
                   left: 10.w,
@@ -623,7 +631,7 @@ class SafeMapCard extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: SafeColors.cardBg,
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(color: SafeColors.border),
       ),
@@ -633,7 +641,6 @@ class SafeMapCard extends StatelessWidget {
   }
 }
 
-// ---------------- SAVE BUTTON ----------------
 class SafeSaveButton extends StatelessWidget {
   final String text;
   final VoidCallback? onPressed;
@@ -655,7 +662,6 @@ class SafeSaveButton extends StatelessWidget {
   }
 }
 
-// ---------------- FOOTER NOTE ----------------
 class SafeFooterNote extends StatelessWidget {
   const SafeFooterNote({Key? key}) : super(key: key);
 
@@ -680,7 +686,6 @@ class SafeFooterNote extends StatelessWidget {
   }
 }
 
-// ---------------- LOCATION INPUT ----------------
 class SafeLocationInput extends StatelessWidget {
   final String label;
   final String value;
@@ -719,7 +724,7 @@ class SafeLocationInput extends StatelessWidget {
                     Flexible(
                       child: reausabletext(
                         value,
-                        fontsize: 12,
+                        fontsize: 8,
                         fontfamily: FontFamily.interSemiBold,
                         color: Colors.black87,
                         textoverflow: TextOverflow.ellipsis,
@@ -743,6 +748,610 @@ class SafeLocationInput extends StatelessWidget {
                   color: SafeColors.primary, size: 14.sp),
             ),
           )
+        ],
+      ),
+    );
+  }
+
+
+
+}
+void showSafeZoneAlertSheet(BuildContext context) {
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (_) => const SafeAlertBottomSheet(
+      type: SafeAlertType.zone,
+    ),
+  );
+}
+
+void showSafeRouteAlertSheet(BuildContext context) {
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (_) => const SafeAlertBottomSheet(
+      type: SafeAlertType.route,
+    ),
+  );
+}
+
+enum SafeAlertType { zone, route }
+
+class SafeAlertBottomSheet extends StatelessWidget {
+  final SafeAlertType type;
+
+  const SafeAlertBottomSheet({
+    Key? key,
+    required this.type,
+  }) : super(key: key);
+
+  bool get isZone => type == SafeAlertType.zone;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.64,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(24.r),
+        ),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(height: 8.h),
+
+          Container(
+            width: 40.w,
+            height: 4.h,
+            decoration: BoxDecoration(
+              color: const Color(0xFFD0CDE0),
+              borderRadius: BorderRadius.circular(4.r),
+            ),
+          ),
+
+          SizedBox(height: 12.h),
+
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 18.w),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Container(
+                  width: 40.w,
+                  height: 40.w,
+                  decoration: BoxDecoration(
+                    color: isZone
+                        ? SafeColors.primary.withOpacity(0.10)
+                        : const Color(0xFFFFF0E8),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    isZone
+                        ? Icons.shield_outlined
+                        : Icons.route_outlined,
+                    color: isZone
+                        ? SafeColors.primary
+                        : const Color(0xFFFF8A3D),
+                    size: 21.sp,
+                  ),
+                ),
+
+                SizedBox(width: 10.w),
+
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      reausabletext(
+                        isZone
+                            ? "Safe Zone Alert"
+                            : "Safe Route Alert",
+                        fontsize: 15,
+                        fontfamily: FontFamily.interSemiBold,
+                        color: Colors.black,
+                      ),
+                      SizedBox(height: 1.h),
+                      reausabletext(
+                        isZone
+                            ? "Real-time alerts when team members leave the safe zone"
+                            : "Real-time alerts when team members deviate from the safe route",
+                        fontsize: 9,
+                        color: Colors.grey.shade600,
+                        fontweight: FontWeight(600),
+                        height: 1.15,
+                        maxline: 2,
+                      ),
+                    ],
+                  ),
+                ),
+
+                GestureDetector(
+                  onTap: () => Get.back(),
+                  child: Icon(
+                    Icons.close,
+                    color: Colors.grey.shade500,
+                    size: 21.sp,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          SizedBox(height: 12.h),
+
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 18.w),
+            child: Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: 12.w,
+                vertical: 10.h,
+              ),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12.r),
+                border: Border.all(
+                  color: SafeColors.border,
+                ),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        reausabletext(
+                          isZone
+                              ? "Active Safe Zone"
+                              : "Active Safe Route",
+                          fontsize: 9,
+                          color: Colors.grey.shade600,
+                          fontweight: FontWeight(600)
+                        ),
+
+                        SizedBox(height: 2.h),
+
+                        reausabletext(
+                          isZone
+                              ? "Chembur Zone"
+                              : "Mumbai Delivery Route",
+                          fontsize: 13,
+                          fontfamily: FontFamily.interSemiBold,
+                          color: Colors.black,
+                        ),
+
+                        SizedBox(height: 2.h),
+
+                        reausabletext(
+                          isZone
+                              ? "Radius: 500 m  •  Center: Chembur, Mumbai"
+                              : "Total Distance: 12.5 km  •  Allowed Deviation: 500 m",
+                          fontsize: 9,
+                          color: Colors.grey.shade600,
+                          fontweight: FontWeight(600),
+                          maxline: 1,
+                          textoverflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  SizedBox(width: 6.w),
+
+                  Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 9.w,
+                      vertical: 3.h,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE6F9EE),
+                      borderRadius: BorderRadius.circular(20.r),
+                    ),
+                    child: reausabletext(
+                      "Active",
+                      fontsize: 10,
+                      color: const Color(0xFF1DBF73),
+                      fontweight: FontWeight.w600,
+                    ),
+                  ),
+
+                  SizedBox(width: 5.w),
+
+                  Icon(
+                    Icons.chevron_right,
+                    color: Colors.grey.shade400,
+                    size: 19.sp,
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          SizedBox(height: 12.h),
+
+
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 18.w),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                reausabletext(
+                  "Recent Alerts",
+                  fontsize: 12,
+                  fontfamily: FontFamily.interSemiBold,
+                  color: Colors.black87,
+                ),
+
+                GestureDetector(
+                  onTap: () {},
+                  child: Row(
+                    children: [
+                      reausabletext(
+                        "View All",
+                        fontsize: 11,
+                        color: SafeColors.primary,
+                        fontweight: FontWeight.w600,
+                      ),
+                      Icon(
+                        Icons.chevron_right,
+                        size: 15.sp,
+                        color: SafeColors.primary,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          SizedBox(height: 7.h),
+
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 18.w),
+            child: Container(
+              width: double.infinity,
+              padding: EdgeInsets.symmetric(
+                horizontal: 10.w,
+                vertical: 4.h,
+              ),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12.r),
+                border: Border.all(
+                  color: SafeColors.border,
+                ),
+              ),
+              child: Column(
+                children: isZone
+                    ? [
+                  _alertTile(
+                    name: "Rahul Verma",
+                    status: "Exited safe zone",
+                    location:
+                    "Near Ghatkopar (Outside Chembur Zone)",
+                    time: "04:32 PM",
+                    ago: "2 min ago",
+                    avatar:
+                    "https://i.pravatar.cc/150?img=12",
+                    isZone: true,
+                  ),
+
+                  Divider(
+                    height: 1,
+                    color: SafeColors.border,
+                  ),
+
+                  _alertTile(
+                    name: "Aamir Khan",
+                    status: "Exited safe zone",
+                    location:
+                    "Vikhroli (Outside Chembur Zone)",
+                    time: "04:45 PM",
+                    ago: "5 min ago",
+                    avatar:
+                    "https://i.pravatar.cc/150?img=13",
+                    isZone: true,
+                  ),
+                ]
+                    : [
+                  _alertTile(
+                    name: "Aamir Khan",
+                    status: "Deviated from safe route",
+                    location:
+                    "Vikhroli (Deviation: 780 m)",
+                    time: "04:45 PM",
+                    ago: "3 min ago",
+                    avatar:
+                    "https://i.pravatar.cc/150?img=13",
+                    isZone: false,
+                  ),
+
+                  Divider(
+                    height: 1,
+                    color: SafeColors.border,
+                  ),
+
+                  _alertTile(
+                    name: "Sameer Shaikh",
+                    status: "Deviated from safe route",
+                    location:
+                    "Kurla (Deviation: 650 m)",
+                    time: "04:32 PM",
+                    ago: "6 min ago",
+                    avatar:
+                    "https://i.pravatar.cc/150?img=15",
+                    isZone: false,
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          SizedBox(height: 8.h),
+
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 18.w),
+            child: Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: 12.w,
+                vertical: 9.h,
+              ),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12.r),
+                border: Border.all(
+                  color: SafeColors.border,
+                ),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 38.w,
+                    height: 38.w,
+                    decoration: BoxDecoration(
+                      color: SafeColors.primary.withOpacity(0.10),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.notifications_outlined,
+                      color: SafeColors.primary,
+                      size: 19.sp,
+                    ),
+                  ),
+
+                  SizedBox(width: 10.w),
+
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment:
+                      CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        reausabletext(
+                          "Alert Settings",
+                          fontsize: 12,
+                          fontfamily: FontFamily.interSemiBold,
+                          color: Colors.black,
+                        ),
+
+                        SizedBox(height: 1.h),
+
+                        reausabletext(
+                          isZone
+                              ? "Manage safe zone, alert distance and notification preferences"
+                              : "Manage safe route alerts, deviation limits and notification preferences.",
+                          fontsize: 9,
+                          color: Colors.grey.shade600,
+                          fontweight: FontWeight(600),
+                          height: 1.15,
+                          maxline: 2,
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  Icon(
+                    Icons.chevron_right,
+                    color: Colors.grey.shade400,
+                    size: 19.sp,
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          SizedBox(height: 10.h),
+
+          // ================= EDIT BUTTON =================
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 18.w),
+            child: SizedBox(
+              width: double.infinity,
+              height: 44.h,
+              child: ElevatedButton(
+                onPressed: () {
+                  Get.back();
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: SafeColors.primary,
+                  elevation: 0,
+                  padding: EdgeInsets.zero,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      isZone
+                          ? Icons.shield_outlined
+                          : Icons.route_outlined,
+                      color: Colors.white,
+                      size: 17.sp,
+                    ),
+
+                    SizedBox(width: 7.w),
+
+                    reausabletext(
+                      isZone
+                          ? "Edit Safe Zone"
+                          : "Edit Safe Route",
+                      fontsize: 13,
+                      fontfamily: FontFamily.interSemiBold,
+                      color: Colors.white,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+          SizedBox(
+            height:
+            MediaQuery.of(context).padding.bottom + 10.h,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _alertTile({
+    required String name,
+    required String status,
+    required String location,
+    required String time,
+    required String ago,
+    required String avatar,
+    required bool isZone,
+  }) {
+    return Padding(
+      padding: EdgeInsets.symmetric(
+        horizontal: 2.w,
+        vertical: 8.h,
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          // ================= AVATAR =================
+          Stack(
+            children: [
+              CircleAvatar(
+                radius: 20.r,
+                backgroundImage: NetworkImage(avatar),
+              ),
+
+              Positioned(
+                right: 0,
+                bottom: 0,
+                child: Container(
+                  width: 15.w,
+                  height: 15.w,
+                  decoration: BoxDecoration(
+                    color: isZone
+                        ? Colors.red
+                        : const Color(0xFFFF8A3D),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: Colors.white,
+                      width: 1.5,
+                    ),
+                  ),
+                  child: Icon(
+                    isZone
+                        ? Icons.priority_high
+                        : Icons.alt_route,
+                    color: Colors.white,
+                    size: 9.sp,
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          SizedBox(width: 10.w),
+
+          // ================= USER DETAILS =================
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                reausabletext(
+                  name,
+                  fontsize: 12,
+                  fontfamily: FontFamily.interSemiBold,
+                  color: Colors.black,
+                ),
+
+                SizedBox(height: 1.h),
+
+                reausabletext(
+                  status,
+                  fontsize: 10,
+                  color: Colors.red,
+                  fontweight: FontWeight.w600,
+                ),
+
+                SizedBox(height: 1.h),
+
+                Row(
+                  children: [
+                    Icon(
+                      Icons.location_on_outlined,
+                      size: 11.sp,
+                      color: Colors.grey.shade600,
+                    ),
+
+                    SizedBox(width: 2.w),
+
+                    Flexible(
+                      child: reausabletext(
+                        location,
+                        fontsize: 9,
+                        color: Colors.grey.shade600,
+                        fontweight: FontWeight(600),
+                        maxline: 1,
+                        textoverflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+
+          SizedBox(width: 6.w),
+
+          // ================= TIME =================
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              reausabletext(
+                time,
+                fontsize: 10,
+                color: Colors.grey.shade600,
+              ),
+
+              SizedBox(height: 1.h),
+
+              reausabletext(
+                ago,
+                fontsize: 9,
+                color: Colors.red,
+              ),
+            ],
+          ),
         ],
       ),
     );

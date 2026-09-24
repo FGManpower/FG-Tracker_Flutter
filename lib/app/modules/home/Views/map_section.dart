@@ -8,8 +8,12 @@ import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 
+import 'package:fgtracker/app/Core/constant/pref_res.dart';
+import 'package:fgtracker/app/Core/values/global.dart';
+import 'package:fgtracker/app/Core/values/Dialog/DialogBox.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
@@ -32,6 +36,8 @@ class _MapSectionState extends State<MapSection> {
   final Map<String, BitmapDescriptor> _markerIconCache = {};
 
   Worker? _locationWorker;
+  Worker? _currentLocationWorker;
+  Worker? _radiusWorker;
 
   int _markerRequestId = 0;
 
@@ -41,7 +47,21 @@ class _MapSectionState extends State<MapSection> {
 
     _locationWorker = ever<List<LiveLocationModel>>(
       controller.liveLocations,
-          (_) {
+      (_) {
+        _loadMarkers();
+      },
+    );
+
+    _currentLocationWorker = ever<LatLng?>(
+      controller.currentLocation,
+      (_) {
+        _loadMarkers();
+      },
+    );
+
+    _radiusWorker = ever<String>(
+      controller.selectedRadius,
+      (_) {
         _loadMarkers();
       },
     );
@@ -57,33 +77,28 @@ class _MapSectionState extends State<MapSection> {
         controller.liveLocations,
       );
 
-      final Set<Marker> newMarkers = <Marker>{};
+      final Set<Marker> initialMarkers = <Marker>{};
 
       for (final member in locations) {
         final String cacheKey =
             '${member.userId}_${member.profileImage}_${member.isOnline}';
+        final BitmapDescriptor icon = _markerIconCache[cacheKey] ??
+            BitmapDescriptor.defaultMarkerWithHue(
+              member.isOnline
+                  ? BitmapDescriptor.hueGreen
+                  : BitmapDescriptor.hueRed,
+            );
 
-        BitmapDescriptor? customIcon = _markerIconCache[cacheKey];
-
-        if (customIcon == null) {
-          customIcon = await getCustomIcon(
-            member.profileImage,
-            member.isOnline,
-          );
-
-          _markerIconCache[cacheKey] = customIcon;
-        }
-
-        newMarkers.add(
+        initialMarkers.add(
           Marker(
             markerId: MarkerId(
-              'member_${member.userId}',
+              'member_${member.userId}_${member.latitude}_${member.longitude}',
             ),
             position: LatLng(
               member.latitude,
               member.longitude,
             ),
-            icon: customIcon,
+            icon: icon,
             anchor: const Offset(0.5, 1.0),
             infoWindow: InfoWindow(
               title: member.fullName,
@@ -96,20 +111,137 @@ class _MapSectionState extends State<MapSection> {
         );
       }
 
-      if (!mounted || requestId != _markerRequestId) {
-        return;
+      final LatLng? myLocation = controller.currentLocation.value;
+      if (myLocation != null &&
+          myLocation.latitude != 0.0 &&
+          myLocation.longitude != 0.0) {
+        final String myImg = controller.userData.value.profileImage ?? '';
+        final String cacheKey = 'me_$myImg';
+        final BitmapDescriptor myIcon = _markerIconCache[cacheKey] ??
+            BitmapDescriptor.defaultMarkerWithHue(
+              BitmapDescriptor.hueAzure,
+            );
+
+        initialMarkers.add(
+          Marker(
+            markerId: const MarkerId('current_user_marker'),
+            position: myLocation,
+            icon: myIcon,
+            anchor: const Offset(0.5, 1.0),
+            zIndex: 10.0,
+            infoWindow: const InfoWindow(
+              title: 'You',
+              snippet: 'Current Location',
+            ),
+            onTap: _showCurrentUserDetails,
+          ),
+        );
       }
 
-      // Reactive update. No setState().
-      _markers.value = newMarkers;
+      if (!mounted) return;
+
+      _markers.value = initialMarkers;
       _circles.value = _buildRadiusCircle(locations);
 
-      await Future.delayed(
-        const Duration(milliseconds: 300),
-      );
+      _fitAllMembers();
 
-      if (mounted && requestId == _markerRequestId) {
-        await _fitAllMembers();
+      final List<Future<void>> iconTasks = [];
+      for (final member in locations) {
+        final String cacheKey =
+            '${member.userId}_${member.profileImage}_${member.isOnline}_${member.fullName}';
+        if (!_markerIconCache.containsKey(cacheKey)) {
+          iconTasks.add(() async {
+            try {
+              final custom = await getCustomIcon(
+                member.profileImage,
+                member.isOnline,
+                name: member.fullName,
+              );
+              _markerIconCache[cacheKey] = custom;
+            } catch (_) {}
+          }());
+        }
+      }
+
+      if (myLocation != null) {
+        final String myImg = controller.userData.value.profileImage ?? '';
+        final String myName = controller.userData.value.name ??
+            Global.storageServices.get(PrefConst.userName)?.toString() ??
+            'You';
+        final String cacheKey = 'me_${myImg}_$myName';
+        if (!_markerIconCache.containsKey(cacheKey)) {
+          iconTasks.add(() async {
+            try {
+              final custom = await getCustomIcon(
+                myImg,
+                true,
+                isMe: true,
+                name: myName,
+              );
+              _markerIconCache[cacheKey] = custom;
+            } catch (_) {}
+          }());
+        }
+      }
+
+      if (iconTasks.isNotEmpty) {
+        await Future.wait(iconTasks);
+        if (mounted && requestId == _markerRequestId) {
+          final Set<Marker> updatedMarkers = <Marker>{};
+          for (final member in locations) {
+            final String cacheKey =
+                '${member.userId}_${member.profileImage}_${member.isOnline}';
+            final icon = _markerIconCache[cacheKey] ??
+                BitmapDescriptor.defaultMarkerWithHue(
+                  member.isOnline
+                      ? BitmapDescriptor.hueGreen
+                      : BitmapDescriptor.hueRed,
+                );
+            updatedMarkers.add(
+              Marker(
+                markerId: MarkerId(
+                  'member_${member.userId}_${member.latitude}_${member.longitude}',
+                ),
+                position: LatLng(
+                  member.latitude,
+                  member.longitude,
+                ),
+                icon: icon,
+                anchor: const Offset(0.5, 1.0),
+                infoWindow: InfoWindow(
+                  title: member.fullName,
+                  snippet: member.isOnline ? 'Online' : 'Offline',
+                ),
+                onTap: () {
+                  _showMemberDetails(member);
+                },
+              ),
+            );
+          }
+          if (myLocation != null) {
+            final String myImg = controller.userData.value.profileImage ?? '';
+            final String cacheKey = 'me_$myImg';
+            final myIcon = _markerIconCache[cacheKey] ??
+                BitmapDescriptor.defaultMarkerWithHue(
+                  BitmapDescriptor.hueAzure,
+                );
+            updatedMarkers.add(
+              Marker(
+                markerId: const MarkerId('current_user_marker'),
+                position: myLocation,
+                icon: myIcon,
+                anchor: const Offset(0.5, 1.0),
+                zIndex: 10.0,
+                infoWindow: const InfoWindow(
+                  title: 'You',
+                  snippet: 'Current Location',
+                ),
+                onTap: _showCurrentUserDetails,
+              ),
+            );
+          }
+          _markers.value = updatedMarkers;
+        }
       }
     } catch (error) {
       debugPrint('Live marker error: $error');
@@ -117,24 +249,27 @@ class _MapSectionState extends State<MapSection> {
   }
 
   Set<Circle> _buildRadiusCircle(
-      List<LiveLocationModel> locations,
-      ) {
-    if (locations.isEmpty) {
+    List<LiveLocationModel> locations,
+  ) {
+    final LatLng? centerLocation = controller.currentLocation.value ??
+        (locations.isNotEmpty
+            ? LatLng(locations.first.latitude, locations.first.longitude)
+            : null);
+
+    if (centerLocation == null) {
       return <Circle>{};
     }
 
-    final LiveLocationModel firstMember = locations.first;
+    final double radiusKm =
+        double.tryParse(controller.selectedRadius.value) ?? 2.0;
 
     return <Circle>{
       Circle(
         circleId: const CircleId(
           'live_tracking_radius',
         ),
-        center: LatLng(
-          firstMember.latitude,
-          firstMember.longitude,
-        ),
-        radius: 2000,
+        center: centerLocation,
+        radius: radiusKm * 1000,
         fillColor: const Color(0xFF6B4DFF).withValues(alpha: 0.12),
         strokeColor: const Color(0xFF6B4DFF).withValues(alpha: 0.50),
         strokeWidth: 1,
@@ -143,16 +278,21 @@ class _MapSectionState extends State<MapSection> {
   }
 
   LatLng? _getInitialPosition() {
-    if (controller.liveLocations.isEmpty) {
-      return null;
+    if (controller.currentLocation.value != null &&
+        controller.currentLocation.value!.latitude != 0.0 &&
+        controller.currentLocation.value!.longitude != 0.0) {
+      return controller.currentLocation.value;
     }
 
-    final LiveLocationModel firstMember = controller.liveLocations.first;
+    if (controller.liveLocations.isNotEmpty) {
+      final LiveLocationModel firstMember = controller.liveLocations.first;
+      return LatLng(
+        firstMember.latitude,
+        firstMember.longitude,
+      );
+    }
 
-    return LatLng(
-      firstMember.latitude,
-      firstMember.longitude,
-    );
+    return null;
   }
 
   Future<void> _fitAllMembers() async {
@@ -162,14 +302,29 @@ class _MapSectionState extends State<MapSection> {
       controller.liveLocations,
     );
 
-    if (mapController == null || locations.isEmpty) {
+    final LatLng? myLocation = controller.currentLocation.value;
+
+    if (mapController == null) {
       return;
     }
 
-    double minLatitude = locations.first.latitude;
-    double maxLatitude = locations.first.latitude;
-    double minLongitude = locations.first.longitude;
-    double maxLongitude = locations.first.longitude;
+    if (locations.isEmpty && myLocation == null) {
+      return;
+    }
+
+    if (locations.isEmpty && myLocation != null) {
+      mapController.animateCamera(
+        CameraUpdate.newCameraPosition(
+          CameraPosition(target: myLocation, zoom: 15),
+        ),
+      );
+      return;
+    }
+
+    double minLatitude = myLocation?.latitude ?? locations.first.latitude;
+    double maxLatitude = myLocation?.latitude ?? locations.first.latitude;
+    double minLongitude = myLocation?.longitude ?? locations.first.longitude;
+    double maxLongitude = myLocation?.longitude ?? locations.first.longitude;
 
     for (final member in locations) {
       if (member.latitude < minLatitude) {
@@ -190,13 +345,13 @@ class _MapSectionState extends State<MapSection> {
     }
 
     if (minLatitude == maxLatitude) {
-      minLatitude -= 0.001;
-      maxLatitude += 0.001;
+      minLatitude -= 0.005;
+      maxLatitude += 0.005;
     }
 
     if (minLongitude == maxLongitude) {
-      minLongitude -= 0.001;
-      maxLongitude += 0.001;
+      minLongitude -= 0.005;
+      maxLongitude += 0.005;
     }
 
     try {
@@ -217,6 +372,19 @@ class _MapSectionState extends State<MapSection> {
       );
     } catch (error) {
       debugPrint('Map camera error: $error');
+      try {
+        await mapController.animateCamera(
+          CameraUpdate.newCameraPosition(
+            CameraPosition(
+              target: LatLng(
+                (minLatitude + maxLatitude) / 2,
+                (minLongitude + maxLongitude) / 2,
+              ),
+              zoom: 14,
+            ),
+          ),
+        );
+      } catch (_) {}
     }
   }
 
@@ -233,75 +401,67 @@ class _MapSectionState extends State<MapSection> {
   }
 
   void _showMemberDetails(
-      LiveLocationModel member,
-      ) {
-    Get.bottomSheet(
-      Container(
-        padding: EdgeInsets.all(20.w),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(
-            top: Radius.circular(22),
-          ),
-        ),
-        child: SafeArea(
-          child: Row(
-            children: [
-              CircleAvatar(
-                radius: 30.r,
-                backgroundColor: const Color(0xFFE8E8FF),
-                backgroundImage: member.profileImage.isNotEmpty
-                    ? NetworkImage(
-                  getProfileImageUrl(
-                    member.profileImage,
-                  ),
-                )
-                    : null,
-                child: member.profileImage.isEmpty
-                    ? Icon(
-                  Icons.person,
-                  size: 32.sp,
-                  color: const Color(0xFF6B4DFF),
-                )
-                    : null,
-              ),
-              SizedBox(width: 14.w),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    reausabletext(
-                      member.fullName,
-                      fontsize: 16.sp,
-                      fontfamily: FontFamily.interBold,
-                    ),
-                    SizedBox(height: 5.h),
-                    Row(
-                      children: [
-                        Container(
-                          width: 9.w,
-                          height: 9.w,
-                          decoration: BoxDecoration(
-                            color: member.isOnline ? Colors.green : Colors.red,
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                        SizedBox(width: 5.w),
-                        reausabletext(
-                          member.isOnline ? 'Online' : 'Offline',
-                          fontsize: 12.sp,
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-      isScrollControlled: true,
+    LiveLocationModel member,
+  ) {
+    double distanceInKm = 0.0;
+    if (controller.currentLocation.value != null &&
+        member.latitude != 0.0 &&
+        member.longitude != 0.0) {
+      final myLoc = controller.currentLocation.value!;
+      final distanceInMeters = Geolocator.distanceBetween(
+        myLoc.latitude,
+        myLoc.longitude,
+        member.latitude,
+        member.longitude,
+      );
+      distanceInKm = distanceInMeters / 1000.0;
+    }
+
+    final int? battery = member.battery != null
+        ? int.tryParse(member.battery.toString())
+        : null;
+
+    DialogBox().showRouteDetailsBottomSheet(
+      destination: LatLng(member.latitude, member.longitude),
+      distance: distanceInKm,
+      userId: member.userId,
+      id: member.userId,
+      name: member.fullName,
+      imageUrl: member.profileImage,
+      status: member.isOnline,
+      phone: member.phone,
+      location: member.address,
+      team: member.team,
+      battery: battery,
+      isGroupChat: false,
+      isLocationSharing: true,
+    );
+  }
+
+  void _showCurrentUserDetails() {
+    final LatLng? myLocation = controller.currentLocation.value;
+    if (myLocation == null) return;
+    final myData = controller.userData.value;
+    final myId = int.tryParse(Global.storageServices.get(PrefConst.userId)?.toString() ?? '') ?? myData.userId;
+    final myName = Global.storageServices.get(PrefConst.userName)?.toString() ??
+        myData.name ??
+        'You';
+    final myImg = Global.storageServices.get(PrefConst.profileImage)?.toString() ??
+        myData.profileImage;
+    final myPhone = Global.storageServices.get(PrefConst.userPhone)?.toString() ??
+        myData.mobileNo;
+
+    DialogBox().showRouteDetailsBottomSheet(
+      destination: myLocation,
+      distance: 0.0,
+      userId: myId,
+      id: myId,
+      name: myName,
+      imageUrl: myImg,
+      status: true,
+      phone: myPhone,
+      isGroupChat: false,
+      isLocationSharing: true,
     );
   }
 
@@ -319,103 +479,93 @@ class _MapSectionState extends State<MapSection> {
             _header(),
             SizedBox(height: 15.h),
 
-            GetX<HomeController>(
-              builder: (homeController) {
-                final LatLng? initialPosition = _getInitialPosition();
+            LayoutBuilder(
+              builder: (
+                BuildContext context,
+                BoxConstraints constraints,
+              ) {
+                final double mapHeight = (constraints.maxWidth * 0.56)
+                    .clamp(180.0, 270.0)
+                    .toDouble();
 
-                return LayoutBuilder(
-                  builder: (
-                      BuildContext context,
-                      BoxConstraints constraints,
-                      ) {
-                    final double mapHeight = (constraints.maxWidth * 0.56)
-                        .clamp(180.0, 270.0)
-                        .toDouble();
+                return Container(
+                  height: mapHeight,
+                  width: double.infinity,
+                  clipBehavior: Clip.antiAlias,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20.r),
+                  ),
+                  child: Stack(
+                    children: [
+                      Obx(
+                        () => GoogleMap(
+                          initialCameraPosition: CameraPosition(
+                            target: _getInitialPosition() ??
+                                const LatLng(18.969458, 72.830956),
+                            zoom: 15,
+                          ),
+                          markers: _markers.value,
+                          circles: _circles.value,
+                          zoomControlsEnabled: false,
+                          myLocationButtonEnabled: false,
+                          myLocationEnabled: false,
+                          mapToolbarEnabled: false,
+                          compassEnabled: false,
+                          buildingsEnabled: true,
+                          mapType: MapType.normal,
+                          onMapCreated: (mapController) {
+                            _googleMapController = mapController;
 
-                    return Container(
-                      height: mapHeight,
-                      width: double.infinity,
-                      clipBehavior: Clip.antiAlias,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(20.r),
-                      ),
-                      child:
-                      // initialPosition == null
-                      //     ? _loadingView()
-                      //     :
-                      Stack(
-                        children: [
-
-                          Obx(
-                                () => GoogleMap(
-                              initialCameraPosition: CameraPosition(
-                                target: initialPosition ?? LatLng(18.96945815314326, 72.83095699364974),
-                                zoom: 16,
+                            Future.delayed(
+                              const Duration(
+                                milliseconds: 600,
                               ),
-                              markers: _markers.value,
-                              circles: _circles.value,
-                              zoomControlsEnabled: false,
-                              myLocationButtonEnabled: false,
-                              myLocationEnabled: false,
-                              mapToolbarEnabled: false,
-                              compassEnabled: false,
-                              buildingsEnabled: true,
-                              mapType: MapType.normal,
-                              onMapCreated: (mapController) {
-                                _googleMapController = mapController;
-
-                                Future.delayed(
-                                  const Duration(
-                                    milliseconds: 500,
-                                  ),
-                                  _fitAllMembers,
+                              _fitAllMembers,
+                            );
+                          },
+                        ),
+                      ),
+                      Positioned(
+                        top: 16.h,
+                        right: 12.w,
+                        child: Column(
+                          children: [
+                            _mapButton(
+                              icon: Icons.add,
+                              onTap: () {
+                                _googleMapController?.animateCamera(
+                                  CameraUpdate.zoomIn(),
                                 );
                               },
                             ),
-                          ),
-                          Positioned(
-                            top: 16.h,
-                            right: 12.w,
-                            child: Column(
-                              children: [
-                                _mapButton(
-                                  icon: Icons.add,
-                                  onTap: () {
-                                    _googleMapController?.animateCamera(
-                                      CameraUpdate.zoomIn(),
-                                    );
-                                  },
-                                ),
-                                SizedBox(height: 5.h),
-                                _mapButton(
-                                  icon: Icons.remove,
-                                  onTap: () {
-                                    _googleMapController?.animateCamera(
-                                      CameraUpdate.zoomOut(),
-                                    );
-                                  },
-                                ),
-                                SizedBox(height: 8.h),
-                                _mapButton(
-                                  icon: Icons.my_location,
-                                  onTap: _fitAllMembers,
-                                ),
-                                SizedBox(height: 8.h),
-                                _sosButton(),
-                              ],
+                            SizedBox(height: 5.h),
+                            _mapButton(
+                              icon: Icons.remove,
+                              onTap: () {
+                                _googleMapController?.animateCamera(
+                                  CameraUpdate.zoomOut(),
+                                );
+                              },
                             ),
-                          ),
-                          Positioned(
-                            left: 12.w,
-                            bottom: 12.h,
-                            child: _membersCountView(
-                              homeController,
+                            SizedBox(height: 8.h),
+                            _mapButton(
+                              icon: Icons.my_location,
+                              onTap: _fitAllMembers,
                             ),
-                          ),
-                        ],
+                            SizedBox(height: 8.h),
+                            _sosButton(),
+                          ],
+                        ),
                       ),
-                    );
-                  },
+                      Positioned(
+                        left: 12.w,
+                        bottom: 12.h,
+                        child: _membersCountView(
+                          controller,
+                        ),
+                      ),
+                    ],
+                  ),
                 );
               },
             ),
@@ -528,85 +678,52 @@ class _MapSectionState extends State<MapSection> {
     );
   }
 
-  Widget _loadingView() {
-    return Container(
-      color: const Color(0xFFF0F4F8),
-      child: const Center(
-        child: CircularProgressIndicator(
-          color: Color(0xFF6B4DFF),
-        ),
-      ),
-    );
-  }
+
 
   Widget _membersCountView(
-      HomeController homeController,
-      ) {
-    final int onlineCount =
-        homeController.liveLocations.where((member) => member.isOnline).length;
+    HomeController homeController,
+  ) {
+    return Obx(() {
+      final int totalMembers = homeController.liveLocations.length;
+      final int onlineCount = homeController.liveLocations
+          .where((member) => member.isOnline)
+          .length;
+      final int countToShow = onlineCount > 0 ? onlineCount : totalMembers;
 
-    return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: 10.w,
-        vertical: 7.h,
-      ),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12.r),
-        boxShadow: const [
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 6,
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Icon(
-            Icons.group,
-            size: 15.sp,
-            color: const Color(0xFF6B4DFF),
-          ),
-          SizedBox(width: 6.w),
-          reausabletext(
-            '$onlineCount Members Live',
-            fontsize: 11.sp,
-            fontfamily: FontFamily.interSemiBold,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _radiusBadge() {
-    return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: 9.w,
-        vertical: 7.h,
-      ),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10.r),
-        border: Border.all(
-          color: Colors.grey.withValues(alpha: 0.2),
+      return Container(
+        padding: EdgeInsets.symmetric(
+          horizontal: 10.w,
+          vertical: 7.h,
         ),
-      ),
-      child: Row(
-        children: [
-          Icon(
-            Icons.my_location,
-            size: 15.sp,
-            color: const Color(0xFF6B4DFF),
-          ),
-          SizedBox(width: 5.w),
-          reausabletext(
-            'Radius: 2 km',
-            fontsize: 11.sp,
-          ),
-        ],
-      ),
-    );
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12.r),
+          boxShadow: const [
+            BoxShadow(
+              color: Colors.black12,
+              blurRadius: 6,
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Icon(
+              Icons.group,
+              size: 15.sp,
+              color: const Color(0xFF6B4DFF),
+            ),
+            SizedBox(width: 6.w),
+            reausabletext(
+              '$countToShow Members Live',
+              fontsize: 11.sp,
+              fontfamily: FontFamily.interSemiBold,
+            ),
+          ],
+        ),
+      );
+    });
   }
+
 
   Widget _mapButton({
     required IconData icon,
@@ -661,6 +778,8 @@ class _MapSectionState extends State<MapSection> {
   @override
   void dispose() {
     _locationWorker?.dispose();
+    _currentLocationWorker?.dispose();
+    _radiusWorker?.dispose();
     _googleMapController = null;
 
     super.dispose();

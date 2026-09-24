@@ -54,18 +54,25 @@ class AppColors {
   static const Color primaryElementLight = Color(0xFFEEF2FF);
   static const Color greenLight = Color(0xFFE8FDF2);
 
-  /// Auth screen background gradient
+  // --- Auth & Login Theme Palette ---
+  static const Color authIconBar = Color(0xFFB2ACFD);
+  static const Color authIconBgCircle = Color(0xFFEEEDFD);
+  static const Color authGradientTop = Color(0xFF7E7DE8);
+  static const Color authGradientBottom = Color(0xFFCFCBFA);
+  static const Color authMainLavender = Color(0xFFDFDEFD);
+  static const Color authTextNavy = Color(0xFF101040);
+
+  /// Auth screen background gradient: 70% top (#7E7DE8), 30% bottom (#CFCBFA)
   static const List<Color> authGradientColors = [
-    Color(0xFF7664F6),
-    Color(0xFF8F7EF8),
-    Color(0xFFD6CEFD),
-    Color(0xFFF3F1FE),
+    Color(0xFF7E7DE8),
+    Color(0xFF7E7DE8),
+    Color(0xFFCFCBFA),
   ];
 
   static const LinearGradient authGradient = LinearGradient(
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
     colors: authGradientColors,
-    stops: [0.0, 0.35, 0.72, 1.0],
+    stops: [0.0, 0.70, 1.0],
   );
 }

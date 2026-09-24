@@ -3,12 +3,15 @@ import 'dart:developer';
 import 'dart:io';
 
 import 'package:audio_session/audio_session.dart';
+import 'package:fgtracker/app/Core/constant/notification_holder.dart';
+import 'package:fgtracker/app/Core/constant/urls.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Controller/walkieController.dart';
-import 'package:fgtracker/app/modules/Walkie-talkie/Views/walkie_invite_dialog.dart';
+import 'package:fgtracker/app/modules/Walkie-talkie/WalkieTalkieScreen.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:get/get.dart' hide navigator;
 import 'package:permission_handler/permission_handler.dart';
+import 'package:proximity_screen_lock/proximity_screen_lock.dart';
 import 'package:socket_io_client/socket_io_client.dart';
 
 enum WalkieAudioRoute { speaker, earpiece, bluetooth, headset }
@@ -20,16 +23,13 @@ class GroupWalkieService {
   Socket? socket;
   String? _selfUserId;
   String? _currentGroupId;
-
   MediaStream? _localStream;
   Completer<bool>? _streamCompleter;
-
   final Map<String, RTCPeerConnection> _peers = {};
   final Map<String, MediaStream> _remoteStreams = {};
   final Map<String, List<RTCIceCandidate>> _pendingIce = {};
   final Set<String> _makingOffer = {};
   final Set<String> _offeredTo = {};
-
   bool _isTalking = false;
   bool _isMuted = false;
   bool _isSpeakerOn = true;
@@ -41,6 +41,10 @@ class GroupWalkieService {
   StreamSubscription? _devicesSub;
 
   final Rx<WalkieAudioRoute> audioRoute = WalkieAudioRoute.speaker.obs;
+  final RxBool hasBluetoothDevice = false.obs;
+  final RxString bluetoothDeviceName = "Bluetooth".obs;
+  final RxBool hasHeadsetDevice = false.obs;
+  final RxString headsetDeviceName = "Headset".obs;
 
   bool get isTalking => _isTalking;
   bool get isMuted => _isMuted;
@@ -55,13 +59,9 @@ class GroupWalkieService {
         'urls': ['stun:stun.l.google.com:19302'],
       },
       {
-        'urls': [
-          'turn:89.116.23.2:3478?transport=udp',
-          'turn:89.116.23.2:3478?transport=tcp',
-          'turns:89.116.23.2:443?transport=tcp',
-        ],
-        'username': 'fgtracker',
-        'credential': 'FGM_Tracker@2025',
+        'urls': Urls.rtcUrl,
+        'username': Urls.rtcUserName,
+        'credential': Urls.rtcCredential,
       }
     ],
     'iceTransportPolicy': 'all',
@@ -78,6 +78,7 @@ class GroupWalkieService {
   }) async {
     _isDisposed = false;
     _selfUserId = selfUserId;
+    _log('GroupWalkieService init called with user: $selfUserId');
 
     await _configureAudioSession(speakerOn: true);
     await _listenAudioDevices();
@@ -137,13 +138,21 @@ class GroupWalkieService {
 
   Future<bool> _requestMicPermission() async {
     try {
-      final status = await Permission.microphone.request();
+      var status = await Permission.microphone.status;
+      _log('Mic permission status: $status');
+
+      if (!status.isGranted) {
+        status = await Permission.microphone.request();
+        _log('Requested mic permission: $status');
+      }
+
       _hasMicPermission = status.isGranted;
       if (Get.isRegistered<GroupWalkieController>()) {
         Get.find<GroupWalkieController>().setMicPermission(_hasMicPermission);
       }
       return _hasMicPermission;
     } catch (e) {
+      _log('⚠️ Error during Permission.microphone check: $e');
       return false;
     }
   }
@@ -159,11 +168,9 @@ class GroupWalkieService {
             avAudioSessionCategory: AVAudioSessionCategory.playAndRecord,
             avAudioSessionMode: AVAudioSessionMode.voiceChat,
             avAudioSessionCategoryOptions:
-                AVAudioSessionCategoryOptions.allowBluetooth |
-                    AVAudioSessionCategoryOptions.allowBluetoothA2dp |
-                    (speakerOn
-                        ? AVAudioSessionCategoryOptions.defaultToSpeaker
-                        : AVAudioSessionCategoryOptions.none),
+            AVAudioSessionCategoryOptions.allowBluetooth |
+            AVAudioSessionCategoryOptions.allowBluetoothA2dp |
+            AVAudioSessionCategoryOptions.defaultToSpeaker,
           ),
         );
       } else {
@@ -175,7 +182,7 @@ class GroupWalkieService {
               usage: AndroidAudioUsage.voiceCommunication,
               contentType: AndroidAudioContentType.speech,
             ),
-            androidAudioFocusGainType: AndroidAudioFocusGainType.gain,
+            androidAudioFocusGainType: AndroidAudioFocusGainType.gainTransient,
           ),
         );
       }
@@ -185,43 +192,84 @@ class GroupWalkieService {
       try {
         await Helper.setSpeakerphoneOn(speakerOn);
       } catch (_) {}
-    } catch (_) {}
+      _log('🎧 AudioSession configured: speakerOn=$speakerOn');
+    } catch (e) {
+      _log('❌ AudioSession configure error: $e');
+    }
   }
 
   Future<void> _listenAudioDevices() async {
     try {
       final session = await AudioSession.instance;
       await _devicesSub?.cancel();
-      _devicesSub = session.devicesStream.listen(_updateRoute);
-      _updateRoute(await session.getDevices());
+      _devicesSub = session.devicesStream.listen((devices) async {
+        await _updateRoute(devices);
+      });
+      await _updateRoute(await session.getDevices());
     } catch (_) {}
   }
 
-  void _updateRoute(Set<AudioDevice> devices) {
-    final hasBT = devices.any((d) =>
-        d.type == AudioDeviceType.bluetoothA2dp ||
+  Future<void> _updateRoute(Set<AudioDevice> devices) async {
+    bool hasBT = devices.any((d) =>
+    d.type == AudioDeviceType.bluetoothA2dp ||
         d.type == AudioDeviceType.bluetoothSco ||
         d.type == AudioDeviceType.bluetoothLe);
-    final hasHeadset = devices.any((d) =>
-        d.type == AudioDeviceType.wiredHeadset ||
-        d.type == AudioDeviceType.wiredHeadphones);
 
-    if (hasBT) {
-      audioRoute.value = WalkieAudioRoute.bluetooth;
-      _isSpeakerOn = false;
-    } else if (hasHeadset) {
-      audioRoute.value = WalkieAudioRoute.headset;
-      _isSpeakerOn = false;
-    } else if (_isSpeakerOn) {
-      audioRoute.value = WalkieAudioRoute.speaker;
-    } else {
-      audioRoute.value = WalkieAudioRoute.earpiece;
+    String btName = "Bluetooth";
+    for (final d in devices) {
+      if ((d.type == AudioDeviceType.bluetoothA2dp ||
+          d.type == AudioDeviceType.bluetoothSco ||
+          d.type == AudioDeviceType.bluetoothLe) &&
+          d.name.trim().isNotEmpty) {
+        btName = d.name.trim();
+        break;
+      }
     }
 
+    final headsetList = devices.where((d) =>
+    d.type == AudioDeviceType.wiredHeadset ||
+        d.type == AudioDeviceType.wiredHeadphones).toList();
+    final hasHeadset = headsetList.isNotEmpty;
+    final headsetName = (hasHeadset && headsetList.first.name.trim().isNotEmpty)
+        ? headsetList.first.name.trim()
+        : "Headset";
+
+    final bool prevHasBT = hasBluetoothDevice.value;
+    final bool prevHasHeadset = hasHeadsetDevice.value;
+
+    hasBluetoothDevice.value = hasBT;
+    bluetoothDeviceName.value = btName;
+    hasHeadsetDevice.value = hasHeadset;
+    headsetDeviceName.value = headsetName;
+
     if (Get.isRegistered<GroupWalkieController>()) {
-      final c = Get.find<GroupWalkieController>();
-      c.setAudioRoute(audioRoute.value);
-      c.isSpeakerOn.value = _isSpeakerOn;
+      Get.find<GroupWalkieController>().updateAvailableRoutes(
+        hasBt: hasBT,
+        btName: btName,
+        hasHeadset: hasHeadset,
+        headsetName: headsetName,
+      );
+    }
+
+    if (!prevHasBT && hasBT) {
+      await setAudioRoute(WalkieAudioRoute.bluetooth);
+      return;
+    }
+
+    if (prevHasBT && !hasBT && audioRoute.value == WalkieAudioRoute.bluetooth) {
+      await setAudioRoute(WalkieAudioRoute.speaker);
+      return;
+    }
+
+    if (!prevHasHeadset && hasHeadset) {
+      await setAudioRoute(WalkieAudioRoute.headset);
+      return;
+    }
+
+    if (prevHasHeadset && !hasHeadset &&
+        audioRoute.value == WalkieAudioRoute.headset) {
+      await setAudioRoute(WalkieAudioRoute.speaker);
+      return;
     }
   }
 
@@ -251,7 +299,7 @@ class GroupWalkieService {
       socket?.off(e);
     }
 
-    socket?.on('walkie_invite', (data) {
+    socket?.on('walkie_invite', (data) async {
       if (_isDisposed || data == null) return;
       final groupId = data['groupId']?.toString() ?? '';
       final groupName = data['groupName']?.toString() ?? 'Group';
@@ -259,14 +307,22 @@ class GroupWalkieService {
       final speakerImage = data['speakerImage']?.toString() ?? '';
 
       if (groupId.isEmpty) return;
-      if (_currentGroupId == groupId) return;
-      if (Get.currentRoute == Routes.groupWalkieScreen) return;
+      if (_currentGroupId == groupId && WalkieLaunchTracker.fromWalkieCall) return;
 
-      WalkieInviteDialog.show(
-        groupId: groupId,
-        groupName: groupName,
-        speakerName: speakerName,
-        speakerImage: speakerImage,
+      if (_currentGroupId != null) {
+        await leaveGroup();
+      }
+
+      Get.to(
+            () => const GroupWalkieScreen(),
+        routeName: Routes.groupWalkieScreen,
+        arguments: {
+          "groupId": groupId,
+          "groupName": groupName,
+          "speakerName": speakerName,
+          "speakerImage": speakerImage,
+          "autoOpened": true,
+        },
       );
     });
 
@@ -322,12 +378,10 @@ class GroupWalkieService {
       await _handleIce(from, ice);
     });
 
-    // CRITICAL RACE-CONDITION FIX (Single Tap Glitch Resolved)
     socket?.on('ptt_granted', (_) async {
       if (_isDisposed) return;
       _log('PTT_GRANTED received');
 
-      // Check if user has already released the button before server granted the request
       if (Get.isRegistered<GroupWalkieController>()) {
         final c = Get.find<GroupWalkieController>();
         if (!c.isPressed.value && !c.isSelfLocked.value) {
@@ -386,7 +440,7 @@ class GroupWalkieService {
       if (!Get.isRegistered<GroupWalkieController>()) return;
       final list = listRaw
           .map((p) =>
-              WalkieParticipant.fromMap(Map<String, dynamic>.from(p as Map)))
+          WalkieParticipant.fromMap(Map<String, dynamic>.from(p as Map)))
           .toList();
       Get.find<GroupWalkieController>().updateParticipants(
         list,
@@ -405,6 +459,7 @@ class GroupWalkieService {
     socket?.on('walkie_error', (data) {});
   }
 
+  // FIXED: Direct fallback to getUserMedia if permission_handler is restricted
   Future<bool> _ensureLocalStream() async {
     if (_localStream != null) return true;
     if (_streamCompleter != null) return _streamCompleter!.future;
@@ -412,32 +467,37 @@ class GroupWalkieService {
     _streamCompleter = Completer<bool>();
 
     try {
-      final granted = await _requestMicPermission();
-      if (!granted) {
-        _streamCompleter!.complete(false);
-        final result = await _streamCompleter!.future;
-        _streamCompleter = null;
-        return result;
-      }
+      _log('Acquiring local media stream via getUserMedia...');
 
-      _localStream = await navigator.mediaDevices.getUserMedia({
-        'audio': {
+      final Map<String, dynamic> mediaConstraints = {
+        'audio': Platform.isIOS
+            ? true
+            : {
           'echoCancellation': true,
           'noiseSuppression': true,
           'autoGainControl': true,
         },
         'video': false,
-      });
+      };
+
+      _localStream = await navigator.mediaDevices.getUserMedia(mediaConstraints);
 
       for (final t in _localStream!.getAudioTracks()) {
         t.enabled = false;
       }
 
+      _hasMicPermission = true;
+      if (Get.isRegistered<GroupWalkieController>()) {
+        Get.find<GroupWalkieController>().setMicPermission(true);
+      }
+
+      _log('✅ Successfully acquired local audio stream');
       _streamCompleter!.complete(true);
       final result = await _streamCompleter!.future;
       _streamCompleter = null;
       return result;
     } catch (e) {
+      _log('❌ getUserMedia execution failed: $e');
       _localStream = null;
       if (!_streamCompleter!.isCompleted) {
         _streamCompleter!.complete(false);
@@ -475,6 +535,11 @@ class GroupWalkieService {
       if (event.track.kind != 'audio') return;
 
       event.track.enabled = !_isMuted;
+      try {
+        event.track.enableSpeakerphone(_isSpeakerOn);
+      } catch (_) {}
+
+      _log('🎧 [AudioTrack] Remote track received from $remoteUserId');
 
       if (event.streams.isNotEmpty) {
         _remoteStreams[remoteUserId] = event.streams[0];
@@ -682,13 +747,17 @@ class GroupWalkieService {
   }
 
   Future<bool> joinGroup(String groupId) async {
-    if (_isDisposed) return false;
+    if (_isDisposed) {
+      _log('joinGroup failed: service is disposed');
+      return false;
+    }
     _currentGroupId = groupId;
     _offeredTo.clear();
+    _log('Joining walkie group: $groupId');
 
     final ok = await _ensureLocalStream();
     if (!ok) {
-      _currentGroupId = null;
+      _log('❌ joinGroup: Failed to ensure local stream');
       if (Get.isRegistered<GroupWalkieController>()) {
         Get.find<GroupWalkieController>().showPermissionDeniedMessage();
       }
@@ -697,6 +766,7 @@ class GroupWalkieService {
 
     await _configureAudioSession(speakerOn: _isSpeakerOn);
     socket?.emit('join_walkie_session', {'groupId': groupId});
+    _log('✅ Emitted join_walkie_session for group: $groupId');
     return true;
   }
 
@@ -731,13 +801,30 @@ class GroupWalkieService {
     socket?.emit('exit_group_membership', {'groupId': groupId});
   }
 
+  // FIXED: Explicit debugging guards to catch why PTT returns false
   Future<bool> startTalking() async {
-    if (_isDisposed) return false;
-    if (_currentGroupId == null || _isTalking) return false;
-    if (_isMuted) return false;
+    _log('startTalking() requested. State => disposed: $_isDisposed, groupId: $_currentGroupId, isTalking: $_isTalking, isMuted: $_isMuted');
+
+    if (_isDisposed) {
+      _log('❌ startTalking failed: Service is disposed');
+      return false;
+    }
+    if (_currentGroupId == null || _currentGroupId!.isEmpty) {
+      _log('❌ startTalking failed: _currentGroupId is null/empty');
+      return false;
+    }
+    if (_isTalking) {
+      _log('❌ startTalking failed: Already talking');
+      return false;
+    }
+    if (_isMuted) {
+      _log('❌ startTalking failed: User is muted');
+      return false;
+    }
 
     final ok = await _ensureLocalStream();
     if (!ok) {
+      _log('❌ startTalking failed: Could not get audio stream');
       if (Get.isRegistered<GroupWalkieController>()) {
         Get.find<GroupWalkieController>().showPermissionDeniedMessage();
       }
@@ -745,6 +832,7 @@ class GroupWalkieService {
     }
 
     _isTalking = true;
+    _log('🚀 Emitting ptt_request for group: $_currentGroupId');
     socket?.emit('ptt_request', {'groupId': _currentGroupId});
     return true;
   }
@@ -786,17 +874,115 @@ class GroupWalkieService {
     }
   }
 
-  Future<void> toggleSpeaker(bool speakerOn) async {
-    if (audioRoute.value == WalkieAudioRoute.bluetooth ||
-        audioRoute.value == WalkieAudioRoute.headset) {
-      return;
+  Future<void> setAudioRoute(WalkieAudioRoute route) async {
+    if (_isDisposed) return;
+    audioRoute.value = route;
+    _isSpeakerOn = (route == WalkieAudioRoute.speaker);
+    _log('🎧 [AudioRoute] setAudioRoute -> target: $route (isSpeaker: $_isSpeakerOn)');
+
+    try {
+      if (Platform.isAndroid) {
+        final am = AndroidAudioManager();
+        try {
+          await am.setMode(AndroidAudioHardwareMode.inCommunication);
+        } catch (e) {
+          _log('⚠️ [AudioRoute] setMode error: $e');
+        }
+
+        if (route == WalkieAudioRoute.speaker) {
+          try {
+            await am.stopBluetoothSco();
+            await am.setBluetoothScoOn(false);
+          } catch (_) {}
+          try {
+            await Helper.setSpeakerphoneOn(true);
+          } catch (e) {
+            _log('⚠️ [AudioRoute] Helper.setSpeakerphoneOn(true) error: $e');
+          }
+          try {
+            await am.setSpeakerphoneOn(true);
+          } catch (_) {}
+          try {
+            await ProximityScreenLock.setActive(false);
+          } catch (_) {}
+        } else if (route == WalkieAudioRoute.bluetooth) {
+          try {
+            await Helper.setSpeakerphoneOn(false);
+          } catch (_) {}
+          try {
+            await am.setSpeakerphoneOn(false);
+          } catch (_) {}
+          try {
+            await am.startBluetoothSco();
+            await Future.delayed(const Duration(milliseconds: 150));
+            await am.setBluetoothScoOn(true);
+          } catch (e) {
+            _log('⚠️ [AudioRoute] BluetoothSco error: $e');
+          }
+          try {
+            await ProximityScreenLock.setActive(false);
+          } catch (_) {}
+        } else if (route == WalkieAudioRoute.earpiece) {
+          try {
+            await am.stopBluetoothSco();
+            await am.setBluetoothScoOn(false);
+          } catch (_) {}
+          try {
+            await Helper.setSpeakerphoneOn(false);
+          } catch (e) {
+            _log('⚠️ [AudioRoute] Helper.setSpeakerphoneOn(false) error: $e');
+          }
+          try {
+            await am.setSpeakerphoneOn(false);
+          } catch (_) {}
+          try {
+            await ProximityScreenLock.setActive(false);
+          } catch (_) {}
+        } else if (route == WalkieAudioRoute.headset) {
+          try {
+            await am.stopBluetoothSco();
+            await am.setBluetoothScoOn(false);
+          } catch (_) {}
+          try {
+            await Helper.setSpeakerphoneOn(false);
+          } catch (_) {}
+          try {
+            await am.setSpeakerphoneOn(false);
+          } catch (_) {}
+          try {
+            await ProximityScreenLock.setActive(false);
+          } catch (_) {}
+        }
+
+        for (final stream in _remoteStreams.values) {
+          for (final track in stream.getAudioTracks()) {
+            try {
+              track.enableSpeakerphone(route == WalkieAudioRoute.speaker);
+            } catch (_) {}
+          }
+        }
+      } else if (Platform.isIOS) {
+        try {
+          await Helper.setSpeakerphoneOn(_isSpeakerOn);
+          _log('🎧 [AudioRoute] iOS WebRTC Speakerphone applied: $_isSpeakerOn');
+        } catch (e) {
+          _log('❌ [AudioRoute] iOS WebRTC Speakerphone error: $e');
+        }
+      }
+    } catch (e) {
+      _log('❌ [AudioRoute] Error setting audio route $route: $e');
     }
-    await _configureAudioSession(speakerOn: speakerOn);
-    audioRoute.value =
-        speakerOn ? WalkieAudioRoute.speaker : WalkieAudioRoute.earpiece;
+
     if (Get.isRegistered<GroupWalkieController>()) {
-      Get.find<GroupWalkieController>().setAudioRoute(audioRoute.value);
+      final c = Get.find<GroupWalkieController>();
+      c.setAudioRoute(route);
+      c.isSpeakerOn.value = _isSpeakerOn;
     }
+  }
+
+  Future<void> toggleSpeaker(bool speakerOn) async {
+    await setAudioRoute(
+        speakerOn ? WalkieAudioRoute.speaker : WalkieAudioRoute.earpiece);
   }
 
   Future<void> dispose() async {
@@ -805,6 +991,16 @@ class GroupWalkieService {
 
     _isTalking = false;
     _stopPing();
+
+    try {
+      if (Platform.isAndroid) {
+        final am = AndroidAudioManager();
+        await am.stopBluetoothSco();
+        await am.setBluetoothScoOn(false);
+        await am.setMode(AndroidAudioHardwareMode.normal);
+      }
+      await ProximityScreenLock.setActive(false);
+    } catch (_) {}
 
     try {
       if (_currentGroupId != null) {
@@ -832,7 +1028,6 @@ class GroupWalkieService {
       socket?.dispose();
     } catch (_) {}
     socket = null;
-
     _currentGroupId = null;
     _listenersBound = false;
   }

@@ -1,8 +1,10 @@
+import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Data/Services/NotificationServices.dart';
 import 'package:fgtracker/app/Data/Services/PermissionGuard.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Dashboard_Service.dart';
 import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
 import 'package:fgtracker/app/modules/Group/controller/JoinGroup_Controller.dart';
+import 'package:fgtracker/app/modules/Track/Controller/SocketServices.dart';
 import 'package:fgtracker/app/modules/Track/Controller/TrackController.dart';
 import 'package:fgtracker/app/modules/home/Controller/home_controller.dart';
 import 'package:fgtracker/app/modules/home/Home_Widget/bannerUi.dart';
@@ -45,11 +47,6 @@ class _HomeScreenState extends State<HomeScreen> {
       }
     });
     notificationServices.askPermission();
-    firebaseNotificationServices().getDiviceToken().then(
-      (value) {
-        debugPrint("token=>$value");
-      },
-    );
     SocketDashboardService.instance.init();
     requestCallPermissions();
   }
@@ -69,8 +66,10 @@ class _HomeScreenState extends State<HomeScreen> {
       autoFetchLocation: true,
     );
     await controller.getProfileData();
-    await groupController.getGroupData();
     await trackingController.loadLocationSharing();
+    await SocketService.instance.init(ConstRes.socketUrl);
+    trackingController.initializeLocation();
+    // await controller.startLiveLocationSession();
   }
 
   @override
@@ -91,13 +90,12 @@ class _HomeScreenState extends State<HomeScreen> {
             padding: EdgeInsets.only(bottom: 20.h),
             children: [
               BannerUi(),
-              SizedBox(height: 15.h),
+              SizedBox(height: 18.h),
               StatsGrid(controller: controller),
-              SizedBox(height: 25.h),
-              const MapSection(),
-              SizedBox(height: 25.h),
-              const QuickActionsSection(),
               SizedBox(height: 10.h),
+              SizedBox(height: 10.h),
+              QuickActionsSection(),
+              SizedBox(height: 6.h),
             ],
           ),
         ),

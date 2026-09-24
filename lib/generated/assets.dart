@@ -10,6 +10,10 @@ class Assets {
   static const String shorebird = 'shorebird.yaml';
   static const $AssetsAssetsGen assets = $AssetsAssetsGen();
   static const $AssetsLibGen lib = $AssetsLibGen();
+  static const $AssetsImagesGen images = $AssetsImagesGen();
+  static const $AssetsIconsGen icons = $AssetsIconsGen();
+  static const $AssetsMusicGen music = $AssetsMusicGen();
+  static const $AssetsSvgGen svg = $AssetsSvgGen();
 }
 
 class $AssetsAssetsGen {
@@ -87,6 +91,24 @@ class $AssetsImagesGen {
       'assets/images/user_avatar.jpg');
   final AssetGenImage userVideo = const AssetGenImage(
       'assets/images/user_video.jpg');
+  final AssetGenImage authArcBg = const AssetGenImage(
+      'assets/images/auth_arc_bg.png');
+  final AssetGenImage authMapWatermark = const AssetGenImage(
+      'assets/images/auth_map_watermark.png');
+  final AssetGenImage loctionIcon = const AssetGenImage(
+      'assets/images/loction_icon.png');
+  final AssetGenImage shelidIcon = const AssetGenImage(
+      'assets/images/shelid_icon.png');
+  final AssetGenImage sosAccident = const AssetGenImage(
+      'assets/images/sos_accident.png');
+  final AssetGenImage sosMedical = const AssetGenImage(
+      'assets/images/sos_medical.png');
+  final AssetGenImage sosOther = const AssetGenImage(
+      'assets/images/sos_other.png');
+  final AssetGenImage sosSafety = const AssetGenImage(
+      'assets/images/sos_safety.png');
+  final AssetGenImage sosThreat = const AssetGenImage(
+      'assets/images/sos_threat.png');
 }
 
 class $AssetsIconsGen {

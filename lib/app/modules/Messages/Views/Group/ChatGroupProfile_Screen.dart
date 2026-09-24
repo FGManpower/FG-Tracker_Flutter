@@ -11,6 +11,8 @@ import 'package:fgtracker/app/Model/MemberDataRes.dart';
 import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
 import 'package:fgtracker/app/modules/Group/controller/MemberController.dart';
 import 'package:fgtracker/app/modules/Messages/Controller/GroupChatController.dart';
+import 'package:fgtracker/app/modules/Messages/Controller/MessageController.dart';
+import 'package:fgtracker/app/modules/Messages/Views/Chat_Screen.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -58,22 +60,18 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
 
   bool _isOnline(LocationData m) {
     if (m.locationSharing == false) return false;
-    if (m.isOnline == true) return true;
-    if (m.lastSeen == null || m.lastSeen.toString().isEmpty) return false;
-    final parsed = DateTime.tryParse(m.lastSeen.toString());
-    if (parsed == null) return false;
-    try {
-      return Tracking().getTimeAgo(parsed).toLowerCase() == "just now";
-    } catch (_) {
-      return false;
-    }
+    return Tracking().isOnline(
+      rawIsOnline: m.isOnline,
+      lastSeen: m.lastSeen,
+      thresholdMinutes: 5,
+    );
   }
 
   String _statusText(LocationData m) {
     if (m.locationSharing == false) return "Ghost Mode";
     if (_isOnline(m)) return "Online";
     if (m.lastSeen == null || m.lastSeen.toString().isEmpty) return "Offline";
-    final parsed = DateTime.tryParse(m.lastSeen.toString());
+    final parsed = Tracking.parseDateTime(m.lastSeen);
     if (parsed == null) return "Offline";
     try {
       return Tracking().getTimeAgo(parsed);
@@ -407,7 +405,7 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
           if (media.isNotEmpty) ...[
             SizedBox(height: 12.h),
             SizedBox(
-              height: 100.h, // Height badha di gayi
+              height: 100.h,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 itemCount: media.length,
@@ -653,6 +651,43 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
     );
   }
 
+  void _openPrivateChat(LocationData m, bool online) {
+    final targetUserId = int.tryParse(m.userId?.toString() ?? "");
+    if (targetUserId == null || targetUserId == 0) {
+      Utils().fluttertoast("Unable to open chat for this user");
+      return;
+    }
+
+    if (Get.isRegistered<MessageController>()) {
+      Get.delete<MessageController>(force: true);
+    }
+
+    final memberData = MemberData(
+      id: int.tryParse(m.id?.toString() ?? ""),
+      userId: targetUserId,
+      groupId: 0,
+      name: m.name?.toString() ?? "Member",
+      profileImage: m.profileImage?.toString(),
+      lastSeen: m.lastSeen?.toString(),
+      isOnline: online,
+    );
+
+    Get.to(
+      () => ChatScreen(),
+      arguments: {
+        "userData": memberData,
+        "type": "chatScreen",
+        "chatType": "private",
+        "groupId": 0,
+        "groupName": m.name?.toString() ?? "Chat",
+        "isCreator": false,
+      },
+      binding: BindingsBuilder(() {
+        Get.put(MessageController());
+      }),
+    );
+  }
+
   Widget _memberTile(BuildContext context, LocationData m) {
     final isMe = m.userId.toString() == _myId;
     final isAdmin = m.isCreator == true;
@@ -666,58 +701,65 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
       padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
       child: Row(
         children: [
-          CircleAvatar(
-            radius: 22.r,
-            backgroundColor: const Color(0xFFE8E4FF),
-            backgroundImage: img != null ? NetworkImage(img) : null,
-            child: img == null
-                ? Text(
-                    name.isNotEmpty ? name[0].toUpperCase() : "?",
-                    style: TextStyle(
-                      color: _purple,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 16.sp,
-                    ),
-                  )
-                : null,
+          GestureDetector(
+            onTap: !isMe ? () => _openPrivateChat(m, online) : null,
+            child: CircleAvatar(
+              radius: 22.r,
+              backgroundColor: const Color(0xFFE8E4FF),
+              backgroundImage: img != null ? NetworkImage(img) : null,
+              child: img == null
+                  ? Text(
+                      name.isNotEmpty ? name[0].toUpperCase() : "?",
+                      style: TextStyle(
+                        color: _purple,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 16.sp,
+                      ),
+                    )
+                  : null,
+            ),
           ),
           SizedBox(width: 10.w),
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Flexible(
-                      child: Text(
-                        isMe ? "$name (You)" : name,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 14.sp,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.black87,
+            child: InkWell(
+              onTap: !isMe ? () => _openPrivateChat(m, online) : null,
+              borderRadius: BorderRadius.circular(8.r),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          isMe ? "$name (You)" : name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black87,
+                          ),
                         ),
                       ),
-                    ),
-                    if (isMe && isAdmin) ...[
-                      SizedBox(width: 6.w),
-                      _badge("Admin", const Color(0xFFE7F8EC),
-                          const Color(0xFF2BB673)),
+                      if (isMe && isAdmin) ...[
+                        SizedBox(width: 6.w),
+                        _badge("Admin", const Color(0xFFE7F8EC),
+                            const Color(0xFF2BB673)),
+                      ],
                     ],
-                  ],
-                ),
-                SizedBox(height: 2.h),
-                Text(
-                  _statusText(m),
-                  style: TextStyle(
-                    fontSize: 11.sp,
-                    color:
-                        online ? const Color(0xFF2BB673) : Colors.grey.shade500,
-                    fontWeight: FontWeight.w500,
                   ),
-                ),
-              ],
+                  SizedBox(height: 2.h),
+                  Text(
+                    _statusText(m),
+                    style: TextStyle(
+                      fontSize: 11.sp,
+                      color:
+                          online ? const Color(0xFF2BB673) : Colors.grey.shade500,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
           if (!isMe && isAdmin)
@@ -730,21 +772,7 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
             color: Colors.white,
             onSelected: (value) {
               if (value == "chat") {
-                final memberData = MemberData(
-                  id: int.tryParse(m.id?.toString() ?? ""),
-                  userId: int.tryParse(m.userId?.toString() ?? ""),
-                  groupId: int.tryParse(m.groupId?.toString() ?? "0") ?? 0,
-                  name: m.name?.toString(),
-                  profileImage: m.profileImage?.toString(),
-                  lastSeen: m.lastSeen?.toString(),
-                  isOnline: online,
-                );
-                Get.toNamed(Routes.chatScreen, arguments: {
-                  "userData": memberData,
-                  "groupName": "Members Chat",
-                  "isCreator": false,
-                  "type": "",
-                });
+                _openPrivateChat(m, online);
               } else if (value == "call") {
                 Get.toNamed(Routes.callScreen, arguments: {
                   "callerId": _myId,

@@ -13,11 +13,10 @@ class SocketDashboardService extends GetxService {
       Get.put(SocketDashboardService());
 
   Socket? _socket;
+  Map<String, dynamic>? _lastLiveLocationParams;
 
   final StreamController<dynamic> _groupCountController =
       StreamController<dynamic>.broadcast();
-
-
 
   final StreamController<List<LiveLocationModel>>
   _liveLocationController =
@@ -30,9 +29,13 @@ class SocketDashboardService extends GetxService {
 
   bool get isConnected => _socket?.connected ?? false;
 
-
   void init() {
-    if (_socket != null) return;
+    if (_socket != null) {
+      if (isConnected) {
+        requestGroupCount();
+      }
+      return;
+    }
 
     _socket = io(
       '${ConstRes.socketUrl}/dashboard',
@@ -46,6 +49,10 @@ class SocketDashboardService extends GetxService {
     _socket!.onConnect((_) {
       log('Dashboard socket connected');
       requestGroupCount();
+      if (_lastLiveLocationParams != null) {
+        log('📡 [DashboardSocket] Re-emitting get-user-live-location on connect: $_lastLiveLocationParams');
+        _socket?.emit('get-user-live-location', _lastLiveLocationParams);
+      }
     });
 
     _socket!.onConnectError((error) {
@@ -53,8 +60,13 @@ class SocketDashboardService extends GetxService {
     });
 
     _socket!.on('group_dashboard_counts', (data) {
+      log('📡 [DashboardSocket] group_dashboard_counts received: $data');
       if (!_groupCountController.isClosed) {
-        _groupCountController.add(data['data']);
+        dynamic payload = data;
+        if (data is Map && data.containsKey('data') && data['data'] != null) {
+          payload = data['data'];
+        }
+        _groupCountController.add(payload);
       }
     });
 
@@ -95,8 +107,8 @@ class SocketDashboardService extends GetxService {
         )
             .where(
               (item) =>
-          item.latitude != 0 &&
-              item.longitude != 0,
+          (item.latitude != 0 && item.longitude != 0) ||
+          (item.address != null && item.address!.trim().isNotEmpty),
         )
             .toList();
 
@@ -120,6 +132,8 @@ class SocketDashboardService extends GetxService {
         'userId': Global.storageServices.get(PrefConst.userId),
       },
     );
+
+
   }
 
   void requestLiveLocation({
@@ -129,16 +143,20 @@ class SocketDashboardService extends GetxService {
     String? address,
     String? area,
     String? city,
+    int? battery,
   }) {
     var param = {
       'userId': Global.storageServices.get(PrefConst.userId),
       'userLat': userLat,
       'userLong': userLong,
       'radius': radius,
+      'battery': battery ?? 85,
       if (address != null && address.isNotEmpty) 'address': address,
       if (area != null && area.isNotEmpty) 'area': area,
       if (city != null && city.isNotEmpty) 'city': city,
     };
+
+    _lastLiveLocationParams = param;
 
     log('📡 [DashboardSocket] Emitting get-user-live-location: $param');
     _socket?.emit(

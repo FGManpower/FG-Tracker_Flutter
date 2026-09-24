@@ -413,20 +413,11 @@ class MemberscreenScreen extends GetView<MemberController> {
                     }
                     final data = controller.filteredMembers[index];
 
-                    bool isOnline = false;
-
-                    if (data.lastSeen != null && data.lastSeen!.isNotEmpty) {
-                      try {
-                        isOnline = Tracking()
-                                .getTimeAgo(
-                                  DateTime.parse(data.lastSeen!),
-                                )
-                                .toLowerCase() ==
-                            "just now";
-                      } catch (_) {
-                        isOnline = false;
-                      }
-                    }
+                    final bool isOnline = Tracking().isOnline(
+                      rawIsOnline: data.isOnline,
+                      lastSeen: data.lastSeen,
+                      thresholdMinutes: 5,
+                    );
 
                     return GestureDetector(
                       onTap: () {
@@ -668,18 +659,11 @@ class MemberscreenScreen extends GetView<MemberController> {
               itemCount: groupData?.length ?? 10,
               itemBuilder: (context, index) {
                 final data = groupData?[index];
-                bool isOnline = false;
-
-                if (data?.lastSeen != null && data!.lastSeen!.isNotEmpty) {
-                  try {
-                    isOnline = Tracking()
-                            .getTimeAgo(DateTime.parse(data.lastSeen!))
-                            .toLowerCase() ==
-                        "just now";
-                  } catch (_) {
-                    isOnline = false;
-                  }
-                }
+                final bool isOnline = Tracking().isOnline(
+                  rawIsOnline: data?.isOnline,
+                  lastSeen: data?.lastSeen,
+                  thresholdMinutes: 5,
+                );
 
                 return TweenAnimationBuilder(
                   duration: Duration(

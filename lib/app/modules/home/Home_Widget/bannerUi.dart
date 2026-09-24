@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:card_swiper/card_swiper.dart';
 import 'package:fgtracker/app/Core/theme/appTheme.dart';
 import 'package:fgtracker/app/Core/values/utility.dart';
@@ -91,72 +92,72 @@ class BannerUi extends StatelessWidget {
                   borderRadius: BorderRadius.circular(16.r),
                   child: Stack(
                     children: [
-                      // Background Image
                       Positioned.fill(
-                        child: Image.network(
-                          Utility.isNullEmptyOrFalse(banner.imageUrl)
-                              ? MyAppTheme.notFoundImg
-                              : banner.imageUrl.toString(),
-                          fit: BoxFit.cover,
-                          width: double.infinity,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Container(
-                              color: Colors.grey.shade300,
-                              child: const Center(
-                                child: Icon(Icons.broken_image, color: Colors.grey),
+                          child: CachedNetworkImage(
+                        imageUrl: Utility.isNullEmptyOrFalse(banner.imageUrl)
+                            ? MyAppTheme.notFoundImg
+                            : banner.imageUrl.toString(),
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                        placeholder: (context, url) {
+                          return Container(
+                            color: Colors.grey.shade100,
+                            child: const Center(
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                          );
+                        },
+                        errorWidget: (context, url, error) {
+                          return Container(
+                            color: Colors.grey.shade300,
+                            child: const Center(
+                              child: Icon(
+                                Icons.broken_image,
+                                color: Colors.grey,
                               ),
-                            );
-                          },
-                          loadingBuilder: (context, child, loadingProgress) {
-                            if (loadingProgress == null) return child;
-                            return Container(
-                              color: Colors.grey.shade100,
-                              child: const Center(
-                                child: CircularProgressIndicator(strokeWidth: 2),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
+                            ),
+                          );
+                        },
+                      )),
 
-                      if (index == 1)
-                        Positioned(
-                          left: 16.w,
-                          top: 16.h,
-                          bottom: 16.h,
-                          right: MediaQuery.of(context).size.width * 0.4,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              if (!Utility.isNullEmptyOrFalse(banner.title)) ...[
-                                Text(
-                                  banner.title.toString(),
-                                  style: TextStyle(
-                                    fontSize: 16.sp,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black87,
-                                  ),
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                SizedBox(height: 6.h),
-                              ],
-                              if (!Utility.isNullEmptyOrFalse(banner.description)) ...[
-                                Text(
-                                  banner.description.toString(),
-                                  style: TextStyle(
-                                    fontSize: 10.sp,
-                                    color: Colors.black54,
-                                    height: 1.2,
-                                  ),
-                                  maxLines: 3,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ],
-                            ],
-                          ),
-                        ),
+                      // if (index == 1)
+                      //   Positioned(
+                      //     left: 16.w,
+                      //     top: 16.h,
+                      //     bottom: 16.h,
+                      //     right: MediaQuery.of(context).size.width * 0.4,
+                      //     child: Column(
+                      //       crossAxisAlignment: CrossAxisAlignment.start,
+                      //       mainAxisAlignment: MainAxisAlignment.center,
+                      //       children: [
+                      //         if (!Utility.isNullEmptyOrFalse(banner.title)) ...[
+                      //           Text(
+                      //             banner.title.toString(),
+                      //             style: TextStyle(
+                      //               fontSize: 16.sp,
+                      //               fontWeight: FontWeight.bold,
+                      //               color: Colors.black87,
+                      //             ),
+                      //             maxLines: 2,
+                      //             overflow: TextOverflow.ellipsis,
+                      //           ),
+                      //           SizedBox(height: 6.h),
+                      //         ],
+                      //         if (!Utility.isNullEmptyOrFalse(banner.description)) ...[
+                      //           Text(
+                      //             banner.description.toString(),
+                      //             style: TextStyle(
+                      //               fontSize: 10.sp,
+                      //               color: Colors.black54,
+                      //               height: 1.2,
+                      //             ),
+                      //             maxLines: 3,
+                      //             overflow: TextOverflow.ellipsis,
+                      //           ),
+                      //         ],
+                      //       ],
+                      //     ),
+                      //   ),
                     ],
                   ),
                 ),

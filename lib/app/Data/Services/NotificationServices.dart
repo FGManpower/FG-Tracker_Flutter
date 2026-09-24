@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:connectycube_flutter_call_kit/connectycube_flutter_call_kit.dart';
 import 'package:fgtracker/app/Core/global/launchedFromCall.dart';
-import 'package:fgtracker/app/Core/util/callkit_service.dart';
+import 'package:fgtracker/app/Core/util/CallKit/callkit_service.dart';
 import 'package:fgtracker/app/Core/values/Context_Utility.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_SignallingService.dart';
 import 'package:fgtracker/app/Model/MemberDataRes.dart';
@@ -49,7 +49,8 @@ class firebaseNotificationServices {
           const RawResourceAndroidNotificationSound('recieve_notification.mp3'),
     );
 
-    AndroidNotificationDetails androidNotificationDetails = AndroidNotificationDetails(
+    AndroidNotificationDetails androidNotificationDetails =
+        AndroidNotificationDetails(
             channel.id.toString(), channel.name.toString(),
             channelDescription: "you Channel Description",
             importance: Importance.high,
@@ -164,7 +165,6 @@ class firebaseNotificationServices {
 
   Future<void> handleMessage(BuildContext context, RemoteMessage message,
       {String? type}) async {
-
     print("Notification-MessageData:${message.data}");
     if (type == "recienvedmessage") {
       if (message.data['screen_name'] == "MemberPage") {
@@ -183,11 +183,17 @@ class firebaseNotificationServices {
           debugPrint("Invalid memberData format: $e");
         }
         if (memberData != null) {
-          Get.toNamed(Routes.chatScreen, arguments: {
-            "userData": memberData,
-            "groupName": "Test",
-            "type": "chatScreen",
-          });
+          memberData.groupId = 0;
+
+          Get.toNamed(
+            Routes.chatScreen,
+            arguments: {
+              "userData": memberData,
+              "groupName": "",
+              "type": "chatScreen",
+            },
+          );
+
           await notificationCtr.markAsRead(
             int.parse(message.data["notificationId"].toString()),
           );
@@ -216,7 +222,37 @@ class firebaseNotificationServices {
           Routes.IncomingCallScreen,
           arguments: {"callDetail": call},
         );
-      } else if (message.data['screen_name'] == "missedCall") {
+      }
+      // else if (message.data['screen_name'] == 'groupCallNotify') {
+        // FlutterRingtonePlayer().stop();
+        // if (CallStateTracker.isIncomingCallScreenOpen) return;
+        //
+        // final data = jsonDecode(message.data['callData']);
+        //
+        // print("=========againCalledgroupIncommingScreen");
+        // CallStateTracker.isIncomingCallScreenOpen = true;
+        // Get.toNamed(
+        //   Routes.groupIncomingCallScreen,
+        //   arguments: {
+        //     "callId": data['callId']?.toString(),
+        //     "groupId": data['groupId']?.toString() ?? "",
+        //     "groupName": (data['groupName'] ?? "Group Call").toString(),
+        //     "callerName": data['callerName'],
+        //     "groupProfile": data['callerProfileImage'],
+        //     "callerProfileImage": data['callerProfileImage'],
+        //     "activeMemberCount": 1,
+        //     "totalMemberCount": data['totalGroupMember'] ?? 0,
+        //     "isVideo": data['isVideo'] == true,
+        //     "callType": "incoming",
+        //   },
+        // );
+        // flutterLocalNotificationsPlugin.cancelAll();
+      // }
+
+
+
+
+      else if (message.data['screen_name'] == "missedCall") {
         Get.toNamed(Routes.notificationScreen);
         // final callData = jsonDecode(message.data['callData']);
         // final bool isVideo = callData["isVideo"] == true;
@@ -264,7 +300,7 @@ class firebaseNotificationServices {
           await ConnectycubeFlutterCallKit.showCallNotification(
             CallEvent(
               sessionId: callIdToUuid(callData['callId'].toString()),
-              callerName: callData['callerName'],
+              callerName: callData['groupName'],
               callType: callData['isVideo'] == true ? 1 : 0,
               opponentsIds: {int.parse(callData['callerId'])},
               callerId: int.parse(callData['callerId']),
@@ -279,7 +315,21 @@ class firebaseNotificationServices {
         final callData = jsonDecode(message.data['callData']);
         final sessionId = callData['session_id'].toString();
         callEnded(sessionId, type: "Notification-services");
+      } else if (message.data['screen_name'] == "missedGroupCall") {
+        final sessionId = message.data['session_id'].toString();
+        callEnded(sessionId, type: "Notification-services");
+        CallStateTracker.isIncomingCallScreenOpen = false;
+        flutterLocalNotificationsPlugin.cancelAll();
       }
+      // else if (message.data['screen_name'] == 'groupCallNotify') {
+      //   FlutterRingtonePlayer().play(
+      //     asAlarm: false,
+      //     fromAsset: Assets.music.incomingCall,
+      //   );
+      //   Future.delayed(const Duration(seconds: 10), () {
+      //     FlutterRingtonePlayer().stop();
+      //   });
+      // }
     }
   }
 }

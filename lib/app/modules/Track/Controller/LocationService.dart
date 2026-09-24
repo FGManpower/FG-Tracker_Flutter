@@ -10,7 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:location/location.dart';
 
-import 'package:fgtracker/app/modules/Track/Controller/Track_controller.dart';
+import 'package:geocoding/geocoding.dart' hide Location;
 import '../../../Core/values/Context_Utility.dart';
 import 'TrackController.dart';
 
@@ -89,8 +89,6 @@ class LocationService extends GetxService {
   }
 
 
-
-
   void _listenToLocationUpdates(String userId) {
     _positionStream?.cancel();
     _positionStream = _location.onLocationChanged.listen((location) async {
@@ -110,7 +108,7 @@ class LocationService extends GetxService {
       String? area;
       String? city;
 
-      // 1. Pull from TrackController if already resolved
+
       if (Get.isRegistered<TrackController>()) {
         final trackCtrl = Get.find<TrackController>();
         if (trackCtrl.currentLocationName.value != "Locating..." &&
@@ -125,6 +123,27 @@ class LocationService extends GetxService {
         }
       }
 
+      if (area == null || area.isEmpty) {
+        try {
+          final placemarks = await placemarkFromCoordinates(lat, lng);
+          if (placemarks.isNotEmpty) {
+            final p = placemarks.first;
+            area = (p.subLocality?.trim().isNotEmpty == true
+                ? p.subLocality!.trim()
+                : (p.thoroughfare?.trim().isNotEmpty == true
+                    ? p.thoroughfare!.trim()
+                    : p.subAdministrativeArea?.trim())) ?? '';
+            city = (p.locality?.trim().isNotEmpty == true
+                ? p.locality!.trim()
+                : p.administrativeArea?.trim()) ?? '';
+            if (address == null || address.isEmpty) {
+              address = area.isNotEmpty && city.isNotEmpty
+                  ? '$area, $city'
+                  : (area.isNotEmpty ? area : city);
+            }
+          }
+        } catch (_) {}
+      }
 
       socketService.emitLocation(
         userId,

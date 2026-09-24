@@ -2,11 +2,14 @@ import 'package:fgtracker/app/Model/group_count_detail.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/modules/home/Controller/home_controller.dart';
 import 'package:fgtracker/app/modules/home/Views/LiveStatus/components/online_member.dart';
-import 'package:fgtracker/app/modules/home/Views/LiveStatus/components/total_groups.dart';
+import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+
+import 'components/ghost_member.dart';
+import 'components/total_member.dart';
 
 class StatsGrid extends StatelessWidget {
   const StatsGrid({super.key, required this.controller});
@@ -27,7 +30,9 @@ class StatsGrid extends StatelessWidget {
               value: detail.totalGroups.toString(),
               subtitle: "Total",
               onTap: () {
-                Get.to(totalGroup());
+                Get.toNamed(Routes.GroupsList)?.then((_) {
+                  controller.refreshGroupCount();
+                });
               },
             ),
           ),
@@ -40,7 +45,9 @@ class StatsGrid extends StatelessWidget {
               value: detail.activeMembers.toString(),
               subtitle: "Now",
               onTap: () {
-                Get.to(OnlineMember());
+                Get.to(() => OnlineMember())?.then((_) {
+                  controller.refreshGroupCount();
+                });
               },
             ),
           ),
@@ -52,6 +59,11 @@ class StatsGrid extends StatelessWidget {
               title: "Members",
               value: detail.totalMembers.toString(),
               subtitle: "Total",
+              onTap: () {
+                Get.to(() => const TotalMember())?.then((_) {
+                  controller.refreshGroupCount();
+                });
+              },
             ),
           ),
           SizedBox(width: 10.w),
@@ -62,8 +74,10 @@ class StatsGrid extends StatelessWidget {
               title: "Ghost Mode",
               value: detail.locationDisabledMembers.toString(),
               subtitle: "Active",
-              onTap:() {
-
+              onTap: () {
+                Get.to(() => GhostMember())?.then((_) {
+                  controller.refreshGroupCount();
+                });
               },
             ),
           ),

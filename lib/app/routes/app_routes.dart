@@ -28,9 +28,15 @@ abstract class Routes {
   static const GroupsList = _Paths.GroupsList;
   static const CreateGroup = _Paths.CreateGroup;
   static const WalkieGroupSelect = _Paths.WalkieGroupSelect;
+  static const walkieTalkieTrialDetails = _Paths.walkieTalkieTrialDetails;
   static const SOSScreen = _Paths.SOSScreen;
   static const groupCallingScreen = _Paths.groupCallingScreen;
   static const groupIncomingCallScreen = _Paths.groupIncomingCallScreen;
+  static const trackingScreen = _Paths.trackingScreen;
+  static const safeZoneScreen = _Paths.safeZoneScreen;
+  static const SafetyDashboard = _Paths.SafetyDashboard;
+  static const TrackingScreen = _Paths.TrackingScreen;
+  static const totalGroup = _Paths.totalGroup;
 
 
 
@@ -65,8 +71,14 @@ abstract class _Paths {
   static const GroupsList = '/groups-list';
   static const CreateGroup = '/create-group';
   static const WalkieGroupSelect = '/walkie-group-select';
+  static const walkieTalkieTrialDetails = '/walkie-talkie-trial-details';
   static const SOSScreen = '/sos';
   static const groupCallingScreen = '/groupCallingScreen';
   static const groupIncomingCallScreen = '/groupIncomingCallScreen';
+  static const trackingScreen = '/trackingScreen';
+  static const safeZoneScreen = '/safeZoneScreen';
+  static const SafetyDashboard = '/safety-dashboard';
+  static const TrackingScreen = '/tracking-screen';
+  static const totalGroup = '/total-group';
 
 }
