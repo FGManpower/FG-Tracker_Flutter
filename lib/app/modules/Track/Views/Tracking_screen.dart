@@ -23,7 +23,6 @@ import 'package:fgtracker/app/modules/mediaStream/Controller/calling_controller.
 class TrackingScreen extends StatelessWidget {
   TrackingScreen({super.key});
 
-
   final TrackController controller = Get.put(TrackController());
   final Rx<MapType> _mapType = MapType.normal.obs;
   final DraggableScrollableController _sheetController =
