@@ -10,7 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:fgtracker/app/modules/Walkie-talkie/Views/walkietalkietrialdetails.dart';
+import 'package:fgtracker/app/modules/Walkie-talkie/Views/walkie_talkie_trial_details.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import '../../Core/constant/const_res.dart';
 import '../../Core/constant/notification_holder.dart';
