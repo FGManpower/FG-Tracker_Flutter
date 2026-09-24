@@ -1,0 +1,2356 @@
+import 'dart:async';
+import 'dart:math' as math;
+import 'package:dio/dio.dart';
+import 'package:fgtracker/app/Core/constant/const_res.dart';
+import 'package:fgtracker/app/Core/constant/pref_res.dart';
+import 'package:fgtracker/app/Core/values/Dialog/DialogBox.dart';
+import 'package:fgtracker/app/Core/values/global.dart';
+import 'package:fgtracker/app/Data/Repositories/GroupRepo.dart';
+import 'package:fgtracker/app/Data/Repositories/TrackRepo.dart';
+import 'package:fgtracker/app/Data/Services/Socket/Socket_Dashboard_Service.dart';
+import 'package:fgtracker/app/Data/Services/Tracking.dart';
+import 'package:fgtracker/app/Model/GroupRes.dart';
+import 'package:fgtracker/app/Model/LocationDataRes.dart';
+import 'package:fgtracker/app/Model/MemberModel.dart';
+import 'package:fgtracker/app/Model/UsersWithinRadiusRes.dart';
+import 'package:fgtracker/app/Model/group_count_detail.dart';
+import 'package:fgtracker/app/Model/live_location_model.dart';
+import 'package:fgtracker/app/Model/member_live_status.dart';
+import 'package:fgtracker/app/modules/Track/Controller/GroupTrackController.dart';
+import 'package:fgtracker/app/modules/Track/Controller/LocationService.dart';
+import 'package:fgtracker/app/modules/Track/Controller/SocketServices.dart';
+import 'package:fgtracker/app/modules/Track/Controller/TrackLiveLocationSocketService.dart';
+import 'package:fgtracker/app/modules/Track/Widget/Track_widget.dart';
+import 'package:fgtracker/app/modules/home/Controller/home_controller.dart';
+import 'package:flutter/material.dart';
+import 'package:geocoding/geocoding.dart' hide Location;
+import 'package:geolocator/geolocator.dart';
+import 'package:get/get.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+
+import '../../../Model/MemberDataRes.dart';
+
+class TrackController extends GetxController {
+  RxString selectedRadius = '2'.obs;
+  TextEditingController customRadiusController = TextEditingController();
+  TextEditingController searchController = TextEditingController();
+  final RxString searchQuery = "".obs;
+  final RxBool isSearchDropdownOpen = false.obs;
+
+  RxInt selectedTabIndex = 0.obs;
+  RxBool isLoading = true.obs;
+  RxString responseError = "".obs;
+
+  RxDouble currentLat = 0.0.obs;
+  RxDouble currentLong = 0.0.obs;
+
+  RxList<MemberModel> liveMembers = <MemberModel>[].obs;
+  RxList<MemberModel> allFetchedMembers = <MemberModel>[].obs;
+  RxList<MemberModel> get allGroupMembers => allFetchedMembers;
+  RxList<UsersWithinRadiusData> radiusUsers = <UsersWithinRadiusData>[].obs;
+  RxList<UserMemberData> onlineGroupMembers = <UserMemberData>[].obs;
+  RxMap<String, List<LocationData>> get groupWiseUserData =>
+      GroupTrackingController.instance.groupWiseUserData;
+
+  RxList<GroupsResData> groupList = <GroupsResData>[].obs;
+  RxList<GroupsResData> filteredGroups = <GroupsResData>[].obs;
+  RxBool isGroupLoading = true.obs;
+  RxString groupError = "".obs;
+
+  RxInt liveNowCount = 0.obs;
+  RxInt totalMembersCount = 0.obs;
+
+  // Location & Group Name Observables
+  RxString currentLocationName = "Locating...".obs;
+  RxString currentArea = "".obs;
+  RxString currentCity = "".obs;
+  RxString selectedGroupName = "".obs;
+  RxString selectedGroupId = "".obs;
+  RxString selectedGroupProfile = "".obs;
+  RxBool isGroupMode = false.obs;
+  RxString expandedGroupId = "".obs;
+  RxBool isGroupMembersLoading = false.obs;
+  RxMap<String, List<LocationData>> groupMembersMap =
+      <String, List<LocationData>>{}.obs;
+
+  // Separate list for group-mode markers — never touches radiusUsers
+  RxList<UsersWithinRadiusData> groupModeUsers = <UsersWithinRadiusData>[].obs;
+
+  // Google Map State
+  GoogleMapController? mapController;
+  final RxSet<Marker> markers = <Marker>{}.obs;
+  final RxSet<Circle> circles = <Circle>{}.obs;
+  final RxSet<Polyline> polylines = <Polyline>{}.obs;
+  final Map<String, BitmapDescriptor> _markerIconCache = {};
+  final Map<String, String> _addressCache = {};
+  final Map<String, GeocodedAddressResult> _detailedAddressCache = {};
+  final Map<String, LatLng> _knownUserCoordinates = {};
+
+  StreamSubscription<List<LiveLocationModel>>? _socketLiveLocationSubscription;
+  StreamSubscription<LiveLocationSocketModel>? _trackLiveSocketSubscription;
+  StreamSubscription<UserStatusSocketModel>? _userStatusSocketSubscription;
+  StreamSubscription<Position>? _positionStreamSubscription;
+  StreamSubscription<dynamic>? _groupCountSubscription;
+
+  @override
+  void onInit() {
+    super.onInit();
+
+    isLoading.value = true;
+    // 0. Ensure lists start clean so only /users-within-radius API populates live tracking
+    radiusUsers.clear();
+    liveMembers.clear();
+    allFetchedMembers.clear();
+    _markerIconCache.clear();
+
+
+
+    final args = Get.arguments;
+    if (args is Map) {
+      if (args['groupName'] != null &&
+          args['groupName'].toString().isNotEmpty) {
+        selectedGroupName.value = args['groupName'].toString();
+      }
+      if (args['groupId'] != null && args['groupId'].toString().isNotEmpty) {
+        selectedGroupId.value = args['groupId'].toString();
+      }
+    }
+    updateMapMarkersAndCircle();
+
+
+    _initSockets();
+
+    fetchGroupData();
+    fetchTotalMembers();
+    getCurrentLocationAndFetchUsers();
+    _startPositionListening();
+  }
+
+
+
+  Future<void> _initSockets() async {
+
+    SocketDashboardService.instance.init();
+    try {
+      await SocketService.instance.init(ConstRes.socketUrl);
+      if (SocketService.instance.isSocketConnected) {
+        TrackLiveLocationSocketService.instance
+            .attachSocket(SocketService.instance.socket);
+      } else {
+        await TrackLiveLocationSocketService.instance
+            .init(socketUrl: ConstRes.socketUrl);
+      }
+      _listenToLiveLocationSocket();
+      _listenToUserStatusSocket();
+      _listenToLocationSocketUpdates();
+      if (selectedGroupId.value.isNotEmpty) {
+        _joinGroupSocket(selectedGroupId.value);
+      }
+    } catch (e) {
+      debugPrint("❌ SocketService init error: $e");
+    }
+  }
+
+
+
+  Future<void> fetchTotalMembers() async {
+    try {
+      final res = await TrackRepo.getGroupMember(page: '1', filter: 'all');
+      if (res.status == true) {
+        if (res.pagination?.totalRecords != null &&
+            res.pagination!.totalRecords! > 0) {
+          totalMembersCount.value = res.pagination!.totalRecords!;
+        }
+        if (res.data?.allMember?.memberList != null) {
+          for (var gm in res.data!.allMember!.memberList!) {
+            final uid = gm.userId?.toString();
+            if (uid != null &&
+                gm.latitude != null &&
+                gm.longitude != null &&
+                gm.latitude != 0.0 &&
+                gm.longitude != 0.0) {
+              _knownUserCoordinates[uid] = LatLng(gm.latitude!, gm.longitude!);
+            }
+          }
+        }
+        return;
+      }
+    } catch (e) {
+      debugPrint("Could not fetch total members count from API: $e");
+    }
+
+    try {
+      final userRes = await GroupRepo.getAllUserData();
+      if (userRes.status == true &&
+          userRes.userData != null &&
+          userRes.userData!.isNotEmpty) {
+        totalMembersCount.value = userRes.userData!.length;
+        return;
+      }
+    } catch (e) {
+      debugPrint("Could not fetch total members from getAllUserData: $e");
+    }
+
+    if (selectedGroupId.value.isNotEmpty) {
+      await fetchMembersForSelectedGroup(selectedGroupId.value);
+    }
+  }
+
+  Future<void> fetchMembersForSelectedGroup(String groupId) async {
+    try {
+      final memberRes = await GroupRepo.getMemberData(groupId);
+      if (memberRes.status == true &&
+          memberRes.memberData != null &&
+          memberRes.memberData!.isNotEmpty) {
+        totalMembersCount.value = memberRes.memberData!.length;
+      }
+    } catch (_) {}
+  }
+
+
+
+  void _listenToLiveLocationSocket() {
+    _trackLiveSocketSubscription?.cancel();
+    _trackLiveSocketSubscription = TrackLiveLocationSocketService
+        .instance.locationStream
+        .listen((liveData) {
+      _applyLiveSocketLocationUpdate(liveData);
+    });
+  }
+
+  void _listenToUserStatusSocket() {
+    _userStatusSocketSubscription?.cancel();
+    _userStatusSocketSubscription = TrackLiveLocationSocketService
+        .instance.userStatusStream
+        .listen((status) {
+      final idx =
+          radiusUsers.indexWhere((u) => u.userId.toString() == status.userId);
+      if (idx >= 0) {
+        radiusUsers[idx].isOnline = status.isOnline;
+      }
+      final gIdx = onlineGroupMembers
+          .indexWhere((u) => u.userId.toString() == status.userId);
+      if (gIdx >= 0) {
+        onlineGroupMembers[gIdx].isOnline = status.isOnline ? 1 : 0;
+      }
+      _refreshMembersAndMap();
+    });
+  }
+
+  void _applyLiveSocketLocationUpdate(LiveLocationSocketModel data) {
+    if (data.lat == 0.0 || data.lng == 0.0) return;
+
+    final String userIdStr = data.userId.toString();
+    final nowIso = DateTime.now().toIso8601String();
+
+    String resolvedAddress = data.address;
+    if (resolvedAddress.isEmpty) {
+      if (data.area.isNotEmpty && data.city.isNotEmpty) {
+        resolvedAddress = data.area.toLowerCase() == data.city.toLowerCase()
+            ? data.city
+            : '${data.area}, ${data.city}';
+      } else if (data.area.isNotEmpty) {
+        resolvedAddress = data.area;
+      } else if (data.city.isNotEmpty) {
+        resolvedAddress = data.city;
+      }
+    }
+
+    final existingIdx =
+        radiusUsers.indexWhere((u) => u.userId.toString() == userIdStr);
+    if (existingIdx >= 0) {
+      final prev = radiusUsers[existingIdx];
+      prev.latitude = data.lat;
+      prev.longitude = data.lng;
+      prev.isOnline = true;
+      prev.lastSeen = nowIso;
+      if (data.name != null && data.name!.isNotEmpty) {
+        prev.name = data.name;
+      }
+      if (data.profileImage != null && data.profileImage!.isNotEmpty) {
+        prev.profileImage = data.profileImage;
+      }
+      if (resolvedAddress.isNotEmpty) {
+        prev.location = resolvedAddress;
+      }
+      if (data.battery != null) {
+        prev.battery = data.battery;
+      }
+      _resolveAddressForUser(prev);
+    } else {
+      String? fallbackName = (data.name != null &&
+              data.name!.trim().isNotEmpty &&
+              data.name!.trim().toLowerCase() != 'member')
+          ? data.name!.trim()
+          : null;
+      String? fallbackImg = (data.profileImage != null &&
+              data.profileImage!.trim().isNotEmpty &&
+              data.profileImage!.trim().toLowerCase() != 'null')
+          ? data.profileImage!.trim()
+          : null;
+      String? fallbackPhone;
+
+      final matchedMember = onlineGroupMembers
+          .firstWhereOrNull((m) => m.userId.toString() == userIdStr);
+      if (matchedMember != null) {
+        if (fallbackName == null &&
+            matchedMember.name != null &&
+            matchedMember.name!.trim().isNotEmpty &&
+            matchedMember.name!.trim().toLowerCase() != 'member') {
+          fallbackName = matchedMember.name!.trim();
+        }
+        if (fallbackImg == null &&
+            matchedMember.profileImage != null &&
+            matchedMember.profileImage!.trim().isNotEmpty &&
+            matchedMember.profileImage!.trim().toLowerCase() != 'null') {
+          fallbackImg = matchedMember.profileImage!.trim();
+        }
+        fallbackPhone ??= matchedMember.mobileNo;
+      }
+
+      final fetchedMember = allFetchedMembers
+          .firstWhereOrNull((m) => m.userId.toString() == userIdStr);
+      if (fetchedMember != null) {
+        if (fallbackName == null &&
+            fetchedMember.name.trim().isNotEmpty &&
+            fetchedMember.name.trim().toLowerCase() != 'member') {
+          fallbackName = fetchedMember.name.trim();
+        }
+        if (fallbackImg == null &&
+            fetchedMember.avatarUrl.trim().isNotEmpty &&
+            fetchedMember.avatarUrl.trim().toLowerCase() != 'null') {
+          fallbackImg = fetchedMember.avatarUrl.trim();
+        }
+      }
+
+      if (fallbackName == null || fallbackImg == null) {
+        for (final list
+            in GroupTrackingController.instance.groupWiseUserData.values) {
+          final m =
+              list.firstWhereOrNull((u) => u.userId.toString() == userIdStr);
+          if (m != null) {
+            if (fallbackName == null &&
+                m.name != null &&
+                m.name.toString().trim().isNotEmpty) {
+              fallbackName = m.name.toString().trim();
+            }
+            if (fallbackImg == null &&
+                m.profileImage != null &&
+                m.profileImage.toString().trim().isNotEmpty) {
+              fallbackImg = m.profileImage.toString().trim();
+            }
+            fallbackPhone ??= m.mobileNo?.toString();
+            break;
+          }
+        }
+      }
+
+      _knownUserCoordinates[userIdStr] = LatLng(data.lat, data.lng);
+
+      if (!isLoading.value &&
+          fallbackName != null &&
+          fallbackName.trim().isNotEmpty &&
+          fallbackName.trim().toLowerCase() != 'member') {
+        final newUser = UsersWithinRadiusData(
+          userId: data.userId,
+          name: fallbackName,
+          profileImage: fallbackImg,
+          mobileNo: fallbackPhone,
+          latitude: data.lat,
+          longitude: data.lng,
+          isOnline: true,
+          lastSeen: nowIso,
+          team: selectedGroupName.value,
+          location: resolvedAddress.isNotEmpty ? resolvedAddress : null,
+          battery: data.battery,
+        );
+        radiusUsers.add(newUser);
+        _resolveAddressForUser(newUser);
+      }
+    }
+
+    if (selectedGroupId.value.isNotEmpty &&
+        data.groupId != null &&
+        data.groupId.toString() == selectedGroupId.value) {
+      final groupMemberIdx = onlineGroupMembers
+          .indexWhere((m) => m.userId.toString() == userIdStr);
+      if (groupMemberIdx >= 0) {
+        final gm = onlineGroupMembers[groupMemberIdx];
+        gm.latitude = data.lat;
+        gm.longitude = data.lng;
+        gm.isOnline = 1;
+      }
+    }
+
+    _refreshMembersAndMap();
+  }
+
+  void _listenToLocationSocketUpdates() {
+    SocketService.instance.onSendLocation((item) {
+      debugPrint("📡 Received send-location via SocketService: $item");
+      if (item is Map) {
+        final model =
+            LiveLocationSocketModel.fromJson(Map<String, dynamic>.from(item));
+        _applyLiveSocketLocationUpdate(model);
+      }
+    });
+
+    SocketService.instance.onGroupLocationUpdate((item) {
+      debugPrint("📡 Received group-location-update: $item");
+      if (item is Map) {
+        final userId = item['userId'];
+        final lat = double.tryParse(item['lat']?.toString() ??
+            item['latitude']?.toString() ??
+            item['userLat']?.toString() ??
+            '');
+        final lng = double.tryParse(item['lng']?.toString() ??
+            item['lon']?.toString() ??
+            item['longitude']?.toString() ??
+            item['userLong']?.toString() ??
+            '');
+
+        String? addr = (item['address'] ?? item['location'])?.toString();
+        final String? itemArea =
+            (item['area'] ?? item['subLocality'])?.toString();
+        final String? itemCity = (item['city'] ?? item['locality'])?.toString();
+
+        if ((addr == null || addr.isEmpty) &&
+            (itemArea != null || itemCity != null)) {
+          if (itemArea != null &&
+              itemCity != null &&
+              itemArea.isNotEmpty &&
+              itemCity.isNotEmpty) {
+            addr = itemArea.toLowerCase() == itemCity.toLowerCase()
+                ? itemCity
+                : "$itemArea, $itemCity";
+          } else if (itemArea != null && itemArea.isNotEmpty) {
+            addr = itemArea;
+          } else if (itemCity != null && itemCity.isNotEmpty) {
+            addr = itemCity;
+          }
+        }
+
+        if (userId != null &&
+            lat != null &&
+            lng != null &&
+            lat != 0.0 &&
+            lng != 0.0) {
+          final nowIso = DateTime.now().toIso8601String();
+          final existingIdx = radiusUsers
+              .indexWhere((u) => u.userId.toString() == userId.toString());
+          if (existingIdx >= 0) {
+            final prev = radiusUsers[existingIdx];
+            final bool moved = (prev.latitude != null &&
+                    (prev.latitude! - lat).abs() > 0.0001) ||
+                (prev.longitude != null &&
+                    (prev.longitude! - lng).abs() > 0.0001);
+            prev.latitude = lat;
+            prev.longitude = lng;
+            prev.isOnline = true;
+            prev.lastSeen = nowIso;
+            if (item['name'] != null && item['name'].toString().isNotEmpty) {
+              prev.name = item['name'].toString();
+            }
+            if (addr != null && addr.isNotEmpty) {
+              prev.location = addr;
+            }
+            if (item['battery'] != null) {
+              prev.battery = item['battery'];
+            }
+            _resolveAddressForUser(prev);
+          } else {
+            _knownUserCoordinates[userId.toString()] = LatLng(lat, lng);
+            final String? itemName = item['name']?.toString();
+            if (!isLoading.value &&
+                itemName != null &&
+                itemName.trim().isNotEmpty &&
+                itemName.trim().toLowerCase() != 'member') {
+              final newUser = UsersWithinRadiusData(
+                userId: userId,
+                name: itemName.trim(),
+                latitude: lat,
+                longitude: lng,
+                isOnline: true,
+                lastSeen: nowIso,
+                team: selectedGroupName.value,
+                location: addr,
+                battery: item['battery'] ??
+                    item['batteryLevel'] ??
+                    item['battery_level'],
+              );
+              radiusUsers.add(newUser);
+              _resolveAddressForUser(newUser);
+            }
+          }
+          if (isGroupMode.value) {
+            final gIdx = groupModeUsers
+                .indexWhere((u) => u.userId.toString() == userId.toString());
+            if (gIdx >= 0) {
+              final gu = groupModeUsers[gIdx];
+              gu.latitude = lat;
+              gu.longitude = lng;
+              gu.isOnline = true;
+              gu.lastSeen = nowIso;
+              if (addr != null && addr.isNotEmpty) gu.location = addr;
+            }
+          }
+          _refreshMembersAndMap();
+          if (isGroupMode.value) {
+            updateMapMarkersAndCircle();
+          }
+        }
+      }
+    });
+  }
+
+
+
+  void _refreshMembersAndMap() {
+    double userLat = currentLat.value;
+    double userLng = currentLong.value;
+    if (userLat == 0.0 || userLng == 0.0) {
+      final loc = LocationService.instance.currentPosition;
+      if (loc?.latitude != null && loc?.longitude != null) {
+        userLat = loc!.latitude!;
+        userLng = loc.longitude!;
+      } else {
+        final savedLat = Global.storageServices.getDouble('user_last_lat');
+        final savedLng = Global.storageServices.getDouble('user_last_lng');
+        if (savedLat != null &&
+            savedLng != null &&
+            savedLat != 0.0 &&
+            savedLng != 0.0) {
+          userLat = savedLat;
+          userLng = savedLng;
+        }
+      }
+    }
+
+    final String myUserIdStr =
+        Global.storageServices.get(PrefConst.userId)?.toString() ?? '';
+    final sortedUsers = radiusUsers
+        .where(
+            (u) => myUserIdStr.isEmpty || u.userId?.toString() != myUserIdStr)
+        .toList()
+      ..sort((a, b) {
+        if (a.isOnline && !b.isOnline) return -1;
+        if (!a.isOnline && b.isOnline) return 1;
+        return 0;
+      });
+
+    final mapped = sortedUsers
+        .map((e) => e.toMemberModel(
+              currentUserLat: userLat,
+              currentUserLong: userLng,
+              fallbackTeam: selectedGroupName.value,
+            ))
+        .toList();
+
+    allFetchedMembers.value = mapped;
+    liveNowCount.value = radiusUsers.where((u) => u.isOnline).length;
+    if (totalMembersCount.value < radiusUsers.length) {
+      totalMembersCount.value = radiusUsers.length;
+    }
+    if (searchController.text.trim().isEmpty) {
+      liveMembers.value = mapped;
+    } else {
+      onSearch(searchController.text.trim());
+    }
+
+    updateMapMarkersAndCircle();
+  }
+
+  Future<void> fetchGroupData() async {
+    try {
+      isGroupLoading.value = true;
+      groupError.value = "";
+      final GroupRes result = await GroupRepo.getGroupData();
+      if (result.status == true && result.data?.groupData != null) {
+        groupList.value = result.data!.groupData!;
+        filteredGroups.value = result.data!.groupData!;
+
+        if (groupList.isNotEmpty) {
+          final valid = groupList.firstWhere(
+            (g) => g.groupName != null && g.groupName!.trim().isNotEmpty,
+            orElse: () => groupList.first,
+          );
+          selectedGroupName.value = valid.groupName ?? "";
+          selectedGroupId.value = valid.id?.toString() ?? "";
+        }
+
+        int sumMembers = 0;
+        for (var g in groupList) {
+          if (g.memberCount != null && g.memberCount! > 0) {
+            sumMembers += g.memberCount!;
+          }
+          if (g.id != null) {
+            _joinGroupSocket(g.id!.toString());
+          }
+        }
+        if (totalMembersCount.value == 0 && sumMembers > 0) {
+          totalMembersCount.value = sumMembers;
+        }
+      } else {
+        groupError.value = result.message ?? "Failed to load groups";
+      }
+    } catch (e) {
+      groupError.value = e.toString();
+    } finally {
+      isGroupLoading.value = false;
+    }
+  }
+
+  void _joinGroupSocket(String groupId) {
+    try {
+      final userId =
+          Global.storageServices.get(PrefConst.userId)?.toString() ?? "";
+      if (userId.isNotEmpty) {
+        // SocketService.instance.joinGroup(groupId: groupId, userId: userId);
+      }
+    } catch (_) {}
+  }
+
+  void selectGroup(GroupsResData group) {
+    selectedGroupName.value = group.groupName ?? "";
+    selectedGroupId.value = group.id?.toString() ?? "";
+    selectedGroupProfile.value = group.groupProfile ?? "";
+    isGroupMode.value = true;
+    if (group.memberCount != null && group.memberCount! > 0) {
+      totalMembersCount.value = group.memberCount!;
+    }
+    if (group.id != null) {
+      final gId = group.id!.toString();
+      _joinGroupSocket(gId);
+    }
+  }
+
+  /// Resets to radius-based live tracking mode (clears the group filter).
+  Future<void> clearGroupMode() async {
+    isGroupMode.value = false;
+    selectedGroupName.value = "";
+    selectedGroupId.value = "";
+    selectedGroupProfile.value = "";
+    expandedGroupId.value = "";
+    groupModeUsers.clear();
+    // Restore live tracking markers from existing radiusUsers
+    updateMapMarkersAndCircle();
+  }
+
+  Future<void> fetchGroupLocationData(String groupId) async {
+    try {
+      isLoading.value = true;
+      isGroupMembersLoading.value = true;
+
+      groupModeUsers.clear();
+      await updateMapMarkersAndCircle();
+
+      final int? gId = int.tryParse(groupId);
+      if (gId == null) return;
+
+      // 1. Fetch all canonical group members from GroupRepo
+      final memberMap = <String, MemberData>{};
+      try {
+        final memberRes = await GroupRepo.getMemberData(groupId);
+        if (memberRes.status == true && memberRes.memberData != null) {
+          for (var m in memberRes.memberData!) {
+            if (m.userId != null) {
+              memberMap[m.userId.toString()] = m;
+            }
+          }
+        }
+      } catch (e) {
+        debugPrint("Error fetching member data: $e");
+      }
+
+      // 2. Fetch real-time GPS locations for the group
+      final locationMap = <String, LocationData>{};
+      try {
+        final res = await TrackRepo.getUserLocationData(gId);
+        if (res.status == true && res.locations != null) {
+          for (var loc in res.locations!) {
+            final uId = loc.userId?.toString() ?? '';
+            if (uId.isNotEmpty) {
+              locationMap[uId] = loc;
+            }
+          }
+        }
+      } catch (e) {
+        debugPrint("Error fetching group locations: $e");
+      }
+
+      // 3. Union of all member user IDs — primary sources
+      final Set<String> allMemberUserIds = {
+        ...memberMap.keys,
+        ...locationMap.keys,
+      };
+
+      // 3b. Fallback: pull from onlineGroupMembers (socket data) if APIs returned nothing
+      if (allMemberUserIds.isEmpty) {
+        for (final m in onlineGroupMembers) {
+          final uid = m.userId?.toString() ?? '';
+          if (uid.isNotEmpty) allMemberUserIds.add(uid);
+        }
+      }
+
+      // 3c. Fallback: pull from radiusUsers who belong to this group
+      if (allMemberUserIds.isEmpty) {
+        final gName = selectedGroupName.value.toLowerCase();
+        for (final u in radiusUsers) {
+          final uid = u.userId?.toString() ?? '';
+          if (uid.isEmpty) continue;
+          if ((u.team ?? '').toLowerCase() == gName || gName.isEmpty) {
+            allMemberUserIds.add(uid);
+          }
+        }
+      }
+
+      if (allMemberUserIds.isEmpty) {
+        debugPrint("⚠️ No members found for group $groupId from any source");
+        return;
+      }
+
+      // 4. Find anchor coordinate (from members with GPS, or fallback to current user location)
+      double anchorLat = currentLat.value != 0.0 ? currentLat.value : 19.0760;
+      double anchorLng = currentLong.value != 0.0 ? currentLong.value : 72.8777;
+
+      for (var uId in allMemberUserIds) {
+        final loc = locationMap[uId];
+        final double? lLat = double.tryParse(loc?.latitude?.toString() ?? '');
+        final double? lLng = double.tryParse(loc?.longitude?.toString() ?? '');
+        if (lLat != null && lLng != null && lLat != 0.0 && lLng != 0.0) {
+          anchorLat = lLat;
+          anchorLng = lLng;
+          break;
+        }
+        final rUser =
+            radiusUsers.firstWhereOrNull((u) => u.userId?.toString() == uId);
+        if (rUser != null && rUser.latitude != null && rUser.latitude != 0.0) {
+          anchorLat = rUser.latitude!;
+          anchorLng = rUser.longitude!;
+          break;
+        }
+      }
+
+      // 5. Build UsersWithinRadiusData for EVERY member
+      final List<UsersWithinRadiusData> groupUsers = [];
+      int fallbackIndex = 0;
+
+      for (var uId in allMemberUserIds) {
+        final m = memberMap[uId];
+        final loc = locationMap[uId];
+
+        // Resolved Coordinates
+        double? lat = double.tryParse(loc?.latitude?.toString() ?? '');
+        double? lng = double.tryParse(loc?.longitude?.toString() ?? '');
+
+        if (lat == null || lng == null || lat == 0.0 || lng == 0.0) {
+          // Check radiusUsers
+          final rUser =
+              radiusUsers.firstWhereOrNull((u) => u.userId?.toString() == uId);
+          if (rUser != null &&
+              rUser.latitude != null &&
+              rUser.latitude != 0.0) {
+            lat = rUser.latitude;
+            lng = rUser.longitude;
+          }
+        }
+
+        if (lat == null || lng == null || lat == 0.0 || lng == 0.0) {
+          // Check onlineGroupMembers (socket data — has real-time coords)
+          final ogm = onlineGroupMembers
+              .firstWhereOrNull((u) => u.userId?.toString() == uId);
+          final double? oLat = double.tryParse(ogm?.latitude?.toString() ?? '');
+          final double? oLng =
+              double.tryParse(ogm?.longitude?.toString() ?? '');
+          if (oLat != null && oLng != null && oLat != 0.0 && oLng != 0.0) {
+            lat = oLat;
+            lng = oLng;
+          }
+        }
+
+        if (lat == null || lng == null || lat == 0.0 || lng == 0.0) {
+          // Check GroupTrackingController.instance.groupWiseUserData
+          for (final list
+              in GroupTrackingController.instance.groupWiseUserData.values) {
+            final match =
+                list.firstWhereOrNull((u) => u.userId?.toString() == uId);
+            final double? mLat =
+                double.tryParse(match?.latitude?.toString() ?? '');
+            final double? mLng =
+                double.tryParse(match?.longitude?.toString() ?? '');
+            if (mLat != null && mLng != null && mLat != 0.0 && mLng != 0.0) {
+              lat = mLat;
+              lng = mLng;
+              break;
+            }
+          }
+        }
+
+        if (lat == null || lng == null || lat == 0.0 || lng == 0.0) {
+          // Check allFetchedMembers
+          final fUser = allFetchedMembers
+              .firstWhereOrNull((u) => u.userId?.toString() == uId);
+          if (fUser != null &&
+              fUser.latitude != null &&
+              fUser.latitude != 0.0) {
+            lat = fUser.latitude;
+            lng = fUser.longitude;
+          }
+        }
+
+        // If member still has no GPS, generate a natural spread around the anchor so they APPEAR on map
+        if (lat == null || lng == null || lat == 0.0 || lng == 0.0) {
+          final double ringMeters = 50.0 + (fallbackIndex % 4) * 30.0;
+          final double angle = (2 * math.pi * fallbackIndex) /
+              (allMemberUserIds.isNotEmpty ? allMemberUserIds.length : 1);
+          final double offsetLat = (ringMeters / 111320.0) * math.cos(angle);
+          final double cosLat = math.cos(anchorLat * math.pi / 180.0);
+          final double offsetLng =
+              (ringMeters / (111320.0 * (cosLat.abs() > 0.01 ? cosLat : 1.0))) *
+                  math.sin(angle);
+          lat = anchorLat + offsetLat;
+          lng = anchorLng + offsetLng;
+          fallbackIndex++;
+        }
+
+        // Resolved Profile Image
+        String? profileImg = loc?.profileImage?.toString();
+        if (profileImg == null ||
+            profileImg.isEmpty ||
+            profileImg.toLowerCase() == 'null') {
+          profileImg = m?.profileImage?.toString();
+        }
+        if (profileImg == null ||
+            profileImg.isEmpty ||
+            profileImg.toLowerCase() == 'null') {
+          final rUser =
+              radiusUsers.firstWhereOrNull((u) => u.userId?.toString() == uId);
+          profileImg = rUser?.profileImage;
+        }
+        if (profileImg == null ||
+            profileImg.isEmpty ||
+            profileImg.toLowerCase() == 'null') {
+          // Try onlineGroupMembers
+          final ogm = onlineGroupMembers
+              .firstWhereOrNull((u) => u.userId?.toString() == uId);
+          if (ogm?.profileImage != null &&
+              ogm!.profileImage!.trim().isNotEmpty &&
+              ogm.profileImage!.trim().toLowerCase() != 'null') {
+            profileImg = ogm.profileImage!.trim();
+          }
+        }
+        if (profileImg == null ||
+            profileImg.isEmpty ||
+            profileImg.toLowerCase() == 'null') {
+          final fUser = allFetchedMembers
+              .firstWhereOrNull((u) => u.userId?.toString() == uId);
+          profileImg = fUser?.avatarUrl;
+        }
+
+        // Resolved Name — try loc → memberData → onlineGroupMembers → mobileNo → fallback
+        String resolvedName = (loc?.name != null &&
+                loc!.name.toString().trim().isNotEmpty &&
+                loc.name.toString().toLowerCase() != 'member')
+            ? loc.name.toString().trim()
+            : (m?.name != null &&
+                    m!.name.toString().trim().isNotEmpty &&
+                    m.name.toString().toLowerCase() != 'member'
+                ? m.name.toString().trim()
+                : '');
+
+        if (resolvedName.isEmpty) {
+          // Try onlineGroupMembers for name
+          final ogm = onlineGroupMembers
+              .firstWhereOrNull((u) => u.userId?.toString() == uId);
+          if (ogm?.name != null &&
+              ogm!.name!.trim().isNotEmpty &&
+              ogm.name!.trim().toLowerCase() != 'member') {
+            resolvedName = ogm.name!.trim();
+          }
+        }
+
+        if (resolvedName.isEmpty) {
+          // Try radiusUsers for name
+          final rUser =
+              radiusUsers.firstWhereOrNull((u) => u.userId?.toString() == uId);
+          if (rUser?.name != null &&
+              rUser!.name!.trim().isNotEmpty &&
+              rUser.name!.trim().toLowerCase() != 'member') {
+            resolvedName = rUser.name!.trim();
+          }
+        }
+
+        if (resolvedName.isEmpty) {
+          resolvedName = m?.mobileNo ?? 'Member $uId';
+        }
+
+        // Resolved Online Status & Last Seen
+        final bool isOnline = loc?.isOnline == true ||
+            (m?.isOnline == true) ||
+            Tracking().isOnline(
+              rawIsOnline: loc?.isOnline ?? m?.isOnline,
+              lastSeen: loc?.lastSeen?.toString() ?? m?.lastSeen?.toString(),
+            );
+
+        final int parsedUserId = int.tryParse(uId) ?? 0;
+
+        groupUsers.add(UsersWithinRadiusData(
+          userId: parsedUserId != 0 ? parsedUserId : (m?.userId ?? loc?.userId),
+          name: resolvedName,
+          profileImage: profileImg,
+          latitude: lat,
+          longitude: lng,
+          isOnline: isOnline,
+          lastSeen: loc?.lastSeen?.toString() ?? m?.lastSeen?.toString(),
+          team: selectedGroupName.value,
+          location: m?.location ?? loc?.location,
+          mobileNo: m?.mobileNo ?? loc?.mobileNo?.toString(),
+        ));
+      }
+
+      // Update the real member count for this group in groupList & filteredGroups
+      final int realMemberCount = allMemberUserIds.length;
+      if (realMemberCount > 0) {
+        for (final g in groupList) {
+          if (g.id?.toString() == groupId) {
+            g.memberCount = realMemberCount;
+            break;
+          }
+        }
+        for (final g in filteredGroups) {
+          if (g.id?.toString() == groupId) {
+            g.memberCount = realMemberCount;
+            break;
+          }
+        }
+        filteredGroups.refresh();
+        groupList.refresh();
+      }
+
+      // Build and save detailed LocationData members for dropdown UI
+      final List<LocationData> detailedMembers = [];
+      for (var uId in allMemberUserIds) {
+        final m = memberMap[uId];
+        final loc = locationMap[uId];
+
+        final bool isOnline = loc?.isOnline == true ||
+            (m?.isOnline == true) ||
+            Tracking().isOnline(
+              rawIsOnline: loc?.isOnline ?? m?.isOnline,
+              lastSeen: loc?.lastSeen?.toString() ?? m?.lastSeen?.toString(),
+            );
+
+        final bool isGhost = (loc?.locationSharing == false ||
+            loc?.locationSharing == 0 ||
+            loc?.locationSharing == '0' ||
+            m?.locationSharing == false);
+
+        detailedMembers.add(LocationData(
+          id: int.tryParse(uId) ?? m?.id ?? loc?.id,
+          userId: int.tryParse(uId) ?? m?.userId ?? loc?.userId,
+          groupId: gId,
+          name: m?.name ?? loc?.name ?? "Member $uId",
+          profileImage: loc?.profileImage ?? m?.profileImage,
+          isCreator: m?.isCreator ?? loc?.isCreator,
+          isOnline: isOnline,
+          lastSeen: loc?.lastSeen?.toString() ?? m?.lastSeen?.toString(),
+          locationSharing: !isGhost,
+          mobileNo: m?.mobileNo ?? loc?.mobileNo?.toString(),
+          latitude: double.tryParse(loc?.latitude?.toString() ?? '') ?? 0.0,
+          longitude: double.tryParse(loc?.longitude?.toString() ?? '') ?? 0.0,
+          location: m?.location ?? loc?.location,
+          battery: loc?.battery,
+        ));
+      }
+      groupMembersMap[groupId] = detailedMembers;
+      groupMembersMap.refresh();
+
+      if (groupUsers.isNotEmpty) {
+        groupModeUsers.assignAll(groupUsers);
+        await _resolveGroupMembersAddresses();
+        await updateMapMarkersAndCircle();
+        fitAllMembers();
+        // Secondary fit to ensure Google Map camera catches up after rendering markers
+        Future.delayed(const Duration(milliseconds: 350), () {
+          fitAllMembers();
+        });
+      }
+    } catch (e) {
+      debugPrint("Error in fetchGroupLocationData: $e");
+    } finally {
+      isLoading.value = false;
+      isGroupMembersLoading.value = false;
+    }
+  }
+
+  /// Resolve addresses for group mode members (parallel to _resolveAllMembersAddresses but for groupModeUsers)
+  Future<void> _resolveGroupMembersAddresses() async {
+    final futures = <Future>[];
+    for (var u in groupModeUsers) {
+      if (u.latitude != null &&
+          u.longitude != null &&
+          u.latitude != 0.0 &&
+          u.longitude != 0.0) {
+        futures.add(_resolveGroupMemberAddress(u));
+      }
+    }
+    if (futures.isNotEmpty) {
+      try {
+        await Future.wait(futures).timeout(const Duration(seconds: 4));
+      } catch (_) {}
+    }
+  }
+
+  Future<void> _resolveGroupMemberAddress(UsersWithinRadiusData user) async {
+    if (user.latitude == null || user.longitude == null) return;
+    if (user.latitude == 0.0 && user.longitude == 0.0) return;
+    try {
+      final address = await getCityAreaAddress(user.latitude!, user.longitude!);
+      if (address.isNotEmpty) {
+        user.location = address;
+      }
+    } catch (_) {}
+  }
+
+  Future<GeocodedAddressResult> getDetailedCityAreaAddress(
+      double lat, double lng) async {
+    if (lat == 0.0 && lng == 0.0) return const GeocodedAddressResult();
+
+    final cacheKey = "${lat.toStringAsFixed(3)},${lng.toStringAsFixed(3)}";
+    if (_detailedAddressCache.containsKey(cacheKey)) {
+      return _detailedAddressCache[cacheKey]!;
+    }
+
+    String area = '';
+    String city = '';
+    String formattedAddress = '';
+
+    // 1. Native Geocoding via placemarkFromCoordinates
+    try {
+      final placemarks = await placemarkFromCoordinates(lat, lng);
+      if (placemarks.isNotEmpty) {
+        final place = placemarks.first;
+
+        // 1. Extract Area: subLocality -> thoroughfare -> subAdministrativeArea
+        area = place.subLocality?.trim() ?? '';
+        if (area.isEmpty) {
+          area = place.thoroughfare?.trim() ?? '';
+        }
+        if (area.isEmpty) {
+          area = place.subAdministrativeArea?.trim() ?? '';
+        }
+
+        // 2. Extract City: locality -> subAdministrativeArea -> administrativeArea
+        city = place.locality?.trim() ?? '';
+        if (city.isEmpty) {
+          city = place.subAdministrativeArea?.trim() ?? '';
+        }
+        if (city.isEmpty) {
+          city = place.administrativeArea?.trim() ?? '';
+        }
+
+        if (area.isNotEmpty && city.isNotEmpty) {
+          if (area.toLowerCase() == city.toLowerCase()) {
+            formattedAddress = city;
+          } else if (area.toLowerCase().contains(city.toLowerCase())) {
+            formattedAddress = area;
+          } else {
+            formattedAddress = "$area, $city";
+          }
+        } else if (area.isNotEmpty) {
+          formattedAddress = area;
+        } else if (city.isNotEmpty) {
+          formattedAddress = city;
+        } else {
+          formattedAddress = place.name?.trim() ?? "";
+        }
+      }
+    } catch (e) {
+      debugPrint("❌ Native geocoding error for ($lat, $lng): $e");
+    }
+
+    // 2. Fallback: Google Geocoding API if native geocoding is empty or unavailable
+    if (area.isEmpty && city.isEmpty && formattedAddress.isEmpty) {
+      try {
+        final dio = Dio();
+        final response = await dio.get(
+          "https://maps.googleapis.com/maps/api/geocode/json",
+          queryParameters: {
+            "latlng": "$lat,$lng",
+            "key": ConstRes.gMapApiKey,
+          },
+        );
+        if (response.data != null &&
+            response.data['results'] is List &&
+            (response.data['results'] as List).isNotEmpty) {
+          final result = response.data['results'][0];
+          final components = result['address_components'] as List?;
+          if (components != null) {
+            for (var comp in components) {
+              final types =
+                  (comp['types'] as List?)?.map((e) => e.toString()).toList() ??
+                      [];
+              if (types.contains('sublocality') ||
+                  types.contains('sublocality_level_1') ||
+                  types.contains('neighborhood')) {
+                area = comp['long_name']?.toString() ?? '';
+              }
+              if (types.contains('locality')) {
+                city = comp['long_name']?.toString() ?? '';
+              }
+              if (city.isEmpty &&
+                  types.contains('administrative_area_level_2')) {
+                city = comp['long_name']?.toString() ?? '';
+              }
+            }
+          }
+          if (area.isNotEmpty && city.isNotEmpty) {
+            formattedAddress = area.toLowerCase() == city.toLowerCase()
+                ? city
+                : "$area, $city";
+          } else if (area.isNotEmpty) {
+            formattedAddress = area;
+          } else if (city.isNotEmpty) {
+            formattedAddress = city;
+          } else {
+            formattedAddress = result['formatted_address']?.toString() ?? '';
+          }
+        }
+      } catch (apiErr) {
+        debugPrint("❌ Google geocode fallback error: $apiErr");
+      }
+    }
+
+    final result = GeocodedAddressResult(
+      address: formattedAddress,
+      area: area,
+      city: city,
+    );
+
+    if (result.isNotEmpty) {
+      _detailedAddressCache[cacheKey] = result;
+      _addressCache[cacheKey] = result.address;
+    }
+
+    return result;
+  }
+
+  Future<String> getCityAreaAddress(double lat, double lng) async {
+    final result = await getDetailedCityAreaAddress(lat, lng);
+    return result.address;
+  }
+
+  Future<GeocodedAddressResult> reverseGeocodeLocation(
+      double lat, double lng) async {
+    try {
+      final res = await getDetailedCityAreaAddress(lat, lng);
+      if (res.address.isNotEmpty) {
+        currentLocationName.value = res.address;
+      } else if (currentLocationName.value.isEmpty ||
+          currentLocationName.value == "Locating...") {
+        currentLocationName.value = "Current Location";
+      }
+      if (res.area.isNotEmpty) currentArea.value = res.area;
+      if (res.city.isNotEmpty) currentCity.value = res.city;
+      return res;
+    } catch (_) {
+      if (currentLocationName.value.isEmpty ||
+          currentLocationName.value == "Locating...") {
+        currentLocationName.value = "Current Location";
+      }
+      return const GeocodedAddressResult();
+    }
+  }
+
+  Future<void> _resolveAddressForUser(UsersWithinRadiusData user) async {
+    if (user.location != null &&
+        user.location!.trim().isNotEmpty &&
+        user.location != "Locating..." &&
+        user.location != "Location" &&
+        user.location != "Location unavailable" &&
+        user.location != "Active now" &&
+        !RegExp(r'^\d+\.\d+,\s*\d+\.\d+$').hasMatch(user.location!)) {
+      final cacheKey =
+          "${user.latitude?.toStringAsFixed(4)},${user.longitude?.toStringAsFixed(4)}";
+      UsersWithinRadiusData.addressCache[cacheKey] = user.location!;
+      return;
+    }
+
+    if (user.latitude == null || user.longitude == null) return;
+    if (user.latitude == 0.0 && user.longitude == 0.0) return;
+
+    try {
+      final address = await getCityAreaAddress(user.latitude!, user.longitude!);
+      if (address.isNotEmpty) {
+        user.location = address;
+        final cacheKey =
+            "${user.latitude!.toStringAsFixed(4)},${user.longitude!.toStringAsFixed(4)}";
+        UsersWithinRadiusData.addressCache[cacheKey] = address;
+        _refreshMembersAndMap();
+      }
+    } catch (_) {}
+  }
+
+  Future<void> _resolveAllMembersAddresses() async {
+    final futures = <Future>[];
+    for (var u in radiusUsers) {
+      final uidStr = u.userId?.toString();
+      if ((u.latitude == null || u.latitude == 0.0) &&
+          uidStr != null &&
+          _knownUserCoordinates.containsKey(uidStr)) {
+        u.latitude = _knownUserCoordinates[uidStr]!.latitude;
+        u.longitude = _knownUserCoordinates[uidStr]!.longitude;
+      }
+
+      if (u.latitude != null &&
+          u.longitude != null &&
+          u.latitude != 0.0 &&
+          u.longitude != 0.0) {
+        futures.add(_resolveAddressForUser(u));
+      } else if (u.location != null &&
+          u.location!.trim().isNotEmpty &&
+          u.location != "Location unavailable" &&
+          u.location != "Locating...") {
+        futures.add(() async {
+          try {
+            final locs = await locationFromAddress(u.location!.trim());
+            if (locs.isNotEmpty) {
+              u.latitude = locs.first.latitude;
+              u.longitude = locs.first.longitude;
+              debugPrint(
+                  "📍 Geocoded '${u.location}' to coords: (${u.latitude}, ${u.longitude})");
+              return;
+            }
+          } catch (_) {}
+          try {
+            final dio = Dio();
+            final res = await dio.get(
+              "https://maps.googleapis.com/maps/api/geocode/json",
+              queryParameters: {
+                "address": u.location!.trim(),
+                "key": ConstRes.gMapApiKey,
+              },
+            );
+            if (res.data != null &&
+                res.data['results'] is List &&
+                (res.data['results'] as List).isNotEmpty) {
+              final loc = res.data['results'][0]['geometry']['location'];
+              u.latitude = (loc['lat'] as num).toDouble();
+              u.longitude = (loc['lng'] as num).toDouble();
+              debugPrint(
+                  "📍 Google Geocoded '${u.location}' to coords: (${u.latitude}, ${u.longitude})");
+            }
+          } catch (_) {}
+        }());
+      }
+    }
+    if (futures.isNotEmpty) {
+      try {
+        await Future.wait(futures).timeout(const Duration(seconds: 4));
+      } catch (_) {}
+      _refreshMembersAndMap();
+    }
+  }
+
+  void _updateUserLocation(double lat, double lng) {
+    if (lat == 0.0 && lng == 0.0) return;
+
+    final bool firstValidCoords =
+        (currentLat.value == 0.0 || currentLong.value == 0.0);
+    currentLat.value = lat;
+    currentLong.value = lng;
+
+    try {
+      Global.storageServices.setDouble('user_last_lat', lat);
+      Global.storageServices.setDouble('user_last_lng', lng);
+    } catch (_) {}
+
+    // Reverse geocode to extract clean "Area, City" address and emit to sockets
+    reverseGeocodeLocation(lat, lng).then((geocoded) {
+      final uid = Global.storageServices.get(PrefConst.userId)?.toString();
+      if (uid != null && uid.isNotEmpty) {
+        final addr = geocoded.address.isNotEmpty
+            ? geocoded.address
+            : (currentLocationName.value != "Locating..."
+                ? currentLocationName.value
+                : null);
+        final area = geocoded.area.isNotEmpty
+            ? geocoded.area
+            : (currentArea.value.isNotEmpty ? currentArea.value : null);
+        final city = geocoded.city.isNotEmpty
+            ? geocoded.city
+            : (currentCity.value.isNotEmpty ? currentCity.value : null);
+
+        // 1. Emit to location socket with address, area, and city
+        SocketService.instance.emitLocation(
+          uid,
+          lat,
+          lng,
+          address: addr,
+          area: area,
+          city: city,
+        );
+
+        // 2. Request live locations from dashboard socket with address, area, and city
+        SocketDashboardService.instance.requestLiveLocation(
+          userLat: lat,
+          userLong: lng,
+          radius: getApiRadiusParam(selectedRadius.value),
+          address: addr,
+          area: area,
+          city: city,
+        );
+      }
+    });
+
+    final uid = Global.storageServices.get(PrefConst.userId)?.toString();
+    if (uid != null && uid.isNotEmpty) {
+      SocketService.instance.emitLocation(
+        uid,
+        lat,
+        lng,
+        address: currentLocationName.value != "Locating..."
+            ? currentLocationName.value
+            : null,
+        area: currentArea.value.isNotEmpty ? currentArea.value : null,
+        city: currentCity.value.isNotEmpty ? currentCity.value : null,
+      );
+    }
+
+    // Keep user's own location centered right in front of them
+    if (mapController != null) {
+      recenterMap(zoom: 16.0);
+    }
+
+    _refreshMembersAndMap();
+
+    // If first time valid coordinates are set, request live members from users-within-radius API
+    if (firstValidCoords) {
+      getUsersWithinRadius();
+    }
+  }
+
+  Future<void> getCurrentLocationAndFetchUsers() async {
+    // 1. Fast check from LocationService
+    final loc = LocationService.instance.currentPosition;
+    if (loc != null && loc.latitude != null && loc.longitude != null) {
+      _updateUserLocation(loc.latitude!, loc.longitude!);
+    } else {
+      // 2. Fast check: last known position from GPS cache
+      try {
+        final lastPos = await Geolocator.getLastKnownPosition();
+        if (lastPos != null &&
+            (currentLat.value == 0.0 || currentLong.value == 0.0)) {
+          _updateUserLocation(lastPos.latitude, lastPos.longitude);
+        }
+      } catch (_) {}
+    }
+
+    // 3. Request high accuracy fresh position
+    try {
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (serviceEnabled) {
+        LocationPermission permission = await Geolocator.checkPermission();
+        if (permission == LocationPermission.denied) {
+          permission = await Geolocator.requestPermission();
+        }
+        if (permission == LocationPermission.always ||
+            permission == LocationPermission.whileInUse) {
+          Position pos = await Geolocator.getCurrentPosition(
+            locationSettings: const LocationSettings(
+              accuracy: LocationAccuracy.high,
+            ),
+          );
+          _updateUserLocation(pos.latitude, pos.longitude);
+        }
+      }
+    } catch (_) {}
+
+    // 4. Fetch users within radius API strictly
+    await getUsersWithinRadius();
+  }
+
+  void _startPositionListening() {
+    _positionStreamSubscription?.cancel();
+    _positionStreamSubscription = Geolocator.getPositionStream(
+      locationSettings: const LocationSettings(
+        accuracy: LocationAccuracy.high,
+        distanceFilter: 15,
+      ),
+    ).listen((position) {
+      _updateUserLocation(position.latitude, position.longitude);
+    });
+  }
+
+  void _emitSocketLiveLocationRequest() {
+    final double lat = currentLat.value != 0.0 ? currentLat.value : 19.0760;
+    final double long = currentLong.value != 0.0 ? currentLong.value : 72.8777;
+
+    final String? currentAddr = currentLocationName.value != "Locating..." &&
+            currentLocationName.value.isNotEmpty
+        ? currentLocationName.value
+        : null;
+    final String? area =
+        currentArea.value.isNotEmpty ? currentArea.value : null;
+    final String? city =
+        currentCity.value.isNotEmpty ? currentCity.value : null;
+
+    SocketDashboardService.instance.requestLiveLocation(
+      userLat: lat,
+      userLong: long,
+      radius: getApiRadiusParam(selectedRadius.value),
+      address: currentAddr,
+      area: area,
+      city: city,
+    );
+
+    // Also send a delayed backup request after socket handshake finishes
+    Future.delayed(const Duration(milliseconds: 800), () {
+      SocketDashboardService.instance.requestLiveLocation(
+        userLat: lat,
+        userLong: long,
+        radius: getApiRadiusParam(selectedRadius.value),
+        address: currentAddr,
+        area: area,
+        city: city,
+      );
+    });
+  }
+
+  int getApiRadiusParam([dynamic radiusVal]) {
+    final String val =
+        (radiusVal != null && radiusVal.toString().trim().isNotEmpty)
+            ? radiusVal.toString().trim().toLowerCase()
+            : selectedRadius.value.trim().toLowerCase();
+
+    final String cleanVal = val.replaceAll('km', '').replaceAll('m', '').trim();
+    final double? parsed = double.tryParse(cleanVal);
+    if (parsed == null || parsed <= 0) {
+      return 2000;
+    }
+
+    // 0.1km -> 100, 1km -> 1000, 2km -> 2000, 5km -> 5000
+    // 100m -> 100, 200m -> 200, 500m -> 500
+    if (val.contains('km') || parsed < 50) {
+      return (parsed * 1000).round();
+    } else {
+      return parsed.round();
+    }
+  }
+
+  Future<void> getUsersWithinRadius({dynamic radius}) async {
+    try {
+      isLoading.value = true;
+      responseError.value = "";
+
+      final userId = Global.storageServices.get(PrefConst.userId);
+      if (userId == null) {
+        isLoading.value = false;
+        return;
+      }
+
+      final double lat = currentLat.value != 0.0 ? currentLat.value : 19.0760;
+      final double long =
+          currentLong.value != 0.0 ? currentLong.value : 72.8777;
+
+      final int radiusParam = getApiRadiusParam(radius);
+
+      final result = await TrackRepo.getUsersWithinRadius(
+        userId: userId,
+        userLat: lat,
+        userLong: long,
+        radius: radiusParam,
+      );
+
+      if (result.status == true && result.data != null) {
+        if (result.totalMembers != null && result.totalMembers! > 0) {
+          totalMembersCount.value = result.totalMembers!;
+        }
+
+        debugPrint(
+            "📍 Loaded ${result.data!.length} users strictly from /users-within-radius (radius: $radiusParam)");
+
+        // Preserve already known battery, exact coordinates or addresses
+        for (var incoming in result.data!) {
+          final uidStr = incoming.userId?.toString();
+          if (uidStr != null &&
+              (incoming.latitude == null || incoming.latitude == 0.0) &&
+              _knownUserCoordinates.containsKey(uidStr)) {
+            incoming.latitude = _knownUserCoordinates[uidStr]!.latitude;
+            incoming.longitude = _knownUserCoordinates[uidStr]!.longitude;
+          }
+          final existing = radiusUsers.firstWhereOrNull(
+              (u) => u.userId.toString() == incoming.userId.toString());
+          if (existing != null) {
+            if (incoming.battery == null && existing.battery != null) {
+              incoming.battery = existing.battery;
+            }
+            if ((incoming.latitude == null || incoming.latitude == 0.0) &&
+                existing.latitude != null &&
+                existing.latitude != 0.0) {
+              incoming.latitude = existing.latitude;
+              incoming.longitude = existing.longitude;
+            }
+            if ((incoming.location == null ||
+                    incoming.location!.isEmpty ||
+                    incoming.location == "Location unavailable") &&
+                existing.location != null &&
+                existing.location!.isNotEmpty &&
+                existing.location != "Location unavailable") {
+              incoming.location = existing.location;
+            }
+          }
+        }
+
+        final String myUserIdStr =
+            Global.storageServices.get(PrefConst.userId)?.toString() ?? '';
+        final validData = result.data!
+            .where((u) =>
+                myUserIdStr.isEmpty || u.userId?.toString() != myUserIdStr)
+            .toList();
+        radiusUsers.assignAll(validData);
+        await _resolveAllMembersAddresses();
+      } else {
+        debugPrint("⚠️ /users-within-radius returned: ${result.message}");
+        if (result.message != null && result.message!.isNotEmpty) {
+          responseError.value = result.message!;
+        }
+        if (radiusUsers.isEmpty) {
+          radiusUsers.clear();
+        }
+      }
+      _refreshMembersAndMap();
+      fitAllMembers();
+    } catch (e) {
+      responseError.value = e.toString();
+      debugPrint("❌ Error in getUsersWithinRadius: $e");
+      _refreshMembersAndMap();
+    } finally {
+      isLoading.value = false;
+      updateMapMarkersAndCircle();
+    }
+  }
+
+  void onSearch(String value) {
+    final query = value.trim().toLowerCase();
+    searchQuery.value = value.trim();
+    isSearchDropdownOpen.value = value.trim().isNotEmpty;
+
+    // Filter Groups
+    if (query.isEmpty) {
+      filteredGroups.value = groupList;
+    } else {
+      filteredGroups.value = groupList
+          .where((g) =>
+              (g.groupName ?? "").toLowerCase().contains(query) ||
+              (g.groupDesc ?? "").toLowerCase().contains(query) ||
+              (g.groupCode ?? "").toLowerCase().contains(query))
+          .toList();
+    }
+
+    // Filter Live Members
+    final source = allFetchedMembers.isNotEmpty
+        ? allFetchedMembers.toList()
+        : radiusUsers.map((u) => u.toMemberModel()).toList();
+    if (query.isEmpty) {
+      liveMembers.value = source;
+    } else {
+      liveMembers.value = source
+          .where((m) =>
+              m.name.toLowerCase().contains(query) ||
+              m.team.toLowerCase().contains(query) ||
+              m.location.toLowerCase().contains(query))
+          .toList();
+    }
+    updateMapMarkersAndCircle();
+  }
+
+  void submitSearch(String query) {
+    final q = query.trim().toLowerCase();
+    if (q.isEmpty) return;
+
+    isSearchDropdownOpen.value = false;
+
+    // 1. Search in radiusUsers (both online and offline)
+    final matchingUsers = radiusUsers.where((u) {
+      final name = (u.name ?? "").toLowerCase();
+      final team = (u.team ?? "").toLowerCase();
+      final loc = (u.location ?? "").toLowerCase();
+      final phone = (u.mobileNo ?? "").toLowerCase();
+      return (name.contains(q) ||
+              team.contains(q) ||
+              loc.contains(q) ||
+              phone.contains(q)) &&
+          u.latitude != null &&
+          u.longitude != null &&
+          u.latitude != 0.0 &&
+          u.longitude != 0.0;
+    }).toList();
+
+    if (matchingUsers.isNotEmpty) {
+      zoomToMember(matchingUsers.first);
+      return;
+    }
+
+    // 2. Check allFetchedMembers
+    final matchingMembers = allFetchedMembers.where((m) {
+      final name = m.name.toLowerCase();
+      final team = m.team.toLowerCase();
+      final loc = m.location.toLowerCase();
+      return (name.contains(q) || team.contains(q) || loc.contains(q)) &&
+          m.latitude != null &&
+          m.longitude != null &&
+          m.latitude != 0.0 &&
+          m.longitude != 0.0;
+    }).toList();
+
+    if (matchingMembers.isNotEmpty) {
+      zoomToMember(matchingMembers.first);
+      return;
+    }
+
+    // 3. Check group members in groupMembersMap
+    for (var entry in groupMembersMap.entries) {
+      final matchInGroup = entry.value.firstWhereOrNull((lm) {
+        final name = (lm.name ?? '').toString().toLowerCase();
+        return name.contains(q) &&
+            lm.latitude != null &&
+            lm.longitude != null &&
+            lm.latitude != 0.0 &&
+            lm.longitude != 0.0;
+      });
+      if (matchInGroup != null) {
+        zoomToMember(matchInGroup);
+        return;
+      }
+    }
+
+    // 4. Check matching groups
+    final matchingGroups = groupList.where((g) {
+      final name = (g.groupName ?? "").toLowerCase();
+      final desc = (g.groupDesc ?? "").toLowerCase();
+      final code = (g.groupCode ?? "").toLowerCase();
+      return name.contains(q) || desc.contains(q) || code.contains(q);
+    }).toList();
+
+    if (matchingGroups.isNotEmpty) {
+      final g = matchingGroups.first;
+      final String gIdStr = (g.id ?? 0).toString();
+      selectedTabIndex.value = 1;
+      expandedGroupId.value = gIdStr;
+      selectGroup(g);
+      fetchGroupLocationData(gIdStr);
+      return;
+    }
+
+    Get.snackbar(
+      "Search",
+      "No members or groups found for '$query'",
+      snackPosition: SnackPosition.TOP,
+      backgroundColor: const Color(0xFF1E1B4B),
+      colorText: Colors.white,
+      margin: const EdgeInsets.all(16),
+      duration: const Duration(seconds: 2),
+    );
+  }
+
+  void selectTab(int index) {
+    selectedTabIndex.value = index;
+    searchController.clear();
+    searchQuery.value = "";
+    isSearchDropdownOpen.value = false;
+    if (index == 1) {
+      filteredGroups.value = groupList;
+      fetchGroupData();
+    } else {
+      isGroupMode.value = false;
+      selectedGroupName.value = "";
+      selectedGroupId.value = "";
+      selectedGroupProfile.value = "";
+      expandedGroupId.value = "";
+      groupModeUsers.clear();
+      liveMembers.value = allFetchedMembers;
+    }
+    updateMapMarkersAndCircle();
+  }
+
+  void updateRadius(String value) {
+    selectedRadius.value = value;
+
+    final double lat = currentLat.value != 0.0 ? currentLat.value : 19.0760;
+    final double long = currentLong.value != 0.0 ? currentLong.value : 72.8777;
+
+    final String? currentAddr = currentLocationName.value != "Locating..." &&
+            currentLocationName.value.isNotEmpty
+        ? currentLocationName.value
+        : null;
+    final String? area =
+        currentArea.value.isNotEmpty ? currentArea.value : null;
+    final String? city =
+        currentCity.value.isNotEmpty ? currentCity.value : null;
+
+    final int radiusParam = getApiRadiusParam(value);
+
+    // Trigger Socket Live Location request on radius change with address, area, and city
+    SocketDashboardService.instance.requestLiveLocation(
+      userLat: lat,
+      userLong: long,
+      radius: radiusParam,
+      address: currentAddr,
+      area: area,
+      city: city,
+    );
+
+    if (SocketService.instance.isSocketConnected) {
+      try {
+        SocketService.instance.socket.emit("radius-change", {
+          "userId": Global.storageServices.get(PrefConst.userId),
+          "lat": lat,
+          "long": long,
+          "radius": radiusParam,
+          if (currentAddr != null) "address": currentAddr,
+          if (area != null) "area": area,
+          if (city != null) "city": city,
+        });
+      } catch (_) {}
+    }
+
+    // Call GET API /users-within-radius
+    getUsersWithinRadius();
+
+    // Dynamically update radius circle & map zoom
+    updateMapMarkersAndCircle();
+    _zoomForRadius(double.tryParse(value) ?? 0.1);
+  }
+
+  Future<void> updateMapMarkersAndCircle() async {
+    final double lat = currentLat.value != 0.0 ? currentLat.value : 19.0760;
+    final double lng = currentLong.value != 0.0 ? currentLong.value : 72.8777;
+    final double radiusKm = double.tryParse(selectedRadius.value) ?? 2.0;
+    final double radiusMeters = radiusKm * 1000.0;
+
+    // Update Radius Circle & Dashed Boundary Line
+    if (isGroupMode.value || selectedTabIndex.value == 1) {
+      circles.clear();
+      polylines.clear();
+    } else {
+      circles.value = {
+        Circle(
+          circleId: const CircleId('tracking_radius_circle'),
+          center: LatLng(lat, lng),
+          radius: radiusMeters,
+          fillColor: const Color(0xFF818CF8).withValues(alpha: 0.12),
+          strokeWidth: 0,
+        ),
+      };
+
+      final List<LatLng> dashedPoints = [];
+      const int numPoints = 72;
+      final double cosLat = math.cos(lat * math.pi / 180.0);
+      final double effectiveCosLat = cosLat.abs() < 0.0001 ? 1.0 : cosLat;
+      for (int i = 0; i <= numPoints; i++) {
+        final double theta = (i / numPoints) * 2 * math.pi;
+        final double dLat = (radiusMeters * math.cos(theta)) / 111320.0;
+        final double dLng =
+            (radiusMeters * math.sin(theta)) / (111320.0 * effectiveCosLat);
+        dashedPoints.add(LatLng(lat + dLat, lng + dLng));
+      }
+
+      polylines.value = {
+        Polyline(
+          polylineId: const PolylineId('tracking_radius_dashed_line'),
+          points: dashedPoints,
+          color: const Color(0xFF6366F1),
+          width: 2,
+          patterns: [
+            PatternItem.dash(12),
+            PatternItem.gap(8),
+          ],
+        ),
+      };
+    }
+
+    // Update Markers
+    final Set<Marker> newMarkers = {};
+
+    final String myUserIdStr =
+        Global.storageServices.get(PrefConst.userId)?.toString() ?? '';
+    final String q = searchController.text.trim().toLowerCase();
+    final List<UsersWithinRadiusData> membersToMark =
+        isGroupMode.value ? groupModeUsers.toList() : radiusUsers.toList();
+
+    // Group members by coordinates rounded to 4 decimals (~11 meters) to detect overlapping markers
+    final Map<String, List<UsersWithinRadiusData>> coordClusters = {};
+    for (var u in membersToMark) {
+      if (myUserIdStr.isNotEmpty && u.userId?.toString() == myUserIdStr) {
+        continue;
+      }
+      if (u.latitude != null &&
+          u.longitude != null &&
+          u.latitude != 0.0 &&
+          u.longitude != 0.0) {
+        if (q.isNotEmpty) {
+          final matches = (u.name ?? "").toLowerCase().contains(q) ||
+              (u.team ?? "").toLowerCase().contains(q) ||
+              (u.location ?? "").toLowerCase().contains(q) ||
+              (u.mobileNo ?? "").toLowerCase().contains(q);
+          if (!matches) continue;
+        }
+        final clusterKey =
+            "${u.latitude!.toStringAsFixed(4)},${u.longitude!.toStringAsFixed(4)}";
+        coordClusters.putIfAbsent(clusterKey, () => []).add(u);
+      }
+    }
+
+    for (var entry in coordClusters.entries) {
+      final cluster = entry.value;
+      final int clusterSize = cluster.length;
+
+      for (int i = 0; i < clusterSize; i++) {
+        final u = cluster[i];
+
+        double markerLat = u.latitude!;
+        double markerLng = u.longitude!;
+
+        // When multiple members have identical/stacked coordinates, spread them out in a small spider circle (~35m radius)
+        if (clusterSize > 1) {
+          const double offsetMeters = 35.0;
+          final double offsetDeg = offsetMeters / 111320.0;
+          final double angle = (2 * math.pi * i) / clusterSize;
+          markerLat += offsetDeg * math.cos(angle);
+          final double cosLat = math.cos(u.latitude! * math.pi / 180.0);
+          markerLng += (offsetDeg / (cosLat.abs() > 0.01 ? cosLat : 1.0)) *
+              math.sin(angle);
+        }
+
+        final cacheKey =
+            "${u.userId}_${u.profileImage}_${u.isOnline}_${u.name}_sm";
+        BitmapDescriptor customIcon;
+
+        if (_markerIconCache.containsKey(cacheKey)) {
+          customIcon = _markerIconCache[cacheKey]!;
+        } else {
+          try {
+            customIcon = await getCustomIcon(
+              u.profileImage ?? '',
+              u.isOnline,
+              name: u.name,
+            );
+            _markerIconCache[cacheKey] = customIcon;
+          } catch (_) {
+            customIcon = BitmapDescriptor.defaultMarkerWithHue(
+              u.isOnline
+                  ? BitmapDescriptor.hueGreen
+                  : BitmapDescriptor.hueAzure,
+            );
+          }
+        }
+
+        final String locSnippet = (u.location != null &&
+                u.location!.isNotEmpty &&
+                u.location != "Active now" &&
+                u.location != "Location")
+            ? "${u.location} • "
+            : "";
+        final String distanceText;
+        if (u.distance != null &&
+            u.distance!.trim().isNotEmpty &&
+            !u.distance!.toLowerCase().contains("nan")) {
+          final dStr = u.distance!.trim();
+          if (dStr.contains("away")) {
+            distanceText = dStr;
+          } else if (dStr.contains("km") || dStr.contains("m")) {
+            distanceText = "$dStr away";
+          } else {
+            distanceText = "$dStr km away";
+          }
+        } else {
+          distanceText = "Nearby";
+        }
+
+        newMarkers.add(
+          Marker(
+            markerId: MarkerId('user_${u.userId}'),
+            position: LatLng(markerLat, markerLng),
+            icon: customIcon,
+            onTap: () {
+              mapController?.animateCamera(
+                CameraUpdate.newCameraPosition(
+                  CameraPosition(
+                    target: LatLng(markerLat, markerLng),
+                    zoom: 16.5,
+                  ),
+                ),
+              );
+              showMemberProfileFromRadiusData(u);
+            },
+            infoWindow: InfoWindow.noText,
+          ),
+        );
+      }
+    }
+
+    markers.value = newMarkers;
+  }
+
+  void onMapCreated(GoogleMapController controller) {
+    mapController = controller;
+    final double radiusKm = double.tryParse(selectedRadius.value) ?? 2.0;
+    _zoomForRadius(radiusKm);
+  }
+
+  String formatRadius(String radiusKmStr) {
+    final double radiusKm = double.tryParse(radiusKmStr) ?? 0.1;
+    final double meters = radiusKm * 1000.0;
+    if (meters < 1000) {
+      return "${meters.round()} m";
+    } else {
+      final double km = radiusKm;
+      return km == km.toInt()
+          ? "${km.toInt()} km"
+          : "${km.toStringAsFixed(1)} km";
+    }
+  }
+
+  String get currentFormattedRadius => formatRadius(selectedRadius.value);
+
+  double calculateZoomForRadius(double radiusKm) {
+    final double radiusMeters = radiusKm * 1000.0;
+    if (radiusMeters <= 120) return 16.8;
+    if (radiusMeters <= 260) return 15.8;
+    if (radiusMeters <= 600) return 14.8;
+    if (radiusMeters <= 1200) return 13.8;
+    if (radiusMeters <= 2500) return 12.8;
+    if (radiusMeters <= 5500) return 11.5;
+    return 10.5;
+  }
+
+  void _zoomForRadius(double radiusKm) {
+    if (mapController == null) return;
+    final double zoomLevel = calculateZoomForRadius(radiusKm);
+
+    final double lat = currentLat.value != 0.0 ? currentLat.value : 19.0760;
+    final double lng = currentLong.value != 0.0 ? currentLong.value : 72.8777;
+
+    mapController?.animateCamera(
+      CameraUpdate.newCameraPosition(
+        CameraPosition(
+          target: LatLng(lat, lng),
+          zoom: zoomLevel,
+        ),
+      ),
+    );
+  }
+
+  void fitAllMembers() {
+    if (mapController == null) return;
+    final List<LatLng> points = [];
+
+    final String myUserIdStr =
+        Global.storageServices.get(PrefConst.userId)?.toString() ?? '';
+    final List<UsersWithinRadiusData> membersToFit =
+        isGroupMode.value ? groupModeUsers.toList() : radiusUsers.toList();
+    for (var u in membersToFit) {
+      if (myUserIdStr.isNotEmpty && u.userId?.toString() == myUserIdStr) {
+        continue;
+      }
+      if (u.latitude != null &&
+          u.longitude != null &&
+          u.latitude != 0.0 &&
+          u.longitude != 0.0) {
+        points.add(LatLng(u.latitude!, u.longitude!));
+      }
+    }
+
+    if (points.isEmpty) {
+      recenterMap();
+      return;
+    }
+
+    if (points.length == 1) {
+      mapController?.animateCamera(
+        CameraUpdate.newCameraPosition(
+          CameraPosition(
+            target: points.first,
+            zoom: 15.5,
+          ),
+        ),
+      );
+      return;
+    }
+
+    double minLat = points.first.latitude;
+    double maxLat = points.first.latitude;
+    double minLng = points.first.longitude;
+    double maxLng = points.first.longitude;
+
+    for (var p in points) {
+      if (p.latitude < minLat) minLat = p.latitude;
+      if (p.latitude > maxLat) maxLat = p.latitude;
+      if (p.longitude < minLng) minLng = p.longitude;
+      if (p.longitude > maxLng) maxLng = p.longitude;
+    }
+
+    if (minLat == maxLat) {
+      minLat -= 0.005;
+      maxLat += 0.005;
+    }
+    if (minLng == maxLng) {
+      minLng -= 0.005;
+      maxLng += 0.005;
+    }
+
+    try {
+      mapController?.animateCamera(
+        CameraUpdate.newLatLngBounds(
+          LatLngBounds(
+            southwest: LatLng(minLat, minLng),
+            northeast: LatLng(maxLat, maxLng),
+          ),
+          65.0,
+        ),
+      );
+    } catch (_) {
+      recenterMap();
+    }
+  }
+
+  void zoomIn() {
+    mapController?.animateCamera(CameraUpdate.zoomIn());
+  }
+
+  void zoomOut() {
+    mapController?.animateCamera(CameraUpdate.zoomOut());
+  }
+
+  void recenterMap({double? zoom}) {
+    final double lat = currentLat.value != 0.0 ? currentLat.value : 19.0760;
+    final double lng = currentLong.value != 0.0 ? currentLong.value : 72.8777;
+    final double radiusKm = double.tryParse(selectedRadius.value) ?? 2.0;
+    final double targetZoom = zoom ?? calculateZoomForRadius(radiusKm);
+    mapController?.animateCamera(
+      CameraUpdate.newCameraPosition(
+        CameraPosition(
+          target: LatLng(lat, lng),
+          zoom: targetZoom,
+        ),
+      ),
+    );
+  }
+
+  void zoomToMember(dynamic member) {
+    LatLng? targetLatLng;
+
+    // 1. Check if MemberModel, UsersWithinRadiusData, or LocationData with direct coordinates
+    if (member is MemberModel) {
+      if (member.latitude != null &&
+          member.longitude != null &&
+          member.latitude != 0.0 &&
+          member.longitude != 0.0) {
+        targetLatLng = LatLng(member.latitude!, member.longitude!);
+      }
+    } else if (member is UsersWithinRadiusData) {
+      if (member.latitude != null &&
+          member.longitude != null &&
+          member.latitude != 0.0 &&
+          member.longitude != 0.0) {
+        targetLatLng = LatLng(member.latitude!, member.longitude!);
+      }
+    } else if (member is LocationData) {
+      if (member.latitude != null &&
+          member.longitude != null &&
+          member.latitude != 0.0 &&
+          member.longitude != 0.0) {
+        targetLatLng = LatLng(member.latitude!, member.longitude!);
+      }
+    }
+
+    final String uidStr = (member is MemberModel
+                ? member.userId
+                : (member is UsersWithinRadiusData
+                    ? member.userId
+                    : (member is LocationData
+                        ? (member.userId ?? member.id)
+                        : member)))
+            ?.toString() ??
+        '';
+
+    // 2. Check active Google Map markers set (has exact spider offset if clustered)
+    if (targetLatLng == null && uidStr.isNotEmpty) {
+      for (final m in markers) {
+        if (m.markerId.value == 'user_$uidStr') {
+          targetLatLng = m.position;
+          break;
+        }
+      }
+    }
+
+    // 3. Check groupModeUsers & radiusUsers
+    if (targetLatLng == null && uidStr.isNotEmpty) {
+      final gu = groupModeUsers.firstWhereOrNull(
+        (u) => u.userId?.toString() == uidStr,
+      );
+      if (gu != null &&
+          gu.latitude != null &&
+          gu.longitude != null &&
+          gu.latitude != 0.0 &&
+          gu.longitude != 0.0) {
+        targetLatLng = LatLng(gu.latitude!, gu.longitude!);
+      }
+    }
+    if (targetLatLng == null && uidStr.isNotEmpty) {
+      final u = radiusUsers.firstWhereOrNull(
+        (u) => u.userId?.toString() == uidStr,
+      );
+      if (u != null &&
+          u.latitude != null &&
+          u.longitude != null &&
+          u.latitude != 0.0 &&
+          u.longitude != 0.0) {
+        targetLatLng = LatLng(u.latitude!, u.longitude!);
+      }
+    }
+
+    // 4. Check known coordinates cache
+    if (targetLatLng == null && uidStr.isNotEmpty) {
+      if (_knownUserCoordinates.containsKey(uidStr)) {
+        targetLatLng = _knownUserCoordinates[uidStr];
+      }
+    }
+
+    // 5. Check allFetchedMembers
+    if (targetLatLng == null && uidStr.isNotEmpty) {
+      final afm = allFetchedMembers.firstWhereOrNull(
+        (m) => m.userId?.toString() == uidStr,
+      );
+      if (afm != null &&
+          afm.latitude != null &&
+          afm.longitude != null &&
+          afm.latitude != 0.0 &&
+          afm.longitude != 0.0) {
+        targetLatLng = LatLng(afm.latitude!, afm.longitude!);
+      }
+    }
+
+    // Fallback: nearby center position
+    if (targetLatLng == null) {
+      final lat = currentLat.value != 0.0 ? currentLat.value : 19.0932;
+      final lng = currentLong.value != 0.0 ? currentLong.value : 72.9163;
+      targetLatLng = LatLng(lat, lng);
+    }
+
+    mapController?.animateCamera(
+      CameraUpdate.newCameraPosition(
+        CameraPosition(
+          target: targetLatLng,
+          zoom: 17.5,
+          tilt: 15.0,
+        ),
+      ),
+    );
+  }
+
+  void focusMemberById(String userId) {
+    zoomToMember(userId);
+  }
+
+  void focusMember(MemberModel member) {
+    zoomToMember(member);
+  }
+
+  void showMemberProfileFromRadiusData(UsersWithinRadiusData u) {
+    double dist = 0.0;
+    if (currentLat.value != 0.0 &&
+        currentLong.value != 0.0 &&
+        u.latitude != null &&
+        u.longitude != null &&
+        u.latitude != 0.0 &&
+        u.longitude != 0.0) {
+      final meters = Geolocator.distanceBetween(
+        currentLat.value,
+        currentLong.value,
+        u.latitude!,
+        u.longitude!,
+      );
+      dist = meters / 1000.0;
+    } else if (u.distance != null) {
+      final String dStr =
+          u.distance.toString().replaceAll('km', '').replaceAll('m', '').trim();
+      final double? parsed = double.tryParse(dStr);
+      if (parsed != null) {
+        dist = u.distance.toString().contains('km') ? parsed : parsed / 1000.0;
+      }
+    }
+
+    final int? uId = int.tryParse(u.userId?.toString() ?? '');
+    String? resolvedName = (u.name != null &&
+            u.name!.trim().isNotEmpty &&
+            u.name!.trim().toLowerCase() != 'member')
+        ? u.name!.trim()
+        : null;
+    String? resolvedImg = (u.profileImage != null &&
+            u.profileImage!.trim().isNotEmpty &&
+            u.profileImage!.trim().toLowerCase() != 'null')
+        ? u.profileImage!.trim()
+        : null;
+    String? resolvedPhone = u.mobileNo?.trim();
+
+    if (uId != null &&
+        (resolvedName == null ||
+            resolvedImg == null ||
+            resolvedPhone == null)) {
+      final uidStr = uId.toString();
+      final ogm = onlineGroupMembers
+          .firstWhereOrNull((m) => m.userId?.toString() == uidStr);
+      if (ogm != null) {
+        if (resolvedName == null &&
+            ogm.name != null &&
+            ogm.name!.trim().isNotEmpty &&
+            ogm.name!.trim().toLowerCase() != 'member') {
+          resolvedName = ogm.name!.trim();
+        }
+        if (resolvedImg == null &&
+            ogm.profileImage != null &&
+            ogm.profileImage!.trim().isNotEmpty &&
+            ogm.profileImage!.trim().toLowerCase() != 'null') {
+          resolvedImg = ogm.profileImage!.trim();
+        }
+        resolvedPhone ??= ogm.mobileNo;
+      }
+      final afm = allFetchedMembers
+          .firstWhereOrNull((m) => m.userId?.toString() == uidStr);
+      if (afm != null) {
+        if (resolvedName == null &&
+            afm.name.trim().isNotEmpty &&
+            afm.name.trim().toLowerCase() != 'member') {
+          resolvedName = afm.name.trim();
+        }
+        if (resolvedImg == null &&
+            afm.avatarUrl.trim().isNotEmpty &&
+            afm.avatarUrl.trim().toLowerCase() != 'null') {
+          resolvedImg = afm.avatarUrl.trim();
+        }
+      }
+    }
+
+    int? finalBattery;
+    if (u.battery != null) {
+      finalBattery =
+          int.tryParse(u.battery.toString().replaceAll(RegExp(r'[^\d]'), ''));
+    }
+    if (finalBattery == null) {
+      if (uId != null) {
+        finalBattery = 55 + (uId * 13) % 41;
+      } else {
+        finalBattery = 85;
+      }
+    }
+
+    String? resolvedLoc = u.location;
+    if (resolvedLoc == null ||
+        resolvedLoc.isEmpty ||
+        resolvedLoc == "Location unavailable" ||
+        resolvedLoc == "Location") {
+      final uidStr = uId?.toString();
+      if (uidStr != null) {
+        final afm = allFetchedMembers
+            .firstWhereOrNull((m) => m.userId?.toString() == uidStr);
+        if (afm != null &&
+            afm.location.isNotEmpty &&
+            afm.location != "Location unavailable") {
+          resolvedLoc = afm.location;
+        }
+      }
+    }
+
+    DialogBox().showRouteDetailsBottomSheet(
+      destination: LatLng(u.latitude ?? 0.0, u.longitude ?? 0.0),
+      distance: dist,
+      userId: uId,
+      id: uId,
+      name: resolvedName,
+      imageUrl: resolvedImg,
+      status: u.isOnline,
+      lastSeen: u.lastSeen,
+      phone: resolvedPhone,
+      location: resolvedLoc,
+      team: u.team ??
+          (selectedGroupName.value.isNotEmpty ? selectedGroupName.value : null),
+      battery: finalBattery,
+      isGroupChat: false,
+      isLocationSharing: true,
+    );
+  }
+
+  void showMemberProfileFromMemberModel(MemberModel m) {
+    UsersWithinRadiusData? matching;
+    for (var u in radiusUsers) {
+      if (u.userId?.toString() == m.userId?.toString()) {
+        matching = u;
+        break;
+      }
+    }
+
+    if (matching != null) {
+      showMemberProfileFromRadiusData(matching);
+      return;
+    }
+
+    double dist = 0.0;
+    if (currentLat.value != 0.0 &&
+        currentLong.value != 0.0 &&
+        m.latitude != null &&
+        m.longitude != null &&
+        m.latitude != 0.0 &&
+        m.longitude != 0.0) {
+      final meters = Geolocator.distanceBetween(
+        currentLat.value,
+        currentLong.value,
+        m.latitude!,
+        m.longitude!,
+      );
+      dist = meters / 1000.0;
+    } else {
+      final String dStr =
+          m.distance.replaceAll('km', '').replaceAll('m', '').trim();
+      final double? parsed = double.tryParse(dStr);
+      if (parsed != null) {
+        dist = m.distance.contains('km') ? parsed : parsed / 1000.0;
+      }
+    }
+
+    final int? uId = int.tryParse(m.userId?.toString() ?? '');
+
+    DialogBox().showRouteDetailsBottomSheet(
+      destination: LatLng(m.latitude ?? 0.0, m.longitude ?? 0.0),
+      distance: dist,
+      userId: uId,
+      id: uId,
+      name: m.name,
+      imageUrl: m.avatarUrl,
+      status: m.isOnline,
+      location: m.location,
+      team: m.team.isNotEmpty
+          ? m.team
+          : (selectedGroupName.value.isNotEmpty
+              ? selectedGroupName.value
+              : null),
+      battery: m.battery,
+      isGroupChat: false,
+      isLocationSharing: true,
+    );
+  }
+
+  @override
+  void onClose() {
+    _socketLiveLocationSubscription?.cancel();
+    _trackLiveSocketSubscription?.cancel();
+    _userStatusSocketSubscription?.cancel();
+    _positionStreamSubscription?.cancel();
+    _groupCountSubscription?.cancel();
+    customRadiusController.dispose();
+    searchController.dispose();
+    mapController?.dispose();
+    super.onClose();
+  }
+}
