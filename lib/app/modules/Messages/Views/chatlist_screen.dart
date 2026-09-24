@@ -1,21 +1,19 @@
-import 'package:fgtracker/app/Model/MemberDataRes.dart';
-import 'package:fgtracker/app/global_widget/common_widget.dart';
-import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:skeletonizer/skeletonizer.dart';
-import '../../../Core/constant/const_res.dart';
-import '../../../Core/util/chatutil.dart';
-import '../../../routes/app_pages.dart';
-import '../../Safe_Zone/views/safe_zone_view.dart';
-import '../../Safe_Zone/views/safety_dashboard_view.dart';
-import '../../Track/Views/Tracking_screen.dart';
-import '../Controller/MessageController.dart';
-import '../Controller/chat_list_controller.dart';
-import '../widgets/custom_dropdown_menu.dart';
-import 'Chat_Screen.dart';
-import 'new_chat_screen.dart';
+
+import 'package:fgtracker/app/Core/constant/const_res.dart';
+import 'package:fgtracker/app/Core/util/chatutil.dart';
+import 'package:fgtracker/app/Model/MemberDataRes.dart';
+import 'package:fgtracker/app/global_widget/common_widget.dart';
+import 'package:fgtracker/app/modules/Messages/Controller/MessageController.dart';
+import 'package:fgtracker/app/modules/Messages/Controller/chat_list_controller.dart';
+import 'package:fgtracker/app/modules/Messages/Views/Chat_Screen.dart';
+import 'package:fgtracker/app/modules/Messages/Views/new_chat_screen.dart';
+import 'package:fgtracker/app/modules/Messages/widgets/custom_dropdown_menu.dart';
+import 'package:fgtracker/app/routes/app_pages.dart';
+import 'package:fgtracker/gen/fonts.gen.dart';
 
 class ChatListScreen extends StatelessWidget {
   ChatListScreen({super.key});
@@ -68,7 +66,7 @@ class ChatListScreen extends StatelessWidget {
         children: [
           _circleIcon(
             Icons.arrow_back,
-                () => Get.back(),
+            () => Get.back(),
           ),
           SizedBox(width: 12.w),
           Expanded(
@@ -85,7 +83,7 @@ class ChatListScreen extends StatelessWidget {
                 reausabletext(
                   "Stay connected with your team",
                   fontsize: 11.sp,
-                  fontweight: const FontWeight(500),
+                  fontweight: FontWeight.w500,
                   color: const Color(0xFF6B4DFF),
                 ),
               ],
@@ -93,7 +91,7 @@ class ChatListScreen extends StatelessWidget {
           ),
           _circleIcon(
             Icons.more_vert,
-                () {},
+            () {},
           ),
         ],
       ),
@@ -101,9 +99,9 @@ class ChatListScreen extends StatelessWidget {
   }
 
   Widget _circleIcon(
-      IconData icon,
-      VoidCallback onTap,
-      ) {
+    IconData icon,
+    VoidCallback onTap,
+  ) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -495,11 +493,11 @@ class _AllChatsBody extends StatelessWidget {
   }
 
   Widget _sectionTitle(
-      String title, {
-        bool showViewAll = false,
-        int? badgeCount,
-        bool showDropdown = false,
-      }) {
+    String title, {
+    bool showViewAll = false,
+    int? badgeCount,
+    bool showDropdown = false,
+  }) {
     // ... same as your previous code ...
     final bool isPinned = title == "Pinned Chats 📌";
 
@@ -582,7 +580,7 @@ class _AllChatsBody extends StatelessWidget {
       },
       onTap: () async {
         final chat = controller.privateChats.firstWhere(
-              (item) => item.name == name && item.image == image,
+          (item) => item.name == name && item.image == image,
           orElse: () => controller.privateChats.first,
         );
 
@@ -591,7 +589,7 @@ class _AllChatsBody extends StatelessWidget {
         }
 
         await Get.to(
-              () => ChatScreen(),
+          () => ChatScreen(),
           arguments: {
             "userData": MemberData(
               userId: chat.userId,
@@ -647,28 +645,28 @@ class _AllChatsBody extends StatelessWidget {
             CircleAvatar(
               radius: 26.r,
               backgroundColor:
-              isGroup ? const Color(0xFF6B4DFF) : Colors.grey.shade300,
+                  isGroup ? const Color(0xFF6B4DFF) : Colors.grey.shade300,
               backgroundImage: (!isGroup && image != null && image.isNotEmpty)
                   ? NetworkImage(
-                image.startsWith("http://") ||
-                    image.startsWith("https://")
-                    ? image
-                    : "${ConstRes.production}$image",
-              )
+                      image.startsWith("http://") ||
+                              image.startsWith("https://")
+                          ? image
+                          : "${ConstRes.production}$image",
+                    )
                   : null,
               child: isGroup
                   ? Icon(
-                Icons.groups,
-                color: Colors.white,
-                size: 24.sp,
-              )
+                      Icons.groups,
+                      color: Colors.white,
+                      size: 24.sp,
+                    )
                   : (image == null || image.isEmpty
-                  ? Icon(
-                Icons.person,
-                color: Colors.white,
-                size: 26.sp,
-              )
-                  : null),
+                      ? Icon(
+                          Icons.person,
+                          color: Colors.white,
+                          size: 26.sp,
+                        )
+                      : null),
             ),
             if (statusColor != null)
               Positioned(
@@ -759,9 +757,9 @@ class _AllChatsBody extends StatelessWidget {
   }
 
   void _showChatOptions(
-      BuildContext context,
-      Offset position,
-      ) {
+    BuildContext context,
+    Offset position,
+  ) {
     // ... same as your previous code ...
     CustomDropdownMenu.show(
       context: context,

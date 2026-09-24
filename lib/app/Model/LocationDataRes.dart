@@ -119,6 +119,7 @@ class LocationData {
   dynamic role;
   dynamic location;
   dynamic team;
+  dynamic battery;
 
   LocationData({
     this.id,
@@ -136,6 +137,7 @@ class LocationData {
     this.role,
     this.location,
     this.team,
+    this.battery,
   });
 
   static double? _parseDouble(dynamic val) {
@@ -258,6 +260,12 @@ class LocationData {
       location = json['address'];
     }
     team = json['team'] ?? json['groupName'] ?? json['group_name'];
+    battery = json['battery'] ??
+        json['batteryLevel'] ??
+        json['battery_level'] ??
+        json['batteryPercentage'] ??
+        user?['battery'] ??
+        user?['batteryLevel'];
   }
 
   Map<String, dynamic> toJson() {
@@ -275,6 +283,7 @@ class LocationData {
     data['locationSharing'] = locationSharing;
     data['mobileNo'] = mobileNo;
     data['role'] = role;
+    data['battery'] = battery;
     return data;
   }
 }

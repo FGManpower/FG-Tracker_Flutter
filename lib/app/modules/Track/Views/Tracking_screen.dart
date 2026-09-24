@@ -9,32 +9,47 @@ import 'package:fgtracker/app/Core/values/colors.dart';
 import 'package:fgtracker/app/Model/MemberModel.dart';
 import 'package:fgtracker/app/Model/GroupRes.dart';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
-import 'package:fgtracker/app/Model/LocationDataRes.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:fgtracker/app/Model/LocationDataRes.dart';
+import 'package:fgtracker/app/Model/MemberDataRes.dart';
+import 'package:fgtracker/app/Core/constant/pref_res.dart';
+import 'package:fgtracker/app/Core/values/global.dart';
+import 'package:fgtracker/app/Data/Services/Tracking.dart';
+import 'package:fgtracker/app/modules/Messages/Controller/MessageController.dart';
+import 'package:fgtracker/app/modules/mediaStream/Controller/calling_controller.dart';
 
 class TrackingScreen extends StatelessWidget {
   TrackingScreen({super.key});
 
+
   final TrackController controller = Get.put(TrackController());
   final Rx<MapType> _mapType = MapType.normal.obs;
   final DraggableScrollableController _sheetController =
-  DraggableScrollableController();
-  final RxDouble _sheetExtent = 0.11.obs;
+      DraggableScrollableController();
+  final RxDouble _sheetExtent = 0.42.obs;
+  static bool _isHelpDialogOpen = false;
+  static DateTime? _lastHelpTapTime;
 
   void _toggleSheet() {
     if (_sheetController.isAttached) {
-      if (_sheetExtent.value < 0.25) {
+      if (_sheetExtent.value < 0.30) {
         _sheetController.animateTo(
-          0.52,
-          duration: const Duration(milliseconds: 250),
+          0.42,
+          duration: const Duration(milliseconds: 280),
+          curve: Curves.easeOutCubic,
+        );
+      } else if (_sheetExtent.value < 0.65) {
+        _sheetController.animateTo(
+          0.90,
+          duration: const Duration(milliseconds: 280),
           curve: Curves.easeOutCubic,
         );
       } else {
         _sheetController.animateTo(
-          0.11,
-          duration: const Duration(milliseconds: 250),
+          0.42,
+          duration: const Duration(milliseconds: 280),
           curve: Curves.easeOutCubic,
         );
       }
@@ -43,7 +58,21 @@ class TrackingScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        if (_sheetController.isAttached && _sheetExtent.value > 0.45) {
+          _sheetController.animateTo(
+            0.42,
+            duration: const Duration(milliseconds: 280),
+            curve: Curves.easeOutCubic,
+          );
+        } else {
+          Get.back();
+        }
+      },
+      child: Scaffold(
       backgroundColor: Colors.white,
       body: Stack(
         children: [
@@ -59,7 +88,7 @@ class TrackingScreen extends StatelessWidget {
               final double extent = _sheetExtent.value;
               final double screenH = MediaQuery.of(context).size.height;
               final double progress =
-              ((extent - 0.11) / (0.58 - 0.11)).clamp(0.0, 1.0);
+                  ((extent - 0.12) / (0.52 - 0.12)).clamp(0.0, 1.0);
               final double mapOffsetY = -progress * (screenH * 0.18);
 
               return Transform.translate(
@@ -81,7 +110,7 @@ class TrackingScreen extends StatelessWidget {
                   mapType: _mapType.value,
                   gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>{
                     Factory<OneSequenceGestureRecognizer>(
-                          () => EagerGestureRecognizer(),
+                      () => EagerGestureRecognizer(),
                     ),
                   },
                   onMapCreated: controller.onMapCreated,
@@ -90,164 +119,181 @@ class TrackingScreen extends StatelessWidget {
                       controller.isSearchDropdownOpen.value = false;
                       FocusScope.of(context).unfocus();
                     }
+                    if (_sheetController.isAttached &&
+                        _sheetExtent.value > 0.45) {
+                      _sheetController.animateTo(
+                        0.42,
+                        duration: const Duration(milliseconds: 250),
+                        curve: Curves.easeOutCubic,
+                      );
+                    }
                   },
                 ),
               );
             }),
           ),
 
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: SafeArea(
-              bottom: false,
-              child: _buildTopSection(context),
-            ),
-          ),
-
           Obx(() {
+            final double extent = _sheetExtent.value;
+            final double fade =
+                (1.0 - ((extent - 0.55) / 0.12)).clamp(0.0, 1.0);
+            if (fade <= 0.0) return const SizedBox.shrink();
+
             final double screenH = MediaQuery.of(context).size.height;
             final double topBarBottom =
                 MediaQuery.of(context).padding.top + 120.h;
-            final double collapsedSheetTop = screenH * (1 - 0.11);
+            final double collapsedSheetTop = screenH * (1 - 0.12);
             final double buttonsHeight = 210.h;
 
-            // When map is big (sheet collapsed at 0.11), center the buttons vertically in visible area
             final double availableBigMapHeight =
                 collapsedSheetTop - topBarBottom;
             final double centerTop =
                 topBarBottom + (availableBigMapHeight - buttonsHeight) / 2;
 
-            // When sheet is expanded (0.58), position buttons safely near top below app bar
             final double topTop = topBarBottom + 6.h;
 
             final double progress =
-            ((_sheetExtent.value - 0.11) / (0.58 - 0.11)).clamp(0.0, 1.0);
+                ((extent - 0.12) / (0.52 - 0.12)).clamp(0.0, 1.0);
 
-            // Smooth interpolation between vertical center (when map is big) and top (when sheet expands)
             final double currentTop =
                 centerTop + (topTop - centerTop) * progress;
 
             return Positioned(
               top: currentTop,
               right: 16.w,
-              child: _buildRightActionButtons(context),
+              child: Opacity(
+                opacity: fade,
+                child: _buildRightActionButtons(context),
+              ),
             );
           }),
 
           Obx(() {
+            final double extent = _sheetExtent.value;
+            final double fade =
+                (1.0 - ((extent - 0.52) / 0.10)).clamp(0.0, 1.0);
+            if (fade <= 0.0) return const SizedBox.shrink();
+
             final screenH = MediaQuery.of(context).size.height;
-            final pillBottom = (_sheetExtent.value * screenH) + 12.h;
+            final pillBottom = (extent * screenH) + 12.h;
             return Positioned(
               left: 16.w,
               bottom: pillBottom,
-              child: _buildLiveMembersPill(),
+              child: Opacity(
+                opacity: fade,
+                child: _buildLiveMembersPill(),
+              ),
             );
           }),
 
-          // ── Group Mode Overlay on Map (Profile photo shown, group name removed) ──
+          // ── Group Mode Overlay on Map ──
           Obx(() {
             if (!controller.isGroupMode.value) return const SizedBox.shrink();
+            final double extent = _sheetExtent.value;
+            final double fade =
+                (1.0 - ((extent - 0.52) / 0.10)).clamp(0.0, 1.0);
+            if (fade <= 0.0) return const SizedBox.shrink();
+
             final String rawGroupImg = controller.selectedGroupProfile.value;
             final String? groupImg =
-            rawGroupImg.isNotEmpty && rawGroupImg.toLowerCase() != 'null'
-                ? (rawGroupImg.startsWith("http")
-                ? rawGroupImg
-                : "${ConstRes.aImageBaseUrl}$rawGroupImg")
-                : null;
+                rawGroupImg.isNotEmpty && rawGroupImg.toLowerCase() != 'null'
+                    ? (rawGroupImg.startsWith("http")
+                        ? rawGroupImg
+                        : "${ConstRes.aImageBaseUrl}$rawGroupImg")
+                    : null;
 
             return Positioned(
-              bottom:
-              (_sheetExtent.value * MediaQuery.of(context).size.height) +
-                  12.h,
+              bottom: (extent * MediaQuery.of(context).size.height) + 12.h,
               right: 16.w,
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                child: Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    GestureDetector(
-                      onTap: () {
-                        controller.fitAllMembers();
-                      },
-                      child: Container(
-                        width: 48.w,
-                        height: 48.w,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.white,
-                          border: Border.all(
-                            color: const Color(0xFF4338CA),
-                            width: 2.5,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color(0xFF4338CA)
-                                  .withValues(alpha: 0.35),
-                              blurRadius: 10.r,
-                              offset: Offset(0, 3.h),
-                            ),
-                          ],
-                        ),
-                        padding: EdgeInsets.all(2.5.w),
-                        child: ClipOval(
-                          child: groupImg != null
-                              ? Image.network(
-                            groupImg,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) =>
-                                Container(
-                                  color: const Color(0xFFEEF2FF),
-                                  child: Icon(
-                                    Icons.groups_rounded,
-                                    color: const Color(0xFF4338CA),
-                                    size: 22.sp,
-                                  ),
-                                ),
-                          )
-                              : Container(
-                            color: const Color(0xFFEEF2FF),
-                            child: Icon(
-                              Icons.groups_rounded,
-                              color: const Color(0xFF4338CA),
-                              size: 22.sp,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      top: -2.h,
-                      right: -2.w,
-                      child: GestureDetector(
+              child: Opacity(
+                opacity: fade,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      GestureDetector(
                         onTap: () {
-                          controller.clearGroupMode();
+                          controller.fitAllMembers();
                         },
-                        behavior: HitTestBehavior.opaque,
                         child: Container(
-                          padding: EdgeInsets.all(3.5.r),
+                          width: 48.w,
+                          height: 48.w,
                           decoration: BoxDecoration(
-                            color: const Color(0xFFEF4444),
                             shape: BoxShape.circle,
-                            border: Border.all(color: Colors.white, width: 1.5),
+                            color: Colors.white,
+                            border: Border.all(
+                              color: const Color(0xFF4338CA),
+                              width: 2.5,
+                            ),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.2),
-                                blurRadius: 4.r,
-                                offset: Offset(0, 1.h),
+                                color: const Color(0xFF4338CA)
+                                    .withValues(alpha: 0.35),
+                                blurRadius: 10.r,
+                                offset: Offset(0, 3.h),
                               ),
                             ],
                           ),
-                          child: Icon(
-                            Icons.close_rounded,
-                            color: Colors.white,
-                            size: 11.sp,
+                          padding: EdgeInsets.all(2.5.w),
+                          child: ClipOval(
+                            child: groupImg != null
+                                ? Image.network(
+                                    groupImg,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) =>
+                                        Container(
+                                      color: const Color(0xFFEEF2FF),
+                                      child: Icon(
+                                        Icons.groups_rounded,
+                                        color: const Color(0xFF4338CA),
+                                        size: 22.sp,
+                                      ),
+                                    ),
+                                  )
+                                : Container(
+                                    color: const Color(0xFFEEF2FF),
+                                    child: Icon(
+                                      Icons.groups_rounded,
+                                      color: const Color(0xFF4338CA),
+                                      size: 22.sp,
+                                    ),
+                                  ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
+                      Positioned(
+                        top: -2.h,
+                        right: -2.w,
+                        child: GestureDetector(
+                          onTap: () {
+                            controller.clearGroupMode();
+                          },
+                          behavior: HitTestBehavior.opaque,
+                          child: Container(
+                            padding: EdgeInsets.all(3.5.r),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFEF4444),
+                              shape: BoxShape.circle,
+                              border: Border.all(color: Colors.white, width: 1.5),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.2),
+                                  blurRadius: 4.r,
+                                  offset: Offset(0, 1.h),
+                                ),
+                              ],
+                            ),
+                            child: Icon(
+                              Icons.close_rounded,
+                              color: Colors.white,
+                              size: 11.sp,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             );
@@ -260,19 +306,19 @@ class TrackingScreen extends StatelessWidget {
             },
             child: DraggableScrollableSheet(
               controller: _sheetController,
-              initialChildSize: 0.11,
-              minChildSize: 0.11,
-              maxChildSize: 0.52,
+              initialChildSize: 0.42,
+              minChildSize: 0.12,
+              maxChildSize: 0.90,
               snap: true,
-              snapSizes: const [0.11, 0.52],
-              snapAnimationDuration: const Duration(milliseconds: 250),
+              snapSizes: const [0.12, 0.42, 0.90],
+              snapAnimationDuration: const Duration(milliseconds: 280),
               builder: (context, scrollController) {
                 return Container(
                   clipBehavior: Clip.antiAlias,
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius:
-                    BorderRadius.vertical(top: Radius.circular(28.r)),
+                        BorderRadius.vertical(top: Radius.circular(28.r)),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withValues(alpha: 0.08),
@@ -296,7 +342,7 @@ class TrackingScreen extends StatelessWidget {
                       displacement: 20.h,
                       child: CustomScrollView(
                         controller: scrollController,
-                        physics: const BouncingScrollPhysics(
+                        physics: const ClampingScrollPhysics(
                           parent: AlwaysScrollableScrollPhysics(),
                         ),
                         slivers: [
@@ -326,10 +372,22 @@ class TrackingScreen extends StatelessWidget {
               },
             ),
           ),
+
+          // ── Top Section (App Bar & Search Bar) on top of Stack ──
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: SafeArea(
+              bottom: false,
+              child: _buildTopSection(context),
+            ),
+          ),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildTopSection(BuildContext context) {
     return Padding(
@@ -339,14 +397,28 @@ class TrackingScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           _buildTopAppBar(context),
-          SizedBox(height: 10.h),
-          _buildTopSearchBar(context),
           Obx(() {
-            if (!controller.isSearchDropdownOpen.value ||
-                controller.searchQuery.value.trim().isEmpty) {
+            final double extent = _sheetExtent.value;
+            // Smoothly fade out search bar as sheet expands above mid (0.52 to 0.65)
+            final double searchOpacity =
+                (1.0 - ((extent - 0.52) / 0.13)).clamp(0.0, 1.0);
+            if (searchOpacity <= 0.0) {
               return const SizedBox.shrink();
             }
-            return _buildSearchDropdown(context);
+            return Opacity(
+              opacity: searchOpacity,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  SizedBox(height: 10.h),
+                  _buildTopSearchBar(context),
+                  if (controller.isSearchDropdownOpen.value &&
+                      controller.searchQuery.value.trim().isNotEmpty)
+                    _buildSearchDropdown(context),
+                ],
+              ),
+            );
           }),
         ],
       ),
@@ -359,7 +431,17 @@ class TrackingScreen extends StatelessWidget {
       children: [
         _iconButton(
           icon: Icons.arrow_back_rounded,
-          onTap: () => Get.back(),
+          onTap: () {
+            if (_sheetController.isAttached && _sheetExtent.value > 0.45) {
+              _sheetController.animateTo(
+                0.42,
+                duration: const Duration(milliseconds: 280),
+                curve: Curves.easeOutCubic,
+              );
+            } else {
+              Get.back();
+            }
+          },
         ),
         _iconButton(
           icon: Icons.help_outline_rounded,
@@ -461,18 +543,23 @@ class TrackingScreen extends StatelessWidget {
 
   Widget _buildSearchDropdown(BuildContext context) {
     final query = controller.searchQuery.value.trim().toLowerCase();
-    final matchingMembers = controller.allFetchedMembers
+    final List<MemberModel> membersSource =
+        controller.allFetchedMembers.isNotEmpty
+            ? controller.allFetchedMembers.toList()
+            : controller.radiusUsers.map((u) => u.toMemberModel()).toList();
+
+    final matchingMembers = membersSource
         .where((m) =>
-    m.name.toLowerCase().contains(query) ||
-        m.team.toLowerCase().contains(query) ||
-        m.location.toLowerCase().contains(query))
+            m.name.toLowerCase().contains(query) ||
+            m.team.toLowerCase().contains(query) ||
+            m.location.toLowerCase().contains(query))
         .toList();
 
     final matchingGroups = controller.groupList
         .where((g) =>
-    (g.groupName ?? "").toLowerCase().contains(query) ||
-        (g.groupDesc ?? "").toLowerCase().contains(query) ||
-        (g.groupCode ?? "").toLowerCase().contains(query))
+            (g.groupName ?? "").toLowerCase().contains(query) ||
+            (g.groupDesc ?? "").toLowerCase().contains(query) ||
+            (g.groupCode ?? "").toLowerCase().contains(query))
         .toList();
 
     final bool hasNoResults = matchingMembers.isEmpty && matchingGroups.isEmpty;
@@ -496,67 +583,67 @@ class TrackingScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(16.r),
         child: hasNoResults
             ? Padding(
-          padding: EdgeInsets.symmetric(vertical: 24.h, horizontal: 16.w),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                Icons.person_search_rounded,
-                color: const Color(0xFF94A3B8),
-                size: 32.sp,
-              ),
-              SizedBox(height: 8.h),
-              Text(
-                "No members or groups matching\n'${controller.searchQuery.value}'",
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 12.5.sp,
-                  color: const Color(0xFF64748B),
-                  fontWeight: FontWeight.w500,
+                padding: EdgeInsets.symmetric(vertical: 24.h, horizontal: 16.w),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.person_search_rounded,
+                      color: const Color(0xFF94A3B8),
+                      size: 32.sp,
+                    ),
+                    SizedBox(height: 8.h),
+                    Text(
+                      "No members or groups matching\n'${controller.searchQuery.value}'",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 12.5.sp,
+                        color: const Color(0xFF64748B),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ],
-          ),
-        )
+              )
             : ListView(
-          padding: EdgeInsets.symmetric(vertical: 6.h),
-          shrinkWrap: true,
-          children: [
-            if (matchingMembers.isNotEmpty) ...[
-              Padding(
-                padding: EdgeInsets.fromLTRB(14.w, 6.h, 14.w, 4.h),
-                child: Text(
-                  "MEMBERS (${matchingMembers.length})",
-                  style: TextStyle(
-                    fontSize: 10.5.sp,
-                    fontWeight: FontWeight.w700,
-                    color: const Color(0xFF6366F1),
-                    letterSpacing: 0.6,
-                  ),
-                ),
+                padding: EdgeInsets.symmetric(vertical: 6.h),
+                shrinkWrap: true,
+                children: [
+                  if (matchingMembers.isNotEmpty) ...[
+                    Padding(
+                      padding: EdgeInsets.fromLTRB(14.w, 6.h, 14.w, 4.h),
+                      child: Text(
+                        "MEMBERS (${matchingMembers.length})",
+                        style: TextStyle(
+                          fontSize: 10.5.sp,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF6366F1),
+                          letterSpacing: 0.6,
+                        ),
+                      ),
+                    ),
+                    ...matchingMembers
+                        .map((m) => _searchMemberItem(context, m)),
+                  ],
+                  if (matchingGroups.isNotEmpty) ...[
+                    if (matchingMembers.isNotEmpty)
+                      Divider(height: 12.h, color: const Color(0xFFF1F5F9)),
+                    Padding(
+                      padding: EdgeInsets.fromLTRB(14.w, 6.h, 14.w, 4.h),
+                      child: Text(
+                        "GROUPS (${matchingGroups.length})",
+                        style: TextStyle(
+                          fontSize: 10.5.sp,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF6366F1),
+                          letterSpacing: 0.6,
+                        ),
+                      ),
+                    ),
+                    ...matchingGroups.map((g) => _searchGroupItem(context, g)),
+                  ],
+                ],
               ),
-              ...matchingMembers
-                  .map((m) => _searchMemberItem(context, m)),
-            ],
-            if (matchingGroups.isNotEmpty) ...[
-              if (matchingMembers.isNotEmpty)
-                Divider(height: 12.h, color: const Color(0xFFF1F5F9)),
-              Padding(
-                padding: EdgeInsets.fromLTRB(14.w, 6.h, 14.w, 4.h),
-                child: Text(
-                  "GROUPS (${matchingGroups.length})",
-                  style: TextStyle(
-                    fontSize: 10.5.sp,
-                    fontWeight: FontWeight.w700,
-                    color: const Color(0xFF6366F1),
-                    letterSpacing: 0.6,
-                  ),
-                ),
-              ),
-              ...matchingGroups.map((g) => _searchGroupItem(context, g)),
-            ],
-          ],
-        ),
       ),
     );
   }
@@ -565,9 +652,17 @@ class TrackingScreen extends StatelessWidget {
     return InkWell(
       onTap: () {
         controller.searchController.text = m.name;
+        controller.searchQuery.value = m.name;
         controller.isSearchDropdownOpen.value = false;
         FocusScope.of(context).unfocus();
-        controller.focusMember(m);
+        if (_sheetController.isAttached) {
+          _sheetController.animateTo(
+            0.12,
+            duration: const Duration(milliseconds: 250),
+            curve: Curves.easeOutCubic,
+          );
+        }
+        controller.zoomToMember(m);
       },
       child: Padding(
         padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
@@ -580,10 +675,10 @@ class TrackingScreen extends StatelessWidget {
                   radius: 18.r,
                   backgroundColor: const Color(0xFFEEF2FF),
                   backgroundImage:
-                  m.avatarUrl.isNotEmpty ? NetworkImage(m.avatarUrl) : null,
+                      m.avatarUrl.isNotEmpty ? NetworkImage(m.avatarUrl) : null,
                   child: m.avatarUrl.isEmpty
                       ? Icon(Icons.person,
-                      size: 20.sp, color: const Color(0xFF4338CA))
+                          size: 20.sp, color: const Color(0xFF4338CA))
                       : null,
                 ),
                 Positioned(
@@ -645,14 +740,19 @@ class TrackingScreen extends StatelessWidget {
   Widget _searchGroupItem(BuildContext context, GroupsResData g) {
     return InkWell(
       onTap: () {
-        controller.searchController.text = g.groupName ?? "";
+        final String gIdStr = (g.id ?? 0).toString();
         controller.isSearchDropdownOpen.value = false;
-        controller.selectTab(1);
         FocusScope.of(context).unfocus();
+        controller.selectedTabIndex.value = 1;
+        controller.searchController.text = g.groupName ?? "";
+        controller.searchQuery.value = g.groupName ?? "";
+        controller.expandedGroupId.value = gIdStr;
+        controller.selectGroup(g);
+        controller.fetchGroupLocationData(gIdStr);
         if (_sheetController.isAttached) {
           _sheetController.animateTo(
             0.52,
-            duration: const Duration(milliseconds: 250),
+            duration: const Duration(milliseconds: 280),
             curve: Curves.easeOutCubic,
           );
         }
@@ -736,14 +836,31 @@ class TrackingScreen extends StatelessWidget {
         ),
         SizedBox(height: 10.h),
         Obx(
-              () => _mapActionButton(
+          () => _mapActionButton(
             icon: Icons.refresh_rounded,
             isLoading: controller.isLoading.value,
-            onTap: () => controller.getUsersWithinRadius(),
+            onTap: () {
+              if (controller.isGroupMode.value &&
+                  controller.selectedGroupId.value.isNotEmpty) {
+                controller.fetchGroupLocationData(
+                    controller.selectedGroupId.value);
+              } else {
+                controller.getUsersWithinRadius();
+              }
+            },
           ),
         ),
-        SizedBox(height: 10.h),
-        _buildRadiusButton(context),
+        Obx(() {
+          // Hide radius button when in group tab or group mode
+          if (controller.isGroupMode.value ||
+              controller.selectedTabIndex.value == 1) {
+            return const SizedBox.shrink();
+          }
+          return Padding(
+            padding: EdgeInsets.only(top: 10.h),
+            child: _buildRadiusButton(context),
+          );
+        }),
       ],
     );
   }
@@ -773,19 +890,19 @@ class TrackingScreen extends StatelessWidget {
         child: Center(
           child: isLoading
               ? SizedBox(
-            width: 18.w,
-            height: 18.w,
-            child: const CircularProgressIndicator(
-              strokeWidth: 2.2,
-              valueColor:
-              AlwaysStoppedAnimation<Color>(Color(0xFF4338CA)),
-            ),
-          )
+                  width: 18.w,
+                  height: 18.w,
+                  child: const CircularProgressIndicator(
+                    strokeWidth: 2.2,
+                    valueColor:
+                        AlwaysStoppedAnimation<Color>(Color(0xFF4338CA)),
+                  ),
+                )
               : Icon(
-            icon,
-            color: const Color(0xFF4338CA),
-            size: 20.sp,
-          ),
+                  icon,
+                  color: const Color(0xFF4338CA),
+                  size: 20.sp,
+                ),
         ),
       ),
     );
@@ -820,7 +937,7 @@ class TrackingScreen extends StatelessWidget {
         },
         itemBuilder: (ctx) => [
           ...presets.map(
-                (p) {
+            (p) {
               final bool isSelected = currentVal == p["value"];
               return PopupMenuItem<String>(
                 value: p["value"],
@@ -832,7 +949,7 @@ class TrackingScreen extends StatelessWidget {
                       p["label"]!,
                       style: TextStyle(
                         fontWeight:
-                        isSelected ? FontWeight.w800 : FontWeight.w500,
+                            isSelected ? FontWeight.w800 : FontWeight.w500,
                         fontSize: 13.sp,
                         color: isSelected
                             ? const Color(0xFF4338CA)
@@ -874,7 +991,7 @@ class TrackingScreen extends StatelessWidget {
                           : "Custom",
                       style: TextStyle(
                         fontWeight:
-                        isCustom ? FontWeight.w800 : FontWeight.w500,
+                            isCustom ? FontWeight.w800 : FontWeight.w500,
                         fontSize: 13.sp,
                         color: isCustom
                             ? const Color(0xFF4338CA)
@@ -1106,7 +1223,7 @@ class TrackingScreen extends StatelessWidget {
                           inactiveTrackColor: Colors.grey.shade200,
                           thumbColor: Colors.white,
                           overlayColor:
-                          const Color(0xFF4338CA).withValues(alpha: 0.1),
+                              const Color(0xFF4338CA).withValues(alpha: 0.1),
                           trackHeight: 3.h,
                           thumbShape: RoundSliderThumbShape(
                             enabledThumbRadius: 9.r,
@@ -1206,7 +1323,7 @@ class TrackingScreen extends StatelessWidget {
                           ),
                           SizedBox(height: 2.h),
                           Obx(
-                                () => Text(
+                            () => Text(
                               controller.currentLocationName.value.isNotEmpty
                                   ? controller.currentLocationName.value
                                   : "Current Location",
@@ -1286,10 +1403,10 @@ class TrackingScreen extends StatelessWidget {
                     child: GestureDetector(
                       onTap: () {
                         final double selectedMeters =
-                        radiusOptions[selectedIndex.value];
+                            radiusOptions[selectedIndex.value];
                         final double inKm = selectedMeters / 1000.0;
                         final String kmString =
-                        inKm == inKm.toInt() ? "${inKm.toInt()}" : "$inKm";
+                            inKm == inKm.toInt() ? "${inKm.toInt()}" : "$inKm";
                         controller.updateRadius(kmString);
                         Get.back();
                       },
@@ -1448,10 +1565,10 @@ class TrackingScreen extends StatelessWidget {
             child: GestureDetector(
               onTap: () {
                 controller.selectTab(0);
-                if (_sheetController.isAttached && _sheetExtent.value < 0.25) {
+                if (_sheetController.isAttached && _sheetExtent.value < 0.30) {
                   _sheetController.animateTo(
                     0.52,
-                    duration: const Duration(milliseconds: 250),
+                    duration: const Duration(milliseconds: 280),
                     curve: Curves.easeOutCubic,
                   );
                 }
@@ -1489,10 +1606,10 @@ class TrackingScreen extends StatelessWidget {
             child: GestureDetector(
               onTap: () {
                 controller.selectTab(1);
-                if (_sheetController.isAttached && _sheetExtent.value < 0.25) {
+                if (_sheetController.isAttached && _sheetExtent.value < 0.30) {
                   _sheetController.animateTo(
                     0.52,
-                    duration: const Duration(milliseconds: 250),
+                    duration: const Duration(milliseconds: 280),
                     curve: Curves.easeOutCubic,
                   );
                 }
@@ -1536,8 +1653,8 @@ class TrackingScreen extends StatelessWidget {
       padding: EdgeInsets.symmetric(horizontal: 16.w),
       sliver: SliverList(
         delegate: SliverChildListDelegate([
-          _buildSearchBox("Search by name or group..."),
-          SizedBox(height: 12.h),
+          // _buildSearchBox("Search by name or group..."),
+          // SizedBox(height: 12.h),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -1554,13 +1671,13 @@ class TrackingScreen extends StatelessWidget {
                   SizedBox(width: 8.w),
                   Container(
                     padding:
-                    EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
+                        EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
                     decoration: BoxDecoration(
                       color: const Color(0xFF4338CA).withValues(alpha: 0.08),
                       borderRadius: BorderRadius.circular(10.r),
                     ),
                     child: Obx(
-                          () => Text(
+                      () => Text(
                         "${controller.liveMembers.length} Live",
                         style: TextStyle(
                           fontSize: 10.5.sp,
@@ -1576,11 +1693,11 @@ class TrackingScreen extends StatelessWidget {
                 final bool loading = controller.isLoading.value;
                 return GestureDetector(
                   onTap:
-                  loading ? null : () => controller.getUsersWithinRadius(),
+                      loading ? null : () => controller.getUsersWithinRadius(),
                   behavior: HitTestBehavior.opaque,
                   child: Container(
                     padding:
-                    EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                        EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
                     decoration: BoxDecoration(
                       color: const Color(0xFFEEF2FF),
                       borderRadius: BorderRadius.circular(8.r),
@@ -1593,20 +1710,20 @@ class TrackingScreen extends StatelessWidget {
                       children: [
                         loading
                             ? SizedBox(
-                          width: 12.sp,
-                          height: 12.sp,
-                          child: const CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              Color(0xFF4338CA),
-                            ),
-                          ),
-                        )
+                                width: 12.sp,
+                                height: 12.sp,
+                                child: const CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    Color(0xFF4338CA),
+                                  ),
+                                ),
+                              )
                             : Icon(
-                          Icons.refresh_rounded,
-                          size: 14.sp,
-                          color: const Color(0xFF4338CA),
-                        ),
+                                Icons.refresh_rounded,
+                                size: 14.sp,
+                                color: const Color(0xFF4338CA),
+                              ),
                         SizedBox(width: 4.w),
                         Text(
                           loading ? "Refreshing..." : "Refresh",
@@ -1625,15 +1742,19 @@ class TrackingScreen extends StatelessWidget {
           ),
           SizedBox(height: 8.h),
           Obx(() {
-            final query = controller.searchController.text.trim().toLowerCase();
+            final query = controller.searchQuery.value.trim().toLowerCase();
+            final List<MemberModel> sourceList =
+                controller.allFetchedMembers.isNotEmpty
+                    ? controller.allFetchedMembers.toList()
+                    : controller.liveMembers.toList();
             final List<MemberModel> membersToDisplay = query.isEmpty
-                ? controller.liveMembers.toList()
-                : controller.liveMembers
-                .where((m) =>
-            m.name.toLowerCase().contains(query) ||
-                m.team.toLowerCase().contains(query) ||
-                m.location.toLowerCase().contains(query))
-                .toList();
+                ? sourceList
+                : sourceList
+                    .where((m) =>
+                        m.name.toLowerCase().contains(query) ||
+                        m.team.toLowerCase().contains(query) ||
+                        m.location.toLowerCase().contains(query))
+                    .toList();
 
             if (controller.isLoading.value) {
               return Skeletonizer(
@@ -1641,7 +1762,7 @@ class TrackingScreen extends StatelessWidget {
                 child: Column(
                   children: List.generate(
                     3,
-                        (index) => _memberCard(
+                    (index) => _memberCard(
                       MemberModel(
                         userId: index,
                         name: "Member Name Placeholder",
@@ -1675,8 +1796,8 @@ class TrackingScreen extends StatelessWidget {
                       ),
                       SizedBox(height: 10.h),
                       Text(
-                        controller.searchController.text.trim().isNotEmpty
-                            ? "No members match '${controller.searchController.text}'"
+                        controller.searchQuery.value.trim().isNotEmpty
+                            ? "No members match '${controller.searchQuery.value}'"
                             : "No active members found within ${controller.currentFormattedRadius}",
                         textAlign: TextAlign.center,
                         style: TextStyle(
@@ -1757,8 +1878,8 @@ class TrackingScreen extends StatelessWidget {
       padding: EdgeInsets.symmetric(horizontal: 16.w),
       sliver: SliverList(
         delegate: SliverChildListDelegate([
-          _buildSearchBox("Search groups..."),
-          SizedBox(height: 12.h),
+          // _buildSearchBox("Search groups..."),
+          // SizedBox(height: 12.h),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -1771,16 +1892,16 @@ class TrackingScreen extends StatelessWidget {
                 ),
               ),
               Obx(() => Skeletonizer(
-                enabled: controller.isGroupLoading.value,
-                child: Text(
-                  "${controller.filteredGroups.length} Groups",
-                  style: TextStyle(
-                    fontSize: 12.sp,
-                    fontWeight: FontWeight.w700,
-                    color: const Color(0xFF4338CA),
-                  ),
-                ),
-              )),
+                    enabled: controller.isGroupLoading.value,
+                    child: Text(
+                      "${controller.filteredGroups.length} Groups",
+                      style: TextStyle(
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF4338CA),
+                      ),
+                    ),
+                  )),
             ],
           ),
           SizedBox(height: 8.h),
@@ -1792,7 +1913,7 @@ class TrackingScreen extends StatelessWidget {
                 child: Column(
                   children: List.generate(
                     4,
-                        (index) => _groupCard(
+                    (index) => _groupCard(
                       GroupsResData(
                         id: index,
                         groupName: "Loading Group Name",
@@ -1808,9 +1929,11 @@ class TrackingScreen extends StatelessWidget {
                 padding: EdgeInsets.symmetric(vertical: 30.h),
                 child: Center(
                   child: Text(
-                    controller.groupError.isNotEmpty
-                        ? controller.groupError.value
-                        : "No groups found",
+                    controller.searchQuery.value.trim().isNotEmpty
+                        ? "No groups match '${controller.searchQuery.value}'"
+                        : (controller.groupError.isNotEmpty
+                            ? controller.groupError.value
+                            : "No groups found"),
                     style: TextStyle(
                       color: AppColors.primaryThreeElementText,
                       fontSize: 13.sp,
@@ -1833,47 +1956,76 @@ class TrackingScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSearchBox(String hint) {
-    return Container(
-      height: 42.h,
-      decoration: BoxDecoration(
-        color: const Color(0xFFF1F5F9),
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-      ),
-      alignment: Alignment.center,
-      child: TextField(
-        controller: controller.searchController,
-        onChanged: controller.onSearch,
-        textInputAction: TextInputAction.search,
-        onSubmitted: (val) {
-          controller.submitSearch(val);
-          FocusManager.instance.primaryFocus?.unfocus();
-        },
-        style: TextStyle(
-          fontSize: 13.sp,
-          color: const Color(0xFF1E1B4B),
-          fontWeight: FontWeight.w500,
-        ),
-        decoration: InputDecoration(
-          isDense: true,
-          prefixIcon: Icon(
-            Icons.search_rounded,
-            color: const Color(0xFF4338CA),
-            size: 20.sp,
-          ),
-          prefixIconConstraints: BoxConstraints(minWidth: 38.w),
-          hintText: hint,
-          hintStyle: TextStyle(
-            color: const Color(0xFF94A3B8),
-            fontSize: 12.sp,
-          ),
-          border: InputBorder.none,
-          contentPadding: EdgeInsets.symmetric(vertical: 10.h),
-        ),
-      ),
-    );
-  }
+  // Widget _buildSearchBox(String hint) {
+  //   return Container(
+  //     height: 42.h,
+  //     decoration: BoxDecoration(
+  //       color: const Color(0xFFF1F5F9),
+  //       borderRadius: BorderRadius.circular(12.r),
+  //       border: Border.all(color: const Color(0xFFE2E8F0)),
+  //     ),
+  //     alignment: Alignment.center,
+  //     child: TextField(
+  //       controller: controller.searchController,
+  //       onChanged: (val) {
+  //         controller.onSearch(val);
+  //         controller.isSearchDropdownOpen.value = false;
+  //       },
+  //       textInputAction: TextInputAction.search,
+  //       onSubmitted: (val) {
+  //         controller.submitSearch(val);
+  //         FocusManager.instance.primaryFocus?.unfocus();
+  //       },
+  //       style: TextStyle(
+  //         fontSize: 13.sp,
+  //         color: const Color(0xFF1E1B4B),
+  //         fontWeight: FontWeight.w500,
+  //       ),
+  //       decoration: InputDecoration(
+  //         isDense: true,
+  //         prefixIcon: Icon(
+  //           Icons.search_rounded,
+  //           color: const Color(0xFF4338CA),
+  //           size: 20.sp,
+  //         ),
+  //         prefixIconConstraints: BoxConstraints(minWidth: 38.w),
+  //         suffixIcon: ValueListenableBuilder<TextEditingValue>(
+  //           valueListenable: controller.searchController,
+  //           builder: (context, value, child) {
+  //             if (value.text.isNotEmpty) {
+  //               return GestureDetector(
+  //                 onTap: () {
+  //                   controller.searchController.clear();
+  //                   controller.searchQuery.value = "";
+  //                   controller.isSearchDropdownOpen.value = false;
+  //                   controller.onSearch('');
+  //                   FocusManager.instance.primaryFocus?.unfocus();
+  //                 },
+  //                 child: Padding(
+  //                   padding: EdgeInsets.symmetric(horizontal: 10.w),
+  //                   child: Icon(
+  //                     Icons.close_rounded,
+  //                     color: const Color(0xFF94A3B8),
+  //                     size: 18.sp,
+  //                   ),
+  //                 ),
+  //               );
+  //             }
+  //             return const SizedBox.shrink();
+  //           },
+  //         ),
+  //         suffixIconConstraints: BoxConstraints(minWidth: 36.w),
+  //         hintText: hint,
+  //         hintStyle: TextStyle(
+  //           color: const Color(0xFF94A3B8),
+  //           fontSize: 12.sp,
+  //         ),
+  //         border: InputBorder.none,
+  //         contentPadding: EdgeInsets.symmetric(vertical: 10.h),
+  //       ),
+  //     ),
+  //   );
+  // }
 
   void _zoomToMemberFromList(MemberModel member) {
     if (_sheetController.isAttached) {
@@ -1924,30 +2076,30 @@ class TrackingScreen extends StatelessWidget {
                     child: ClipOval(
                       child: member.avatarUrl.isNotEmpty
                           ? CachedNetworkImage(
-                        imageUrl: member.avatarUrl,
-                        width: 44.w,
-                        height: 44.w,
-                        fit: BoxFit.cover,
-                        placeholder: (context, url) => Container(
-                          width: 44.w,
-                          height: 44.w,
-                          color: AppColors.primaryElementLight,
-                          child: const Center(
-                            child: SizedBox(
-                              width: 14,
-                              height: 14,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 1.8,
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                  Color(0xFF4338CA),
+                              imageUrl: member.avatarUrl,
+                              width: 44.w,
+                              height: 44.w,
+                              fit: BoxFit.cover,
+                              placeholder: (context, url) => Container(
+                                width: 44.w,
+                                height: 44.w,
+                                color: AppColors.primaryElementLight,
+                                child: const Center(
+                                  child: SizedBox(
+                                    width: 14,
+                                    height: 14,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 1.8,
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                        Color(0xFF4338CA),
+                                      ),
+                                    ),
+                                  ),
                                 ),
                               ),
-                            ),
-                          ),
-                        ),
-                        errorWidget: (context, url, error) =>
-                            _placeholderAvatar(member.name),
-                      )
+                              errorWidget: (context, url, error) =>
+                                  _placeholderAvatar(member.name),
+                            )
                           : _placeholderAvatar(member.name),
                     ),
                   ),
@@ -1996,16 +2148,16 @@ class TrackingScreen extends StatelessWidget {
                       Expanded(
                         child: Text(
                           (member.location.isNotEmpty &&
-                              member.location != "Location unavailable" &&
-                              member.location != "Location" &&
-                              member.location != "Locating...")
+                                  member.location != "Location unavailable" &&
+                                  member.location != "Location" &&
+                                  member.location != "Locating...")
                               ? member.location
                               : (member.latitude != null &&
-                              member.longitude != null &&
-                              member.latitude != 0.0 &&
-                              member.longitude != 0.0
-                              ? "${member.latitude!.toStringAsFixed(4)}, ${member.longitude!.toStringAsFixed(4)}"
-                              : "Location unavailable"),
+                                      member.longitude != null &&
+                                      member.latitude != 0.0 &&
+                                      member.longitude != 0.0
+                                  ? "${member.latitude!.toStringAsFixed(4)}, ${member.longitude!.toStringAsFixed(4)}"
+                                  : "Location unavailable"),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
@@ -2180,179 +2332,665 @@ class TrackingScreen extends StatelessWidget {
   }
 
   Widget _groupCard(GroupsResData group) {
+    final String gIdStr = (group.id ?? 0).toString();
     final String? profileUrl =
-    group.groupProfile != null && group.groupProfile!.isNotEmpty
-        ? (group.groupProfile!.startsWith("http")
-        ? group.groupProfile!
-        : "${ConstRes.aImageBaseUrl}${group.groupProfile}")
-        : null;
+        group.groupProfile != null && group.groupProfile!.isNotEmpty
+            ? (group.groupProfile!.startsWith("http")
+                ? group.groupProfile!
+                : "${ConstRes.aImageBaseUrl}${group.groupProfile}")
+            : null;
 
-    return GestureDetector(
-      onTap: () {
-        final int gId = group.id is int
-            ? (group.id as int)
-            : (int.tryParse(group.id?.toString() ?? '0') ?? 0);
-        // Update selected group state (sets isGroupMode = true)
-        controller.selectGroup(group);
-        // Load group members as isolated markers on the main map
-        controller.fetchGroupLocationData(gId.toString());
-        // Collapse sheet to reveal the map with the group and member profiles
-        if (_sheetController.isAttached) {
-          _sheetController.animateTo(
-            0.11,
-            duration: const Duration(milliseconds: 250),
-            curve: Curves.easeOutCubic,
-          );
-        }
-      },
-      child: Container(
+    return Obx(() {
+      final bool isExpanded = controller.expandedGroupId.value == gIdStr;
+      final List<LocationData> members =
+          controller.groupMembersMap[gIdStr] ?? [];
+      final bool isMembersLoading = controller.isGroupMembersLoading.value &&
+          controller.expandedGroupId.value == gIdStr;
+
+      return Container(
         margin: EdgeInsets.only(bottom: 10.h),
-        padding: EdgeInsets.all(12.w),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(14.r),
-          border: Border.all(color: const Color(0xFFF1F5F9)),
+          borderRadius: BorderRadius.circular(16.r),
+          border: Border.all(
+            color: isExpanded
+                ? const Color(0xFF4338CA).withValues(alpha: 0.35)
+                : const Color(0xFFF1F5F9),
+            width: isExpanded ? 1.5 : 1.0,
+          ),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF1E2046).withValues(alpha: 0.02),
-              blurRadius: 8.r,
+              color: isExpanded
+                  ? const Color(0xFF4338CA).withValues(alpha: 0.08)
+                  : const Color(0xFF1E2046).withValues(alpha: 0.02),
+              blurRadius: isExpanded ? 12.r : 8.r,
               offset: Offset(0, 2.h),
             ),
           ],
         ),
-        child: Row(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Container(
-              width: 42.w,
-              height: 42.w,
-              decoration: BoxDecoration(
-                color: AppColors.primaryElementLight,
-                shape: BoxShape.circle,
-                image: profileUrl != null
-                    ? DecorationImage(
-                  image: NetworkImage(profileUrl),
-                  fit: BoxFit.cover,
-                )
-                    : null,
+            // ── Group Card Header (Tappable to toggle dropdown) ──
+            GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () {
+                final int gId = group.id is int
+                    ? (group.id as int)
+                    : (int.tryParse(group.id?.toString() ?? '0') ?? 0);
+
+                if (isExpanded) {
+                  controller.expandedGroupId.value = "";
+                } else {
+                  controller.expandedGroupId.value = gIdStr;
+                  controller.selectGroup(group);
+                  controller.fetchGroupLocationData(gIdStr);
+
+                  // Keep sheet expanded so the dropdown members list is visible!
+                  if (_sheetController.isAttached &&
+                      _sheetExtent.value < 0.52) {
+                    _sheetController.animateTo(
+                      0.52,
+                      duration: const Duration(milliseconds: 280),
+                      curve: Curves.easeOutCubic,
+                    );
+                  }
+                }
+              },
+              child: Padding(
+                padding: EdgeInsets.all(12.w),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 42.w,
+                      height: 42.w,
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryElementLight,
+                        shape: BoxShape.circle,
+                        image: profileUrl != null
+                            ? DecorationImage(
+                                image: NetworkImage(profileUrl),
+                                fit: BoxFit.cover,
+                              )
+                            : null,
+                      ),
+                      child: profileUrl == null
+                          ? Icon(Icons.groups_rounded,
+                              color: AppColors.primaryElement, size: 21.sp)
+                          : null,
+                    ),
+                    SizedBox(width: 12.w),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  group.groupName ?? "Unnamed Group",
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontSize: 13.5.sp,
+                                    fontWeight: FontWeight.w800,
+                                    color: const Color(0xFF1E1B4B),
+                                  ),
+                                ),
+                              ),
+                              if (group.isCreator == true)
+                                Container(
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: 6.w,
+                                    vertical: 2.h,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.primaryElementLight,
+                                    borderRadius: BorderRadius.circular(6.r),
+                                  ),
+                                  child: Text(
+                                    "Admin",
+                                    style: TextStyle(
+                                      fontSize: 9.5.sp,
+                                      fontWeight: FontWeight.w700,
+                                      color: AppColors.primaryElement,
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                          SizedBox(height: 3.h),
+                          Text(
+                            (group.groupDesc != null &&
+                                    group.groupDesc!.isNotEmpty)
+                                ? group.groupDesc!
+                                : (group.groupCode != null
+                                    ? "Code: ${group.groupCode}"
+                                    : "No description"),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 11.sp,
+                              color: const Color(0xFF64748B),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(width: 10.w),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        // Member count badge
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 8.w, vertical: 3.h),
+                          decoration: BoxDecoration(
+                            color: AppColors.primaryElementLight,
+                            borderRadius: BorderRadius.circular(10.r),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.people,
+                                  size: 11.sp,
+                                  color: AppColors.primaryElement),
+                              SizedBox(width: 3.w),
+                              Text(
+                                "${group.memberCount ?? members.length}",
+                                style: TextStyle(
+                                  fontSize: 10.sp,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.primaryElement,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        // ── Commented out Memberscreen navigation & forward arrow as requested ──
+                        // GestureDetector(
+                        //   onTap: () {
+                        //     Get.toNamed(
+                        //       Routes.Memberscreen,
+                        //       arguments: {
+                        //         "groupId": group.id?.toString() ?? "",
+                        //         "groupName": group.groupName ?? "",
+                        //         "groupCode": group.groupCode ?? "",
+                        //         "isCreator": group.isCreator?.toString() ?? "false",
+                        //         "isActive": group.isActive?.toString() ?? "false",
+                        //       },
+                        //     )?.then((value) {
+                        //       if (value == true) {
+                        //         controller.fetchGroupData();
+                        //       }
+                        //     });
+                        //   },
+                        //   child: Container(
+                        //     padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+                        //     decoration: BoxDecoration(
+                        //       color: AppColors.primaryElementLight,
+                        //       borderRadius: BorderRadius.circular(10.r),
+                        //     ),
+                        //     child: Row(
+                        //       mainAxisSize: MainAxisSize.min,
+                        //       children: [
+                        //         Icon(Icons.people, size: 11.sp, color: AppColors.primaryElement),
+                        //         SizedBox(width: 3.w),
+                        //         Text("${group.memberCount ?? 0}"),
+                        //       ],
+                        //     ),
+                        //   ),
+                        // ),
+                        // SizedBox(height: 4.h),
+                        // Icon(
+                        //   Icons.arrow_forward_ios_rounded,
+                        //   size: 13.sp,
+                        //   color: AppColors.primaryThreeElementText,
+                        // ),
+                        SizedBox(height: 4.h),
+                        AnimatedRotation(
+                          turns: isExpanded ? 0.5 : 0.0,
+                          duration: const Duration(milliseconds: 200),
+                          child: Icon(
+                            Icons.keyboard_arrow_down_rounded,
+                            size: 20.sp,
+                            color: isExpanded
+                                ? const Color(0xFF4338CA)
+                                : AppColors.primaryThreeElementText,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-              child: profileUrl == null
-                  ? Icon(Icons.groups_rounded,
-                  color: AppColors.primaryElement, size: 21.sp)
-                  : null,
             ),
-            SizedBox(width: 12.w),
+
+            // ── Group Members Dropdown List ──
+            if (isExpanded)
+              _buildGroupMembersDropdown(
+                  group, members, isMembersLoading),
+          ],
+        ),
+      );
+    });
+  }
+
+  Widget _buildGroupMembersDropdown(
+    GroupsResData group,
+    List<LocationData> members,
+    bool isLoading,
+  ) {
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.vertical(bottom: Radius.circular(16.r)),
+      ),
+      padding: EdgeInsets.fromLTRB(12.w, 6.h, 12.w, 10.h),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Divider(
+            color: const Color(0xFFE2E8F0),
+            height: 1.h,
+            thickness: 1,
+          ),
+          SizedBox(height: 8.h),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Icon(
+                    Icons.groups_rounded,
+                    size: 14.sp,
+                    color: const Color(0xFF4338CA),
+                  ),
+                  SizedBox(width: 5.w),
+                  Text(
+                    "Group Members",
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF1E1B4B),
+                    ),
+                  ),
+                ],
+              ),
+              if (members.isNotEmpty)
+                Text(
+                  "${members.length} member${members.length == 1 ? '' : 's'}",
+                  style: TextStyle(
+                    fontSize: 11.sp,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF64748B),
+                  ),
+                ),
+            ],
+          ),
+          SizedBox(height: 8.h),
+          if (isLoading && members.isEmpty)
+            Padding(
+              padding: EdgeInsets.symmetric(vertical: 20.h),
+              child: Center(
+                child: SizedBox(
+                  width: 22.w,
+                  height: 22.w,
+                  child: const CircularProgressIndicator(
+                    strokeWidth: 2.2,
+                    valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF4338CA)),
+                  ),
+                ),
+              ),
+            )
+          else if (members.isEmpty)
+            Padding(
+              padding: EdgeInsets.symmetric(vertical: 16.h),
+              child: Center(
+                child: Text(
+                  "No members found in this group",
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    color: const Color(0xFF94A3B8),
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            )
+          else
+            Column(
+              children: members
+                  .map((m) => _buildGroupDropdownMemberItem(m, group))
+                  .toList(),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGroupDropdownMemberItem(
+    LocationData member,
+    GroupsResData group,
+  ) {
+    final currentUserId =
+        Global.storageServices.get(PrefConst.userId)?.toString() ?? '';
+    final memberUserId = (member.userId ?? member.id ?? '').toString();
+    final bool isMe =
+        memberUserId.isNotEmpty && memberUserId == currentUserId;
+
+    final bool isAdmin = member.isCreator == true ||
+        member.isCreator == 1 ||
+        member.isCreator == '1' ||
+        member.role?.toString().toLowerCase() == 'admin';
+
+    final bool isGhostMode = member.locationSharing == false ||
+        member.locationSharing == 0 ||
+        member.locationSharing == '0';
+
+    final bool isOnline = !isGhostMode &&
+        Tracking().isOnline(
+          rawIsOnline: member.isOnline,
+          lastSeen: member.lastSeen,
+          thresholdMinutes: 5,
+        );
+
+    final String name = (member.name != null &&
+            member.name.toString().trim().isNotEmpty &&
+            member.name.toString().toLowerCase() != 'null')
+        ? member.name.toString().trim()
+        : 'Member';
+
+    final String? rawImg = member.profileImage?.toString();
+    final String? profileUrl = (rawImg != null &&
+            rawImg.trim().isNotEmpty &&
+            rawImg.toLowerCase() != 'null')
+        ? (rawImg.startsWith('http://') || rawImg.startsWith('https://')
+            ? rawImg
+            : "${ConstRes.aImageBaseUrl}$rawImg")
+        : null;
+
+    String getLastSeenText() {
+      if (isGhostMode) return "Ghost Mode Enabled";
+      if (isOnline) return "Online";
+      if (member.lastSeen == null ||
+          member.lastSeen.toString().trim().isEmpty ||
+          member.lastSeen.toString().toLowerCase() == 'null') {
+        return "Offline";
+      }
+
+      final parsedDate = Tracking.parseDateTime(member.lastSeen);
+      if (parsedDate == null) {
+        final s = member.lastSeen.toString().trim();
+        return s.toLowerCase() == 'offline' ? "Offline" : "Last seen: $s";
+      }
+
+      try {
+        return "Last seen: ${Tracking().getTimeAgo(parsedDate)}";
+      } catch (_) {
+        return "Offline";
+      }
+    }
+
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () {
+        controller.zoomToMember(member);
+      },
+      child: Container(
+        margin: EdgeInsets.symmetric(vertical: 4.h),
+        padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 8.h),
+        decoration: BoxDecoration(
+          color: isGhostMode ? const Color(0xFFF1F5F9) : Colors.white,
+          borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(
+            color: isGhostMode
+                ? const Color(0xFFE2E8F0)
+                : const Color(0xFF4338CA).withValues(alpha: 0.08),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.02),
+              blurRadius: 4.r,
+              offset: const Offset(0, 1),
+            ),
+          ],
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            // Avatar with online status badge
+            Stack(
+              clipBehavior: Clip.none,
+              children: [
+                CircleAvatar(
+                  radius: 19.r,
+                  backgroundColor: const Color(0xFFEEF2FF),
+                  backgroundImage:
+                      profileUrl != null ? NetworkImage(profileUrl) : null,
+                  child: profileUrl == null
+                      ? Text(
+                          name.isNotEmpty ? name[0].toUpperCase() : "?",
+                          style: TextStyle(
+                            color: const Color(0xFF4338CA),
+                            fontWeight: FontWeight.w700,
+                            fontSize: 14.sp,
+                          ),
+                        )
+                      : null,
+                ),
+                Positioned(
+                  bottom: -1,
+                  right: -1,
+                  child: Container(
+                    width: 9.5.w,
+                    height: 9.5.w,
+                    decoration: BoxDecoration(
+                      color: isGhostMode
+                          ? const Color(0xFF7E57C2)
+                          : (isOnline
+                              ? const Color(0xFF10B981)
+                              : const Color(0xFF94A3B8)),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 1.5.w),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(width: 10.w),
+            // Name & Status
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     children: [
-                      Expanded(
+                      Flexible(
                         child: Text(
-                          group.groupName ?? "Unnamed Group",
+                          name,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
-                            fontSize: 13.5.sp,
-                            fontWeight: FontWeight.w800,
+                            fontSize: 13.sp,
+                            fontWeight: FontWeight.w700,
                             color: const Color(0xFF1E1B4B),
                           ),
                         ),
                       ),
-                      if (group.isCreator == true)
-                        Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 6.w,
-                            vertical: 2.h,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.primaryElementLight,
-                            borderRadius: BorderRadius.circular(6.r),
-                          ),
-                          child: Text(
-                            "Admin",
-                            style: TextStyle(
-                              fontSize: 9.5.sp,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.primaryElement,
-                            ),
-                          ),
+                      if (isMe) ...[
+                        SizedBox(width: 5.w),
+                        _memberBadge(
+                          "You",
+                          const Color(0xFFEEF2FF),
+                          const Color(0xFF4338CA),
                         ),
+                      ],
+                      if (isAdmin) ...[
+                        SizedBox(width: 5.w),
+                        _memberBadge(
+                          "Admin",
+                          const Color(0xFFE7F8EC),
+                          const Color(0xFF2BB673),
+                        ),
+                      ],
                     ],
                   ),
                   SizedBox(height: 3.h),
-                  Text(
-                    (group.groupDesc != null && group.groupDesc!.isNotEmpty)
-                        ? group.groupDesc!
-                        : (group.groupCode != null
-                        ? "Code: ${group.groupCode}"
-                        : "No description"),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 11.sp,
-                      color: const Color(0xFF64748B),
-                    ),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.circle,
+                        size: 6.r,
+                        color: isGhostMode
+                            ? const Color(0xFF7E57C2)
+                            : (isOnline
+                                ? const Color(0xFF10B981)
+                                : const Color(0xFF94A3B8)),
+                      ),
+                      SizedBox(width: 4.w),
+                      Expanded(
+                        child: Text(
+                          getLastSeenText(),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 10.5.sp,
+                            color: isGhostMode
+                                ? const Color(0xFF7E57C2)
+                                : (isOnline
+                                    ? const Color(0xFF10B981)
+                                    : const Color(0xFF64748B)),
+                            fontWeight: isGhostMode || isOnline
+                                ? FontWeight.w600
+                                : FontWeight.w400,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
             ),
-            SizedBox(width: 10.w),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                GestureDetector(
-                  onTap: () {
-                    Get.toNamed(
-                      Routes.Memberscreen,
-                      arguments: {
-                        "groupId": group.id?.toString() ?? "",
-                        "groupName": group.groupName ?? "",
-                        "groupCode": group.groupCode ?? "",
-                        "isCreator": group.isCreator?.toString() ?? "false",
-                        "isActive": group.isActive?.toString() ?? "false",
-                      },
-                    )?.then((value) {
-                      if (value == true) {
-                        controller.fetchGroupData();
-                      }
-                    });
-                  },
-                  child: Container(
-                    padding:
-                    EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
-                    decoration: BoxDecoration(
-                      color: AppColors.primaryElementLight,
-                      borderRadius: BorderRadius.circular(10.r),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.people,
-                            size: 11.sp, color: AppColors.primaryElement),
-                        SizedBox(width: 3.w),
-                        Text(
-                          "${group.memberCount ?? 0}",
-                          style: TextStyle(
-                            fontSize: 10.sp,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.primaryElement,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                SizedBox(height: 4.h),
-                Icon(
-                  Icons.arrow_forward_ios_rounded,
-                  size: 13.sp,
-                  color: AppColors.primaryThreeElementText,
-                ),
-              ],
-            ),
+            // Action buttons (Chat, Call, Video Call) if not me
+            if (!isMe) ...[
+              _memberActionButton(
+                icon: Icons.chat_bubble_outline_rounded,
+                color: const Color(0xFF4338CA),
+                onTap: () {
+                  if (Get.isRegistered<MessageController>()) {
+                    Get.delete<MessageController>(force: true);
+                  }
+                  final MemberData memberData = MemberData(
+                    id: int.tryParse(member.id?.toString() ?? ''),
+                    userId: int.tryParse(memberUserId),
+                    groupId: 0,
+                    name: name,
+                    profileImage: member.profileImage?.toString(),
+                    lastSeen: member.lastSeen?.toString(),
+                    isOnline: isOnline,
+                    locationSharing: !isGhostMode,
+                  );
+
+                  Get.toNamed(
+                    Routes.chatScreen,
+                    arguments: {
+                      "userData": memberData,
+                      "groupName": name,
+                      "isCreator": false,
+                      "type": "chatScreen",
+                      "chatType": "private",
+                      "groupId": 0,
+                    },
+                  );
+                },
+              ),
+              SizedBox(width: 6.w),
+              _memberActionButton(
+                icon: Icons.call_outlined,
+                color: const Color(0xFF2BB673),
+                onTap: () {
+                  if (Get.isRegistered<CallingController>()) {
+                    Get.delete<CallingController>(force: true);
+                  }
+                  Get.toNamed(
+                    Routes.callScreen,
+                    arguments: {
+                      "callerId": currentUserId,
+                      "remoteUserId": memberUserId,
+                      "callerName": name,
+                      "callerProfile":
+                          member.profileImage?.toString() ?? "",
+                      "offer": null,
+                      "is_video": false,
+                      "callType": "outGoing",
+                    },
+                  );
+                },
+              ),
+              SizedBox(width: 6.w),
+              _memberActionButton(
+                icon: Icons.videocam_outlined,
+                color: const Color(0xFFEF4444),
+                onTap: () {
+                  if (Get.isRegistered<CallingController>()) {
+                    Get.delete<CallingController>(force: true);
+                  }
+                  Get.toNamed(
+                    Routes.callScreen,
+                    arguments: {
+                      "callerId": currentUserId,
+                      "remoteUserId": memberUserId,
+                      "callerName": name,
+                      "callerProfile":
+                          member.profileImage?.toString() ?? "",
+                      "offer": null,
+                      "is_video": true,
+                      "callType": "outGoing",
+                    },
+                  );
+                },
+              ),
+            ],
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _memberBadge(String label, Color bg, Color textColor) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 5.w, vertical: 1.5.h),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(5.r),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 8.5.sp,
+          fontWeight: FontWeight.w700,
+          color: textColor,
+        ),
+      ),
+    );
+  }
+
+  Widget _memberActionButton({
+    required IconData icon,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: Container(
+        width: 30.w,
+        height: 30.w,
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.1),
+          shape: BoxShape.circle,
+        ),
+        child: Icon(icon, color: color, size: 15.sp),
       ),
     );
   }
@@ -2381,6 +3019,9 @@ class TrackingScreen extends StatelessWidget {
   }
 
   void _showTrackingHelpDialog(BuildContext context) {
+    if (_isHelpDialogOpen) return;
+    _isHelpDialogOpen = true;
+
     showGeneralDialog(
       context: context,
       barrierDismissible: true,
@@ -2392,51 +3033,23 @@ class TrackingScreen extends StatelessWidget {
           child: Align(
             alignment: Alignment.topRight,
             child: Padding(
-              padding: EdgeInsets.only(top: 10.h, right: 16.w),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  GestureDetector(
-                    onTap: () => Navigator.of(ctx).pop(),
-                    child: Container(
-                      width: 42.w,
-                      height: 42.w,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12.r),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.12),
-                            blurRadius: 10.r,
-                            offset: Offset(0, 2.h),
-                          ),
-                        ],
+              padding: EdgeInsets.only(top: 56.h, right: 16.w),
+              child: Material(
+                color: Colors.transparent,
+                child: Container(
+                  width: 250.w,
+                  padding: EdgeInsets.fromLTRB(14.w, 12.h, 14.w, 14.h),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16.r),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.15),
+                        blurRadius: 20.r,
+                        offset: Offset(0, 6.h),
                       ),
-                      child: Icon(
-                        Icons.help_outline_rounded,
-                        color: AppColors.primaryText,
-                        size: 20.sp,
-                      ),
-                    ),
+                    ],
                   ),
-                  SizedBox(height: 8.h),
-                  Material(
-                    color: Colors.transparent,
-                    child: Container(
-                      width: 245.w,
-                      padding: EdgeInsets.fromLTRB(14.w, 12.h, 14.w, 14.h),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16.r),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.12),
-                            blurRadius: 20.r,
-                            offset: Offset(0, 6.h),
-                          ),
-                        ],
-                      ),
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -2470,47 +3083,47 @@ class TrackingScreen extends StatelessWidget {
                             icon: Icons.location_on_rounded,
                             title: "What is Live Tracking?",
                             subtitle:
-                            "Track team's real-time location on the map.",
+                                "Track team's real-time location on the map.",
                           ),
                           SizedBox(height: 11.h),
                           _helpItem(
                             icon: Icons.groups_rounded,
                             title: "How to Add Group?",
                             subtitle:
-                            "Create a group to track multiple members.",
+                                "Create a group to track multiple members.",
                           ),
                           SizedBox(height: 11.h),
                           _helpItem(
                             icon: Icons.gps_fixed_rounded,
                             title: "What is Tracking Radius?",
                             subtitle:
-                            "Set the area to find nearby members on the map.",
+                                "Set the area to find nearby members on the map.",
                           ),
                         ],
                       ),
                     ),
                   ),
-                ],
+                ),
               ),
-            ),
-          ),
-        );
-      },
-      transitionBuilder: (ctx, anim1, anim2, child) {
-        return FadeTransition(
-          opacity: anim1,
-          child: ScaleTransition(
-            scale: CurvedAnimation(
-              parent: anim1,
-              curve: Curves.easeOutCubic,
-            ),
-            alignment: Alignment.topRight,
-            child: child,
-          ),
-        );
-      },
-    );
-  }
+            );
+          },
+          transitionBuilder: (ctx, anim1, anim2, child) {
+            return FadeTransition(
+              opacity: anim1,
+              child: ScaleTransition(
+                scale: CurvedAnimation(
+                  parent: anim1,
+                  curve: Curves.easeOutCubic,
+                ),
+                alignment: Alignment.topRight,
+                child: child,
+              ),
+            );
+          },
+        ).then((_) {
+          _isHelpDialogOpen = false;
+        });
+      }
 
   Widget _helpItem({
     required IconData icon,
@@ -2598,15 +3211,14 @@ class TrackingScreen extends StatelessWidget {
       alignment: Alignment.center,
       child: initial.isNotEmpty
           ? Text(
-        initial,
-        style: TextStyle(
-          color: AppColors.primaryElement,
-          fontWeight: FontWeight.w700,
-          fontSize: 16.sp,
-        ),
-      )
+              initial,
+              style: TextStyle(
+                color: AppColors.primaryElement,
+                fontWeight: FontWeight.w700,
+                fontSize: 16.sp,
+              ),
+            )
           : Icon(Icons.person, color: AppColors.primaryElement, size: 22.sp),
     );
   }
 }
-
