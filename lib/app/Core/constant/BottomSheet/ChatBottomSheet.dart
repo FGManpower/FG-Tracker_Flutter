@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:get/get.dart';
 import '../../../config/themes_data.dart';
 import '../../../global_widget/common_widget.dart';
 import '../../../routes/app_pages.dart';
@@ -9,21 +8,22 @@ import 'attendance_sheet.dart';
 
 class ChatBottomSheet {
   static Future<void> showCreateAttendance(
-      BuildContext context, {
-        List<dynamic>? groupMembers,
-        VoidCallback? onCreated,
-      }) {
+    BuildContext context, {
+    List<dynamic>? groupMembers,
+    VoidCallback? onCreated,
+  }) {
     return showAttendanceSheet(
       context: context,
       groupMembers: groupMembers,
       onCreated: onCreated,
     );
   }
+
   static Future<void> showCallOptions(
-      BuildContext context, {
-        VoidCallback? onAudioCall,
-        VoidCallback? onWalkieTalkieCall,
-      }) async {
+    BuildContext context, {
+    VoidCallback? onAudioCall,
+    VoidCallback? onWalkieTalkieCall,
+  }) async {
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -93,14 +93,14 @@ class ChatBottomSheet {
   }
 
   static Future<void> showFileOptions(
-      BuildContext context, {
-        required VoidCallback onGallery,
-        required VoidCallback onCamera,
-        required VoidCallback onDocument,
-        required VoidCallback onLocation,
-        required VoidCallback onContact,
-        VoidCallback? onAttendance,
-      }) async {
+    BuildContext context, {
+    required VoidCallback onGallery,
+    required VoidCallback onCamera,
+    required VoidCallback onDocument,
+    required VoidCallback onLocation,
+    required VoidCallback onContact,
+    VoidCallback? onAttendance,
+  }) async {
     return showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -124,7 +124,6 @@ class ChatBottomSheet {
                 ),
               ),
               SizedBox(height: 18.h),
-
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -171,7 +170,6 @@ class ChatBottomSheet {
                 ],
               ),
               SizedBox(height: 22.h),
-
               GridView.count(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
@@ -302,11 +300,12 @@ class ChatBottomSheet {
       ),
     );
   }
+
   static Widget rowFile(
       {required String title,
-        required IconData icon,
-        Color iconColor = Colors.black,
-        required GestureTapCallback onTap}) {
+      required IconData icon,
+      Color iconColor = Colors.black,
+      required GestureTapCallback onTap}) {
     return GestureDetector(
       onTap: onTap,
       child: Column(
@@ -447,13 +446,13 @@ class ChatBottomSheet {
   // }
 
   static Widget _callTile(
-      BuildContext context, {
-        required String title,
-        required String subtitle,
-        required IconData icon,
-        required Color color,
-        required VoidCallback onTap,
-      }) {
+    BuildContext context, {
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(14.r),

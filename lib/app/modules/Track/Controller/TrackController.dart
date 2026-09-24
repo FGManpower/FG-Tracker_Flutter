@@ -69,9 +69,9 @@ class TrackingController extends GetxController {
   String? _alreadyListeningGroupId;
 
   Future<void> changeMapTheme(
-      MapType type, {
-        bool darkTheme = false,
-      }) async {
+    MapType type, {
+    bool darkTheme = false,
+  }) async {
     currentMapType.value = type;
 
     isDarkMode = darkTheme;
@@ -111,10 +111,10 @@ class TrackingController extends GetxController {
     groupWiseUserData.remove(groupId);
 
     markers.removeWhere(
-          (marker) {
+      (marker) {
         return groupWiseUserData[groupId]?.any(
               (user) => user.userId.toString() == marker.markerId.value,
-        ) ??
+            ) ??
             false;
       },
     );
@@ -135,9 +135,9 @@ class TrackingController extends GetxController {
   }
 
   Future getGroupLocationData(
-      BuildContext context,
-      int groupId,
-      ) async {
+    BuildContext context,
+    int groupId,
+  ) async {
     try {
       Loading().showloading(context: context);
 
@@ -234,7 +234,7 @@ class TrackingController extends GetxController {
       for (final user in group) {
         if (clusterUserIds.contains(user.userId.toString())) {
           final alreadyAdded = clusterUsers.any(
-                (u) => u.userId.toString() == user.userId.toString(),
+            (u) => u.userId.toString() == user.userId.toString(),
           );
           if (!alreadyAdded) clusterUsers.add(user);
         }
@@ -259,10 +259,10 @@ class TrackingController extends GetxController {
   }
 
   Future<void> searchUserAndZoom(
-      String groupId,
-      String userId, {
-        bool showProfile = false,
-      }) async {
+    String groupId,
+    String userId, {
+    bool showProfile = false,
+  }) async {
     int retries = 0;
 
     while (markers.isEmpty && retries < 30) {
@@ -272,7 +272,7 @@ class TrackingController extends GetxController {
 
     final matchedMarker = markers.toList().firstWhereOrNull(
           (m) => m.markerId.value == userId,
-    );
+        );
 
     if (matchedMarker != null && mapController != null) {
       await mapController!.animateCamera(
@@ -339,25 +339,25 @@ class TrackingController extends GetxController {
             ? int.tryParse(arguments!['groupId'].toString())
             : null);
     final String? effectiveGroupName =
-    arguments != null ? arguments!['groupName']?.toString() : null;
+        arguments != null ? arguments!['groupName']?.toString() : null;
 
     final int? effectiveUserId = user.userId != null
         ? int.tryParse(user.userId.toString())
         : (user.id != null ? int.tryParse(user.id.toString()) : null);
 
     final int? effectiveId =
-    user.id != null ? int.tryParse(user.id.toString()) : effectiveUserId;
+        user.id != null ? int.tryParse(user.id.toString()) : effectiveUserId;
 
     String? resolvedName = (user.name != null &&
-        user.name.toString().trim().isNotEmpty &&
-        user.name.toString().toLowerCase() != 'null')
+            user.name.toString().trim().isNotEmpty &&
+            user.name.toString().toLowerCase() != 'null')
         ? user.name.toString().trim()
         : null;
 
     final String? rawImg = user.profileImage?.toString();
     String? resolvedImg = (rawImg != null &&
-        rawImg.trim().isNotEmpty &&
-        rawImg.toLowerCase() != 'null')
+            rawImg.trim().isNotEmpty &&
+            rawImg.toLowerCase() != 'null')
         ? rawImg.trim()
         : null;
 
@@ -639,7 +639,7 @@ class TrackingController extends GetxController {
 
     // Preserve existing real data if incoming socket event lacks name/image/phone
     final existingUser = groupList.firstWhereOrNull(
-          (u) => u.userId.toString() == data.userId.toString(),
+      (u) => u.userId.toString() == data.userId.toString(),
     );
 
     if (existingUser != null) {
@@ -669,7 +669,7 @@ class TrackingController extends GetxController {
       if (Get.isRegistered<TrackController>()) {
         final tc = Get.find<TrackController>();
         final ogm = tc.onlineGroupMembers.firstWhereOrNull(
-              (m) => m.userId?.toString() == data.userId.toString(),
+          (m) => m.userId?.toString() == data.userId.toString(),
         );
         if (ogm != null) {
           if (ogm.name != null &&
@@ -687,7 +687,7 @@ class TrackingController extends GetxController {
           }
         }
         final ru = tc.radiusUsers.firstWhereOrNull(
-              (u) => u.userId?.toString() == data.userId.toString(),
+          (u) => u.userId?.toString() == data.userId.toString(),
         );
         if (ru != null) {
           if (ru.name != null &&
@@ -705,7 +705,7 @@ class TrackingController extends GetxController {
           }
         }
         final afm = tc.allFetchedMembers.firstWhereOrNull(
-              (m) => m.userId?.toString() == data.userId.toString(),
+          (m) => m.userId?.toString() == data.userId.toString(),
         );
         if (afm != null) {
           if (afm.name.trim().isNotEmpty &&
@@ -721,7 +721,7 @@ class TrackingController extends GetxController {
     }
 
     groupList.removeWhere(
-          (u) => u.userId.toString() == data.userId.toString(),
+      (u) => u.userId.toString() == data.userId.toString(),
     );
 
     groupList.add(data);
@@ -740,14 +740,14 @@ class TrackingController extends GetxController {
     );
 
     Marker markerBuilder(LatLng position) => Marker(
-      markerId: MarkerId(data.userId.toString()),
-      position: position,
-      icon: icon,
-      clusterManagerId: const ClusterManagerId(_clusterManagerId),
-      onTap: () async {
-        showMemberProfileBottomSheet(data);
-      },
-    );
+          markerId: MarkerId(data.userId.toString()),
+          position: position,
+          icon: icon,
+          clusterManagerId: const ClusterManagerId(_clusterManagerId),
+          onTap: () async {
+            showMemberProfileBottomSheet(data);
+          },
+        );
 
     markers.removeWhere((m) => m.markerId.value == data.userId.toString());
 
@@ -818,11 +818,11 @@ class TrackingController extends GetxController {
   }
 
   double _calculateDistance(
-      double lat1,
-      double lon1,
-      double lat2,
-      double lon2,
-      ) {
+    double lat1,
+    double lon1,
+    double lat2,
+    double lon2,
+  ) {
     const R = 6371;
     final dLat = (lat2 - lat1) * (pi / 180);
     final dLon = (lon2 - lon1) * (pi / 180);
@@ -842,7 +842,7 @@ class TrackingController extends GetxController {
     socketService.onGroupLocationUpdateOff();
 
     socketService.onGroupLocationUpdate(
-          (data) {
+      (data) {
         print("========== SOCKET ==========");
         print(data);
         print("===========================");
@@ -978,11 +978,11 @@ class TrackingController extends GetxController {
                                 : AppColors.appGreybackgroundcolor,
                             backgroundImage: imageUrl.isNotEmpty
                                 ? NetworkImage(
-                                ConstRes.aImageBaseUrl + imageUrl)
+                                    ConstRes.aImageBaseUrl + imageUrl)
                                 : null,
                             child: imageUrl.isEmpty
                                 ? const Icon(Icons.person,
-                                color: AppColors.grey)
+                                    color: AppColors.grey)
                                 : null,
                           ),
                         ),
@@ -996,11 +996,11 @@ class TrackingController extends GetxController {
                               color: isGhostMode
                                   ? AppColors.grey
                                   : (isOnline
-                                  ? AppColors.primaryElementStatus
-                                  : AppColors.darkRed),
+                                      ? AppColors.primaryElementStatus
+                                      : AppColors.darkRed),
                               shape: BoxShape.circle,
                               border:
-                              Border.all(color: AppColors.white, width: 2),
+                                  Border.all(color: AppColors.white, width: 2),
                             ),
                           ),
                         ),
@@ -1045,20 +1045,20 @@ class TrackingController extends GetxController {
                       isGhostMode
                           ? "Ghost Mode Enabled"
                           : isOnline
-                          ? "Online"
-                          : user.lastSeen != null &&
-                          user.lastSeen.toString().isNotEmpty
-                          ? Tracking().getTimeAgo(
-                        Tracking.parseDateTime(user.lastSeen) ??
-                            DateTime.now(),
-                      )
-                          : "Offline",
+                              ? "Online"
+                              : user.lastSeen != null &&
+                                      user.lastSeen.toString().isNotEmpty
+                                  ? Tracking().getTimeAgo(
+                                      Tracking.parseDateTime(user.lastSeen) ??
+                                          DateTime.now(),
+                                    )
+                                  : "Offline",
                       style: TextStyle(
                         color: isGhostMode
                             ? AppColors.grey
                             : (isOnline
-                            ? AppColors.primaryElementStatus
-                            : AppColors.grey),
+                                ? AppColors.primaryElementStatus
+                                : AppColors.grey),
                         fontSize: 12,
                       ),
                     ),
@@ -1315,15 +1315,15 @@ class TrackController extends GetxController {
     _groupCountSubscription?.cancel();
     _groupCountSubscription =
         SocketDashboardService.instance.groupCountStream.listen((data) {
-          if (data != null) {
-            try {
-              final counts = GroupCountDetail.fromJson(data);
-              if (counts.totalMembers > 0) {
-                totalMembersCount.value = counts.totalMembers;
-              }
-            } catch (_) {}
+      if (data != null) {
+        try {
+          final counts = GroupCountDetail.fromJson(data);
+          if (counts.totalMembers > 0) {
+            totalMembersCount.value = counts.totalMembers;
           }
-        });
+        } catch (_) {}
+      }
+    });
     SocketDashboardService.instance.requestGroupCount();
   }
 
@@ -1385,12 +1385,12 @@ class TrackController extends GetxController {
     _socketLiveLocationSubscription?.cancel();
     _socketLiveLocationSubscription =
         SocketDashboardService.instance.liveLocationStream.listen((locations) {
-          if (locations.isNotEmpty) {
-            debugPrint(
-                "📡 Received ${locations.length} live locations from dashboard socket");
-            _mergeSocketLocations(locations);
-          }
-        });
+      if (locations.isNotEmpty) {
+        debugPrint(
+            "📡 Received ${locations.length} live locations from dashboard socket");
+        _mergeSocketLocations(locations);
+      }
+    });
   }
 
   void _listenToLiveLocationSocket() {
@@ -1408,7 +1408,7 @@ class TrackController extends GetxController {
         .instance.userStatusStream
         .listen((status) {
       final idx =
-      radiusUsers.indexWhere((u) => u.userId.toString() == status.userId);
+          radiusUsers.indexWhere((u) => u.userId.toString() == status.userId);
       if (idx >= 0) {
         radiusUsers[idx].isOnline = status.isOnline;
       }
@@ -1441,7 +1441,7 @@ class TrackController extends GetxController {
     }
 
     final existingIdx =
-    radiusUsers.indexWhere((u) => u.userId.toString() == userIdStr);
+        radiusUsers.indexWhere((u) => u.userId.toString() == userIdStr);
     if (existingIdx >= 0) {
       final prev = radiusUsers[existingIdx];
       prev.latitude = data.lat;
@@ -1463,13 +1463,13 @@ class TrackController extends GetxController {
       _resolveAddressForUser(prev);
     } else {
       String? fallbackName = (data.name != null &&
-          data.name!.trim().isNotEmpty &&
-          data.name!.trim().toLowerCase() != 'member')
+              data.name!.trim().isNotEmpty &&
+              data.name!.trim().toLowerCase() != 'member')
           ? data.name!.trim()
           : null;
       String? fallbackImg = (data.profileImage != null &&
-          data.profileImage!.trim().isNotEmpty &&
-          data.profileImage!.trim().toLowerCase() != 'null')
+              data.profileImage!.trim().isNotEmpty &&
+              data.profileImage!.trim().toLowerCase() != 'null')
           ? data.profileImage!.trim()
           : null;
       String? fallbackPhone;
@@ -1509,9 +1509,9 @@ class TrackController extends GetxController {
 
       if (fallbackName == null || fallbackImg == null) {
         for (final list
-        in TrackingController.instance.groupWiseUserData.values) {
+            in TrackingController.instance.groupWiseUserData.values) {
           final m =
-          list.firstWhereOrNull((u) => u.userId.toString() == userIdStr);
+              list.firstWhereOrNull((u) => u.userId.toString() == userIdStr);
           if (m != null) {
             if (fallbackName == null &&
                 m.name != null &&
@@ -1574,7 +1574,7 @@ class TrackController extends GetxController {
       debugPrint("📡 Received send-location via SocketService: $item");
       if (item is Map) {
         final model =
-        LiveLocationSocketModel.fromJson(Map<String, dynamic>.from(item));
+            LiveLocationSocketModel.fromJson(Map<String, dynamic>.from(item));
         _applyLiveSocketLocationUpdate(model);
       }
     });
@@ -1595,7 +1595,7 @@ class TrackController extends GetxController {
 
         String? addr = (item['address'] ?? item['location'])?.toString();
         final String? itemArea =
-        (item['area'] ?? item['subLocality'])?.toString();
+            (item['area'] ?? item['subLocality'])?.toString();
         final String? itemCity = (item['city'] ?? item['locality'])?.toString();
 
         if ((addr == null || addr.isEmpty) &&
@@ -1625,7 +1625,7 @@ class TrackController extends GetxController {
           if (existingIdx >= 0) {
             final prev = radiusUsers[existingIdx];
             final bool moved = (prev.latitude != null &&
-                (prev.latitude! - lat).abs() > 0.0001) ||
+                    (prev.latitude! - lat).abs() > 0.0001) ||
                 (prev.longitude != null &&
                     (prev.longitude! - lng).abs() > 0.0001);
             prev.latitude = lat;
@@ -1717,7 +1717,7 @@ class TrackController extends GetxController {
       }
 
       final existingIndex =
-      radiusUsers.indexWhere((u) => u.userId.toString() == uidStr);
+          radiusUsers.indexWhere((u) => u.userId.toString() == uidStr);
       if (existingIndex >= 0) {
         final prev = radiusUsers[existingIndex];
         if (lat != 0.0 && lng != 0.0) {
@@ -1787,7 +1787,8 @@ class TrackController extends GetxController {
     final String myUserIdStr =
         Global.storageServices.get(PrefConst.userId)?.toString() ?? '';
     final sortedUsers = radiusUsers
-        .where((u) => myUserIdStr.isEmpty || u.userId?.toString() != myUserIdStr)
+        .where(
+            (u) => myUserIdStr.isEmpty || u.userId?.toString() != myUserIdStr)
         .toList()
       ..sort((a, b) {
         if (a.isOnline && !b.isOnline) return -1;
@@ -1797,10 +1798,10 @@ class TrackController extends GetxController {
 
     final mapped = sortedUsers
         .map((e) => e.toMemberModel(
-      currentUserLat: userLat,
-      currentUserLong: userLng,
-      fallbackTeam: selectedGroupName.value,
-    ))
+              currentUserLat: userLat,
+              currentUserLong: userLng,
+              fallbackTeam: selectedGroupName.value,
+            ))
         .toList();
 
     allFetchedMembers.value = mapped;
@@ -1828,7 +1829,7 @@ class TrackController extends GetxController {
 
         if (groupList.isNotEmpty) {
           final valid = groupList.firstWhere(
-                (g) => g.groupName != null && g.groupName!.trim().isNotEmpty,
+            (g) => g.groupName != null && g.groupName!.trim().isNotEmpty,
             orElse: () => groupList.first,
           );
           selectedGroupName.value = valid.groupName ?? "";
@@ -1980,7 +1981,7 @@ class TrackController extends GetxController {
           break;
         }
         final rUser =
-        radiusUsers.firstWhereOrNull((u) => u.userId?.toString() == uId);
+            radiusUsers.firstWhereOrNull((u) => u.userId?.toString() == uId);
         if (rUser != null && rUser.latitude != null && rUser.latitude != 0.0) {
           anchorLat = rUser.latitude!;
           anchorLng = rUser.longitude!;
@@ -2003,7 +2004,7 @@ class TrackController extends GetxController {
         if (lat == null || lng == null || lat == 0.0 || lng == 0.0) {
           // Check radiusUsers
           final rUser =
-          radiusUsers.firstWhereOrNull((u) => u.userId?.toString() == uId);
+              radiusUsers.firstWhereOrNull((u) => u.userId?.toString() == uId);
           if (rUser != null &&
               rUser.latitude != null &&
               rUser.latitude != 0.0) {
@@ -2016,10 +2017,9 @@ class TrackController extends GetxController {
           // Check onlineGroupMembers (socket data — has real-time coords)
           final ogm = onlineGroupMembers
               .firstWhereOrNull((u) => u.userId?.toString() == uId);
-          final double? oLat =
-          double.tryParse(ogm?.latitude?.toString() ?? '');
+          final double? oLat = double.tryParse(ogm?.latitude?.toString() ?? '');
           final double? oLng =
-          double.tryParse(ogm?.longitude?.toString() ?? '');
+              double.tryParse(ogm?.longitude?.toString() ?? '');
           if (oLat != null && oLng != null && oLat != 0.0 && oLng != 0.0) {
             lat = oLat;
             lng = oLng;
@@ -2029,13 +2029,13 @@ class TrackController extends GetxController {
         if (lat == null || lng == null || lat == 0.0 || lng == 0.0) {
           // Check TrackingController.instance.groupWiseUserData
           for (final list
-          in TrackingController.instance.groupWiseUserData.values) {
+              in TrackingController.instance.groupWiseUserData.values) {
             final match =
-            list.firstWhereOrNull((u) => u.userId?.toString() == uId);
+                list.firstWhereOrNull((u) => u.userId?.toString() == uId);
             final double? mLat =
-            double.tryParse(match?.latitude?.toString() ?? '');
+                double.tryParse(match?.latitude?.toString() ?? '');
             final double? mLng =
-            double.tryParse(match?.longitude?.toString() ?? '');
+                double.tryParse(match?.longitude?.toString() ?? '');
             if (mLat != null && mLng != null && mLat != 0.0 && mLng != 0.0) {
               lat = mLat;
               lng = mLng;
@@ -2082,7 +2082,7 @@ class TrackController extends GetxController {
             profileImg.isEmpty ||
             profileImg.toLowerCase() == 'null') {
           final rUser =
-          radiusUsers.firstWhereOrNull((u) => u.userId?.toString() == uId);
+              radiusUsers.firstWhereOrNull((u) => u.userId?.toString() == uId);
           profileImg = rUser?.profileImage;
         }
         if (profileImg == null ||
@@ -2107,14 +2107,14 @@ class TrackController extends GetxController {
 
         // Resolved Name — try loc → memberData → onlineGroupMembers → mobileNo → fallback
         String resolvedName = (loc?.name != null &&
-            loc!.name.toString().trim().isNotEmpty &&
-            loc.name.toString().toLowerCase() != 'member')
+                loc!.name.toString().trim().isNotEmpty &&
+                loc.name.toString().toLowerCase() != 'member')
             ? loc.name.toString().trim()
             : (m?.name != null &&
-            m!.name.toString().trim().isNotEmpty &&
-            m.name.toString().toLowerCase() != 'member'
-            ? m.name.toString().trim()
-            : '');
+                    m!.name.toString().trim().isNotEmpty &&
+                    m.name.toString().toLowerCase() != 'member'
+                ? m.name.toString().trim()
+                : '');
 
         if (resolvedName.isEmpty) {
           // Try onlineGroupMembers for name
@@ -2130,7 +2130,7 @@ class TrackController extends GetxController {
         if (resolvedName.isEmpty) {
           // Try radiusUsers for name
           final rUser =
-          radiusUsers.firstWhereOrNull((u) => u.userId?.toString() == uId);
+              radiusUsers.firstWhereOrNull((u) => u.userId?.toString() == uId);
           if (rUser?.name != null &&
               rUser!.name!.trim().isNotEmpty &&
               rUser.name!.trim().toLowerCase() != 'member') {
@@ -2514,7 +2514,7 @@ class TrackController extends GetxController {
     if (lat == 0.0 && lng == 0.0) return;
 
     final bool firstValidCoords =
-    (currentLat.value == 0.0 || currentLong.value == 0.0);
+        (currentLat.value == 0.0 || currentLong.value == 0.0);
     currentLat.value = lat;
     currentLong.value = lng;
 
@@ -2530,8 +2530,8 @@ class TrackController extends GetxController {
         final addr = geocoded.address.isNotEmpty
             ? geocoded.address
             : (currentLocationName.value != "Locating..."
-            ? currentLocationName.value
-            : null);
+                ? currentLocationName.value
+                : null);
         final area = geocoded.area.isNotEmpty
             ? geocoded.area
             : (currentArea.value.isNotEmpty ? currentArea.value : null);
@@ -2645,13 +2645,13 @@ class TrackController extends GetxController {
     final double long = currentLong.value != 0.0 ? currentLong.value : 72.8777;
 
     final String? currentAddr = currentLocationName.value != "Locating..." &&
-        currentLocationName.value.isNotEmpty
+            currentLocationName.value.isNotEmpty
         ? currentLocationName.value
         : null;
     final String? area =
-    currentArea.value.isNotEmpty ? currentArea.value : null;
+        currentArea.value.isNotEmpty ? currentArea.value : null;
     final String? city =
-    currentCity.value.isNotEmpty ? currentCity.value : null;
+        currentCity.value.isNotEmpty ? currentCity.value : null;
 
     SocketDashboardService.instance.requestLiveLocation(
       userLat: lat,
@@ -2677,9 +2677,9 @@ class TrackController extends GetxController {
 
   int getApiRadiusParam([dynamic radiusVal]) {
     final String val =
-    (radiusVal != null && radiusVal.toString().trim().isNotEmpty)
-        ? radiusVal.toString().trim().toLowerCase()
-        : selectedRadius.value.trim().toLowerCase();
+        (radiusVal != null && radiusVal.toString().trim().isNotEmpty)
+            ? radiusVal.toString().trim().toLowerCase()
+            : selectedRadius.value.trim().toLowerCase();
 
     final String cleanVal = val.replaceAll('km', '').replaceAll('m', '').trim();
     final double? parsed = double.tryParse(cleanVal);
@@ -2709,7 +2709,7 @@ class TrackController extends GetxController {
 
       final double lat = currentLat.value != 0.0 ? currentLat.value : 19.0760;
       final double long =
-      currentLong.value != 0.0 ? currentLong.value : 72.8777;
+          currentLong.value != 0.0 ? currentLong.value : 72.8777;
 
       final int radiusParam = getApiRadiusParam(radius);
 
@@ -2738,7 +2738,7 @@ class TrackController extends GetxController {
             incoming.longitude = _knownUserCoordinates[uidStr]!.longitude;
           }
           final existing = radiusUsers.firstWhereOrNull(
-                  (u) => u.userId.toString() == incoming.userId.toString());
+              (u) => u.userId.toString() == incoming.userId.toString());
           if (existing != null) {
             if (incoming.battery == null && existing.battery != null) {
               incoming.battery = existing.battery;
@@ -2750,8 +2750,8 @@ class TrackController extends GetxController {
               incoming.longitude = existing.longitude;
             }
             if ((incoming.location == null ||
-                incoming.location!.isEmpty ||
-                incoming.location == "Location unavailable") &&
+                    incoming.location!.isEmpty ||
+                    incoming.location == "Location unavailable") &&
                 existing.location != null &&
                 existing.location!.isNotEmpty &&
                 existing.location != "Location unavailable") {
@@ -2764,7 +2764,7 @@ class TrackController extends GetxController {
             Global.storageServices.get(PrefConst.userId)?.toString() ?? '';
         final validData = result.data!
             .where((u) =>
-        myUserIdStr.isEmpty || u.userId?.toString() != myUserIdStr)
+                myUserIdStr.isEmpty || u.userId?.toString() != myUserIdStr)
             .toList();
         radiusUsers.assignAll(validData);
         await _resolveAllMembersAddresses();
@@ -2835,7 +2835,10 @@ class TrackController extends GetxController {
       final team = (u.team ?? "").toLowerCase();
       final loc = (u.location ?? "").toLowerCase();
       final phone = (u.mobileNo ?? "").toLowerCase();
-      return (name.contains(q) || team.contains(q) || loc.contains(q) || phone.contains(q)) &&
+      return (name.contains(q) ||
+              team.contains(q) ||
+              loc.contains(q) ||
+              phone.contains(q)) &&
           u.latitude != null &&
           u.longitude != null &&
           u.latitude != 0.0 &&
@@ -2936,13 +2939,13 @@ class TrackController extends GetxController {
     final double long = currentLong.value != 0.0 ? currentLong.value : 72.8777;
 
     final String? currentAddr = currentLocationName.value != "Locating..." &&
-        currentLocationName.value.isNotEmpty
+            currentLocationName.value.isNotEmpty
         ? currentLocationName.value
         : null;
     final String? area =
-    currentArea.value.isNotEmpty ? currentArea.value : null;
+        currentArea.value.isNotEmpty ? currentArea.value : null;
     final String? city =
-    currentCity.value.isNotEmpty ? currentCity.value : null;
+        currentCity.value.isNotEmpty ? currentCity.value : null;
 
     final int radiusParam = getApiRadiusParam(value);
 
@@ -3032,13 +3035,12 @@ class TrackController extends GetxController {
         Global.storageServices.get(PrefConst.userId)?.toString() ?? '';
     final String q = searchController.text.trim().toLowerCase();
     final List<UsersWithinRadiusData> membersToMark =
-    isGroupMode.value ? groupModeUsers.toList() : radiusUsers.toList();
+        isGroupMode.value ? groupModeUsers.toList() : radiusUsers.toList();
 
     // Group members by coordinates rounded to 4 decimals (~11 meters) to detect overlapping markers
     final Map<String, List<UsersWithinRadiusData>> coordClusters = {};
     for (var u in membersToMark) {
-      if (myUserIdStr.isNotEmpty &&
-          u.userId?.toString() == myUserIdStr) {
+      if (myUserIdStr.isNotEmpty && u.userId?.toString() == myUserIdStr) {
         continue;
       }
       if (u.latitude != null &&
@@ -3103,9 +3105,9 @@ class TrackController extends GetxController {
         }
 
         final String locSnippet = (u.location != null &&
-            u.location!.isNotEmpty &&
-            u.location != "Active now" &&
-            u.location != "Location")
+                u.location!.isNotEmpty &&
+                u.location != "Active now" &&
+                u.location != "Location")
             ? "${u.location} • "
             : "";
         final String distanceText;
@@ -3205,7 +3207,7 @@ class TrackController extends GetxController {
     final String myUserIdStr =
         Global.storageServices.get(PrefConst.userId)?.toString() ?? '';
     final List<UsersWithinRadiusData> membersToFit =
-    isGroupMode.value ? groupModeUsers.toList() : radiusUsers.toList();
+        isGroupMode.value ? groupModeUsers.toList() : radiusUsers.toList();
     for (var u in membersToFit) {
       if (myUserIdStr.isNotEmpty && u.userId?.toString() == myUserIdStr) {
         continue;
@@ -3322,11 +3324,13 @@ class TrackController extends GetxController {
     }
 
     final String uidStr = (member is MemberModel
-        ? member.userId
-        : (member is UsersWithinRadiusData
-            ? member.userId
-            : (member is LocationData ? (member.userId ?? member.id) : member)))
-        ?.toString() ??
+                ? member.userId
+                : (member is UsersWithinRadiusData
+                    ? member.userId
+                    : (member is LocationData
+                        ? (member.userId ?? member.id)
+                        : member)))
+            ?.toString() ??
         '';
 
     // 2. Check active Google Map markers set (has exact spider offset if clustered)
@@ -3375,7 +3379,7 @@ class TrackController extends GetxController {
     // 5. Check allFetchedMembers
     if (targetLatLng == null && uidStr.isNotEmpty) {
       final afm = allFetchedMembers.firstWhereOrNull(
-            (m) => m.userId?.toString() == uidStr,
+        (m) => m.userId?.toString() == uidStr,
       );
       if (afm != null &&
           afm.latitude != null &&
@@ -3429,7 +3433,7 @@ class TrackController extends GetxController {
       dist = meters / 1000.0;
     } else if (u.distance != null) {
       final String dStr =
-      u.distance.toString().replaceAll('km', '').replaceAll('m', '').trim();
+          u.distance.toString().replaceAll('km', '').replaceAll('m', '').trim();
       final double? parsed = double.tryParse(dStr);
       if (parsed != null) {
         dist = u.distance.toString().contains('km') ? parsed : parsed / 1000.0;
@@ -3438,13 +3442,13 @@ class TrackController extends GetxController {
 
     final int? uId = int.tryParse(u.userId?.toString() ?? '');
     String? resolvedName = (u.name != null &&
-        u.name!.trim().isNotEmpty &&
-        u.name!.trim().toLowerCase() != 'member')
+            u.name!.trim().isNotEmpty &&
+            u.name!.trim().toLowerCase() != 'member')
         ? u.name!.trim()
         : null;
     String? resolvedImg = (u.profileImage != null &&
-        u.profileImage!.trim().isNotEmpty &&
-        u.profileImage!.trim().toLowerCase() != 'null')
+            u.profileImage!.trim().isNotEmpty &&
+            u.profileImage!.trim().toLowerCase() != 'null')
         ? u.profileImage!.trim()
         : null;
     String? resolvedPhone = u.mobileNo?.trim();
@@ -3566,7 +3570,7 @@ class TrackController extends GetxController {
       dist = meters / 1000.0;
     } else {
       final String dStr =
-      m.distance.replaceAll('km', '').replaceAll('m', '').trim();
+          m.distance.replaceAll('km', '').replaceAll('m', '').trim();
       final double? parsed = double.tryParse(dStr);
       if (parsed != null) {
         dist = m.distance.contains('km') ? parsed : parsed / 1000.0;
@@ -3587,8 +3591,8 @@ class TrackController extends GetxController {
       team: m.team.isNotEmpty
           ? m.team
           : (selectedGroupName.value.isNotEmpty
-          ? selectedGroupName.value
-          : null),
+              ? selectedGroupName.value
+              : null),
       battery: m.battery,
       isGroupChat: false,
       isLocationSharing: true,
@@ -3608,4 +3612,3 @@ class TrackController extends GetxController {
     super.onClose();
   }
 }
-

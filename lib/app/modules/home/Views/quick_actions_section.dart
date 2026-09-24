@@ -42,10 +42,15 @@ class QuickActionsSection extends StatelessWidget {
               Icons.call,
               onTap: () => Get.to(() => CallScreen()),
             ),
+            // _QuickActionCard(
+            //   "Walkie Talkie",
+            //   Icons.settings_cell,
+            //   onTap: () => Get.toNamed(Routes.WalkieGroupSelect),
+            // ),
             _QuickActionCard(
               "Walkie Talkie",
               Icons.settings_cell,
-              onTap: () => Get.toNamed(Routes.WalkieGroupSelect),
+              onTap: () => Get.toNamed(Routes.walkieTalkieTrialDetails),
             ),
             _QuickActionCard(
               "Tracking",
