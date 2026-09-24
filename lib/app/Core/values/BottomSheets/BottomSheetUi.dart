@@ -14,7 +14,6 @@ import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
 import 'package:fgtracker/app/modules/Messages/Controller/GroupChatController.dart';
 import 'package:fgtracker/app/modules/Messages/Controller/MessageController.dart';
 import 'package:fgtracker/app/modules/mediaStream/Controller/calling_controller.dart';
-import 'package:fgtracker/app/modules/Track/Controller/GroupTrackController.dart';
 import 'package:fgtracker/app/Core/util/http/http_util.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:flutter/material.dart';
@@ -414,62 +413,62 @@ class BottomSheetUi {
 
                                       return GestureDetector(
                                         onTap: () {
-                                          if (!isDeleteMode) {
-                                            if (isMe) return;
-                                            Navigator.pop(context);
-                                            if (Get.currentRoute ==
-                                                Routes.LocationTracking) {
-                                              final int targetGroupId =
-                                                  effectiveGroupId ??
-                                                      int.tryParse(member
-                                                              .groupId
-                                                              ?.toString() ??
-                                                          '') ??
-                                                      0;
-                                              GroupTrackingController.instance
-                                                  .searchUserAndZoom(
-                                                targetGroupId.toString(),
-                                                memberUserId,
-                                              );
-                                            } else {
-                                              if (Get.isRegistered<
-                                                  MessageController>()) {
-                                                Get.delete<MessageController>(
-                                                    force: true);
-                                              }
-                                              final MemberData memberData =
-                                                  MemberData(
-                                                id: int.tryParse(member.id
-                                                        ?.toString() ??
-                                                    ''),
-                                                userId: int.tryParse(
-                                                    memberUserId),
-                                                groupId: 0,
-                                                name: name,
-                                                profileImage: member
-                                                    .profileImage
-                                                    ?.toString(),
-                                                lastSeen: member.lastSeen
-                                                    ?.toString(),
-                                                isOnline: isOnline,
-                                                locationSharing:
-                                                    !isGhostMode,
-                                              );
-
-                                              Get.toNamed(
-                                                Routes.chatScreen,
-                                                arguments: {
-                                                  "userData": memberData,
-                                                  "groupName": name,
-                                                  "isCreator": false,
-                                                  "type": "chatScreen",
-                                                  "chatType": "private",
-                                                  "groupId": 0,
-                                                },
-                                              );
-                                            }
-                                            return;
-                                          }
+                                          // if (!isDeleteMode) {
+                                          //   if (isMe) return;
+                                          //   Navigator.pop(context);
+                                          //   if (Get.currentRoute ==
+                                          //       Routes.LocationTracking) {
+                                          //     final int targetGroupId =
+                                          //         effectiveGroupId ??
+                                          //             int.tryParse(member
+                                          //                     .groupId
+                                          //                     ?.toString() ??
+                                          //                 '') ??
+                                          //             0;
+                                          //     GroupTrackingController.instance
+                                          //         .searchUserAndZoom(
+                                          //       targetGroupId.toString(),
+                                          //       memberUserId,
+                                          //     );
+                                          //   } else {
+                                          //     if (Get.isRegistered<
+                                          //         MessageController>()) {
+                                          //       Get.delete<MessageController>(
+                                          //           force: true);
+                                          //     }
+                                          //     final MemberData memberData =
+                                          //         MemberData(
+                                          //       id: int.tryParse(member.id
+                                          //               ?.toString() ??
+                                          //           ''),
+                                          //       userId: int.tryParse(
+                                          //           memberUserId),
+                                          //       groupId: 0,
+                                          //       name: name,
+                                          //       profileImage: member
+                                          //           .profileImage
+                                          //           ?.toString(),
+                                          //       lastSeen: member.lastSeen
+                                          //           ?.toString(),
+                                          //       isOnline: isOnline,
+                                          //       locationSharing:
+                                          //           !isGhostMode,
+                                          //     );
+                                          //
+                                          //     Get.toNamed(
+                                          //       Routes.chatScreen,
+                                          //       arguments: {
+                                          //         "userData": memberData,
+                                          //         "groupName": name,
+                                          //         "isCreator": false,
+                                          //         "type": "chatScreen",
+                                          //         "chatType": "private",
+                                          //         "groupId": 0,
+                                          //       },
+                                          //     );
+                                          //   }
+                                          //   return;
+                                          // }
 
                                           if (isMe) {
                                             CommonDialog.errorMessage(
@@ -788,40 +787,9 @@ class BottomSheetUi {
                                                         .navigation_rounded,
                                                     color:
                                                         const Color(0xFF3B82F6),
-                                                    onTap: () {
-                                                      Navigator.pop(context);
-                                                      final int targetGroupId =
-                                                          effectiveGroupId ??
-                                                              int.tryParse(member
-                                                                      .groupId
-                                                                      ?.toString() ??
-                                                                  '') ??
-                                                              0;
-                                                      if (Get.currentRoute ==
-                                                          Routes
-                                                              .LocationTracking) {
-                                                        GroupTrackingController
-                                                            .instance
-                                                            .searchUserAndZoom(
-                                                          targetGroupId
-                                                              .toString(),
-                                                          memberUserId,
-                                                        );
-                                                      } else {
-                                                        Get.toNamed(
-                                                          Routes
-                                                              .LocationTracking,
-                                                          arguments: {
-                                                            "groupId":
-                                                                targetGroupId,
-                                                            "groupName":
-                                                                effectiveGroupName,
-                                                            "targetUserId":
-                                                                memberUserId,
-                                                          },
-                                                        );
-                                                      }
-                                                    },
+                                  onTap: () {
+
+                                  },
                                                   ),
                                                 ],
                                                 if (isDeleteMode) ...[

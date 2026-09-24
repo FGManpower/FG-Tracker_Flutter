@@ -646,7 +646,7 @@ class GroupTrackingController extends GetxController {
       data.role ??= existingUser.role;
     }
 
-    // Also check TrackController if still missing
+
     if (data.name == null ||
         data.name.toString().trim().isEmpty ||
         data.name.toString().toLowerCase() == 'member' ||
@@ -655,9 +655,7 @@ class GroupTrackingController extends GetxController {
         data.profileImage.toString().toLowerCase() == 'null') {
       if (Get.isRegistered<TrackController>()) {
         final tc = Get.find<TrackController>();
-        final ogm = tc.onlineGroupMembers.firstWhereOrNull(
-              (m) => m.userId?.toString() == data.userId.toString(),
-        );
+        final ogm = tc.onlineGroupMembers.firstWhereOrNull((m) => m.userId?.toString() == data.userId.toString(),);
         if (ogm != null) {
           if (ogm.name != null &&
               ogm.name!.trim().isNotEmpty &&
