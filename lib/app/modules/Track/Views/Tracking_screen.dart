@@ -1652,8 +1652,8 @@ class TrackingScreen extends StatelessWidget {
       padding: EdgeInsets.symmetric(horizontal: 16.w),
       sliver: SliverList(
         delegate: SliverChildListDelegate([
-          _buildSearchBox("Search by name or group..."),
-          SizedBox(height: 12.h),
+          // _buildSearchBox("Search by name or group..."),
+          // SizedBox(height: 12.h),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -1877,8 +1877,8 @@ class TrackingScreen extends StatelessWidget {
       padding: EdgeInsets.symmetric(horizontal: 16.w),
       sliver: SliverList(
         delegate: SliverChildListDelegate([
-          _buildSearchBox("Search groups..."),
-          SizedBox(height: 12.h),
+          // _buildSearchBox("Search groups..."),
+          // SizedBox(height: 12.h),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -1955,76 +1955,76 @@ class TrackingScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSearchBox(String hint) {
-    return Container(
-      height: 42.h,
-      decoration: BoxDecoration(
-        color: const Color(0xFFF1F5F9),
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-      ),
-      alignment: Alignment.center,
-      child: TextField(
-        controller: controller.searchController,
-        onChanged: (val) {
-          controller.onSearch(val);
-          controller.isSearchDropdownOpen.value = false;
-        },
-        textInputAction: TextInputAction.search,
-        onSubmitted: (val) {
-          controller.submitSearch(val);
-          FocusManager.instance.primaryFocus?.unfocus();
-        },
-        style: TextStyle(
-          fontSize: 13.sp,
-          color: const Color(0xFF1E1B4B),
-          fontWeight: FontWeight.w500,
-        ),
-        decoration: InputDecoration(
-          isDense: true,
-          prefixIcon: Icon(
-            Icons.search_rounded,
-            color: const Color(0xFF4338CA),
-            size: 20.sp,
-          ),
-          prefixIconConstraints: BoxConstraints(minWidth: 38.w),
-          suffixIcon: ValueListenableBuilder<TextEditingValue>(
-            valueListenable: controller.searchController,
-            builder: (context, value, child) {
-              if (value.text.isNotEmpty) {
-                return GestureDetector(
-                  onTap: () {
-                    controller.searchController.clear();
-                    controller.searchQuery.value = "";
-                    controller.isSearchDropdownOpen.value = false;
-                    controller.onSearch('');
-                    FocusManager.instance.primaryFocus?.unfocus();
-                  },
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 10.w),
-                    child: Icon(
-                      Icons.close_rounded,
-                      color: const Color(0xFF94A3B8),
-                      size: 18.sp,
-                    ),
-                  ),
-                );
-              }
-              return const SizedBox.shrink();
-            },
-          ),
-          suffixIconConstraints: BoxConstraints(minWidth: 36.w),
-          hintText: hint,
-          hintStyle: TextStyle(
-            color: const Color(0xFF94A3B8),
-            fontSize: 12.sp,
-          ),
-          border: InputBorder.none,
-          contentPadding: EdgeInsets.symmetric(vertical: 10.h),
-        ),
-      ),
-    );
-  }
+  // Widget _buildSearchBox(String hint) {
+  //   return Container(
+  //     height: 42.h,
+  //     decoration: BoxDecoration(
+  //       color: const Color(0xFFF1F5F9),
+  //       borderRadius: BorderRadius.circular(12.r),
+  //       border: Border.all(color: const Color(0xFFE2E8F0)),
+  //     ),
+  //     alignment: Alignment.center,
+  //     child: TextField(
+  //       controller: controller.searchController,
+  //       onChanged: (val) {
+  //         controller.onSearch(val);
+  //         controller.isSearchDropdownOpen.value = false;
+  //       },
+  //       textInputAction: TextInputAction.search,
+  //       onSubmitted: (val) {
+  //         controller.submitSearch(val);
+  //         FocusManager.instance.primaryFocus?.unfocus();
+  //       },
+  //       style: TextStyle(
+  //         fontSize: 13.sp,
+  //         color: const Color(0xFF1E1B4B),
+  //         fontWeight: FontWeight.w500,
+  //       ),
+  //       decoration: InputDecoration(
+  //         isDense: true,
+  //         prefixIcon: Icon(
+  //           Icons.search_rounded,
+  //           color: const Color(0xFF4338CA),
+  //           size: 20.sp,
+  //         ),
+  //         prefixIconConstraints: BoxConstraints(minWidth: 38.w),
+  //         suffixIcon: ValueListenableBuilder<TextEditingValue>(
+  //           valueListenable: controller.searchController,
+  //           builder: (context, value, child) {
+  //             if (value.text.isNotEmpty) {
+  //               return GestureDetector(
+  //                 onTap: () {
+  //                   controller.searchController.clear();
+  //                   controller.searchQuery.value = "";
+  //                   controller.isSearchDropdownOpen.value = false;
+  //                   controller.onSearch('');
+  //                   FocusManager.instance.primaryFocus?.unfocus();
+  //                 },
+  //                 child: Padding(
+  //                   padding: EdgeInsets.symmetric(horizontal: 10.w),
+  //                   child: Icon(
+  //                     Icons.close_rounded,
+  //                     color: const Color(0xFF94A3B8),
+  //                     size: 18.sp,
+  //                   ),
+  //                 ),
+  //               );
+  //             }
+  //             return const SizedBox.shrink();
+  //           },
+  //         ),
+  //         suffixIconConstraints: BoxConstraints(minWidth: 36.w),
+  //         hintText: hint,
+  //         hintStyle: TextStyle(
+  //           color: const Color(0xFF94A3B8),
+  //           fontSize: 12.sp,
+  //         ),
+  //         border: InputBorder.none,
+  //         contentPadding: EdgeInsets.symmetric(vertical: 10.h),
+  //       ),
+  //     ),
+  //   );
+  // }
 
   void _zoomToMemberFromList(MemberModel member) {
     if (_sheetController.isAttached) {
