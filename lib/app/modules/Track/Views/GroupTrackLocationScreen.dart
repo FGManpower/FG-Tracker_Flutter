@@ -3,20 +3,20 @@ import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:fgtracker/app/modules/Track/Controller/TrackController.dart';
+import 'package:fgtracker/app/modules/Track/Controller/GroupTrackController.dart';
 
 import '../../../routes/app_pages.dart';
 import '../Widget/TrackLAppBar.dart';
 
-class LocationTrackingPage extends StatefulWidget {
-  const LocationTrackingPage({super.key});
+class GroupLocationTrackingPage extends StatefulWidget {
+  const GroupLocationTrackingPage({super.key});
 
   @override
-  State<LocationTrackingPage> createState() => _LocationTrackingPageState();
+  State<GroupLocationTrackingPage> createState() => _LocationTrackingPageState();
 }
 
-class _LocationTrackingPageState extends State<LocationTrackingPage> {
-  final controller = TrackingController.instance;
+class _LocationTrackingPageState extends State<GroupLocationTrackingPage> {
+  final controller = GroupTrackingController.instance;
   final groupController = Get.put(GroupController());
 
   late int groupId;

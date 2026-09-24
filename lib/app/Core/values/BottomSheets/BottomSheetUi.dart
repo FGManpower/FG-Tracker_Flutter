@@ -14,7 +14,7 @@ import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
 import 'package:fgtracker/app/modules/Messages/Controller/GroupChatController.dart';
 import 'package:fgtracker/app/modules/Messages/Controller/MessageController.dart';
 import 'package:fgtracker/app/modules/mediaStream/Controller/calling_controller.dart';
-import 'package:fgtracker/app/modules/Track/Controller/TrackController.dart';
+import 'package:fgtracker/app/modules/Track/Controller/GroupTrackController.dart';
 import 'package:fgtracker/app/Core/util/http/http_util.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:flutter/material.dart';
@@ -426,7 +426,7 @@ class BottomSheetUi {
                                                               ?.toString() ??
                                                           '') ??
                                                       0;
-                                              TrackingController.instance
+                                              GroupTrackingController.instance
                                                   .searchUserAndZoom(
                                                 targetGroupId.toString(),
                                                 memberUserId,
@@ -800,7 +800,7 @@ class BottomSheetUi {
                                                       if (Get.currentRoute ==
                                                           Routes
                                                               .LocationTracking) {
-                                                        TrackingController
+                                                        GroupTrackingController
                                                             .instance
                                                             .searchUserAndZoom(
                                                           targetGroupId

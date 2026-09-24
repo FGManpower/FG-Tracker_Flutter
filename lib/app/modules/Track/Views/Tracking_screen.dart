@@ -1,10 +1,10 @@
+import 'package:fgtracker/app/modules/Track/Controller/TrackingController.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import '../Controller/TrackController.dart';
 import 'package:fgtracker/app/Core/values/colors.dart';
 import 'package:fgtracker/app/Model/MemberModel.dart';
 import 'package:fgtracker/app/Model/GroupRes.dart';

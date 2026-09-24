@@ -6,7 +6,7 @@ import 'package:fgtracker/app/Core/constant/urls.dart';
 import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Core/values/utility.dart';
-import 'package:fgtracker/app/modules/Track/Controller/TrackController.dart';
+import 'package:fgtracker/app/modules/Track/Controller/GroupTrackController.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 
 import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
@@ -85,7 +85,7 @@ class CallingController extends GetxController {
     WakelockPlus.enable();
 
     try {
-      TrackingController.instance.initializeLocation();
+      GroupTrackingController.instance.initializeLocation();
     } catch (e) {
       log("==============CallLocationException======${e.toString()}");
     }

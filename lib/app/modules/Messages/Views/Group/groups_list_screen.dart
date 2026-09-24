@@ -35,6 +35,7 @@ class _GroupsListScreenState extends State<GroupsListScreen> {
   @override
   void initState() {
     super.initState();
+    groupController.getGroupData();
     _scrollController.addListener(() {
       if (_scrollController.offset > 40 && !_isSearchCollapsed.value) {
         _isSearchCollapsed.value = true;

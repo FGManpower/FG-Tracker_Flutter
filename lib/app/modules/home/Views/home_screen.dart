@@ -5,12 +5,11 @@ import 'package:fgtracker/app/Data/Services/Socket/Socket_Dashboard_Service.dart
 import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
 import 'package:fgtracker/app/modules/Group/controller/JoinGroup_Controller.dart';
 import 'package:fgtracker/app/modules/Track/Controller/SocketServices.dart';
-import 'package:fgtracker/app/modules/Track/Controller/TrackController.dart';
+import 'package:fgtracker/app/modules/Track/Controller/GroupTrackController.dart';
 import 'package:fgtracker/app/modules/home/Controller/home_controller.dart';
 import 'package:fgtracker/app/modules/home/Home_Widget/bannerUi.dart';
 import 'package:fgtracker/app/modules/home/Views/LiveStatus/StatsGrid.dart';
 import 'package:fgtracker/app/modules/home/Views/bottom_actions_bar.dart';
-import 'package:fgtracker/app/modules/home/Views/map_section.dart';
 import 'package:fgtracker/app/modules/home/Views/quick_actions_section.dart';
 import 'package:fgtracker/app/modules/home/Views/sidemenu.dart';
 import 'package:fgtracker/app/widgets/Appbar.dart';
@@ -31,7 +30,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final groupController = Get.put(GroupController());
   final controller = Get.put(HomeController());
   final joinGroupController = Get.put(JoinGroupController());
-  final trackingController = Get.put(TrackingController());
+  final trackingController = Get.put(GroupTrackingController());
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   final firebaseNotificationServices notificationServices =
@@ -69,7 +68,7 @@ class _HomeScreenState extends State<HomeScreen> {
     await trackingController.loadLocationSharing();
     await SocketService.instance.init(ConstRes.socketUrl);
     trackingController.initializeLocation();
-    // await controller.startLiveLocationSession();
+
   }
 
   @override
@@ -90,6 +89,9 @@ class _HomeScreenState extends State<HomeScreen> {
             padding: EdgeInsets.only(bottom: 20.h),
             children: [
               BannerUi(),
+              // ElevatedButton(onPressed: () {
+              //   SocketDashboardService.instance.requestGroupCount();
+              // }, child: Text("Request to count")),
               SizedBox(height: 18.h),
               StatsGrid(controller: controller),
               SizedBox(height: 10.h),

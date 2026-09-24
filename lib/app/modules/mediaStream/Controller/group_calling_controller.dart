@@ -325,29 +325,7 @@ class GroupCallingController extends GetxController {
     }
   }
 
-  Future<void> startWebRTCForegroundService() async {
-    if (WebRTC.platformIsAndroid) {
-      try {
-        await WebRTC.invokeMethod('startForegroundService', <String, dynamic>{
-          'notificationTitle': 'Screen Sharing',
-          'notificationText': 'Sharing your screen in group call',
-        });
-        await Future.delayed(const Duration(milliseconds: 300));
-      } catch (e) {
-        log('[ScreenShare] Foreground service start error: $e');
-      }
-    }
-  }
 
-  Future<void> stopWebRTCForegroundService() async {
-    if (WebRTC.platformIsAndroid) {
-      try {
-        await WebRTC.invokeMethod('stopForegroundService');
-      } catch (e) {
-        log('[ScreenShare] Foreground service stop error: $e');
-      }
-    }
-  }
 
   void openParticipantsSheet() {
     _refreshNotInCallList();

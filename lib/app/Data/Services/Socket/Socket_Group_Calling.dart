@@ -24,7 +24,7 @@ class Socket_GroupCallService {
 
   MediaStream? localStream;
 
-  /// Current outgoing video track (camera OR screen)
+
   MediaStreamTrack? activeVideoTrack;
 
   final Map<String, RTCPeerConnection> _peers = {};
@@ -42,7 +42,7 @@ class Socket_GroupCallService {
   Function(String userId, bool isMuted)? onParticipantMuteChanged;
   Function(Map<String, dynamic> data)? onIncomingCallReceived;
 
-  // Screen share callbacks
+
   Function(String userId)? onScreenShareStarted;
   Function(String userId)? onScreenShareStopped;
 
@@ -132,7 +132,7 @@ class Socket_GroupCallService {
     );
 
     socket?.onConnect((_) {
-      _log('🟢 Connected to /groupCall Namespace');
+      _log('Connected to /groupCall Namespace');
       _listenersBound = false;
       _bindSocketListeners();
     });
@@ -147,7 +147,7 @@ class Socket_GroupCallService {
     });
   }
 
-  /// Waits for socket connection dynamically if launched from Terminated state
+
   Future<bool> _ensureConnected({int timeoutSeconds = 10}) async {
     if (socket != null && socket!.connected) return true;
 

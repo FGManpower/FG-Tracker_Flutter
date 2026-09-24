@@ -6,7 +6,7 @@ import 'package:fgtracker/app/Model/group_member_model.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../../Track/Controller/TrackController.dart';
+import '../../Track/Controller/GroupTrackController.dart';
 
 class LivesStatusController extends GetxController {
   static LivesStatusController get instance =>
@@ -491,8 +491,8 @@ class LivesStatusController extends GetxController {
           newLocationSharing,
         );
 
-        if (Get.isRegistered<TrackingController>()) {
-          final trackingController = Get.find<TrackingController>();
+        if (Get.isRegistered<GroupTrackingController>()) {
+          final trackingController = Get.find<GroupTrackingController>();
 
           trackingController.isLocationSharing.value = newLocationSharing;
         }

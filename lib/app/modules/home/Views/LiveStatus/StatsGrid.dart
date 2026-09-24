@@ -30,9 +30,7 @@ class StatsGrid extends StatelessWidget {
               value: detail.totalGroups.toString(),
               subtitle: "Total",
               onTap: () {
-                Get.toNamed(Routes.GroupsList)?.then((_) {
-                  controller.refreshGroupCount();
-                });
+                Get.toNamed(Routes.GroupsList);
               },
             ),
           ),
@@ -45,9 +43,7 @@ class StatsGrid extends StatelessWidget {
               value: detail.activeMembers.toString(),
               subtitle: "Now",
               onTap: () {
-                Get.to(() => OnlineMember())?.then((_) {
-                  controller.refreshGroupCount();
-                });
+                Get.to(() => OnlineMember());
               },
             ),
           ),
@@ -60,9 +56,7 @@ class StatsGrid extends StatelessWidget {
               value: detail.totalMembers.toString(),
               subtitle: "Total",
               onTap: () {
-                Get.to(() => const TotalMember())?.then((_) {
-                  controller.refreshGroupCount();
-                });
+                Get.to(() => const TotalMember());
               },
             ),
           ),
@@ -75,9 +69,7 @@ class StatsGrid extends StatelessWidget {
               value: detail.locationDisabledMembers.toString(),
               subtitle: "Active",
               onTap: () {
-                Get.to(() => GhostMember())?.then((_) {
-                  controller.refreshGroupCount();
-                });
+                Get.to(() => GhostMember());
               },
             ),
           ),
