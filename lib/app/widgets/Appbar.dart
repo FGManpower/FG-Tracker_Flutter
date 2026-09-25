@@ -3,7 +3,7 @@ import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/theme/appTheme.dart';
 import 'package:fgtracker/app/Core/values/utility.dart';
 import 'package:fgtracker/app/modules/Notification/Controller/Notification_Controller.dart';
-import 'package:fgtracker/app/modules/Track/Controller/TrackController.dart';
+import 'package:fgtracker/app/modules/Track/Controller/GroupTrackController.dart';
 import 'package:fgtracker/app/modules/home/Controller/home_controller.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
@@ -40,7 +40,7 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   final GlobalKey<ScaffoldState> scaffoldKey;
   final HomeController controller;
-  final TrackingController trackingController;
+  final GroupTrackingController trackingController;
   final NotificationController notificationController =
   Get.put(NotificationController());
 
@@ -176,7 +176,7 @@ class _LocationStatus extends StatelessWidget {
     required this.trackingController,
   });
 
-  final TrackingController trackingController;
+  final GroupTrackingController trackingController;
 
   @override
   Widget build(BuildContext context) {

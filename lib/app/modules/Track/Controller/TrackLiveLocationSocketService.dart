@@ -7,7 +7,6 @@ import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 
-/// Model representing location data received via socket event 'send-location'
 class LiveLocationSocketModel {
   final dynamic userId;
   final dynamic groupId;
@@ -321,39 +320,6 @@ class TrackLiveLocationSocketService extends GetxService {
     _listeners.remove(callback);
   }
 
-  /// Emit location using 'send-location' event
-  void emitSendLocation({
-    required String userId,
-    dynamic groupId,
-    required double lat,
-    required double lng,
-    String? area,
-    String? city,
-    String? address,
-  }) {
-    if (_socket == null || !_socket!.connected) {
-      log('⚠️ [TrackLiveSocket] Cannot emit send-location: Socket not connected');
-      return;
-    }
-
-    final payload = <String, dynamic>{
-      'userId': userId,
-      if (groupId != null && groupId.toString().isNotEmpty) 'groupId': groupId,
-      'lat': lat,
-      'lng': lng,
-      'latitude': lat,
-      'longitude': lng,
-      if (area != null && area.trim().isNotEmpty) 'area': area.trim(),
-      if (city != null && city.trim().isNotEmpty) 'city': city.trim(),
-      if (address != null && address.trim().isNotEmpty)
-        'address': address.trim(),
-      if (address != null && address.trim().isNotEmpty)
-        'location': address.trim(),
-    };
-
-    _socket!.emit('send-location', payload);
-    log('📤 [TrackLiveSocket] Emitted "send-location": $payload');
-  }
 
   /// Join a group room on the location socket
   void joinGroup({required String groupId, required String userId}) {

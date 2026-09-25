@@ -6,7 +6,7 @@ import 'package:fgtracker/app/Core/values/loading.dart';
 import 'package:fgtracker/app/Data/Repositories/GroupRepo.dart';
 
 import 'package:fgtracker/app/Model/MemberDataRes.dart';
-import 'package:fgtracker/app/modules/Track/Controller/TrackController.dart';
+import 'package:fgtracker/app/modules/Track/Controller/GroupTrackController.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
@@ -126,7 +126,7 @@ class MemberController extends GetxController {
     required String groupId,
         required void Function(bool) onSuccess,
   }) async {
-    TrackingController.instance.exitGroup(
+    GroupTrackingController.instance.exitGroup(
       groupId: groupId,
       onCompletion: (success) {
         if (success) {
@@ -142,7 +142,7 @@ class MemberController extends GetxController {
     BuildContext context, {
     required String groupId,
   }) async {
-    TrackingController.instance.deleteGroup(
+    GroupTrackingController.instance.deleteGroup(
       groupId: groupId,
       onCompletion: (success) {
         if (success) {

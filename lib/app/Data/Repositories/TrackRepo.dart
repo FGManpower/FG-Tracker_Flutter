@@ -193,9 +193,6 @@ class TrackRepo {
           '&page=$page'
           '&limit=$limit';
 
-      log("🟢 [TrackRepo] GET Group Members ($filter): $url");
-      debugPrint("🟢 [TrackRepo] GET Group Members ($filter): $url");
-
       final response = await HttpUtil().get(url);
 
       if (response is Map<String, dynamic>) {

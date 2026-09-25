@@ -14,7 +14,7 @@ import 'package:fgtracker/app/Model/GetMessage.dart';
 import 'package:fgtracker/app/Model/LocationMessage.dart';
 import 'package:fgtracker/app/Model/MemberDataRes.dart';
 import 'package:fgtracker/app/modules/Messages/widgets/videoThumbnailWidget.dart';
-import 'package:fgtracker/app/modules/Track/Controller/TrackController.dart';
+import 'package:fgtracker/app/modules/Track/Controller/GroupTrackController.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
@@ -219,7 +219,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     log("=================================");
 
     try {
-      TrackingController.instance.initializeLocation();
+      GroupTrackingController.instance.initializeLocation();
     } catch (e) {
       log("==============MessageException======${e.toString()}");
     }

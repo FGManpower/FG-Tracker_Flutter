@@ -6,13 +6,14 @@ import 'package:fgtracker/app/Core/values/global.dart';
 
 import 'package:fgtracker/app/Data/Services/LocationPermission.dart';
 import 'package:fgtracker/app/modules/Track/Controller/SocketServices.dart';
+import 'package:fgtracker/app/modules/Track/Controller/TrackingController.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:location/location.dart';
 
 import 'package:geocoding/geocoding.dart' hide Location;
 import '../../../Core/values/Context_Utility.dart';
-import 'TrackController.dart';
+import 'GroupTrackController.dart';
 
 class LocationService extends GetxService {
   static LocationService get instance => Get.put(LocationService());
@@ -94,7 +95,7 @@ class LocationService extends GetxService {
     _positionStream = _location.onLocationChanged.listen((location) async {
       currentPosition = location;
 
-      if (!TrackingController.instance.isLocationSharing.value) {
+      if (!GroupTrackingController.instance.isLocationSharing.value) {
         log("Ghost Mode Enabled - Location not shared");
         return;
       }
@@ -152,6 +153,7 @@ class LocationService extends GetxService {
         address: address,
         area: area,
         city: city,
+        battery:23
       );
     });
   }

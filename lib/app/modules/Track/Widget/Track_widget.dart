@@ -71,7 +71,7 @@ Future<ui.Image?> _fetchAndDecodeImage(String url, int targetSize) async {
       return frame.image;
     }
   } catch (e) {
-    debugPrint("⚠️ Marker image load failed for $url: $e");
+    debugPrint("️ Marker image load failed for $url: $e");
   }
   return null;
 }

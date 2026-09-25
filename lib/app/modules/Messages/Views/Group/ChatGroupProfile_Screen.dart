@@ -753,8 +753,9 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
                     _statusText(m),
                     style: TextStyle(
                       fontSize: 11.sp,
-                      color:
-                          online ? const Color(0xFF2BB673) : Colors.grey.shade500,
+                      color: online
+                          ? const Color(0xFF2BB673)
+                          : Colors.grey.shade500,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -805,10 +806,14 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
                       context,
                       groupId: chatController.groupId.toString(),
                       groupMemberId: m.userId.toString(),
-                      onSuccess: (success) {
+                      onSuccess: (success) async {
                         if (success) {
                           chatController.groupMembers
-                              .removeWhere((e) => e.userId == m.userId);
+                              .removeWhere((e) => e.userId.toString() == m.userId.toString());
+
+                          chatController.groupMembers.refresh();
+
+                          await chatController.getGroupMembers();
                         }
                       },
                     );
@@ -876,6 +881,7 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
       ),
     );
   }
+
   Widget _buildDangerSection(BuildContext context) {
     return _whiteCard(
       padding: EdgeInsets.zero,

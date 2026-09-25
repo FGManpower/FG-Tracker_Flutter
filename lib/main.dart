@@ -9,12 +9,10 @@ import 'package:fgtracker/app/Data/Services/CallStateTracker.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Group_Calling.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Walkie-Talkie-Service.dart';
 import 'package:fgtracker/app/Data/Services/screen_share_service.dart';
-import 'package:fgtracker/gen/assets.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -29,7 +27,7 @@ import 'app/Data/Services/Socket/Socket_SignallingService.dart';
 import 'app/modules/Notification/Controller/cubit/notification_count_cubit.dart';
 import 'app/routes/app_pages.dart';
 import 'app/modules/Track/Controller/SocketServices.dart';
-import 'app/modules/Track/Controller/TrackController.dart';
+import 'app/modules/Track/Controller/GroupTrackController.dart';
 import 'app/modules/Track/Controller/LocationService.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
@@ -205,7 +203,7 @@ Future<void> main() async {
     const SystemUiOverlayStyle(statusBarColor: Colors.transparent),
   );
 
-  Get.put<TrackingController>(TrackingController());
+  Get.put<GroupTrackingController>(GroupTrackingController());
 
   Get.put<LocationService>(LocationService());
   Get.put<SocketService>(SocketService());
