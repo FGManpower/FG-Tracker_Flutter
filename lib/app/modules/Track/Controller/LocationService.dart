@@ -95,10 +95,10 @@ class LocationService extends GetxService {
     _positionStream = _location.onLocationChanged.listen((location) async {
       currentPosition = location;
 
-      if (!GroupTrackingController.instance.isLocationSharing.value) {
-        log("Ghost Mode Enabled - Location not shared");
-        return;
-      }
+      // if (!GroupTrackingController.instance.isLocationSharing.value) {
+      //   log("Ghost Mode Enabled - Location not shared");
+      //   return;
+      // }
 
       final lat = currentPosition?.latitude;
       final lng = currentPosition?.longitude;
