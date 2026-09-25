@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
-import '../../../../gen/assets.gen.dart';
+import 'package:fgtracker/generated/assets.dart';
 import '../../../routes/app_pages.dart';
 
 class WalkieInviteDialog {
@@ -234,15 +234,14 @@ class _BannerInviteWidgetState extends State<_BannerInviteWidget>
           Container(
             width: 44.r,
             height: 44.r,
+            padding: EdgeInsets.all(4.r),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: _btnRejectBg,
               border: Border.all(color: _primaryPurple.withValues(alpha: 0.3), width: 1),
             ),
-            child: Icon(
-              Icons.speaker_phone_rounded,
-              color: Colors.white,
-              size: 22.sp,
+            child: Assets.walkieTalkie.walkieDevice.image(
+              fit: BoxFit.contain,
             ),
           ),
           Positioned(

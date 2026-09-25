@@ -30,6 +30,8 @@ import '../modules/Safe_Zone/views/safety_dashboard_view.dart';
 import '../modules/Track/Views/Tracking_screen.dart';
 import '../modules/Walkie-talkie/Views/walkie_group_select_screen.dart';
 import '../modules/Walkie-talkie/Views/walkie_talkie_trial_details.dart';
+import '../modules/Walkie-talkie/Views/walkie_talkie_plan_details.dart';
+import '../modules/Walkie-talkie/Views/walkie_talkie_purchase_success_screen.dart';
 import '../modules/Track/Views/Search_Members.dart';
 import '../modules/Track/Views/GroupTrackLocationScreen.dart';
 import '../modules/Walkie-talkie/WalkieTalkieScreen.dart';
@@ -222,6 +224,18 @@ class AppPages {
     GetPage(
       name: Routes.walkieTalkieTrialDetails,
       page: () => const WalkieTalkieTrialDetailsScreen(),
+    ),
+    GetPage(
+      name: Routes.walkieTalkiePlanScreen,
+      page: () => const WalkieTalkiePlanDetails(),
+      transition: Transition.rightToLeft,
+      transitionDuration: const Duration(milliseconds: 400),
+    ),
+    GetPage(
+      name: Routes.walkieTalkiePurchaseSuccess,
+      page: () => const WalkieTalkiePurchaseSuccessScreen(),
+      transition: Transition.rightToLeft,
+      transitionDuration: const Duration(milliseconds: 400),
     ),
     GetPage(
       name: Routes.groupWalkieScreen,

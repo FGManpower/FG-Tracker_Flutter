@@ -351,8 +351,10 @@ class _ChatInputAreaState extends State<ChatInputArea> {
                                   ),
                                   suffixIcon: GestureDetector(
                                     onTap: () {
+                                      final isGroupAdmin = widget.groupMessageController?.isCreator.value == true;
                                       ChatBottomSheet.showFileOptions(
                                         context,
+                                        showAttendance: isGroupAdmin,
                                         onGallery: () async {
                                           Navigator.pop(context);
                                           final List<XFile> mediaFiles =
@@ -437,13 +439,15 @@ class _ChatInputAreaState extends State<ChatInputArea> {
                                           Navigator.pop(context);
                                           widget.onContactSelected();
                                         },
-                                        onAttendance: () {
-                                          Navigator.pop(context);
-                                          ChatBottomSheet.showCreateAttendance(
-                                            context,
-                                            groupMembers: widget.groupMembers,
-                                          );
-                                        },
+                                        onAttendance: isGroupAdmin
+                                            ? () {
+                                                Navigator.pop(context);
+                                                ChatBottomSheet.showCreateAttendance(
+                                                  context,
+                                                  groupMembers: widget.groupMembers,
+                                                );
+                                              }
+                                            : null,
                                       );
                                     },
                                     child: Padding(

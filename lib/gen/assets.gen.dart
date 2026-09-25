@@ -82,6 +82,59 @@ class $AssetsIconsGen {
       ];
 }
 
+class $AssetsWalkieTalkieGen {
+  const $AssetsWalkieTalkieGen();
+
+  /// File path: assets/walkie_talkie/walkie_device.png
+  AssetGenImage get walkieDevice =>
+      const AssetGenImage('assets/walkie_talkie/walkie_device.png');
+
+  /// File path: assets/walkie_talkie/walkie_device_glow.png
+  AssetGenImage get walkieDeviceGlow =>
+      const AssetGenImage('assets/walkie_talkie/walkie_device_glow.png');
+
+  /// File path: assets/walkie_talkie/worker_white_helmet.png
+  AssetGenImage get workerWhiteHelmet =>
+      const AssetGenImage('assets/walkie_talkie/worker_white_helmet.png');
+
+  /// File path: assets/walkie_talkie/worker_yellow_helmet.png
+  AssetGenImage get workerYellowHelmet =>
+      const AssetGenImage('assets/walkie_talkie/worker_yellow_helmet.png');
+
+  /// File path: assets/walkie_talkie/worker_yellow_helmet_right.png
+  AssetGenImage get workerYellowHelmetRight =>
+      const AssetGenImage('assets/walkie_talkie/worker_yellow_helmet_right.png');
+
+  /// File path: assets/walkie_talkie/worker_blue_cap.png
+  AssetGenImage get workerBlueCap =>
+      const AssetGenImage('assets/walkie_talkie/worker_blue_cap.png');
+
+  /// File path: assets/walkie_talkie/city_skyline.png
+  AssetGenImage get citySkyline =>
+      const AssetGenImage('assets/walkie_talkie/city_skyline.png');
+
+  /// File path: assets/walkie_talkie/connector_line_up.png
+  AssetGenImage get connectorLineUp =>
+      const AssetGenImage('assets/walkie_talkie/connector_line_up.png');
+
+  /// File path: assets/walkie_talkie/connector_line_down.png
+  AssetGenImage get connectorLineDown =>
+      const AssetGenImage('assets/walkie_talkie/connector_line_down.png');
+
+  /// List of all assets
+  List<AssetGenImage> get values => [
+        walkieDevice,
+        walkieDeviceGlow,
+        workerWhiteHelmet,
+        workerYellowHelmet,
+        workerYellowHelmetRight,
+        workerBlueCap,
+        citySkyline,
+        connectorLineUp,
+        connectorLineDown
+      ];
+}
+
 class $AssetsImagesGen {
   const $AssetsImagesGen();
 
@@ -530,6 +583,7 @@ abstract final class Assets {
   static const $AssetsMapThemeGen mapTheme = $AssetsMapThemeGen();
   static const $AssetsMusicGen music = $AssetsMusicGen();
   static const $AssetsSvgGen svg = $AssetsSvgGen();
+  static const $AssetsWalkieTalkieGen walkieTalkie = $AssetsWalkieTalkieGen();
   static const $LibGen lib = $LibGen();
   static const String shorebird = 'shorebird.yaml';
 

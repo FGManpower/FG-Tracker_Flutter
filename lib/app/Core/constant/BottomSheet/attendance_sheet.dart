@@ -4,6 +4,10 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
 import '../../../modules/Messages/Controller/GroupChatController.dart';
+import '../../constant/pref_res.dart';
+import '../../values/global.dart';
+import '../../../modules/Attendance/models/attendance_poll_model.dart';
+import '../../../modules/Attendance/widgets/attendance_chat_card.dart';
 
 Future<void> showAttendanceSheet({
   BuildContext? context,
@@ -343,6 +347,23 @@ class _AttendanceSheetState extends State<AttendanceSheet> {
       );
     }
 
+    final currentUserId =
+        Global.storageServices.get(PrefConst.userId)?.toString() ?? "user_1";
+    final currentUserName =
+        Global.storageServices.get(PrefConst.userName)?.toString() ?? "You";
+
+    final pollData = AttendancePollData(
+      id: "att_${DateTime.now().millisecondsSinceEpoch}",
+      question: _questionController.text.trim(),
+      date: _formattedDate,
+      creatorName: currentUserName,
+      totalMembers: selectedCount > 0 ? selectedCount : 12,
+      presentCount: 0,
+      absentCount: 0,
+      respondedCount: 0,
+      responses: [],
+    );
+
     Get.snackbar(
       "Attendance Created",
       "Attendance poll sent to $selectedCount members",
@@ -352,6 +373,54 @@ class _AttendanceSheetState extends State<AttendanceSheet> {
       margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
       borderRadius: 12.r,
     );
+
+    // Launch Screen 2 (Mark Attendance -> Camera -> Submit -> Admin View)
+    Future.delayed(const Duration(milliseconds: 250), () {
+      final ctx = Get.context;
+      if (ctx != null) {
+        showModalBottomSheet(
+          context: ctx,
+          isScrollControlled: true,
+          backgroundColor: Colors.transparent,
+          barrierColor: Colors.black.withValues(alpha: 0.45),
+          builder: (sheetCtx) => Container(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(sheetCtx).size.height * 0.90,
+            ),
+            padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 20.h),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+            ),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 44.w,
+                      height: 4.h,
+                      margin: EdgeInsets.only(bottom: 8.h),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFCBD5E1),
+                        borderRadius: BorderRadius.circular(20.r),
+                      ),
+                    ),
+                  ),
+                  AttendanceChatCard(
+                    pollData: pollData,
+                    isAdmin: false,
+                    currentUserId: currentUserId,
+                    currentUserName: currentUserName,
+                    groupName: "Site Team",
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      }
+    });
   }
 
   @override

@@ -14,6 +14,7 @@ class Assets {
   static const $AssetsIconsGen icons = $AssetsIconsGen();
   static const $AssetsMusicGen music = $AssetsMusicGen();
   static const $AssetsSvgGen svg = $AssetsSvgGen();
+  static const $AssetsWalkieTalkieGen walkieTalkie = $AssetsWalkieTalkieGen();
 }
 
 class $AssetsAssetsGen {
@@ -23,6 +24,30 @@ class $AssetsAssetsGen {
   final $AssetsImagesGen images = const $AssetsImagesGen();
   final $AssetsMusicGen music = const $AssetsMusicGen();
   final $AssetsSvgGen svg = const $AssetsSvgGen();
+  final $AssetsWalkieTalkieGen walkieTalkie = const $AssetsWalkieTalkieGen();
+}
+
+class $AssetsWalkieTalkieGen {
+  const $AssetsWalkieTalkieGen();
+
+  final AssetGenImage walkieDevice =
+      const AssetGenImage('assets/walkie_talkie/walkie_device.png');
+  final AssetGenImage walkieDeviceGlow =
+      const AssetGenImage('assets/walkie_talkie/walkie_device_glow.png');
+  final AssetGenImage workerWhiteHelmet =
+      const AssetGenImage('assets/walkie_talkie/worker_white_helmet.png');
+  final AssetGenImage workerYellowHelmet =
+      const AssetGenImage('assets/walkie_talkie/worker_yellow_helmet.png');
+  final AssetGenImage workerYellowHelmetRight =
+      const AssetGenImage('assets/walkie_talkie/worker_yellow_helmet_right.png');
+  final AssetGenImage workerBlueCap =
+      const AssetGenImage('assets/walkie_talkie/worker_blue_cap.png');
+  final AssetGenImage citySkyline =
+      const AssetGenImage('assets/walkie_talkie/city_skyline.png');
+  final AssetGenImage connectorLineUp =
+      const AssetGenImage('assets/walkie_talkie/connector_line_up.png');
+  final AssetGenImage connectorLineDown =
+      const AssetGenImage('assets/walkie_talkie/connector_line_down.png');
 }
 
 class $AssetsImagesGen {
