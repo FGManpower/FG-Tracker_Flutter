@@ -2,6 +2,7 @@ import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Controller/walkie_talkie_plan_controller.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Views/walkie_talkie_purchase_success_screen.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
+import 'package:fgtracker/generated/assets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -327,21 +328,38 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
                     ],
                   ),
 
-                  // Circle Badge with 3 Team Icons for Team Plan
+                  // Worker Avatars Cluster for Team Plan
                   if (isTeam) ...[
                     SizedBox(height: 6.h),
                     Padding(
-                      padding: EdgeInsets.only(left: 12.w),
-                      child: Container(
-                        padding: EdgeInsets.all(5.5.w),
-                        decoration: const BoxDecoration(
-                          color: Color(0xFFEDE9FE),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          Icons.groups_rounded,
-                          color: _primaryPurple,
-                          size: 19.sp.clamp(17.0, 22.0),
+                      padding: EdgeInsets.only(left: 6.w),
+                      child: SizedBox(
+                        width: 44.w,
+                        height: 24.w,
+                        child: Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            Positioned(
+                              left: 0,
+                              child: SizedBox(
+                                width: 24.w,
+                                height: 24.w,
+                                child: Assets.walkieTalkie.workerWhiteHelmet.image(
+                                  fit: BoxFit.contain,
+                                ),
+                              ),
+                            ),
+                            Positioned(
+                              left: 18.w,
+                              child: SizedBox(
+                                width: 24.w,
+                                height: 24.w,
+                                child: Assets.walkieTalkie.workerYellowHelmetRight.image(
+                                  fit: BoxFit.contain,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
@@ -356,119 +374,28 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
   }
 
   Widget _buildWalkieTalkieDevice() {
-    return Container(
-      width: 48.w.clamp(44.0, 54.0),
-      height: 80.h.clamp(74.0, 88.0),
-      decoration: BoxDecoration(
-        color: const Color(0xFF222433),
-        borderRadius: BorderRadius.circular(15.r),
-        boxShadow: [
-          BoxShadow(
-            color: _primaryPurple.withValues(alpha: 0.28),
-            blurRadius: 14,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
+    return SizedBox(
+      width: 52.w.clamp(46.0, 58.0),
+      height: 84.h.clamp(78.0, 92.0),
       child: Stack(
-        clipBehavior: Clip.none,
         alignment: Alignment.center,
         children: [
-          // Antenna top left
-          Positioned(
-            top: -16.h,
-            left: 9.w,
-            child: Container(
-              width: 6.5.w,
-              height: 18.h,
-              decoration: BoxDecoration(
-                color: const Color(0xFF1B1D29),
-                borderRadius: BorderRadius.circular(3.r),
-              ),
+          Container(
+            width: 40.w,
+            height: 68.h,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(14.r),
+              boxShadow: [
+                BoxShadow(
+                  color: _primaryPurple.withValues(alpha: 0.28),
+                  blurRadius: 14,
+                  offset: const Offset(0, 6),
+                ),
+              ],
             ),
           ),
-          // Knob top right
-          Positioned(
-            top: -7.h,
-            right: 10.w,
-            child: Container(
-              width: 10.w,
-              height: 9.h,
-              decoration: BoxDecoration(
-                color: const Color(0xFF333647),
-                borderRadius: BorderRadius.circular(3.r),
-              ),
-            ),
-          ),
-          // PTT side button
-          Positioned(
-            left: -3.w,
-            top: 26.h,
-            child: Container(
-              width: 4.w,
-              height: 20.h,
-              decoration: BoxDecoration(
-                color: _primaryPurple,
-                borderRadius: BorderRadius.circular(2.r),
-              ),
-            ),
-          ),
-          // Device Face
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              SizedBox(height: 3.h),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    width: 16.w,
-                    height: 2.5.h,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.25),
-                      borderRadius: BorderRadius.circular(2.r),
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 7.h),
-              // Illuminated center mic/speaker
-              Container(
-                width: 36.w,
-                height: 36.w,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: const Color(0xFF151722),
-                  border: Border.all(
-                    color: _primaryPurple,
-                    width: 2.2.w,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: _primaryPurple.withValues(alpha: 0.5),
-                      blurRadius: 8,
-                    ),
-                  ],
-                ),
-                child: Center(
-                  child: Icon(
-                    Icons.mic_rounded,
-                    color: Colors.white,
-                    size: 15.sp,
-                  ),
-                ),
-              ),
-              SizedBox(height: 5.h),
-              // Status dot
-              Container(
-                width: 4.5.w,
-                height: 4.5.w,
-                decoration: const BoxDecoration(
-                  color: Color(0xFF00E676),
-                  shape: BoxShape.circle,
-                ),
-              ),
-            ],
+          Assets.walkieTalkie.walkieDevice.image(
+            fit: BoxFit.contain,
           ),
         ],
       ),

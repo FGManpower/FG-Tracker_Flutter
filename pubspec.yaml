@@ -129,6 +129,7 @@ flutter:
     - assets/icons/
     - assets/svg/
     - assets/music/
+    - assets/walkie_talkie/
     - shorebird.yaml
     - assets/map_theme/dark_map.json
     - lib/app/routes/

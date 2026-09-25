@@ -536,9 +536,28 @@ class ChatBubble extends StatelessWidget {
         message.content?.toString() ?? "",
       );
 
+      final currentUserId =
+          Global.storageServices.get(PrefConst.userId)?.toString() ?? "";
+      final currentUserName =
+          Global.storageServices.get(PrefConst.userName)?.toString() ?? "You";
+      final groupName = controller is GroupMessageController
+          ? (controller as GroupMessageController).groupName
+          : "Site Team";
+
       return AttendanceChatCard(
         pollData: pollData,
         isAdmin: isCreator,
+        currentUserId: currentUserId,
+        currentUserName: currentUserName,
+        groupName: groupName,
+        onAttendanceSubmitted: (response) {
+          if (controller is GroupMessageController && message.id != null) {
+            (controller as GroupMessageController).updateAttendanceResponse(
+              messageId: message.id!,
+              response: response,
+            );
+          }
+        },
       );
     } else {
       return _buildTextContent(

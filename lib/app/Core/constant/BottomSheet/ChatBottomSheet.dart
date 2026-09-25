@@ -100,6 +100,7 @@ class ChatBottomSheet {
     required VoidCallback onLocation,
     required VoidCallback onContact,
     VoidCallback? onAttendance,
+    bool showAttendance = false,
   }) async {
     return showModalBottomSheet(
       context: context,
@@ -213,20 +214,21 @@ class ChatBottomSheet {
                     title: "Contact",
                     onTap: onContact,
                   ),
-                  _attachmentItem(
-                    icon: Icons.event_available_rounded,
-                    iconColor: const Color(0xFF7B61FF),
-                    bgColor: const Color(0xFFF0EBFF),
-                    title: "Attendance",
-                    onTap: () {
-                      Navigator.pop(sheetContext);
-                      if (onAttendance != null) {
-                        onAttendance();
-                      } else {
-                        showAttendanceSheet(context: context);
-                      }
-                    },
-                  ),
+                  if (showAttendance)
+                    _attachmentItem(
+                      icon: Icons.event_available_rounded,
+                      iconColor: const Color(0xFF7B61FF),
+                      bgColor: const Color(0xFFF0EBFF),
+                      title: "Attendance",
+                      onTap: () {
+                        Navigator.pop(sheetContext);
+                        if (onAttendance != null) {
+                          onAttendance();
+                        } else {
+                          showAttendanceSheet(context: context);
+                        }
+                      },
+                    ),
                 ],
               ),
               SizedBox(height: 8.h),

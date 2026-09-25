@@ -7,6 +7,8 @@ class AttendanceMemberResponse {
   final String status; // "Present" or "Absent"
   final String? photoUrl;
   final String time;
+  final String? location;
+  final String? locationDistance;
 
   AttendanceMemberResponse({
     required this.userId,
@@ -15,6 +17,8 @@ class AttendanceMemberResponse {
     required this.status,
     this.photoUrl,
     required this.time,
+    this.location,
+    this.locationDistance,
   });
 
   Map<String, dynamic> toJson() => {
@@ -24,6 +28,8 @@ class AttendanceMemberResponse {
     "status": status,
     "photoUrl": photoUrl,
     "time": time,
+    "location": location,
+    "locationDistance": locationDistance,
   };
 
   factory AttendanceMemberResponse.fromJson(Map<String, dynamic> json) =>
@@ -34,6 +40,8 @@ class AttendanceMemberResponse {
         status: json["status"]?.toString() ?? "Present",
         photoUrl: json["photoUrl"]?.toString(),
         time: json["time"]?.toString() ?? "",
+        location: json["location"]?.toString(),
+        locationDistance: json["locationDistance"]?.toString(),
       );
 }
 
@@ -55,10 +63,10 @@ class AttendancePollData {
     required this.date,
     this.creatorName = "Rahul Verma",
     this.creatorAvatar = "",
-    this.totalMembers = 2,
+    this.totalMembers = 12,
     this.presentCount = 2,
     this.absentCount = 1,
-    this.respondedCount = 2,
+    this.respondedCount = 3,
     List<AttendanceMemberResponse>? responses,
   }) : responses = responses ?? [];
 
@@ -93,7 +101,7 @@ class AttendancePollData {
       creatorAvatar: json["creatorAvatar"]?.toString() ?? "",
       totalMembers: json["totalMembers"] is int
           ? json["totalMembers"]
-          : int.tryParse(json["totalMembers"]?.toString() ?? "2") ?? 2,
+          : int.tryParse(json["totalMembers"]?.toString() ?? "12") ?? 12,
       presentCount: json["presentCount"] is int
           ? json["presentCount"]
           : int.tryParse(json["presentCount"]?.toString() ?? "2") ?? 2,
@@ -102,7 +110,7 @@ class AttendancePollData {
           : int.tryParse(json["absentCount"]?.toString() ?? "1") ?? 1,
       respondedCount: json["respondedCount"] is int
           ? json["respondedCount"]
-          : int.tryParse(json["respondedCount"]?.toString() ?? "2") ?? 2,
+          : int.tryParse(json["respondedCount"]?.toString() ?? "3") ?? 3,
       responses: resList,
     );
   }
@@ -118,22 +126,36 @@ class AttendancePollData {
       id: "att_1",
       question: "Team, please mark your attendance for today.",
       date: "11 Sep",
-      totalMembers: 2,
+      totalMembers: 12,
       presentCount: 2,
       absentCount: 1,
-      respondedCount: 2,
+      respondedCount: 3,
       responses: [
         AttendanceMemberResponse(
           userId: "1",
-          userName: "Rahul Verma",
+          userName: "Rahul",
           status: "Present",
-          time: "09:15 AM",
+          time: "09:12 AM",
+          location: "Ghatkopar, Mumbai",
+          locationDistance: "Just now • Within 50 m",
+          photoUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150",
         ),
         AttendanceMemberResponse(
           userId: "2",
-          userName: "Divesh Shinde",
+          userName: "Sameer",
           status: "Present",
           time: "09:20 AM",
+          location: "Pune, Maharashtra",
+          locationDistance: "2 mins ago • 1.2 km away",
+          photoUrl: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150",
+        ),
+        AttendanceMemberResponse(
+          userId: "3",
+          userName: "Imran",
+          status: "Absent",
+          time: "09:50 AM",
+          location: "- \nNo location available",
+          locationDistance: "",
         ),
       ],
     );

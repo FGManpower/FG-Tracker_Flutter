@@ -26,6 +26,7 @@ import '../../../Data/Repositories/GetMessageRepo.dart';
 import '../../../Model/GetMessage.dart';
 
 import '../../../Data/Services/Socket/Socket_Message_Services.dart';
+import '../../Attendance/models/attendance_poll_model.dart';
 
 class GroupMessageController extends GetxController {
   final socketService = SocketMessageService.instance;
@@ -71,7 +72,7 @@ class GroupMessageController extends GetxController {
   final RxString searchQuery = "".obs;
   final RxList<int> searchResultIds = <int>[].obs;
   final RxInt currentSearchIndex = (-1).obs;
-  RxBool isCreator = false.obs;
+  RxBool isCreator = true.obs;
   final Rxn<MessageData> pinnedMessage = Rxn<MessageData>();
   final RxBool showPinnedBanner = true.obs;
   Rx<MessageData?> replyMessage = Rx<MessageData?>(null);
@@ -453,38 +454,28 @@ class GroupMessageController extends GetxController {
     required int totalMembers,
   }) {
     try {
-      final pollMap = {
-        "id": "att_${DateTime.now().millisecondsSinceEpoch}",
-        "question": question,
-        "date": date,
-        "creatorName": "Rahul Verma",
-        "totalMembers": totalMembers,
-        "presentCount": 2,
-        "absentCount": 1,
-        "respondedCount": 2,
-        "responses": [
-          {
-            "userId": "1",
-            "userName": "Rahul Verma",
-            "status": "Present",
-            "time": "09:15 AM",
-          },
-          {
-            "userId": "2",
-            "userName": "Divesh Shinde",
-            "status": "Present",
-            "time": "09:20 AM",
-          },
-        ],
-      };
+      final currentUserName =
+          Global.storageServices.get(PrefConst.userName)?.toString() ?? "Rahul Verma";
 
-      final content = jsonEncode(pollMap);
+      final pollData = AttendancePollData(
+        id: "att_${DateTime.now().millisecondsSinceEpoch}",
+        question: question,
+        date: date,
+        creatorName: currentUserName,
+        totalMembers: totalMembers,
+        presentCount: 0,
+        absentCount: 0,
+        respondedCount: 0,
+        responses: [],
+      );
+
+      final content = jsonEncode(pollData.toJson());
 
       final newMsg = MessageData(
         id: DateTime.now().millisecondsSinceEpoch,
         content: content,
         messageType: "attendance",
-        senderName: "Rahul Verma",
+        senderName: currentUserName,
         timestamp: DateTime.now().toIso8601String(),
       );
 
@@ -500,6 +491,58 @@ class GroupMessageController extends GetxController {
       scrollToBottom();
     } catch (e) {
       log("SEND ATTENDANCE ERROR: $e");
+    }
+  }
+
+  void updateAttendanceResponse({
+    required int messageId,
+    required AttendanceMemberResponse response,
+  }) {
+    try {
+      final index = _messages.indexWhere((m) => m.id == messageId);
+      if (index == -1) return;
+
+      final currentMsg = _messages[index];
+      final pollData = AttendancePollData.fromRawJson(
+        currentMsg.content?.toString() ?? "",
+      );
+
+      final existingIndex =
+          pollData.responses.indexWhere((r) => r.userId == response.userId);
+      if (existingIndex != -1) {
+        final oldStatus = pollData.responses[existingIndex].status;
+        if (oldStatus == "Present" && response.status == "Absent") {
+          pollData.presentCount = (pollData.presentCount - 1).clamp(0, 9999);
+          pollData.absentCount++;
+        } else if (oldStatus == "Absent" && response.status == "Present") {
+          pollData.absentCount = (pollData.absentCount - 1).clamp(0, 9999);
+          pollData.presentCount++;
+        }
+        pollData.responses[existingIndex] = response;
+      } else {
+        if (response.status == "Present") {
+          pollData.presentCount++;
+        } else {
+          pollData.absentCount++;
+        }
+        pollData.respondedCount++;
+        pollData.responses.add(response);
+      }
+
+      final updatedContent = jsonEncode(pollData.toJson());
+      _messages[index].content = updatedContent;
+      updateMessageStream();
+
+      final currentUserId =
+          Global.storageServices.get(PrefConst.userId)?.toString() ?? "";
+
+      socketService.editMessage(
+        messageId: messageId,
+        content: updatedContent,
+        userId: currentUserId,
+      );
+    } catch (e) {
+      log("UPDATE ATTENDANCE RESPONSE ERROR: $e");
     }
   }
 

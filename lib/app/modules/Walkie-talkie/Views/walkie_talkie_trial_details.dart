@@ -5,6 +5,7 @@ import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Views/walkie_group_select_screen.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Views/walkie_talkie_plan_details.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
+import 'package:fgtracker/generated/assets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -112,6 +113,19 @@ class _WalkieTalkieTrialDetailsScreenState
       child: Stack(
         alignment: Alignment.center,
         children: [
+          // City skyline backdrop
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: Opacity(
+              opacity: 0.35,
+              child: Assets.walkieTalkie.citySkyline.image(
+                fit: BoxFit.cover,
+                height: 52.h,
+              ),
+            ),
+          ),
           // Background concentric rings
           Container(
             width: 155.w,
@@ -129,10 +143,24 @@ class _WalkieTalkieTrialDetailsScreenState
               color: const Color(0xFF6356F6).withValues(alpha: 0.08),
             ),
           ),
-          // Subtle dashed connector painter
-          Positioned.fill(
-            child: CustomPaint(
-              painter: _DashedLineConnectorPainter(),
+          // Left connector line
+          Positioned(
+            left: 54.w,
+            top: 42.h,
+            width: 66.w,
+            height: 42.h,
+            child: Assets.walkieTalkie.connectorLineUp.image(
+              fit: BoxFit.contain,
+            ),
+          ),
+          // Right connector line
+          Positioned(
+            right: 54.w,
+            top: 42.h,
+            width: 66.w,
+            height: 42.h,
+            child: Assets.walkieTalkie.connectorLineDown.image(
+              fit: BoxFit.contain,
             ),
           ),
           // Center 3D Walkie Talkie device
@@ -140,44 +168,40 @@ class _WalkieTalkieTrialDetailsScreenState
           // 4 surrounding avatars with sound badge
           // 1. Top Left
           Positioned(
-            left: 30.w,
-            top: 10.h,
+            left: 24.w,
+            top: 6.h,
             child: _buildAvatarWithSoundBadge(
-              imageUrl:
-                  "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&auto=format&fit=crop&q=80",
+              assetImage: Assets.walkieTalkie.workerWhiteHelmet,
               initial: "S",
               badgeAlignRight: true,
             ),
           ),
           // 2. Bottom Left
           Positioned(
-            left: 26.w,
-            bottom: 8.h,
+            left: 20.w,
+            bottom: 6.h,
             child: _buildAvatarWithSoundBadge(
-              imageUrl:
-                  "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
+              assetImage: Assets.walkieTalkie.workerYellowHelmet,
               initial: "R",
               badgeAlignRight: true,
             ),
           ),
           // 3. Top Right
           Positioned(
-            right: 30.w,
-            top: 10.h,
+            right: 24.w,
+            top: 6.h,
             child: _buildAvatarWithSoundBadge(
-              imageUrl:
-                  "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80",
+              assetImage: Assets.walkieTalkie.workerBlueCap,
               initial: "A",
               badgeAlignRight: false,
             ),
           ),
           // 4. Bottom Right
           Positioned(
-            right: 26.w,
-            bottom: 8.h,
+            right: 20.w,
+            bottom: 6.h,
             child: _buildAvatarWithSoundBadge(
-              imageUrl:
-                  "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=150&auto=format&fit=crop&q=80",
+              assetImage: Assets.walkieTalkie.workerYellowHelmetRight,
               initial: "I",
               badgeAlignRight: false,
             ),
@@ -188,120 +212,28 @@ class _WalkieTalkieTrialDetailsScreenState
   }
 
   Widget _buildCenterWalkieTalkieDevice() {
-    return Container(
-      width: 66.w,
-      height: 105.h,
-      decoration: BoxDecoration(
-        color: const Color(0xFF242738),
-        borderRadius: BorderRadius.circular(20.r),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF4C3EC3).withValues(alpha: 0.25),
-            blurRadius: 18,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
+    return SizedBox(
+      width: 76.w,
+      height: 116.h,
       child: Stack(
-        clipBehavior: Clip.none,
         alignment: Alignment.center,
         children: [
-          // Antenna top left
-          Positioned(
-            top: -22.h,
-            left: 12.w,
-            child: Container(
-              width: 9.w,
-              height: 24.h,
-              decoration: BoxDecoration(
-                color: const Color(0xFF1E202C),
-                borderRadius: BorderRadius.circular(4.r),
-              ),
+          Container(
+            width: 58.w,
+            height: 94.h,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16.r),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF6356F6).withValues(alpha: 0.22),
+                  blurRadius: 18,
+                  offset: const Offset(0, 8),
+                ),
+              ],
             ),
           ),
-          // Knob top right
-          Positioned(
-            top: -10.h,
-            right: 14.w,
-            child: Container(
-              width: 14.w,
-              height: 12.h,
-              decoration: BoxDecoration(
-                color: const Color(0xFF383C52),
-                borderRadius: BorderRadius.circular(4.r),
-              ),
-            ),
-          ),
-          // Side PTT button
-          Positioned(
-            left: -4.w,
-            top: 36.h,
-            child: Container(
-              width: 5.w,
-              height: 28.h,
-              decoration: BoxDecoration(
-                color: const Color(0xFF6356F6),
-                borderRadius: BorderRadius.circular(2.r),
-              ),
-            ),
-          ),
-          // Device body content
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              SizedBox(height: 6.h),
-              // Top small speaker grill lines
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    width: 22.w,
-                    height: 3.h,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(2.r),
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 10.h),
-              // Big round speaker/mic circle with purple ring
-              Container(
-                width: 48.w,
-                height: 48.w,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: const Color(0xFF191B26),
-                  border: Border.all(
-                    color: const Color(0xFF6356F6),
-                    width: 3.w,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF6356F6).withValues(alpha: 0.4),
-                      blurRadius: 10,
-                    ),
-                  ],
-                ),
-                child: Center(
-                  child: Icon(
-                    Icons.mic_rounded,
-                    color: Colors.white,
-                    size: 20.sp,
-                  ),
-                ),
-              ),
-              SizedBox(height: 8.h),
-              // Bottom status dot
-              Container(
-                width: 6.w,
-                height: 6.w,
-                decoration: const BoxDecoration(
-                  color: Color(0xFF00E676),
-                  shape: BoxShape.circle,
-                ),
-              ),
-            ],
+          Assets.walkieTalkie.walkieDevice.image(
+            fit: BoxFit.contain,
           ),
         ],
       ),
@@ -309,10 +241,20 @@ class _WalkieTalkieTrialDetailsScreenState
   }
 
   Widget _buildAvatarWithSoundBadge({
-    required String imageUrl,
+    AssetGenImage? assetImage,
+    String? imageUrl,
     required String initial,
     required bool badgeAlignRight,
   }) {
+    if (assetImage != null) {
+      return SizedBox(
+        width: 48.w,
+        height: 48.w,
+        child: assetImage.image(
+          fit: BoxFit.contain,
+        ),
+      );
+    }
     return Stack(
       clipBehavior: Clip.none,
       children: [
@@ -332,7 +274,7 @@ class _WalkieTalkieTrialDetailsScreenState
           ),
           child: ClipOval(
             child: CachedNetworkImage(
-              imageUrl: imageUrl,
+              imageUrl: imageUrl ?? '',
               fit: BoxFit.cover,
               placeholder: (_, __) => _avatarFallback(initial),
               errorWidget: (_, __, ___) => _avatarFallback(initial),

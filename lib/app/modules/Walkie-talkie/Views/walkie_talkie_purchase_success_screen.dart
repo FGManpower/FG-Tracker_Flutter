@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'package:fgtracker/app/modules/Walkie-talkie/Views/walkie_group_select_screen.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
+import 'package:fgtracker/generated/assets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -593,126 +594,25 @@ class _WalkieTalkiePurchaseSuccessScreenState
   // Mini Walkie Device Graphic with glowing halo
   Widget _buildMiniWalkieGraphic() {
     return SizedBox(
-      width: 70.w.clamp(60.0, 78.0),
-      height: 78.h.clamp(68.0, 86.0),
+      width: 58.w.clamp(52.0, 66.0),
+      height: 68.h.clamp(60.0, 76.0),
       child: Stack(
         alignment: Alignment.center,
         clipBehavior: Clip.none,
         children: [
           // Halo glow behind
           Container(
-            width: 66.w.clamp(58.0, 74.0),
-            height: 66.w.clamp(58.0, 74.0),
+            width: 54.w.clamp(48.0, 62.0),
+            height: 54.w.clamp(48.0, 62.0),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: _primaryPurple.withValues(alpha: 0.10),
+              color: _primaryPurple.withValues(alpha: 0.12),
             ),
           ),
 
-          // Walkie Talkie miniature body
-          Positioned(
-            bottom: 4.h,
-            child: Container(
-              width: 38.w.clamp(34.0, 42.0),
-              height: 60.h.clamp(54.0, 68.0),
-              decoration: BoxDecoration(
-                color: const Color(0xFF1F2231),
-                borderRadius: BorderRadius.circular(10.r),
-                boxShadow: [
-                  BoxShadow(
-                    color: _primaryPurple.withValues(alpha: 0.25),
-                    blurRadius: 8,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Stack(
-                clipBehavior: Clip.none,
-                alignment: Alignment.center,
-                children: [
-                  // Antenna top left
-                  Positioned(
-                    top: -10.h,
-                    left: 6.w,
-                    child: Container(
-                      width: 4.5.w,
-                      height: 12.h,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF131520),
-                        borderRadius: BorderRadius.circular(2.r),
-                      ),
-                    ),
-                  ),
-                  // Knob top right
-                  Positioned(
-                    top: -5.h,
-                    right: 6.w,
-                    child: Container(
-                      width: 7.w,
-                      height: 6.h,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF2E3245),
-                        borderRadius: BorderRadius.circular(2.r),
-                      ),
-                    ),
-                  ),
-                  // PTT side accent
-                  Positioned(
-                    left: -2.5.w,
-                    top: 16.h,
-                    child: Container(
-                      width: 3.w,
-                      height: 13.h,
-                      decoration: BoxDecoration(
-                        color: _primaryPurple,
-                        borderRadius: BorderRadius.circular(1.5.r),
-                      ),
-                    ),
-                  ),
-                  // Mic speaker circle
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(
-                        width: 24.w,
-                        height: 24.w,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: const Color(0xFF141724),
-                          border: Border.all(
-                            color: _primaryPurple,
-                            width: 1.8.w,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: _primaryPurple.withValues(alpha: 0.45),
-                              blurRadius: 6,
-                            ),
-                          ],
-                        ),
-                        child: Center(
-                          child: Icon(
-                            Icons.mic_rounded,
-                            color: Colors.white,
-                            size: 11.sp,
-                          ),
-                        ),
-                      ),
-                      SizedBox(height: 3.h),
-                      // Status LED
-                      Container(
-                        width: 3.5.w,
-                        height: 3.5.w,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFF00E676),
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
+          // Walkie Talkie 3D asset image
+          Assets.walkieTalkie.walkieDevice.image(
+            fit: BoxFit.contain,
           ),
         ],
       ),
