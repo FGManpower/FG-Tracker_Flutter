@@ -65,12 +65,10 @@
 	<string>Need microphone access for audio calls and stream live voice over the walkie-talkie channel or Screen Sharing</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>We need access to save QR codes to your gallery.</string>
-
 	<key>RTCAppGroupIdentifier</key>
-    <string>group.com.fg.fgtracker.screenshare</string>
-    <key>RTCScreenSharingExtension</key>
-    <string>com.fg.fgtracker.ScreenShareExtension</string>
-
+	<string>group.com.fg.fgtracker</string>
+	<key>RTCScreenSharingExtension</key>
+	<string>com.fg.fgtracker.broadcast</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>We need access to your photo library to allow you to set a profile image and upload photos and get QR code from photo library of your site location.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
