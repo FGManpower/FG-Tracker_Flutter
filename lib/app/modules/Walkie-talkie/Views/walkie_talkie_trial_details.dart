@@ -3,7 +3,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Views/walkie_group_select_screen.dart';
-import 'package:fgtracker/app/modules/Walkie-talkie/Views/walkie_talkie_plan_screen.dart';
+import 'package:fgtracker/app/modules/Walkie-talkie/Views/walkie_talkie_plan_details.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -31,17 +31,17 @@ class _WalkieTalkieTrialDetailsScreenState
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              SizedBox(height: 8.h),
+              SizedBox(height: 4.h),
               _buildHeroGraphic(),
-              SizedBox(height: 16.h),
+              SizedBox(height: 10.h),
               _buildHeadingSection(),
-              SizedBox(height: 18.h),
+              SizedBox(height: 12.h),
               _buildFreeTrialStatusCard(),
-              SizedBox(height: 14.h),
+              SizedBox(height: 10.h),
               _buildFeaturesAndCtaCard(context),
-              SizedBox(height: 14.h),
+              SizedBox(height: 10.h),
               _buildPurchasePlanCard(),
-              SizedBox(height: 24.h),
+              SizedBox(height: 16.h),
             ],
           ),
         ),
@@ -107,23 +107,23 @@ class _WalkieTalkieTrialDetailsScreenState
 
   Widget _buildHeroGraphic() {
     return SizedBox(
-      height: 195.h,
+      height: 156.h,
       width: double.infinity,
       child: Stack(
         alignment: Alignment.center,
         children: [
           // Background concentric rings
           Container(
-            width: 190.w,
-            height: 190.w,
+            width: 155.w,
+            height: 155.w,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: const Color(0xFF6356F6).withValues(alpha: 0.04),
             ),
           ),
           Container(
-            width: 140.w,
-            height: 140.w,
+            width: 115.w,
+            height: 115.w,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: const Color(0xFF6356F6).withValues(alpha: 0.08),
@@ -138,10 +138,10 @@ class _WalkieTalkieTrialDetailsScreenState
           // Center 3D Walkie Talkie device
           _buildCenterWalkieTalkieDevice(),
           // 4 surrounding avatars with sound badge
-          // 1. Top Left (yellow helmet)
+          // 1. Top Left
           Positioned(
-            left: 36.w,
-            top: 14.h,
+            left: 30.w,
+            top: 10.h,
             child: _buildAvatarWithSoundBadge(
               imageUrl:
                   "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&auto=format&fit=crop&q=80",
@@ -149,10 +149,10 @@ class _WalkieTalkieTrialDetailsScreenState
               badgeAlignRight: true,
             ),
           ),
-          // 2. Bottom Left (blue cap)
+          // 2. Bottom Left
           Positioned(
-            left: 32.w,
-            bottom: 12.h,
+            left: 26.w,
+            bottom: 8.h,
             child: _buildAvatarWithSoundBadge(
               imageUrl:
                   "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
@@ -160,10 +160,10 @@ class _WalkieTalkieTrialDetailsScreenState
               badgeAlignRight: true,
             ),
           ),
-          // 3. Top Right (white helmet)
+          // 3. Top Right
           Positioned(
-            right: 36.w,
-            top: 14.h,
+            right: 30.w,
+            top: 10.h,
             child: _buildAvatarWithSoundBadge(
               imageUrl:
                   "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80",
@@ -171,10 +171,10 @@ class _WalkieTalkieTrialDetailsScreenState
               badgeAlignRight: false,
             ),
           ),
-          // 4. Bottom Right (dark cap)
+          // 4. Bottom Right
           Positioned(
-            right: 32.w,
-            bottom: 12.h,
+            right: 26.w,
+            bottom: 8.h,
             child: _buildAvatarWithSoundBadge(
               imageUrl:
                   "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=150&auto=format&fit=crop&q=80",
@@ -189,8 +189,8 @@ class _WalkieTalkieTrialDetailsScreenState
 
   Widget _buildCenterWalkieTalkieDevice() {
     return Container(
-      width: 78.w,
-      height: 125.h,
+      width: 66.w,
+      height: 105.h,
       decoration: BoxDecoration(
         color: const Color(0xFF242738),
         borderRadius: BorderRadius.circular(20.r),
@@ -317,8 +317,8 @@ class _WalkieTalkieTrialDetailsScreenState
       clipBehavior: Clip.none,
       children: [
         Container(
-          width: 44.w,
-          height: 44.w,
+          width: 38.w,
+          height: 38.w,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             border: Border.all(color: Colors.white, width: 2.w),
@@ -394,20 +394,20 @@ class _WalkieTalkieTrialDetailsScreenState
         children: [
           reausabletext(
             "Stay Connected, Talk Instantly",
-            fontsize: 19.sp,
+            fontsize: 17.5.sp,
             fontfamily: FontFamily.interBold,
             color: const Color(0xFF1E1B4B),
             align: TextAlign.center,
           ),
-          SizedBox(height: 6.h),
+          SizedBox(height: 4.h),
           Text(
             "Use push-to-talk voice communication with your group without making a phone call.",
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: 12.5.sp,
+              fontSize: 11.5.sp,
               color: const Color(0xFF6B7280),
               fontFamily: FontFamily.interRegular,
-              height: 1.35,
+              height: 1.3,
             ),
           ),
         ],
@@ -696,7 +696,7 @@ class _WalkieTalkieTrialDetailsScreenState
   Widget _buildPurchasePlanCard() {
     return GestureDetector(
       onTap: () {
-        Get.to(() => const WalkieTalkiePlanScreen());
+        Get.to(() => const WalkieTalkiePlanDetails(initialTabIndex: 0));
       },
       child: Container(
         margin: EdgeInsets.symmetric(horizontal: 16.w),
@@ -755,7 +755,7 @@ class _WalkieTalkieTrialDetailsScreenState
           ),
           GestureDetector(
             onTap: () {
-              Get.to(() => const WalkieTalkiePlanScreen());
+              Get.to(() => const WalkieTalkiePlanDetails(initialTabIndex: 0));
             },
             child: Container(
               padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
