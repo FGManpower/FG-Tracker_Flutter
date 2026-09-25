@@ -7,7 +7,6 @@ import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 
-/// Model representing location data received via socket event 'send-location'
 class LiveLocationSocketModel {
   final dynamic userId;
   final dynamic groupId;
