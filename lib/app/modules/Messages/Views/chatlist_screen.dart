@@ -15,6 +15,7 @@ import '../../Track/Views/Tracking_screen.dart';
 import '../Controller/MessageController.dart';
 import '../Controller/chat_list_controller.dart';
 import '../widgets/custom_dropdown_menu.dart';
+import 'ArchivedChatsScreen.dart';
 import 'Chat_Screen.dart';
 import 'new_chat_screen.dart';
 
@@ -304,9 +305,12 @@ class _AllChatsBody extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            _archivedChatsRow(),
+
             _sectionTitle(
               "All Chats",
             ),
+
             Obx(() {
               if (controller.isLoading.value &&
                   controller.privateChats.isEmpty) {
@@ -833,9 +837,11 @@ class _AllChatsBody extends StatelessWidget {
           },
         ),
         DropdownMenuItemData(
-          icon: Icons.mark_email_unread_outlined,
-          title: "Mark as Unread",
-          onTap: () {},
+          icon: Icons.mark_email_read_outlined,
+          title: "Mark as Read",
+          onTap: () {
+            controller.markChatAsRead(chat);
+          },
         ),
         DropdownMenuItemData(
           icon: Icons.person_outline,
@@ -844,21 +850,24 @@ class _AllChatsBody extends StatelessWidget {
         ),
         DropdownMenuItemData(
           icon: Icons.visibility_off_outlined,
-          title: "Hide Chat",
-          onTap: () {},
+          title: "Archive Chat",
+          onTap: () {
+            controller.archiveChat(chat);
+          },
         ),
         DropdownMenuItemData(
           icon: Icons.delete_outline,
           title: "Delete Chat",
           isDestructive: true,
-          onTap: () {},
+          onTap: () {
+            controller.deleteChat(chat);
+          },
         ),
       ],
     );
   }
 
   Color? _statusColor(String? status) {
-    // ... same as your previous code ...
     final value = (status ?? "").toLowerCase().trim();
     if (value == "online" || value == "active" || value == "available") {
       return Colors.green;
@@ -872,7 +881,6 @@ class _AllChatsBody extends StatelessWidget {
     }
     return null;
   }
-
   String _formatChatTime(String value) {
     if (value.isEmpty) return "";
     final parsed = DateTime.tryParse(value);
@@ -895,9 +903,9 @@ class _AllChatsBody extends StatelessWidget {
   }
 
   void _showMuteOptions(
-      BuildContext context,
-      PrivateChatModel chat,
-      ) {
+    BuildContext context,
+    PrivateChatModel chat,
+  ) {
     String selectedOption = "1_hour";
 
     showDialog(
@@ -1076,23 +1084,21 @@ class _AllChatsBody extends StatelessWidget {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: selected
-                      ? const Color(0xFF8080EE)
-                      : Colors.black45,
+                  color: selected ? const Color(0xFF8080EE) : Colors.black45,
                   width: 2,
                 ),
               ),
               child: selected
                   ? Center(
-                child: Container(
-                  width: 10.w,
-                  height: 10.w,
-                  decoration: const BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Color(0xFF8080EE),
-                  ),
-                ),
-              )
+                      child: Container(
+                        width: 10.w,
+                        height: 10.w,
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Color(0xFF8080EE),
+                        ),
+                      ),
+                    )
                   : null,
             ),
             SizedBox(width: 14.w),
@@ -1112,4 +1118,87 @@ class _AllChatsBody extends StatelessWidget {
   }
 
 
+
+  Widget _archivedChatsRow() {
+    return Padding(
+      padding: EdgeInsets.only(
+        left: 16.w,
+        right: 16.w,
+        top: 8.h,
+        bottom: 4.h,
+      ),
+      child: GestureDetector(
+        onTap: () {
+          Get.to(
+                () => const ArchivedChatsScreen(),
+          );
+        },
+        child: Container(
+          padding: EdgeInsets.symmetric(
+            horizontal: 14.w,
+            vertical: 12.h,
+          ),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16.r),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.025),
+                blurRadius: 10,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 40.w,
+                height: 40.w,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Color(0xFFE9E7FF),
+                ),
+                child: Icon(
+                  Icons.archive_outlined,
+                  size: 21.sp,
+                  color: const Color(0xFF6B4DFF),
+                ),
+              ),
+
+              SizedBox(width: 12.w),
+
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    reausabletext(
+                      "Archived",
+                      fontsize: 13.sp,
+                      fontfamily: FontFamily.interBold,
+                      color: Colors.black87,
+                    ),
+
+                    SizedBox(height: 2.h),
+
+                    reausabletext(
+                      "View archived conversations",
+                      fontsize: 10.sp,
+                      color: Colors.grey,
+                      maxline: 1,
+                    ),
+                  ],
+                ),
+              ),
+
+              Icon(
+                Icons.chevron_right_rounded,
+                size: 21.sp,
+                color: Colors.grey,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
