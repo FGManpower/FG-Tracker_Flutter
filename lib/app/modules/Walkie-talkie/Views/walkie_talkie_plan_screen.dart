@@ -1,5 +1,4 @@
 import 'package:fgtracker/app/Core/values/Utils.dart';
-import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -9,7 +8,7 @@ class WalkieTalkiePlanScreen extends StatefulWidget {
   final int initialTabIndex; // 0 for Individual, 1 for Team Plan
   const WalkieTalkiePlanScreen({
     super.key,
-    this.initialTabIndex = 0,
+    this.initialTabIndex = 1,
   });
 
   @override
@@ -17,26 +16,27 @@ class WalkieTalkiePlanScreen extends StatefulWidget {
 }
 
 class _WalkieTalkiePlanScreenState extends State<WalkieTalkiePlanScreen> {
-  // Tab: 0 = Individual, 1 = Team Plan
+  // 0 = Individual, 1 = Team Plan
   late int _selectedTab;
 
-  // Individual Plan Selection (0 = Monthly, 1 = Quarterly, 2 = Yearly)
+  // Individual Plan (0 = Monthly, 1 = Quarterly, 2 = Yearly)
   int _selectedIndividualPlan = 0;
 
-  // Team Plan Configuration
+  // Team Plan State
   int _teamMemberCount = 5;
   int _selectedTeamDuration = 0; // 0 = Monthly, 1 = Quarterly, 2 = Yearly
   String? _appliedPromoCode;
   double _promoDiscountPercent = 0.0;
 
-  // Colors Palette
-  final Color _primaryPurple = const Color(0xFF5A35FF);
-  final Color _lightPurpleBg = const Color(0xFFF0EFFF);
-  final Color _softPurpleBorder = const Color(0xFFDCD7FE);
-  final Color _darkText = const Color(0xFF111827);
-  final Color _secondaryText = const Color(0xFF6B7280);
-  final Color _badgeGreenBg = const Color(0xFFDCFCE7);
-  final Color _badgeGreenText = const Color(0xFF15803D);
+  // Color Constants (Matching Screenshots Exactly)
+  static const Color _primaryPurple = Color(0xFF5B4DF5);
+  static const Color _bgSoft = Color(0xFFF6F8FE);
+  static const Color _textDark = Color(0xFF0F172A);
+  static const Color _textSecondary = Color(0xFF64748B);
+  static const Color _cardBorder = Color(0xFFEDF2F7);
+  static const Color _lightPillBg = Color(0xFFF1F3FE);
+  static const Color _greenBadgeBg = Color(0xFFDCFCE7);
+  static const Color _greenBadgeText = Color(0xFF16A34A);
 
   @override
   void initState() {
@@ -46,79 +46,86 @@ class _WalkieTalkiePlanScreenState extends State<WalkieTalkiePlanScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isTeam = _selectedTab == 1;
+    final bool isTeam = _selectedTab == 1;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FE),
+      backgroundColor: _bgSoft,
       body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Top App Bar + Hero Graphic
-                    _buildTopHeroSection(isTeam),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final double screenWidth = constraints.maxWidth;
+            final bool isSmallScreen = screenWidth < 360;
 
-                    SizedBox(height: 12.h),
+            return Column(
+              children: [
+                Expanded(
+                  child: SingleChildScrollView(
+                    physics: const BouncingScrollPhysics(),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Top Bar + Hero Section
+                        _buildTopHeroSection(isTeam, isSmallScreen),
 
-                    // Feature Pill Highlights Row
-                    _buildFeaturePills(isTeam),
+                        SizedBox(height: 12.h),
 
-                    SizedBox(height: 16.h),
+                        // Feature Highlight Badges (Scrollable)
+                        _buildFeaturePills(isTeam),
 
-                    // Individual vs Team Plan Segmented Control
-                    _buildSegmentedTabToggle(),
+                        SizedBox(height: 14.h),
 
-                    SizedBox(height: 16.h),
+                        // Segmented Tab Switcher (Individual / Team Plan)
+                        _buildSegmentedTabToggle(isTeam, isSmallScreen),
 
-                    // Content based on selected tab
-                    AnimatedCrossFade(
-                      firstChild: _buildIndividualTabContent(),
-                      secondChild: _buildTeamTabContent(),
-                      crossFadeState: isTeam
-                          ? CrossFadeState.showSecond
-                          : CrossFadeState.showFirst,
-                      duration: const Duration(milliseconds: 250),
+                        SizedBox(height: 14.h),
+
+                        // Content based on selected tab
+                        AnimatedCrossFade(
+                          firstChild: _buildIndividualTabContent(isSmallScreen),
+                          secondChild: _buildTeamTabContent(isSmallScreen),
+                          crossFadeState: isTeam
+                              ? CrossFadeState.showSecond
+                              : CrossFadeState.showFirst,
+                          duration: const Duration(milliseconds: 200),
+                        ),
+
+                        SizedBox(height: 20.h),
+                      ],
                     ),
-
-                    SizedBox(height: 20.h),
-                  ],
+                  ),
                 ),
-              ),
-            ),
 
-            // Fixed Bottom Action Bar
-            _buildBottomActionBar(isTeam),
-          ],
+                // Bottom Continue Action Bar
+                _buildBottomActionBar(isTeam),
+              ],
+            );
+          },
         ),
       ),
     );
   }
 
   // ==========================================
-  // TOP HERO SECTION (Back btn + Title + 3D Device)
+  // TOP HERO SECTION (Back Btn, Title, 3D Hero)
   // ==========================================
-  Widget _buildTopHeroSection(bool isTeam) {
+  Widget _buildTopHeroSection(bool isTeam, bool isSmallScreen) {
     return Container(
-      padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 4.h),
+      padding: EdgeInsets.fromLTRB(16.w, 10.h, 16.w, 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Back Button
+          // Squircle Back Button
           GestureDetector(
             onTap: () => Get.back(),
             child: Container(
-              width: 42.w,
-              height: 42.w,
+              width: 40.w.clamp(38.0, 46.0),
+              height: 40.w.clamp(38.0, 46.0),
               decoration: BoxDecoration(
                 color: Colors.white,
-                shape: BoxShape.circle,
+                borderRadius: BorderRadius.circular(13.r),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.06),
+                    color: Colors.black.withValues(alpha: 0.05),
                     blurRadius: 10,
                     offset: const Offset(0, 2),
                   ),
@@ -126,29 +133,35 @@ class _WalkieTalkiePlanScreenState extends State<WalkieTalkiePlanScreen> {
               ),
               child: Icon(
                 Icons.arrow_back,
-                size: 20.sp,
+                size: 20.sp.clamp(18.0, 22.0),
                 color: _primaryPurple,
               ),
             ),
           ),
 
-          SizedBox(height: 12.h),
+          SizedBox(height: 10.h),
 
-          // Title & Hero Walkie Talkie Illustration Row
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Left text info
+              // Title & Subtitle
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    SizedBox(height: 8.h),
-                    reausabletext(
-                      isTeam ? "Team Plan" : "Choose a Plan",
-                      fontsize: 24.sp,
-                      fontfamily: FontFamily.interBold,
-                      color: _darkText,
+                    SizedBox(height: 4.h),
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        isTeam ? "Team Plan" : "Choose a Plan",
+                        style: TextStyle(
+                          fontSize: 24.sp.clamp(20.0, 28.0),
+                          fontFamily: FontFamily.interBold,
+                          color: _textDark,
+                          letterSpacing: -0.5,
+                        ),
+                      ),
                     ),
                     SizedBox(height: 6.h),
                     Text(
@@ -156,9 +169,9 @@ class _WalkieTalkiePlanScreenState extends State<WalkieTalkiePlanScreen> {
                           ? "Add team members and get everyone connected with Walkie Talkie"
                           : "Continue using Walkie Talkie with a plan that fits your team",
                       style: TextStyle(
-                        fontSize: 12.5.sp,
-                        color: _secondaryText,
+                        fontSize: 12.sp.clamp(11.0, 13.5),
                         fontFamily: FontFamily.interRegular,
+                        color: _textSecondary,
                         height: 1.35,
                       ),
                     ),
@@ -168,8 +181,8 @@ class _WalkieTalkiePlanScreenState extends State<WalkieTalkiePlanScreen> {
 
               SizedBox(width: 8.w),
 
-              // Right 3D Walkie Talkie Illustration with badge & annotations
-              _buildWalkieTalkieHeroGraphic(isTeam),
+              // 3D Walkie Talkie Hero Graphic
+              _buildWalkieTalkieHeroGraphic(isTeam, isSmallScreen),
             ],
           ),
         ],
@@ -177,57 +190,63 @@ class _WalkieTalkiePlanScreenState extends State<WalkieTalkiePlanScreen> {
     );
   }
 
-  Widget _buildWalkieTalkieHeroGraphic(bool isTeam) {
+  Widget _buildWalkieTalkieHeroGraphic(bool isTeam, bool isSmallScreen) {
+    final double graphicWidth =
+        (isSmallScreen ? 120.w : 136.w).clamp(110.0, 150.0);
+    final double graphicHeight = 124.h.clamp(110.0, 136.0);
+
     return SizedBox(
-      width: 140.w,
-      height: 125.h,
+      width: graphicWidth,
+      height: graphicHeight,
       child: Stack(
         alignment: Alignment.center,
         clipBehavior: Clip.none,
         children: [
-          // Glowing radial circular halo background
+          // Outer halo gradient disc
           Container(
-            width: 110.w,
-            height: 110.w,
+            width: 108.w.clamp(90.0, 120.0),
+            height: 108.w.clamp(90.0, 120.0),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               gradient: RadialGradient(
                 colors: [
-                  _primaryPurple.withValues(alpha: 0.16),
-                  _primaryPurple.withValues(alpha: 0.04),
+                  _primaryPurple.withValues(alpha: 0.15),
+                  _primaryPurple.withValues(alpha: 0.03),
                   Colors.transparent,
                 ],
               ),
             ),
           ),
 
-          // Walkie Talkie Device Graphic
+          // Walkie Talkie Device
           Positioned(
-            right: 28.w,
+            right: 26.w,
             bottom: 4.h,
             child: _buildWalkieTalkieDevice(),
           ),
 
-          // Stylized Annotation / Badge (Handwritten tone)
+          // Hand-annotated curved arrow and text
           Positioned(
-            top: 6.h,
+            top: 4.h,
             right: 0,
             child: Row(
               mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Icon(
                   Icons.subdirectory_arrow_right_rounded,
-                  color: _primaryPurple.withValues(alpha: 0.7),
-                  size: 14.sp,
+                  color: _primaryPurple.withValues(alpha: 0.8),
+                  size: 14.sp.clamp(12.0, 16.0),
                 ),
                 SizedBox(width: 2.w),
                 Text(
-                  isTeam ? "Stronger\nTeams\nSafer Sites" : "Stay\nConnected\nAlways",
-                  textAlign: TextAlign.left,
+                  isTeam
+                      ? "Stronger\nTeams\nSafer Sites"
+                      : "Stay\nConnected\nAlways",
                   style: TextStyle(
                     fontFamily: FontFamily.interMedium,
                     fontStyle: FontStyle.italic,
-                    fontSize: 8.5.sp,
+                    fontSize: 8.5.sp.clamp(7.5, 10.0),
                     color: _primaryPurple,
                     height: 1.15,
                   ),
@@ -236,13 +255,13 @@ class _WalkieTalkiePlanScreenState extends State<WalkieTalkiePlanScreen> {
             ),
           ),
 
-          // Small Team Avatars icon badge for Team Plan
+          // Team Badge in Team Plan
           if (isTeam)
             Positioned(
-              right: 2.w,
+              right: 4.w,
               bottom: 22.h,
               child: Container(
-                padding: EdgeInsets.all(6.w),
+                padding: EdgeInsets.all(5.5.w),
                 decoration: BoxDecoration(
                   color: _primaryPurple.withValues(alpha: 0.12),
                   shape: BoxShape.circle,
@@ -250,7 +269,7 @@ class _WalkieTalkiePlanScreenState extends State<WalkieTalkiePlanScreen> {
                 child: Icon(
                   Icons.groups_rounded,
                   color: _primaryPurple,
-                  size: 22.sp,
+                  size: 19.sp.clamp(16.0, 22.0),
                 ),
               ),
             ),
@@ -261,14 +280,14 @@ class _WalkieTalkiePlanScreenState extends State<WalkieTalkiePlanScreen> {
 
   Widget _buildWalkieTalkieDevice() {
     return Container(
-      width: 62.w,
-      height: 98.h,
+      width: 58.w.clamp(52.0, 66.0),
+      height: 94.h.clamp(86.0, 104.0),
       decoration: BoxDecoration(
         color: const Color(0xFF222433),
-        borderRadius: BorderRadius.circular(16.r),
+        borderRadius: BorderRadius.circular(15.r),
         boxShadow: [
           BoxShadow(
-            color: _primaryPurple.withValues(alpha: 0.3),
+            color: _primaryPurple.withValues(alpha: 0.28),
             blurRadius: 14,
             offset: const Offset(0, 6),
           ),
@@ -280,11 +299,11 @@ class _WalkieTalkiePlanScreenState extends State<WalkieTalkiePlanScreen> {
         children: [
           // Antenna top left
           Positioned(
-            top: -18.h,
-            left: 10.w,
+            top: -16.h,
+            left: 9.w,
             child: Container(
-              width: 7.w,
-              height: 20.h,
+              width: 6.5.w,
+              height: 18.h,
               decoration: BoxDecoration(
                 color: const Color(0xFF1B1D29),
                 borderRadius: BorderRadius.circular(3.r),
@@ -293,11 +312,11 @@ class _WalkieTalkiePlanScreenState extends State<WalkieTalkiePlanScreen> {
           ),
           // Knob top right
           Positioned(
-            top: -8.h,
-            right: 11.w,
+            top: -7.h,
+            right: 10.w,
             child: Container(
-              width: 11.w,
-              height: 10.h,
+              width: 10.w,
+              height: 9.h,
               decoration: BoxDecoration(
                 color: const Color(0xFF333647),
                 borderRadius: BorderRadius.circular(3.r),
@@ -307,10 +326,10 @@ class _WalkieTalkiePlanScreenState extends State<WalkieTalkiePlanScreen> {
           // PTT side button
           Positioned(
             left: -3.w,
-            top: 28.h,
+            top: 26.h,
             child: Container(
               width: 4.w,
-              height: 22.h,
+              height: 20.h,
               decoration: BoxDecoration(
                 color: _primaryPurple,
                 borderRadius: BorderRadius.circular(2.r),
@@ -321,13 +340,12 @@ class _WalkieTalkiePlanScreenState extends State<WalkieTalkiePlanScreen> {
           Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              SizedBox(height: 4.h),
-              // Grill slits
+              SizedBox(height: 3.h),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Container(
-                    width: 18.w,
+                    width: 16.w,
                     height: 2.5.h,
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.25),
@@ -336,21 +354,21 @@ class _WalkieTalkiePlanScreenState extends State<WalkieTalkiePlanScreen> {
                   ),
                 ],
               ),
-              SizedBox(height: 8.h),
-              // Center illuminated speaker
+              SizedBox(height: 7.h),
+              // Illuminated center mic/speaker
               Container(
-                width: 38.w,
-                height: 38.w,
+                width: 36.w,
+                height: 36.w,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: const Color(0xFF151722),
                   border: Border.all(
                     color: _primaryPurple,
-                    width: 2.5.w,
+                    width: 2.2.w,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: _primaryPurple.withValues(alpha: 0.45),
+                      color: _primaryPurple.withValues(alpha: 0.5),
                       blurRadius: 8,
                     ),
                   ],
@@ -359,15 +377,15 @@ class _WalkieTalkiePlanScreenState extends State<WalkieTalkiePlanScreen> {
                   child: Icon(
                     Icons.mic_rounded,
                     color: Colors.white,
-                    size: 16.sp,
+                    size: 15.sp,
                   ),
                 ),
               ),
-              SizedBox(height: 6.h),
+              SizedBox(height: 5.h),
               // Status dot
               Container(
-                width: 5.w,
-                height: 5.w,
+                width: 4.5.w,
+                height: 4.5.w,
                 decoration: const BoxDecoration(
                   color: Color(0xFF00E676),
                   shape: BoxShape.circle,
@@ -388,33 +406,40 @@ class _WalkieTalkiePlanScreenState extends State<WalkieTalkiePlanScreen> {
         ? [
             {
               "icon": Icons.bolt_rounded,
-              "label": "Unlimited\nWalkie Talkie",
+              "title": "Unlimited",
+              "subtitle": "Walkie Talkie",
             },
             {
               "icon": Icons.groups_rounded,
-              "label": "For Teams\nof All Sizes",
+              "title": "For Teams",
+              "subtitle": "of All Sizes",
             },
             {
               "icon": Icons.shield_outlined,
-              "label": "Reliable &\nSecure",
+              "title": "Reliable &",
+              "subtitle": "Secure",
             },
             {
               "icon": Icons.headset_mic_rounded,
-              "label": "Priority\nSupport",
+              "title": "Priority",
+              "subtitle": "Support",
             },
           ]
         : [
             {
               "icon": Icons.bolt_rounded,
-              "label": "Instant\nCommunication",
+              "title": "Instant",
+              "subtitle": "Communication",
             },
             {
               "icon": Icons.groups_rounded,
-              "label": "For Teams\nof All Sizes",
+              "title": "For Teams",
+              "subtitle": "of All Sizes",
             },
             {
               "icon": Icons.all_inclusive_rounded,
-              "label": "Reliable &\nSecure",
+              "title": "Reliable &",
+              "subtitle": "Secure",
             },
           ];
 
@@ -426,42 +451,58 @@ class _WalkieTalkiePlanScreenState extends State<WalkieTalkiePlanScreen> {
         children: pills.map((p) {
           return Container(
             margin: EdgeInsets.only(right: 8.w),
-            padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 8.h),
+            padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 7.h),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(16.r),
+              borderRadius: BorderRadius.circular(20.r),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.03),
+                  color: Colors.black.withValues(alpha: 0.025),
                   blurRadius: 6,
                   offset: const Offset(0, 2),
                 ),
               ],
             ),
             child: Row(
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
-                  width: 32.w,
-                  height: 32.w,
-                  decoration: BoxDecoration(
-                    color: _lightPurpleBg,
+                  width: 28.w.clamp(26.0, 32.0),
+                  height: 28.w.clamp(26.0, 32.0),
+                  decoration: const BoxDecoration(
+                    color: _lightPillBg,
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
                     p["icon"] as IconData,
-                    size: 16.sp,
+                    size: 15.sp.clamp(14.0, 18.0),
                     color: _primaryPurple,
                   ),
                 ),
-                SizedBox(width: 8.w),
-                Text(
-                  p["label"] as String,
-                  style: TextStyle(
-                    fontSize: 10.5.sp,
-                    fontFamily: FontFamily.interSemiBold,
-                    color: _darkText,
-                    height: 1.2,
-                  ),
+                SizedBox(width: 7.w),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      p["title"] as String,
+                      style: TextStyle(
+                        fontSize: 10.5.sp.clamp(9.5, 12.0),
+                        fontFamily: FontFamily.interSemiBold,
+                        color: _textDark,
+                        height: 1.15,
+                      ),
+                    ),
+                    Text(
+                      p["subtitle"] as String,
+                      style: TextStyle(
+                        fontSize: 9.5.sp.clamp(8.5, 11.0),
+                        fontFamily: FontFamily.interRegular,
+                        color: _textSecondary,
+                        height: 1.15,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -472,19 +513,19 @@ class _WalkieTalkiePlanScreenState extends State<WalkieTalkiePlanScreen> {
   }
 
   // ==========================================
-  // SEGMENTED TAB TOGGLE (Individual | Team Plan)
+  // SEGMENTED TAB TOGGLE
   // ==========================================
-  Widget _buildSegmentedTabToggle() {
+  Widget _buildSegmentedTabToggle(bool isTeam, bool isSmallScreen) {
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 16.w),
       padding: EdgeInsets.all(4.w),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(14.r),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
+            color: Colors.black.withValues(alpha: 0.025),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -495,20 +536,24 @@ class _WalkieTalkiePlanScreenState extends State<WalkieTalkiePlanScreen> {
           // Individual Tab
           Expanded(
             child: _buildToggleTabItem(
-              index: 0,
+              isSelected: !isTeam,
+              onTap: () => setState(() => _selectedTab = 0),
               icon: Icons.person_outline_rounded,
               title: "Individual",
               subtitle: "Per Person",
+              isSmallScreen: isSmallScreen,
             ),
           ),
           SizedBox(width: 4.w),
           // Team Plan Tab
           Expanded(
             child: _buildToggleTabItem(
-              index: 1,
+              isSelected: isTeam,
+              onTap: () => setState(() => _selectedTab = 1),
               icon: Icons.groups_rounded,
               title: "Team Plan",
               subtitle: "For Multiple Members",
+              isSmallScreen: isSmallScreen,
             ),
           ),
         ],
@@ -517,29 +562,25 @@ class _WalkieTalkiePlanScreenState extends State<WalkieTalkiePlanScreen> {
   }
 
   Widget _buildToggleTabItem({
-    required int index,
+    required bool isSelected,
+    required VoidCallback onTap,
     required IconData icon,
     required String title,
     required String subtitle,
+    required bool isSmallScreen,
   }) {
-    final bool isSelected = _selectedTab == index;
-
     return GestureDetector(
-      onTap: () {
-        setState(() {
-          _selectedTab = index;
-        });
-      },
+      onTap: onTap,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
+        duration: const Duration(milliseconds: 180),
         padding: EdgeInsets.symmetric(vertical: 10.h),
         decoration: BoxDecoration(
           color: isSelected ? _primaryPurple : Colors.transparent,
-          borderRadius: BorderRadius.circular(10.r),
+          borderRadius: BorderRadius.circular(12.r),
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: _primaryPurple.withValues(alpha: 0.3),
+                    color: _primaryPurple.withValues(alpha: 0.35),
                     blurRadius: 8,
                     offset: const Offset(0, 3),
                   ),
@@ -551,33 +592,41 @@ class _WalkieTalkiePlanScreenState extends State<WalkieTalkiePlanScreen> {
           children: [
             Icon(
               icon,
-              size: 20.sp,
-              color: isSelected ? Colors.white : _secondaryText,
+              size: (isSmallScreen ? 18.sp : 21.sp).clamp(17.0, 23.0),
+              color: isSelected ? Colors.white : _primaryPurple,
             ),
-            SizedBox(width: 8.w),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: 13.5.sp,
-                    fontFamily: FontFamily.interBold,
-                    color: isSelected ? Colors.white : _darkText,
+            SizedBox(width: 6.w),
+            Flexible(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      title,
+                      style: TextStyle(
+                        fontSize: 13.sp.clamp(11.5, 14.5),
+                        fontFamily: FontFamily.interBold,
+                        color: isSelected ? Colors.white : _textDark,
+                      ),
+                    ),
                   ),
-                ),
-                Text(
-                  subtitle,
-                  style: TextStyle(
-                    fontSize: 10.sp,
-                    fontFamily: FontFamily.interRegular,
-                    color: isSelected
-                        ? Colors.white.withValues(alpha: 0.85)
-                        : _secondaryText,
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      subtitle,
+                      style: TextStyle(
+                        fontSize: 9.5.sp.clamp(8.5, 11.0),
+                        fontFamily: FontFamily.interRegular,
+                        color: isSelected
+                            ? Colors.white.withValues(alpha: 0.9)
+                            : _textSecondary,
+                      ),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ],
         ),
@@ -586,9 +635,9 @@ class _WalkieTalkiePlanScreenState extends State<WalkieTalkiePlanScreen> {
   }
 
   // ==========================================
-  // TAB 1: INDIVIDUAL PLAN CONTENT (Image 2)
+  // TAB 1: INDIVIDUAL PLAN CONTENT (Screenshot 2)
   // ==========================================
-  Widget _buildIndividualTabContent() {
+  Widget _buildIndividualTabContent(bool isSmallScreen) {
     return Column(
       children: [
         // Monthly Plan Card (Most Popular)
@@ -599,6 +648,7 @@ class _WalkieTalkiePlanScreenState extends State<WalkieTalkiePlanScreen> {
           priceSuffix: " / person",
           subtitle: "Perfect for short-term use",
           isMostPopular: true,
+          isSmallScreen: isSmallScreen,
         ),
 
         SizedBox(height: 12.h),
@@ -612,6 +662,7 @@ class _WalkieTalkiePlanScreenState extends State<WalkieTalkiePlanScreen> {
           originalPrice: "₹3,000",
           discountBadge: "Save 20%",
           subtitle: "Great value for growing teams",
+          isSmallScreen: isSmallScreen,
         ),
 
         SizedBox(height: 12.h),
@@ -625,18 +676,19 @@ class _WalkieTalkiePlanScreenState extends State<WalkieTalkiePlanScreen> {
           originalPrice: "₹6,000",
           discountBadge: "Save 33%",
           subtitle: "Best for long-term use",
+          isSmallScreen: isSmallScreen,
         ),
 
-        SizedBox(height: 16.h),
+        SizedBox(height: 14.h),
 
-        // Free Trial Remaining Info Box
+        // Info Banner
         Container(
           margin: EdgeInsets.symmetric(horizontal: 16.w),
           padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
           decoration: BoxDecoration(
-            color: const Color(0xFFF1F3FF),
+            color: const Color(0xFFF1F3FE),
             borderRadius: BorderRadius.circular(14.r),
-            border: Border.all(color: const Color(0xFFE0E5FF)),
+            border: Border.all(color: const Color(0xFFE2E7FC)),
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -644,16 +696,16 @@ class _WalkieTalkiePlanScreenState extends State<WalkieTalkiePlanScreen> {
               Icon(
                 Icons.info_outline_rounded,
                 color: _primaryPurple,
-                size: 20.sp,
+                size: 20.sp.clamp(18.0, 22.0),
               ),
               SizedBox(width: 10.w),
               Expanded(
                 child: Text(
-                  "You can still use your free trial for the remaining time. The plan will activate after your trial ends.",
+                  "You can still use your free trial for the remaining time.\nThe plan will activate after your trial ends.",
                   style: TextStyle(
-                    fontSize: 12.sp,
+                    fontSize: 11.5.sp.clamp(10.5, 13.0),
                     fontFamily: FontFamily.interMedium,
-                    color: const Color(0xFF4B5563),
+                    color: const Color(0xFF475569),
                     height: 1.35,
                   ),
                 ),
@@ -674,29 +726,26 @@ class _WalkieTalkiePlanScreenState extends State<WalkieTalkiePlanScreen> {
     String? originalPrice,
     String? discountBadge,
     bool isMostPopular = false,
+    required bool isSmallScreen,
   }) {
     final bool isSelected = _selectedIndividualPlan == index;
 
     return GestureDetector(
-      onTap: () {
-        setState(() {
-          _selectedIndividualPlan = index;
-        });
-      },
+      onTap: () => setState(() => _selectedIndividualPlan = index),
       child: Container(
         margin: EdgeInsets.symmetric(horizontal: 16.w),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16.r),
           border: Border.all(
-            color: isSelected ? _primaryPurple : const Color(0xFFE5E7EB),
-            width: isSelected ? 1.8 : 1.0,
+            color: isSelected ? _primaryPurple : const Color(0xFFE2E8F0),
+            width: isSelected ? 1.6 : 1.0,
           ),
           boxShadow: [
             BoxShadow(
               color: isSelected
                   ? _primaryPurple.withValues(alpha: 0.08)
-                  : Colors.black.withValues(alpha: 0.03),
+                  : Colors.black.withValues(alpha: 0.025),
               blurRadius: 10,
               offset: const Offset(0, 3),
             ),
@@ -707,141 +756,151 @@ class _WalkieTalkiePlanScreenState extends State<WalkieTalkiePlanScreen> {
           child: Stack(
             children: [
               Padding(
-                padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 16.h),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                padding: EdgeInsets.fromLTRB(14.w, 15.h, 12.w, 15.h),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    // Top Row: Title, Price, and Radio Button
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                title,
-                                style: TextStyle(
-                                  fontSize: 16.sp,
-                                  fontFamily: FontFamily.interBold,
-                                  color: _darkText,
+                    // Left Column: Title, Price, Subtitle, Discount
+                    Expanded(
+                      flex: 11,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            title,
+                            style: TextStyle(
+                              fontSize: 15.sp.clamp(14.0, 17.0),
+                              fontFamily: FontFamily.interBold,
+                              color: _textDark,
+                            ),
+                          ),
+                          SizedBox(height: 5.h),
+                          FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.baseline,
+                              textBaseline: TextBaseline.alphabetic,
+                              children: [
+                                Text(
+                                  price,
+                                  style: TextStyle(
+                                    fontSize: 25.sp.clamp(21.0, 28.0),
+                                    fontFamily: FontFamily.interBold,
+                                    color: _textDark,
+                                    letterSpacing: -0.5,
+                                  ),
                                 ),
-                              ),
-                              SizedBox(height: 6.h),
-                              Row(
-                                crossAxisAlignment: CrossAxisAlignment.baseline,
-                                textBaseline: TextBaseline.alphabetic,
-                                children: [
-                                  Text(
-                                    price,
-                                    style: TextStyle(
-                                      fontSize: 26.sp,
-                                      fontFamily: FontFamily.interBold,
-                                      color: _darkText,
+                                Text(
+                                  priceSuffix,
+                                  style: TextStyle(
+                                    fontSize: 12.sp.clamp(10.5, 13.5),
+                                    fontFamily: FontFamily.interRegular,
+                                    color: _textSecondary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          if (discountBadge != null ||
+                              originalPrice != null) ...[
+                            SizedBox(height: 3.h),
+                            Row(
+                              children: [
+                                if (discountBadge != null)
+                                  Container(
+                                    padding: EdgeInsets.symmetric(
+                                        horizontal: 6.w, vertical: 2.h),
+                                    decoration: BoxDecoration(
+                                      color: _greenBadgeBg,
+                                      borderRadius: BorderRadius.circular(5.r),
+                                    ),
+                                    child: Text(
+                                      discountBadge,
+                                      style: TextStyle(
+                                        fontSize: 9.5.sp.clamp(8.5, 11.0),
+                                        fontFamily: FontFamily.interBold,
+                                        color: _greenBadgeText,
+                                      ),
                                     ),
                                   ),
+                                if (originalPrice != null) ...[
+                                  SizedBox(width: 6.w),
                                   Text(
-                                    priceSuffix,
+                                    originalPrice,
                                     style: TextStyle(
-                                      fontSize: 13.sp,
+                                      fontSize: 11.5.sp.clamp(10.0, 13.0),
                                       fontFamily: FontFamily.interMedium,
-                                      color: _secondaryText,
+                                      color: const Color(0xFF94A3B8),
+                                      decoration: TextDecoration.lineThrough,
                                     ),
                                   ),
                                 ],
-                              ),
-                              if (discountBadge != null || originalPrice != null) ...[
-                                SizedBox(height: 4.h),
-                                Row(
-                                  children: [
-                                    if (discountBadge != null)
-                                      Container(
-                                        padding: EdgeInsets.symmetric(
-                                            horizontal: 7.w, vertical: 2.h),
-                                        decoration: BoxDecoration(
-                                          color: _badgeGreenBg,
-                                          borderRadius:
-                                              BorderRadius.circular(6.r),
-                                        ),
-                                        child: Text(
-                                          discountBadge,
-                                          style: TextStyle(
-                                            fontSize: 10.5.sp,
-                                            fontFamily: FontFamily.interBold,
-                                            color: _badgeGreenText,
-                                          ),
-                                        ),
-                                      ),
-                                    if (originalPrice != null) ...[
-                                      SizedBox(width: 8.w),
-                                      Text(
-                                        originalPrice,
-                                        style: TextStyle(
-                                          fontSize: 12.sp,
-                                          fontFamily: FontFamily.interMedium,
-                                          color: const Color(0xFF9CA3AF),
-                                          decoration:
-                                              TextDecoration.lineThrough,
-                                        ),
-                                      ),
-                                    ],
-                                  ],
-                                ),
                               ],
-                              SizedBox(height: 4.h),
-                              Text(
-                                subtitle,
-                                style: TextStyle(
-                                  fontSize: 11.5.sp,
-                                  fontFamily: FontFamily.interRegular,
-                                  color: _secondaryText,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        // Radio Button
-                        Container(
-                          margin: EdgeInsets.only(top: isMostPopular ? 14.h : 4.h),
-                          width: 22.w,
-                          height: 22.w,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: isSelected
-                                  ? _primaryPurple
-                                  : const Color(0xFFCBD5E1),
-                              width: 2.w,
+                            ),
+                          ],
+                          SizedBox(height: 3.h),
+                          Text(
+                            subtitle,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 10.5.sp.clamp(9.5, 12.0),
+                              fontFamily: FontFamily.interRegular,
+                              color: _textSecondary,
+                              height: 1.25,
                             ),
                           ),
-                          child: isSelected
-                              ? Center(
-                                  child: Container(
-                                    width: 12.w,
-                                    height: 12.w,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: _primaryPurple,
-                                    ),
-                                  ),
-                                )
-                              : null,
+                        ],
+                      ),
+                    ),
+
+                    SizedBox(width: 8.w),
+
+                    // Middle Column: Checklist Features (Exact 4 bullets in Screenshot 2)
+                    Expanded(
+                      flex: 12,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildCheckItem("Unlimited Walkie Talkie"),
+                          SizedBox(height: 4.h),
+                          _buildCheckItem("High Quality Voice"),
+                          SizedBox(height: 4.h),
+                          _buildCheckItem("Group Communication"),
+                          SizedBox(height: 4.h),
+                          _buildCheckItem("Priority Support"),
+                        ],
+                      ),
+                    ),
+
+                    SizedBox(width: 6.w),
+
+                    // Right Column: Radio Button
+                    Container(
+                      width: 21.w.clamp(19.0, 24.0),
+                      height: 21.w.clamp(19.0, 24.0),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: isSelected
+                              ? _primaryPurple
+                              : const Color(0xFFCBD5E1),
+                          width: 1.8.w,
                         ),
-                      ],
-                    ),
-
-                    SizedBox(height: 14.h),
-
-                    // Feature Checklist
-                    _buildPlanChecklistRow(
-                      col1: "Unlimited Walkie Talkie",
-                      col2: "High Quality Voice",
-                    ),
-                    SizedBox(height: 6.h),
-                    _buildPlanChecklistRow(
-                      col1: "Group Communication",
-                      col2: "Priority Support",
+                      ),
+                      child: isSelected
+                          ? Center(
+                              child: Container(
+                                width: 11.w,
+                                height: 11.w,
+                                decoration: const BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: _primaryPurple,
+                                ),
+                              ),
+                            )
+                          : null,
                     ),
                   ],
                 ),
@@ -854,7 +913,7 @@ class _WalkieTalkiePlanScreenState extends State<WalkieTalkiePlanScreen> {
                   right: 0,
                   child: Container(
                     padding:
-                        EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
+                        EdgeInsets.symmetric(horizontal: 12.w, vertical: 3.5.h),
                     decoration: BoxDecoration(
                       color: _primaryPurple,
                       borderRadius: BorderRadius.only(
@@ -864,7 +923,7 @@ class _WalkieTalkiePlanScreenState extends State<WalkieTalkiePlanScreen> {
                     child: Text(
                       "Most Popular",
                       style: TextStyle(
-                        fontSize: 10.5.sp,
+                        fontSize: 9.5.sp.clamp(8.5, 11.0),
                         fontFamily: FontFamily.interBold,
                         color: Colors.white,
                       ),
@@ -878,55 +937,25 @@ class _WalkieTalkiePlanScreenState extends State<WalkieTalkiePlanScreen> {
     );
   }
 
-  Widget _buildPlanChecklistRow({
-    required String col1,
-    required String col2,
-  }) {
+  Widget _buildCheckItem(String label) {
     return Row(
       children: [
-        Expanded(
-          child: Row(
-            children: [
-              Icon(
-                Icons.check_rounded,
-                size: 16.sp,
-                color: _primaryPurple,
-              ),
-              SizedBox(width: 6.w),
-              Expanded(
-                child: Text(
-                  col1,
-                  style: TextStyle(
-                    fontSize: 11.5.sp,
-                    fontFamily: FontFamily.interMedium,
-                    color: const Color(0xFF374151),
-                  ),
-                ),
-              ),
-            ],
-          ),
+        Icon(
+          Icons.check_rounded,
+          size: 14.sp.clamp(12.0, 16.0),
+          color: _primaryPurple,
         ),
-        SizedBox(width: 8.w),
+        SizedBox(width: 4.w),
         Expanded(
-          child: Row(
-            children: [
-              Icon(
-                Icons.check_rounded,
-                size: 16.sp,
-                color: _primaryPurple,
-              ),
-              SizedBox(width: 6.w),
-              Expanded(
-                child: Text(
-                  col2,
-                  style: TextStyle(
-                    fontSize: 11.5.sp,
-                    fontFamily: FontFamily.interMedium,
-                    color: const Color(0xFF374151),
-                  ),
-                ),
-              ),
-            ],
+          child: Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: 10.sp.clamp(9.0, 11.5),
+              fontFamily: FontFamily.interMedium,
+              color: const Color(0xFF334155),
+            ),
           ),
         ),
       ],
@@ -934,50 +963,427 @@ class _WalkieTalkiePlanScreenState extends State<WalkieTalkiePlanScreen> {
   }
 
   // ==========================================
-  // TAB 2: TEAM PLAN CONTENT (Image 1)
+  // TAB 2: TEAM PLAN CONTENT (Screenshot 1)
   // ==========================================
-  Widget _buildTeamTabContent() {
+  Widget _buildTeamTabContent(bool isSmallScreen) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Step 1: Select Number of Members
-        _buildSectionHeader(
-          stepNumber: "1",
-          title: "Select Number of Members",
-          subtitle: "Choose how many team members you want to add",
+        // Card 1: Select Number of Members
+        _buildTeamMembersCard(isSmallScreen),
+
+        SizedBox(height: 14.h),
+
+        // Card 2: Select Plan Duration
+        _buildTeamDurationCard(),
+
+        SizedBox(height: 14.h),
+
+        // Card 3: Plan Summary
+        _buildTeamSummaryCard(),
+      ],
+    );
+  }
+
+  Widget _buildTeamMembersCard(bool isSmallScreen) {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 16.w),
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18.r),
+        border: Border.all(color: _cardBorder),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.025),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildCardStepHeader(
+            stepNumber: "1",
+            title: "Select Number of Members",
+            subtitle: "Choose how many team members you want to add",
+          ),
+          SizedBox(height: 14.h),
+          Row(
+            children: [
+              // Stepper Controls
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Minus Button
+                  GestureDetector(
+                    onTap: () {
+                      if (_teamMemberCount > 2) {
+                        setState(() => _teamMemberCount--);
+                      } else {
+                        Utils().fluttertoast("Minimum team size is 2 members");
+                      }
+                    },
+                    child: Container(
+                      width: 40.w.clamp(36.0, 44.0),
+                      height: 40.w.clamp(36.0, 44.0),
+                      decoration: const BoxDecoration(
+                        color: _lightPillBg,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.remove_rounded,
+                        color: _primaryPurple,
+                        size: 20.sp.clamp(18.0, 22.0),
+                      ),
+                    ),
+                  ),
+
+                  SizedBox(width: 8.w),
+
+                  // Count Display
+                  Container(
+                    width: (isSmallScreen ? 86.w : 100.w).clamp(80.0, 110.0),
+                    padding: EdgeInsets.symmetric(vertical: 8.h),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(13.r),
+                      border: Border.all(color: const Color(0xFFE2E8F0)),
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          "$_teamMemberCount",
+                          style: TextStyle(
+                            fontSize: 22.sp.clamp(19.0, 26.0),
+                            fontFamily: FontFamily.interBold,
+                            color: _textDark,
+                          ),
+                        ),
+                        Text(
+                          "Members",
+                          style: TextStyle(
+                            fontSize: 10.5.sp.clamp(9.5, 12.0),
+                            fontFamily: FontFamily.interRegular,
+                            color: _textSecondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  SizedBox(width: 8.w),
+
+                  // Plus Button
+                  GestureDetector(
+                    onTap: () => setState(() => _teamMemberCount++),
+                    child: Container(
+                      width: 40.w.clamp(36.0, 44.0),
+                      height: 40.w.clamp(36.0, 44.0),
+                      decoration: const BoxDecoration(
+                        color: _lightPillBg,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.add_rounded,
+                        color: _primaryPurple,
+                        size: 20.sp.clamp(18.0, 22.0),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+
+              SizedBox(width: 10.w),
+
+              // "More Members?" Info Box
+              Expanded(
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 8.h),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF1F3FE),
+                    borderRadius: BorderRadius.circular(13.r),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.groups_rounded,
+                        color: _primaryPurple,
+                        size: 20.sp.clamp(17.0, 22.0),
+                      ),
+                      SizedBox(width: 5.w),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "More Members?",
+                              style: TextStyle(
+                                fontSize: 11.sp.clamp(9.5, 12.0),
+                                fontFamily: FontFamily.interBold,
+                                color: _textDark,
+                              ),
+                            ),
+                            SizedBox(height: 1.h),
+                            Text(
+                              "You can add or remove members anytime.",
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 9.sp.clamp(8.0, 10.5),
+                                fontFamily: FontFamily.interRegular,
+                                color: _textSecondary,
+                                height: 1.2,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTeamDurationCard() {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 16.w),
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18.r),
+        border: Border.all(color: _cardBorder),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.025),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildCardStepHeader(
+            stepNumber: "2",
+            title: "Select Plan Duration",
+            subtitle: "Choose the plan duration that works for you",
+          ),
+          SizedBox(height: 14.h),
+          Row(
+            children: [
+              // Monthly
+              Expanded(
+                child: _buildTeamDurationOptionItem(
+                  index: 0,
+                  title: "Monthly",
+                  price: "₹500",
+                  priceSuffix: "per member",
+                ),
+              ),
+              SizedBox(width: 8.w),
+              // Quarterly
+              Expanded(
+                child: _buildTeamDurationOptionItem(
+                  index: 1,
+                  title: "Quarterly",
+                  price: "₹2,400",
+                  priceSuffix: "per member",
+                  discountBadge: "Save 20%",
+                ),
+              ),
+              SizedBox(width: 8.w),
+              // Yearly
+              Expanded(
+                child: _buildTeamDurationOptionItem(
+                  index: 2,
+                  title: "Yearly",
+                  price: "₹4,020",
+                  priceSuffix: "per member",
+                  discountBadge: "Save 33%",
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTeamDurationOptionItem({
+    required int index,
+    required String title,
+    required String price,
+    required String priceSuffix,
+    String? discountBadge,
+  }) {
+    final bool isSelected = _selectedTeamDuration == index;
+
+    return GestureDetector(
+      onTap: () => setState(() => _selectedTeamDuration = index),
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 11.h),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFFF7F8FF) : Colors.white,
+          borderRadius: BorderRadius.circular(14.r),
+          border: Border.all(
+            color: isSelected ? _primaryPurple : const Color(0xFFE2E8F0),
+            width: isSelected ? 1.6 : 1.0,
+          ),
         ),
-        SizedBox(height: 12.h),
-        _buildMemberStepperSection(),
-
-        SizedBox(height: 20.h),
-
-        // Step 2: Select Plan Duration
-        _buildSectionHeader(
-          stepNumber: "2",
-          title: "Select Plan Duration",
-          subtitle: "Choose the plan duration that works for you",
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Flexible(
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      title,
+                      style: TextStyle(
+                        fontSize: 12.sp.clamp(11.0, 13.5),
+                        fontFamily: FontFamily.interBold,
+                        color: _textDark,
+                      ),
+                    ),
+                  ),
+                ),
+                Container(
+                  width: 16.w.clamp(14.0, 18.0),
+                  height: 16.w.clamp(14.0, 18.0),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color:
+                          isSelected ? _primaryPurple : const Color(0xFFCBD5E1),
+                      width: 1.8.w,
+                    ),
+                  ),
+                  child: isSelected
+                      ? Center(
+                          child: Container(
+                            width: 8.w,
+                            height: 8.w,
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: _primaryPurple,
+                            ),
+                          ),
+                        )
+                      : null,
+                ),
+              ],
+            ),
+            SizedBox(height: 7.h),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                price,
+                style: TextStyle(
+                  fontSize: 17.sp.clamp(15.0, 19.0),
+                  fontFamily: FontFamily.interBold,
+                  color: _textDark,
+                ),
+              ),
+            ),
+            SizedBox(height: 1.h),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                priceSuffix,
+                style: TextStyle(
+                  fontSize: 9.5.sp.clamp(8.5, 11.0),
+                  fontFamily: FontFamily.interRegular,
+                  color: _textSecondary,
+                ),
+              ),
+            ),
+            SizedBox(height: 6.h),
+            if (discountBadge != null)
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 5.w, vertical: 2.h),
+                decoration: BoxDecoration(
+                  color: _greenBadgeBg,
+                  borderRadius: BorderRadius.circular(4.r),
+                ),
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    discountBadge,
+                    style: TextStyle(
+                      fontSize: 9.sp.clamp(8.0, 10.5),
+                      fontFamily: FontFamily.interBold,
+                      color: _greenBadgeText,
+                    ),
+                  ),
+                ),
+              )
+            else
+              SizedBox(height: 15.h),
+          ],
         ),
-        SizedBox(height: 12.h),
-        _buildDurationOptionsRow(),
+      ),
+    );
+  }
 
-        SizedBox(height: 20.h),
+  Widget _buildTeamSummaryCard() {
+    final String durationName = _selectedTeamDuration == 0
+        ? "Monthly"
+        : (_selectedTeamDuration == 1 ? "Quarterly" : "Yearly");
 
-        // Step 3: Plan Summary
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16.w),
-          child: Row(
+    final int ratePerMember = _selectedTeamDuration == 0
+        ? 500
+        : (_selectedTeamDuration == 1 ? 2400 : 4020);
+
+    final int originalTotal = _teamMemberCount * ratePerMember;
+    const double teamSavingsRate = 0.20;
+    int discountedTotal = (originalTotal * (1 - teamSavingsRate)).round();
+
+    if (_promoDiscountPercent > 0) {
+      discountedTotal = (discountedTotal * (1 - _promoDiscountPercent)).round();
+    }
+
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 16.w),
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18.r),
+        border: Border.all(color: _cardBorder),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.025),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Step 3 Header with Promo Code link on right
+          Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Row(
                 children: [
-                  _buildStepCircle("3"),
-                  SizedBox(width: 10.w),
+                  _buildStepNumberBadge("3"),
+                  SizedBox(width: 8.w),
                   Text(
                     "Plan Summary",
                     style: TextStyle(
-                      fontSize: 15.sp,
+                      fontSize: 14.5.sp.clamp(13.5, 16.0),
                       fontFamily: FontFamily.interBold,
-                      color: _darkText,
+                      color: _textDark,
                     ),
                   ),
                 ],
@@ -997,7 +1403,7 @@ class _WalkieTalkiePlanScreenState extends State<WalkieTalkiePlanScreen> {
                           ? "Code: $_appliedPromoCode"
                           : "Have a Promo Code?",
                       style: TextStyle(
-                        fontSize: 12.sp,
+                        fontSize: 11.5.sp.clamp(10.5, 13.0),
                         fontFamily: FontFamily.interSemiBold,
                         color: _primaryPurple,
                       ),
@@ -1007,45 +1413,100 @@ class _WalkieTalkiePlanScreenState extends State<WalkieTalkiePlanScreen> {
               ),
             ],
           ),
-        ),
-        SizedBox(height: 10.h),
-        _buildPlanSummaryCard(),
-      ],
-    );
-  }
 
-  Widget _buildSectionHeader({
-    required String stepNumber,
-    required String title,
-    required String subtitle,
-  }) {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 16.w),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildStepCircle(stepNumber),
-          SizedBox(width: 10.w),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          SizedBox(height: 12.h),
+
+          // Inner Summary Box
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF8F9FE),
+              borderRadius: BorderRadius.circular(12.r),
+              border: Border.all(color: const Color(0xFFE8EEF5)),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: 15.sp,
-                    fontFamily: FontFamily.interBold,
-                    color: _darkText,
+                Flexible(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          "Team Plan ($durationName)",
+                          style: TextStyle(
+                            fontSize: 14.sp.clamp(12.5, 15.5),
+                            fontFamily: FontFamily.interBold,
+                            color: _textDark,
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 4.h),
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          "$_teamMemberCount Members × ₹$ratePerMember",
+                          style: TextStyle(
+                            fontSize: 11.5.sp.clamp(10.0, 13.0),
+                            fontFamily: FontFamily.interMedium,
+                            color: _textSecondary,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                SizedBox(height: 2.h),
-                Text(
-                  subtitle,
-                  style: TextStyle(
-                    fontSize: 11.5.sp,
-                    fontFamily: FontFamily.interRegular,
-                    color: _secondaryText,
-                  ),
+                SizedBox(width: 8.w),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 6.w, vertical: 2.h),
+                          decoration: BoxDecoration(
+                            color: _greenBadgeBg,
+                            borderRadius: BorderRadius.circular(6.r),
+                          ),
+                          child: Text(
+                            _promoDiscountPercent > 0
+                                ? "Save ${(teamSavingsRate * 100 + _promoDiscountPercent * 100).toInt()}%"
+                                : "Save 20%",
+                            style: TextStyle(
+                              fontSize: 9.5.sp.clamp(8.5, 11.0),
+                              fontFamily: FontFamily.interBold,
+                              color: _greenBadgeText,
+                            ),
+                          ),
+                        ),
+                        SizedBox(width: 6.w),
+                        Text(
+                          "₹${_formatCurrency(discountedTotal)}",
+                          style: TextStyle(
+                            fontSize: 20.sp.clamp(17.0, 23.0),
+                            fontFamily: FontFamily.interBold,
+                            color: _textDark,
+                            letterSpacing: -0.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 2.h),
+                    Text(
+                      "₹${_formatCurrency(originalTotal)} per month",
+                      style: TextStyle(
+                        fontSize: 10.5.sp.clamp(9.5, 12.0),
+                        fontFamily: FontFamily.interRegular,
+                        color: const Color(0xFF94A3B8),
+                        decoration: TextDecoration.lineThrough,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -1055,11 +1516,49 @@ class _WalkieTalkiePlanScreenState extends State<WalkieTalkiePlanScreen> {
     );
   }
 
-  Widget _buildStepCircle(String number) {
+  Widget _buildCardStepHeader({
+    required String stepNumber,
+    required String title,
+    required String subtitle,
+  }) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildStepNumberBadge(stepNumber),
+        SizedBox(width: 10.w),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 14.5.sp.clamp(13.0, 16.0),
+                  fontFamily: FontFamily.interBold,
+                  color: _textDark,
+                ),
+              ),
+              SizedBox(height: 2.h),
+              Text(
+                subtitle,
+                style: TextStyle(
+                  fontSize: 11.5.sp.clamp(10.0, 13.0),
+                  fontFamily: FontFamily.interRegular,
+                  color: _textSecondary,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStepNumberBadge(String number) {
     return Container(
-      width: 24.w,
-      height: 24.w,
-      decoration: BoxDecoration(
+      width: 23.w.clamp(20.0, 26.0),
+      height: 23.w.clamp(20.0, 26.0),
+      decoration: const BoxDecoration(
         color: _primaryPurple,
         shape: BoxShape.circle,
       ),
@@ -1067,450 +1566,11 @@ class _WalkieTalkiePlanScreenState extends State<WalkieTalkiePlanScreen> {
         child: Text(
           number,
           style: TextStyle(
-            fontSize: 12.sp,
+            fontSize: 11.5.sp.clamp(10.0, 13.0),
             fontFamily: FontFamily.interBold,
             color: Colors.white,
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildMemberStepperSection() {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 16.w),
-      child: Row(
-        children: [
-          // Minus Button
-          GestureDetector(
-            onTap: () {
-              if (_teamMemberCount > 2) {
-                setState(() {
-                  _teamMemberCount--;
-                });
-              } else {
-                Utils().fluttertoast("Minimum team size is 2 members");
-              }
-            },
-            child: Container(
-              width: 44.w,
-              height: 44.w,
-              decoration: BoxDecoration(
-                color: _lightPurpleBg,
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                Icons.remove_rounded,
-                color: _primaryPurple,
-                size: 22.sp,
-              ),
-            ),
-          ),
-
-          SizedBox(width: 10.w),
-
-          // Member Count Display
-          Container(
-            width: 110.w,
-            padding: EdgeInsets.symmetric(vertical: 10.h),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(14.r),
-              border: Border.all(color: const Color(0xFFE5E7EB)),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.03),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  "$_teamMemberCount",
-                  style: TextStyle(
-                    fontSize: 24.sp,
-                    fontFamily: FontFamily.interBold,
-                    color: _darkText,
-                  ),
-                ),
-                Text(
-                  "Members",
-                  style: TextStyle(
-                    fontSize: 11.5.sp,
-                    fontFamily: FontFamily.interMedium,
-                    color: _secondaryText,
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          SizedBox(width: 10.w),
-
-          // Plus Button
-          GestureDetector(
-            onTap: () {
-              setState(() {
-                _teamMemberCount++;
-              });
-            },
-            child: Container(
-              width: 44.w,
-              height: 44.w,
-              decoration: BoxDecoration(
-                color: _primaryPurple,
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: _primaryPurple.withValues(alpha: 0.35),
-                    blurRadius: 8,
-                    offset: const Offset(0, 3),
-                  ),
-                ],
-              ),
-              child: Icon(
-                Icons.add_rounded,
-                color: Colors.white,
-                size: 22.sp,
-              ),
-            ),
-          ),
-
-          SizedBox(width: 12.w),
-
-          // More Members Info Card
-          Expanded(
-            child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
-              decoration: BoxDecoration(
-                color: _lightPurpleBg,
-                borderRadius: BorderRadius.circular(14.r),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.groups_rounded,
-                    color: _primaryPurple,
-                    size: 24.sp,
-                  ),
-                  SizedBox(width: 8.w),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          "More Members?",
-                          style: TextStyle(
-                            fontSize: 11.5.sp,
-                            fontFamily: FontFamily.interBold,
-                            color: const Color(0xFF1E1B4B),
-                          ),
-                        ),
-                        SizedBox(height: 2.h),
-                        Text(
-                          "You can add or remove members anytime.",
-                          style: TextStyle(
-                            fontSize: 10.sp,
-                            fontFamily: FontFamily.interRegular,
-                            color: _secondaryText,
-                            height: 1.25,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDurationOptionsRow() {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 16.w),
-      child: Row(
-        children: [
-          // Monthly
-          Expanded(
-            child: _buildDurationCard(
-              index: 0,
-              title: "Monthly",
-              price: "₹500",
-              priceSuffix: "per member",
-            ),
-          ),
-          SizedBox(width: 8.w),
-          // Quarterly
-          Expanded(
-            child: _buildDurationCard(
-              index: 1,
-              title: "Quarterly",
-              price: "₹2,400",
-              priceSuffix: "per member",
-              discountBadge: "Save 20%",
-            ),
-          ),
-          SizedBox(width: 8.w),
-          // Yearly
-          Expanded(
-            child: _buildDurationCard(
-              index: 2,
-              title: "Yearly",
-              price: "₹4,020",
-              priceSuffix: "per member",
-              discountBadge: "Save 33%",
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDurationCard({
-    required int index,
-    required String title,
-    required String price,
-    required String priceSuffix,
-    String? discountBadge,
-  }) {
-    final bool isSelected = _selectedTeamDuration == index;
-
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _selectedTeamDuration = index;
-        });
-      },
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 12.h),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(14.r),
-          border: Border.all(
-            color: isSelected ? _primaryPurple : const Color(0xFFE5E7EB),
-            width: isSelected ? 1.8 : 1.0,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: isSelected
-                  ? _primaryPurple.withValues(alpha: 0.08)
-                  : Colors.black.withValues(alpha: 0.02),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Title + Radio icon
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: 12.5.sp,
-                    fontFamily: FontFamily.interBold,
-                    color: _darkText,
-                  ),
-                ),
-                Container(
-                  width: 16.w,
-                  height: 16.w,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: isSelected
-                          ? _primaryPurple
-                          : const Color(0xFFCBD5E1),
-                      width: 1.8.w,
-                    ),
-                  ),
-                  child: isSelected
-                      ? Center(
-                          child: Container(
-                            width: 8.w,
-                            height: 8.w,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: _primaryPurple,
-                            ),
-                          ),
-                        )
-                      : null,
-                ),
-              ],
-            ),
-
-            SizedBox(height: 8.h),
-
-            // Price
-            Text(
-              price,
-              style: TextStyle(
-                fontSize: 17.sp,
-                fontFamily: FontFamily.interBold,
-                color: _darkText,
-              ),
-            ),
-            SizedBox(height: 2.h),
-            Text(
-              priceSuffix,
-              style: TextStyle(
-                fontSize: 10.sp,
-                fontFamily: FontFamily.interRegular,
-                color: _secondaryText,
-              ),
-            ),
-
-            SizedBox(height: 8.h),
-
-            // Discount Badge (if any)
-            if (discountBadge != null)
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
-                decoration: BoxDecoration(
-                  color: _badgeGreenBg,
-                  borderRadius: BorderRadius.circular(4.r),
-                ),
-                child: Text(
-                  discountBadge,
-                  style: TextStyle(
-                    fontSize: 9.5.sp,
-                    fontFamily: FontFamily.interBold,
-                    color: _badgeGreenText,
-                  ),
-                ),
-              )
-            else
-              SizedBox(height: 16.h), // Equalizer space
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPlanSummaryCard() {
-    // Math calculation for Team Plan
-    final String durationName = _selectedTeamDuration == 0
-        ? "Monthly"
-        : (_selectedTeamDuration == 1 ? "Quarterly" : "Yearly");
-
-    final int ratePerMember = _selectedTeamDuration == 0
-        ? 500
-        : (_selectedTeamDuration == 1 ? 2400 : 4020);
-
-    // Standard original base calculation
-    final int originalTotal = _teamMemberCount * ratePerMember;
-
-    // Built-in Team discount: 20% savings on Monthly base
-    const double teamSavingsRate = 0.20;
-    int discountedTotal = (originalTotal * (1 - teamSavingsRate)).round();
-
-    // Additional Promo Code discount
-    if (_promoDiscountPercent > 0) {
-      discountedTotal =
-          (discountedTotal * (1 - _promoDiscountPercent)).round();
-    }
-
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 16.w),
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          // Left: Breakdown
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                "Team Plan ($durationName)",
-                style: TextStyle(
-                  fontSize: 14.5.sp,
-                  fontFamily: FontFamily.interBold,
-                  color: _darkText,
-                ),
-              ),
-              SizedBox(height: 4.h),
-              Text(
-                "$_teamMemberCount Members × ₹$ratePerMember",
-                style: TextStyle(
-                  fontSize: 12.sp,
-                  fontFamily: FontFamily.interMedium,
-                  color: _secondaryText,
-                ),
-              ),
-            ],
-          ),
-
-          // Right: Pricing & Savings
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    padding:
-                        EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
-                    decoration: BoxDecoration(
-                      color: _badgeGreenBg,
-                      borderRadius: BorderRadius.circular(6.r),
-                    ),
-                    child: Text(
-                      _promoDiscountPercent > 0
-                          ? "Save ${(teamSavingsRate * 100 + _promoDiscountPercent * 100).toInt()}%"
-                          : "Save 20%",
-                      style: TextStyle(
-                        fontSize: 10.5.sp,
-                        fontFamily: FontFamily.interBold,
-                        color: _badgeGreenText,
-                      ),
-                    ),
-                  ),
-                  SizedBox(width: 8.w),
-                  Text(
-                    "₹${_formatCurrency(discountedTotal)}",
-                    style: TextStyle(
-                      fontSize: 20.sp,
-                      fontFamily: FontFamily.interBold,
-                      color: _darkText,
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 3.h),
-              Text(
-                "₹${_formatCurrency(originalTotal)} per month",
-                style: TextStyle(
-                  fontSize: 11.5.sp,
-                  fontFamily: FontFamily.interRegular,
-                  color: const Color(0xFF9CA3AF),
-                  decoration: TextDecoration.lineThrough,
-                ),
-              ),
-            ],
-          ),
-        ],
       ),
     );
   }
@@ -1528,7 +1588,7 @@ class _WalkieTalkiePlanScreenState extends State<WalkieTalkiePlanScreen> {
   }
 
   // ==========================================
-  // BOTTOM ACTION BAR & PAYMENT TRIGGER
+  // BOTTOM BAR
   // ==========================================
   Widget _buildBottomActionBar(bool isTeam) {
     String buttonText;
@@ -1550,7 +1610,7 @@ class _WalkieTalkiePlanScreenState extends State<WalkieTalkiePlanScreen> {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 10,
             offset: const Offset(0, -3),
           ),
@@ -1559,10 +1619,10 @@ class _WalkieTalkiePlanScreenState extends State<WalkieTalkiePlanScreen> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Action Button
+          // Continue Button
           SizedBox(
             width: double.infinity,
-            height: 48.h,
+            height: 48.h.clamp(44.0, 52.0),
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: _primaryPurple,
@@ -1571,49 +1631,50 @@ class _WalkieTalkiePlanScreenState extends State<WalkieTalkiePlanScreen> {
                 ),
                 elevation: 0,
               ),
-              onPressed: () {
-                _showPaymentMethodBottomSheet(buttonText);
-              },
+              onPressed: () => _showPaymentMethodBottomSheet(buttonText),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(
-                    buttonText,
-                    style: TextStyle(
-                      fontSize: 15.sp,
-                      fontFamily: FontFamily.interBold,
-                      color: Colors.white,
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      buttonText,
+                      style: TextStyle(
+                        fontSize: 15.sp.clamp(13.5, 16.5),
+                        fontFamily: FontFamily.interBold,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                   SizedBox(width: 8.w),
                   Icon(
                     Icons.arrow_forward_rounded,
                     color: Colors.white,
-                    size: 18.sp,
+                    size: 18.sp.clamp(16.0, 20.0),
                   ),
                 ],
               ),
             ),
           ),
 
-          SizedBox(height: 8.h),
+          SizedBox(height: 7.h),
 
-          // Security Lock Badge
+          // Security Lock Note
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
                 Icons.lock_outline_rounded,
-                size: 13.sp,
-                color: _secondaryText,
+                size: 13.sp.clamp(11.0, 14.0),
+                color: _textSecondary,
               ),
               SizedBox(width: 6.w),
               Text(
                 "Secure & Encrypted Payment",
                 style: TextStyle(
-                  fontSize: 11.5.sp,
+                  fontSize: 11.5.sp.clamp(10.0, 13.0),
                   fontFamily: FontFamily.interMedium,
-                  color: _secondaryText,
+                  color: _textSecondary,
                 ),
               ),
             ],
@@ -1624,7 +1685,7 @@ class _WalkieTalkiePlanScreenState extends State<WalkieTalkiePlanScreen> {
   }
 
   // ==========================================
-  // PROMO CODE BOTTOM SHEET
+  // PROMO CODE SHEET
   // ==========================================
   void _showPromoCodeBottomSheet() {
     final TextEditingController promoController =
@@ -1669,7 +1730,7 @@ class _WalkieTalkiePlanScreenState extends State<WalkieTalkiePlanScreen> {
                     style: TextStyle(
                       fontSize: 17.sp,
                       fontFamily: FontFamily.interBold,
-                      color: _darkText,
+                      color: _textDark,
                     ),
                   ),
                   GestureDetector(
@@ -1683,7 +1744,7 @@ class _WalkieTalkiePlanScreenState extends State<WalkieTalkiePlanScreen> {
                       child: Icon(
                         Icons.close_rounded,
                         size: 18.sp,
-                        color: _secondaryText,
+                        color: _textSecondary,
                       ),
                     ),
                   ),
@@ -1699,16 +1760,16 @@ class _WalkieTalkiePlanScreenState extends State<WalkieTalkiePlanScreen> {
                       decoration: BoxDecoration(
                         color: const Color(0xFFF9FAFB),
                         borderRadius: BorderRadius.circular(12.r),
-                        border: Border.all(color: const Color(0xFFE5E7EB)),
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
                       ),
                       child: TextField(
                         controller: promoController,
                         textCapitalization: TextCapitalization.characters,
                         decoration: InputDecoration(
-                          hintText: "Enter coupon code (e.g. TEAM20)",
+                          hintText: "Enter code (e.g. TEAM20)",
                           hintStyle: TextStyle(
                             fontSize: 12.5.sp,
-                            color: const Color(0xFF9CA3AF),
+                            color: const Color(0xFF94A3B8),
                             fontFamily: FontFamily.interRegular,
                           ),
                           border: InputBorder.none,
@@ -1736,7 +1797,7 @@ class _WalkieTalkiePlanScreenState extends State<WalkieTalkiePlanScreen> {
                         }
                         setState(() {
                           _appliedPromoCode = code;
-                          _promoDiscountPercent = 0.10; // Extra 10%
+                          _promoDiscountPercent = 0.10;
                         });
                         Navigator.pop(ctx);
                         Utils().fluttertoast("Promo code $code applied!");
@@ -1754,20 +1815,17 @@ class _WalkieTalkiePlanScreenState extends State<WalkieTalkiePlanScreen> {
                 ],
               ),
               SizedBox(height: 14.h),
-              // Preset suggestions
               Text(
                 "Available Coupons",
                 style: TextStyle(
                   fontSize: 12.sp,
                   fontFamily: FontFamily.interSemiBold,
-                  color: _darkText,
+                  color: _textDark,
                 ),
               ),
               SizedBox(height: 8.h),
-              _buildCouponPresetItem(
-                code: "TEAM20",
-                description: "Extra 10% off on all plans",
-                onSelect: () {
+              GestureDetector(
+                onTap: () {
                   setState(() {
                     _appliedPromoCode = "TEAM20";
                     _promoDiscountPercent = 0.10;
@@ -1775,6 +1833,50 @@ class _WalkieTalkiePlanScreenState extends State<WalkieTalkiePlanScreen> {
                   Navigator.pop(ctx);
                   Utils().fluttertoast("Coupon TEAM20 applied!");
                 },
+                child: Container(
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+                  decoration: BoxDecoration(
+                    color: _lightPillBg,
+                    borderRadius: BorderRadius.circular(12.r),
+                    border: Border.all(color: const Color(0xFFDCD7FE)),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "TEAM20",
+                            style: TextStyle(
+                              fontSize: 13.sp,
+                              fontFamily: FontFamily.interBold,
+                              color: _primaryPurple,
+                            ),
+                          ),
+                          SizedBox(height: 2.h),
+                          Text(
+                            "Extra 10% off on all plans",
+                            style: TextStyle(
+                              fontSize: 11.sp,
+                              fontFamily: FontFamily.interRegular,
+                              color: _textSecondary,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Text(
+                        "TAP TO APPLY",
+                        style: TextStyle(
+                          fontSize: 11.sp,
+                          fontFamily: FontFamily.interBold,
+                          color: _primaryPurple,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ],
           ),
@@ -1783,61 +1885,8 @@ class _WalkieTalkiePlanScreenState extends State<WalkieTalkiePlanScreen> {
     );
   }
 
-  Widget _buildCouponPresetItem({
-    required String code,
-    required String description,
-    required VoidCallback onSelect,
-  }) {
-    return GestureDetector(
-      onTap: onSelect,
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
-        decoration: BoxDecoration(
-          color: _lightPurpleBg,
-          borderRadius: BorderRadius.circular(12.r),
-          border: Border.all(color: _softPurpleBorder),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  code,
-                  style: TextStyle(
-                    fontSize: 13.sp,
-                    fontFamily: FontFamily.interBold,
-                    color: _primaryPurple,
-                  ),
-                ),
-                SizedBox(height: 2.h),
-                Text(
-                  description,
-                  style: TextStyle(
-                    fontSize: 11.sp,
-                    fontFamily: FontFamily.interRegular,
-                    color: _secondaryText,
-                  ),
-                ),
-              ],
-            ),
-            Text(
-              "TAP TO APPLY",
-              style: TextStyle(
-                fontSize: 11.sp,
-                fontFamily: FontFamily.interBold,
-                color: _primaryPurple,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   // ==========================================
-  // PAYMENT FLOW DIALOG / SHEET
+  // PAYMENT BOTTOM SHEET & SUCCESS
   // ==========================================
   void _showPaymentMethodBottomSheet(String planDescription) {
     showModalBottomSheet(
@@ -1871,7 +1920,7 @@ class _WalkieTalkiePlanScreenState extends State<WalkieTalkiePlanScreen> {
                 style: TextStyle(
                   fontSize: 18.sp,
                   fontFamily: FontFamily.interBold,
-                  color: _darkText,
+                  color: _textDark,
                 ),
               ),
               SizedBox(height: 4.h),
@@ -1880,7 +1929,7 @@ class _WalkieTalkiePlanScreenState extends State<WalkieTalkiePlanScreen> {
                 style: TextStyle(
                   fontSize: 12.sp,
                   fontFamily: FontFamily.interRegular,
-                  color: _secondaryText,
+                  color: _textSecondary,
                 ),
               ),
               SizedBox(height: 16.h),
@@ -1945,15 +1994,15 @@ class _WalkieTalkiePlanScreenState extends State<WalkieTalkiePlanScreen> {
       decoration: BoxDecoration(
         color: const Color(0xFFF9FAFB),
         borderRadius: BorderRadius.circular(14.r),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
       ),
       child: Row(
         children: [
           Container(
             width: 38.w,
             height: 38.w,
-            decoration: BoxDecoration(
-              color: _lightPurpleBg,
+            decoration: const BoxDecoration(
+              color: _lightPillBg,
               shape: BoxShape.circle,
             ),
             child: Icon(icon, color: _primaryPurple, size: 20.sp),
@@ -1968,7 +2017,7 @@ class _WalkieTalkiePlanScreenState extends State<WalkieTalkiePlanScreen> {
                   style: TextStyle(
                     fontSize: 13.5.sp,
                     fontFamily: FontFamily.interBold,
-                    color: _darkText,
+                    color: _textDark,
                   ),
                 ),
                 SizedBox(height: 2.h),
@@ -1977,7 +2026,7 @@ class _WalkieTalkiePlanScreenState extends State<WalkieTalkiePlanScreen> {
                   style: TextStyle(
                     fontSize: 11.sp,
                     fontFamily: FontFamily.interRegular,
-                    color: _secondaryText,
+                    color: _textSecondary,
                   ),
                 ),
               ],
@@ -1985,7 +2034,7 @@ class _WalkieTalkiePlanScreenState extends State<WalkieTalkiePlanScreen> {
           ),
           Icon(
             Icons.chevron_right_rounded,
-            color: const Color(0xFF9CA3AF),
+            color: const Color(0xFF94A3B8),
             size: 20.sp,
           ),
         ],
@@ -2023,7 +2072,7 @@ class _WalkieTalkiePlanScreenState extends State<WalkieTalkiePlanScreen> {
                 style: TextStyle(
                   fontSize: 17.sp,
                   fontFamily: FontFamily.interBold,
-                  color: _darkText,
+                  color: _textDark,
                 ),
               ),
               SizedBox(height: 8.h),
@@ -2032,7 +2081,7 @@ class _WalkieTalkiePlanScreenState extends State<WalkieTalkiePlanScreen> {
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 12.5.sp,
-                  color: _secondaryText,
+                  color: _textSecondary,
                   fontFamily: FontFamily.interRegular,
                 ),
               ),
@@ -2048,8 +2097,8 @@ class _WalkieTalkiePlanScreenState extends State<WalkieTalkiePlanScreen> {
                     ),
                   ),
                   onPressed: () {
-                    Get.back(); // close dialog
-                    Get.back(); // return to previous screen
+                    Get.back();
+                    Get.back();
                   },
                   child: Text(
                     "Done",
