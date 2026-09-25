@@ -3,6 +3,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Views/walkie_group_select_screen.dart';
+import 'package:fgtracker/app/modules/Walkie-talkie/Views/walkie_talkie_plan_screen.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -693,21 +694,25 @@ class _WalkieTalkieTrialDetailsScreenState
   }
 
   Widget _buildPurchasePlanCard() {
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 16.w),
-      padding: EdgeInsets.all(14.w),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Row(
+    return GestureDetector(
+      onTap: () {
+        Get.to(() => const WalkieTalkiePlanScreen());
+      },
+      child: Container(
+        margin: EdgeInsets.symmetric(horizontal: 16.w),
+        padding: EdgeInsets.all(14.w),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16.r),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.03),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Row(
         children: [
           Container(
             width: 44.w,
@@ -750,7 +755,7 @@ class _WalkieTalkieTrialDetailsScreenState
           ),
           GestureDetector(
             onTap: () {
-              Utils().fluttertoast("Plan purchase flow selected");
+              Get.to(() => const WalkieTalkiePlanScreen());
             },
             child: Container(
               padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
@@ -772,6 +777,7 @@ class _WalkieTalkieTrialDetailsScreenState
           ),
         ],
       ),
+    ),
     );
   }
 
