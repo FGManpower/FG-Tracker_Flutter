@@ -289,8 +289,10 @@ class GroupCallingController extends GetxController {
     } else {
       try {
         await ScreenShareForegroundService.start(groupName: groupName);
-        screenStream =
-            await navigator.mediaDevices.getDisplayMedia({'video': true});
+        final constraints = webrtc.WebRTC.platformIsIOS
+            ? {'video': {'deviceId': 'broadcast'}}
+            : {'video': true};
+        screenStream = await navigator.mediaDevices.getDisplayMedia(constraints);
 
         isScreenSharing.value = true;
         isScreenShareExpanded.value = true;
