@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'package:fgtracker/app/modules/Walkie-talkie/Views/walkie_group_select_screen.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
+import 'package:fgtracker/app/global_widget/blend_mask.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:fgtracker/generated/assets.dart';
 import 'package:flutter/material.dart';
@@ -47,7 +48,7 @@ class _WalkieTalkiePurchaseSuccessScreenState
   String get validTill => widget.validTill;
 
   static const Color _primaryPurple = Color(0xFF5B4DF5);
-  static const Color _bgSoft = Color(0xFFF7F8FE);
+  static const Color _bgSoft = Color(0xFFF6F8FE);
   static const Color _textDark = Color(0xFF0F172A);
   static const Color _textSecondary = Color(0xFF64748B);
   static const Color _cardBorder = Color(0xFFEDF2F7);
@@ -594,27 +595,13 @@ class _WalkieTalkiePurchaseSuccessScreenState
   // Mini Walkie Device Graphic with glowing halo
   Widget _buildMiniWalkieGraphic() {
     return SizedBox(
-      width: 58.w.clamp(52.0, 66.0),
-      height: 68.h.clamp(60.0, 76.0),
-      child: Stack(
-        alignment: Alignment.center,
-        clipBehavior: Clip.none,
-        children: [
-          // Halo glow behind
-          Container(
-            width: 54.w.clamp(48.0, 62.0),
-            height: 54.w.clamp(48.0, 62.0),
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: _primaryPurple.withValues(alpha: 0.12),
-            ),
-          ),
-
-          // Walkie Talkie 3D asset image
-          Assets.walkieTalkie.walkieDevice.image(
-            fit: BoxFit.contain,
-          ),
-        ],
+      width: 82.w.clamp(74.0, 94.0),
+      height: 82.h.clamp(74.0, 94.0),
+      child: BlendMask(
+        blendMode: BlendMode.multiply,
+        child: Assets.walkieTalkie.walkieWavesBadge.image(
+          fit: BoxFit.contain,
+        ),
       ),
     );
   }

@@ -1,9 +1,11 @@
 import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Controller/walkie_talkie_plan_controller.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Views/walkie_talkie_purchase_success_screen.dart';
+import 'package:fgtracker/app/global_widget/blend_mask.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:fgtracker/generated/assets.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
@@ -161,88 +163,88 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
   // ==========================================
   Widget _buildTopHeroSection(bool isTeam, bool isSmallScreen) {
     return Container(
-      padding: EdgeInsets.fromLTRB(16.w, 4.h, 16.w, 0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      width: double.infinity,
+      padding: EdgeInsets.fromLTRB(16.w, 4.h, 4.w, 0),
+      child: Stack(
+        clipBehavior: Clip.none,
         children: [
-          // Squircle Back Button
-          GestureDetector(
-            onTap: () {
-              if (_selectedTab == 1) {
-                setState(() {
-                  _selectedTab = 0;
-                  controller.setTab(0);
-                });
-              } else {
-                Get.back();
-              }
-            },
-            child: Container(
-              width: 36.w.clamp(34.0, 42.0),
-              height: 36.w.clamp(34.0, 42.0),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(11.r),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
+          // Left side Column: Back Button, spacing, Title, Subtitle
+          Padding(
+            padding: EdgeInsets.only(
+              right: (isSmallScreen ? 145.w : 165.w).clamp(135.0, 185.0),
+              bottom: 4.h,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Squircle Back Button
+                GestureDetector(
+                  onTap: () {
+                    if (_selectedTab == 1) {
+                      setState(() {
+                        _selectedTab = 0;
+                        controller.setTab(0);
+                      });
+                    } else {
+                      Get.back();
+                    }
+                  },
+                  child: Container(
+                    width: 38.w.clamp(34.0, 42.0),
+                    height: 38.w.clamp(34.0, 42.0),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12.r),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.05),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Icon(
+                      Icons.arrow_back,
+                      size: 19.sp.clamp(16.0, 21.0),
+                      color: _primaryPurple,
+                    ),
                   ),
-                ],
-              ),
-              child: Icon(
-                Icons.arrow_back,
-                size: 18.sp.clamp(16.0, 20.0),
-                color: _primaryPurple,
-              ),
+                ),
+
+                SizedBox(height: 12.h),
+
+                Text(
+                  isTeam ? "Team Plan" : "Choose a Plan",
+                  style: TextStyle(
+                    fontSize: 23.sp.clamp(20.0, 27.0),
+                    fontFamily: FontFamily.interBold,
+                    color: _textDark,
+                    letterSpacing: -0.4,
+                  ),
+                ),
+                SizedBox(height: 5.h),
+                Text(
+                  isTeam
+                      ? "Add team members and get everyone connected with Walkie Talkie"
+                      : "Continue using Walkie Talkie with a plan that fits your team",
+                  style: TextStyle(
+                    fontSize: 12.sp.clamp(10.5, 13.5),
+                    fontFamily: FontFamily.interRegular,
+                    color: _textSecondary,
+                    height: 1.35,
+                  ),
+                ),
+              ],
             ),
           ),
 
-          SizedBox(height: 6.h),
-
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              // Title & Subtitle
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    FittedBox(
-                      fit: BoxFit.scaleDown,
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        isTeam ? "Team Plan" : "Choose a Plan",
-                        style: TextStyle(
-                          fontSize: 21.sp.clamp(18.0, 25.0),
-                          fontFamily: FontFamily.interBold,
-                          color: _textDark,
-                          letterSpacing: -0.4,
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 4.h),
-                    Text(
-                      isTeam
-                          ? "Add team members and get everyone connected with Walkie Talkie"
-                          : "Continue using Walkie Talkie with a plan that fits your team",
-                      style: TextStyle(
-                        fontSize: 11.5.sp.clamp(10.5, 13.0),
-                        fontFamily: FontFamily.interRegular,
-                        color: _textSecondary,
-                        height: 1.3,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              SizedBox(width: 8.w),
-
-              // 3D Walkie Talkie Hero Graphic
-              _buildWalkieTalkieHeroGraphic(isTeam, isSmallScreen),
-            ],
+          // Right side: 3D Walkie Talkie Hero Graphic in top right corner (Large & Responsive)
+          Positioned(
+            top: -6.h,
+            right: 0,
+            bottom: 0,
+            child: _buildWalkieTalkieHeroGraphic(isTeam, isSmallScreen),
           ),
         ],
       ),
@@ -250,154 +252,25 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
   }
 
   Widget _buildWalkieTalkieHeroGraphic(bool isTeam, bool isSmallScreen) {
-    final double graphicWidth =
-        (isSmallScreen ? 120.w : 132.w).clamp(116.0, 142.0);
-    final double graphicHeight = 100.h.clamp(92.0, 110.0);
-
+    final double width = (isSmallScreen ? 155.w : 180.w).clamp(145.0, 205.0);
     return SizedBox(
-      width: graphicWidth,
-      height: graphicHeight,
-      child: Stack(
-        clipBehavior: Clip.none,
-        alignment: Alignment.centerLeft,
-        children: [
-          // Outer halo gradient disc centered on walkie
-          Positioned(
-            left: 0,
-            bottom: 0,
-            child: Container(
-              width: 84.w.clamp(74.0, 92.0),
-              height: 84.w.clamp(74.0, 92.0),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  colors: [
-                    _primaryPurple.withValues(alpha: 0.14),
-                    _primaryPurple.withValues(alpha: 0.03),
-                    Colors.transparent,
-                  ],
-                ),
-              ),
-            ),
-          ),
-
-          // Walkie Talkie Device on Left
-          Positioned(
-            bottom: 2.h,
-            left: 8.w,
-            child: _buildWalkieTalkieDevice(),
-          ),
-
-          // Annotation on the Right: Curved arrow + Callout Text + Group Badge
-          Positioned(
-            top: 4.h,
-            right: 0,
-            child: SizedBox(
-              width: (isSmallScreen ? 66.w : 74.w).clamp(64.0, 80.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Curved Arrow pointing to Walkie Talkie
-                      Padding(
-                        padding: EdgeInsets.only(top: 2.h, right: 3.w),
-                        child: CustomPaint(
-                          size: Size(13.w.clamp(11.0, 15.0), 15.h.clamp(13.0, 18.0)),
-                          painter: const _CurvedArrowPainter(color: _primaryPurple),
-                        ),
-                      ),
-                      // Handwritten / Italic Styled Text
-                      Expanded(
-                        child: Text(
-                          isTeam
-                              ? "Stronger\nTeams\nSafer Sites"
-                              : "Stay\nConnected\nAlways",
-                          style: TextStyle(
-                            fontSize: (isSmallScreen ? 8.5.sp : 9.5.sp).clamp(8.0, 10.5),
-                            fontFamily: FontFamily.interBold,
-                            fontStyle: FontStyle.italic,
-                            color: _primaryPurple,
-                            height: 1.15,
-                            letterSpacing: -0.2,
-                          ),
-                        ),
-                      ),
-                    ],
+      width: width,
+      child: Center(
+        child: AspectRatio(
+          aspectRatio: 1.25,
+          child: BlendMask(
+            blendMode: BlendMode.multiply,
+            child: isTeam
+                ? Assets.walkieTalkie.walkieTeamHeader.image(
+                    fit: BoxFit.contain,
+                    alignment: Alignment.topRight,
+                  )
+                : Assets.walkieTalkie.walkieIndividualHeader.image(
+                    fit: BoxFit.contain,
+                    alignment: Alignment.topRight,
                   ),
-
-                  // Worker Avatars Cluster for Team Plan
-                  if (isTeam) ...[
-                    SizedBox(height: 6.h),
-                    Padding(
-                      padding: EdgeInsets.only(left: 6.w),
-                      child: SizedBox(
-                        width: 44.w,
-                        height: 24.w,
-                        child: Stack(
-                          clipBehavior: Clip.none,
-                          children: [
-                            Positioned(
-                              left: 0,
-                              child: SizedBox(
-                                width: 24.w,
-                                height: 24.w,
-                                child: Assets.walkieTalkie.workerWhiteHelmet.image(
-                                  fit: BoxFit.contain,
-                                ),
-                              ),
-                            ),
-                            Positioned(
-                              left: 18.w,
-                              child: SizedBox(
-                                width: 24.w,
-                                height: 24.w,
-                                child: Assets.walkieTalkie.workerYellowHelmetRight.image(
-                                  fit: BoxFit.contain,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildWalkieTalkieDevice() {
-    return SizedBox(
-      width: 52.w.clamp(46.0, 58.0),
-      height: 84.h.clamp(78.0, 92.0),
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          Container(
-            width: 40.w,
-            height: 68.h,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(14.r),
-              boxShadow: [
-                BoxShadow(
-                  color: _primaryPurple.withValues(alpha: 0.28),
-                  blurRadius: 14,
-                  offset: const Offset(0, 6),
-                ),
-              ],
-            ),
-          ),
-          Assets.walkieTalkie.walkieDevice.image(
-            fit: BoxFit.contain,
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -1019,12 +892,13 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Minus Button (Highlights in blue/purple on tap)
+                  // Minus Button (Highlights in solid purple on tap)
                   _buildStepperButton(
                     isPlus: false,
                     isEnabled: _teamMemberCount > 1,
                     onTap: () {
                       if (_teamMemberCount > 1) {
+                        HapticFeedback.lightImpact();
                         setState(() {
                           _teamMemberCount--;
                           _activeStepperButton = 0;
@@ -1038,23 +912,37 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
 
                   SizedBox(width: 8.w),
 
-                  // Count Display
-                  Container(
-                    width: (isSmallScreen ? 76.w : 88.w).clamp(72.0, 96.0),
-                    padding: EdgeInsets.symmetric(vertical: 6.h),
+                  // Count Display (Highlights with purple border & bounce on every tap)
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    width: (isSmallScreen ? 78.w : 90.w).clamp(74.0, 98.0),
+                    padding: EdgeInsets.symmetric(vertical: 7.h),
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(12.r),
-                      border: Border.all(color: const Color(0xFFE2E8F0)),
+                      borderRadius: BorderRadius.circular(14.r),
+                      border: Border.all(
+                        color: _primaryPurple.withValues(alpha: 0.35),
+                        width: 1.5,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: _primaryPurple.withValues(alpha: 0.08),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
                     ),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         AnimatedSwitcher(
-                          duration: const Duration(milliseconds: 180),
+                          duration: const Duration(milliseconds: 220),
                           transitionBuilder: (child, animation) {
                             return ScaleTransition(
-                              scale: animation,
+                              scale: CurvedAnimation(
+                                parent: animation,
+                                curve: Curves.easeOutBack,
+                              ),
                               child: child,
                             );
                           },
@@ -1062,7 +950,7 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
                             "$_teamMemberCount",
                             key: ValueKey<int>(_teamMemberCount),
                             style: TextStyle(
-                              fontSize: 20.sp.clamp(18.0, 24.0),
+                              fontSize: 22.sp.clamp(20.0, 26.0),
                               fontFamily: FontFamily.interBold,
                               color: _textDark,
                             ),
@@ -1071,8 +959,8 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
                         Text(
                           _teamMemberCount == 1 ? "Member" : "Members",
                           style: TextStyle(
-                            fontSize: 10.sp.clamp(9.0, 11.5),
-                            fontFamily: FontFamily.interRegular,
+                            fontSize: 10.5.sp.clamp(9.5, 12.0),
+                            fontFamily: FontFamily.interMedium,
                             color: _textSecondary,
                           ),
                         ),
@@ -1082,11 +970,12 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
 
                   SizedBox(width: 8.w),
 
-                  // Plus Button (Highlights in blue/purple on tap)
+                  // Plus Button (Highlights in solid purple on tap)
                   _buildStepperButton(
                     isPlus: true,
                     isEnabled: true,
                     onTap: () {
+                      HapticFeedback.lightImpact();
                       setState(() {
                         _teamMemberCount++;
                         _activeStepperButton = 1;
@@ -1170,24 +1059,30 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
       },
       onTap: onTap,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
+        duration: const Duration(milliseconds: 200),
         curve: Curves.easeOut,
-        width: 36.w.clamp(32.0, 40.0),
-        height: 36.w.clamp(32.0, 40.0),
+        width: 40.w.clamp(36.0, 46.0),
+        height: 40.w.clamp(36.0, 46.0),
         decoration: BoxDecoration(
           color: isHighlighted
               ? _primaryPurple
-              : (isEnabled ? _lightPillBg : const Color(0xFFF1F5F9)),
+              : (isEnabled ? const Color(0xFFF1F3FE) : const Color(0xFFF1F5F9)),
           shape: BoxShape.circle,
           boxShadow: isHighlighted
               ? [
                   BoxShadow(
-                    color: _primaryPurple.withValues(alpha: 0.38),
-                    blurRadius: 8,
-                    offset: const Offset(0, 3),
+                    color: _primaryPurple.withValues(alpha: 0.4),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
                   ),
                 ]
-              : null,
+              : [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.03),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
         ),
         child: Center(
           child: Icon(
@@ -1195,7 +1090,7 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
             color: isHighlighted
                 ? Colors.white
                 : (isEnabled ? _primaryPurple : const Color(0xFF94A3B8)),
-            size: 18.sp.clamp(16.0, 20.0),
+            size: 20.sp.clamp(18.0, 23.0),
           ),
         ),
       ),
