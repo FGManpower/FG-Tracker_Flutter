@@ -65,6 +65,7 @@ class _HomeScreenState extends State<HomeScreen> {
       autoFetchLocation: true,
     );
     await controller.getProfileData();
+    await controller.fetchInitializeData();
     await trackingController.loadLocationSharing();
     await SocketService.instance.init(ConstRes.socketUrl);
     trackingController.initializeLocation();

@@ -1,5 +1,8 @@
 import 'package:fgtracker/app/global_widget/common_widget.dart';
+import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
 import 'package:fgtracker/app/modules/Track/Views/Tracking_screen.dart';
+import 'package:fgtracker/app/modules/Walkie-talkie/WalkieTalkieScreen.dart';
+import 'package:fgtracker/app/modules/home/Controller/home_controller.dart';
 import 'package:fgtracker/app/modules/mediaStream/Views/call_screen.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
@@ -42,15 +45,37 @@ class QuickActionsSection extends StatelessWidget {
               Icons.call,
               onTap: () => Get.to(() => CallScreen()),
             ),
-            // _QuickActionCard(
-            //   "Walkie Talkie",
-            //   Icons.settings_cell,
-            //   onTap: () => Get.toNamed(Routes.WalkieGroupSelect),
-            // ),
             _QuickActionCard(
               "Walkie Talkie",
               Icons.settings_cell,
-              onTap: () => Get.toNamed(Routes.walkieTalkieTrialDetails),
+              onTap: () {
+                final homeCtrl = Get.isRegistered<HomeController>()
+                    ? Get.find<HomeController>()
+                    : null;
+                final bool canUse = homeCtrl?.canUseWalkie ?? false;
+                if (canUse) {
+                  final groupCtrl = Get.isRegistered<GroupController>()
+                      ? Get.find<GroupController>()
+                      : null;
+                  final activeGroup = (groupCtrl?.groupData.isNotEmpty == true)
+                      ? groupCtrl!.groupData.first
+                      : null;
+                  Get.to(
+                    () => const GroupWalkieScreen(),
+                    arguments: activeGroup != null
+                        ? {
+                            'groupId': activeGroup.id?.toString() ?? '',
+                            'groupName':
+                                activeGroup.groupName ?? 'Walkie Group',
+                            'groupDesc': activeGroup.groupDesc ?? '',
+                            'groupCode': activeGroup.groupCode ?? '',
+                          }
+                        : null,
+                  );
+                } else {
+                  Get.toNamed(Routes.walkieTalkieTrialDetails);
+                }
+              },
             ),
             _QuickActionCard(
               "Tracking",

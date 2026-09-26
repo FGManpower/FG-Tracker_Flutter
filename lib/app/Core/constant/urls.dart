@@ -17,6 +17,7 @@ class Urls {
       '${ConstRes.aBaseUrl}users-within-radius';
   static const String userWithinRadiusFallback =
       '${ConstRes.aBaseUrl}user-within-radius';
+  static const String initialize = '${ConstRes.aBaseUrl}initialize';
 
   ///------------------------ Params ------------------------///
   static const String rtcUserName = 'fgtracker';
