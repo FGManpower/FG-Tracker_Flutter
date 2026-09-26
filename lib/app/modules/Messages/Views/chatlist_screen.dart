@@ -302,82 +302,78 @@ class _AllChatsBody extends StatelessWidget {
       onRefresh: controller.refreshChats,
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _archivedChatsRow(),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Obx(
+            () => controller.archivedChats.isNotEmpty
+                ? _archivedChatsRow()
+                : const SizedBox.shrink(),
+          ),
+          _sectionTitle("All Chats"),
+          Obx(() {
+            if (controller.isLoading.value && controller.privateChats.isEmpty) {
+              return _buildSkeletonList();
+            }
 
-            _sectionTitle(
-              "All Chats",
-            ),
+            if (controller.privateChats.isEmpty) {
+              return _emptyChats();
+            }
 
-            Obx(() {
-              if (controller.isLoading.value &&
-                  controller.privateChats.isEmpty) {
-                return _buildSkeletonList();
-              }
-
-              if (controller.privateChats.isEmpty) {
-                return _emptyChats();
-              }
-
-              return Container(
-                margin: EdgeInsets.symmetric(
-                  horizontal: 16.w,
-                ),
-                padding: EdgeInsets.symmetric(
-                  vertical: 4.h,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(18.r),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(
-                        alpha: 0.03,
-                      ),
-                      blurRadius: 12,
-                      offset: const Offset(0, 3),
+            return Container(
+              margin: EdgeInsets.symmetric(
+                horizontal: 16.w,
+              ),
+              padding: EdgeInsets.symmetric(
+                vertical: 4.h,
+              ),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(18.r),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(
+                      alpha: 0.03,
                     ),
-                  ],
-                ),
-                child: ListView.separated(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  padding: EdgeInsets.zero,
-                  itemCount: controller.privateChats.length,
-                  separatorBuilder: (_, __) => Divider(
-                    color: Colors.grey.withValues(
-                      alpha: 0.12,
-                    ),
-                    height: 1,
-                    indent: 16.w,
-                    endIndent: 16.w,
+                    blurRadius: 12,
+                    offset: const Offset(0, 3),
                   ),
-                  itemBuilder: (context, index) {
-                    final chat = controller.privateChats[index];
-
-                    return _chatRow(
-                      context: context,
-                      chat: chat,
-                      name: chat.name ?? "Unknown User",
-                      role: chat.role ?? "",
-                      msg: ChatUtil.formatLastMessage(chat.message),
-                      time: _formatChatTime(
-                        chat.time ?? "",
-                      ),
-                      unreadCount: chat.unreadCount ?? 0,
-                      statusColor: _statusColor(chat.status),
-                      isGroup: chat.isGroup ?? false,
-                      image: chat.image,
-                    );
-                  },
+                ],
+              ),
+              child: ListView.separated(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                padding: EdgeInsets.zero,
+                itemCount: controller.privateChats.length,
+                separatorBuilder: (_, __) => Divider(
+                  color: Colors.grey.withValues(
+                    alpha: 0.12,
+                  ),
+                  height: 1,
+                  indent: 16.w,
+                  endIndent: 16.w,
                 ),
-              );
-            }),
-            SizedBox(height: 150.h),
-          ],
-        ),
+                itemBuilder: (context, index) {
+                  final chat = controller.privateChats[index];
+
+                  return _chatRow(
+                    context: context,
+                    chat: chat,
+                    name: chat.name ?? "Unknown User",
+                    role: chat.role ?? "",
+                    msg: ChatUtil.formatLastMessage(chat.message),
+                    time: _formatChatTime(
+                      chat.time ?? "",
+                    ),
+                    unreadCount: chat.unreadCount ?? 0,
+                    statusColor: _statusColor(chat.status),
+                    isGroup: chat.isGroup ?? false,
+                    image: chat.image,
+                  );
+                },
+              ),
+            );
+          }),
+          SizedBox(height: 150.h),
+        ]),
       ),
     );
   }
@@ -844,11 +840,6 @@ class _AllChatsBody extends StatelessWidget {
           },
         ),
         DropdownMenuItemData(
-          icon: Icons.person_outline,
-          title: "View Contact",
-          onTap: () {},
-        ),
-        DropdownMenuItemData(
           icon: Icons.visibility_off_outlined,
           title: "Archive Chat",
           onTap: () {
@@ -881,6 +872,7 @@ class _AllChatsBody extends StatelessWidget {
     }
     return null;
   }
+
   String _formatChatTime(String value) {
     if (value.isEmpty) return "";
     final parsed = DateTime.tryParse(value);
@@ -1117,8 +1109,6 @@ class _AllChatsBody extends StatelessWidget {
     );
   }
 
-
-
   Widget _archivedChatsRow() {
     return Padding(
       padding: EdgeInsets.only(
@@ -1130,7 +1120,7 @@ class _AllChatsBody extends StatelessWidget {
       child: GestureDetector(
         onTap: () {
           Get.to(
-                () => const ArchivedChatsScreen(),
+            () => const ArchivedChatsScreen(),
           );
         },
         child: Container(
@@ -1164,9 +1154,7 @@ class _AllChatsBody extends StatelessWidget {
                   color: const Color(0xFF6B4DFF),
                 ),
               ),
-
               SizedBox(width: 12.w),
-
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -1177,9 +1165,7 @@ class _AllChatsBody extends StatelessWidget {
                       fontfamily: FontFamily.interBold,
                       color: Colors.black87,
                     ),
-
                     SizedBox(height: 2.h),
-
                     reausabletext(
                       "View archived conversations",
                       fontsize: 10.sp,
@@ -1189,7 +1175,6 @@ class _AllChatsBody extends StatelessWidget {
                   ],
                 ),
               ),
-
               Icon(
                 Icons.chevron_right_rounded,
                 size: 21.sp,
