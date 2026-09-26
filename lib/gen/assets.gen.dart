@@ -93,6 +93,34 @@ class $AssetsWalkieTalkieGen {
   AssetGenImage get walkieDeviceGlow =>
       const AssetGenImage('assets/walkie_talkie/walkie_device_glow.png');
 
+  /// File path: assets/walkie_talkie/walkie_trial_hero.png
+  AssetGenImage get walkieTrialHero =>
+      const AssetGenImage('assets/walkie_talkie/walkie_trial_hero.png');
+
+  /// File path: assets/walkie_talkie/walkie_team_header.png
+  AssetGenImage get walkieTeamHeader =>
+      const AssetGenImage('assets/walkie_talkie/walkie_team_header.png');
+
+  /// File path: assets/walkie_talkie/walkie_individual_header.png
+  AssetGenImage get walkieIndividualHeader =>
+      const AssetGenImage('assets/walkie_talkie/walkie_individual_header.png');
+
+  /// File path: assets/walkie_talkie/walkie_waves_badge.png
+  AssetGenImage get walkieWavesBadge =>
+      const AssetGenImage('assets/walkie_talkie/walkie_waves_badge.png');
+
+  /// File path: assets/walkie_talkie/walkie_trial_gift.png
+  AssetGenImage get walkieTrialGift =>
+      const AssetGenImage('assets/walkie_talkie/walkie_trial_gift.png');
+
+  /// File path: assets/walkie_talkie/walkie_trial_crown.png
+  AssetGenImage get walkieTrialCrown =>
+      const AssetGenImage('assets/walkie_talkie/walkie_trial_crown.png');
+
+  /// File path: assets/walkie_talkie/purchase_success_hero.png
+  AssetGenImage get purchaseSuccessHero =>
+      const AssetGenImage('assets/walkie_talkie/purchase_success_hero.png');
+
   /// File path: assets/walkie_talkie/worker_white_helmet.png
   AssetGenImage get workerWhiteHelmet =>
       const AssetGenImage('assets/walkie_talkie/worker_white_helmet.png');
@@ -125,6 +153,13 @@ class $AssetsWalkieTalkieGen {
   List<AssetGenImage> get values => [
         walkieDevice,
         walkieDeviceGlow,
+        walkieTrialHero,
+        walkieTeamHeader,
+        walkieIndividualHeader,
+        walkieWavesBadge,
+        walkieTrialGift,
+        walkieTrialCrown,
+        purchaseSuccessHero,
         workerWhiteHelmet,
         workerYellowHelmet,
         workerYellowHelmetRight,

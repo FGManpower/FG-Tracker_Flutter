@@ -4,6 +4,7 @@ import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Views/walkie_group_select_screen.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Views/walkie_talkie_plan_details.dart';
+import 'package:fgtracker/app/global_widget/blend_mask.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:fgtracker/generated/assets.dart';
 import 'package:flutter/material.dart';
@@ -23,7 +24,7 @@ class _WalkieTalkieTrialDetailsScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F7FF),
+      backgroundColor: const Color(0xFFF6F8FE),
       appBar: _buildAppBar(),
       body: SafeArea(
         top: false,
@@ -52,7 +53,7 @@ class _WalkieTalkieTrialDetailsScreenState
 
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
-      backgroundColor: const Color(0xFFF8F7FF),
+      backgroundColor: const Color(0xFFF6F8FE),
       elevation: 0,
       scrolledUnderElevation: 0,
       toolbarHeight: 65.h,
@@ -107,222 +108,15 @@ class _WalkieTalkieTrialDetailsScreenState
   }
 
   Widget _buildHeroGraphic() {
-    return SizedBox(
-      height: 156.h,
-      width: double.infinity,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          // City skyline backdrop
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: Opacity(
-              opacity: 0.35,
-              child: Assets.walkieTalkie.citySkyline.image(
-                fit: BoxFit.cover,
-                height: 52.h,
-              ),
-            ),
-          ),
-          // Background concentric rings
-          Container(
-            width: 155.w,
-            height: 155.w,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: const Color(0xFF6356F6).withValues(alpha: 0.04),
-            ),
-          ),
-          Container(
-            width: 115.w,
-            height: 115.w,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: const Color(0xFF6356F6).withValues(alpha: 0.08),
-            ),
-          ),
-          // Left connector line
-          Positioned(
-            left: 54.w,
-            top: 42.h,
-            width: 66.w,
-            height: 42.h,
-            child: Assets.walkieTalkie.connectorLineUp.image(
-              fit: BoxFit.contain,
-            ),
-          ),
-          // Right connector line
-          Positioned(
-            right: 54.w,
-            top: 42.h,
-            width: 66.w,
-            height: 42.h,
-            child: Assets.walkieTalkie.connectorLineDown.image(
-              fit: BoxFit.contain,
-            ),
-          ),
-          // Center 3D Walkie Talkie device
-          _buildCenterWalkieTalkieDevice(),
-          // 4 surrounding avatars with sound badge
-          // 1. Top Left
-          Positioned(
-            left: 24.w,
-            top: 6.h,
-            child: _buildAvatarWithSoundBadge(
-              assetImage: Assets.walkieTalkie.workerWhiteHelmet,
-              initial: "S",
-              badgeAlignRight: true,
-            ),
-          ),
-          // 2. Bottom Left
-          Positioned(
-            left: 20.w,
-            bottom: 6.h,
-            child: _buildAvatarWithSoundBadge(
-              assetImage: Assets.walkieTalkie.workerYellowHelmet,
-              initial: "R",
-              badgeAlignRight: true,
-            ),
-          ),
-          // 3. Top Right
-          Positioned(
-            right: 24.w,
-            top: 6.h,
-            child: _buildAvatarWithSoundBadge(
-              assetImage: Assets.walkieTalkie.workerBlueCap,
-              initial: "A",
-              badgeAlignRight: false,
-            ),
-          ),
-          // 4. Bottom Right
-          Positioned(
-            right: 20.w,
-            bottom: 6.h,
-            child: _buildAvatarWithSoundBadge(
-              assetImage: Assets.walkieTalkie.workerYellowHelmetRight,
-              initial: "I",
-              badgeAlignRight: false,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCenterWalkieTalkieDevice() {
-    return SizedBox(
-      width: 76.w,
-      height: 116.h,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          Container(
-            width: 58.w,
-            height: 94.h,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16.r),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFF6356F6).withValues(alpha: 0.22),
-                  blurRadius: 18,
-                  offset: const Offset(0, 8),
-                ),
-              ],
-            ),
-          ),
-          Assets.walkieTalkie.walkieDevice.image(
-            fit: BoxFit.contain,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAvatarWithSoundBadge({
-    AssetGenImage? assetImage,
-    String? imageUrl,
-    required String initial,
-    required bool badgeAlignRight,
-  }) {
-    if (assetImage != null) {
-      return SizedBox(
-        width: 48.w,
-        height: 48.w,
-        child: assetImage.image(
-          fit: BoxFit.contain,
-        ),
-      );
-    }
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        Container(
-          width: 38.w,
-          height: 38.w,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            border: Border.all(color: Colors.white, width: 2.w),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.08),
-                blurRadius: 6,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: ClipOval(
-            child: CachedNetworkImage(
-              imageUrl: imageUrl ?? '',
-              fit: BoxFit.cover,
-              placeholder: (_, __) => _avatarFallback(initial),
-              errorWidget: (_, __, ___) => _avatarFallback(initial),
-            ),
-          ),
-        ),
-        Positioned(
-          top: -2.h,
-          left: badgeAlignRight ? 34.w : null,
-          right: badgeAlignRight ? null : 34.w,
-          child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 5.w, vertical: 3.h),
-            decoration: BoxDecoration(
-              color: const Color(0xFF6356F6),
-              borderRadius: BorderRadius.circular(10.r),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFF6356F6).withValues(alpha: 0.35),
-                  blurRadius: 4,
-                ),
-              ],
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.graphic_eq_rounded,
-                  color: Colors.white,
-                  size: 11.sp,
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _avatarFallback(String initial) {
     return Container(
-      color: const Color(0xFFEDE9FE),
+      width: double.infinity,
+      height: 250.h.clamp(220.0, 280.0),
+      margin: EdgeInsets.symmetric(horizontal: 4.w),
       child: Center(
-        child: Text(
-          initial,
-          style: TextStyle(
-            color: const Color(0xFF6B4DFF),
-            fontFamily: FontFamily.interSemiBold,
-            fontSize: 14.sp,
+        child: BlendMask(
+          blendMode: BlendMode.multiply,
+          child: Assets.walkieTalkie.walkieTrialHero.image(
+            fit: BoxFit.contain,
           ),
         ),
       ),
@@ -379,14 +173,16 @@ class _WalkieTalkieTrialDetailsScreenState
               Container(
                 width: 44.w,
                 height: 44.w,
+                padding: EdgeInsets.all(6.w),
                 decoration: BoxDecoration(
                   color: const Color(0xFFF0EFFF),
                   borderRadius: BorderRadius.circular(12.r),
                 ),
-                child: Icon(
-                  Icons.card_giftcard_rounded,
-                  color: const Color(0xFF6B4DFF),
-                  size: 24.sp,
+                child: BlendMask(
+                  blendMode: BlendMode.multiply,
+                  child: Assets.walkieTalkie.walkieTrialGift.image(
+                    fit: BoxFit.contain,
+                  ),
                 ),
               ),
               SizedBox(width: 12.w),
@@ -659,14 +455,16 @@ class _WalkieTalkieTrialDetailsScreenState
           Container(
             width: 44.w,
             height: 44.w,
+            padding: EdgeInsets.all(8.w),
             decoration: BoxDecoration(
               color: const Color(0xFFF0EFFF),
               borderRadius: BorderRadius.circular(12.r),
             ),
-            child: Icon(
-              Icons.workspace_premium_rounded,
-              color: const Color(0xFF6B4DFF),
-              size: 24.sp,
+            child: BlendMask(
+              blendMode: BlendMode.multiply,
+              child: Assets.walkieTalkie.walkieTrialCrown.image(
+                fit: BoxFit.contain,
+              ),
             ),
           ),
           SizedBox(width: 12.w),

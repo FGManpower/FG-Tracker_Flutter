@@ -34,6 +34,20 @@ class $AssetsWalkieTalkieGen {
       const AssetGenImage('assets/walkie_talkie/walkie_device.png');
   final AssetGenImage walkieDeviceGlow =
       const AssetGenImage('assets/walkie_talkie/walkie_device_glow.png');
+  final AssetGenImage walkieTrialHero =
+      const AssetGenImage('assets/walkie_talkie/walkie_trial_hero.png');
+  final AssetGenImage walkieTeamHeader =
+      const AssetGenImage('assets/walkie_talkie/walkie_team_header.png');
+  final AssetGenImage walkieIndividualHeader =
+      const AssetGenImage('assets/walkie_talkie/walkie_individual_header.png');
+  final AssetGenImage walkieWavesBadge =
+      const AssetGenImage('assets/walkie_talkie/walkie_waves_badge.png');
+  final AssetGenImage walkieTrialGift =
+      const AssetGenImage('assets/walkie_talkie/walkie_trial_gift.png');
+  final AssetGenImage walkieTrialCrown =
+      const AssetGenImage('assets/walkie_talkie/walkie_trial_crown.png');
+  final AssetGenImage purchaseSuccessHero =
+      const AssetGenImage('assets/walkie_talkie/purchase_success_hero.png');
   final AssetGenImage workerWhiteHelmet =
       const AssetGenImage('assets/walkie_talkie/worker_white_helmet.png');
   final AssetGenImage workerYellowHelmet =
