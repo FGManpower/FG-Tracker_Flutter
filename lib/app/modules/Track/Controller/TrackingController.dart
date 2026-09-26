@@ -2110,10 +2110,14 @@ class TrackController extends GetxController {
               child: const Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text("👻", style: TextStyle(fontSize: 11)),
+                  Icon(
+                    Icons.lock_outline_rounded,
+                    size: 11,
+                    color: Color(0xFF7E57C2),
+                  ),
                   SizedBox(width: 4),
                   Text(
-                    "Ghost Mode",
+                    "Private",
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
@@ -2137,7 +2141,7 @@ class TrackController extends GetxController {
         messageText: Padding(
           padding: const EdgeInsets.only(top: 2),
           child: Text(
-            "$memberName is currently in Ghost Mode. Location is protected and hidden.",
+            "$memberName has paused location sharing. Live location is not available.",
             style: const TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w500,
@@ -2157,7 +2161,7 @@ class TrackController extends GetxController {
             ),
           ),
           child: const Icon(
-            Icons.visibility_off_rounded,
+            Icons.location_off_rounded,
             color: Color(0xFF7E57C2),
             size: 20,
           ),

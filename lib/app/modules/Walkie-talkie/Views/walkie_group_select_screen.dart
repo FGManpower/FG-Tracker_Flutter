@@ -273,7 +273,6 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF8F7FF),
       appBar: _buildAppBar(),
-      bottomNavigationBar: _buildBottomWalkieBar(),
       body: SafeArea(
         top: false,
         child: Column(
@@ -683,92 +682,6 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
     );
   }
 
-  Widget _buildBottomWalkieBar() {
-    return Container(
-      margin: EdgeInsets.only(left: 16.w, right: 16.w, bottom: 16.h, top: 4.h),
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF6356F6), Color(0xFF5041EB)],
-          begin: Alignment.centerLeft,
-          end: Alignment.centerRight,
-        ),
-        borderRadius: BorderRadius.circular(28.r),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF5041EB).withValues(alpha: 0.35),
-            blurRadius: 16,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: InkWell(
-        onTap: () {
-          final groups = _filteredGroups.isNotEmpty
-              ? _filteredGroups
-              : controller.groupData;
-          if (groups.isNotEmpty) {
-            final group = groups.first;
-            Get.to(
-              () => const GroupWalkieScreen(),
-              arguments: {
-                'groupId': group.id?.toString() ?? "unknown",
-                'groupName': group.groupName ?? "Unknown Group",
-                'groupDesc': group.groupDesc ?? "",
-                'groupCode': group.groupCode ?? "",
-              },
-            );
-          } else {
-            Utils().fluttertoast("Please select or create a group");
-          }
-        },
-        child: Row(
-          children: [
-            Image.asset(
-              Assets.icons.walkieTalkie.path,
-              width: 28.w,
-              height: 28.w,
-              color: Colors.white,
-            ),
-            SizedBox(width: 12.w),
-            Expanded(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  reausabletext(
-                    "Start Walkie Talkie",
-                    fontsize: 15.sp,
-                    fontfamily: FontFamily.interBold,
-                    color: Colors.white,
-                  ),
-                  SizedBox(height: 2.h),
-                  reausabletext(
-                    "Hold & Slide to Talk",
-                    fontsize: 11.sp,
-                    color: Colors.white.withValues(alpha: 0.8),
-                  ),
-                ],
-              ),
-            ),
-            Container(
-              width: 36.w,
-              height: 36.w,
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                Icons.arrow_forward_rounded,
-                color: const Color(0xFF5041EB),
-                size: 20.sp,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
   void _showEditAssignedMembersBottomSheet(BuildContext context) {
     final TextEditingController sheetSearchController = TextEditingController();

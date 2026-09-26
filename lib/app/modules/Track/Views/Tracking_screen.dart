@@ -2748,7 +2748,7 @@ class TrackingScreen extends StatelessWidget {
         : null;
 
     String getLastSeenText() {
-      if (isGhostMode) return "Ghost Mode Enabled";
+      if (isGhostMode) return "Location Hidden";
       if (isOnline) return "Online";
       if (member.lastSeen == null ||
           member.lastSeen.toString().trim().isEmpty ||
@@ -2788,13 +2788,14 @@ class TrackingScreen extends StatelessWidget {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(
-                        "👻",
-                        style: TextStyle(fontSize: 11.sp),
+                      Icon(
+                        Icons.lock_outline_rounded,
+                        size: 11.sp,
+                        color: const Color(0xFF7E57C2),
                       ),
                       SizedBox(width: 4.w),
                       Text(
-                        "Ghost Mode",
+                        "Private",
                         style: TextStyle(
                           fontSize: 11.sp,
                           fontWeight: FontWeight.w700,
@@ -2819,8 +2820,8 @@ class TrackingScreen extends StatelessWidget {
               padding: EdgeInsets.only(top: 2.h),
               child: Text(
                 isMe
-                    ? "You are currently in Ghost Mode. Your live location is not shared."
-                    : "$name is currently in Ghost Mode. Location is protected and hidden.",
+                    ? "Your live location sharing is paused and private."
+                    : "$name has paused location sharing. Live location is not available.",
                 style: TextStyle(
                   fontSize: 12.sp,
                   fontWeight: FontWeight.w500,
@@ -2840,7 +2841,7 @@ class TrackingScreen extends StatelessWidget {
                 ),
               ),
               child: Icon(
-                Icons.visibility_off_rounded,
+                Icons.location_off_rounded,
                 color: const Color(0xFF7E57C2),
                 size: 20.sp,
               ),
@@ -2957,7 +2958,7 @@ class TrackingScreen extends StatelessWidget {
                       if (isGhostMode) ...[
                         SizedBox(width: 5.w),
                         _memberBadge(
-                          "👻 Ghost",
+                          "Private",
                           const Color(0xFFF3E8FF),
                           const Color(0xFF7E57C2),
                         ),

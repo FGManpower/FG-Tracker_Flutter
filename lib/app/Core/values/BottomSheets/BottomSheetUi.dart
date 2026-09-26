@@ -387,7 +387,7 @@ class BottomSheetUi {
 
                                       String getLastSeenText() {
                                         if (isGhostMode) {
-                                          return "Ghost Mode Enabled";
+                                          return "Location Hidden";
                                         }
                                         if (isOnline) return "Online";
                                         if (member.lastSeen == null ||

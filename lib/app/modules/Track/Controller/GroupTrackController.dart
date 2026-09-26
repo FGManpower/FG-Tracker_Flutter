@@ -878,7 +878,7 @@ class GroupTrackingController extends GetxController {
 
         Get.snackbar(
           "Error",
-          "Unable to update Ghost Mode",
+          "Unable to update Private Mode",
         );
       }
     } catch (e) {
@@ -1042,7 +1042,7 @@ class GroupTrackingController extends GetxController {
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: const Text(
-                              "👻 Ghost",
+                              "Private",
                               style: TextStyle(
                                 color: AppColors.white,
                                 fontSize: 10,
@@ -1054,7 +1054,7 @@ class GroupTrackingController extends GetxController {
                     ),
                     subtitle: Text(
                       isGhostMode
-                          ? "Ghost Mode Enabled"
+                          ? "Location Hidden"
                           : isOnline
                           ? "Online"
                           : user.lastSeen != null &&
@@ -1090,10 +1090,14 @@ class GroupTrackingController extends GetxController {
                                 child: const Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Text("👻", style: TextStyle(fontSize: 11)),
+                                    Icon(
+                                      Icons.lock_outline_rounded,
+                                      size: 11,
+                                      color: Color(0xFF7E57C2),
+                                    ),
                                     SizedBox(width: 4),
                                     Text(
-                                      "Ghost Mode",
+                                      "Private",
                                       style: TextStyle(
                                         fontSize: 11,
                                         fontWeight: FontWeight.w700,
@@ -1117,7 +1121,7 @@ class GroupTrackingController extends GetxController {
                           messageText: Padding(
                             padding: const EdgeInsets.only(top: 2),
                             child: Text(
-                              "${user.name} is currently in Ghost Mode. Location is protected and hidden.",
+                              "${user.name} has paused location sharing. Live location is not available.",
                               style: const TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w500,
@@ -1138,7 +1142,7 @@ class GroupTrackingController extends GetxController {
                               ),
                             ),
                             child: const Icon(
-                              Icons.visibility_off_rounded,
+                              Icons.location_off_rounded,
                               color: Color(0xFF7E57C2),
                               size: 20,
                             ),
