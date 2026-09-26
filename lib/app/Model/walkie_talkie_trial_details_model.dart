@@ -1,221 +1,261 @@
+
 class WalkieTalkieTrialDetailsModel {
-  bool? status;
-  String? message;
-  Data? data;
+  final bool? status;
+  final String? message;
+  final WalkieOverviewData? data;
 
-  WalkieTalkieTrialDetailsModel({this.status, this.message, this.data});
-
-  WalkieTalkieTrialDetailsModel.fromJson(Map<String, dynamic> json) {
-    status = json['status'];
-    message = json['message'];
-    data = json['data'] != null ? new Data.fromJson(json['data']) : null;
-  }
-
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['status'] = this.status;
-    data['message'] = this.message;
-    if (this.data != null) {
-      data['data'] = this.data!.toJson();
-    }
-    return data;
-  }
-}
-
-class Data {
-  String? serverTime;
-  Access? access;
-  Trial? trial;
-  Subscription? subscription;
-  Pricing? pricing;
-  Actions? actions;
-
-  Data(
-      {this.serverTime,
-        this.access,
-        this.trial,
-        this.subscription,
-        this.pricing,
-        this.actions});
-
-  Data.fromJson(Map<String, dynamic> json) {
-    serverTime = json['serverTime'];
-    access =
-    json['access'] != null ? new Access.fromJson(json['access']) : null;
-    trial = json['trial'] != null ? new Trial.fromJson(json['trial']) : null;
-    subscription = json['subscription'] != null
-        ? new Subscription.fromJson(json['subscription'])
-        : null;
-    pricing =
-    json['pricing'] != null ? new Pricing.fromJson(json['pricing']) : null;
-    actions =
-    json['actions'] != null ? new Actions.fromJson(json['actions']) : null;
-  }
-
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['serverTime'] = this.serverTime;
-    if (this.access != null) {
-      data['access'] = this.access!.toJson();
-    }
-    if (this.trial != null) {
-      data['trial'] = this.trial!.toJson();
-    }
-    if (this.subscription != null) {
-      data['subscription'] = this.subscription!.toJson();
-    }
-    if (this.pricing != null) {
-      data['pricing'] = this.pricing!.toJson();
-    }
-    if (this.actions != null) {
-      data['actions'] = this.actions!.toJson();
-    }
-    return data;
-  }
-}
-
-class Access {
-  bool? canUseWalkie;
-  String? accessType;
-
-  Access({this.canUseWalkie, this.accessType});
-
-  Access.fromJson(Map<String, dynamic> json) {
-    canUseWalkie = json['canUseWalkie'];
-    accessType = json['accessType'];
-  }
-
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['canUseWalkie'] = this.canUseWalkie;
-    data['accessType'] = this.accessType;
-    return data;
-  }
-}
-
-class Trial {
-  bool? hasReceivedTrial;
-  bool? isEligibleForTrial;
-  bool? isActive;
-  bool? isExpired;
-  String? status;
-  int? durationSeconds;
-  Null? startedAt;
-  Null? expiresAt;
-  int? remainingSeconds;
-  int? remainingMinutes;
-  RemainingTime? remainingTime;
-  int? totalSeconds;
-  int? usedSeconds;
-  int? usagePercentage;
-
-  Trial(
-      {this.hasReceivedTrial,
-        this.isEligibleForTrial,
-        this.isActive,
-        this.isExpired,
-        this.status,
-        this.durationSeconds,
-        this.startedAt,
-        this.expiresAt,
-        this.remainingSeconds,
-        this.remainingMinutes,
-        this.remainingTime,
-        this.totalSeconds,
-        this.usedSeconds,
-        this.usagePercentage});
-
-  Trial.fromJson(Map<String, dynamic> json) {
-    hasReceivedTrial = json['hasReceivedTrial'];
-    isEligibleForTrial = json['isEligibleForTrial'];
-    isActive = json['isActive'];
-    isExpired = json['isExpired'];
-    status = json['status'];
-    durationSeconds = json['durationSeconds'];
-    startedAt = json['startedAt'];
-    expiresAt = json['expiresAt'];
-    remainingSeconds = json['remainingSeconds'];
-    remainingMinutes = json['remainingMinutes'];
-    remainingTime = json['remainingTime'] != null
-        ? new RemainingTime.fromJson(json['remainingTime'])
-        : null;
-    totalSeconds = json['totalSeconds'];
-    usedSeconds = json['usedSeconds'];
-    usagePercentage = json['usagePercentage'];
-  }
-
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['hasReceivedTrial'] = this.hasReceivedTrial;
-    data['isEligibleForTrial'] = this.isEligibleForTrial;
-    data['isActive'] = this.isActive;
-    data['isExpired'] = this.isExpired;
-    data['status'] = this.status;
-    data['durationSeconds'] = this.durationSeconds;
-    data['startedAt'] = this.startedAt;
-    data['expiresAt'] = this.expiresAt;
-    data['remainingSeconds'] = this.remainingSeconds;
-    data['remainingMinutes'] = this.remainingMinutes;
-    if (this.remainingTime != null) {
-      data['remainingTime'] = this.remainingTime!.toJson();
-    }
-    data['totalSeconds'] = this.totalSeconds;
-    data['usedSeconds'] = this.usedSeconds;
-    data['usagePercentage'] = this.usagePercentage;
-    return data;
-  }
-}
-
-class RemainingTime {
-  int? hours;
-  int? minutes;
-  int? seconds;
-
-  RemainingTime({this.hours, this.minutes, this.seconds});
-
-  RemainingTime.fromJson(Map<String, dynamic> json) {
-    hours = json['hours'];
-    minutes = json['minutes'];
-    seconds = json['seconds'];
-  }
-
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['hours'] = this.hours;
-    data['minutes'] = this.minutes;
-    data['seconds'] = this.seconds;
-    return data;
-  }
-}
-
-
-class Subscription {
-  bool? hasActiveSubscription;
-  Map<String, dynamic>? currentSubscription;
-  List<Map<String, dynamic>>? activeSubscriptions;
-
-  Subscription({
-    this.hasActiveSubscription,
-    this.currentSubscription,
-    this.activeSubscriptions,
+  const WalkieTalkieTrialDetailsModel({
+    this.status,
+    this.message,
+    this.data,
   });
 
-  Subscription.fromJson(Map<String, dynamic> json) {
-    hasActiveSubscription = json['hasActiveSubscription'];
+  factory WalkieTalkieTrialDetailsModel.fromJson(
+      Map<String, dynamic> json,
+      ) {
+    return WalkieTalkieTrialDetailsModel(
+      status: json['status'] as bool?,
+      message: json['message']?.toString(),
+      data: json['data'] is Map
+          ? WalkieOverviewData.fromJson(
+        Map<String, dynamic>.from(json['data']),
+      )
+          : null,
+    );
+  }
 
-    currentSubscription =
-    json['currentSubscription'] is Map
-        ? Map<String, dynamic>.from(
-      json['currentSubscription'],
-    )
-        : null;
+  Map<String, dynamic> toJson() => {
+    'status': status,
+    'message': message,
+    'data': data?.toJson(),
+  };
+}
 
-    activeSubscriptions =
-        (json['activeSubscriptions'] as List?)
-            ?.map(
-              (item) => Map<String, dynamic>.from(item),
-        )
-            .toList();
+class WalkieOverviewData {
+  final DateTime? serverTime;
+  final WalkieAccess? access;
+  final WalkieTrial? trial;
+  final WalkieSubscription? subscription;
+  final WalkiePricing? pricing;
+  final WalkieActions? actions;
+
+  const WalkieOverviewData({
+    this.serverTime,
+    this.access,
+    this.trial,
+    this.subscription,
+    this.pricing,
+    this.actions,
+  });
+
+  factory WalkieOverviewData.fromJson(
+      Map<String, dynamic> json,
+      ) {
+    return WalkieOverviewData(
+      serverTime: DateTime.tryParse(
+        json['serverTime']?.toString() ?? '',
+      ),
+      access: json['access'] is Map
+          ? WalkieAccess.fromJson(
+        Map<String, dynamic>.from(json['access']),
+      )
+          : null,
+      trial: json['trial'] is Map
+          ? WalkieTrial.fromJson(
+        Map<String, dynamic>.from(json['trial']),
+      )
+          : null,
+      subscription: json['subscription'] is Map
+          ? WalkieSubscription.fromJson(
+        Map<String, dynamic>.from(json['subscription']),
+      )
+          : null,
+      pricing: json['pricing'] is Map
+          ? WalkiePricing.fromJson(
+        Map<String, dynamic>.from(json['pricing']),
+      )
+          : null,
+      actions: json['actions'] is Map
+          ? WalkieActions.fromJson(
+        Map<String, dynamic>.from(json['actions']),
+      )
+          : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    'serverTime': serverTime?.toUtc().toIso8601String(),
+    'access': access?.toJson(),
+    'trial': trial?.toJson(),
+    'subscription': subscription?.toJson(),
+    'pricing': pricing?.toJson(),
+    'actions': actions?.toJson(),
+  };
+}
+
+class WalkieAccess {
+  final bool canUseWalkie;
+  final String accessType;
+
+  const WalkieAccess({
+    required this.canUseWalkie,
+    required this.accessType,
+  });
+
+  factory WalkieAccess.fromJson(Map<String, dynamic> json) {
+    return WalkieAccess(
+      canUseWalkie: json['canUseWalkie'] == true,
+      accessType: json['accessType']?.toString() ?? 'none',
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    'canUseWalkie': canUseWalkie,
+    'accessType': accessType,
+  };
+}
+
+class WalkieTrial {
+  final bool hasReceivedTrial;
+  final bool isEligibleForTrial;
+  final bool isActive;
+  final bool isExpired;
+  final String status;
+  final int durationSeconds;
+  final DateTime? startedAt;
+  final DateTime? expiresAt;
+  final int remainingSeconds;
+  final int remainingMinutes;
+  final WalkieRemainingTime? remainingTime;
+  final int totalSeconds;
+  final int usedSeconds;
+  final double usagePercentage;
+
+  const WalkieTrial({
+    required this.hasReceivedTrial,
+    required this.isEligibleForTrial,
+    required this.isActive,
+    required this.isExpired,
+    required this.status,
+    required this.durationSeconds,
+    required this.startedAt,
+    required this.expiresAt,
+    required this.remainingSeconds,
+    required this.remainingMinutes,
+    required this.remainingTime,
+    required this.totalSeconds,
+    required this.usedSeconds,
+    required this.usagePercentage,
+  });
+
+  factory WalkieTrial.fromJson(Map<String, dynamic> json) {
+    int asInt(dynamic value) =>
+        value is num ? value.toInt() : int.tryParse('$value') ?? 0;
+
+    return WalkieTrial(
+      hasReceivedTrial: json['hasReceivedTrial'] == true,
+      isEligibleForTrial: json['isEligibleForTrial'] == true,
+      isActive: json['isActive'] == true,
+      isExpired: json['isExpired'] == true,
+      status: json['status']?.toString() ?? 'unknown',
+      durationSeconds: asInt(json['durationSeconds']),
+      startedAt: DateTime.tryParse(
+        json['startedAt']?.toString() ?? '',
+      ),
+      expiresAt: DateTime.tryParse(
+        json['expiresAt']?.toString() ?? '',
+      ),
+      remainingSeconds: asInt(json['remainingSeconds']),
+      remainingMinutes: asInt(json['remainingMinutes']),
+      remainingTime: json['remainingTime'] is Map
+          ? WalkieRemainingTime.fromJson(
+        Map<String, dynamic>.from(json['remainingTime']),
+      )
+          : null,
+      totalSeconds: asInt(json['totalSeconds']),
+      usedSeconds: asInt(json['usedSeconds']),
+      usagePercentage:
+      (json['usagePercentage'] as num?)?.toDouble() ?? 0,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    'hasReceivedTrial': hasReceivedTrial,
+    'isEligibleForTrial': isEligibleForTrial,
+    'isActive': isActive,
+    'isExpired': isExpired,
+    'status': status,
+    'durationSeconds': durationSeconds,
+    'startedAt': startedAt?.toUtc().toIso8601String(),
+    'expiresAt': expiresAt?.toUtc().toIso8601String(),
+    'remainingSeconds': remainingSeconds,
+    'remainingMinutes': remainingMinutes,
+    'remainingTime': remainingTime?.toJson(),
+    'totalSeconds': totalSeconds,
+    'usedSeconds': usedSeconds,
+    'usagePercentage': usagePercentage,
+  };
+}
+
+class WalkieRemainingTime {
+  final int hours;
+  final int minutes;
+  final int seconds;
+
+  const WalkieRemainingTime({
+    required this.hours,
+    required this.minutes,
+    required this.seconds,
+  });
+
+  factory WalkieRemainingTime.fromJson(
+      Map<String, dynamic> json,
+      ) {
+    return WalkieRemainingTime(
+      hours: (json['hours'] as num?)?.toInt() ?? 0,
+      minutes: (json['minutes'] as num?)?.toInt() ?? 0,
+      seconds: (json['seconds'] as num?)?.toInt() ?? 0,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    'hours': hours,
+    'minutes': minutes,
+    'seconds': seconds,
+  };
+}
+
+class WalkieSubscription {
+  final bool hasActiveSubscription;
+  final Map<String, dynamic>? currentSubscription;
+  final List<Map<String, dynamic>> activeSubscriptions;
+
+  const WalkieSubscription({
+    required this.hasActiveSubscription,
+    required this.currentSubscription,
+    required this.activeSubscriptions,
+  });
+
+  factory WalkieSubscription.fromJson(
+      Map<String, dynamic> json,
+      ) {
+    final rawSubscriptions = json['activeSubscriptions'];
+
+    return WalkieSubscription(
+      hasActiveSubscription:
+      json['hasActiveSubscription'] == true,
+      currentSubscription: json['currentSubscription'] is Map
+          ? Map<String, dynamic>.from(
+        json['currentSubscription'],
+      )
+          : null,
+      activeSubscriptions: rawSubscriptions is List
+          ? rawSubscriptions
+          .whereType<Map>()
+          .map((item) => Map<String, dynamic>.from(item))
+          .toList()
+          : [],
+    );
   }
 
   Map<String, dynamic> toJson() => {
@@ -225,110 +265,123 @@ class Subscription {
   };
 }
 
-class Pricing {
-  bool? available;
-  SelectedPlan? selectedPlan;
-  int? price;
-  String? currency;
-  String? priceType;
+class WalkiePricing {
+  final bool available;
+  final WalkieSelectedPlan? selectedPlan;
+  final double? price;
+  final String currency;
+  final String priceType;
 
-  Pricing(
-      {this.available,
-        this.selectedPlan,
-        this.price,
-        this.currency,
-        this.priceType});
+  const WalkiePricing({
+    required this.available,
+    required this.selectedPlan,
+    required this.price,
+    required this.currency,
+    required this.priceType,
+  });
 
-  Pricing.fromJson(Map<String, dynamic> json) {
-    available = json['available'];
-    selectedPlan = json['selectedPlan'] != null
-        ? new SelectedPlan.fromJson(json['selectedPlan'])
-        : null;
-    price = json['price'];
-    currency = json['currency'];
-    priceType = json['priceType'];
+  factory WalkiePricing.fromJson(Map<String, dynamic> json) {
+    return WalkiePricing(
+      available: json['available'] == true,
+      selectedPlan: json['selectedPlan'] is Map
+          ? WalkieSelectedPlan.fromJson(
+        Map<String, dynamic>.from(json['selectedPlan']),
+      )
+          : null,
+      price: json['price'] is num
+          ? (json['price'] as num).toDouble()
+          : double.tryParse('${json['price']}'),
+      currency: json['currency']?.toString() ?? 'INR',
+      priceType: json['priceType']?.toString() ?? '',
+    );
   }
 
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['available'] = this.available;
-    if (this.selectedPlan != null) {
-      data['selectedPlan'] = this.selectedPlan!.toJson();
-    }
-    data['price'] = this.price;
-    data['currency'] = this.currency;
-    data['priceType'] = this.priceType;
-    return data;
-  }
+  Map<String, dynamic> toJson() => {
+    'available': available,
+    'selectedPlan': selectedPlan?.toJson(),
+    'price': price,
+    'currency': currency,
+    'priceType': priceType,
+  };
 }
 
-class SelectedPlan {
-  int? id;
-  String? name;
-  String? planType;
-  String? billingInterval;
-  int? durationMonths;
-  int? pricePerMember;
-  String? currency;
-  int? minMembers;
-  int? maxMembers;
+class WalkieSelectedPlan {
+  final int id;
+  final String name;
+  final String planType;
+  final String billingInterval;
+  final int durationMonths;
+  final double pricePerMember;
+  final String currency;
+  final int minMembers;
+  final int maxMembers;
 
-  SelectedPlan(
-      {this.id,
-        this.name,
-        this.planType,
-        this.billingInterval,
-        this.durationMonths,
-        this.pricePerMember,
-        this.currency,
-        this.minMembers,
-        this.maxMembers});
+  const WalkieSelectedPlan({
+    required this.id,
+    required this.name,
+    required this.planType,
+    required this.billingInterval,
+    required this.durationMonths,
+    required this.pricePerMember,
+    required this.currency,
+    required this.minMembers,
+    required this.maxMembers,
+  });
 
-  SelectedPlan.fromJson(Map<String, dynamic> json) {
-    id = json['id'];
-    name = json['name'];
-    planType = json['planType'];
-    billingInterval = json['billingInterval'];
-    durationMonths = json['durationMonths'];
-    pricePerMember = json['pricePerMember'];
-    currency = json['currency'];
-    minMembers = json['minMembers'];
-    maxMembers = json['maxMembers'];
+  factory WalkieSelectedPlan.fromJson(
+      Map<String, dynamic> json,
+      ) {
+    return WalkieSelectedPlan(
+      id: (json['id'] as num?)?.toInt() ?? 0,
+      name: json['name']?.toString() ?? '',
+      planType: json['planType']?.toString() ?? '',
+      billingInterval:
+      json['billingInterval']?.toString() ?? '',
+      durationMonths:
+      (json['durationMonths'] as num?)?.toInt() ?? 0,
+      pricePerMember:
+      (json['pricePerMember'] as num?)?.toDouble() ?? 0,
+      currency: json['currency']?.toString() ?? 'INR',
+      minMembers: (json['minMembers'] as num?)?.toInt() ?? 1,
+      maxMembers: (json['maxMembers'] as num?)?.toInt() ?? 1,
+    );
   }
 
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['id'] = this.id;
-    data['name'] = this.name;
-    data['planType'] = this.planType;
-    data['billingInterval'] = this.billingInterval;
-    data['durationMonths'] = this.durationMonths;
-    data['pricePerMember'] = this.pricePerMember;
-    data['currency'] = this.currency;
-    data['minMembers'] = this.minMembers;
-    data['maxMembers'] = this.maxMembers;
-    return data;
-  }
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'name': name,
+    'planType': planType,
+    'billingInterval': billingInterval,
+    'durationMonths': durationMonths,
+    'pricePerMember': pricePerMember,
+    'currency': currency,
+    'minMembers': minMembers,
+    'maxMembers': maxMembers,
+  };
 }
 
-class Actions {
-  bool? showTrialCountdown;
-  bool? showSubscribe;
-  bool? showTrialExpired;
+class WalkieActions {
+  final bool showTrialCountdown;
+  final bool showSubscribe;
+  final bool showTrialExpired;
 
-  Actions({this.showTrialCountdown, this.showSubscribe, this.showTrialExpired});
+  const WalkieActions({
+    required this.showTrialCountdown,
+    required this.showSubscribe,
+    required this.showTrialExpired,
+  });
 
-  Actions.fromJson(Map<String, dynamic> json) {
-    showTrialCountdown = json['showTrialCountdown'];
-    showSubscribe = json['showSubscribe'];
-    showTrialExpired = json['showTrialExpired'];
+  factory WalkieActions.fromJson(Map<String, dynamic> json) {
+    return WalkieActions(
+      showTrialCountdown: json['showTrialCountdown'] == true,
+      showSubscribe: json['showSubscribe'] == true,
+      showTrialExpired: json['showTrialExpired'] == true,
+    );
   }
 
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['showTrialCountdown'] = this.showTrialCountdown;
-    data['showSubscribe'] = this.showSubscribe;
-    data['showTrialExpired'] = this.showTrialExpired;
-    return data;
-  }
+  Map<String, dynamic> toJson() => {
+    'showTrialCountdown': showTrialCountdown,
+    'showSubscribe': showSubscribe,
+    'showTrialExpired': showTrialExpired,
+  };
 }

@@ -18,6 +18,9 @@ class Urls {
   static const String userWithinRadiusFallback =
       '${ConstRes.aBaseUrl}user-within-radius';
 
+
+  static const String walkieOverview = '${ConstRes.aBaseUrl}walkie/overview';
+
   ///------------------------ Params ------------------------///
   static const String rtcUserName = 'fgtracker';
   static const String rtcCredential = 'FGM_Tracker@2025';
