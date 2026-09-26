@@ -543,7 +543,6 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
     final colors = colorPool[index % colorPool.length];
     final String groupId = group.id?.toString() ?? "unknown";
     final bool isOnline = (index % 2 == 0);
-    final bool isMuted = (index == 0);
 
     return InkWell(
       onTap: () {
@@ -573,41 +572,18 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
         ),
         child: Row(
           children: [
-            Stack(
-              clipBehavior: Clip.none,
-              children: [
-                Container(
-                  width: 48.w,
-                  height: 48.w,
-                  decoration: BoxDecoration(
-                    color: colors['bg'],
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    Icons.groups_rounded,
-                    color: colors['icon'],
-                    size: 24.sp,
-                  ),
-                ),
-                if (isMuted)
-                  Positioned(
-                    right: -2.w,
-                    bottom: -2.h,
-                    child: Container(
-                      width: 18.w,
-                      height: 18.w,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFF5A5D72),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        Icons.volume_off_rounded,
-                        color: Colors.white,
-                        size: 10.sp,
-                      ),
-                    ),
-                  ),
-              ],
+            Container(
+              width: 48.w,
+              height: 48.w,
+              decoration: BoxDecoration(
+                color: colors['bg'],
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.groups_rounded,
+                color: colors['icon'],
+                size: 24.sp,
+              ),
             ),
             SizedBox(width: 12.w),
             Expanded(
