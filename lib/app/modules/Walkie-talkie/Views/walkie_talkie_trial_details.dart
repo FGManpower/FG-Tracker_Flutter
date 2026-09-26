@@ -110,7 +110,7 @@ class _WalkieTalkieTrialDetailsScreenState
   Widget _buildHeroGraphic() {
     return Container(
       width: double.infinity,
-      height: 290.h.clamp(260.0, 330.0),
+      height: 250.h.clamp(220.0, 280.0),
       margin: EdgeInsets.symmetric(horizontal: 4.w),
       child: Center(
         child: BlendMask(

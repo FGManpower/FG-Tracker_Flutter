@@ -164,9 +164,6 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
   Widget _buildTopHeroSection(bool isTeam, bool isSmallScreen) {
     return Container(
       width: double.infinity,
-      constraints: BoxConstraints(
-        minHeight: (isSmallScreen ? 148.h : 170.h),
-      ),
       padding: EdgeInsets.fromLTRB(16.w, 4.h, 4.w, 0),
       child: Stack(
         clipBehavior: Clip.none,
@@ -174,7 +171,7 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
           // Left side Column: Back Button, spacing, Title, Subtitle
           Padding(
             padding: EdgeInsets.only(
-              right: (isSmallScreen ? 135.w : 155.w).clamp(125.0, 175.0),
+              right: (isSmallScreen ? 145.w : 165.w).clamp(135.0, 185.0),
               bottom: 4.h,
             ),
             child: Column(
@@ -244,8 +241,9 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
 
           // Right side: 3D Walkie Talkie Hero Graphic in top right corner (Large & Responsive)
           Positioned(
-            top: -12.h,
-            right: -6.w,
+            top: -6.h,
+            right: 0,
+            bottom: 0,
             child: _buildWalkieTalkieHeroGraphic(isTeam, isSmallScreen),
           ),
         ],
@@ -254,22 +252,24 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
   }
 
   Widget _buildWalkieTalkieHeroGraphic(bool isTeam, bool isSmallScreen) {
-    final double size = (isSmallScreen ? 165.w : 195.w).clamp(155.0, 220.0);
+    final double width = (isSmallScreen ? 155.w : 180.w).clamp(145.0, 205.0);
     return SizedBox(
-      width: size,
-      height: size,
+      width: width,
       child: Center(
-        child: BlendMask(
-          blendMode: BlendMode.multiply,
-          child: isTeam
-              ? Assets.walkieTalkie.walkieTeamHeader.image(
-                  fit: BoxFit.contain,
-                  alignment: Alignment.centerRight,
-                )
-              : Assets.walkieTalkie.walkieIndividualHeader.image(
-                  fit: BoxFit.contain,
-                  alignment: Alignment.centerRight,
-                ),
+        child: AspectRatio(
+          aspectRatio: 1.25,
+          child: BlendMask(
+            blendMode: BlendMode.multiply,
+            child: isTeam
+                ? Assets.walkieTalkie.walkieTeamHeader.image(
+                    fit: BoxFit.contain,
+                    alignment: Alignment.topRight,
+                  )
+                : Assets.walkieTalkie.walkieIndividualHeader.image(
+                    fit: BoxFit.contain,
+                    alignment: Alignment.topRight,
+                  ),
+          ),
         ),
       ),
     );
