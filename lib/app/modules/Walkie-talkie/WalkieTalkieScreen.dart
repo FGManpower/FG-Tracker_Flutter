@@ -3,6 +3,7 @@ import 'dart:developer' as dev;
 import 'dart:io';
 import 'dart:math' as math;
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Walkie-Talkie-Service.dart';
+import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Controller/walkieController.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:flutter/cupertino.dart';
@@ -92,7 +93,21 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
       duration: const Duration(milliseconds: 1200),
     );
 
-    final groupId = args?['groupId']?.toString() ?? '';
+    String groupId = args?['groupId']?.toString() ?? '';
+    if (groupId.isEmpty && Get.isRegistered<GroupController>()) {
+      final gc = Get.find<GroupController>();
+      if (gc.groupData.isNotEmpty) {
+        final g = gc.groupData.first;
+        groupId = g.id?.toString() ?? '';
+        args = {
+          'groupId': groupId,
+          'groupName': g.groupName ?? 'Walkie Group',
+          'groupDesc': g.groupDesc ?? '',
+          'groupCode': g.groupCode ?? '',
+        };
+      }
+    }
+
     if (groupId.isNotEmpty) {
       _log('Configuring active session for group ID: $groupId');
       controller.setCurrentGroup(groupId);

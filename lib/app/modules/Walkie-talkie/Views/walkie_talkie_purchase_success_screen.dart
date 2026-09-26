@@ -162,7 +162,8 @@ class _WalkieTalkiePurchaseSuccessScreenState
                   child: SingleChildScrollView(
                     physics: const BouncingScrollPhysics(),
                     padding: EdgeInsets.symmetric(
-                      horizontal: (isWideScreen ? 24.w : 16.w).clamp(16.0, 32.0),
+                      horizontal:
+                          (isWideScreen ? 24.w : 16.w).clamp(16.0, 32.0),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
@@ -304,8 +305,9 @@ class _WalkieTalkiePurchaseSuccessScreenState
         final double rippleAlpha = _rippleOpacity.value;
         final double confettiScale = _confettiScale.value;
         final double confettiAlpha = _confettiOpacity.value;
-        final double pulseScale =
-            _mainController.isCompleted ? (1.0 + (_pulseController.value * 0.05)) : 1.0;
+        final double pulseScale = _mainController.isCompleted
+            ? (1.0 + (_pulseController.value * 0.05))
+            : 1.0;
 
         return SizedBox(
           width: 220.w.clamp(190.0, 240.0),
@@ -454,9 +456,7 @@ class _WalkieTalkiePurchaseSuccessScreenState
                 ),
                 SizedBox(height: 3.h),
                 Text(
-                  isTeam
-                      ? "$memberCount Members"
-                      : "1 Member",
+                  isTeam ? "$memberCount Members" : "1 Member",
                   style: TextStyle(
                     fontSize: 12.5.sp.clamp(11.0, 13.5),
                     fontFamily: FontFamily.interMedium,
@@ -1340,4 +1340,3 @@ class _AnimatedCheckmarkPainter extends CustomPainter {
         oldDelegate.strokeWidth != strokeWidth;
   }
 }
-
