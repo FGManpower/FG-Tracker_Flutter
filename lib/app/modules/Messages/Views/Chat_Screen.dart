@@ -496,26 +496,51 @@ class ChatScreen extends GetView<MessageController> {
                 onSelected: (value) {
                   if (value == 0) {
                     controller.startSearch();
-                  } else if (value == 1) {
+                    return;
+                  }
+
+                  if (value == 1) {
+                    CommonDialog.ConfirmationDialog(
+                      title: "Clear Chat",
+                      content: "Clear all messages from this chat?",
+                      confirm: "Clear",
+                      onConfirm: () {
+                        Get.back();
+
+                        controller.clearPrivateChat();
+                      },
+                    );
+                    return;
+                  }
+
+                  final isGroupChat =
+                      (userData.groupId ?? 0) != 0;
+
+                  if (!isGroupChat) {
+                    return;
+                  }
+
+                  if (value == 2) {
                     groupController.groupName.text =
                         controller.arguments?['groupName'] ?? "";
+
                     DialogBox().showUpdateGroupBottomSheet(
                       context: context,
                       controller: groupController,
                       groupId: userData.groupId.toString(),
                     );
-                  } else if (value == 2) {
+                  } else if (value == 3) {
                     CommonDialog.ConfirmationDialog(
                       title: "Remove Member",
                       content:
-                          "Are you sure you want to remove this member from the group?",
+                      "Are you sure you want to remove this member from the group?",
                       confirm: "Remove",
                       onConfirm: () {
                         groupController.deleteGroupMember(
                           context,
                           groupId: userData.groupId.toString(),
                           groupMemberId:
-                              controller.memberData.userId.toString(),
+                          controller.memberData.userId.toString(),
                           onSuccess: (success) {
                             if (success) {
                               Get.offAllNamed(Routes.Home_Screen);
@@ -527,6 +552,9 @@ class ChatScreen extends GetView<MessageController> {
                   }
                 },
                 itemBuilder: (context) {
+                  final isGroupChat =
+                      (userData.groupId ?? 0) != 0;
+
                   return [
                     _buildPopupMenuItem(
                       value: 0,
@@ -534,19 +562,31 @@ class ChatScreen extends GetView<MessageController> {
                       iconColor: _purple,
                       title: "Search Messages",
                     ),
+
                     _buildPopupMenuItem(
                       value: 1,
-                      icon: Icons.edit_rounded,
-                      iconColor: _purple,
-                      title: "Update Group",
-                    ),
-                    _buildPopupMenuItem(
-                      value: 2,
-                      icon: Icons.person_remove_rounded,
+                      icon: Icons.delete_outline_rounded,
                       iconColor: Colors.redAccent,
-                      title: "Delete Member",
+                      title: "Clear Chat",
                       isDestructive: true,
                     ),
+
+                    if (isGroupChat)
+                      _buildPopupMenuItem(
+                        value: 2,
+                        icon: Icons.edit_rounded,
+                        iconColor: _purple,
+                        title: "Update Group",
+                      ),
+
+                    if (isGroupChat)
+                      _buildPopupMenuItem(
+                        value: 3,
+                        icon: Icons.person_remove_rounded,
+                        iconColor: Colors.redAccent,
+                        title: "Delete Member",
+                        isDestructive: true,
+                      ),
                   ];
                 },
               ),

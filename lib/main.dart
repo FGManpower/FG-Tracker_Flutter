@@ -31,6 +31,8 @@ import 'app/modules/Track/Controller/GroupTrackController.dart';
 import 'app/modules/Track/Controller/LocationService.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
+
+
 final socket = SignallingService.instance.socket;
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
@@ -39,7 +41,6 @@ final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
   log("====Background-Bg===${message.data}");
-
   if (message.data['screen_name'] == "incomingCall") {
     if (Platform.isIOS) {
       // await RemoteLoggerTest.log("FCM_BG_HANDLER", "iOS detected in FCM background handler: ${message.data}");

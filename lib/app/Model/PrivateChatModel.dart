@@ -12,26 +12,26 @@ class PrivateChatResponse {
   });
 
   factory PrivateChatResponse.fromJson(
-    Map<String, dynamic> json,
-  ) {
+      Map<String, dynamic> json,
+      ) {
     return PrivateChatResponse(
       status: json['status'] as bool?,
       message: json['message'] as String?,
       pagination: json['pagination'] != null
           ? Pagination.fromJson(
-              Map<String, dynamic>.from(
-                json['pagination'],
-              ),
-            )
+        Map<String, dynamic>.from(
+          json['pagination'],
+        ),
+      )
           : null,
       data: json['data'] != null
           ? List<PrivateChatModel>.from(
-              (json['data'] as List).map(
-                (x) => PrivateChatModel.fromJson(
-                  Map<String, dynamic>.from(x),
-                ),
-              ),
-            )
+        (json['data'] as List).map(
+              (x) => PrivateChatModel.fromJson(
+            Map<String, dynamic>.from(x),
+          ),
+        ),
+      )
           : <PrivateChatModel>[],
     );
   }
@@ -64,8 +64,8 @@ class Pagination {
   });
 
   factory Pagination.fromJson(
-    Map<String, dynamic> json,
-  ) {
+      Map<String, dynamic> json,
+      ) {
     return Pagination(
       currentPage: _parseInt(json['currentPage']),
       perPage: _parseInt(json['perPage']),
@@ -125,11 +125,15 @@ class Pagination {
     if (value is String) {
       final normalized = value.toLowerCase().trim();
 
-      if (normalized == 'true' || normalized == 'yes' || normalized == '1') {
+      if (normalized == 'true' ||
+          normalized == 'yes' ||
+          normalized == '1') {
         return true;
       }
 
-      if (normalized == 'false' || normalized == 'no' || normalized == '0') {
+      if (normalized == 'false' ||
+          normalized == 'no' ||
+          normalized == '0') {
         return false;
       }
     }
@@ -155,6 +159,7 @@ class PrivateChatModel {
   bool? isGroup;
   bool? isPinned;
   bool? isMuted;
+  bool? isArchived;
 
   String? image;
 
@@ -172,14 +177,16 @@ class PrivateChatModel {
     this.isGroup,
     this.isPinned,
     this.isMuted,
+    this.isArchived,
     this.image,
   });
 
   factory PrivateChatModel.fromJson(
       Map<String, dynamic> json,
       ) {
-    final user =
-    json['user'] is Map ? Map<String, dynamic>.from(json['user']) : null;
+    final user = json['user'] is Map
+        ? Map<String, dynamic>.from(json['user'])
+        : null;
 
     final lastActivity = json['lastActivity'] is Map
         ? Map<String, dynamic>.from(json['lastActivity'])
@@ -255,7 +262,9 @@ class PrivateChatModel {
       )
           : "",
       unreadCount: _parseInt(
-        json['unreadCount'] ?? json['unread_count'] ?? json['unread'],
+        json['unreadCount'] ??
+            json['unread_count'] ??
+            json['unread'],
       ),
       status: json.containsKey('isOnline')
           ? (online == true ? "Online" : "Offline")
@@ -270,13 +279,23 @@ class PrivateChatModel {
         ],
       ),
       isGroup: _parseBool(
-        json['isGroup'] ?? json['is_group'] ?? json['group'],
+        json['isGroup'] ??
+            json['is_group'] ??
+            json['group'],
       ),
       isPinned: _parseBool(
-        json['isPinned'] ?? json['is_pinned'] ?? json['pinned'],
+        json['isPinned'] ??
+            json['is_pinned'] ??
+            json['pinned'],
       ),
       isMuted: _parseBool(
-        json['isMuted'] ?? json['is_muted'],
+        json['isMuted'] ??
+            json['is_muted'],
+      ),
+      isArchived: _parseBool(
+        json['isArchived'] ??
+            json['is_archived'] ??
+            json['archived'],
       ),
       image: _readString(
         json,
@@ -308,6 +327,7 @@ class PrivateChatModel {
       'isGroup': isGroup,
       'isPinned': isPinned,
       'isMuted': isMuted,
+      'isArchived': isArchived,
       'image': image,
     };
   }

@@ -516,12 +516,12 @@ class SocketMessageService extends GetxService {
       },
     );
   }
-
   void initPrivateChatListSocket(
-    String socketUrl, {
-    required String userId,
-  }) {
-    if (_privateChatListSocket != null && _privateChatListSocket!.connected) {
+      String socketUrl, {
+        required String userId,
+      }) {
+    if (_privateChatListSocket != null &&
+        _privateChatListSocket!.connected) {
       log("PRIVATE CHAT LIST SOCKET ALREADY CONNECTED");
       return;
     }
@@ -537,6 +537,18 @@ class SocketMessageService extends GetxService {
         "auth": {
           "userId": userId,
         },
+      },
+    );
+
+    _privateChatListSocket?.on(
+      "archived_private_chats",
+          (data) {
+        log("========================================");
+        log("ARCHIVED PRIVATE CHATS RECEIVED");
+        log("DATA => $data");
+        log("========================================");
+
+        _archivedPrivateChatsCallback?.call(data);
       },
     );
 
@@ -593,7 +605,12 @@ class SocketMessageService extends GetxService {
           },
         );
       }
-    }    );
+
+      getArchivedPrivateChats(
+        page: 1,
+        limit: 20,
+      );
+    });
 
     _privateChatListSocket?.onDisconnect((reason) {
       log("PRIVATE CHAT LIST SOCKET DISCONNECTED");
@@ -604,7 +621,6 @@ class SocketMessageService extends GetxService {
       log("PRIVATE CHAT LIST SOCKET ERROR =====> $error");
     });
   }
-
   Function(dynamic)? _privateChatListUpdatedCallback;
 
   void listenPrivateChatListUpdated({
@@ -676,6 +692,7 @@ class SocketMessageService extends GetxService {
     _privateChatSocket?.off("messages_delivered");
     _privateChatSocket?.off("messages_seen_update");
     _privateChatSocket?.off("private_chat_updated");
+    _privateChatSocket?.off("private_chat_cleared");
 
     _privateChatSocket?.disconnect();
     _privateChatSocket?.dispose();
@@ -1250,7 +1267,99 @@ class SocketMessageService extends GetxService {
   }
 
 
+  Function(dynamic)? _archivedPrivateChatsCallback;
 
+  void listenArchivedPrivateChats({
+    required Function(dynamic) callback,
+  }) {
+    _archivedPrivateChatsCallback = callback;
+
+    if (_privateChatListSocket == null) {
+      log("ARCHIVED PRIVATE CHATS => SOCKET NOT INITIALIZED");
+      return;
+    }
+
+    log("LISTENING => archived_private_chats");
+
+    _privateChatListSocket!.off("archived_private_chats");
+
+    _privateChatListSocket!.on(
+      "archived_private_chats",
+          (data) {
+        log("========================================");
+        log("ARCHIVED PRIVATE CHATS RECEIVED");
+        log("DATA => $data");
+        log("========================================");
+
+        _archivedPrivateChatsCallback?.call(data);
+      },
+    );
+  }
+
+  void getArchivedPrivateChats({
+    required int page,
+    required int limit,
+  }) {
+    if (!isPrivateChatListSocketConnected) {
+      log("GET ARCHIVED PRIVATE CHATS => SOCKET NOT CONNECTED");
+      return;
+    }
+
+    final payload = {
+      "page": page,
+      "limit": limit,
+    };
+
+    log("GET ARCHIVED PRIVATE CHATS => $payload");
+
+    _privateChatListSocket!.emit(
+      "get_archived_private_chats",
+      payload,
+    );
+  }
+
+  void clearPrivateChat({
+    required String chatId,
+  }) {
+    if (!isPrivateChatSocketConnected) {
+      log("CLEAR PRIVATE CHAT => SOCKET NOT CONNECTED");
+      return;
+    }
+
+    final payload = {
+      "chatId": int.tryParse(chatId) ?? chatId,
+    };
+
+    log("📦 CLEAR PRIVATE CHAT => $payload");
+
+    _privateChatSocket!.emit(
+      "clear_private_chat",
+      payload,
+    );
+  }
+
+
+  void listenPrivateChatCleared(
+      Function(Map<String, dynamic>) callback,
+      ) {
+    if (_privateChatSocket == null) {
+      log("CLEAR PRIVATE CHAT LISTENER => SOCKET NOT INITIALIZED");
+      return;
+    }
+
+    _privateChatSocket!.off("private_chat_cleared");
+
+    _privateChatSocket!.on(
+      "private_chat_cleared",
+          (data) {
+        log("📩 PRIVATE CHAT CLEARED => $data");
+
+        if (data is Map) {
+          callback(Map<String, dynamic>.from(data));
+        }
+      },
+    );
+  }
 
 
   void disconnectSocket() {

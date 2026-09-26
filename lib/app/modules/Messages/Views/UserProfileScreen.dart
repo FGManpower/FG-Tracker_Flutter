@@ -14,6 +14,8 @@ import 'package:get/get.dart';
 import 'package:fgtracker/app/Model/MemberDataRes.dart';
 import 'package:fgtracker/app/modules/mediaStream/Controller/calling_controller.dart';
 
+import '../../../Data/Services/Socket/Socket_Message_Services.dart';
+
 class UserProfileScreen extends StatefulWidget {
   final MemberData? userData;
   const UserProfileScreen({super.key, this.userData});
@@ -668,7 +670,20 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           confirm: "Clear",
           onConfirm: () {
             Get.back();
-            Utils().fluttertoast("Clear chat coming soon");
+
+            final chatId = _chatController?.privateChatId.value;
+            if (chatId == null) {
+              Utils().fluttertoast("Unable to clear chat");
+              return;
+            }
+
+            SocketMessageService.instance.clearPrivateChat(
+              chatId: chatId.toString(),
+            );
+
+            _chatController?.messageData.clear();
+
+            Utils().fluttertoast("Chat cleared");
           },
         );
       },

@@ -299,6 +299,9 @@ class MessageController extends GetxController with WidgetsBindingObserver {
           }
         },
       );
+      socketService.listenPrivateChatCleared(
+        handlePrivateChatCleared,
+      );
 
       socketService.listenPrivateMessagesDelivered(
         callback: (data) {
@@ -1196,6 +1199,39 @@ class MessageController extends GetxController with WidgetsBindingObserver {
       loadOlderPrivateMessages();
     }
   }
+
+  void handlePrivateChatCleared(Map<String, dynamic> data) {
+    final conversationId =
+    int.tryParse(data['conversationId']?.toString() ?? '');
+
+    if (conversationId == null) return;
+
+    log(
+      "PRIVATE CHAT CLEARED => conversationId=$conversationId",
+    );
+
+    messageData.clear();
+    updateMessageStream();
+
+    log("CHAT MESSAGES CLEARED FROM UI");
+  }
+
+  void clearPrivateChat() {
+    if (privateChatId.value.isEmpty) {
+      log("CLEAR PRIVATE CHAT => CHAT ID NOT FOUND");
+      return;
+    }
+
+    log(
+      "CLEAR PRIVATE CHAT => chatId=${privateChatId.value}",
+    );
+
+    socketService.clearPrivateChat(
+      chatId: privateChatId.value,
+    );
+  }
+
+
 
   Future<void> loadOlderPrivateMessages() async {
     if (isLoadingOlderMessages.value) return;
