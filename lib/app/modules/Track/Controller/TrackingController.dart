@@ -892,20 +892,28 @@ class TrackController extends GetxController {
               lastSeen: loc?.lastSeen?.toString() ?? m?.lastSeen?.toString(),
             );
 
+        final bool isGhost = (loc?.locationSharing == false ||
+            loc?.locationSharing == 0 ||
+            loc?.locationSharing == '0' ||
+            m?.locationSharing == false);
+
         final int parsedUserId = int.tryParse(uId) ?? 0;
 
-        groupUsers.add(UsersWithinRadiusData(
-          userId: parsedUserId != 0 ? parsedUserId : (m?.userId ?? loc?.userId),
-          name: resolvedName,
-          profileImage: profileImg,
-          latitude: lat,
-          longitude: lng,
-          isOnline: isOnline,
-          lastSeen: loc?.lastSeen?.toString() ?? m?.lastSeen?.toString(),
-          team: selectedGroupName.value,
-          location: m?.location ?? loc?.location,
-          mobileNo: m?.mobileNo ?? loc?.mobileNo?.toString(),
-        ));
+        // If member is in Ghost Mode, do not show their location pin on the map
+        if (!isGhost) {
+          groupUsers.add(UsersWithinRadiusData(
+            userId: parsedUserId != 0 ? parsedUserId : (m?.userId ?? loc?.userId),
+            name: resolvedName,
+            profileImage: profileImg,
+            latitude: lat,
+            longitude: lng,
+            isOnline: isOnline,
+            lastSeen: loc?.lastSeen?.toString() ?? m?.lastSeen?.toString(),
+            team: selectedGroupName.value,
+            location: m?.location ?? loc?.location,
+            mobileNo: m?.mobileNo ?? loc?.mobileNo?.toString(),
+          ));
+        }
       }
 
       // Update the real member count for this group in groupList & filteredGroups
@@ -962,6 +970,44 @@ class TrackController extends GetxController {
           battery: loc?.battery,
         ));
       }
+
+      // Sort: 1st: You, 2nd: Ghost Mode, 3rd: All other members
+      final String currentUserId =
+          Global.storageServices.get(PrefConst.userId)?.toString() ?? '';
+      detailedMembers.sort((a, b) {
+        final aId = (a.userId ?? a.id ?? '').toString();
+        final bId = (b.userId ?? b.id ?? '').toString();
+
+        final bool aIsMe = aId.isNotEmpty && aId == currentUserId;
+        final bool bIsMe = bId.isNotEmpty && bId == currentUserId;
+
+        // 1st: "You" (logged-in user)
+        if (aIsMe && !bIsMe) return -1;
+        if (!aIsMe && bIsMe) return 1;
+        if (aIsMe && bIsMe) return 0;
+
+        // 2nd: Ghost mode members
+        final bool aGhost = a.locationSharing == false ||
+            a.locationSharing == 0 ||
+            a.locationSharing == '0';
+        final bool bGhost = b.locationSharing == false ||
+            b.locationSharing == 0 ||
+            b.locationSharing == '0';
+
+        if (aGhost && !bGhost) return -1;
+        if (!aGhost && bGhost) return 1;
+
+        // 3rd: All other members (Online first, then alphabetical by name)
+        final bool aOnline = a.isOnline == true;
+        final bool bOnline = b.isOnline == true;
+        if (aOnline && !bOnline) return -1;
+        if (!aOnline && bOnline) return 1;
+
+        final aName = (a.name ?? '').toString().toLowerCase();
+        final bName = (b.name ?? '').toString().toLowerCase();
+        return aName.compareTo(bName);
+      });
+
       groupMembersMap[groupId] = detailedMembers;
       groupMembersMap.refresh();
 
@@ -2039,6 +2085,106 @@ class TrackController extends GetxController {
   }
 
   void zoomToMember(dynamic member) {
+    // Check if member is in Ghost Mode: if so, do not zoom to location, show top notification popup
+    bool isGhost = false;
+    String memberName = "Member";
+    if (member is LocationData) {
+      isGhost = member.locationSharing == false ||
+          member.locationSharing == 0 ||
+          member.locationSharing == '0';
+      memberName = member.name?.toString() ?? "Member";
+    }
+
+    if (isGhost) {
+      Get.snackbar(
+        "",
+        "",
+        titleText: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF3E8FF),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.lock_outline_rounded,
+                    size: 11,
+                    color: Color(0xFF7E57C2),
+                  ),
+                  SizedBox(width: 4),
+                  Text(
+                    "Private",
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF7E57C2),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            const Text(
+              "Location Hidden",
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF1E1B4B),
+              ),
+            ),
+          ],
+        ),
+        messageText: Padding(
+          padding: const EdgeInsets.only(top: 2),
+          child: Text(
+            "$memberName has paused location sharing. Live location is not available.",
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: Color(0xFF64748B),
+            ),
+          ),
+        ),
+        icon: Container(
+          margin: const EdgeInsets.only(left: 10),
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF3E8FF),
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: const Color(0xFF7E57C2).withValues(alpha: 0.25),
+              width: 1,
+            ),
+          ),
+          child: const Icon(
+            Icons.location_off_rounded,
+            color: Color(0xFF7E57C2),
+            size: 20,
+          ),
+        ),
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Colors.white,
+        borderColor: const Color(0xFFE2E8F0),
+        borderWidth: 1.2,
+        boxShadows: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 18,
+            offset: const Offset(0, 6),
+          ),
+        ],
+        margin: const EdgeInsets.fromLTRB(14, 14, 14, 0),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        borderRadius: 16,
+        duration: const Duration(seconds: 3),
+      );
+      return;
+    }
+
     LatLng? targetLatLng;
 
     // 1. Check if MemberModel, UsersWithinRadiusData, or LocationData with direct coordinates

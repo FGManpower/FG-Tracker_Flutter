@@ -84,21 +84,10 @@
 		F73DD8E9B69BE638BCFCB1A5 /* Pods-RunnerTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.debug.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
-/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		120CB0BD3066A333006553E5 /* Exceptions for "BroadcastExtension" folder in "BroadcastExtension" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Info.plist,
-			);
-			target = 120CB0AE3066A333006553E5 /* BroadcastExtension */;
-		};
-/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
-
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		120CB0B23066A333006553E5 /* BroadcastExtension */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				120CB0BD3066A333006553E5 /* Exceptions for "BroadcastExtension" folder in "BroadcastExtension" target */,
 			);
 			path = BroadcastExtension;
 			sourceTree = "<group>";
@@ -227,7 +216,6 @@
 			buildPhases = (
 				120CB0AB3066A333006553E5 /* Sources */,
 				120CB0AC3066A333006553E5 /* Frameworks */,
-				120CB0AD3066A333006553E5 /* Resources */,
 			);
 			buildRules = (
 			);
@@ -270,6 +258,7 @@
 				97C146EB1CF9000F007C117D /* Frameworks */,
 				97C146EC1CF9000F007C117D /* Resources */,
 				9705A1C41CF9048500538489 /* Embed Frameworks */,
+				120CB0B93066A333006553E5 /* Embed Foundation Extensions */,
 				3B06AD1E1E4923F5004D2608 /* Thin Binary */,
 				22BA94AB4C646D65DD03C69E /* [CP] Embed Pods Frameworks */,
 				128DF9DF3067ED1A004E76B2 /* Embed Broadcast Extension Script */,
@@ -336,13 +325,6 @@
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		120CB0AD3066A333006553E5 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		331C807F294A63A400263BE5 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -742,11 +724,11 @@
 				BUILD_LIBRARY_FOR_DISTRIBUTION = NO;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
-				CURRENT_PROJECT_VERSION = 37;
+				CURRENT_PROJECT_VERSION = 39;
 				DEVELOPMENT_TEAM = 5VH5Y7DS44;
 				ENABLE_BITCODE = NO;
 				FLUTTER_BUILD_NAME = 1.3.9;
-				FLUTTER_BUILD_NUMBER = 37;
+				FLUTTER_BUILD_NUMBER = 39;
 				INFOPLIST_FILE = Runner/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -933,11 +915,11 @@
 				BUILD_LIBRARY_FOR_DISTRIBUTION = NO;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
-				CURRENT_PROJECT_VERSION = 37;
+				CURRENT_PROJECT_VERSION = 39;
 				DEVELOPMENT_TEAM = 5VH5Y7DS44;
 				ENABLE_BITCODE = NO;
 				FLUTTER_BUILD_NAME = 1.3.9;
-				FLUTTER_BUILD_NUMBER = 37;
+				FLUTTER_BUILD_NUMBER = 39;
 				INFOPLIST_FILE = Runner/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -962,11 +944,11 @@
 				BUILD_LIBRARY_FOR_DISTRIBUTION = NO;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
-				CURRENT_PROJECT_VERSION = 37;
+				CURRENT_PROJECT_VERSION = 39;
 				DEVELOPMENT_TEAM = 5VH5Y7DS44;
 				ENABLE_BITCODE = NO;
 				FLUTTER_BUILD_NAME = 1.3.9;
-				FLUTTER_BUILD_NUMBER = 37;
+				FLUTTER_BUILD_NUMBER = 39;
 				INFOPLIST_FILE = Runner/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (

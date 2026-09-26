@@ -250,15 +250,26 @@ class _AttendanceCameraScreenState extends State<AttendanceCameraScreen> {
         children: [
           // Camera top icon container
           Container(
-            width: 52.w,
-            height: 52.w,
+            width: 54.w,
+            height: 54.w,
             decoration: BoxDecoration(
-              color: const Color(0xFFEEF2FF),
+              gradient: const LinearGradient(
+                colors: [Color(0xFF8B6BFE), Color(0xFF5A3EFE)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
               borderRadius: BorderRadius.circular(16.r),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF5A3EFE).withValues(alpha: 0.25),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
             child: Icon(
               Icons.camera_alt_rounded,
-              color: const Color(0xFF5A3EFE),
+              color: Colors.white,
               size: 26.sp,
             ),
           ),
@@ -295,46 +306,60 @@ class _AttendanceCameraScreenState extends State<AttendanceCameraScreen> {
           SizedBox(height: 20.h),
 
           // Take Photo Button
-          SizedBox(
+          Container(
             width: double.infinity,
             height: 48.h,
-            child: ElevatedButton(
-              onPressed: _isCapturing ? null : _takePhoto,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF5A3EFE),
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14.r),
-                ),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF6E52FE), Color(0xFF5A3EFE)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
-              child: _isCapturing
-                  ? SizedBox(
-                      width: 22.w,
-                      height: 22.w,
-                      child: const CircularProgressIndicator(
-                        strokeWidth: 2.2,
-                        color: Colors.white,
-                      ),
-                    )
-                  : Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.camera_alt_rounded,
-                          color: Colors.white,
-                          size: 19.sp,
-                        ),
-                        SizedBox(width: 8.w),
-                        Text(
-                          "Take Photo",
-                          style: TextStyle(
-                            fontSize: 14.5.sp,
-                            fontWeight: FontWeight.w700,
+              borderRadius: BorderRadius.circular(14.r),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF5A3EFE).withValues(alpha: 0.32),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: _isCapturing ? null : _takePhoto,
+                borderRadius: BorderRadius.circular(14.r),
+                child: Center(
+                  child: _isCapturing
+                      ? SizedBox(
+                          width: 22.w,
+                          height: 22.w,
+                          child: const CircularProgressIndicator(
+                            strokeWidth: 2.2,
                             color: Colors.white,
                           ),
+                        )
+                      : Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.camera_alt_rounded,
+                              color: Colors.white,
+                              size: 19.sp,
+                            ),
+                            SizedBox(width: 8.w),
+                            Text(
+                              "Take Photo",
+                              style: TextStyle(
+                                fontSize: 14.5.sp,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
+                ),
+              ),
             ),
           ),
 
@@ -345,20 +370,24 @@ class _AttendanceCameraScreenState extends State<AttendanceCameraScreen> {
             width: double.infinity,
             padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
             decoration: BoxDecoration(
-              color: const Color(0xFFF1EEFE),
+              color: const Color(0xFFF5F3FF),
               borderRadius: BorderRadius.circular(12.r),
+              border: Border.all(
+                color: const Color(0xFFDDD6FE),
+                width: 1,
+              ),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(
-                  Icons.info_rounded,
+                  Icons.verified_user_rounded,
                   color: const Color(0xFF5A3EFE),
                   size: 17.sp,
                 ),
                 SizedBox(width: 8.w),
                 Text(
-                  "Photo required for Present",
+                  "Photo required for Present verification",
                   style: TextStyle(
                     fontSize: 12.5.sp,
                     fontWeight: FontWeight.w600,
@@ -395,14 +424,20 @@ class _AttendanceCameraScreenState extends State<AttendanceCameraScreen> {
               )
             else
               Container(
-                color: const Color(0xFF64748B),
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                  ),
+                ),
                 child: Center(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       const CircularProgressIndicator(
                         strokeWidth: 2.4,
-                        color: Colors.white,
+                        color: Color(0xFF8B6BFE),
                       ),
                       SizedBox(height: 12.h),
                       Text(
@@ -427,6 +462,45 @@ class _AttendanceCameraScreenState extends State<AttendanceCameraScreen> {
               ),
             ),
 
+            // Align Face pill at top
+            Positioned(
+              top: 12.h,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 5.h),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.45),
+                    borderRadius: BorderRadius.circular(20.r),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.15),
+                      width: 1,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.face_retouching_natural_rounded,
+                        color: Colors.white,
+                        size: 14.sp,
+                      ),
+                      SizedBox(width: 5.w),
+                      Text(
+                        "Align face inside frame",
+                        style: TextStyle(
+                          fontSize: 11.sp,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
             // Flip Camera Button
             if (_cameras.length > 1)
               Positioned(
@@ -437,8 +511,12 @@ class _AttendanceCameraScreenState extends State<AttendanceCameraScreen> {
                   child: Container(
                     padding: EdgeInsets.all(7.w),
                     decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.4),
+                      color: Colors.black.withValues(alpha: 0.45),
                       shape: BoxShape.circle,
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.25),
+                        width: 1,
+                      ),
                     ),
                     child: Icon(
                       Icons.flip_camera_ios_rounded,
@@ -458,6 +536,14 @@ class _AttendanceCameraScreenState extends State<AttendanceCameraScreen> {
 class _ViewfinderCornersPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
+    // Subtle shadow behind corners for high contrast & clarity
+    final shadowPaint = Paint()
+      ..color = Colors.black.withValues(alpha: 0.35)
+      ..strokeWidth = 4.5
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 1.5);
+
     final paint = Paint()
       ..color = Colors.white
       ..strokeWidth = 3.5
@@ -475,6 +561,7 @@ class _ViewfinderCornersPainter extends CustomPainter {
       ..lineTo(0, cornerRadius)
       ..quadraticBezierTo(0, 0, cornerRadius, 0)
       ..lineTo(cornerLength, 0);
+    canvas.drawPath(tl, shadowPaint);
     canvas.drawPath(tl, paint);
 
     // Top-Right corner bracket
@@ -483,6 +570,7 @@ class _ViewfinderCornersPainter extends CustomPainter {
       ..lineTo(w - cornerRadius, 0)
       ..quadraticBezierTo(w, 0, w, cornerRadius)
       ..lineTo(w, cornerLength);
+    canvas.drawPath(tr, shadowPaint);
     canvas.drawPath(tr, paint);
 
     // Bottom-Left corner bracket
@@ -491,6 +579,7 @@ class _ViewfinderCornersPainter extends CustomPainter {
       ..lineTo(0, h - cornerRadius)
       ..quadraticBezierTo(0, h, cornerRadius, h)
       ..lineTo(cornerLength, h);
+    canvas.drawPath(bl, shadowPaint);
     canvas.drawPath(bl, paint);
 
     // Bottom-Right corner bracket
@@ -499,6 +588,7 @@ class _ViewfinderCornersPainter extends CustomPainter {
       ..lineTo(w - cornerRadius, h)
       ..quadraticBezierTo(w, h, w, h - cornerRadius)
       ..lineTo(w, h - cornerLength);
+    canvas.drawPath(br, shadowPaint);
     canvas.drawPath(br, paint);
   }
 

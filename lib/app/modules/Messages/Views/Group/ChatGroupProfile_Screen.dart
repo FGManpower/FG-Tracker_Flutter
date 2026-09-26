@@ -68,7 +68,7 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
   }
 
   String _statusText(LocationData m) {
-    if (m.locationSharing == false) return "Ghost Mode";
+    if (m.locationSharing == false) return "Location Hidden";
     if (_isOnline(m)) return "Online";
     if (m.lastSeen == null || m.lastSeen.toString().isEmpty) return "Offline";
     final parsed = Tracking.parseDateTime(m.lastSeen);

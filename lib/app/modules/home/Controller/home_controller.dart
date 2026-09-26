@@ -2,12 +2,14 @@ import 'dart:async';
 
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
+import 'package:fgtracker/app/Data/Repositories/InitializeRepo.dart';
 import 'package:fgtracker/app/Data/Repositories/Profile_Repo.dart';
 import 'package:fgtracker/app/Data/Repositories/TrackRepo.dart';
 import 'package:fgtracker/app/Data/Repositories/banner_Repo.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Dashboard_Service.dart';
 import 'package:fgtracker/app/Model/ProfileRes.dart';
 import 'package:fgtracker/app/Model/group_count_detail.dart';
+import 'package:fgtracker/app/Model/initialize_model.dart';
 import 'package:fgtracker/app/Model/live_location_model.dart';
 import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
 import 'package:fgtracker/app/modules/Track/Controller/LocationService.dart';
@@ -31,6 +33,12 @@ class HomeController extends GetxController {
   final Rx<LatLng?> currentLocation = Rx<LatLng?>(null);
   RxString selectedRadius = '2'.obs;
 
+  final Rx<InitializeModel?> initializeModel = Rx<InitializeModel?>(null);
+  final RxBool isInitializing = false.obs;
+
+  bool get canUseWalkie =>
+      initializeModel.value?.data?.walkie?.access?.canUseWalkie ?? false;
+
   StreamSubscription<Position>? _positionStreamSubscription;
 
   @override
@@ -39,6 +47,7 @@ class HomeController extends GetxController {
     SocketDashboardService.instance.init();
     _listenGroupCount();
     fetchBanners();
+    fetchInitializeData();
   }
 
   void _listenGroupCount() {
@@ -99,6 +108,20 @@ class HomeController extends GetxController {
     } catch (e) {
       isLoadingBanners(false);
       BannerResponeMessage.value = e.toString();
+    }
+  }
+
+  Future<void> fetchInitializeData() async {
+    try {
+      isInitializing.value = true;
+      final result = await InitializeRepo.getInitializeData();
+      if (result.status == true) {
+        initializeModel.value = result;
+      }
+    } catch (e) {
+      debugPrint("[HomeController] fetchInitializeData error: $e");
+    } finally {
+      isInitializing.value = false;
     }
   }
 

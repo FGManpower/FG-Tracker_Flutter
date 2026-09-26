@@ -65,7 +65,7 @@ class StatsGrid extends StatelessWidget {
             child: _StatCard(
               icon: Icons.supervised_user_circle,
               iconColor: const Color(0xFFF59E0B),
-              title: "Ghost Mode",
+              title: "Private",
               value: detail.locationDisabledMembers.toString(),
               subtitle: "Active",
               onTap: () {

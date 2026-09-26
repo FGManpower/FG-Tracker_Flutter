@@ -878,7 +878,7 @@ class GroupTrackingController extends GetxController {
 
         Get.snackbar(
           "Error",
-          "Unable to update Ghost Mode",
+          "Unable to update Private Mode",
         );
       }
     } catch (e) {
@@ -892,14 +892,40 @@ class GroupTrackingController extends GetxController {
   }
 
   void _showClusterMembersSheet(List<LocationData> users) {
-    print("========== CLUSTER USERS ==========");
-    print("Current User: ${Global.storageServices.get(PrefConst.userId)}");
+    final currentUserId =
+        Global.storageServices.get(PrefConst.userId)?.toString() ?? '';
 
-    for (final u in users) {
-      print("${u.userId} - ${u.name}");
-    }
+    // Sort: 1st: You, 2nd: Ghost Mode, 3rd: All other members
+    users.sort((a, b) {
+      final aId = (a.userId ?? a.id ?? '').toString();
+      final bId = (b.userId ?? b.id ?? '').toString();
 
-    print("==================================");
+      final bool aIsMe = aId.isNotEmpty && aId == currentUserId;
+      final bool bIsMe = bId.isNotEmpty && bId == currentUserId;
+
+      // 1st: "You"
+      if (aIsMe && !bIsMe) return -1;
+      if (!aIsMe && bIsMe) return 1;
+      if (aIsMe && bIsMe) return 0;
+
+      // 2nd: Ghost mode members
+      final bool aGhost = a.locationSharing == false;
+      final bool bGhost = b.locationSharing == false;
+
+      if (aGhost && !bGhost) return -1;
+      if (!aGhost && bGhost) return 1;
+
+      // 3rd: All other members
+      final bool aOnline = a.isOnline == true;
+      final bool bOnline = b.isOnline == true;
+      if (aOnline && !bOnline) return -1;
+      if (!aOnline && bOnline) return 1;
+
+      final aName = (a.name ?? '').toString().toLowerCase();
+      final bName = (b.name ?? '').toString().toLowerCase();
+      return aName.compareTo(bName);
+    });
+
     Get.bottomSheet(
       Container(
         padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
@@ -1016,7 +1042,7 @@ class GroupTrackingController extends GetxController {
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: const Text(
-                              "👻 Ghost",
+                              "Private",
                               style: TextStyle(
                                 color: AppColors.white,
                                 fontSize: 10,
@@ -1028,7 +1054,7 @@ class GroupTrackingController extends GetxController {
                     ),
                     subtitle: Text(
                       isGhostMode
-                          ? "Ghost Mode Enabled"
+                          ? "Location Hidden"
                           : isOnline
                           ? "Online"
                           : user.lastSeen != null &&
@@ -1050,9 +1076,93 @@ class GroupTrackingController extends GetxController {
                     onTap: () async {
                       if (isGhostMode) {
                         Get.snackbar(
-                          "Ghost Mode",
-                          "${user.name} is currently in Ghost Mode.",
-                          snackPosition: SnackPosition.BOTTOM,
+                          "",
+                          "",
+                          titleText: Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 7, vertical: 2.5),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFF3E8FF),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: const Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.lock_outline_rounded,
+                                      size: 11,
+                                      color: Color(0xFF7E57C2),
+                                    ),
+                                    SizedBox(width: 4),
+                                    Text(
+                                      "Private",
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w700,
+                                        color: Color(0xFF7E57C2),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              const Text(
+                                "Location Hidden",
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w700,
+                                  color: Color(0xFF1E1B4B),
+                                ),
+                              ),
+                            ],
+                          ),
+                          messageText: Padding(
+                            padding: const EdgeInsets.only(top: 2),
+                            child: Text(
+                              "${user.name} has paused location sharing. Live location is not available.",
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                                color: Color(0xFF64748B),
+                              ),
+                            ),
+                          ),
+                          icon: Container(
+                            margin: const EdgeInsets.only(left: 10),
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF3E8FF),
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: const Color(0xFF7E57C2)
+                                    .withValues(alpha: 0.25),
+                                width: 1,
+                              ),
+                            ),
+                            child: const Icon(
+                              Icons.location_off_rounded,
+                              color: Color(0xFF7E57C2),
+                              size: 20,
+                            ),
+                          ),
+                          snackPosition: SnackPosition.TOP,
+                          backgroundColor: Colors.white,
+                          borderColor: const Color(0xFFE2E8F0),
+                          borderWidth: 1.2,
+                          boxShadows: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.08),
+                              blurRadius: 18,
+                              offset: const Offset(0, 6),
+                            ),
+                          ],
+                          margin: const EdgeInsets.fromLTRB(14, 14, 14, 0),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 14, vertical: 12),
+                          borderRadius: 16,
+                          duration: const Duration(seconds: 3),
                         );
                         return;
                       }

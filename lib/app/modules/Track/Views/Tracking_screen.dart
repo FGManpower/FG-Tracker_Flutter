@@ -2580,6 +2580,45 @@ class TrackingScreen extends StatelessWidget {
     List<LocationData> members,
     bool isLoading,
   ) {
+    final currentUserId =
+        Global.storageServices.get(PrefConst.userId)?.toString() ?? '';
+
+    // Sort: 1st: You, 2nd: Ghost Mode enabled, 3rd: All other members
+    final List<LocationData> sortedMembers = List<LocationData>.from(members);
+    sortedMembers.sort((a, b) {
+      final aId = (a.userId ?? a.id ?? '').toString();
+      final bId = (b.userId ?? b.id ?? '').toString();
+
+      final bool aIsMe = aId.isNotEmpty && aId == currentUserId;
+      final bool bIsMe = bId.isNotEmpty && bId == currentUserId;
+
+      // 1st: "You" (logged-in user)
+      if (aIsMe && !bIsMe) return -1;
+      if (!aIsMe && bIsMe) return 1;
+      if (aIsMe && bIsMe) return 0;
+
+      // 2nd: Ghost mode members
+      final bool aGhost = a.locationSharing == false ||
+          a.locationSharing == 0 ||
+          a.locationSharing == '0';
+      final bool bGhost = b.locationSharing == false ||
+          b.locationSharing == 0 ||
+          b.locationSharing == '0';
+
+      if (aGhost && !bGhost) return -1;
+      if (!aGhost && bGhost) return 1;
+
+      // 3rd: All other members (Online first, then alphabetical by name)
+      final bool aOnline = a.isOnline == true;
+      final bool bOnline = b.isOnline == true;
+      if (aOnline && !bOnline) return -1;
+      if (!aOnline && bOnline) return 1;
+
+      final aName = (a.name ?? '').toString().toLowerCase();
+      final bName = (b.name ?? '').toString().toLowerCase();
+      return aName.compareTo(bName);
+    });
+
     return Container(
       decoration: BoxDecoration(
         color: const Color(0xFFF8FAFC),
@@ -2658,7 +2697,7 @@ class TrackingScreen extends StatelessWidget {
             )
           else
             Column(
-              children: members
+              children: sortedMembers
                   .map((m) => _buildGroupDropdownMemberItem(m, group))
                   .toList(),
             ),
@@ -2709,7 +2748,7 @@ class TrackingScreen extends StatelessWidget {
         : null;
 
     String getLastSeenText() {
-      if (isGhostMode) return "Ghost Mode Enabled";
+      if (isGhostMode) return "Location Hidden";
       if (isOnline) return "Online";
       if (member.lastSeen == null ||
           member.lastSeen.toString().trim().isEmpty ||
@@ -2733,6 +2772,98 @@ class TrackingScreen extends StatelessWidget {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: () {
+        if (isGhostMode) {
+          Get.snackbar(
+            "",
+            "",
+            titleText: Row(
+              children: [
+                Container(
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 7.w, vertical: 2.5.h),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF3E8FF),
+                    borderRadius: BorderRadius.circular(6.r),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.lock_outline_rounded,
+                        size: 11.sp,
+                        color: const Color(0xFF7E57C2),
+                      ),
+                      SizedBox(width: 4.w),
+                      Text(
+                        "Private",
+                        style: TextStyle(
+                          fontSize: 11.sp,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF7E57C2),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(width: 8.w),
+                Text(
+                  "Location Hidden",
+                  style: TextStyle(
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF1E1B4B),
+                  ),
+                ),
+              ],
+            ),
+            messageText: Padding(
+              padding: EdgeInsets.only(top: 2.h),
+              child: Text(
+                isMe
+                    ? "Your live location sharing is paused and private."
+                    : "$name has paused location sharing. Live location is not available.",
+                style: TextStyle(
+                  fontSize: 12.sp,
+                  fontWeight: FontWeight.w500,
+                  color: const Color(0xFF64748B),
+                ),
+              ),
+            ),
+            icon: Container(
+              margin: EdgeInsets.only(left: 10.w),
+              padding: EdgeInsets.all(8.r),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF3E8FF),
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: const Color(0xFF7E57C2).withValues(alpha: 0.25),
+                  width: 1,
+                ),
+              ),
+              child: Icon(
+                Icons.location_off_rounded,
+                color: const Color(0xFF7E57C2),
+                size: 20.sp,
+              ),
+            ),
+            snackPosition: SnackPosition.TOP,
+            backgroundColor: Colors.white,
+            borderColor: const Color(0xFFE2E8F0),
+            borderWidth: 1.2,
+            boxShadows: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.08),
+                blurRadius: 18.r,
+                offset: const Offset(0, 6),
+              ),
+            ],
+            margin: EdgeInsets.fromLTRB(14.w, 14.h, 14.w, 0),
+            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+            borderRadius: 16.r,
+            duration: const Duration(seconds: 3),
+          );
+          return;
+        }
         controller.zoomToMember(member);
       },
       child: Container(
@@ -2822,6 +2953,14 @@ class TrackingScreen extends StatelessWidget {
                           "You",
                           const Color(0xFFEEF2FF),
                           const Color(0xFF4338CA),
+                        ),
+                      ],
+                      if (isGhostMode) ...[
+                        SizedBox(width: 5.w),
+                        _memberBadge(
+                          "Private",
+                          const Color(0xFFF3E8FF),
+                          const Color(0xFF7E57C2),
                         ),
                       ],
                       if (isAdmin) ...[

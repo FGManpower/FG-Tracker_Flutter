@@ -77,6 +77,18 @@ class BottomSheetUi {
             final bMe = bId == currentUserId ? 0 : 1;
             if (aMe != bMe) return aMe.compareTo(bMe);
 
+            final aGhost = (a.locationSharing == false ||
+                    a.locationSharing == 0 ||
+                    a.locationSharing == '0')
+                ? 0
+                : 1;
+            final bGhost = (b.locationSharing == false ||
+                    b.locationSharing == 0 ||
+                    b.locationSharing == '0')
+                ? 0
+                : 1;
+            if (aGhost != bGhost) return aGhost.compareTo(bGhost);
+
             final aAdmin =
                 (a.isCreator == true || a.isCreator == 1 || a.isCreator == '1')
                     ? 0
@@ -87,17 +99,14 @@ class BottomSheetUi {
                     : 1;
             if (aAdmin != bAdmin) return aAdmin.compareTo(bAdmin);
 
-            final aGhost = (a.locationSharing == false ||
-                    a.locationSharing == 0 ||
-                    a.locationSharing == '0')
-                ? 1
-                : 0;
-            final bGhost = (b.locationSharing == false ||
-                    b.locationSharing == 0 ||
-                    b.locationSharing == '0')
-                ? 1
-                : 0;
-            return aGhost.compareTo(bGhost);
+            final aOnline = a.isOnline == true ? 0 : 1;
+            final bOnline = b.isOnline == true ? 0 : 1;
+            if (aOnline != bOnline) return aOnline.compareTo(bOnline);
+
+            return (a.name ?? '')
+                .toString()
+                .toLowerCase()
+                .compareTo((b.name ?? '').toString().toLowerCase());
           });
         }
 
@@ -378,7 +387,7 @@ class BottomSheetUi {
 
                                       String getLastSeenText() {
                                         if (isGhostMode) {
-                                          return "Ghost Mode Enabled";
+                                          return "Location Hidden";
                                         }
                                         if (isOnline) return "Online";
                                         if (member.lastSeen == null ||
