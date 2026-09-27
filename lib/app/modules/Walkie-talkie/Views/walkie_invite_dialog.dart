@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
-import 'package:fgtracker/generated/assets.dart';
+import 'package:fgtracker/gen/assets.gen.dart';
 import '../../../routes/app_pages.dart';
 
 class WalkieInviteDialog {

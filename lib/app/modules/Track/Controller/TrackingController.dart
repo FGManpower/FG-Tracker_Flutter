@@ -1903,7 +1903,17 @@ class TrackController extends GetxController {
             u.distance!.trim().isNotEmpty &&
             !u.distance!.toLowerCase().contains("nan")) {
           final dStr = u.distance!.trim();
-          if (dStr.contains("away")) {
+          final cleaned = dStr.replaceAll(RegExp(r'[^\d.]'), '');
+          final numVal = double.tryParse(cleaned);
+          if (numVal != null && numVal <= 0.05) {
+            distanceText = "Nearby you";
+          } else if (dStr.startsWith("0.0") ||
+              dStr == "0 m" ||
+              dStr == "0 m away" ||
+              dStr.toLowerCase() == "nearby" ||
+              dStr.toLowerCase() == "nearby you") {
+            distanceText = "Nearby you";
+          } else if (dStr.contains("away")) {
             distanceText = dStr;
           } else if (dStr.contains("km") || dStr.contains("m")) {
             distanceText = "$dStr away";
@@ -1911,7 +1921,7 @@ class TrackController extends GetxController {
             distanceText = "$dStr km away";
           }
         } else {
-          distanceText = "Nearby";
+          distanceText = "Nearby you";
         }
 
         newMarkers.add(
@@ -2425,6 +2435,7 @@ class TrackController extends GetxController {
       battery: finalBattery,
       isGroupChat: false,
       isLocationSharing: true,
+      rawDistance: u.distance,
     );
   }
 
@@ -2484,6 +2495,7 @@ class TrackController extends GetxController {
       battery: m.battery,
       isGroupChat: false,
       isLocationSharing: true,
+      rawDistance: m.distance,
     );
   }
 

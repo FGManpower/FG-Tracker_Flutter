@@ -1,10 +1,11 @@
 import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/Model/walkie_plan_model.dart';
+import 'package:fgtracker/app/Model/walkie_coupon_model.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Controller/walkie_talkie_plan_controller.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Views/walkie_talkie_purchase_success_screen.dart';
 import 'package:fgtracker/app/global_widget/blend_mask.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
-import 'package:fgtracker/generated/assets.dart';
+import 'package:fgtracker/gen/assets.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -19,7 +20,8 @@ class WalkieTalkiePlanDetails extends StatefulWidget {
   });
 
   @override
-  State<WalkieTalkiePlanDetails> createState() => _WalkieTalkiePlanDetailsState();
+  State<WalkieTalkiePlanDetails> createState() =>
+      _WalkieTalkiePlanDetailsState();
 }
 
 // Aliases so all casing variants work interchangeably
@@ -28,9 +30,6 @@ typedef WalkieTalkiePlanScreen = WalkieTalkiePlanDetails;
 typedef walkieTalkiePlanScreen = WalkieTalkiePlanDetails;
 
 class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
-  // 0 = minus active, 1 = plus active (highlighted in blue/purple)
-  int _activeStepperButton = 1;
-
   // Color Constants (Matching Screenshots Exactly)
   static const Color _primaryPurple = Color(0xFF5B4DF5);
   static const Color _bgSoft = Color(0xFFF6F8FE);
@@ -45,10 +44,12 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
 
   // Reactive state bridges connected to controller
   int get _selectedIndividualPlan => controller.selectedIndividualPlan.value;
-  set _selectedIndividualPlan(int val) => controller.selectedIndividualPlan.value = val;
+  set _selectedIndividualPlan(int val) =>
+      controller.selectedIndividualPlan.value = val;
 
   int get _selectedTeamDuration => controller.selectedTeamDuration.value;
-  set _selectedTeamDuration(int val) => controller.selectedTeamDuration.value = val;
+  set _selectedTeamDuration(int val) =>
+      controller.selectedTeamDuration.value = val;
 
   int get _teamMemberCount => controller.teamMemberCount.value;
   set _teamMemberCount(int val) => controller.teamMemberCount.value = val;
@@ -57,7 +58,8 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
   set _appliedPromoCode(String? val) => controller.appliedPromoCode.value = val;
 
   double get _promoDiscountPercent => controller.promoDiscountPercent.value;
-  set _promoDiscountPercent(double val) => controller.promoDiscountPercent.value = val;
+  set _promoDiscountPercent(double val) =>
+      controller.promoDiscountPercent.value = val;
 
   bool get isTeam => controller.isTeam;
 
@@ -75,67 +77,59 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
     return Obx(() {
       final bool isTeam = controller.isTeam;
 
-      return PopScope(
-        canPop: controller.selectedTab.value == 0,
-        onPopInvokedWithResult: (didPop, result) {
-          if (didPop) return;
-          if (controller.selectedTab.value == 1) {
-            controller.setTab(0);
-          }
-        },
-        child: Scaffold(
-          backgroundColor: _bgSoft,
-          body: SafeArea(
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final double screenWidth = constraints.maxWidth;
-                final bool isSmallScreen = screenWidth < 360;
-                final bool isWideScreen = screenWidth > 600;
+      return Scaffold(
+        backgroundColor: _bgSoft,
+        body: SafeArea(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final double screenWidth = constraints.maxWidth;
+              final bool isSmallScreen = screenWidth < 360;
+              final bool isWideScreen = screenWidth > 600;
 
-                Widget content = Column(
-                  children: [
-                    Expanded(
-                      child: SingleChildScrollView(
-                        physics: const BouncingScrollPhysics(),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // Top Bar + Hero Section
-                            _buildTopHeroSection(isTeam, isSmallScreen),
+              Widget content = Column(
+                children: [
+                  Expanded(
+                    child: SingleChildScrollView(
+                      physics: const BouncingScrollPhysics(),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Top Bar + Hero Section
+                          _buildTopHeroSection(isTeam, isSmallScreen),
 
-                            SizedBox(height: 12.h),
+                          SizedBox(height: 12.h),
 
-                            // Feature Highlight Badges (Scrollable)
-                            _buildFeaturePills(isTeam),
+                          // Feature Highlight Badges (Scrollable)
+                          _buildFeaturePills(isTeam),
 
-                            SizedBox(height: 14.h),
+                          SizedBox(height: 14.h),
 
-                            // Segmented Tab Switcher (Individual / Team Plan)
-                            _buildSegmentedTabToggle(isTeam, isSmallScreen),
+                          // Segmented Tab Switcher (Individual / Team Plan)
+                          _buildSegmentedTabToggle(isTeam, isSmallScreen),
 
-                            SizedBox(height: 14.h),
+                          SizedBox(height: 14.h),
 
-                            // Content based on selected tab
-                            AnimatedCrossFade(
-                              firstChild:
-                                  _buildIndividualTabContent(isSmallScreen),
-                              secondChild: _buildTeamTabContent(isSmallScreen),
-                              crossFadeState: isTeam
-                                  ? CrossFadeState.showSecond
-                                  : CrossFadeState.showFirst,
-                              duration: const Duration(milliseconds: 200),
-                            ),
+                          // Content based on selected tab
+                          AnimatedCrossFade(
+                            firstChild:
+                                _buildIndividualTabContent(isSmallScreen),
+                            secondChild: _buildTeamTabContent(isSmallScreen),
+                            crossFadeState: isTeam
+                                ? CrossFadeState.showSecond
+                                : CrossFadeState.showFirst,
+                            duration: const Duration(milliseconds: 200),
+                          ),
 
-                            SizedBox(height: 16.h),
-                          ],
-                        ),
+                          SizedBox(height: 16.h),
+                        ],
                       ),
                     ),
+                  ),
 
-                    // Bottom Continue Action Bar
-                    _buildBottomActionBar(isTeam),
-                  ],
-                );
+                  // Bottom Continue Action Bar
+                  _buildBottomActionBar(isTeam),
+                ],
+              );
 
               if (isWideScreen) {
                 return Center(
@@ -160,8 +154,7 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
             },
           ),
         ),
-      ),
-    );
+      );
     });
   }
 
@@ -169,114 +162,100 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
   // TOP HERO SECTION (Back Btn, Title, 3D Hero)
   // ==========================================
   Widget _buildTopHeroSection(bool isTeam, bool isSmallScreen) {
-    final double graphicWidth =
-        (isSmallScreen ? 140.w : 160.w).clamp(130.0, 175.0);
-
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.fromLTRB(16.w, 6.h, 8.w, 0),
-      child: Stack(
-        clipBehavior: Clip.none,
-        alignment: Alignment.centerRight,
+      clipBehavior: Clip.none,
+      padding: EdgeInsets.fromLTRB(16.w, 8.h, 4.w, 0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Left side Column: Back Button, spacing, Title, Subtitle
-          Padding(
-            padding: EdgeInsets.only(
-              right: graphicWidth - 10.w,
-              bottom: 4.h,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Squircle Back Button
-                GestureDetector(
-                  onTap: () {
-                    if (controller.isTeam) {
-                      controller.setTab(0);
-                    } else {
-                      Get.back();
-                    }
-                  },
-                  child: Container(
-                    width: 38.w.clamp(34.0, 42.0),
-                    height: 38.w.clamp(34.0, 42.0),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12.r),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.05),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: Icon(
-                      Icons.arrow_back,
-                      size: 19.sp.clamp(16.0, 21.0),
-                      color: _primaryPurple,
+          // Left side Column: Back Button, Title, Subtitle
+          Expanded(
+            flex: 11,
+            child: Padding(
+              padding: EdgeInsets.only(right: 6.w),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Squircle Back Button
+                  GestureDetector(
+                    onTap: () => Get.back(),
+                    child: Container(
+                      width: 38.w.clamp(34.0, 42.0),
+                      height: 38.w.clamp(34.0, 42.0),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12.r),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.05),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Icon(
+                        Icons.arrow_back,
+                        size: 19.sp.clamp(16.0, 21.0),
+                        color: _primaryPurple,
+                      ),
                     ),
                   ),
-                ),
 
-                SizedBox(height: 12.h),
+                  SizedBox(height: 10.h),
 
-                Text(
-                  isTeam ? "Team Plan" : "Choose a Plan",
-                  style: TextStyle(
-                    fontSize: 23.sp.clamp(20.0, 27.0),
-                    fontFamily: FontFamily.interBold,
-                    color: _textDark,
-                    letterSpacing: -0.4,
+                  Text(
+                    isTeam ? "Team Plan" : "Choose a Plan",
+                    style: TextStyle(
+                      fontSize: 21.sp.clamp(18.0, 24.0),
+                      fontFamily: FontFamily.interBold,
+                      color: _textDark,
+                      letterSpacing: -0.4,
+                    ),
                   ),
-                ),
-                SizedBox(height: 5.h),
-                Text(
-                  isTeam
-                      ? "Add team members and get everyone connected with Walkie Talkie"
-                      : "Continue using Walkie Talkie with a plan that fits your team",
-                  style: TextStyle(
-                    fontSize: 12.sp.clamp(10.5, 13.5),
-                    fontFamily: FontFamily.interRegular,
-                    color: _textSecondary,
-                    height: 1.35,
+                  SizedBox(height: 4.h),
+                  Text(
+                    isTeam
+                        ? "Add team members and get everyone connected with Walkie Talkie"
+                        : "Continue using Walkie Talkie with a plan that fits your team",
+                    style: TextStyle(
+                      fontSize: 11.5.sp.clamp(10.0, 12.5),
+                      fontFamily: FontFamily.interRegular,
+                      color: _textSecondary,
+                      height: 1.3,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
 
-          // Right side: 3D Walkie Talkie Hero Graphic in top right corner (Fitted without cutting)
-          Positioned(
-            top: 0,
-            right: 0,
-            bottom: 0,
-            child: _buildWalkieTalkieHeroGraphic(isTeam, graphicWidth),
+          // Right side: Full 1:1 AspectRatio Hero Graphic (Circle, Device & Text never cut)
+          Expanded(
+            flex: 10,
+            child: _buildWalkieTalkieHeroGraphic(isTeam),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildWalkieTalkieHeroGraphic(bool isTeam, double width) {
-    return SizedBox(
-      width: width,
-      child: FittedBox(
-        fit: BoxFit.contain,
-        alignment: Alignment.centerRight,
-        child: Padding(
-          padding: EdgeInsets.symmetric(vertical: 2.h, horizontal: 2.w),
-          child: BlendMask(
-            blendMode: BlendMode.multiply,
-            child: isTeam
-                ? Assets.walkieTalkie.walkieTeamHeader.image(
-                    fit: BoxFit.contain,
-                  )
-                : Assets.walkieTalkie.walkieIndividualHeader.image(
-                    fit: BoxFit.contain,
-                  ),
-          ),
+  Widget _buildWalkieTalkieHeroGraphic(bool isTeam) {
+    return AspectRatio(
+      aspectRatio: 1.0,
+      child: Center(
+        child: BlendMask(
+          blendMode: BlendMode.multiply,
+          child: isTeam
+              ? Assets.walkieTalkie.walkieTeamHeader.image(
+                  fit: BoxFit.contain,
+                  alignment: Alignment.centerRight,
+                )
+              : Assets.walkieTalkie.walkieIndividualHeader.image(
+                  fit: BoxFit.contain,
+                  alignment: Alignment.centerRight,
+                ),
         ),
       ),
     );
@@ -785,8 +764,7 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
                                         fontSize: 11.5.sp.clamp(10.0, 13.0),
                                         fontFamily: FontFamily.interMedium,
                                         color: const Color(0xFF94A3B8),
-                                        decoration:
-                                            TextDecoration.lineThrough,
+                                        decoration: TextDecoration.lineThrough,
                                       ),
                                     ),
                                   ],
@@ -994,9 +972,6 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
                       onTap: () {
                         if (memberCount > minMembers) {
                           HapticFeedback.lightImpact();
-                          setState(() {
-                            _activeStepperButton = 0;
-                          });
                           controller.decrementMembers();
                         } else {
                           controller.showTopWhiteMessage(
@@ -1007,7 +982,7 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
 
                     SizedBox(width: 6.w),
 
-                    // Count Display (Prominently highlighted on every tap)
+                    // Count Display
                     AnimatedContainer(
                       duration: const Duration(milliseconds: 220),
                       curve: Curves.easeOutCubic,
@@ -1076,9 +1051,6 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
                       onTap: () {
                         if (memberCount < maxMembers) {
                           HapticFeedback.lightImpact();
-                          setState(() {
-                            _activeStepperButton = 1;
-                          });
                           controller.incrementMembers();
                         } else {
                           controller.showTopWhiteMessage(
@@ -1094,8 +1066,8 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
                 // "More Members?" Info Box
                 Expanded(
                   child: Container(
-                    padding: EdgeInsets.symmetric(
-                        horizontal: 10.w, vertical: 8.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 10.w, vertical: 8.h),
                     decoration: BoxDecoration(
                       color: const Color(0xFFF1F3FE),
                       borderRadius: BorderRadius.circular(13.r),
@@ -1152,57 +1124,31 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
     required bool isEnabled,
     required VoidCallback onTap,
   }) {
-    final bool isHighlighted = _activeStepperButton == (isPlus ? 1 : 0);
-
     return Material(
       color: Colors.transparent,
       child: InkWell(
         borderRadius: BorderRadius.circular(22.r),
-        onTap: () {
-          setState(() {
-            _activeStepperButton = isPlus ? 1 : 0;
-          });
-          onTap();
-        },
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 180),
-          curve: Curves.easeOutBack,
+        onTap: isEnabled ? onTap : null,
+        child: Container(
           width: 38.w.clamp(35.0, 42.0),
           height: 38.w.clamp(35.0, 42.0),
           decoration: BoxDecoration(
-            color: isHighlighted
-                ? _primaryPurple
-                : (isEnabled ? const Color(0xFFEDE9FE) : const Color(0xFFF1F5F9)),
+            color:
+                isEnabled ? const Color(0xFFF1F5F9) : const Color(0xFFF8FAFC),
             shape: BoxShape.circle,
             border: Border.all(
-              color: isHighlighted
-                  ? _primaryPurple
-                  : (isEnabled ? const Color(0xFFDDD6FE) : const Color(0xFFE2E8F0)),
-              width: 1.5,
+              color: isEnabled
+                  ? const Color(0xFFE2E8F0)
+                  : const Color(0xFFE2E8F0).withValues(alpha: 0.5),
+              width: 1.2,
             ),
-            boxShadow: isHighlighted
-                ? [
-                    BoxShadow(
-                      color: _primaryPurple.withValues(alpha: 0.38),
-                      blurRadius: 10,
-                      offset: const Offset(0, 3),
-                    ),
-                  ]
-                : [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.03),
-                      blurRadius: 4,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
           ),
           child: Center(
             child: Icon(
               isPlus ? Icons.add_rounded : Icons.remove_rounded,
-              color: isHighlighted
-                  ? Colors.white
-                  : (isEnabled ? _primaryPurple : const Color(0xFF94A3B8)),
-              size: 20.sp.clamp(18.0, 23.0),
+              color:
+                  isEnabled ? const Color(0xFF334155) : const Color(0xFFCBD5E1),
+              size: 20.sp.clamp(18.0, 22.0),
             ),
           ),
         ),
@@ -1418,168 +1364,119 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
   }
 
   Widget _buildTeamSummaryCard() {
-    final String durationName = controller.durationName;
-    final int ratePerMember = controller.ratePerMember;
-    final int memberCount = controller.teamMemberCount.value;
-    final int originalTotal = controller.originalTotal;
-    final double teamSavingsRate = controller.teamSavingsRate;
-    final int discountedTotal = controller.discountedTotal;
-    final double promoDiscount = controller.promoDiscountPercent.value;
-    final String? promoCode = controller.appliedPromoCode.value;
+    return Obx(() {
+      final String durationName = controller.durationName;
+      final int ratePerMember = controller.ratePerMember;
+      final int memberCount = controller.teamMemberCount.value;
+      final int originalTotal = controller.originalTotal;
+      final num discountedTotal = controller.discountedTotal;
+      final num couponDiscount = controller.couponDiscountAmount;
+      final String? promoCode = controller.appliedPromoCode.value;
+      final appliedData = controller.appliedCouponData.value;
+      final pricing = appliedData?.pricing;
 
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 16.w),
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18.r),
-        border: Border.all(color: _cardBorder),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.025),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Step 3 Header with Promo Code link on right
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  _buildStepNumberBadge("3"),
-                  SizedBox(width: 10.w),
-                  Text(
-                    "Plan Summary",
-                    style: TextStyle(
-                      fontSize: 14.5.sp.clamp(13.5, 16.0),
-                      fontFamily: FontFamily.interBold,
-                      color: _textDark,
-                    ),
-                  ),
-                ],
-              ),
-              GestureDetector(
-                onTap: _showPromoCodeBottomSheet,
-                child: Row(
+      return Container(
+        margin: EdgeInsets.symmetric(horizontal: 16.w),
+        padding: EdgeInsets.all(16.w),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(18.r),
+          border: Border.all(color: _cardBorder),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.025),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Step 3 Header with Promo Code link on right
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
                   children: [
-                    Icon(
-                      Icons.local_offer_outlined,
-                      size: 14.sp,
-                      color: _primaryPurple,
-                    ),
-                    SizedBox(width: 4.w),
+                    _buildStepNumberBadge("3"),
+                    SizedBox(width: 10.w),
                     Text(
-                      promoCode != null
-                          ? "Code: $promoCode"
-                          : "Have a Promo Code?",
+                      "Plan Summary",
                       style: TextStyle(
-                        fontSize: 11.5.sp.clamp(10.5, 13.0),
-                        fontFamily: FontFamily.interSemiBold,
-                        color: _primaryPurple,
+                        fontSize: 14.5.sp.clamp(13.5, 16.0),
+                        fontFamily: FontFamily.interBold,
+                        color: _textDark,
                       ),
                     ),
                   ],
                 ),
-              ),
-            ],
-          ),
-
-          SizedBox(height: 12.h),
-
-          // Inner Summary Box
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF8F9FE),
-              borderRadius: BorderRadius.circular(12.r),
-              border: Border.all(color: const Color(0xFFE8EEF5)),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Flexible(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      FittedBox(
-                        fit: BoxFit.scaleDown,
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          "Team Plan ($durationName)",
-                          style: TextStyle(
-                            fontSize: 14.sp.clamp(12.5, 15.5),
-                            fontFamily: FontFamily.interBold,
-                            color: _textDark,
-                          ),
-                        ),
-                      ),
-                      SizedBox(height: 4.h),
-                      FittedBox(
-                        fit: BoxFit.scaleDown,
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          "$memberCount Members × ₹${controller.formatCurrency(ratePerMember)}",
-                          style: TextStyle(
-                            fontSize: 11.5.sp.clamp(10.0, 13.0),
-                            fontFamily: FontFamily.interMedium,
-                            color: _textSecondary,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                SizedBox(width: 8.w),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
+                Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        /* Container(
-                          padding: EdgeInsets.symmetric(
-                              horizontal: 6.w, vertical: 2.h),
-                          decoration: BoxDecoration(
-                            color: _greenBadgeBg,
-                            borderRadius: BorderRadius.circular(6.r),
+                    InkWell(
+                      onTap: () {
+                        HapticFeedback.lightImpact();
+                        _showPromoCodeBottomSheet();
+                      },
+                      borderRadius: BorderRadius.circular(8.r),
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 8.w, vertical: 4.h),
+                        decoration: BoxDecoration(
+                          color: promoCode != null
+                              ? const Color(0xFFDCFCE7).withValues(alpha: 0.6)
+                              : const Color(0xFFF1F3FE),
+                          borderRadius: BorderRadius.circular(8.r),
+                          border: Border.all(
+                            color: promoCode != null
+                                ? const Color(0xFF86EFAC)
+                                : const Color(0xFFDCD7FE),
+                            width: 1.0,
                           ),
-                          child: Text(
-                            promoDiscount > 0
-                                ? "Save ${(teamSavingsRate * 100 + promoDiscount * 100).toInt()}%"
-                                : "Save 20%",
-                            style: TextStyle(
-                              fontSize: 9.5.sp.clamp(8.5, 11.0),
-                              fontFamily: FontFamily.interBold,
-                              color: _greenBadgeText,
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.local_offer_rounded,
+                              size: 13.sp,
+                              color: promoCode != null
+                                  ? const Color(0xFF16A34A)
+                                  : _primaryPurple,
                             ),
-                          ),
+                            SizedBox(width: 4.w),
+                            Text(
+                              promoCode != null
+                                  ? "Code: $promoCode"
+                                  : "Have a Promo Code?",
+                              style: TextStyle(
+                                fontSize: 11.5.sp.clamp(10.5, 13.0),
+                                fontFamily: FontFamily.interBold,
+                                color: promoCode != null
+                                    ? const Color(0xFF16A34A)
+                                    : _primaryPurple,
+                              ),
+                            ),
+                          ],
                         ),
-                        SizedBox(width: 6.w), */
-                        Text(
-                          "₹${controller.formatCurrency(discountedTotal)}",
-                          style: TextStyle(
-                            fontSize: 20.sp.clamp(17.0, 23.0),
-                            fontFamily: FontFamily.interBold,
-                            color: _textDark,
-                            letterSpacing: -0.5,
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
-                    if (originalTotal != discountedTotal) ...[
-                      SizedBox(height: 2.h),
-                      Text(
-                        "₹${controller.formatCurrency(originalTotal)} total",
-                        style: TextStyle(
-                          fontSize: 10.5.sp.clamp(9.5, 12.0),
-                          fontFamily: FontFamily.interRegular,
-                          color: const Color(0xFF94A3B8),
-                          decoration: TextDecoration.lineThrough,
+                    if (promoCode != null) ...[
+                      SizedBox(width: 6.w),
+                      GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: () {
+                          HapticFeedback.lightImpact();
+                          controller.removePromoCode();
+                        },
+                        child: Container(
+                          padding: EdgeInsets.all(4.w),
+                          child: Icon(
+                            Icons.cancel_rounded,
+                            size: 16.sp,
+                            color: const Color(0xFFEF4444),
+                          ),
                         ),
                       ),
                     ],
@@ -1587,10 +1484,182 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
                 ),
               ],
             ),
-          ),
-        ],
-      ),
-    );
+
+            SizedBox(height: 12.h),
+
+            // Inner Summary Box
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF8F9FE),
+                borderRadius: BorderRadius.circular(12.r),
+                border: Border.all(color: const Color(0xFFE8EEF5)),
+              ),
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Flexible(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                "Team Plan ($durationName)",
+                                style: TextStyle(
+                                  fontSize: 14.sp.clamp(12.5, 15.5),
+                                  fontFamily: FontFamily.interBold,
+                                  color: _textDark,
+                                ),
+                              ),
+                            ),
+                            SizedBox(height: 4.h),
+                            FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                "$memberCount Members × ₹${controller.formatCurrency(ratePerMember)}",
+                                style: TextStyle(
+                                  fontSize: 11.5.sp.clamp(10.0, 13.0),
+                                  fontFamily: FontFamily.interMedium,
+                                  color: _textSecondary,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(width: 8.w),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            "₹${controller.formatCurrency(discountedTotal)}",
+                            style: TextStyle(
+                              fontSize: 20.sp.clamp(17.0, 23.0),
+                              fontFamily: FontFamily.interBold,
+                              color: _textDark,
+                              letterSpacing: -0.5,
+                            ),
+                          ),
+                          if (originalTotal != discountedTotal) ...[
+                            SizedBox(height: 2.h),
+                            Text(
+                              "₹${controller.formatCurrency(originalTotal)} total",
+                              style: TextStyle(
+                                fontSize: 10.5.sp.clamp(9.5, 12.0),
+                                fontFamily: FontFamily.interRegular,
+                                color: const Color(0xFF94A3B8),
+                                decoration: TextDecoration.lineThrough,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ],
+                  ),
+                  if (promoCode != null && couponDiscount > 0) ...[
+                    SizedBox(height: 8.h),
+                    const Divider(height: 1, color: Color(0xFFE2E8F0)),
+                    SizedBox(height: 8.h),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.check_circle_outline_rounded,
+                              size: 13.sp,
+                              color: const Color(0xFF16A34A),
+                            ),
+                            SizedBox(width: 4.w),
+                            Text(
+                              "Promo ($promoCode) applied",
+                              style: TextStyle(
+                                fontSize: 11.sp,
+                                fontFamily: FontFamily.interMedium,
+                                color: const Color(0xFF16A34A),
+                              ),
+                            ),
+                          ],
+                        ),
+                        Text(
+                          "-₹${controller.formatCurrency(couponDiscount)}",
+                          style: TextStyle(
+                            fontSize: 12.sp,
+                            fontFamily: FontFamily.interBold,
+                            color: const Color(0xFF16A34A),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                  if (pricing?.gstAmount != null && pricing!.gstAmount! > 0) ...[
+                    SizedBox(height: 6.h),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          "GST (${pricing.gstPercent ?? 18}%)",
+                          style: TextStyle(
+                            fontSize: 11.sp,
+                            fontFamily: FontFamily.interRegular,
+                            color: _textSecondary,
+                          ),
+                        ),
+                        Text(
+                          "+₹${controller.formatCurrency(pricing.gstAmount)}",
+                          style: TextStyle(
+                            fontSize: 11.5.sp,
+                            fontFamily: FontFamily.interMedium,
+                            color: _textDark,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                  if (pricing?.amountSaved != null &&
+                      pricing!.amountSaved! > 0) ...[
+                    SizedBox(height: 8.h),
+                    Container(
+                      width: double.infinity,
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFDCFCE7),
+                        borderRadius: BorderRadius.circular(6.r),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.celebration_rounded,
+                            size: 13.sp,
+                            color: const Color(0xFF16A34A),
+                          ),
+                          SizedBox(width: 4.w),
+                          Text(
+                            "You save ₹${controller.formatCurrency(pricing!.amountSaved)} with this coupon!",
+                            style: TextStyle(
+                              fontSize: 10.5.sp,
+                              fontFamily: FontFamily.interBold,
+                              color: const Color(0xFF16A34A),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    });
   }
 
   Widget _buildCardStepHeader({
@@ -1791,8 +1860,9 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
               height: 48.h.clamp(44.0, 52.0),
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor:
-                      isButtonEnabled ? _primaryPurple : const Color(0xFFCBD5E1),
+                  backgroundColor: isButtonEnabled
+                      ? _primaryPurple
+                      : const Color(0xFFCBD5E1),
                   disabledBackgroundColor: const Color(0xFFE2E8F0),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14.r),
@@ -1875,200 +1945,640 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
   // PROMO CODE SHEET
   // ==========================================
   void _showPromoCodeBottomSheet() {
+    controller.fetchEligibleCoupons();
     final TextEditingController promoController =
-        TextEditingController(text: _appliedPromoCode ?? "");
+        TextEditingController(text: controller.appliedPromoCode.value ?? "");
 
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
       backgroundColor: Colors.transparent,
       builder: (ctx) {
-        return Container(
-          padding: EdgeInsets.fromLTRB(
-            20.w,
-            16.h,
-            20.w,
-            MediaQuery.of(ctx).viewInsets.bottom + 20.h,
+        final double maxHeight = MediaQuery.of(ctx).size.height * 0.78;
+
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(ctx).viewInsets.bottom,
           ),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Container(
-                  width: 40.w,
-                  height: 4.h,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFD1D5DB),
-                    borderRadius: BorderRadius.circular(2.r),
+          child: Container(
+            constraints: BoxConstraints(maxHeight: maxHeight),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.1),
+                  blurRadius: 20,
+                  offset: const Offset(0, -4),
+                ),
+              ],
+            ),
+            child: SingleChildScrollView(
+              padding: EdgeInsets.fromLTRB(20.w, 14.h, 20.w, 20.h),
+              physics: const BouncingScrollPhysics(),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                Center(
+                  child: Container(
+                    width: 40.w,
+                    height: 4.h,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFD1D5DB),
+                      borderRadius: BorderRadius.circular(2.r),
+                    ),
                   ),
                 ),
-              ),
-              SizedBox(height: 16.h),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    "Apply Promo Code",
-                    style: TextStyle(
-                      fontSize: 17.sp,
-                      fontFamily: FontFamily.interBold,
-                      color: _textDark,
-                    ),
-                  ),
-                  GestureDetector(
-                    onTap: () => Navigator.pop(ctx),
-                    child: Container(
-                      padding: EdgeInsets.all(4.w),
-                      decoration: const BoxDecoration(
-                        color: Color(0xFFF3F4F6),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        Icons.close_rounded,
-                        size: 18.sp,
-                        color: _textSecondary,
+                SizedBox(height: 14.h),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      "Apply Promo Code",
+                      style: TextStyle(
+                        fontSize: 17.sp,
+                        fontFamily: FontFamily.interBold,
+                        color: _textDark,
                       ),
                     ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 16.h),
-              Row(
-                children: [
-                  Expanded(
-                    child: Container(
-                      height: 46.h,
-                      padding: EdgeInsets.symmetric(horizontal: 14.w),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF9FAFB),
-                        borderRadius: BorderRadius.circular(12.r),
-                        border: Border.all(color: const Color(0xFFE2E8F0)),
-                      ),
-                      child: TextField(
-                        controller: promoController,
-                        textCapitalization: TextCapitalization.characters,
-                        decoration: InputDecoration(
-                          hintText: "Enter code (e.g. TEAM20)",
-                          hintStyle: TextStyle(
-                            fontSize: 12.5.sp,
-                            color: const Color(0xFF94A3B8),
-                            fontFamily: FontFamily.interRegular,
-                          ),
-                          border: InputBorder.none,
-                          isDense: true,
+                    GestureDetector(
+                      onTap: () => Navigator.pop(ctx),
+                      child: Container(
+                        padding: EdgeInsets.all(5.w),
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFF3F4F6),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.close_rounded,
+                          size: 18.sp,
+                          color: _textSecondary,
                         ),
                       ),
                     ),
-                  ),
-                  SizedBox(width: 10.w),
-                  SizedBox(
-                    height: 46.h,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: _primaryPurple,
-                        shape: RoundedRectangleBorder(
+                         SizedBox(height: 14.h),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        height: 46.h,
+                        padding: EdgeInsets.symmetric(horizontal: 14.w),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF9FAFB),
                           borderRadius: BorderRadius.circular(12.r),
+                          border: Border.all(color: const Color(0xFFE2E8F0)),
                         ),
-                        elevation: 0,
-                      ),
-                      onPressed: () {
-                        final code = promoController.text.trim().toUpperCase();
-                        if (code.isEmpty) {
-                          Utils().fluttertoast("Please enter a valid code");
-                          return;
-                        }
-                        controller.applyPromoCode(code);
-                        setState(() {
-                          _appliedPromoCode = code;
-                          _promoDiscountPercent = 0.10;
-                        });
-                        Navigator.pop(ctx);
-                      },
-                      child: Text(
-                        "Apply",
-                        style: TextStyle(
-                          fontSize: 13.5.sp,
-                          fontFamily: FontFamily.interBold,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 14.h),
-              Text(
-                "Available Coupons",
-                style: TextStyle(
-                  fontSize: 12.sp,
-                  fontFamily: FontFamily.interSemiBold,
-                  color: _textDark,
-                ),
-              ),
-              SizedBox(height: 8.h),
-              GestureDetector(
-                onTap: () {
-                  controller.applyPromoCode("TEAM20");
-                  setState(() {
-                    _appliedPromoCode = "TEAM20";
-                    _promoDiscountPercent = 0.10;
-                  });
-                  Navigator.pop(ctx);
-                },
-                child: Container(
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
-                  decoration: BoxDecoration(
-                    color: _lightPillBg,
-                    borderRadius: BorderRadius.circular(12.r),
-                    border: Border.all(color: const Color(0xFFDCD7FE)),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "TEAM20",
-                            style: TextStyle(
-                              fontSize: 13.sp,
-                              fontFamily: FontFamily.interBold,
-                              color: _primaryPurple,
+                        child: Center(
+                          child: TextField(
+                            controller: promoController,
+                            textCapitalization: TextCapitalization.characters,
+                            decoration: InputDecoration(
+                              hintText: "Enter code (e.g. WELCOME10)",
+                              hintStyle: TextStyle(
+                                fontSize: 12.sp,
+                                color: const Color(0xFF94A3B8),
+                                fontFamily: FontFamily.interRegular,
+                              ),
+                              border: InputBorder.none,
+                              isDense: true,
+                              contentPadding: EdgeInsets.zero,
                             ),
                           ),
-                          SizedBox(height: 2.h),
-                          Text(
-                            "Extra 10% off on all plans",
-                            style: TextStyle(
-                              fontSize: 11.sp,
-                              fontFamily: FontFamily.interRegular,
-                              color: _textSecondary,
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 8.w),
+                    Obx(() {
+                      final bool isApplying = controller.isApplyingCoupon.value;
+                      final bool isAnyApplied =
+                          controller.appliedPromoCode.value != null &&
+                              controller.appliedPromoCode.value!.isNotEmpty;
+
+                      return SizedBox(
+                        height: 46.h,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: isAnyApplied
+                                ? const Color(0xFF16A34A)
+                                : _primaryPurple,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12.r),
+                            ),
+                            padding: EdgeInsets.symmetric(horizontal: 16.w),
+                            elevation: 0,
+                          ),
+                          onPressed: isApplying
+                              ? null
+                              : () async {
+                                  final code =
+                                      promoController.text.trim().toUpperCase();
+                                  if (code.isEmpty) {
+                                    controller.showTopWhiteMessage(
+                                        "Please enter a valid code");
+                                    return;
+                                  }
+                                  final success =
+                                      await controller.applyPromoCode(code);
+                                  if (success) {
+                                    await Future.delayed(
+                                        const Duration(milliseconds: 650));
+                                    if (ctx.mounted) {
+                                      Navigator.pop(ctx);
+                                    }
+                                  }
+                                },
+                          child: isApplying &&
+                                  ((controller.applyingCouponCode.value ?? '') ==
+                                          promoController.text
+                                              .trim()
+                                              .toUpperCase() ||
+                                      controller.applyingCouponCode.value == null)
+                              ? SizedBox(
+                                  width: 18.w,
+                                  height: 18.w,
+                                  child: const CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    if (isAnyApplied) ...[
+                                      Icon(Icons.check_rounded,
+                                          color: Colors.white, size: 15.sp),
+                                      SizedBox(width: 4.w),
+                                    ],
+                                    Text(
+                                      isAnyApplied ? "Applied" : "Apply",
+                                      style: TextStyle(
+                                        fontSize: 13.sp,
+                                        fontFamily: FontFamily.interBold,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                        ),
+                      );
+                    }),
+                  ],
+                ),
+                SizedBox(height: 16.h),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      "Available Coupons",
+                      style: TextStyle(
+                        fontSize: 13.5.sp,
+                        fontFamily: FontFamily.interBold,
+                        color: _textDark,
+                      ),
+                    ),
+                    Obx(() {
+                      if (controller.isLoadingCoupons.value &&
+                          controller.eligibleCoupons.isNotEmpty) {
+                        return const SizedBox(
+                          width: 14,
+                          height: 14,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: _primaryPurple,
+                          ),
+                        );
+                      }
+                      return const SizedBox.shrink();
+                    }),
+                  ],
+                ),
+                SizedBox(height: 10.h),
+                Obx(() {
+                  if (controller.isLoadingCoupons.value &&
+                      controller.eligibleCoupons.isEmpty) {
+                    return _buildCouponsSkeletonList();
+                  }
+
+                  if (controller.eligibleCoupons.isEmpty) {
+                    return _buildNoCouponsEmptyState();
+                  }
+
+                  return ListView.separated(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: controller.eligibleCoupons.length,
+                    separatorBuilder: (_, __) => SizedBox(height: 10.h),
+                    itemBuilder: (context, index) {
+                      final coupon = controller.eligibleCoupons[index];
+                      final String couponCode =
+                          (coupon.code ?? '').trim().toUpperCase();
+                      final bool isApplied =
+                          controller.appliedPromoCode.value != null &&
+                              controller.appliedPromoCode.value!
+                                      .toUpperCase() ==
+                                  couponCode;
+                      final bool isEligible = coupon.eligible == true;
+                      final bool isThisItemApplying =
+                          controller.isApplyingCoupon.value &&
+                              (controller.applyingCouponCode.value ?? '')
+                                      .trim()
+                                      .toUpperCase() ==
+                                  couponCode;
+
+                      return AnimatedContainer(
+                        duration: const Duration(milliseconds: 250),
+                        padding: EdgeInsets.all(12.w),
+                        decoration: BoxDecoration(
+                          color: isApplied
+                              ? const Color(0xFFF0FDF4)
+                              : (isEligible
+                                  ? _lightPillBg
+                                  : const Color(0xFFF8FAFC)),
+                          borderRadius: BorderRadius.circular(14.r),
+                          border: Border.all(
+                            color: isApplied
+                                ? const Color(0xFF86EFAC)
+                                : (isEligible
+                                    ? const Color(0xFFDCD7FE)
+                                    : const Color(0xFFE2E8F0)),
+                            width: isApplied ? 1.4 : 1.0,
+                          ),
+                        ),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Container(
+                              width: 36.w,
+                              height: 36.w,
+                              decoration: BoxDecoration(
+                                color: isApplied
+                                    ? const Color(0xFFDCFCE7)
+                                    : (isEligible
+                                        ? const Color(0xFFE0E7FF)
+                                        : const Color(0xFFF1F5F9)),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                isApplied
+                                    ? Icons.check_circle_rounded
+                                    : Icons.local_offer_rounded,
+                                size: 17.sp,
+                                color: isApplied
+                                    ? const Color(0xFF16A34A)
+                                    : (isEligible
+                                        ? _primaryPurple
+                                        : const Color(0xFF94A3B8)),
+                              ),
+                            ),
+                            SizedBox(width: 10.w),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Wrap(
+                                    spacing: 6.w,
+                                    runSpacing: 4.h,
+                                    crossAxisAlignment:
+                                        WrapCrossAlignment.center,
+                                    children: [
+                                      Text(
+                                        coupon.code ?? '',
+                                        style: TextStyle(
+                                          fontSize: 13.sp,
+                                          fontFamily: FontFamily.interBold,
+                                          color: isEligible || isApplied
+                                              ? _textDark
+                                              : const Color(0xFF94A3B8),
+                                        ),
+                                      ),
+                                      if (coupon
+                                          .discountDescription.isNotEmpty)
+                                        Container(
+                                          padding: EdgeInsets.symmetric(
+                                            horizontal: 6.w,
+                                            vertical: 1.5.h,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: isApplied
+                                                ? const Color(0xFFDCFCE7)
+                                                : (isEligible
+                                                    ? const Color(0xFFE0E7FF)
+                                                    : const Color(0xFFF1F5F9)),
+                                            borderRadius:
+                                                BorderRadius.circular(6.r),
+                                          ),
+                                          child: Text(
+                                            coupon.discountDescription,
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: TextStyle(
+                                              fontSize: 9.5.sp,
+                                              fontFamily:
+                                                  FontFamily.interBold,
+                                              color: isApplied
+                                                  ? const Color(0xFF16A34A)
+                                                  : (isEligible
+                                                      ? _primaryPurple
+                                                      : const Color(
+                                                          0xFF94A3B8)),
+                                            ),
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                  SizedBox(height: 3.h),
+                                  if (!isEligible)
+                                    Text(
+                                      coupon.formattedIneligibleReason,
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        fontSize: 10.5.sp,
+                                        fontFamily: FontFamily.interMedium,
+                                        color: const Color(0xFFEF4444),
+                                      ),
+                                    )
+                                  else if (coupon
+                                      .formattedExpiry.isNotEmpty)
+                                    Text(
+                                      coupon.formattedExpiry,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        fontSize: 10.5.sp,
+                                        fontFamily: FontFamily.interRegular,
+                                        color: _textSecondary,
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ),
+                            SizedBox(width: 8.w),
+                            if (isApplied)
+                              Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Container(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 8.w,
+                                      vertical: 3.5.h,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFDCFCE7),
+                                      borderRadius: BorderRadius.circular(6.r),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          Icons.check_rounded,
+                                          size: 12.sp,
+                                          color: const Color(0xFF16A34A),
+                                        ),
+                                        SizedBox(width: 2.w),
+                                        Text(
+                                          "APPLIED",
+                                          style: TextStyle(
+                                            fontSize: 9.5.sp,
+                                            fontFamily: FontFamily.interBold,
+                                            color: const Color(0xFF16A34A),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  SizedBox(height: 4.h),
+                                  GestureDetector(
+                                    onTap: () {
+                                      HapticFeedback.lightImpact();
+                                      controller.removePromoCode();
+                                      promoController.clear();
+                                    },
+                                    child: Padding(
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: 4.w,
+                                        vertical: 2.h,
+                                      ),
+                                      child: Text(
+                                        "REMOVE",
+                                        style: TextStyle(
+                                          fontSize: 10.sp,
+                                          fontFamily: FontFamily.interBold,
+                                          color: const Color(0xFFEF4444),
+                                          decoration: TextDecoration.underline,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              )
+                            else
+                              GestureDetector(
+                                onTap: (controller.isApplyingCoupon.value || !isEligible)
+                                    ? (!isEligible
+                                        ? () => controller.showTopWhiteMessage(
+                                            coupon.formattedIneligibleReason)
+                                        : null)
+                                    : () async {
+                                        HapticFeedback.lightImpact();
+                                        final ok =
+                                            await controller.applyCoupon(coupon);
+                                        if (ok) {
+                                          promoController.text =
+                                              coupon.code ?? '';
+                                          await Future.delayed(
+                                              const Duration(milliseconds: 650));
+                                          if (ctx.mounted) {
+                                            Navigator.pop(ctx);
+                                          }
+                                        }
+                                      },
+                                child: AnimatedContainer(
+                                  duration: const Duration(milliseconds: 200),
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: 12.w,
+                                    vertical: 6.h,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: isThisItemApplying
+                                        ? _primaryPurple.withValues(alpha: 0.8)
+                                        : (isEligible
+                                            ? _primaryPurple
+                                            : const Color(0xFFE2E8F0)),
+                                    borderRadius: BorderRadius.circular(8.r),
+                                  ),
+                                  child: isThisItemApplying
+                                      ? SizedBox(
+                                          width: 14.w,
+                                          height: 14.w,
+                                          child: const CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            color: Colors.white,
+                                          ),
+                                        )
+                                      : Text(
+                                          isEligible ? "APPLY" : "LOCKED",
+                                          style: TextStyle(
+                                            fontSize: 11.sp,
+                                            fontFamily: FontFamily.interBold,
+                                            color: isEligible
+                                                ? Colors.white
+                                                : const Color(0xFF94A3B8),
+                                          ),
+                                        ),
+                                ),
+                              ),
+                          ],
+                        ),
+                      );
+                    },
+                  );
+                }),
+              ],
+            ),
+          ])),
+        ),
+      );
+    },
+  );
+}
+
+  Widget _buildCouponsSkeletonList() {
+    return Skeletonizer(
+      enabled: true,
+      child: ListView.separated(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: 3,
+        separatorBuilder: (_, __) => SizedBox(height: 10.h),
+        itemBuilder: (context, index) {
+          return Container(
+            padding: EdgeInsets.all(12.w),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.circular(14.r),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 38.w,
+                  height: 38.w,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFE0E7FF),
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            width: 80.w,
+                            height: 14.h,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(4.r),
+                            ),
+                          ),
+                          SizedBox(width: 6.w),
+                          Container(
+                            width: 50.w,
+                            height: 14.h,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(4.r),
                             ),
                           ),
                         ],
                       ),
-                      Text(
-                        "TAP TO APPLY",
-                        style: TextStyle(
-                          fontSize: 11.sp,
-                          fontFamily: FontFamily.interBold,
-                          color: _primaryPurple,
+                      SizedBox(height: 6.h),
+                      Container(
+                        width: 140.w,
+                        height: 11.h,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(4.r),
                         ),
                       ),
                     ],
                   ),
                 ),
+                SizedBox(width: 8.w),
+                Container(
+                  width: 56.w,
+                  height: 26.h,
+                  decoration: BoxDecoration(
+                    color: _primaryPurple,
+                    borderRadius: BorderRadius.circular(8.r),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildNoCouponsEmptyState() {
+    return Center(
+      child: Container(
+        width: double.infinity,
+        margin: EdgeInsets.symmetric(vertical: 8.h),
+        padding: EdgeInsets.symmetric(vertical: 24.h, horizontal: 16.w),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF8FAFC),
+          borderRadius: BorderRadius.circular(14.r),
+          border: Border.all(color: const Color(0xFFE2E8F0)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Container(
+              width: 46.w,
+              height: 46.w,
+              decoration: const BoxDecoration(
+                color: Color(0xFFEFF2F6),
+                shape: BoxShape.circle,
               ),
-            ],
-          ),
-        );
-      },
+              child: Icon(
+                Icons.confirmation_number_outlined,
+                size: 24.sp,
+                color: const Color(0xFF94A3B8),
+              ),
+            ),
+            SizedBox(height: 10.h),
+            Text(
+              "No Coupons Available",
+              style: TextStyle(
+                fontSize: 13.5.sp,
+                fontFamily: FontFamily.interBold,
+                color: _textDark,
+              ),
+            ),
+            SizedBox(height: 4.h),
+            Text(
+              "There are no active coupons for this plan right now.",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 11.5.sp,
+                fontFamily: FontFamily.interRegular,
+                color: _textSecondary,
+                height: 1.3,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -2240,8 +2750,18 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
       expiryDate = DateTime(now.year + 1, now.month, now.day);
     }
     const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec'
     ];
     return "${expiryDate.day} ${months[expiryDate.month - 1]} ${expiryDate.year}";
   }
@@ -2253,9 +2773,8 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
     final String durationName = durationIndex == 0
         ? "Monthly"
         : (durationIndex == 1 ? "Quarterly" : "Yearly");
-    final String planTitle = team
-        ? "Team Plan ($durationName)"
-        : "Individual Plan ($durationName)";
+    final String planTitle =
+        team ? "Team Plan ($durationName)" : "Individual Plan ($durationName)";
     final int memberCount = team ? _teamMemberCount : 1;
     final String validTill = _getValidTillDate(durationIndex);
 
@@ -2342,43 +2861,3 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
     );
   }
 }
-
-class _CurvedArrowPainter extends CustomPainter {
-  final Color color;
-  const _CurvedArrowPainter({required this.color});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..strokeWidth = 1.6
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round;
-
-    final path = Path();
-    path.moveTo(size.width, size.height * 0.15);
-    path.quadraticBezierTo(
-      size.width * 0.4,
-      -size.height * 0.05,
-      2,
-      size.height * 0.85,
-    );
-    canvas.drawPath(path, paint);
-
-    final arrowPaint = Paint()
-      ..color = color
-      ..strokeWidth = 1.6
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round;
-
-    final arrowPath = Path();
-    arrowPath.moveTo(7, size.height * 0.65);
-    arrowPath.lineTo(2, size.height * 0.85);
-    arrowPath.lineTo(5, size.height * 1.05);
-    canvas.drawPath(arrowPath, arrowPaint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
-

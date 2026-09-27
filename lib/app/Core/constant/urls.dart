@@ -19,7 +19,10 @@ class Urls {
       '${ConstRes.aBaseUrl}user-within-radius';
   static const String initialize = '${ConstRes.aBaseUrl}initialize';
   static const String walkiePlans = '${ConstRes.aBaseUrl}walkie/plans';
-
+  static const String walkieEligibleCoupons =
+      '${ConstRes.aBaseUrl}walkie/coupons/eligible';
+  static const String walkieApplyCoupon =
+      '${ConstRes.aBaseUrl}walkie/coupons/apply';
 
   static const String walkieOverview = '${ConstRes.aBaseUrl}walkie/overview';
 
