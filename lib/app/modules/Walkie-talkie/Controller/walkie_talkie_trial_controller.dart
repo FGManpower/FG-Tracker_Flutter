@@ -130,6 +130,12 @@ class WalkieTalkieTrialController extends GetxController
         '${remainder.toString().padLeft(2, '0')}';
   }
 
+  String get trialDurationFormatted => formatDuration(totalSeconds);
+
+  String get trialDurationHuman => formatDuration(totalSeconds);
+
+  String get trialDurationFreeLabel => '${formatDuration(totalSeconds)} Free';
+
   @override
   void onInit() {
     super.onInit();

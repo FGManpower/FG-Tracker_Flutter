@@ -3,7 +3,7 @@ import 'package:fgtracker/app/modules/Walkie-talkie/Views/walkie_group_select_sc
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:fgtracker/app/global_widget/blend_mask.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
-import 'package:fgtracker/generated/assets.dart';
+import 'package:fgtracker/gen/assets.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';

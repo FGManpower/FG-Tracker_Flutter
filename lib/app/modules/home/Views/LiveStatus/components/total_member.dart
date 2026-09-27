@@ -660,17 +660,17 @@ class _TotalMemberState extends State<TotalMember> {
                       color: Colors.black87,
                     ),
                   ),
-                  SizedBox(height: 3.h),
-                  Text(
-                    member.displayDepartment,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 12.sp,
-                      fontFamily: FontFamily.interRegular,
-                      color: Colors.grey.shade600,
-                    ),
-                  ),
+                  // SizedBox(height: 3.h),
+                  // Text(
+                  //   member.displayDepartment,
+                  //   maxLines: 1,
+                  //   overflow: TextOverflow.ellipsis,
+                  //   style: TextStyle(
+                  //     fontSize: 12.sp,
+                  //     fontFamily: FontFamily.interRegular,
+                  //     color: Colors.grey.shade600,
+                  //   ),
+                  // ),
                   SizedBox(height: 3.h),
                   Row(
                     children: [
@@ -775,14 +775,14 @@ class _TotalMemberSkeletonTile extends StatelessWidget {
                     fontFamily: FontFamily.interBold,
                   ),
                 ),
-                SizedBox(height: 4.h),
-                Text(
-                  "Member Department",
-                  style: TextStyle(
-                    fontSize: 12.sp,
-                    fontFamily: FontFamily.interRegular,
-                  ),
-                ),
+                // SizedBox(height: 4.h),
+                // Text(
+                //   "Member Department",
+                //   style: TextStyle(
+                //     fontSize: 12.sp,
+                //     fontFamily: FontFamily.interRegular,
+                //   ),
+                // ),
                 SizedBox(height: 4.h),
                 Text(
                   "Active",

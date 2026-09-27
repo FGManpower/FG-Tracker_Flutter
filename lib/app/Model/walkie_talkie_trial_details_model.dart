@@ -130,6 +130,7 @@ class WalkieTrial {
   final int totalSeconds;
   final int usedSeconds;
   final double usagePercentage;
+  final String? rawDuration;
 
   const WalkieTrial({
     required this.hasReceivedTrial,
@@ -146,36 +147,145 @@ class WalkieTrial {
     required this.totalSeconds,
     required this.usedSeconds,
     required this.usagePercentage,
+    this.rawDuration,
   });
 
+  static int parseSecondsHelper(dynamic value) {
+    if (value == null) return 0;
+    if (value is num) return value.toInt();
+    if (value is Map) {
+      final h = (value['hours'] as num?)?.toInt() ?? 0;
+      final m = (value['minutes'] as num?)?.toInt() ?? 0;
+      final s = (value['seconds'] as num?)?.toInt() ?? 0;
+      final total = (h * 3600) + (m * 60) + s;
+      if (total > 0) return total;
+    }
+    final str = value.toString().trim();
+    if (str.isEmpty) return 0;
+
+    final directInt = int.tryParse(str);
+    if (directInt != null) return directInt;
+
+    if (str.contains(':')) {
+      final parts = str.split(':');
+      if (parts.length == 3) {
+        final h = int.tryParse(parts[0]) ?? 0;
+        final m = int.tryParse(parts[1]) ?? 0;
+        final s = int.tryParse(parts[2]) ?? 0;
+        return (h * 3600) + (m * 60) + s;
+      } else if (parts.length == 2) {
+        final m = int.tryParse(parts[0]) ?? 0;
+        final s = int.tryParse(parts[1]) ?? 0;
+        return (m * 60) + s;
+      }
+    }
+    return 0;
+  }
+
   factory WalkieTrial.fromJson(Map<String, dynamic> json) {
-    int asInt(dynamic value) =>
-        value is num ? value.toInt() : int.tryParse('$value') ?? 0;
+    final int duration = parseSecondsHelper(
+      json['durationSeconds'] ??
+          json['duration_seconds'] ??
+          json['totalSeconds'] ??
+          json['total_seconds'] ??
+          json['duration'] ??
+          json['trial_duration'] ??
+          json['trial_seconds'] ??
+          json['seconds'] ??
+          json['time'],
+    );
+
+    final int total = parseSecondsHelper(
+      json['totalSeconds'] ??
+          json['total_seconds'] ??
+          json['durationSeconds'] ??
+          json['duration_seconds'] ??
+          json['duration'] ??
+          json['trial_duration'] ??
+          json['trial_seconds'] ??
+          json['seconds'] ??
+          json['time'],
+    );
+
+    final int remaining = parseSecondsHelper(
+      json['remainingSeconds'] ??
+          json['remaining_seconds'] ??
+          json['remaining'] ??
+          json['remaining_time_seconds'] ??
+          json['remaining_time'],
+    );
+
+    final int used = parseSecondsHelper(
+      json['usedSeconds'] ??
+          json['used_seconds'] ??
+          json['used'] ??
+          json['used_time_seconds'] ??
+          json['used_time'],
+    );
+
+    final String? rawStr = json['raw_duration']?.toString() ??
+        json['rawDuration']?.toString() ??
+        json['duration_text']?.toString() ??
+        json['durationText']?.toString() ??
+        json['duration_label']?.toString() ??
+        json['durationLabel']?.toString() ??
+        (json['duration'] is String && json['duration'].toString().contains(':')
+            ? json['duration'].toString()
+            : null);
+
+    final int resolvedDuration =
+        duration > 0 ? duration : (total > 0 ? total : 3600);
+    final int resolvedTotal =
+        total > 0 ? total : (duration > 0 ? duration : 3600);
 
     return WalkieTrial(
-      hasReceivedTrial: json['hasReceivedTrial'] == true,
-      isEligibleForTrial: json['isEligibleForTrial'] == true,
-      isActive: json['isActive'] == true,
-      isExpired: json['isExpired'] == true,
+      hasReceivedTrial: json['hasReceivedTrial'] == true ||
+          json['has_received_trial'] == true,
+      isEligibleForTrial: json['isEligibleForTrial'] == true ||
+          json['is_eligible_for_trial'] == true ||
+          json['eligible'] == true ||
+          json['is_eligible'] == true,
+      isActive: json['isActive'] == true ||
+          json['is_active'] == true ||
+          json['active'] == true,
+      isExpired: json['isExpired'] == true ||
+          json['is_expired'] == true ||
+          json['expired'] == true,
       status: json['status']?.toString() ?? 'unknown',
-      durationSeconds: asInt(json['durationSeconds']),
+      durationSeconds: resolvedDuration,
+      rawDuration: rawStr,
       startedAt: DateTime.tryParse(
-        json['startedAt']?.toString() ?? '',
+        json['startedAt']?.toString() ??
+            json['started_at']?.toString() ??
+            '',
       ),
       expiresAt: DateTime.tryParse(
-        json['expiresAt']?.toString() ?? '',
+        json['expiresAt']?.toString() ??
+            json['expires_at']?.toString() ??
+            '',
       ),
-      remainingSeconds: asInt(json['remainingSeconds']),
-      remainingMinutes: asInt(json['remainingMinutes']),
+      remainingSeconds: remaining,
+      remainingMinutes: parseSecondsHelper(
+        json['remainingMinutes'] ??
+            json['remaining_minutes'] ??
+            (remaining > 0 ? remaining ~/ 60 : 0),
+      ),
       remainingTime: json['remainingTime'] is Map
           ? WalkieRemainingTime.fromJson(
-        Map<String, dynamic>.from(json['remainingTime']),
-      )
-          : null,
-      totalSeconds: asInt(json['totalSeconds']),
-      usedSeconds: asInt(json['usedSeconds']),
-      usagePercentage:
-      (json['usagePercentage'] as num?)?.toDouble() ?? 0,
+              Map<String, dynamic>.from(json['remainingTime']),
+            )
+          : (json['remaining_time'] is Map
+              ? WalkieRemainingTime.fromJson(
+                  Map<String, dynamic>.from(json['remaining_time']),
+                )
+              : null),
+      totalSeconds: resolvedTotal,
+      usedSeconds: used,
+      usagePercentage: (json['usagePercentage'] ??
+                  json['usage_percentage'] ??
+                  json['percentage'] as num?)
+              ?.toDouble() ??
+          0,
     );
   }
 

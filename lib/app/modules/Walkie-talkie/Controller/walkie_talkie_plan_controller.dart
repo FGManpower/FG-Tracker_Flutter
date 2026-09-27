@@ -1,6 +1,7 @@
 import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/Data/Repositories/walkie_plan_repo.dart';
 import 'package:fgtracker/app/Model/walkie_plan_model.dart';
+import 'package:fgtracker/app/Model/walkie_coupon_model.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Views/walkie_talkie_purchase_success_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -12,11 +13,20 @@ class WalkieTalkiePlanController extends GetxController {
   // Loading states
   final RxBool isLoadingIndividual = false.obs;
   final RxBool isLoadingGroup = false.obs;
+  final RxBool isLoadingCoupons = false.obs;
   final RxBool isSubmitting = false.obs;
 
   // Plans lists from API
   final RxList<WalkiePlanItem> individualPlans = <WalkiePlanItem>[].obs;
   final RxList<WalkiePlanItem> groupPlans = <WalkiePlanItem>[].obs;
+
+  // Coupons from API
+  final RxList<WalkieCouponItem> eligibleCoupons = <WalkieCouponItem>[].obs;
+  final Rxn<WalkieCouponItem> selectedCoupon = Rxn<WalkieCouponItem>();
+  final Rxn<WalkieAppliedCouponData> appliedCouponData =
+      Rxn<WalkieAppliedCouponData>();
+  final RxBool isApplyingCoupon = false.obs;
+  final RxnString applyingCouponCode = RxnString();
 
   // Selected plan indices
   final RxInt selectedIndividualPlan = 0.obs;
@@ -26,6 +36,7 @@ class WalkieTalkiePlanController extends GetxController {
   final RxInt teamMemberCount = 1.obs;
   final RxnString appliedPromoCode = RxnString();
   final RxDouble promoDiscountPercent = 0.0.obs;
+  final RxDouble fixedDiscountAmount = 0.0.obs;
 
   @override
   void onInit() {
@@ -46,7 +57,8 @@ class WalkieTalkiePlanController extends GetxController {
 
   WalkiePlanItem? get activeIndividualPlan {
     if (individualPlans.isEmpty) return null;
-    final idx = selectedIndividualPlan.value.clamp(0, individualPlans.length - 1);
+    final idx =
+        selectedIndividualPlan.value.clamp(0, individualPlans.length - 1);
     return individualPlans[idx];
   }
 
@@ -93,15 +105,55 @@ class WalkieTalkiePlanController extends GetxController {
 
   int get originalTotal => teamMemberCount.value * ratePerMember;
 
+  num get currentSubtotal {
+    if (appliedCouponData.value?.pricing?.subtotal != null) {
+      return appliedCouponData.value!.pricing!.subtotal!;
+    }
+    return isTeam ? originalTotal : (activeIndividualPlan?.safePrice ?? 0);
+  }
+
   // double get teamSavingsRate => 0.20; // commented out
   double get teamSavingsRate => 0.0;
 
-  int get discountedTotal {
-    int total = (originalTotal * (1 - teamSavingsRate)).round();
-    if (promoDiscountPercent.value > 0) {
-      total = (total * (1 - promoDiscountPercent.value)).round();
+  num get couponDiscountAmount {
+    if (appliedCouponData.value?.pricing?.discountAmount != null) {
+      return appliedCouponData.value!.pricing!.discountAmount!;
     }
-    return total;
+    if (selectedCoupon.value != null) {
+      final coupon = selectedCoupon.value!;
+      if (coupon.isFixed) {
+        return (coupon.discountValue ?? 0).clamp(0, currentSubtotal);
+      } else if (coupon.isPercentage) {
+        final pct = (coupon.discountValue ?? 0) / 100.0;
+        num discount = (currentSubtotal * pct);
+        if (coupon.maxDiscountAmount != null &&
+            discount > coupon.maxDiscountAmount!) {
+          discount = coupon.maxDiscountAmount!;
+        }
+        return discount.clamp(0, currentSubtotal);
+      } else if (coupon.estimatedDiscount != null &&
+          coupon.estimatedDiscount! > 0) {
+        return coupon.estimatedDiscount!.clamp(0, currentSubtotal);
+      }
+    }
+    if (promoDiscountPercent.value > 0) {
+      return (currentSubtotal * promoDiscountPercent.value)
+          .clamp(0, currentSubtotal);
+    }
+    if (fixedDiscountAmount.value > 0) {
+      return fixedDiscountAmount.value.clamp(0, currentSubtotal);
+    }
+    return 0;
+  }
+
+  num get discountedTotal {
+    if (appliedCouponData.value?.pricing?.finalAmount != null) {
+      return appliedCouponData.value!.pricing!.finalAmount!;
+    }
+    final num base =
+        isTeam ? (originalTotal * (1 - teamSavingsRate)) : currentSubtotal;
+    final num total = base - couponDiscountAmount;
+    return total < 0 ? 0 : total;
   }
 
   String get buttonText {
@@ -211,6 +263,7 @@ class WalkieTalkiePlanController extends GetxController {
     final max = activeGroupPlan?.safeMaxMembers ?? 99;
     if (teamMemberCount.value < max) {
       teamMemberCount.value++;
+      _reapplyCouponIfActive();
     } else {
       showTopWhiteMessage("Maximum limit of $max members reached");
     }
@@ -220,6 +273,7 @@ class WalkieTalkiePlanController extends GetxController {
     final min = activeGroupPlan?.safeMinMembers ?? 1;
     if (teamMemberCount.value > min) {
       teamMemberCount.value--;
+      _reapplyCouponIfActive();
     } else {
       showTopWhiteMessage("Minimum team size is $min member");
     }
@@ -230,6 +284,13 @@ class WalkieTalkiePlanController extends GetxController {
     final max = activeGroupPlan?.safeMaxMembers ?? 99;
     if (count >= min && count <= max) {
       teamMemberCount.value = count;
+      _reapplyCouponIfActive();
+    }
+  }
+
+  void _reapplyCouponIfActive() {
+    if (appliedPromoCode.value != null && appliedPromoCode.value!.isNotEmpty) {
+      applyCouponApi(appliedPromoCode.value!, isSilent: true);
     }
   }
 
@@ -284,25 +345,132 @@ class WalkieTalkiePlanController extends GetxController {
     }
   }
 
-  bool applyPromoCode(String code) {
+  Future<void> fetchEligibleCoupons() async {
+    if (isLoadingCoupons.value) return;
+    try {
+      isLoadingCoupons.value = true;
+      final plan = activePlan;
+      final planId = plan?.id ?? (isTeam ? 4 : 1);
+      final seats = isTeam ? teamMemberCount.value : 1;
+
+      final res = await WalkiePlanRepo.getEligibleCoupons(
+        planId: planId,
+        purchasedSeats: seats,
+      );
+      if (res.status == true && res.data != null) {
+        eligibleCoupons.assignAll(res.data!.coupons);
+      }
+    } catch (e) {
+      debugPrint("Error fetching eligible coupons: $e");
+    } finally {
+      isLoadingCoupons.value = false;
+    }
+  }
+
+  Future<bool> applyCouponApi(String code, {bool isSilent = false}) async {
     final cleanCode = code.trim().toUpperCase();
     if (cleanCode.isEmpty) {
-      Utils().fluttertoast("Please enter a valid code");
+      if (!isSilent) showTopWhiteMessage("Please enter a valid coupon code");
       return false;
     }
 
-    appliedPromoCode.value = cleanCode;
-    promoDiscountPercent.value = 0.10;
-    Utils().fluttertoast("Promo code $cleanCode applied!");
-    return true;
+    final plan = activePlan;
+    final planId = plan?.id ?? (isTeam ? 4 : 1);
+    final seats = isTeam ? teamMemberCount.value : 1;
+
+    try {
+      isApplyingCoupon.value = true;
+      applyingCouponCode.value = cleanCode;
+      final res = await WalkiePlanRepo.applyCoupon(
+        planId: planId,
+        purchasedSeats: seats,
+        couponCode: cleanCode,
+      );
+
+      if (res.status == true && res.data != null) {
+        appliedCouponData.value = res.data;
+        appliedPromoCode.value = res.data?.coupon?.code ?? cleanCode;
+        promoDiscountPercent.value = 0.0;
+        fixedDiscountAmount.value = 0.0;
+
+        final match = eligibleCoupons.firstWhereOrNull(
+          (c) => (c.code ?? '').trim().toUpperCase() == cleanCode,
+        );
+        if (match != null) {
+          selectedCoupon.value = match;
+        }
+
+        if (!isSilent) {
+          final saved = res.data?.pricing?.amountSaved ??
+              res.data?.pricing?.discountAmount;
+          if (saved != null && saved > 0) {
+            showTopWhiteMessage(
+                "Coupon applied! You save ₹${formatCurrency(saved)}");
+          } else {
+            showTopWhiteMessage(res.message ?? "Coupon applied successfully!");
+          }
+        }
+        return true;
+      } else {
+        if (!isSilent) {
+          showTopWhiteMessage(res.message ?? "Failed to apply coupon");
+        }
+        return false;
+      }
+    } catch (e) {
+      debugPrint("Error applying coupon: $e");
+      if (!isSilent) {
+        showTopWhiteMessage(e.toString());
+      }
+      return false;
+    } finally {
+      isApplyingCoupon.value = false;
+      applyingCouponCode.value = null;
+    }
+  }
+
+  Future<bool> applyCoupon(WalkieCouponItem coupon) async {
+    if (coupon.eligible != true) {
+      showTopWhiteMessage(coupon.formattedIneligibleReason);
+      return false;
+    }
+    return applyCouponApi(coupon.code ?? '');
+  }
+
+  Future<bool> applyPromoCode(String code) async {
+    return applyCouponApi(code);
   }
 
   void removePromoCode() {
+    appliedCouponData.value = null;
+    selectedCoupon.value = null;
     appliedPromoCode.value = null;
     promoDiscountPercent.value = 0.0;
+    fixedDiscountAmount.value = 0.0;
+    appliedCouponData.refresh();
+    appliedPromoCode.refresh();
+    selectedCoupon.refresh();
+    teamMemberCount.refresh();
+    update();
+    showTopWhiteMessage("Coupon removed");
   }
 
-  String formatCurrency(int amount) {
+  String formatCurrency(dynamic amount) {
+    if (amount == null) return "0";
+    if (amount is num) {
+      if (amount % 1 == 0) {
+        return _formatInt(amount.toInt());
+      } else {
+        final parts = amount.toStringAsFixed(2).split('.');
+        return "${_formatInt(int.parse(parts[0]))}.${parts[1]}";
+      }
+    }
+    final parsed = num.tryParse(amount.toString());
+    if (parsed != null) return formatCurrency(parsed);
+    return amount.toString();
+  }
+
+  String _formatInt(int amount) {
     final str = amount.toString();
     if (str.length <= 3) return str;
     final lastThree = str.substring(str.length - 3);

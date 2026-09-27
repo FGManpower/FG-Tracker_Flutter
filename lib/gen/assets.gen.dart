@@ -35,6 +35,10 @@ class $AssetsIconsGen {
   /// File path: assets/icons/app_icon.png
   AssetGenImage get appIcon => const AssetGenImage('assets/icons/app_icon.png');
 
+  /// File path: assets/icons/fg_manpower_logo.png
+  AssetGenImage get fgManpowerLogo =>
+      const AssetGenImage('assets/icons/fg_manpower_logo.png');
+
   /// File path: assets/icons/flag.png
   AssetGenImage get flag => const AssetGenImage('assets/icons/flag.png');
 
@@ -71,6 +75,7 @@ class $AssetsIconsGen {
         singleSafeRoute,
         alart,
         appIcon,
+        fgManpowerLogo,
         flag,
         safeRoute,
         safeZoneAlart,

@@ -2172,55 +2172,49 @@ class TrackingScreen extends StatelessWidget {
               ),
             ),
             SizedBox(width: 8.w),
-            Builder(
-              builder: (context) {
-                final int? batteryVal = member.battery;
-                Color batteryColor;
-                if (batteryVal == null) {
-                  batteryColor = const Color(0xFF94A3B8);
-                } else if (batteryVal > 50) {
-                  batteryColor = const Color(0xFF10B981);
-                } else if (batteryVal >= 20) {
-                  batteryColor = const Color(0xFFF59E0B);
-                } else {
-                  batteryColor = const Color(0xFFEF4444);
-                }
-
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      _formatDistance(member.distance),
-                      style: TextStyle(
-                        color: const Color(0xFF4338CA),
-                        fontSize: 11.sp,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    SizedBox(height: 4.h),
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          _getBatteryIcon(batteryVal ?? 100),
-                          color: batteryColor,
-                          size: 14.sp,
-                        ),
-                        SizedBox(width: 3.w),
-                        Text(
-                          batteryVal != null ? "$batteryVal%" : "--%",
-                          style: TextStyle(
-                            color: batteryColor,
-                            fontSize: 11.sp,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                );
-              },
+            Text(
+              _formatDistance(member.distance),
+              style: TextStyle(
+                color: const Color(0xFF4338CA),
+                fontSize: 11.sp,
+                fontWeight: FontWeight.w700,
+              ),
             ),
+            // Battery indicator commented out
+            // Builder(
+            //   builder: (context) {
+            //     final int? batteryVal = member.battery;
+            //     Color batteryColor;
+            //     if (batteryVal == null) {
+            //       batteryColor = const Color(0xFF94A3B8);
+            //     } else if (batteryVal > 50) {
+            //       batteryColor = const Color(0xFF10B981);
+            //     } else if (batteryVal >= 20) {
+            //       batteryColor = const Color(0xFFF59E0B);
+            //     } else {
+            //       batteryColor = const Color(0xFFEF4444);
+            //     }
+            //     return Row(
+            //       mainAxisSize: MainAxisSize.min,
+            //       children: [
+            //         Icon(
+            //           _getBatteryIcon(batteryVal ?? 100),
+            //           color: batteryColor,
+            //           size: 14.sp,
+            //         ),
+            //         SizedBox(width: 3.w),
+            //         Text(
+            //           batteryVal != null ? "$batteryVal%" : "--%",
+            //           style: TextStyle(
+            //             color: batteryColor,
+            //             fontSize: 11.sp,
+            //             fontWeight: FontWeight.w700,
+            //           ),
+            //         ),
+            //       ],
+            //     );
+            //   },
+            // ),
             SizedBox(width: 10.w),
             GestureDetector(
               onTap: () => _zoomToMemberFromList(member),
@@ -3315,21 +3309,40 @@ class TrackingScreen extends StatelessWidget {
   }
 
   String _formatDistance(String distance) {
-    if (distance.isEmpty ||
-        distance.toLowerCase().contains("nan") ||
-        distance.trim() == "Nearby") {
-      return "Nearby";
+    final trimmed = distance.trim();
+    if (trimmed.isEmpty ||
+        trimmed.toLowerCase().contains("nan") ||
+        trimmed == "Nearby" ||
+        trimmed == "Nearby you" ||
+        trimmed == "0.0 m away" ||
+        trimmed == "0.0m away" ||
+        trimmed == "0 m away" ||
+        trimmed == "0.0 km away" ||
+        trimmed == "0.00 km away" ||
+        trimmed == "0.0 m" ||
+        trimmed == "0 m" ||
+        trimmed == "0.0 km" ||
+        trimmed == "0.00 km") {
+      return "Nearby you";
     }
-    if (distance.contains("away")) return distance;
-    if (distance.contains("km") || distance.contains(" m")) {
-      return "$distance away";
-    }
-    final cleaned = distance.replaceAll(RegExp(r'[^\d.]'), '');
+    final cleaned = trimmed.replaceAll(RegExp(r'[^\d.]'), '');
     final numVal = double.tryParse(cleaned);
+    if (numVal != null && numVal <= 0.05) {
+      return "Nearby you";
+    }
+    if (trimmed.startsWith("0.0") ||
+        trimmed.startsWith("0 m") ||
+        trimmed.startsWith("0 km")) {
+      return "Nearby you";
+    }
+    if (trimmed.contains("away")) return trimmed;
+    if (trimmed.contains("km") || trimmed.contains(" m")) {
+      return "$trimmed away";
+    }
     if (numVal != null) {
       return "${numVal.toStringAsFixed(1)} km away";
     }
-    return distance;
+    return trimmed;
   }
 
   IconData _getBatteryIcon(int level) {

@@ -492,6 +492,7 @@ class DialogBox {
     String? location,
     String? team,
     int? battery,
+    String? rawDistance,
   }) {
     final currentUserId =
         Global.storageServices.get(PrefConst.userId)?.toString() ?? '';
@@ -1028,42 +1029,62 @@ class DialogBox {
                       ),
                       Divider(height: 16.h, color: Colors.grey.shade200),
                     ],
-                    Row(
-                      children: [
-                        Icon(Icons.near_me_outlined,
-                            color: ToggleThemeData.darkPurple, size: 18.sp),
-                        SizedBox(width: 10.w),
-                        Expanded(
-                          child: Text(
-                            "${AppText.distance}${effectiveDistance.toStringAsFixed(2)} Km",
-                            style: TextStyle(
-                              fontSize: 13.sp,
-                              fontFamily: FontFamily.interSemiBold,
-                              color: Colors.black87,
+                    Builder(
+                      builder: (context) {
+                        final String raw = (rawDistance ?? '').trim();
+                        final bool isNearby = effectiveDistance <= 0.05 ||
+                            raw == "0.0 m away" ||
+                            raw == "0.0m away" ||
+                            raw == "0 m away" ||
+                            raw == "0.0 km away" ||
+                            raw == "0.00 km away" ||
+                            raw == "0.0 m" ||
+                            raw == "0 m" ||
+                            raw.startsWith("0.0") ||
+                            raw.toLowerCase() == "nearby" ||
+                            raw.toLowerCase() == "nearby you";
+                        final String displayDistance = isNearby
+                            ? "Nearby you"
+                            : "${AppText.distance}${effectiveDistance.toStringAsFixed(2)} Km";
+
+                        return Row(
+                          children: [
+                            Icon(Icons.near_me_outlined,
+                                color: ToggleThemeData.darkPurple, size: 18.sp),
+                            SizedBox(width: 10.w),
+                            Expanded(
+                              child: Text(
+                                displayDistance,
+                                style: TextStyle(
+                                  fontSize: 13.sp,
+                                  fontFamily: FontFamily.interSemiBold,
+                                  color: Colors.black87,
+                                ),
+                              ),
                             ),
-                          ),
-                        ),
-                        if (resolvedBattery != null && resolvedBattery > 0) ...[
-                          Icon(
-                            resolvedBattery > 20
-                                ? Icons.battery_5_bar_rounded
-                                : Icons.battery_alert_rounded,
-                            size: 16.sp,
-                            color: resolvedBattery > 20
-                                ? const Color(0xFF10B981)
-                                : Colors.orange,
-                          ),
-                          SizedBox(width: 4.w),
-                          Text(
-                            "$resolvedBattery%",
-                            style: TextStyle(
-                              fontSize: 12.sp,
-                              color: Colors.grey.shade700,
-                              fontFamily: FontFamily.interMedium,
-                            ),
-                          ),
-                        ],
-                      ],
+                            if (resolvedBattery != null && resolvedBattery > 0) ...[
+                              Icon(
+                                resolvedBattery > 20
+                                    ? Icons.battery_5_bar_rounded
+                                    : Icons.battery_alert_rounded,
+                                size: 16.sp,
+                                color: resolvedBattery > 20
+                                    ? const Color(0xFF10B981)
+                                    : Colors.orange,
+                              ),
+                              SizedBox(width: 4.w),
+                              Text(
+                                "$resolvedBattery%",
+                                style: TextStyle(
+                                  fontSize: 12.sp,
+                                  color: Colors.grey.shade700,
+                                  fontFamily: FontFamily.interMedium,
+                                ),
+                              ),
+                            ],
+                          ],
+                        );
+                      },
                     ),
                   ],
                 ),
