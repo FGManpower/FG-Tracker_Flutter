@@ -436,24 +436,14 @@ class Sidemenu extends StatelessWidget {
           ),
           _buildDivider(),
           _buildDrawerItem(
-            icon: Icons.info_rounded,
-            title: AppText.aboutUs.tr,
-            subtitle: "Know more about us",
-            onTap: () {
-              Navigator.pop(context);
-              Get.toNamed(Routes.AboutUs);
-            },
-          ),
-          _buildDivider(),
-          _buildDrawerItem(
-            icon: Icons.verified_user_rounded,
-            title: "Privacy Policy",
-            subtitle: "View our privacy policy",
+            icon: Icons.support_agent_rounded,
+            title: "Contact Us",
+            subtitle: "Get in touch with us",
             onTap: () async {
               Navigator.pop(context);
               try {
                 final Uri url =
-                    Uri.parse('https://www.fgmanpower.co.in/privacy-policy/');
+                    Uri.parse('https://www.fgmanpower.co.in/contact/');
                 if (!await launchUrl(url,
                     mode: LaunchMode.externalApplication)) {
                   debugPrint('Could not launch $url');
@@ -463,6 +453,25 @@ class Sidemenu extends StatelessWidget {
               }
             },
           ),
+          // _buildDivider(),
+          // _buildDrawerItem(
+          //   icon: Icons.verified_user_rounded,
+          //   title: "Privacy Policy",
+          //   subtitle: "View our privacy policy",
+          //   onTap: () async {
+          //     Navigator.pop(context);
+          //     try {
+          //       final Uri url =
+          //           Uri.parse('https://www.fgmanpower.co.in/privacy-policy/');
+          //       if (!await launchUrl(url,
+          //           mode: LaunchMode.externalApplication)) {
+          //         debugPrint('Could not launch $url');
+          //       }
+          //     } catch (e) {
+          //       log(e.toString());
+          //     }
+          //   },
+          // ),
           _buildDivider(),
           _buildDrawerItem(
             icon: Icons.headset_mic_rounded,
@@ -536,36 +545,20 @@ class Sidemenu extends StatelessWidget {
             ),
             child: CircleAvatar(
               radius: 28.r,
-              backgroundColor: const Color(0xFF5D47F1),
+              backgroundColor: Colors.transparent,
               backgroundImage: AssetImage(Assets.icons.appIcon.path),
             ),
           ),
           SizedBox(width: 14.w),
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "FG Tracker",
-                  style: TextStyle(
-                    fontSize: 16.sp,
-                    fontFamily: FontFamily.interBold,
-                    fontWeight: FontWeight.bold,
-                    color: const Color(0xFF1E202B),
-                  ),
-                ),
-                SizedBox(height: 3.h),
-                Text(
-                  "Stay connected,\nStay together.",
-                  style: TextStyle(
-                    fontSize: 12.sp,
-                    fontFamily: FontFamily.interRegular,
-                    color: const Color(0xFF7A7F93),
-                    height: 1.35,
-                  ),
-                  maxLines: 2,
-                ),
-              ],
+            child: Text(
+              "FG Manpower LLP",
+              style: TextStyle(
+                fontSize: 16.sp,
+                fontFamily: FontFamily.interBold,
+                fontWeight: FontWeight.bold,
+                color: const Color(0xFF1E202B),
+              ),
             ),
           ),
         ],

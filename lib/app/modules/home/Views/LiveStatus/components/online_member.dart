@@ -670,17 +670,17 @@ class _OnlineMemberState extends State<OnlineMember> {
                       color: Colors.black87,
                     ),
                   ),
-                  SizedBox(height: 3.h),
-                  Text(
-                    member.displayDepartment,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 12.sp,
-                      fontFamily: FontFamily.interRegular,
-                      color: Colors.grey.shade600,
-                    ),
-                  ),
+                  // SizedBox(height: 3.h),
+                  // Text(
+                  //   member.displayDepartment,
+                  //   maxLines: 1,
+                  //   overflow: TextOverflow.ellipsis,
+                  //   style: TextStyle(
+                  //     fontSize: 12.sp,
+                  //     fontFamily: FontFamily.interRegular,
+                  //     color: Colors.grey.shade600,
+                  //   ),
+                  // ),
                   SizedBox(height: 3.h),
                   Text(
                     isOnlineNow
@@ -985,15 +985,15 @@ class _OnlineMemberSkeletonTile extends StatelessWidget {
                     fontFamily: FontFamily.interBold,
                   ),
                 ),
-                SizedBox(height: 4.h),
-                Text(
-                  "Loading department",
-                  maxLines: 1,
-                  style: TextStyle(
-                    fontSize: 12.sp,
-                    fontFamily: FontFamily.interRegular,
-                  ),
-                ),
+                // SizedBox(height: 4.h),
+                // Text(
+                //   "Loading department",
+                //   maxLines: 1,
+                //   style: TextStyle(
+                //     fontSize: 12.sp,
+                //     fontFamily: FontFamily.interRegular,
+                //   ),
+                // ),
                 SizedBox(height: 4.h),
                 Text(
                   "Online",

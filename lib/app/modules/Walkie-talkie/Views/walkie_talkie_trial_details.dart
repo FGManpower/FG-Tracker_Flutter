@@ -60,6 +60,8 @@ class _WalkieTalkieTrialDetailsScreenState
 
         top: false,
 
+        bottom: false,
+
         child: Obx(() {
 
           // Initial loading
@@ -128,11 +130,6 @@ class _WalkieTalkieTrialDetailsScreenState
 
                   _buildFeaturesAndCtaCard(context),
 
-                  SizedBox(height: 10.h),
-
-                  if (controller.showSubscribe)
-                    _buildPurchasePlanCard(),
-
                   SizedBox(height: 16.h),
 
                 ],
@@ -142,6 +139,27 @@ class _WalkieTalkieTrialDetailsScreenState
 
         }),
       ),
+
+      bottomNavigationBar: Obx(() {
+        if (!controller.showSubscribe ||
+            controller.data == null ||
+            controller.pricing == null ||
+            controller.pricing?.available != true ||
+            controller.pricing?.price == null) {
+          return const SizedBox.shrink();
+        }
+
+        return Container(
+          color: backgroundColor,
+          child: SafeArea(
+            top: false,
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(16.w, 4.h, 16.w, 14.h),
+              child: _buildPurchasePlanCard(isBottomBar: true),
+            ),
+          ),
+        );
+      }),
     );
   }
 
@@ -150,95 +168,55 @@ class _WalkieTalkieTrialDetailsScreenState
   // =====================================================
 
   PreferredSizeWidget _buildAppBar() {
-
     return AppBar(
-
       backgroundColor: backgroundColor,
-
       elevation: 0,
-
       scrolledUnderElevation: 0,
-
       toolbarHeight: 65.h,
-
       automaticallyImplyLeading: false,
-
       title: Row(
-
         children: [
-
           GestureDetector(
-
             onTap: () => Get.back(),
-
             child: Container(
-
               padding: EdgeInsets.all(10.w),
-
               decoration: BoxDecoration(
-
                 color: Colors.white,
-
-                shape: BoxShape.circle,
-
+                borderRadius: BorderRadius.circular(12.r),
                 boxShadow: [
-
                   BoxShadow(
-
                     color: Colors.black.withValues(
                       alpha: 0.05,
                     ),
-
                     blurRadius: 8,
+                    offset: const Offset(0, 2),
                   ),
                 ],
               ),
-
               child: Icon(
-
                 Icons.arrow_back,
-
                 size: 20.sp,
-
-                color: const Color(0xFF6B4DFF),
+                color: primaryColor,
               ),
             ),
           ),
-
-          SizedBox(width: 12.w),
-
+          SizedBox(width: 14.w),
           Expanded(
-
             child: Column(
-
-              crossAxisAlignment:
-              CrossAxisAlignment.start,
-
-              mainAxisAlignment:
-              MainAxisAlignment.center,
-
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-
                 reausabletext(
-
                   "Walkie Talkie",
-
                   fontsize: 18.sp,
-
                   fontfamily: FontFamily.interBold,
-
-                  color: Colors.black87,
+                  color: textColor,
                 ),
-
                 SizedBox(height: 2.h),
-
                 reausabletext(
-
                   "Instantly communicate with your group",
-
-                  fontsize: 11.5.sp,
-
-                  color: Colors.grey,
+                  fontsize: 12.sp,
+                  color: subtitleColor,
                 ),
               ],
             ),
@@ -253,26 +231,16 @@ class _WalkieTalkieTrialDetailsScreenState
   // =====================================================
 
   Widget _buildHeroGraphic() {
-
     return Container(
-
       width: double.infinity,
-
-      height: 250.h.clamp(220.0, 280.0),
-
+      height: 220.h,
       margin: EdgeInsets.symmetric(
         horizontal: 4.w,
       ),
-
       child: Center(
-
         child: BlendMask(
-
           blendMode: BlendMode.multiply,
-
-          child:
-          Assets.walkieTalkie.walkieTrialHero.image(
-
+          child: Assets.walkieTalkie.walkieTrialHero.image(
             fit: BoxFit.contain,
           ),
         ),
@@ -285,48 +253,28 @@ class _WalkieTalkieTrialDetailsScreenState
   // =====================================================
 
   Widget _buildHeadingSection() {
-
     return Padding(
-
       padding: EdgeInsets.symmetric(
         horizontal: 24.w,
       ),
-
       child: Column(
-
         children: [
-
           reausabletext(
-
             "Stay Connected, Talk Instantly",
-
-            fontsize: 17.5.sp,
-
+            fontsize: 18.sp,
             fontfamily: FontFamily.interBold,
-
             color: textColor,
-
             align: TextAlign.center,
           ),
-
-          SizedBox(height: 4.h),
-
+          SizedBox(height: 5.h),
           Text(
-
-            "Use push-to-talk voice communication "
-                "with your group without making a phone call.",
-
+            "Use push-to-talk voice communication with your group\nwithout making a phone call.",
             textAlign: TextAlign.center,
-
             style: TextStyle(
-
-              fontSize: 11.5.sp,
-
+              fontSize: 12.sp,
               color: subtitleColor,
-
               fontFamily: FontFamily.interRegular,
-
-              height: 1.3,
+              height: 1.35,
             ),
           ),
         ],
@@ -339,172 +287,99 @@ class _WalkieTalkieTrialDetailsScreenState
   // =====================================================
 
   Widget _buildFreeTrialStatusCard() {
-
     return Obx(() {
-
       final trial = controller.trial;
-
-      final bool hasSubscription =
-          controller.hasActiveSubscription;
-
-      final bool trialActive =
-          controller.isTrialActive;
-
-      final bool trialExpired =
-          controller.showTrialExpired;
-
-      final bool trialEligible =
-          controller.isTrialEligible;
+      final bool hasSubscription = controller.hasActiveSubscription;
+      final bool trialActive = controller.isTrialActive;
+      final bool trialExpired = controller.showTrialExpired;
+      final bool trialEligible = controller.isTrialEligible;
 
       String title = "FREE TRIAL";
-
-      String subtitle = "Free Trial Available";
-
-      String description =
-          "Activate your free trial to get started.";
+      String subtitle = "1 Hour Free";
+      String description = "Use your 1-hour trial anytime within 7 days.";
 
       if (hasSubscription) {
-
         title = "ACTIVE SUBSCRIPTION";
-
         subtitle = "Walkie Talkie Active";
-
-        description =
-        "Your subscription is currently active.";
-
+        description = "Your subscription is currently active.";
       } else if (trialActive) {
-
         title = "TRIAL ACTIVE";
-
         subtitle = "Free Trial Running";
-
-        description =
-        "Enjoy Walkie Talkie during your trial.";
-
+        description = "Enjoy Walkie Talkie during your trial.";
       } else if (trialExpired) {
-
         title = "TRIAL EXPIRED";
-
         subtitle = "Your Trial Has Ended";
-
-        description =
-        "Choose a subscription to continue.";
-
+        description = "Choose a subscription to continue.";
       } else if (trialEligible) {
-
         title = "FREE TRIAL";
-
-        subtitle =
-        "${controller.formatDuration(
-          controller.totalSeconds,
-        )} Free";
-
-        description =
-        "Start your free trial without payment.";
+        final sec = controller.totalSeconds;
+        final hours = sec ~/ 3600;
+        final mins = (sec % 3600) ~/ 60;
+        if (hours > 0 && mins == 0) {
+          subtitle = "$hours Hour Free";
+        } else if (hours > 0) {
+          subtitle = "$hours Hr $mins Mins Free";
+        } else if (mins > 0) {
+          subtitle = "$mins Mins Free";
+        } else {
+          subtitle = "1 Hour Free";
+        }
+        description = "Use your 1-hour trial anytime within 7 days.";
       }
 
       return Container(
-
         margin: EdgeInsets.symmetric(
           horizontal: 16.w,
         ),
-
         padding: EdgeInsets.all(16.w),
-
         decoration: _cardDecoration(),
-
         child: Column(
-
           children: [
-
             // -----------------------------------------
             // Trial header
             // -----------------------------------------
-
             Row(
-
               children: [
-
                 Container(
-
-                  width: 44.w,
-
-                  height: 44.w,
-
-                  padding: EdgeInsets.all(6.w),
-
+                  width: 48.w,
+                  height: 48.w,
+                  padding: EdgeInsets.all(7.w),
                   decoration: BoxDecoration(
-
                     color: const Color(0xFFF0EFFF),
-
-                    borderRadius:
-                    BorderRadius.circular(12.r),
+                    borderRadius: BorderRadius.circular(12.r),
                   ),
-
                   child: BlendMask(
-
                     blendMode: BlendMode.multiply,
-
-                    child: Assets
-                        .walkieTalkie
-                        .walkieTrialGift
-                        .image(
+                    child: Assets.walkieTalkie.walkieTrialGift.image(
                       fit: BoxFit.contain,
                     ),
                   ),
                 ),
-
                 SizedBox(width: 12.w),
-
                 Expanded(
-
                   child: Column(
-
-                    crossAxisAlignment:
-                    CrossAxisAlignment.start,
-
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-
                       reausabletext(
-
                         title,
-
                         fontsize: 13.sp,
-
-                        fontfamily:
-                        FontFamily.interBold,
-
+                        fontfamily: FontFamily.interBold,
                         color: textColor,
                       ),
-
                       SizedBox(height: 2.h),
-
                       reausabletext(
-
                         subtitle,
-
-                        fontsize: 14.5.sp,
-
-                        fontfamily:
-                        FontFamily.interBold,
-
+                        fontsize: 15.sp,
+                        fontfamily: FontFamily.interBold,
                         color: primaryColor,
                       ),
-
                       SizedBox(height: 2.h),
-
                       Text(
-
                         description,
-
                         style: TextStyle(
-
                           fontSize: 11.5.sp,
-
                           color: subtitleColor,
-
-                          fontFamily:
-                          FontFamily.interRegular,
+                          fontFamily: FontFamily.interRegular,
                         ),
                       ),
                     ],
@@ -512,189 +387,104 @@ class _WalkieTalkieTrialDetailsScreenState
                 ),
               ],
             ),
-
             SizedBox(height: 14.h),
 
             // -----------------------------------------
             // Trial usage
             // -----------------------------------------
-
             Container(
-
               padding: EdgeInsets.symmetric(
-
                 horizontal: 14.w,
-
                 vertical: 12.h,
               ),
-
               decoration: BoxDecoration(
-
                 color: const Color(0xFFFBFBFE),
-
-                borderRadius:
-                BorderRadius.circular(12.r),
-
+                borderRadius: BorderRadius.circular(12.r),
                 border: Border.all(
-
                   color: const Color(0xFFEFF0F6),
                 ),
               ),
-
               child: Column(
-
                 children: [
-
                   Row(
-
-                    mainAxisAlignment:
-                    MainAxisAlignment.spaceBetween,
-
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-
                       reausabletext(
-
                         "Trial Usage",
-
                         fontsize: 12.sp,
-
-                        fontfamily:
-                        FontFamily.interMedium,
-
+                        fontfamily: FontFamily.interMedium,
                         color: textColor,
                       ),
-
                       reausabletext(
-
                         controller.usageLabel,
-
                         fontsize: 12.sp,
-
-                        fontfamily:
-                        FontFamily.interSemiBold,
-
+                        fontfamily: FontFamily.interSemiBold,
                         color: textColor,
                       ),
                     ],
                   ),
-
                   SizedBox(height: 8.h),
 
                   // Dynamic progress bar
-
                   ClipRRect(
-
-                    borderRadius:
-                    BorderRadius.circular(3.r),
-
+                    borderRadius: BorderRadius.circular(3.r),
                     child: LinearProgressIndicator(
-
-                      value:
-                      controller.usageProgress,
-
+                      value: controller.usageProgress,
                       minHeight: 6.h,
-
-                      backgroundColor:
-                      const Color(0xFFE5E7EB),
-
-                      valueColor:
-                      const AlwaysStoppedAnimation<Color>(
+                      backgroundColor: const Color(0xFFE5E7EB),
+                      valueColor: const AlwaysStoppedAnimation<Color>(
                         primaryColor,
                       ),
                     ),
                   ),
-
                   SizedBox(height: 10.h),
 
                   // -----------------------------------
                   // Countdown / trial status
                   // -----------------------------------
-
                   Row(
-
-                    mainAxisAlignment:
-                    MainAxisAlignment.spaceBetween,
-
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-
-                      Expanded(
-
-                        child: Row(
-
-                          children: [
-
-                            Container(
-
-                              padding:
-                              EdgeInsets.all(3.w),
-
-                              decoration: BoxDecoration(
-
-                                color:
-                                const Color(0xFFF0EFFF),
-
-                                borderRadius:
-                                BorderRadius.circular(
-                                  4.r,
-                                ),
-                              ),
-
-                              child: Icon(
-
-                                trialExpired
-                                    ? Icons.timer_off_outlined
-                                    : Icons.hourglass_empty_rounded,
-
-                                size: 13.sp,
-
-                                color:
-                                const Color(0xFF6B4DFF),
-                              ),
+                      Row(
+                        children: [
+                          Container(
+                            padding: EdgeInsets.all(3.w),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF0EFFF),
+                              borderRadius: BorderRadius.circular(4.r),
                             ),
-
-                            SizedBox(width: 6.w),
-
-                            Flexible(
-
-                              child: reausabletext(
-
-                                trialActive
-                                    ? "Trial Time Remaining"
-                                    : trialExpired
-                                    ? "Trial Expired"
-                                    : hasSubscription
-                                    ? "Subscription Active"
-                                    : "Trial Status",
-
-                                fontsize: 11.5.sp,
-
-                                fontfamily:
-                                FontFamily.interMedium,
-
-                                color: textColor,
-                              ),
+                            child: Icon(
+                              trialExpired
+                                  ? Icons.timer_off_outlined
+                                  : Icons.hourglass_empty_rounded,
+                              size: 13.sp,
+                              color: primaryColor,
                             ),
-                          ],
-                        ),
+                          ),
+                          SizedBox(width: 6.w),
+                          reausabletext(
+                            trialActive
+                                ? "Trial Time Remaining"
+                                : trialExpired
+                                ? "Trial Expired"
+                                : hasSubscription
+                                ? "Subscription Active"
+                                : "7 Days Trial Period",
+                            fontsize: 11.5.sp,
+                            fontfamily: FontFamily.interMedium,
+                            color: textColor,
+                          ),
+                        ],
                       ),
-
-                      SizedBox(width: 8.w),
-
                       reausabletext(
-
                         trialActive
                             ? controller.remainingLabel
                             : trialExpired
                             ? "Expired"
                             : hasSubscription
                             ? "Active"
-                            : trial?.status ==
-                            "not_started"
-                            ? "Not Started"
-                            : trial?.status ?? "",
-
-                        fontsize: 11.sp,
-
+                            : "Expires in 7 days",
+                        fontsize: 11.5.sp,
                         color: trialExpired
                             ? Colors.red
                             : subtitleColor,
@@ -714,178 +504,107 @@ class _WalkieTalkieTrialDetailsScreenState
   // FEATURES AND CTA CARD
   // =====================================================
 
-  Widget _buildFeaturesAndCtaCard(
-      BuildContext context,
-      ) {
-
+  Widget _buildFeaturesAndCtaCard(BuildContext context) {
     return Container(
-
       margin: EdgeInsets.symmetric(
         horizontal: 16.w,
       ),
-
       padding: EdgeInsets.all(16.w),
-
       decoration: _cardDecoration(),
-
       child: Column(
-
         children: [
-
-          Row(
-
-            children: [
-
-              Expanded(
-
-                child: _buildFeatureItem(
-
-                  icon: Icons.mic_rounded,
-
-                  title:
-                  "Push-to-talk\ncommunication",
+          IntrinsicHeight(
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    children: [
+                      _buildFeatureItem(
+                        icon: Icons.mic_rounded,
+                        title: "Push-to-talk\ncommunication",
+                      ),
+                      SizedBox(height: 14.h),
+                      _buildFeatureItem(
+                        icon: Icons.groups_rounded,
+                        title: "Quick group\ncommunication",
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-
-              SizedBox(width: 12.w),
-
-              Expanded(
-
-                child: _buildFeatureItem(
-
-                  icon:
-                  Icons.touch_app_rounded,
-
-                  title: "Hold to talk",
+                Container(
+                  width: 1,
+                  color: const Color(0xFFF0F1F6),
+                  margin: EdgeInsets.symmetric(horizontal: 12.w),
                 ),
-              ),
-            ],
+                Expanded(
+                  child: Column(
+                    children: [
+                      _buildFeatureItem(
+                        icon: Icons.touch_app_rounded,
+                        title: "Hold to talk",
+                      ),
+                      SizedBox(height: 14.h),
+                      _buildFeatureItem(
+                        icon: Icons.group_work_rounded,
+                        title: "Easy group\ncoordination",
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
-
-          SizedBox(height: 14.h),
-
-          Row(
-
-            children: [
-
-              Expanded(
-
-                child: _buildFeatureItem(
-
-                  icon: Icons.groups_rounded,
-
-                  title:
-                  "Quick group\ncommunication",
-                ),
-              ),
-
-              SizedBox(width: 12.w),
-
-              Expanded(
-
-                child: _buildFeatureItem(
-
-                  icon:
-                  Icons.group_work_rounded,
-
-                  title:
-                  "Easy group\ncoordination",
-                ),
-              ),
-            ],
-          ),
-
-          SizedBox(height: 16.h),
+          SizedBox(height: 18.h),
 
           // -----------------------------------------
           // Dynamic CTA
           // -----------------------------------------
-
           Obx(() {
-
-            final bool canUse =
-                controller.canUseWalkie;
-
-            final bool eligible =
-                controller.isTrialEligible;
+            final bool canUse = controller.canUseWalkie;
+            final bool eligible = controller.isTrialEligible;
 
             // Trial already used, no active access.
-            // Purchase card is displayed separately.
-
             if (!canUse && !eligible) {
-
               return const SizedBox.shrink();
             }
 
             return SizedBox(
-
               width: double.infinity,
-
               height: 48.h,
-
               child: ElevatedButton(
-
                 style: ElevatedButton.styleFrom(
-
                   backgroundColor: primaryColor,
-
                   shape: RoundedRectangleBorder(
-
-                    borderRadius:
-                    BorderRadius.circular(12.r),
+                    borderRadius: BorderRadius.circular(12.r),
                   ),
-
                   elevation: 0,
                 ),
-
                 onPressed: () {
-
                   if (canUse) {
-
                     Get.to(
-                          () =>
-                      const WalkieGroupSelectScreen(),
+                      () => const WalkieGroupSelectScreen(),
                     );
-
                     return;
                   }
-
-                  _showStartFreeTrialBottomSheet(
-                    context,
-                  );
+                  _showStartFreeTrialBottomSheet(context);
                 },
-
                 child: Row(
-
-                  mainAxisAlignment:
-                  MainAxisAlignment.center,
-
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-
                     Icon(
-
                       canUse
                           ? Icons.mic_rounded
                           : Icons.play_arrow_rounded,
-
                       color: Colors.white,
-
                       size: 22.sp,
                     ),
-
                     SizedBox(width: 8.w),
-
                     reausabletext(
-
                       canUse
                           ? "Open Walkie Talkie"
                           : "Start Free Trial",
-
                       fontsize: 15.sp,
-
-                      fontfamily:
-                      FontFamily.interBold,
-
+                      fontfamily: FontFamily.interBold,
                       color: Colors.white,
                     ),
                   ],
@@ -903,60 +622,33 @@ class _WalkieTalkieTrialDetailsScreenState
   // =====================================================
 
   Widget _buildFeatureItem({
-
     required IconData icon,
-
     required String title,
-
   }) {
-
     return Row(
-
-      crossAxisAlignment:
-      CrossAxisAlignment.center,
-
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-
         Container(
-
-          width: 36.w,
-
-          height: 36.w,
-
+          width: 38.w,
+          height: 38.w,
           decoration: const BoxDecoration(
-
             color: Color(0xFFF0EFFF),
-
             shape: BoxShape.circle,
           ),
-
           child: Icon(
-
             icon,
-
-            color: const Color(0xFF6B4DFF),
-
+            color: primaryColor,
             size: 19.sp,
           ),
         ),
-
         SizedBox(width: 10.w),
-
         Expanded(
-
           child: Text(
-
             title,
-
             style: TextStyle(
-
               fontSize: 12.sp,
-
-              fontFamily:
-              FontFamily.interMedium,
-
+              fontFamily: FontFamily.interMedium,
               color: textColor,
-
               height: 1.25,
             ),
           ),
@@ -969,161 +661,104 @@ class _WalkieTalkieTrialDetailsScreenState
   // PURCHASE PLAN CARD
   // =====================================================
 
-  Widget _buildPurchasePlanCard() {
-
+  Widget _buildPurchasePlanCard({bool isBottomBar = false}) {
     return Obx(() {
-
       final pricing = controller.pricing;
 
-      if (
-      pricing == null ||
+      if (pricing == null ||
           pricing.available != true ||
-          pricing.price == null
-      ) {
-
+          pricing.price == null) {
         return const SizedBox.shrink();
       }
 
       return GestureDetector(
-
         onTap: _openPlanDetails,
-
         child: Container(
-
-          margin: EdgeInsets.symmetric(
-            horizontal: 16.w,
-          ),
-
-          padding: EdgeInsets.all(14.w),
-
-          decoration: _cardDecoration(),
-
-          child: Row(
-
-            children: [
-
-              Container(
-
-                width: 44.w,
-
-                height: 44.w,
-
-                padding: EdgeInsets.all(8.w),
-
-                decoration: BoxDecoration(
-
-                  color:
-                  const Color(0xFFF0EFFF),
-
-                  borderRadius:
-                  BorderRadius.circular(12.r),
+          margin: isBottomBar
+              ? EdgeInsets.zero
+              : EdgeInsets.symmetric(
+                  horizontal: 16.w,
                 ),
-
-                child: BlendMask(
-
-                  blendMode: BlendMode.multiply,
-
-                  child: Assets
-                      .walkieTalkie
-                      .walkieTrialCrown
-                      .image(
-                    fit: BoxFit.contain,
-                  ),
+          padding: EdgeInsets.symmetric(
+            horizontal: 14.w,
+            vertical: 12.h,
+          ),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16.r),
+            border: Border.all(
+              color: const Color(0xFFECEBFA),
+              width: 1.0,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.04),
+                blurRadius: 10,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 48.w,
+                height: 48.w,
+                padding: EdgeInsets.all(9.w),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF0EFFF),
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                child: Assets.walkieTalkie.walkieTrialCrown.image(
+                  color: primaryColor,
+                  fit: BoxFit.contain,
                 ),
               ),
-
               SizedBox(width: 12.w),
-
               Expanded(
-
                 child: Column(
-
-                  crossAxisAlignment:
-                  CrossAxisAlignment.start,
-
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-
                     reausabletext(
-
                       "After your free trial",
-
                       fontsize: 10.5.sp,
-
                       color: subtitleColor,
                     ),
-
                     SizedBox(height: 2.h),
-
                     reausabletext(
-
-                      "${controller.priceLabel} / "
-                          "${controller.priceTypeLabel}",
-
-                      fontsize: 15.sp,
-
-                      fontfamily:
-                      FontFamily.interBold,
-
+                      "${controller.priceLabel} / ${controller.priceTypeLabel}",
+                      fontsize: 16.sp,
+                      fontfamily: FontFamily.interBold,
                       color: textColor,
                     ),
-
                     SizedBox(height: 2.h),
-
                     reausabletext(
-
                       "Continue with Walkie Talkie",
-
                       fontsize: 10.5.sp,
-
                       color: subtitleColor,
                     ),
                   ],
                 ),
               ),
-
               GestureDetector(
-
                 onTap: _openPlanDetails,
-
                 child: Container(
-
                   padding: EdgeInsets.symmetric(
-
                     horizontal: 14.w,
-
-                    vertical: 10.h,
+                    vertical: 11.h,
                   ),
-
                   decoration: BoxDecoration(
-
-                    color:
-                    const Color(0xFFF5F3FF),
-
-                    borderRadius:
-                    BorderRadius.circular(10.r),
-
+                    color: const Color(0xFFF5F3FF),
+                    borderRadius: BorderRadius.circular(10.r),
                     border: Border.all(
-
-                      color:
-                      const Color(0xFF6B4DFF)
-                          .withValues(
-                        alpha: 0.5,
-                      ),
-
+                      color: const Color(0xFFC7B8FF),
                       width: 1.2,
                     ),
                   ),
-
                   child: reausabletext(
-
-                    "Purchase for "
-                        "${controller.priceLabel}",
-
-                    fontsize: 12.sp,
-
-                    fontfamily:
-                    FontFamily.interSemiBold,
-
+                    "Purchase for ${controller.priceLabel}",
+                    fontsize: 12.5.sp,
+                    fontfamily: FontFamily.interSemiBold,
                     color: primaryColor,
                   ),
                 ),
