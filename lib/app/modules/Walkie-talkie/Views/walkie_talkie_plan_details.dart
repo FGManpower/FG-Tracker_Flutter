@@ -3,7 +3,7 @@ import 'package:fgtracker/app/Model/walkie_plan_model.dart';
 import 'package:fgtracker/app/Model/walkie_coupon_model.dart';
 import 'package:fgtracker/app/Model/walkie_payment_order_model.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Controller/walkie_talkie_plan_controller.dart';
-import 'package:fgtracker/app/modules/Walkie-talkie/Views/walkie_talkie_payment_screen.dart';
+import 'package:fgtracker/app/modules/Walkie-talkie/Views/walkie_order_summary_screen.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Views/walkie_talkie_purchase_success_screen.dart';
 import 'package:fgtracker/app/global_widget/blend_mask.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';

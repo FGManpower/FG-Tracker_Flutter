@@ -14,15 +14,11 @@ class WalkieTalkieTrialBinding extends Bindings {
     );
 
     Get.lazyPut<WalkieTalkieTrialService>(
-          () => WalkieTalkieTrialService(
-        repository: Get.find<WalkieTalkieTrialRepo>(),
-      ),
+      () => WalkieTalkieTrialService(),
     );
 
     Get.lazyPut<WalkieTalkieTrialController>(
-          () => WalkieTalkieTrialController(
-        service: Get.find<WalkieTalkieTrialService>(),
-      ),
+      () => WalkieTalkieTrialController(),
     );
   }
 }

@@ -25,6 +25,8 @@ class Urls {
       '${ConstRes.aBaseUrl}walkie/coupons/apply';
 
   static const String walkieOverview = '${ConstRes.aBaseUrl}walkie/overview';
+  static const String walkieOrderSummary =
+      '${ConstRes.aBaseUrl}walkie/orders/summary';
 
   ///------------------------ Params ------------------------///
   static const String rtcUserName = 'fgtracker';

@@ -53,6 +53,46 @@ class TrackingScreen extends StatelessWidget {
     }
   }
 
+  void _onHeaderDragUpdate(DragUpdateDetails details, double screenHeight) {
+    if (!_sheetController.isAttached || screenHeight <= 0) return;
+    final double deltaFraction = (details.primaryDelta ?? 0) / screenHeight;
+    final double currentSize = _sheetController.size;
+    final double newSize = (currentSize - deltaFraction).clamp(0.12, 0.95);
+    _sheetController.jumpTo(newSize);
+  }
+
+  void _onHeaderDragEnd(DragEndDetails details) {
+    if (!_sheetController.isAttached) return;
+    final double velocity = details.primaryVelocity ?? 0;
+    final double currentSize = _sheetController.size;
+
+    if (velocity < -250) {
+      if (currentSize < 0.35) {
+        _animateSheetTo(0.38);
+      } else {
+        _animateSheetTo(0.95);
+      }
+    } else if (velocity > 250) {
+      if (currentSize > 0.65) {
+        _animateSheetTo(0.38);
+      } else {
+        _animateSheetTo(0.12);
+      }
+    } else {
+      const snapSizes = [0.12, 0.38, 0.95];
+      double closest = snapSizes.first;
+      double minDiff = (currentSize - closest).abs();
+      for (final s in snapSizes) {
+        final diff = (currentSize - s).abs();
+        if (diff < minDiff) {
+          minDiff = diff;
+          closest = s;
+        }
+      }
+      _animateSheetTo(closest);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return PopScope(
@@ -324,6 +364,9 @@ class TrackingScreen extends StatelessWidget {
                       // ── FIXED TOP SECTION OF SHEET: Drag handle + Tabs stay fixed ──
                       GestureDetector(
                         onTap: _toggleSheet,
+                        onVerticalDragUpdate: (details) =>
+                            _onHeaderDragUpdate(details, MediaQuery.of(context).size.height),
+                        onVerticalDragEnd: _onHeaderDragEnd,
                         behavior: HitTestBehavior.opaque,
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
@@ -1520,13 +1563,13 @@ class TrackingScreen extends StatelessWidget {
     return Container(
       width: double.infinity,
       color: Colors.transparent,
-      padding: EdgeInsets.symmetric(vertical: 8.h),
+      padding: EdgeInsets.symmetric(vertical: 10.h),
       alignment: Alignment.center,
       child: Container(
-        width: 44.w,
-        height: 4.5.h,
+        width: 48.w,
+        height: 5.h,
         decoration: BoxDecoration(
-          color: const Color(0xFF94A3B8).withValues(alpha: 0.4),
+          color: const Color(0xFF94A3B8).withValues(alpha: 0.5),
           borderRadius: BorderRadius.circular(3.r),
         ),
       ),

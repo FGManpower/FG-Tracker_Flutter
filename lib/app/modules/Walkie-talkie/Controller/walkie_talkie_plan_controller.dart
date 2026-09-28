@@ -3,7 +3,7 @@ import 'package:fgtracker/app/Data/Repositories/walkie_plan_repo.dart';
 import 'package:fgtracker/app/Model/walkie_plan_model.dart';
 import 'package:fgtracker/app/Model/walkie_coupon_model.dart';
 import 'package:fgtracker/app/Model/walkie_payment_order_model.dart';
-import 'package:fgtracker/app/modules/Walkie-talkie/Views/walkie_talkie_payment_screen.dart';
+import 'package:fgtracker/app/modules/Walkie-talkie/Views/walkie_order_summary_screen.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Views/walkie_talkie_purchase_success_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -579,7 +579,7 @@ class WalkieTalkiePlanController extends GetxController {
       validTill: getValidTillDate(),
     );
 
-    Get.to(() => WalkieTalkiePaymentScreen(order: order));
+    Get.to(() => WalkieOrderSummaryScreen(order: order));
   }
 
   void openPurchaseSuccessScreen() {
