@@ -14,21 +14,32 @@ class WalkieInviteDialog {
     required String groupName,
     required String speakerName,
     required String speakerImage,
-  }) async {
+  }) {
     if (WalkieLaunchTracker.fromWalkieCall) return;
-    if (GroupWalkieService.instance.currentGroupId != null) {
-      await GroupWalkieService.instance.leaveGroup();
+
+    // Dismiss any existing open dialog to prevent stacking
+    if (Get.isDialogOpen ?? false) {
+      Get.back();
     }
-    Get.to(
-      () => const GroupWalkieScreen(),
-      routeName: Routes.groupWalkieScreen,
-      arguments: {
-        "groupId": groupId,
-        "groupName": groupName,
-        "speakerName": speakerName,
-        "speakerImage": speakerImage,
-        "autoOpened": true,
-      },
+
+    Get.dialog(
+      Align(
+        alignment: Alignment.topCenter,
+        child: SafeArea(
+          child: Material(
+            color: Colors.transparent,
+            child: _BannerInviteWidget(
+              groupId: groupId,
+              groupName: groupName,
+              speakerName: speakerName,
+              speakerImage: speakerImage,
+            ),
+          ),
+        ),
+      ),
+      barrierDismissible: true,
+      barrierColor: Colors.black26, // Gentle dark overlay behind top banner
+      useSafeArea: false,
     );
   }
 }
@@ -66,19 +77,21 @@ class _BannerInviteWidgetState extends State<_BannerInviteWidget>
       vsync: this,
       duration: const Duration(seconds: 2),
     )..repeat();
+
+    // Play notification sound on incoming walkie talkie invite
+    try {
+      FlutterRingtonePlayer().playNotification();
+    } catch (_) {}
   }
 
   @override
   void dispose() {
     _rippleController.dispose();
+    // Stop sound when banner is closed or accepted
+    try {
+      FlutterRingtonePlayer().stop();
+    } catch (_) {}
     super.dispose();
-  }
-
-  String _getInitials(String name) {
-    if (name.trim().isEmpty) return "?";
-    List<String> parts = name.trim().split(" ");
-    if (parts.length > 1) return (parts[0][0] + parts[1][0]).toUpperCase();
-    return name.substring(0, name.length >= 2 ? 2 : 1).toUpperCase();
   }
 
   @override
@@ -86,7 +99,7 @@ class _BannerInviteWidgetState extends State<_BannerInviteWidget>
     return Container(
       width: double.infinity,
       margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
-      padding: EdgeInsets.fromLTRB(16.w, 20.h, 16.w, 20.h),
+      padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 16.h),
       decoration: BoxDecoration(
         color: _bgDark,
         borderRadius: BorderRadius.circular(24.r),
@@ -106,7 +119,7 @@ class _BannerInviteWidgetState extends State<_BannerInviteWidget>
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           _buildAnimatedIcon(),
-          SizedBox(width: 14.w),
+          SizedBox(width: 12.w),
           Expanded(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -128,7 +141,7 @@ class _BannerInviteWidgetState extends State<_BannerInviteWidget>
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 17.sp,
+                    fontSize: 15.sp,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -146,8 +159,11 @@ class _BannerInviteWidgetState extends State<_BannerInviteWidget>
                 SizedBox(height: 4.h),
                 Row(
                   children: [
-                    Icon(Icons.people_alt_rounded,
-                        color: _lightPurple, size: 14.sp),
+                    Icon(
+                      Icons.people_alt_rounded,
+                      color: _lightPurple,
+                      size: 14.sp,
+                    ),
                     SizedBox(width: 6.w),
                     Text(
                       "Active Channel",
@@ -162,6 +178,7 @@ class _BannerInviteWidgetState extends State<_BannerInviteWidget>
               ],
             ),
           ),
+          SizedBox(width: 8.w),
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -171,9 +188,13 @@ class _BannerInviteWidgetState extends State<_BannerInviteWidget>
                 iconColor: Colors.white,
                 bgColor: _btnRejectBg,
                 labelColor: Colors.white70,
-                onTap: () => Get.back(),
+                onTap: () {
+                  if (Get.isDialogOpen ?? false) {
+                    Get.back();
+                  }
+                },
               ),
-              SizedBox(width: 16.w),
+              SizedBox(width: 12.w),
               _buildActionButton(
                 icon: Icons.mic_rounded,
                 label: "Accept",
@@ -181,16 +202,27 @@ class _BannerInviteWidgetState extends State<_BannerInviteWidget>
                 isGradient: true,
                 labelColor: _lightPurple,
                 onTap: () async {
-                  Get.back();
+                  // Dismiss banner
+                  if (Get.isDialogOpen ?? false) {
+                    Get.back();
+                  }
+
+                  // Leave previous group if connected
                   if (GroupWalkieService.instance.currentGroupId != null) {
                     await GroupWalkieService.instance.leaveGroup();
                   }
-                  Get.toNamed(Routes.groupWalkieScreen, arguments: {
-                    "groupId": widget.groupId,
-                    "groupName": widget.groupName,
-                    "speakerName": widget.speakerName,
-                    "autoOpened": true,
-                  });
+
+                  // Navigate to Group Walkie Screen
+                  Get.toNamed(
+                    Routes.groupWalkieScreen,
+                    arguments: {
+                      "groupId": widget.groupId,
+                      "groupName": widget.groupName,
+                      "speakerName": widget.speakerName,
+                      "speakerImage": widget.speakerImage,
+                      "autoOpened": true,
+                    },
+                  );
                 },
               ),
             ],
@@ -202,8 +234,8 @@ class _BannerInviteWidgetState extends State<_BannerInviteWidget>
 
   Widget _buildAnimatedIcon() {
     return SizedBox(
-      width: 64.r,
-      height: 64.r,
+      width: 56.r,
+      height: 56.r,
       child: Stack(
         alignment: Alignment.center,
         children: [
@@ -213,8 +245,9 @@ class _BannerInviteWidgetState extends State<_BannerInviteWidget>
               return Stack(
                 alignment: Alignment.center,
                 children: List.generate(3, (i) {
-                  final progress = ((_rippleController.value + i * 0.33) % 1.0);
-                  final size = 40.r + (progress * 24.r);
+                  final progress =
+                  ((_rippleController.value + i * 0.33) % 1.0);
+                  final size = 36.r + (progress * 20.r);
                   final opacity = (1 - progress).clamp(0.0, 1.0);
                   return Container(
                     width: size,
@@ -232,28 +265,31 @@ class _BannerInviteWidgetState extends State<_BannerInviteWidget>
             },
           ),
           Container(
-            width: 44.r,
-            height: 44.r,
+            width: 40.r,
+            height: 40.r,
             padding: EdgeInsets.all(4.r),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: _btnRejectBg,
-              border: Border.all(color: _primaryPurple.withValues(alpha: 0.3), width: 1),
+              border: Border.all(
+                color: _primaryPurple.withValues(alpha: 0.3),
+                width: 1,
+              ),
             ),
             child: Assets.walkieTalkie.walkieDevice.image(
               fit: BoxFit.contain,
             ),
           ),
           Positioned(
-            right: 4.w,
-            bottom: 4.h,
+            right: 2.w,
+            bottom: 2.h,
             child: Container(
-              width: 14.r,
-              height: 14.r,
+              width: 12.r,
+              height: 12.r,
               decoration: BoxDecoration(
                 color: _lightPurple,
                 shape: BoxShape.circle,
-                border: Border.all(color: _bgDark, width: 2.5),
+                border: Border.all(color: _bgDark, width: 2),
               ),
             ),
           ),
@@ -277,8 +313,8 @@ class _BannerInviteWidgetState extends State<_BannerInviteWidget>
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: 46.r,
-            height: 46.r,
+            width: 42.r,
+            height: 42.r,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: isGradient ? null : bgColor,
@@ -299,14 +335,14 @@ class _BannerInviteWidgetState extends State<_BannerInviteWidget>
               ]
                   : null,
             ),
-            child: Icon(icon, color: iconColor, size: 22.sp),
+            child: Icon(icon, color: iconColor, size: 20.sp),
           ),
-          SizedBox(height: 8.h),
+          SizedBox(height: 6.h),
           Text(
             label,
             style: TextStyle(
               color: labelColor,
-              fontSize: 12.sp,
+              fontSize: 11.sp,
               fontWeight: FontWeight.w600,
             ),
           ),

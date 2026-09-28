@@ -29,8 +29,9 @@ class GroupCallingScreen extends GetView<GroupCallingController> {
                 final fullUserId = controller.fullScreenShareUserId.value;
 
                 if (fullUserId != null && fullUserId.isNotEmpty) {
-                  final participant = controller.activeParticipants.firstWhereOrNull(
-                        (p) => p.userId.toString().trim() == fullUserId.trim(),
+                  final participant =
+                      controller.activeParticipants.firstWhereOrNull(
+                    (p) => p.userId.toString().trim() == fullUserId.trim(),
                   );
 
                   if (participant != null) {
@@ -44,8 +45,7 @@ class GroupCallingScreen extends GetView<GroupCallingController> {
                 return GroupParticipantGrid(
                   participants: controller.activeParticipants.toList(),
                   isVideoMode: controller.isVideo,
-                  isScreenShareExpanded:
-                  controller.isScreenShareExpanded.value,
+                  isScreenShareExpanded: controller.isScreenShareExpanded.value,
                   screenSharingUserIds: controller.screenSharingUsers
                       .map((e) => e.toString().trim())
                       .toSet(),
@@ -58,17 +58,15 @@ class GroupCallingScreen extends GetView<GroupCallingController> {
                     controller.openFullScreenShare(userId);
                   },
                   onZoomOut: () {
-
-                    if( controller.isScreenShareExpanded.value){
+                    if (controller.isScreenShareExpanded.value) {
                       controller.isScreenShareExpanded.value = false;
-                    }else{
+                    } else {
                       controller.isScreenShareExpanded.value = true;
                     }
                   },
                 );
               }),
             ),
-
             Obx(() {
               if (controller.fullScreenShareUserId.value != null) {
                 return const SizedBox.shrink();
@@ -95,8 +93,6 @@ class GroupCallingScreen extends GetView<GroupCallingController> {
                 ),
               );
             }),
-
-
             Positioned(
               bottom: 0,
               left: 0,
@@ -116,50 +112,55 @@ class GroupCallingScreen extends GetView<GroupCallingController> {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 5.h),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Expanded(
-            child: Transform.translate(
-              offset: Offset(0, 18.h),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    controller.groupName,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 18.sp,
-                      fontFamily: FontFamily.interSemiBold,
-                      color: Colors.white,
-                    ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  controller.groupName,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 18.sp,
+                    fontFamily: FontFamily.interSemiBold,
+                    color: Colors.white,
                   ),
-                  SizedBox(height: 2.h),
-                  Obx(() => Text(
+                ),
+                SizedBox(height: 2.h),
+                Obx(
+                      () => Text(
                     "${controller.activeParticipants.length} in call · ${controller.totalMemberCount} members",
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 13.sp,
                       fontFamily: FontFamily.interRegular,
                       color: Colors.white70,
                     ),
-                  )),
-                  SizedBox(height: 6.h),
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        width: 8.r,
-                        height: 8.r,
-                        decoration: const BoxDecoration(
-                          color: Colors.greenAccent,
-                          shape: BoxShape.circle,
-                        ),
+                  ),
+                ),
+                SizedBox(height: 6.h),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      width: 8.r,
+                      height: 8.r,
+                      decoration: const BoxDecoration(
+                        color: Colors.greenAccent,
+                        shape: BoxShape.circle,
                       ),
-                      SizedBox(width: 6.w),
-                      Obx(() => Text(
+                    ),
+                    SizedBox(width: 6.w),
+                    Obx(
+                          () => Text(
                         controller.callStatus.value == "Connected"
                             ? controller.formattedDuration
                             : "${controller.callStatus.value}...",
@@ -168,21 +169,44 @@ class GroupCallingScreen extends GetView<GroupCallingController> {
                           fontFamily: FontFamily.interMedium,
                           color: Colors.greenAccent,
                         ),
-                      )),
-                    ],
-                  ),
-                ],
-              ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
-          SizedBox(
-            width: 44.w,
-            child: IconButton(
-              padding: EdgeInsets.zero,
-              icon: const Icon(Icons.people_outline,
-                  color: Colors.white, size: 28),
-              onPressed: controller.openParticipantsSheet,
-            ),
+          SizedBox(width: 8.w),
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              SizedBox(
+                width: 44.w,
+                height: 44.w,
+                child: IconButton(
+                  padding: EdgeInsets.zero,
+                  icon: const Icon(
+                    Icons.people_outline,
+                    color: Colors.white,
+                    size: 28,
+                  ),
+                  onPressed: controller.openParticipantsSheet,
+                ),
+              ),
+              if (controller.isVideo) ...[
+                SizedBox(height: 8.h),
+                ControlItem(
+                  icon: Icons.cameraswitch_rounded,
+                  label: "Flip",
+                  bgColor: Colors.white,
+                  iconColor: const Color(0xFF6E5CA4),
+                  borderColor: const Color(0xFFE9E5FE),
+                  onTap: controller.switchCamera,
+                ),
+              ],
+            ],
           ),
         ],
       ),

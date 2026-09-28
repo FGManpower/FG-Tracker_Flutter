@@ -39,7 +39,7 @@ class GroupCallControls extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               SizedBox(width: 4.w),
-              _ControlItem(
+              ControlItem(
                 icon: Icons.more_horiz_rounded,
                 label: "More",
                 bgColor: Colors.white,
@@ -49,7 +49,7 @@ class GroupCallControls extends StatelessWidget {
               ),
               SizedBox(width: 8.w),
               if (isVideo) ...[
-                _ControlItem(
+                ControlItem(
                   icon: isVideoOn
                       ? Icons.videocam_rounded
                       : Icons.videocam_off_rounded,
@@ -61,18 +61,18 @@ class GroupCallControls extends StatelessWidget {
                 ),
                 SizedBox(width: 8.w),
               ],
-              if (isVideo && isVideoOn && !isScreenSharing) ...[
-                _ControlItem(
-                  icon: Icons.cameraswitch_rounded,
-                  label: "Flip",
-                  bgColor: Colors.white,
-                  iconColor: const Color(0xFF6E5CA4),
-                  borderColor: const Color(0xFFE9E5FE),
-                  onTap: controller.switchCamera,
-                ),
-                SizedBox(width: 8.w),
-              ],
-              _ControlItem(
+              // if (isVideo && isVideoOn && !isScreenSharing) ...[
+              //   _ControlItem(
+              //     icon: Icons.cameraswitch_rounded,
+              //     label: "Flip",
+              //     bgColor: Colors.white,
+              //     iconColor: const Color(0xFF6E5CA4),
+              //     borderColor: const Color(0xFFE9E5FE),
+              //     onTap: controller.switchCamera,
+              //   ),
+              //   SizedBox(width: 8.w),
+              // ],
+              ControlItem(
                 icon: Icons.call_end_rounded,
                 label: "End call",
                 bgColor: const Color(0xFFFF3B30),
@@ -82,7 +82,7 @@ class GroupCallControls extends StatelessWidget {
                 onTap: controller.endCall,
               ),
               SizedBox(width: 8.w),
-              _ControlItem(
+              ControlItem(
                 icon: isAudioOn ? Icons.mic_rounded : Icons.mic_off_rounded,
                 label: isAudioOn ? "Mute" : "Unmute",
                 bgColor: Colors.white,
@@ -91,7 +91,7 @@ class GroupCallControls extends StatelessWidget {
                 onTap: controller.toggleMic,
               ),
               SizedBox(width: 8.w),
-              _ControlItem(
+              ControlItem(
                 icon: isSpeakerOn
                     ? Icons.volume_up_rounded
                     : Icons.volume_off_rounded,
@@ -110,7 +110,7 @@ class GroupCallControls extends StatelessWidget {
   }
 }
 
-class _ControlItem extends StatelessWidget {
+class ControlItem extends StatelessWidget {
   final IconData icon;
   final String label;
   final Color bgColor;
@@ -120,7 +120,7 @@ class _ControlItem extends StatelessWidget {
   final double iconSize;
   final VoidCallback onTap;
 
-  const _ControlItem({
+  const ControlItem({
     required this.icon,
     required this.label,
     required this.bgColor,
