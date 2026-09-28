@@ -90,12 +90,7 @@ class _HomeScreenState extends State<HomeScreen> {
             padding: EdgeInsets.only(bottom: 20.h),
             children: [
               BannerUi(),
-              // ElevatedButton(onPressed: () {
-              //   SocketDashboardService.instance.requestGroupCount();
-              // }, child: Text("Request to count")),
-              SizedBox(height: 18.h),
               StatsGrid(controller: controller),
-              SizedBox(height: 10.h),
               SizedBox(height: 10.h),
               QuickActionsSection(),
               SizedBox(height: 6.h),

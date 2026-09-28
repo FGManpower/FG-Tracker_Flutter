@@ -205,7 +205,34 @@ class MessageRepo {
     return ForwardMessageResponse.fromJson(response);
   }
 
+  static Future<dynamic> blockUser({
+    required int blockedUserId,
+  }) async {
+    final data = {
+      "blockedUserId": blockedUserId,
+    };
 
+    final response = await HttpUtil().Authpost(
+      "/blockUser",
+      data: data,
+    );
 
+    return response;
+  }
+
+  static Future<dynamic> unblockUser({
+    required int blockedUserId,
+  }) async {
+    final data = {
+      "blockedUserId": blockedUserId,
+    };
+
+    final response = await HttpUtil().Authpost(
+      "/unblockUser",
+      data: data,
+    );
+
+    return response;
+  }
 
 }

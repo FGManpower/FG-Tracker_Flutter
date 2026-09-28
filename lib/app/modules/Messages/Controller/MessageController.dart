@@ -73,6 +73,10 @@ class MessageController extends GetxController with WidgetsBindingObserver {
   final RxString floatingDate = "".obs;
   final RxBool showFloatingDate = false.obs;
   final Rxn<MessageData> editingMessage = Rxn<MessageData>();
+  final RxBool isBlocking = false.obs;
+  final RxBool isUnblocking = false.obs;
+  final RxBool isBlocked = false.obs;
+  final RxBool blockedByMe = false.obs;
 
   RxString privateChatId = "".obs;
 
@@ -848,39 +852,53 @@ class MessageController extends GetxController with WidgetsBindingObserver {
       if (result.status == true) {
         final messages = result.messageData ?? [];
 
-        _messages
-          ..clear()
-          ..addAll(messages.reversed);
+        if (result.status == true) {
+          final blockStatus = result.blockStatus;
 
-        final pinnedId = result.pinnedMessageId;
+          if (blockStatus != null) {
+            isBlocked.value = blockStatus.isBlocked == true;
+            blockedByMe.value = blockStatus.blockedByMe == true;
+          } else {
+            isBlocked.value = false;
+            blockedByMe.value = false;
+          }
 
-        if (pinnedId != null) {
-          final pinned = _messages.firstWhereOrNull(
-            (message) => message.id == pinnedId,
-          );
+          final messages = result.messageData ?? [];
 
-          if (pinned != null) {
-            pinnedMessage.value = pinned;
-            showPinnedBanner.value = true;
+          _messages
+            ..clear()
+            ..addAll(messages.reversed);
+
+          final pinnedId = result.pinnedMessageId;
+
+          if (pinnedId != null) {
+            final pinned = _messages.firstWhereOrNull(
+              (message) => message.id == pinnedId,
+            );
+
+            if (pinned != null) {
+              pinnedMessage.value = pinned;
+              showPinnedBanner.value = true;
+            } else {
+              pinnedMessage.value = null;
+              showPinnedBanner.value = false;
+            }
           } else {
             pinnedMessage.value = null;
             showPinnedBanner.value = false;
           }
+
+          updateMessageStream();
+          isCreator.value = result.isCreator ?? false;
+
+          if (result.pagination != null) {
+            hasMoreOlderMessages.value = result.pagination!.hasNextPage == true;
+          }
+
+          scrollToBottom();
         } else {
-          pinnedMessage.value = null;
-          showPinnedBanner.value = false;
+          CommonDialog.errorMessage(result.message);
         }
-
-        updateMessageStream();
-        isCreator.value = result.isCreator ?? false;
-
-        if (result.pagination != null) {
-          hasMoreOlderMessages.value = result.pagination!.hasNextPage == true;
-        }
-
-        scrollToBottom();
-      } else {
-        CommonDialog.errorMessage(result.message);
       }
     } catch (e) {
       log("Private History Error: $e");
@@ -1202,7 +1220,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
   void handlePrivateChatCleared(Map<String, dynamic> data) {
     final conversationId =
-    int.tryParse(data['conversationId']?.toString() ?? '');
+        int.tryParse(data['conversationId']?.toString() ?? '');
 
     if (conversationId == null) return;
 
@@ -1231,7 +1249,61 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     );
   }
 
+  Future<String?> blockUser(int blockedUserId) async {
+    if (isBlocking.value) return null;
 
+    isBlocking.value = true;
+
+    try {
+      final response = await MessageRepo.blockUser(
+        blockedUserId: blockedUserId,
+      );
+
+      if (response is Map && response["status"] == true) {
+        isBlocked.value = true;
+        blockedByMe.value = true;
+
+        return response["message"]?.toString() ?? "User blocked successfully";
+      }
+
+      return response is Map
+          ? response["message"]?.toString()
+          : "Unable to block user";
+    } catch (e) {
+      log("Block user error: $e");
+      return null;
+    } finally {
+      isBlocking.value = false;
+    }
+  }
+
+  Future<String?> unblockUser(int blockedUserId) async {
+    if (isUnblocking.value) return null;
+
+    isUnblocking.value = true;
+
+    try {
+      final response = await MessageRepo.unblockUser(
+        blockedUserId: blockedUserId,
+      );
+
+      if (response is Map && response["status"] == true) {
+        isBlocked.value = false;
+        blockedByMe.value = false;
+
+        return response["message"]?.toString() ?? "User unblocked successfully";
+      }
+
+      return response is Map
+          ? response["message"]?.toString()
+          : "Unable to unblock user";
+    } catch (e) {
+      log("Unblock user error: $e");
+      return null;
+    } finally {
+      isUnblocking.value = false;
+    }
+  }
 
   Future<void> loadOlderPrivateMessages() async {
     if (isLoadingOlderMessages.value) return;
@@ -1264,7 +1336,6 @@ class MessageController extends GetxController with WidgetsBindingObserver {
       );
 
       if (result.status == true) {
-
         final olderMessages = result.messageData ?? [];
 
         if (olderMessages.isNotEmpty) {

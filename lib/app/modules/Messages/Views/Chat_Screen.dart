@@ -2,6 +2,7 @@ import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/Dialog/Common_dialog.dart';
 import 'package:fgtracker/app/Core/values/Dialog/DialogBox.dart';
+import 'package:fgtracker/app/Core/values/Utils.dart' show Utils;
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Core/values/utility.dart';
 import 'package:fgtracker/app/Data/Services/Tracking.dart';
@@ -220,57 +221,64 @@ class ChatScreen extends GetView<MessageController> {
                   ),
                 );
               }),
-              ChatInputArea(
-                messageText: controller.messageText,
-                imagePath: controller.imagePaths,
-                videoPaths: controller.videoPaths,
-                videoThumbnails: controller.videoThumbnails,
-                videoDurations: controller.videoDurations,
-                documentPath: controller.documentPath,
-                isSending: controller.isSending,
-                textController: _controller,
-                messageController: controller,
-                onSend: _sendMessage,
-                uploadingVideoIndexes: controller.uploadingVideoIndexes,
-                videoUploadProgress: controller.videoUploadProgress,
-                onImageSelected: (paths) {
-                  controller.imagePaths.addAll(paths);
-                },
-                onVoiceSend: (voicePath) {
-                  if (Utility.isNotNullEmptyOrFalse(voicePath)) {
-                    controller.uploadAudio(voicePath);
-                  }
-                },
-                onVideosSelected: (paths) async {
-                  if (paths.isNotEmpty) {
-                    await controller.addVideos(paths);
-                  }
-                },
-                isUploadingVideo: controller.isUploadingVideo,
-                uploadProgress: controller.uploadProgress,
-                onDocumentSelected: (path) async {
-                  if (Utility.isNotNullEmptyOrFalse(path)) {
-                    controller.documentPath.value = path;
-                  }
-                },
-                onLocationSelected: () async {
-                  final location = await Get.to<LocationMessage>(
-                    () => const LocationPickerPage(),
-                  );
-                  if (location != null) {
-                    await controller.sendLocation(location: location);
-                  }
-                },
-                onContactSelected: () async {
-                  final contact = await Get.to<ContactMessage>(
-                    () => const ContactPickerPage(),
-                  );
-                  if (contact != null) {
-                    await controller.sendContact(contact: contact);
-                  }
-                },
-              ),
-            ],
+              Obx(() {
+                if (controller.isBlocked.value) {
+                  return _buildBlockedMessage();
+                }
+
+                return ChatInputArea(
+                  messageText: controller.messageText,
+                  imagePath: controller.imagePaths,
+                  videoPaths: controller.videoPaths,
+                  videoThumbnails: controller.videoThumbnails,
+                  videoDurations: controller.videoDurations,
+                  documentPath: controller.documentPath,
+                  isSending: controller.isSending,
+                  textController: _controller,
+                  messageController: controller,
+                  onSend: _sendMessage,
+                  uploadingVideoIndexes: controller.uploadingVideoIndexes,
+                  videoUploadProgress: controller.videoUploadProgress,
+                  onImageSelected: (paths) {
+                    controller.imagePaths.addAll(paths);
+                  },
+                  onVoiceSend: (voicePath) {
+                    if (Utility.isNotNullEmptyOrFalse(voicePath)) {
+                      controller.uploadAudio(voicePath);
+                    }
+                  },
+                  onVideosSelected: (paths) async {
+                    if (paths.isNotEmpty) {
+                      await controller.addVideos(paths);
+                    }
+                  },
+                  isUploadingVideo: controller.isUploadingVideo,
+                  uploadProgress: controller.uploadProgress,
+                  onDocumentSelected: (path) async {
+                    if (Utility.isNotNullEmptyOrFalse(path)) {
+                      controller.documentPath.value = path;
+                    }
+                  },
+                  onLocationSelected: () async {
+                    final location = await Get.to<LocationMessage>(
+                          () => const LocationPickerPage(),
+                    );
+
+                    if (location != null) {
+                      await controller.sendLocation(location: location);
+                    }
+                  },
+                  onContactSelected: () async {
+                    final contact = await Get.to<ContactMessage>(
+                          () => const ContactPickerPage(),
+                    );
+
+                    if (contact != null) {
+                      await controller.sendContact(contact: contact);
+                    }
+                  },
+                );
+              })            ],
           ),
         ),
       ),
@@ -646,6 +654,101 @@ class ChatScreen extends GetView<MessageController> {
           ],
         ),
         child: Icon(icon, color: _purple, size: 18.sp),
+      ),
+    );
+  }
+
+
+
+
+  Widget _buildBlockedMessage() {
+    final blockedByMe = controller.blockedByMe.value;
+
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(
+        horizontal: 20.w,
+        vertical: 14.h,
+      ),
+      color: Colors.white,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.block_rounded,
+            color: Colors.red,
+            size: 22.sp,
+          ),
+          SizedBox(height: 6.h),
+          Text(
+            blockedByMe
+                ? "You blocked this contact"
+                : "This contact has blocked you",
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Colors.red,
+              fontSize: 13.sp,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          if (blockedByMe) ...[
+            SizedBox(height: 8.h),
+            GestureDetector(
+              onTap: () async {
+                final userId = controller.memberData.userId;
+
+                if (userId == null) return;
+
+                final confirmed = await Get.dialog<bool>(
+                  AlertDialog(
+                    title: const Text("Unblock Contact"),
+                    content: const Text(
+                      "Are you sure you want to unblock this contact?",
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () {
+                          Get.back(result: false);
+                        },
+                        child: const Text("Cancel"),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Get.back(result: true);
+                        },
+                        child: const Text(
+                          "Unblock",
+                          style: TextStyle(
+                            color: Colors.red,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+
+                if (confirmed != true) return;
+
+                final message = await controller.unblockUser(
+                  int.parse(userId.toString()),
+                );
+
+                if (message != null) {
+                  Utils().fluttertoast(message);
+                }
+              },
+              child: Text(
+                "Unblock",
+                style: TextStyle(
+                  color: _purple,
+                  fontSize: 13.sp,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ],
+        ],
       ),
     );
   }
