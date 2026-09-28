@@ -217,7 +217,7 @@ class OtpController extends GetxController {
             "true",
           );
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            Get.offAllNamed(Routes.Home_Screen);
+            Get.offNamedUntil(Routes.Home_Screen, (route) => false);
           });
         }
       } else {
