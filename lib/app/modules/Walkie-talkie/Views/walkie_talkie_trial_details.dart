@@ -1,4 +1,3 @@
-
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/global_widget/blend_mask.dart';
 
@@ -27,23 +26,18 @@ class WalkieTalkieTrialDetailsScreen extends StatefulWidget {
 
 class _WalkieTalkieTrialDetailsScreenState
     extends State<WalkieTalkieTrialDetailsScreen> {
-
   final WalkieTalkieTrialController controller =
-  Get.isRegistered<WalkieTalkieTrialController>()
-      ? Get.find<WalkieTalkieTrialController>()
-      : Get.put(WalkieTalkieTrialController());
+      Get.isRegistered<WalkieTalkieTrialController>()
+          ? Get.find<WalkieTalkieTrialController>()
+          : Get.put(WalkieTalkieTrialController());
 
-  static const Color primaryColor =
-  Color(0xFF5B4DFF);
+  static const Color primaryColor = Color(0xFF5B4DFF);
 
-  static const Color textColor =
-  Color(0xFF1E1B4B);
+  static const Color textColor = Color(0xFF1E1B4B);
 
-  static const Color subtitleColor =
-  Color(0xFF6B7280);
+  static const Color subtitleColor = Color(0xFF6B7280);
 
-  static const Color backgroundColor =
-  Color(0xFFF6F8FE);
+  static const Color backgroundColor = Color(0xFFF6F8FE);
 
   // =====================================================
   // RESPONSIVE FONT SCALING HELPER (Mobile / Tab / PC)
@@ -118,21 +112,13 @@ class _WalkieTalkieTrialDetailsScreenState
                       color: primaryColor,
                       minHeight: 2,
                     ),
-
                   _buildHeroGraphic(),
-
                   SizedBox(height: 6.h),
-
                   _buildHeadingSection(),
-
                   SizedBox(height: 8.h),
-
                   _buildFreeTrialStatusCard(),
-
                   SizedBox(height: 8.h),
-
                   _buildFeaturesAndCtaCard(context),
-
                   SizedBox(height: 10.h),
                 ],
               ),
@@ -491,10 +477,10 @@ class _WalkieTalkieTrialDetailsScreenState
                             trialActive
                                 ? "Trial Time Remaining"
                                 : trialExpired
-                                ? "Trial Expired"
-                                : hasSubscription
-                                ? "Subscription Active"
-                                : "7 Days Trial Period",
+                                    ? "Trial Expired"
+                                    : hasSubscription
+                                        ? "Subscription Active"
+                                        : "7 Days Trial Period",
                             fontsize: _sp(11),
                             fontfamily: FontFamily.interMedium,
                             color: textColor,
@@ -505,14 +491,12 @@ class _WalkieTalkieTrialDetailsScreenState
                         trialActive
                             ? controller.remainingLabel
                             : trialExpired
-                            ? "Expired"
-                            : hasSubscription
-                            ? "Active"
-                            : "Expires in 7 days",
+                                ? "Expired"
+                                : hasSubscription
+                                    ? "Active"
+                                    : "Expires in 7 days",
                         fontsize: _sp(11),
-                        color: trialExpired
-                            ? Colors.red
-                            : subtitleColor,
+                        color: trialExpired ? Colors.red : subtitleColor,
                       ),
                     ],
                   ),
@@ -617,9 +601,7 @@ class _WalkieTalkieTrialDetailsScreenState
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(
-                      canUse
-                          ? Icons.mic_rounded
-                          : Icons.play_arrow_rounded,
+                      canUse ? Icons.mic_rounded : Icons.play_arrow_rounded,
                       color: Colors.white,
                       size: _sp(20),
                     ),
@@ -788,11 +770,8 @@ class _WalkieTalkieTrialDetailsScreenState
   }
 
   void _openPlanDetails() {
-
     Get.to(
-
-          () => const WalkieTalkiePlanDetails(
-
+      () => const WalkieTalkiePlanDetails(
         initialTabIndex: 0,
       ),
     );
@@ -803,18 +782,12 @@ class _WalkieTalkieTrialDetailsScreenState
   // =====================================================
 
   void _showStartFreeTrialBottomSheet(
-      BuildContext context,
-      ) {
-
+    BuildContext context,
+  ) {
     showModalBottomSheet<void>(
-
       context: context,
-
       isScrollControlled: true,
-
-      backgroundColor:
-      Colors.transparent,
-
+      backgroundColor: Colors.transparent,
       builder: (ctx) {
         final bool isWideScreen = MediaQuery.of(ctx).size.width > 550;
 
@@ -834,33 +807,20 @@ class _WalkieTalkieTrialDetailsScreenState
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
-
                 children: [
-
                   // Drag indicator
 
                   Center(
-
                     child: Container(
-
                       margin: EdgeInsets.only(
-
                         top: 12.h,
-
                         bottom: 14.h,
                       ),
-
                       width: 44.w,
-
                       height: 4.h,
-
                       decoration: BoxDecoration(
-
-                        color:
-                        const Color(0xFFB4B7CC),
-
-                        borderRadius:
-                        BorderRadius.circular(2.r),
+                        color: const Color(0xFFB4B7CC),
+                        borderRadius: BorderRadius.circular(2.r),
                       ),
                     ),
                   ),
@@ -958,8 +918,7 @@ class _WalkieTalkieTrialDetailsScreenState
                                   child: Column(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.center,
+                                    mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
                                       reausabletext(
                                         controller.trialDurationFreeLabel,
@@ -973,8 +932,7 @@ class _WalkieTalkieTrialDetailsScreenState
                                         style: TextStyle(
                                           fontSize: _sp(10.5),
                                           color: subtitleColor,
-                                          fontFamily:
-                                              FontFamily.interRegular,
+                                          fontFamily: FontFamily.interRegular,
                                           height: 1.25,
                                         ),
                                       ),
@@ -1015,8 +973,7 @@ class _WalkieTalkieTrialDetailsScreenState
                                   child: Column(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.center,
+                                    mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
                                       reausabletext(
                                         "Valid for 7 Days",
@@ -1030,8 +987,7 @@ class _WalkieTalkieTrialDetailsScreenState
                                         style: TextStyle(
                                           fontSize: _sp(10.5),
                                           color: subtitleColor,
-                                          fontFamily:
-                                              FontFamily.interRegular,
+                                          fontFamily: FontFamily.interRegular,
                                           height: 1.25,
                                         ),
                                       ),
@@ -1226,52 +1182,29 @@ class _WalkieTalkieTrialDetailsScreenState
   // =====================================================
 
   Widget _buildTrialHighlightCard({
-
     required IconData icon,
-
     required String title,
-
     required String subtitle,
-
   }) {
-
     return Container(
-
       padding: EdgeInsets.all(12.w),
-
       decoration: BoxDecoration(
-
         color: const Color(0xFFF6F5FF),
-
-        borderRadius:
-        BorderRadius.circular(14.r),
-
+        borderRadius: BorderRadius.circular(14.r),
         border: Border.all(
-
           color: const Color(0xFFE9E5FF),
         ),
       ),
-
       child: Column(
-
-        crossAxisAlignment:
-        CrossAxisAlignment.start,
-
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-
           Container(
-
             width: 34.w,
-
             height: 34.w,
-
             decoration: const BoxDecoration(
-
               color: Color(0xFFECEBFF),
-
               shape: BoxShape.circle,
             ),
-
             child: Icon(
               icon,
               color: const Color(0xFF6B4DFF),
@@ -1305,15 +1238,10 @@ class _WalkieTalkieTrialDetailsScreenState
   // =====================================================
 
   Widget _buildTrialMiniFeature({
-
     required IconData icon,
-
     required String title,
-
     required String desc,
-
   }) {
-
     return Container(
       padding: EdgeInsets.symmetric(
         horizontal: 10.w,
@@ -1563,20 +1491,12 @@ class _WalkieTalkieTrialDetailsScreenState
   // =====================================================
 
   Widget _buildErrorState() {
-
     return Center(
-
       child: Padding(
-
         padding: EdgeInsets.all(24.w),
-
         child: Column(
-
-          mainAxisSize:
-          MainAxisSize.min,
-
+          mainAxisSize: MainAxisSize.min,
           children: [
-
             Icon(
               Icons.wifi_off_rounded,
               size: _sp(52),
@@ -1629,24 +1549,15 @@ class _WalkieTalkieTrialDetailsScreenState
   // =====================================================
 
   BoxDecoration _cardDecoration() {
-
     return BoxDecoration(
-
       color: Colors.white,
-
-      borderRadius:
-      BorderRadius.circular(16.r),
-
+      borderRadius: BorderRadius.circular(16.r),
       boxShadow: [
-
         BoxShadow(
-
           color: Colors.black.withValues(
             alpha: 0.03,
           ),
-
           blurRadius: 10,
-
           offset: const Offset(0, 3),
         ),
       ],

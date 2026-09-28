@@ -31,6 +31,7 @@ abstract class Routes {
   static const walkieTalkieTrialDetails = _Paths.walkieTalkieTrialDetails;
   static const walkieTalkiePlanScreen = _Paths.walkieTalkiePlanScreen;
   static const walkieTalkiePurchaseSuccess = _Paths.walkieTalkiePurchaseSuccess;
+  static const walkieTalkiePayment = _Paths.walkieTalkiePayment;
   static const SOSScreen = _Paths.SOSScreen;
   static const groupCallingScreen = _Paths.groupCallingScreen;
   static const groupIncomingCallScreen = _Paths.groupIncomingCallScreen;
@@ -76,6 +77,7 @@ abstract class _Paths {
   static const walkieTalkieTrialDetails = '/walkie-talkie-trial-details';
   static const walkieTalkiePlanScreen = '/walkie-talkie-plan';
   static const walkieTalkiePurchaseSuccess = '/walkie-talkie-purchase-success';
+  static const walkieTalkiePayment = '/walkie-talkie-payment';
   static const SOSScreen = '/sos';
   static const groupCallingScreen = '/groupCallingScreen';
   static const groupIncomingCallScreen = '/groupIncomingCallScreen';

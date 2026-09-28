@@ -1,4 +1,3 @@
-
 import 'dart:async';
 import 'dart:io';
 
@@ -32,62 +31,49 @@ class WalkieTalkieTrialController extends GetxController
   WalkieTrial? get trial => data?.trial;
   WalkiePricing? get pricing => data?.pricing;
 
-  bool get canUseWalkie =>
-      data?.access?.canUseWalkie == true;
+  bool get canUseWalkie => data?.access?.canUseWalkie == true;
 
-  bool get isTrialEligible =>
-      trial?.isEligibleForTrial == true;
+  bool get isTrialEligible => trial?.isEligibleForTrial == true;
 
   bool get isTrialActive =>
-      trial?.isActive == true &&
-          remainingSeconds.value > 0;
+      trial?.isActive == true && remainingSeconds.value > 0;
 
   bool get hasActiveSubscription =>
       data?.subscription?.hasActiveSubscription == true;
 
   bool get showTrialCountdown =>
-      data?.actions?.showTrialCountdown == true &&
-          trial?.isActive == true;
+      data?.actions?.showTrialCountdown == true && trial?.isActive == true;
 
   bool get showSubscribe =>
-      data?.actions?.showSubscribe == true &&
-          pricing?.available == true;
+      data?.actions?.showSubscribe == true && pricing?.available == true;
 
   bool get showTrialExpired =>
-      data?.actions?.showTrialExpired == true ||
-          trial?.isExpired == true;
+      data?.actions?.showTrialExpired == true || trial?.isExpired == true;
 
   int get totalSeconds {
-    final value =
-        trial?.totalSeconds ?? trial?.durationSeconds ?? 0;
+    final value = trial?.totalSeconds ?? trial?.durationSeconds ?? 0;
 
     return value < 0 ? 0 : value;
   }
 
   int get usedSeconds {
-    if (trial?.isActive == true &&
-        trial?.expiresAt != null) {
-      return (totalSeconds - remainingSeconds.value)
-          .clamp(0, totalSeconds);
+    if (trial?.isActive == true && trial?.expiresAt != null) {
+      return (totalSeconds - remainingSeconds.value).clamp(0, totalSeconds);
     }
 
-    return (trial?.usedSeconds ?? 0)
-        .clamp(0, totalSeconds);
+    return (trial?.usedSeconds ?? 0).clamp(0, totalSeconds);
   }
 
   double get usageProgress {
     if (totalSeconds == 0) return 0;
 
-    return (usedSeconds / totalSeconds)
-        .clamp(0.0, 1.0);
+    return (usedSeconds / totalSeconds).clamp(0.0, 1.0);
   }
 
-  String get usageLabel =>
-      '${formatDuration(usedSeconds)} / '
-          '${formatDuration(totalSeconds)}';
+  String get usageLabel => '${formatDuration(usedSeconds)} / '
+      '${formatDuration(totalSeconds)}';
 
-  String get remainingLabel =>
-      formatDuration(remainingSeconds.value);
+  String get remainingLabel => formatDuration(remainingSeconds.value);
 
   String get priceLabel {
     final amount = pricing?.price;
@@ -102,9 +88,7 @@ class WalkieTalkieTrialController extends GetxController
 
     final currency = pricing?.currency ?? 'INR';
 
-    return currency == 'INR'
-        ? '₹$formatted'
-        : '$currency $formatted';
+    return currency == 'INR' ? '₹$formatted' : '$currency $formatted';
   }
 
   String get priceTypeLabel {
@@ -178,15 +162,13 @@ class WalkieTalkieTrialController extends GetxController
         return;
       }
 
-      errorMessage.value =
-      'Please check your internet connection.';
+      errorMessage.value = 'Please check your internet connection.';
     } on TimeoutException {
       if (isClosed || requestId != _requestVersion) {
         return;
       }
 
-      errorMessage.value =
-      'The request timed out. Please try again.';
+      errorMessage.value = 'The request timed out. Please try again.';
     } catch (error, stackTrace) {
       if (isClosed || requestId != _requestVersion) {
         return;
@@ -201,7 +183,7 @@ class WalkieTalkieTrialController extends GetxController
       );
 
       errorMessage.value =
-      'Unable to load Walkie-Talkie details. Please try again.';
+          'Unable to load Walkie-Talkie details. Please try again.';
     } finally {
       if (!isClosed && requestId == _requestVersion) {
         isLoading.value = false;
@@ -249,7 +231,7 @@ class WalkieTalkieTrialController extends GetxController
 
     _countdownTimer = Timer.periodic(
       const Duration(seconds: 1),
-          (_) => _tickCountdown(),
+      (_) => _tickCountdown(),
     );
   }
 
@@ -258,12 +240,10 @@ class WalkieTalkieTrialController extends GetxController
 
     if (expiry == null) return;
 
-    final milliseconds =
-        expiry.difference(DateTime.now()).inMilliseconds;
+    final milliseconds = expiry.difference(DateTime.now()).inMilliseconds;
 
-    remainingSeconds.value = milliseconds <= 0
-        ? 0
-        : (milliseconds / 1000).ceil();
+    remainingSeconds.value =
+        milliseconds <= 0 ? 0 : (milliseconds / 1000).ceil();
 
     if (remainingSeconds.value == 0) {
       _countdownTimer?.cancel();
@@ -275,8 +255,8 @@ class WalkieTalkieTrialController extends GetxController
 
   @override
   void didChangeAppLifecycleState(
-      AppLifecycleState state,
-      ) {
+    AppLifecycleState state,
+  ) {
     if (state == AppLifecycleState.resumed) {
       fetchOverview(refresh: true);
     }

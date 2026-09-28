@@ -27,30 +27,28 @@ class TrackingScreen extends StatelessWidget {
   final Rx<MapType> _mapType = MapType.normal.obs;
   final DraggableScrollableController _sheetController =
       DraggableScrollableController();
-  final RxDouble _sheetExtent = 0.42.obs;
+  final RxDouble _sheetExtent = 0.38.obs;
   static bool _isHelpDialogOpen = false;
   static DateTime? _lastHelpTapTime;
 
+  void _animateSheetTo(double extent, {int millis = 300}) {
+    if (_sheetController.isAttached) {
+      _sheetController.animateTo(
+        extent,
+        duration: Duration(milliseconds: millis),
+        curve: Curves.easeOutCubic,
+      );
+    }
+  }
+
   void _toggleSheet() {
     if (_sheetController.isAttached) {
-      if (_sheetExtent.value < 0.30) {
-        _sheetController.animateTo(
-          0.42,
-          duration: const Duration(milliseconds: 280),
-          curve: Curves.easeOutCubic,
-        );
-      } else if (_sheetExtent.value < 0.65) {
-        _sheetController.animateTo(
-          0.90,
-          duration: const Duration(milliseconds: 280),
-          curve: Curves.easeOutCubic,
-        );
+      if (_sheetExtent.value < 0.25) {
+        _animateSheetTo(0.38);
+      } else if (_sheetExtent.value < 0.70) {
+        _animateSheetTo(0.95);
       } else {
-        _sheetController.animateTo(
-          0.42,
-          duration: const Duration(milliseconds: 280),
-          curve: Curves.easeOutCubic,
-        );
+        _animateSheetTo(0.38);
       }
     }
   }
@@ -62,11 +60,7 @@ class TrackingScreen extends StatelessWidget {
       onPopInvokedWithResult: (didPop, result) {
         if (didPop) return;
         if (_sheetController.isAttached && _sheetExtent.value > 0.45) {
-          _sheetController.animateTo(
-            0.42,
-            duration: const Duration(milliseconds: 280),
-            curve: Curves.easeOutCubic,
-          );
+          _animateSheetTo(0.38);
         } else {
           Get.back();
         }
@@ -118,13 +112,12 @@ class TrackingScreen extends StatelessWidget {
                       controller.isSearchDropdownOpen.value = false;
                       FocusScope.of(context).unfocus();
                     }
-                    if (_sheetController.isAttached &&
-                        _sheetExtent.value > 0.45) {
-                      _sheetController.animateTo(
-                        0.42,
-                        duration: const Duration(milliseconds: 250),
-                        curve: Curves.easeOutCubic,
-                      );
+                    if (_sheetController.isAttached) {
+                      if (_sheetExtent.value > 0.45) {
+                        _animateSheetTo(0.38);
+                      } else if (_sheetExtent.value > 0.20) {
+                        _animateSheetTo(0.12);
+                      }
                     }
                   },
                 ),
@@ -305,12 +298,12 @@ class TrackingScreen extends StatelessWidget {
             },
             child: DraggableScrollableSheet(
               controller: _sheetController,
-              initialChildSize: 0.42,
+              initialChildSize: 0.38,
               minChildSize: 0.12,
-              maxChildSize: 0.90,
+              maxChildSize: 0.95,
               snap: true,
-              snapSizes: const [0.12, 0.42, 0.90],
-              snapAnimationDuration: const Duration(milliseconds: 280),
+              snapSizes: const [0.12, 0.38, 0.95],
+              snapAnimationDuration: const Duration(milliseconds: 300),
               builder: (context, scrollController) {
                 return Container(
                   clipBehavior: Clip.antiAlias,
@@ -326,47 +319,55 @@ class TrackingScreen extends StatelessWidget {
                       ),
                     ],
                   ),
-                  child: Obx(() {
-                    final isGroupTab = controller.selectedTabIndex.value == 1;
-                    return RefreshIndicator(
-                      onRefresh: () async {
-                        if (isGroupTab) {
-                          await controller.fetchGroupData();
-                        } else {
-                          await controller.getUsersWithinRadius();
-                        }
-                      },
-                      color: const Color(0xFF4338CA),
-                      backgroundColor: Colors.white,
-                      displacement: 20.h,
-                      child: CustomScrollView(
-                        controller: scrollController,
-                        physics: const ClampingScrollPhysics(
-                          parent: AlwaysScrollableScrollPhysics(),
+                  child: Column(
+                    children: [
+                      // ── FIXED TOP SECTION OF SHEET: Drag handle + Tabs stay fixed ──
+                      GestureDetector(
+                        onTap: _toggleSheet,
+                        behavior: HitTestBehavior.opaque,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            _buildDragHandle(),
+                            Obx(() => _buildCustomTabs()),
+                            SizedBox(height: 8.h),
+                          ],
                         ),
-                        slivers: [
-                          SliverToBoxAdapter(
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                GestureDetector(
-                                  onTap: _toggleSheet,
-                                  behavior: HitTestBehavior.opaque,
-                                  child: _buildDragHandle(),
-                                ),
-                                _buildCustomTabs(),
-                                SizedBox(height: 10.h),
+                      ),
+
+                      // ── SCROLLABLE BODY CONTENT (Scrolls underneath fixed tabs) ──
+                      Expanded(
+                        child: Obx(() {
+                          final isGroupTab =
+                              controller.selectedTabIndex.value == 1;
+                          return RefreshIndicator(
+                            onRefresh: () async {
+                              if (isGroupTab) {
+                                await controller.fetchGroupData();
+                              } else {
+                                await controller.getUsersWithinRadius();
+                              }
+                            },
+                            color: const Color(0xFF4338CA),
+                            backgroundColor: Colors.white,
+                            displacement: 20.h,
+                            child: CustomScrollView(
+                              controller: scrollController,
+                              physics: const ClampingScrollPhysics(
+                                parent: AlwaysScrollableScrollPhysics(),
+                              ),
+                              slivers: [
+                                if (isGroupTab)
+                                  _buildGroupSliverContent()
+                                else
+                                  _buildLiveTrackingSliverContent(),
                               ],
                             ),
-                          ),
-                          if (isGroupTab)
-                            _buildGroupSliverContent()
-                          else
-                            _buildLiveTrackingSliverContent(),
-                        ],
+                          );
+                        }),
                       ),
-                    );
-                  }),
+                    ],
+                  ),
                 );
               },
             ),
@@ -432,11 +433,7 @@ class TrackingScreen extends StatelessWidget {
           icon: Icons.arrow_back_rounded,
           onTap: () {
             if (_sheetController.isAttached && _sheetExtent.value > 0.45) {
-              _sheetController.animateTo(
-                0.42,
-                duration: const Duration(milliseconds: 280),
-                curve: Curves.easeOutCubic,
-              );
+              _animateSheetTo(0.38);
             } else {
               Get.back();
             }
@@ -654,13 +651,7 @@ class TrackingScreen extends StatelessWidget {
         controller.searchQuery.value = m.name;
         controller.isSearchDropdownOpen.value = false;
         FocusScope.of(context).unfocus();
-        if (_sheetController.isAttached) {
-          _sheetController.animateTo(
-            0.12,
-            duration: const Duration(milliseconds: 250),
-            curve: Curves.easeOutCubic,
-          );
-        }
+        _animateSheetTo(0.38);
         controller.zoomToMember(m);
       },
       child: Padding(
@@ -748,13 +739,8 @@ class TrackingScreen extends StatelessWidget {
         controller.expandedGroupId.value = gIdStr;
         controller.selectGroup(g);
         controller.fetchGroupLocationData(gIdStr);
-        if (_sheetController.isAttached) {
-          _sheetController.animateTo(
-            0.52,
-            duration: const Duration(milliseconds: 280),
-            curve: Curves.easeOutCubic,
-          );
-        }
+        _animateSheetTo(0.38);
+        controller.fitAllMembers();
       },
       child: Padding(
         padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
@@ -1564,12 +1550,8 @@ class TrackingScreen extends StatelessWidget {
             child: GestureDetector(
               onTap: () {
                 controller.selectTab(0);
-                if (_sheetController.isAttached && _sheetExtent.value < 0.30) {
-                  _sheetController.animateTo(
-                    0.52,
-                    duration: const Duration(milliseconds: 280),
-                    curve: Curves.easeOutCubic,
-                  );
+                if (_sheetController.isAttached && _sheetExtent.value < 0.25) {
+                  _animateSheetTo(0.38);
                 }
               },
               child: AnimatedContainer(
@@ -1605,12 +1587,8 @@ class TrackingScreen extends StatelessWidget {
             child: GestureDetector(
               onTap: () {
                 controller.selectTab(1);
-                if (_sheetController.isAttached && _sheetExtent.value < 0.30) {
-                  _sheetController.animateTo(
-                    0.52,
-                    duration: const Duration(milliseconds: 280),
-                    curve: Curves.easeOutCubic,
-                  );
+                if (_sheetController.isAttached && _sheetExtent.value < 0.25) {
+                  _animateSheetTo(0.38);
                 }
               },
               child: AnimatedContainer(
@@ -2027,13 +2005,7 @@ class TrackingScreen extends StatelessWidget {
   // }
 
   void _zoomToMemberFromList(MemberModel member) {
-    if (_sheetController.isAttached) {
-      _sheetController.animateTo(
-        0.11,
-        duration: const Duration(milliseconds: 250),
-        curve: Curves.easeOutCubic,
-      );
-    }
+    _animateSheetTo(0.38);
     controller.zoomToMember(member);
   }
 
@@ -2381,12 +2353,8 @@ class TrackingScreen extends StatelessWidget {
 
                   // Keep sheet expanded so the dropdown members list is visible!
                   if (_sheetController.isAttached &&
-                      _sheetExtent.value < 0.52) {
-                    _sheetController.animateTo(
-                      0.52,
-                      duration: const Duration(milliseconds: 280),
-                      curve: Curves.easeOutCubic,
-                    );
+                      _sheetExtent.value < 0.50) {
+                    _animateSheetTo(0.60);
                   }
                 }
               },
@@ -2858,6 +2826,7 @@ class TrackingScreen extends StatelessWidget {
           );
           return;
         }
+        _animateSheetTo(0.38);
         controller.zoomToMember(member);
       },
       child: Container(
@@ -3345,13 +3314,13 @@ class TrackingScreen extends StatelessWidget {
     return trimmed;
   }
 
-  IconData _getBatteryIcon(int level) {
-    if (level >= 90) return Icons.battery_full_rounded;
-    if (level >= 75) return Icons.battery_6_bar_rounded;
-    if (level >= 50) return Icons.battery_4_bar_rounded;
-    if (level >= 20) return Icons.battery_2_bar_rounded;
-    return Icons.battery_alert_rounded;
-  }
+  // IconData _getBatteryIcon(int level) {
+  //   if (level >= 90) return Icons.battery_full_rounded;
+  //   if (level >= 75) return Icons.battery_6_bar_rounded;
+  //   if (level >= 50) return Icons.battery_4_bar_rounded;
+  //   if (level >= 20) return Icons.battery_2_bar_rounded;
+  //   return Icons.battery_alert_rounded;
+  // }
 
   Widget _placeholderAvatar([String? name]) {
     final String initial = (name != null && name.trim().isNotEmpty)

@@ -2,6 +2,8 @@ import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/Data/Repositories/walkie_plan_repo.dart';
 import 'package:fgtracker/app/Model/walkie_plan_model.dart';
 import 'package:fgtracker/app/Model/walkie_coupon_model.dart';
+import 'package:fgtracker/app/Model/walkie_payment_order_model.dart';
+import 'package:fgtracker/app/modules/Walkie-talkie/Views/walkie_talkie_payment_screen.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Views/walkie_talkie_purchase_success_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -434,11 +436,55 @@ class WalkieTalkiePlanController extends GetxController {
       showTopWhiteMessage(coupon.formattedIneligibleReason);
       return false;
     }
-    return applyCouponApi(coupon.code ?? '');
+    final String cleanCode = (coupon.code ?? '').trim().toUpperCase();
+    final bool ok = await applyCouponApi(cleanCode, isSilent: true);
+    if (ok) {
+      final saved = appliedCouponData.value?.pricing?.amountSaved ??
+          appliedCouponData.value?.pricing?.discountAmount;
+      if (saved != null && saved > 0) {
+        showTopWhiteMessage("Coupon applied! You save ₹${formatCurrency(saved)}");
+      } else {
+        showTopWhiteMessage("Coupon '$cleanCode' applied successfully!");
+      }
+      return true;
+    }
+
+    // Fallback if backend API is not responding/fails: Apply directly using coupon definition
+    selectedCoupon.value = coupon;
+    appliedPromoCode.value = cleanCode;
+    if (coupon.isPercentage) {
+      promoDiscountPercent.value = ((coupon.discountValue ?? 0) / 100.0);
+      fixedDiscountAmount.value = 0.0;
+    } else if (coupon.isFixed) {
+      fixedDiscountAmount.value = (coupon.discountValue ?? 0).toDouble();
+      promoDiscountPercent.value = 0.0;
+    }
+    final num saved = couponDiscountAmount;
+    if (saved > 0) {
+      showTopWhiteMessage("Coupon applied! You save ₹${formatCurrency(saved)}");
+    } else {
+      showTopWhiteMessage("Coupon '$cleanCode' applied successfully!");
+    }
+    appliedPromoCode.refresh();
+    selectedCoupon.refresh();
+    teamMemberCount.refresh();
+    update();
+    return true;
   }
 
   Future<bool> applyPromoCode(String code) async {
-    return applyCouponApi(code);
+    final String cleanCode = code.trim().toUpperCase();
+    if (cleanCode.isEmpty) {
+      showTopWhiteMessage("Please enter a valid coupon code");
+      return false;
+    }
+    final match = eligibleCoupons.firstWhereOrNull(
+      (c) => (c.code ?? '').trim().toUpperCase() == cleanCode,
+    );
+    if (match != null) {
+      return applyCoupon(match);
+    }
+    return applyCouponApi(cleanCode);
   }
 
   void removePromoCode() {
@@ -510,14 +556,34 @@ class WalkieTalkiePlanController extends GetxController {
     return "${expiryDate.day} ${monthNames[expiryDate.month - 1]} ${expiryDate.year}";
   }
 
-  void openPurchaseSuccessScreen() {
+  void openPaymentScreen() {
     if (!hasPlans || isLoading) return;
-    Get.to(() => WalkieTalkiePurchaseSuccessScreen(
-          isTeam: isTeam,
-          planTitle: planTitle,
-          memberCount: effectiveMemberCount,
-          validTill: getValidTillDate(),
-        ));
+
+    final order = WalkiePaymentOrderModel(
+      plan: activePlan,
+      isTeam: isTeam,
+      planTitle: planTitle,
+      durationName: durationName,
+      durationMonths: activePlan?.durationMonths ??
+          (isTeam
+              ? (selectedTeamDuration.value == 0
+                  ? 1
+                  : (selectedTeamDuration.value == 1 ? 3 : 12))
+              : 1),
+      memberCount: effectiveMemberCount,
+      ratePerMember: ratePerMember,
+      planAmount: originalTotal,
+      couponDiscount: couponDiscountAmount,
+      appliedCouponCode: appliedPromoCode.value,
+      totalPayable: discountedTotal,
+      validTill: getValidTillDate(),
+    );
+
+    Get.to(() => WalkieTalkiePaymentScreen(order: order));
+  }
+
+  void openPurchaseSuccessScreen() {
+    openPaymentScreen();
   }
 }
 

@@ -32,6 +32,8 @@ import '../modules/Walkie-talkie/Views/walkie_group_select_screen.dart';
 import '../modules/Walkie-talkie/Views/walkie_talkie_trial_details.dart';
 import '../modules/Walkie-talkie/Views/walkie_talkie_plan_details.dart';
 import '../modules/Walkie-talkie/Views/walkie_talkie_purchase_success_screen.dart';
+import '../modules/Walkie-talkie/Views/walkie_talkie_payment_screen.dart';
+import '../modules/Walkie-talkie/Binding/walkie_talkie_payment_binding.dart';
 import '../modules/Track/Views/Search_Members.dart';
 import '../modules/Track/Views/GroupTrackLocationScreen.dart';
 import '../modules/Walkie-talkie/WalkieTalkieScreen.dart';
@@ -234,6 +236,13 @@ class AppPages {
     GetPage(
       name: Routes.walkieTalkiePurchaseSuccess,
       page: () => const WalkieTalkiePurchaseSuccessScreen(),
+      transition: Transition.rightToLeft,
+      transitionDuration: const Duration(milliseconds: 400),
+    ),
+    GetPage(
+      name: Routes.walkieTalkiePayment,
+      page: () => const WalkieTalkiePaymentScreen(),
+      binding: WalkieTalkiePaymentBinding(),
       transition: Transition.rightToLeft,
       transitionDuration: const Duration(milliseconds: 400),
     ),
