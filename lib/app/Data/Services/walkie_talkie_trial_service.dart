@@ -12,12 +12,7 @@ class WalkieTrialException implements Exception {
 }
 
 class WalkieTalkieTrialService {
-  WalkieTalkieTrialService({
-    WalkieTalkieTrialRepo? repository,
-  }) : _repository =
-      repository ?? const WalkieTalkieTrialRepo();
-
-  final WalkieTalkieTrialRepo _repository;
+  final WalkieTalkieTrialRepo _repository = const WalkieTalkieTrialRepo();
 
   Future<WalkieOverviewData> getOverview() async {
     try {
