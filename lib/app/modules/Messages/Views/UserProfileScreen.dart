@@ -13,11 +13,11 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:fgtracker/app/Model/MemberDataRes.dart';
 import 'package:fgtracker/app/modules/mediaStream/Controller/calling_controller.dart';
-
 import '../../../Data/Services/Socket/Socket_Message_Services.dart';
 
 class UserProfileScreen extends StatefulWidget {
   final MemberData? userData;
+
   const UserProfileScreen({super.key, this.userData});
 
   @override
@@ -32,18 +32,22 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
   MemberData get _member =>
       widget.userData ??
-          (_chatController != null ? _chatController!.memberData : MemberData());
+      (_chatController != null ? _chatController!.memberData : MemberData());
 
   static const Color _purple = Color(0xFF1E1466);
   static const Color _lightPurple = Color(0xFF5045B9);
   static const Color _bg = Color(0xFFF4F3F8);
+
   final RxBool notificationsOn = false.obs;
+
   String get _myId => Global.storageServices.get(PrefConst.userId).toString();
 
   List<MessageData> get _mediaMessages {
     if (_chatController == null) return [];
+
     return _chatController!.messageData.where((m) {
       final t = (m.messageType ?? "").toLowerCase();
+
       return t == "image" ||
           t == "image_text" ||
           t == "video" ||
@@ -53,11 +57,15 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
   bool _isOnline() {
     if (_member.isOnline == true) return true;
+
     if (_member.lastSeen == null || _member.lastSeen!.trim().isEmpty) {
       return false;
     }
+
     final parsed = DateTime.tryParse(_member.lastSeen!.trim());
+
     if (parsed == null) return false;
+
     try {
       return Tracking().getTimeAgo(parsed).toLowerCase() == "just now";
     } catch (_) {
@@ -67,11 +75,15 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
   String _statusText() {
     if (_isOnline()) return "Online";
+
     if (_member.lastSeen == null || _member.lastSeen!.trim().isEmpty) {
       return "Offline";
     }
+
     final parsed = DateTime.tryParse(_member.lastSeen!.trim());
+
     if (parsed == null) return "Offline";
+
     try {
       return Tracking().getTimeAgo(parsed);
     } catch (_) {
@@ -82,17 +94,23 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   String _mediaThumb(MessageData m) {
     final type = (m.messageType ?? "").toLowerCase();
     final content = m.content ?? "";
+
     if (type == "video") {
       final parts = content.split("||");
+
       if (parts.length > 1 && parts[1].isNotEmpty) {
         return "${ConstRes.aImageBaseUrl}${parts[1]}";
       }
+
       return "";
     }
+
     if (type == "image" || type == "image_text") {
       final part = content.split("||").first;
+
       return "${ConstRes.aImageBaseUrl}$part";
     }
+
     return "";
   }
 
@@ -106,7 +124,11 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         scrolledUnderElevation: 0,
         leadingWidth: 64.w,
         leading: Padding(
-          padding: EdgeInsets.only(left: 16.w, top: 8.h, bottom: 8.h),
+          padding: EdgeInsets.only(
+            left: 16.w,
+            top: 8.h,
+            bottom: 8.h,
+          ),
           child: _roundBtn(
             icon: Icons.arrow_back_rounded,
             onTap: () => Get.back(),
@@ -115,7 +137,10 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       ),
       body: SafeArea(
         child: ListView(
-          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+          padding: EdgeInsets.symmetric(
+            horizontal: 16.w,
+            vertical: 8.h,
+          ),
           children: [
             _buildProfileHeader(),
             SizedBox(height: 24.h),
@@ -125,7 +150,6 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             SizedBox(height: 12.h),
             _buildAboutCard(),
             SizedBox(height: 12.h),
-
             // _buildNotificationsCard(),
             SizedBox(height: 8.h),
             _buildEncryptionCard(),
@@ -142,7 +166,10 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     );
   }
 
-  Widget _roundBtn({required IconData icon, required VoidCallback onTap}) {
+  Widget _roundBtn({
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -157,7 +184,11 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             ),
           ],
         ),
-        child: Icon(icon, color: _purple, size: 20.sp),
+        child: Icon(
+          icon,
+          color: _purple,
+          size: 20.sp,
+        ),
       ),
     );
   }
@@ -166,14 +197,15 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     final isOnline = _isOnline();
     final img = _member.profileImage?.toString() ?? "";
     final name = _member.name?.toString() ?? "Member";
+
     final String teamName = (_member.team != null &&
-        _member.team!.trim().isNotEmpty)
+            _member.team!.trim().isNotEmpty)
         ? _member.team!.trim()
         : ((_member.department != null && _member.department!.trim().isNotEmpty)
-        ? _member.department!.trim()
-        : (_member.groupId != null && _member.groupId != 0
-        ? "Group #${_member.groupId}"
-        : "FG Tracker Member"));
+            ? _member.department!.trim()
+            : (_member.groupId != null && _member.groupId != 0
+                ? "Group #${_member.groupId}"
+                : "FG Tracker Member"));
 
     return Column(
       children: [
@@ -184,29 +216,39 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               width: 100.w,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                border: Border.all(color: _lightPurple, width: 2),
+                border: Border.all(
+                  color: _lightPurple,
+                  width: 2,
+                ),
                 gradient: const LinearGradient(
-                  colors: [Color(0xFF8B78FF), Color(0xFF6A5AE0)],
+                  colors: [
+                    Color(0xFF8B78FF),
+                    Color(0xFF6A5AE0),
+                  ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
               ),
               child: (img.isNotEmpty && img.toLowerCase() != 'null')
                   ? ClipOval(
-                child: Image.network(
-                  (img.startsWith('http://') ||
-                      img.startsWith('https://'))
-                      ? img
-                      : "${ConstRes.aImageBaseUrl}$img",
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => Icon(
-                    Icons.person,
-                    color: Colors.white,
-                    size: 45.sp,
-                  ),
-                ),
-              )
-                  : Icon(Icons.person, color: Colors.white, size: 45.sp),
+                      child: Image.network(
+                        (img.startsWith('http://') ||
+                                img.startsWith('https://'))
+                            ? img
+                            : "${ConstRes.aImageBaseUrl}$img",
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => Icon(
+                          Icons.person,
+                          color: Colors.white,
+                          size: 45.sp,
+                        ),
+                      ),
+                    )
+                  : Icon(
+                      Icons.person,
+                      color: Colors.white,
+                      size: 45.sp,
+                    ),
             ),
             if (isOnline)
               Positioned(
@@ -218,7 +260,10 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                   decoration: BoxDecoration(
                     color: const Color(0xFF2BB673),
                     shape: BoxShape.circle,
-                    border: Border.all(color: _bg, width: 3),
+                    border: Border.all(
+                      color: _bg,
+                      width: 3,
+                    ),
                   ),
                 ),
               ),
@@ -245,7 +290,10 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         ),
         SizedBox(height: 8.h),
         Container(
-          padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+          padding: EdgeInsets.symmetric(
+            horizontal: 10.w,
+            vertical: 4.h,
+          ),
           decoration: BoxDecoration(
             color: isOnline ? const Color(0xFFE8F6ED) : Colors.grey.shade200,
             borderRadius: BorderRadius.circular(20.r),
@@ -258,7 +306,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                 width: 8.w,
                 decoration: BoxDecoration(
                   color:
-                  isOnline ? const Color(0xFF2BB673) : Colors.grey.shade500,
+                      isOnline ? const Color(0xFF2BB673) : Colors.grey.shade500,
                   shape: BoxShape.circle,
                 ),
               ),
@@ -305,12 +353,14 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         is_video: isVideo,
         callerName: _member.name,
       );
+
       return;
     }
 
     if (Get.isRegistered<CallingController>()) {
       Get.delete<CallingController>(force: true);
     }
+
     Get.toNamed(
       Routes.callScreen,
       arguments: {
@@ -372,7 +422,11 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           ),
           child: Column(
             children: [
-              Icon(icon, color: _lightPurple, size: 24.sp),
+              Icon(
+                icon,
+                color: _lightPurple,
+                size: 24.sp,
+              ),
               SizedBox(height: 6.h),
               Text(
                 label,
@@ -403,8 +457,10 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           InkWell(
             onTap: () {
               final msgs = _chatController?.messageData ?? <MessageData>[];
+
               final all = msgs.where((m) {
                 final t = (m.messageType ?? "").toLowerCase().trim();
+
                 if (t == "image" ||
                     t == "image_text" ||
                     t == "video" ||
@@ -416,14 +472,20 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                     t.contains("link")) {
                   return true;
                 }
+
                 final c = m.content ?? "";
+
                 return RegExp(
                   r'(https?:\/\/[^\s]+)|(www\.[^\s]+)',
                   caseSensitive: false,
                 ).hasMatch(c);
               }).toList();
 
-              Get.to(() => MediaLinksDocsScreen(mediaMessages: all));
+              Get.to(
+                () => MediaLinksDocsScreen(
+                  mediaMessages: all,
+                ),
+              );
             },
             child: Row(
               children: [
@@ -445,8 +507,11 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-                Icon(Icons.chevron_right_rounded,
-                    color: _lightPurple, size: 20.sp),
+                Icon(
+                  Icons.chevron_right_rounded,
+                  color: _lightPurple,
+                  size: 20.sp,
+                ),
               ],
             ),
           ),
@@ -490,11 +555,11 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                       color: const Color(0xFFF3F1FB),
                       child: thumb.isNotEmpty
                           ? Image.network(
-                        thumb,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) =>
-                            _mediaPlaceholder(type),
-                      )
+                              thumb,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) =>
+                                  _mediaPlaceholder(type),
+                            )
                           : _mediaPlaceholder(type),
                     ),
                   );
@@ -505,7 +570,10 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             SizedBox(height: 10.h),
             Text(
               "No media shared yet",
-              style: TextStyle(fontSize: 13.sp, color: Colors.grey.shade500),
+              style: TextStyle(
+                fontSize: 13.sp,
+                color: Colors.grey.shade500,
+              ),
             ),
           ],
         ],
@@ -515,9 +583,22 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
   Widget _mediaPlaceholder(String type) {
     IconData icon = Icons.insert_drive_file_rounded;
-    if (type == "image" || type == "image_text") icon = Icons.image_rounded;
-    if (type == "video") icon = Icons.videocam_rounded;
-    return Center(child: Icon(icon, color: _lightPurple, size: 28.sp));
+
+    if (type == "image" || type == "image_text") {
+      icon = Icons.image_rounded;
+    }
+
+    if (type == "video") {
+      icon = Icons.videocam_rounded;
+    }
+
+    return Center(
+      child: Icon(
+        icon,
+        color: _lightPurple,
+        size: 28.sp,
+      ),
+    );
   }
 
   Widget _buildAboutCard() {
@@ -540,7 +621,11 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             SizedBox(height: 10.h),
             Row(
               children: [
-                Icon(Icons.phone_rounded, color: _lightPurple, size: 18.sp),
+                Icon(
+                  Icons.phone_rounded,
+                  color: _lightPurple,
+                  size: 18.sp,
+                ),
                 SizedBox(width: 8.w),
                 Text(
                   phone,
@@ -557,8 +642,11 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             SizedBox(height: 8.h),
             Row(
               children: [
-                Icon(Icons.location_on_outlined,
-                    color: _lightPurple, size: 18.sp),
+                Icon(
+                  Icons.location_on_outlined,
+                  color: _lightPurple,
+                  size: 18.sp,
+                ),
                 SizedBox(width: 8.w),
                 Expanded(
                   child: Text(
@@ -594,7 +682,11 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: EdgeInsets.only(left: 14.w, top: 12.h, bottom: 2.h),
+            padding: EdgeInsets.only(
+              left: 14.w,
+              top: 12.h,
+              bottom: 2.h,
+            ),
             child: Text(
               "Notifications",
               style: TextStyle(
@@ -604,23 +696,25 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               ),
             ),
           ),
-          Obx(() => _settingTile(
-            icon: Icons.notifications_rounded,
-            iconBgColor: const Color(0xFFF3F1FB),
-            iconColor: _lightPurple,
-            title: "Mute notifications",
-            trailing: Transform.scale(
-              scale: 0.85,
-              child: Switch(
-                value: notificationsOn.value,
-                activeColor: Colors.white,
-                activeTrackColor: _lightPurple,
-                inactiveThumbColor: Colors.white,
-                inactiveTrackColor: Colors.grey.shade300,
-                onChanged: (v) => notificationsOn.value = v,
+          Obx(
+            () => _settingTile(
+              icon: Icons.notifications_rounded,
+              iconBgColor: const Color(0xFFF3F1FB),
+              iconColor: _lightPurple,
+              title: "Mute notifications",
+              trailing: Transform.scale(
+                scale: 0.85,
+                child: Switch(
+                  value: notificationsOn.value,
+                  activeColor: Colors.white,
+                  activeTrackColor: _lightPurple,
+                  inactiveThumbColor: Colors.white,
+                  inactiveTrackColor: Colors.grey.shade300,
+                  onChanged: (v) => notificationsOn.value = v,
+                ),
               ),
             ),
-          )),
+          ),
           _divider(),
           _settingTile(
             icon: Icons.music_note_rounded,
@@ -672,8 +766,11 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             Get.back();
 
             final chatId = _chatController?.privateChatId.value;
+
             if (chatId == null) {
-              Utils().fluttertoast("Unable to clear chat");
+              Utils().fluttertoast(
+                "Unable to clear chat",
+              );
               return;
             }
 
@@ -690,28 +787,102 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     );
   }
 
-  Widget _buildBlockCard() {
-    return _buildSingleTileCard(
-      icon: Icons.block_rounded,
-      iconBgColor: const Color(0xFFFFF0F0),
-      iconColor: Colors.redAccent,
-      title: "Block ${_member.name ?? 'User'}",
-      titleColor: Colors.redAccent,
-      arrowColor: Colors.redAccent,
-      onTap: () {
-        CommonDialog.ConfirmationDialog(
-          title: "Block User",
-          content: "Are you sure you want to block this user?",
-          confirm: "Block",
-          onConfirm: () {
-            Get.back();
-            Utils().fluttertoast("User Blocked");
-          },
-        );
-      },
+  Future<void> _handleBlockUser() async {
+    final userId = _member.userId;
+
+    if (userId == null) {
+      Utils().fluttertoast("User not found");
+      return;
+    }
+
+    final controller = _chatController;
+
+    if (controller == null) {
+      Utils().fluttertoast("Unable to block user");
+      return;
+    }
+
+    final message = await controller.blockUser(
+      int.parse(userId.toString()),
     );
+
+    if (message != null) {
+      Utils().fluttertoast(message);
+      Get.back();
+    } else {
+      Utils().fluttertoast("Unable to block user");
+    }
   }
 
+  Widget _buildBlockCard() {
+    final controller = _chatController;
+
+    if (controller == null) {
+      return const SizedBox.shrink();
+    }
+
+    return Obx(() {
+      final blocked = controller.isBlocked.value;
+
+      return _buildSingleTileCard(
+        icon: blocked
+            ? Icons.lock_open_rounded
+            : Icons.block_rounded,
+        iconBgColor: blocked
+            ? const Color(0xFFF3F1FB)
+            : const Color(0xFFFFF0F0),
+        iconColor: blocked ? _lightPurple : Colors.redAccent,
+        title: blocked
+            ? "Unblock ${_member.name ?? 'User'}"
+            : "Block ${_member.name ?? 'User'}",
+        titleColor: blocked ? _lightPurple : Colors.redAccent,
+        arrowColor: blocked ? _lightPurple : Colors.redAccent,
+        onTap: blocked
+            ? () {
+          CommonDialog.ConfirmationDialog(
+            title: "Unblock User",
+            content: "Are you sure you want to unblock this user?",
+            confirm: "Unblock",
+            onConfirm: _handleUnblockUser,
+          );
+        }
+            : () {
+          CommonDialog.ConfirmationDialog(
+            title: "Block User",
+            content: "Are you sure you want to block this user?",
+            confirm: "Block",
+            onConfirm: _handleBlockUser,
+          );
+        },
+      );
+    });
+  }
+  Future<void> _handleUnblockUser() async {
+    final userId = _member.userId;
+
+    if (userId == null) {
+      Utils().fluttertoast("User not found");
+      return;
+    }
+
+    final controller = _chatController;
+
+    if (controller == null) {
+      Utils().fluttertoast("Unable to unblock user");
+      return;
+    }
+
+    final message = await controller.unblockUser(
+      int.parse(userId.toString()),
+    );
+
+    if (message != null) {
+      Utils().fluttertoast(message);
+      Get.back();
+    } else {
+      Utils().fluttertoast("Unable to unblock user");
+    }
+  }
   Widget _buildSingleTileCard({
     required IconData icon,
     required Color iconColor,
@@ -737,11 +908,17 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     );
   }
 
-  Widget _whiteCard({required Widget child, EdgeInsets? padding}) {
+  Widget _whiteCard({
+    required Widget child,
+    EdgeInsets? padding,
+  }) {
     return Container(
       width: double.infinity,
-      padding:
-      padding ?? EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+      padding: padding ??
+          EdgeInsets.symmetric(
+            horizontal: 14.w,
+            vertical: 12.h,
+          ),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(14.r),
@@ -758,12 +935,13 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   }
 
   Widget _divider() => Divider(
-    height: 1,
-    thickness: 1,
-    color: Colors.grey.shade100,
-    indent: 62.w,
-    endIndent: 14.w,
-  );
+        height: 1,
+        thickness: 1,
+        color: Colors.grey.shade100,
+        indent: 62.w,
+        endIndent: 14.w,
+      );
+
   Widget _settingTile({
     required IconData icon,
     required Color iconColor,
@@ -779,7 +957,10 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       onTap: onTap,
       borderRadius: BorderRadius.circular(14.r),
       child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
+        padding: EdgeInsets.symmetric(
+          horizontal: 14.w,
+          vertical: 10.h,
+        ),
         child: Row(
           children: [
             Container(
@@ -789,7 +970,11 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                 color: iconBgColor,
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon, color: iconColor, size: 18.sp),
+              child: Icon(
+                icon,
+                color: iconColor,
+                size: 18.sp,
+              ),
             ),
             SizedBox(width: 12.w),
             Expanded(

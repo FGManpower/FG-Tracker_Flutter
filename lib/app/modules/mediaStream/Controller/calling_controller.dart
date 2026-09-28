@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:developer';
-
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/constant/urls.dart';
 import 'package:fgtracker/app/Core/values/Utils.dart';
@@ -8,7 +7,6 @@ import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Core/values/utility.dart';
 import 'package:fgtracker/app/modules/Track/Controller/GroupTrackController.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
-
 import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'package:get/get.dart' hide navigator;
 import 'package:flutter_webrtc/flutter_webrtc.dart';
@@ -129,8 +127,7 @@ class CallingController extends GetxController {
       is_video = true;
       isVideoCall.value = true;
 
-      final myUserId =
-      Global.storageServices.get(PrefConst.userId).toString();
+      final myUserId = Global.storageServices.get(PrefConst.userId).toString();
       final isCaller = myUserId == callerId.toString();
 
       if (isCaller || args["callType"] == "outGoing") {
@@ -164,7 +161,6 @@ class CallingController extends GetxController {
       isUpgradingToVideo.value = false;
     }
   }
-
 
   void _listenVideoUpgradeEvents() {
     socket?.off("upgradeToVideo");
@@ -240,11 +236,11 @@ class CallingController extends GetxController {
       }
     });
 
-
     socket?.on("requestVideoUpgrade", (data) async {
       await upgradeToVideoCall();
     });
   }
+
   void _listenForCallEvents() {
     socket?.off("callRejected");
     socket?.off("callEnded");
@@ -253,8 +249,43 @@ class CallingController extends GetxController {
     socket?.off("callCreated");
     socket?.off("newCall");
     socket?.off("sdpOfferFromCaller");
-    _listenVideoUpgradeEvents();
+    socket?.off("callError");
+    socket?.off("callBlocked");
 
+    socket?.on("callError", (data) {
+      log("CALL ERROR => $data");
+
+      stopSound();
+      _clearTimers();
+      resetPeer();
+
+      if (Get.isOverlaysOpen) {
+        Get.back();
+      }
+
+      Get.snackbar(
+        "Call Failed",
+        data?['message']?.toString() ?? "Unable to make call",
+      );
+    });
+
+    socket?.on("callBlocked", (data) {
+      log("CALL BLOCKED => $data");
+
+      stopSound();
+      _clearTimers();
+      resetPeer();
+
+      if (Get.isOverlaysOpen) {
+        Get.back();
+      }
+
+      Get.snackbar(
+        "Call unavailable",
+        data?['message']?.toString() ??
+            "Communication is not available with this user",
+      );
+    });
 
     socket?.on("sdpOfferFromCaller", (data) async {
       log("====== Received SDP Offer from Caller (CallKit flow) ======");
@@ -270,7 +301,10 @@ class CallingController extends GetxController {
         callId = data["callId"] ?? callId;
 
         await peer!.setRemoteDescription(
-          RTCSessionDescription(sdp["sdp"], sdp["type"]),
+          RTCSessionDescription(
+            sdp["sdp"],
+            sdp["type"],
+          ),
         );
 
         final answer = await peer!.createAnswer();
@@ -278,6 +312,7 @@ class CallingController extends GetxController {
 
         peer!.onIceCandidate = (c) {
           if (c.candidate == null) return;
+
           socket!.emit("IceCandidate", {
             "remoteUserId": callerId,
             "iceCandidate": {
@@ -312,8 +347,10 @@ class CallingController extends GetxController {
       _clearTimers();
 
       if (CallSessionState.sessionId != null) {
-        callEnded(CallSessionState.sessionId.toString(),
-            type: "CallRejectedFromController");
+        callEnded(
+          CallSessionState.sessionId.toString(),
+          type: "CallRejectedFromController",
+        );
       }
 
       resetPeer();
@@ -324,13 +361,18 @@ class CallingController extends GetxController {
       _clearTimers();
 
       resetPeer();
+
       if (CallSessionState.sessionId != null) {
-        callEnded(data['sessionId'].toString(),
-            type: "callEndedFromController");
+        callEnded(
+          data['sessionId'].toString(),
+          type: "callEndedFromController",
+        );
       }
+
       if (args["callType"] == "outGoing") {
         stopSound();
       }
+
       if (Get.currentRoute != Routes.Home_Screen) {
         Get.offAllNamed(Routes.Home_Screen);
       }
@@ -338,10 +380,14 @@ class CallingController extends GetxController {
 
     socket!.on("missedCall", (data) async {
       log("==========MissedCallCalled=======$data");
+
       _clearTimers();
+
       if (CallSessionState.sessionId != null) {
-        callEnded(CallSessionState.sessionId.toString(),
-            type: "missedCallFromController");
+        callEnded(
+          CallSessionState.sessionId.toString(),
+          type: "missedCallFromController",
+        );
       }
 
       resetPeer();
@@ -358,6 +404,7 @@ class CallingController extends GetxController {
 
     socket?.on("callCreated", (data) {
       callId = data['callId'];
+
       fetchCallDetail();
       startMissedCallTimer();
     });
@@ -469,11 +516,8 @@ class CallingController extends GetxController {
         "callerId": callerId,
         "sdpAnswer": answer.toMap(),
       });
-    }
-
-    else if (fromCallKit || (args["callType"] == "Incoming" && offer == null)) {
-
-
+    } else if (fromCallKit ||
+        (args["callType"] == "Incoming" && offer == null)) {
       callStatus.value = "Connecting...";
 
       // Tell the caller that we accepted from CallKit and request the SDP
@@ -485,9 +529,7 @@ class CallingController extends GetxController {
       });
 
       // We will receive the offer via "sdpOfferFromCaller" listener
-    }
-
-    else {
+    } else {
       log("====== Outgoing Call ======");
 
       peer!.onIceCandidate = (c) => iceCandidates.add(c);
@@ -550,11 +592,7 @@ class CallingController extends GetxController {
       "remoteUserId": targetUser.toString(),
     };
 
-
-
-    if(callStatus.value != "Connected"){
-
-    }
+    if (callStatus.value != "Connected") {}
     if (type != "missedCall") {
       log("========CallEndParameterDetail:$param");
       socket?.emit("endCall", param);
@@ -601,8 +639,6 @@ class CallingController extends GetxController {
     });
     update();
   }
-
-
 
   Future<void> enableSpeaker() async {
     await Helper.setSpeakerphoneOn(true);
@@ -665,7 +701,6 @@ class CallingController extends GetxController {
     }
   }
 
-
   void startCallTimer() {
     if (callTimer != null) return;
 
@@ -694,13 +729,12 @@ class CallingController extends GetxController {
         if (missCallDurationSeconds.value == 0) {
           timer.cancel();
           missedCall();
-
         }
       },
     );
   }
 
-  void missedCall(){
+  void missedCall() {
     var param = {
       "callId": callId,
       "remoteUserId": remoteUserId,
@@ -711,6 +745,7 @@ class CallingController extends GetxController {
 
     endCall(type: "missedCall");
   }
+
   void _clearTimers() {
     callTimer?.cancel();
     missedCallTimer?.cancel();

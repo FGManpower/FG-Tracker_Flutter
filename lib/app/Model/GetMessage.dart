@@ -5,6 +5,7 @@ class GetMessage {
   bool? isCreator;
   int? pinnedMessageId;
   MessagePagination? pagination;
+  BlockStatus? blockStatus;
 
   GetMessage({
     this.status,
@@ -13,6 +14,7 @@ class GetMessage {
     this.isCreator,
     this.pinnedMessageId,
     this.pagination,
+    this.blockStatus,
   });
 
   GetMessage.fromJson(Map<String, dynamic> json) {
@@ -20,6 +22,12 @@ class GetMessage {
     message = json['message'];
     isCreator = json['isCreator'];
     pinnedMessageId = json['pinnedMessageId'];
+
+    if (json['blockStatus'] is Map) {
+      blockStatus = BlockStatus.fromJson(
+        Map<String, dynamic>.from(json['blockStatus']),
+      );
+    }
 
     if (json['pagination'] is Map) {
       pagination = MessagePagination.fromJson(
@@ -59,6 +67,10 @@ class GetMessage {
     data['isCreator'] = isCreator;
     data['pinnedMessageId'] = pinnedMessageId;
 
+    if (blockStatus != null) {
+      data['blockStatus'] = blockStatus!.toJson();
+    }
+
     if (pagination != null) {
       data['pagination'] = pagination!.toJson();
     }
@@ -69,6 +81,32 @@ class GetMessage {
     }
 
     return data;
+  }
+}
+
+class BlockStatus {
+  bool? isBlocked;
+  bool? blockedByMe;
+  int? otherUserId;
+
+  BlockStatus({
+    this.isBlocked,
+    this.blockedByMe,
+    this.otherUserId,
+  });
+
+  BlockStatus.fromJson(Map<String, dynamic> json) {
+    isBlocked = json['isBlocked'];
+    blockedByMe = json['blockedByMe'];
+    otherUserId = json['otherUserId'];
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'isBlocked': isBlocked,
+      'blockedByMe': blockedByMe,
+      'otherUserId': otherUserId,
+    };
   }
 }
 

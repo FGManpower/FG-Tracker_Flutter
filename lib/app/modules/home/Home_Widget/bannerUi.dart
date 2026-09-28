@@ -2,7 +2,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:card_swiper/card_swiper.dart';
 import 'package:fgtracker/app/Core/theme/appTheme.dart';
 import 'package:fgtracker/app/Core/values/utility.dart';
-import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/gen/assets.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -45,124 +44,82 @@ class BannerUi extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      if (controller.BannerResponeMessage.value.isNotEmpty) {
-        return LostinternetConnection(
-            retry: () {
-              controller.fetchBanners();
-            },
-            messgae: controller.BannerResponeMessage.value.toString());
-      } else if (controller.isLoadingBanners.value) {
-        return _buildBannerSkeleton();
-      } else if (controller.bannerList.isEmpty) {
-        return DataEmpty_AssetsIcon(assetspath: Assets.images.notFount.path);
-      } else {
-        return SizedBox(
-          height: 160.h,
-          child: Swiper(
-            itemCount: controller.bannerList.length,
-            autoplay: true,
-            autoplayDelay: 3500,
-            duration: 800,
-            pagination: SwiperPagination(
-              alignment: Alignment.bottomCenter,
-              builder: DotSwiperPaginationBuilder(
-                activeColor: const Color(0xFF6B4DFF),
-                color: Colors.white.withValues(alpha: 0.6),
-                size: 6.0.r,
-                activeSize: 8.0.r,
-                space: 4.0.w,
-              ),
-            ),
-            itemBuilder: (BuildContext context, int index) {
-              BannerData banner = controller.bannerList[index];
-
-              return Container(
-                margin: EdgeInsets.symmetric(horizontal: 4.w),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(16.r),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.06),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
+      if (controller.BannerResponeMessage.value.isNotEmpty || controller.bannerList.isEmpty) {
+        return const SizedBox.shrink();
+      }
+      else if (controller.isLoadingBanners.value) {
+        return Padding(
+          padding: EdgeInsets.only(bottom: 18.h),
+          child: _buildBannerSkeleton(),
+        );
+      }
+      else {
+        return Padding(
+          padding: EdgeInsets.only(bottom: 18.h),
+          child: SizedBox(
+            height: 160.h,
+            child: Swiper(
+              itemCount: controller.bannerList.length,
+              autoplay: true,
+              autoplayDelay: 3500,
+              duration: 800,
+              pagination: SwiperPagination(
+                alignment: Alignment.bottomCenter,
+                builder: DotSwiperPaginationBuilder(
+                  activeColor: const Color(0xFF6B4DFF),
+                  color: Colors.white.withValues(alpha: 0.6),
+                  size: 6.0.r,
+                  activeSize: 8.0.r,
+                  space: 4.0.w,
                 ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(16.r),
-                  child: Stack(
-                    children: [
-                      Positioned.fill(
-                          child: CachedNetworkImage(
-                        imageUrl: Utility.isNullEmptyOrFalse(banner.imageUrl)
-                            ? MyAppTheme.notFoundImg
-                            : banner.imageUrl.toString(),
-                        fit: BoxFit.cover,
-                        width: double.infinity,
-                        placeholder: (context, url) {
-                          return Container(
-                            color: Colors.grey.shade100,
-                            child: const Center(
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            ),
-                          );
-                        },
-                        errorWidget: (context, url, error) {
-                          return Container(
-                            color: Colors.grey.shade300,
-                            child: const Center(
-                              child: Icon(
-                                Icons.broken_image,
-                                color: Colors.grey,
-                              ),
-                            ),
-                          );
-                        },
-                      )),
+              ),
+              itemBuilder: (BuildContext context, int index) {
+                BannerData banner = controller.bannerList[index];
 
-                      // if (index == 1)
-                      //   Positioned(
-                      //     left: 16.w,
-                      //     top: 16.h,
-                      //     bottom: 16.h,
-                      //     right: MediaQuery.of(context).size.width * 0.4,
-                      //     child: Column(
-                      //       crossAxisAlignment: CrossAxisAlignment.start,
-                      //       mainAxisAlignment: MainAxisAlignment.center,
-                      //       children: [
-                      //         if (!Utility.isNullEmptyOrFalse(banner.title)) ...[
-                      //           Text(
-                      //             banner.title.toString(),
-                      //             style: TextStyle(
-                      //               fontSize: 16.sp,
-                      //               fontWeight: FontWeight.bold,
-                      //               color: Colors.black87,
-                      //             ),
-                      //             maxLines: 2,
-                      //             overflow: TextOverflow.ellipsis,
-                      //           ),
-                      //           SizedBox(height: 6.h),
-                      //         ],
-                      //         if (!Utility.isNullEmptyOrFalse(banner.description)) ...[
-                      //           Text(
-                      //             banner.description.toString(),
-                      //             style: TextStyle(
-                      //               fontSize: 10.sp,
-                      //               color: Colors.black54,
-                      //               height: 1.2,
-                      //             ),
-                      //             maxLines: 3,
-                      //             overflow: TextOverflow.ellipsis,
-                      //           ),
-                      //         ],
-                      //       ],
-                      //     ),
-                      //   ),
+                return Container(
+                  margin: EdgeInsets.symmetric(horizontal: 4.w),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16.r),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.06),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
                     ],
                   ),
-                ),
-              );
-            },
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(16.r),
+                    child: CachedNetworkImage(
+                      imageUrl: Utility.isNullEmptyOrFalse(banner.imageUrl)
+                          ? MyAppTheme.notFoundImg
+                          : banner.imageUrl.toString(),
+                      fit: BoxFit.cover,
+                      width: double.infinity,
+                      placeholder: (context, url) {
+                        return Container(
+                          color: Colors.grey.shade100,
+                          child: const Center(
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        );
+                      },
+                      errorWidget: (context, url, error) {
+                        return Container(
+                          color: Colors.grey.shade300,
+                          child: const Center(
+                            child: Icon(
+                              Icons.broken_image,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                );
+              },
+            ),
           ),
         );
       }
