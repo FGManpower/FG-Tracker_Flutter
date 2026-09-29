@@ -170,13 +170,13 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
     return Container(
       width: double.infinity,
       clipBehavior: Clip.none,
-      padding: EdgeInsets.fromLTRB(16.w, 8.h, 4.w, 0),
+      padding: EdgeInsets.fromLTRB(16.w, 8.h, 0, 0),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           // Left side Column: Back Button, Title, Subtitle
           Expanded(
-            flex: 11,
+            flex: isSmallScreen ? 11 : 10,
             child: Padding(
               padding: EdgeInsets.only(right: 6.w),
               child: Column(
@@ -208,24 +208,26 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
                     ),
                   ),
 
-                  SizedBox(height: 10.h),
+                  SizedBox(height: isSmallScreen ? 6.h : 10.h),
 
                   Text(
                     isTeam ? "Team Plan" : "Choose a Plan",
                     style: TextStyle(
-                      fontSize: 21.sp.clamp(18.0, 24.0),
+                      fontSize:
+                          (isSmallScreen ? 19.sp : 22.sp).clamp(17.0, 25.0),
                       fontFamily: FontFamily.interBold,
                       color: _textDark,
                       letterSpacing: -0.4,
                     ),
                   ),
-                  SizedBox(height: 4.h),
+                  SizedBox(height: 3.h),
                   Text(
                     isTeam
                         ? "Add team members and get everyone connected with Walkie Talkie"
                         : "Continue using Walkie Talkie with a plan that fits your team",
                     style: TextStyle(
-                      fontSize: 11.5.sp.clamp(10.0, 12.5),
+                      fontSize:
+                          (isSmallScreen ? 10.5.sp : 11.5.sp).clamp(9.5, 12.5),
                       fontFamily: FontFamily.interRegular,
                       color: _textSecondary,
                       height: 1.3,
@@ -236,28 +238,37 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
             ),
           ),
 
-          // Right side: Full 1:1 AspectRatio Hero Graphic (Circle, Device & Text never cut)
+          // Right side: Hero Graphic (Responsive Dynamic Sizing)
           Expanded(
-            flex: 10,
-            child: _buildWalkieTalkieHeroGraphic(isTeam),
+            flex: isSmallScreen ? 10 : 12,
+            child: _buildWalkieTalkieHeroGraphic(isTeam, isSmallScreen),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildWalkieTalkieHeroGraphic(bool isTeam) {
-    return AspectRatio(
-      aspectRatio: 1.0,
-      child: Center(
-        child: BlendMask(
-          blendMode: BlendMode.multiply,
+  Widget _buildWalkieTalkieHeroGraphic(bool isTeam, bool isSmallScreen) {
+    final double targetHeight =
+        isSmallScreen ? 118.h.clamp(105.0, 130.0) : 142.h.clamp(120.0, 165.0);
+    final double scaleFactor = isSmallScreen ? 1.05 : 1.15;
+
+    return SizedBox(
+      height: targetHeight,
+      child: FittedBox(
+        fit: BoxFit.contain,
+        alignment: Alignment.centerRight,
+        child: Transform.scale(
+          scale: scaleFactor,
+          alignment: Alignment.centerRight,
           child: isTeam
-              ? Assets.walkieTalkie.walkieTeamHeader.image(
+              ? Image.asset(
+                  'assets/walkie_talkie/walkie_team_header.png',
                   fit: BoxFit.contain,
                   alignment: Alignment.centerRight,
                 )
-              : Assets.walkieTalkie.walkieIndividualHeader.image(
+              : Image.asset(
+                  'assets/walkie_talkie/walkie_individual_header.png',
                   fit: BoxFit.contain,
                   alignment: Alignment.centerRight,
                 ),
@@ -700,12 +711,6 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
   }
 
   String? _getDiscountBadgeForPlan(WalkiePlanItem plan) {
-    // final interval = (plan.billingInterval ?? '').toLowerCase();
-    // if (interval == 'quarterly' || plan.durationMonths == 3) {
-    //   return "Save 20%";
-    // } else if (interval == 'yearly' || plan.durationMonths == 12) {
-    //   return "Save 33%";
-    // }
     return null;
   }
 
@@ -1267,7 +1272,6 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
                     title: "Quarterly",
                     price: "₹399",
                     priceSuffix: "per member",
-                    // discountBadge: "Save 20%",
                     isSelected: true,
                   ),
                 ),
@@ -1277,10 +1281,6 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
             Row(
               children: List.generate(plans.length, (index) {
                 final plan = plans[index];
-                // String? discount;
-                // if (plan.billingInterval?.toLowerCase() == 'yearly') {
-                //   discount = "Save 33%";
-                // }
                 return Expanded(
                   child: Padding(
                     padding: EdgeInsets.only(
@@ -1291,7 +1291,6 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
                       title: plan.displayTitle,
                       price: "₹${controller.formatCurrency(plan.safePrice)}",
                       priceSuffix: "per member",
-                      // discountBadge: discount,
                       isSelected: selectedIdx == index,
                       onTap: () {
                         setState(() {
@@ -1664,30 +1663,6 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
                       ],
                     ),
                   ],
-                  // if (pricing?.gstAmount != null && pricing!.gstAmount! > 0) ...[
-                  //   SizedBox(height: 6.h),
-                  //   Row(
-                  //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  //     children: [
-                  //       Text(
-                  //         "GST (${pricing.gstPercent ?? 18}%)",
-                  //         style: TextStyle(
-                  //           fontSize: 11.sp,
-                  //           fontFamily: FontFamily.interRegular,
-                  //           color: _textSecondary,
-                  //         ),
-                  //       ),
-                  //       Text(
-                  //         "+₹${controller.formatCurrency(pricing.gstAmount)}",
-                  //         style: TextStyle(
-                  //           fontSize: 11.5.sp,
-                  //           fontFamily: FontFamily.interMedium,
-                  //           color: _textDark,
-                  //         ),
-                  //       ),
-                  //     ],
-                  //   ),
-                  // ],
                   if (pricing?.amountSaved != null &&
                       pricing!.amountSaved! > 0) ...[
                     SizedBox(height: 8.h),

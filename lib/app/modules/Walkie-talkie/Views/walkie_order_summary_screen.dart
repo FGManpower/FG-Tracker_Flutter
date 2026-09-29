@@ -1,4 +1,3 @@
-import 'package:fgtracker/app/Model/walkie_coupon_model.dart';
 import 'package:fgtracker/app/Model/walkie_payment_order_model.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Controller/walkie_order_summary_controller.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
@@ -6,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:pretty_qr_code/pretty_qr_code.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 class WalkieOrderSummaryScreen extends StatefulWidget {
@@ -86,7 +86,10 @@ class _WalkieOrderSummaryScreenState extends State<WalkieOrderSummaryScreen> {
                             // Card 2: Applied Promo / Coupon Code Section (Only shown when applied)
                             _buildPromoCodeCard(),
 
-                            // Card 3: Payment Details Summary Card
+                            // Card 3: Razorpay Payment Initiation Card (Between Box 1 & Box 2)
+                            _buildRazorpayInitiateCard(),
+
+                            // Card 4: Payment Details Summary Card
                             _buildPaymentDetailsCard(),
 
                             SizedBox(height: 24.h),
@@ -351,9 +354,7 @@ class _WalkieOrderSummaryScreenState extends State<WalkieOrderSummaryScreen> {
                     borderRadius: BorderRadius.circular(12.r),
                   ),
                   child: Icon(
-                    isMultiMember
-                        ? Icons.groups_rounded
-                        : Icons.person_rounded,
+                    isMultiMember ? Icons.groups_rounded : Icons.person_rounded,
                     size: 24.sp,
                     color: _primaryPurple,
                   ),
@@ -682,8 +683,7 @@ class _WalkieOrderSummaryScreenState extends State<WalkieOrderSummaryScreen> {
                 controller.removeCoupon();
               },
               child: Container(
-                padding:
-                    EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
                 decoration: BoxDecoration(
                   color: const Color(0xFFFEE2E2),
                   borderRadius: BorderRadius.circular(8.r),
@@ -705,7 +705,1649 @@ class _WalkieOrderSummaryScreenState extends State<WalkieOrderSummaryScreen> {
   }
 
   // ==========================================
-  // CARD 3: PAYMENT DETAILS SUMMARY CARD
+  // CARD 3: PAYMENT METHODS & RAZORPAY INITIATION CARD
+  // ==========================================
+  Widget _buildRazorpayInitiateCard() {
+    return Obx(() {
+      final bool isProcessing = controller.isProcessingPayment.value;
+      final String activeMethod = controller.selectedPaymentMethod.value;
+
+      return Container(
+        width: double.infinity,
+        margin: EdgeInsets.only(bottom: 14.h),
+        padding: EdgeInsets.all(16.w),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(18.r),
+          border: Border.all(
+            color: isProcessing
+                ? _primaryPurple.withValues(alpha: 0.5)
+                : _cardBorder,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.025),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Top Header: Title & 100% Secure Badge
+            Row(
+              children: [
+                Expanded(
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 38.w,
+                        height: 38.w,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF1F3FE),
+                          borderRadius: BorderRadius.circular(12.r),
+                        ),
+                        child: Icon(
+                          Icons.payments_rounded,
+                          size: 20.sp,
+                          color: _primaryPurple,
+                        ),
+                      ),
+                      SizedBox(width: 10.w),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "Payment Method",
+                              style: TextStyle(
+                                fontSize: 14.sp,
+                                fontFamily: FontFamily.interBold,
+                                color: _textDark,
+                              ),
+                            ),
+                            SizedBox(height: 1.h),
+                            Text(
+                              "Choose preferred payment mode",
+                              style: TextStyle(
+                                fontSize: 10.5.sp,
+                                fontFamily: FontFamily.interRegular,
+                                color: _textSecondary,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(width: 6.w),
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 7.w, vertical: 3.h),
+                  decoration: BoxDecoration(
+                    color: _greenBg,
+                    borderRadius: BorderRadius.circular(6.r),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.shield_rounded,
+                        size: 11.sp,
+                        color: _greenText,
+                      ),
+                      SizedBox(width: 3.w),
+                      Text(
+                        "SECURE",
+                        style: TextStyle(
+                          fontSize: 9.sp,
+                          fontFamily: FontFamily.interBold,
+                          color: _greenText,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+
+            Padding(
+              padding: EdgeInsets.symmetric(vertical: 12.h),
+              child: const Divider(height: 1, color: Color(0xFFF1F5F9)),
+            ),
+
+            // Main Payment Method Selection Tabs
+            Row(
+              children: [
+                _buildMethodPill(
+                  id: 'upi',
+                  icon: Icons.bolt_rounded,
+                  label: "UPI / QR",
+                  isSelected: activeMethod == 'upi',
+                ),
+                SizedBox(width: 6.w),
+                _buildMethodPill(
+                  id: 'card',
+                  icon: Icons.credit_card_rounded,
+                  label: "Cards",
+                  isSelected: activeMethod == 'card',
+                ),
+                SizedBox(width: 6.w),
+                _buildMethodPill(
+                  id: 'netbanking',
+                  icon: Icons.account_balance_rounded,
+                  label: "NetBanking",
+                  isSelected: activeMethod == 'netbanking',
+                ),
+                SizedBox(width: 6.w),
+                _buildMethodPill(
+                  id: 'wallet',
+                  icon: Icons.account_balance_wallet_rounded,
+                  label: "Wallets",
+                  isSelected: activeMethod == 'wallet',
+                ),
+              ],
+            ),
+
+            SizedBox(height: 14.h),
+
+            // Dynamic Sub-options based on active selection
+            if (activeMethod == 'upi') ...[
+              _buildUpiSubOptions(),
+            ] else if (activeMethod == 'card') ...[
+              _buildCardSubOptions(),
+            ] else if (activeMethod == 'netbanking') ...[
+              _buildNetBankingSubOptions(),
+            ] else if (activeMethod == 'wallet') ...[
+              _buildWalletSubOptions(),
+            ],
+
+            SizedBox(height: 12.h),
+
+            // Info / Checkout trigger banner
+            Container(
+              width: double.infinity,
+              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+              decoration: BoxDecoration(
+                color: isProcessing
+                    ? const Color(0xFFF1F3FE)
+                    : const Color(0xFFF8FAFC),
+                borderRadius: BorderRadius.circular(12.r),
+                border: Border.all(
+                  color: isProcessing
+                      ? const Color(0xFFC7D2FE)
+                      : const Color(0xFFE2E8F0),
+                ),
+              ),
+              child: Row(
+                children: [
+                  if (isProcessing) ...[
+                    SizedBox(
+                      width: 14.w,
+                      height: 14.w,
+                      child: const CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: _primaryPurple,
+                      ),
+                    ),
+                    SizedBox(width: 8.w),
+                    Expanded(
+                      child: Text(
+                        "Opening Razorpay Payment Checkout...",
+                        style: TextStyle(
+                          fontSize: 11.5.sp,
+                          fontFamily: FontFamily.interMedium,
+                          color: _primaryPurple,
+                        ),
+                      ),
+                    ),
+                  ] else ...[
+                    Icon(
+                      Icons.verified_user_rounded,
+                      size: 15.sp,
+                      color: _primaryPurple,
+                    ),
+                    SizedBox(width: 8.w),
+                    Expanded(
+                      child: Text(
+                        "Secure 256-bit payment processed via Razorpay Gateway.",
+                        style: TextStyle(
+                          fontSize: 11.sp,
+                          fontFamily: FontFamily.interRegular,
+                          color: _textDark,
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    });
+  }
+
+  Widget _buildMethodPill({
+    required String id,
+    required IconData icon,
+    required String label,
+    required bool isSelected,
+  }) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: () {
+          HapticFeedback.selectionClick();
+          controller.selectedPaymentMethod.value = id;
+        },
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 2.w),
+          decoration: BoxDecoration(
+            color:
+                isSelected ? const Color(0xFFF1F3FE) : const Color(0xFFF8FAFC),
+            borderRadius: BorderRadius.circular(10.r),
+            border: Border.all(
+              color: isSelected ? _primaryPurple : const Color(0xFFE2E8F0),
+              width: isSelected ? 1.5 : 1.0,
+            ),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                icon,
+                size: 17.sp,
+                color: isSelected ? _primaryPurple : _textSecondary,
+              ),
+              SizedBox(height: 3.h),
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 10.sp,
+                    fontFamily: isSelected
+                        ? FontFamily.interBold
+                        : FontFamily.interMedium,
+                    color: isSelected ? _primaryPurple : _textDark,
+                  ),
+                  maxLines: 1,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildUpiSubOptions() {
+    return Obx(() {
+      final selectedApp = controller.selectedUpiApp.value;
+      final currentTab = controller.selectedUpiTab.value;
+      final customVpa = controller.customUpiVpa.value;
+
+      final upiTabs = [
+        {'id': 'apps', 'label': 'UPI Apps', 'icon': Icons.apps_rounded},
+        {'id': 'vpa', 'label': 'Enter UPI ID', 'icon': Icons.alternate_email_rounded},
+        {'id': 'qr', 'label': 'Scan QR', 'icon': Icons.qr_code_rounded},
+      ];
+
+      final apps = [
+        {'id': 'gpay', 'name': 'Google Pay', 'type': 'gpay'},
+        {'id': 'phonepe', 'name': 'PhonePe', 'type': 'phonepe'},
+        {'id': 'paytm', 'name': 'Paytm UPI', 'type': 'paytm'},
+        {'id': 'bhim', 'name': 'BHIM UPI', 'type': 'bhim'},
+        {'id': 'cred', 'name': 'CRED UPI', 'type': 'cred'},
+        {'id': 'amazonpay', 'name': 'Amazon Pay', 'type': 'amazonpay'},
+      ];
+
+      final upiSuffixes = [
+        '@okhdfcbank',
+        '@okaxis',
+        '@oksbi',
+        '@okicici',
+        '@paytm',
+        '@ybl',
+        '@ibl',
+      ];
+
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Segmented UPI Mode Toggle Bar
+          Container(
+            padding: EdgeInsets.all(3.w),
+            decoration: BoxDecoration(
+              color: const Color(0xFFE2E8F0).withValues(alpha: 0.6),
+              borderRadius: BorderRadius.circular(10.r),
+            ),
+            child: Row(
+              children: upiTabs.map((tab) {
+                final bool isSelected = currentTab == tab['id'];
+                return Expanded(
+                  child: GestureDetector(
+                    onTap: () {
+                      HapticFeedback.selectionClick();
+                      controller.selectedUpiTab.value = tab['id'] as String;
+                    },
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 180),
+                      padding: EdgeInsets.symmetric(vertical: 6.5.h),
+                      decoration: BoxDecoration(
+                        color: isSelected ? Colors.white : Colors.transparent,
+                        borderRadius: BorderRadius.circular(8.r),
+                        boxShadow: isSelected
+                            ? [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.04),
+                                  blurRadius: 4,
+                                  offset: const Offset(0, 1),
+                                ),
+                              ]
+                            : [],
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            tab['icon'] as IconData,
+                            size: 13.sp,
+                            color: isSelected ? _primaryPurple : _textSecondary,
+                          ),
+                          SizedBox(width: 4.w),
+                          Text(
+                            tab['label'] as String,
+                            style: TextStyle(
+                              fontSize: 11.sp,
+                              fontFamily: isSelected
+                                  ? FontFamily.interBold
+                                  : FontFamily.interMedium,
+                              color: isSelected ? _primaryPurple : _textSecondary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+
+          SizedBox(height: 12.h),
+
+          // TAB 1: UPI APPS
+          if (currentTab == 'apps') ...[
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 8.w,
+                mainAxisSpacing: 8.h,
+                childAspectRatio: 2.3,
+              ),
+              itemCount: apps.length,
+              itemBuilder: (context, idx) {
+                final app = apps[idx];
+                final bool isAppSelected = selectedApp == app['id'];
+
+                return GestureDetector(
+                  onTap: () {
+                    HapticFeedback.selectionClick();
+                    controller.selectedUpiApp.value = app['id'] as String;
+                  },
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 180),
+                    padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 6.h),
+                    decoration: BoxDecoration(
+                      color:
+                          isAppSelected ? const Color(0xFFF5F3FF) : Colors.white,
+                      borderRadius: BorderRadius.circular(12.r),
+                      border: Border.all(
+                        color: isAppSelected
+                            ? _primaryPurple
+                            : const Color(0xFFE2E8F0),
+                        width: isAppSelected ? 1.5 : 1.0,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: isAppSelected
+                              ? _primaryPurple.withValues(alpha: 0.08)
+                              : Colors.black.withValues(alpha: 0.02),
+                          blurRadius: 6,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        _buildBrandLogoBadge(app['type'] as String),
+                        SizedBox(width: 8.w),
+                        Expanded(
+                          child: Text(
+                            app['name'] as String,
+                            style: TextStyle(
+                              fontSize: 11.5.sp,
+                              fontFamily: isAppSelected
+                                  ? FontFamily.interBold
+                                  : FontFamily.interMedium,
+                              color: isAppSelected ? _primaryPurple : _textDark,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        if (isAppSelected)
+                          Icon(
+                            Icons.check_circle_rounded,
+                            size: 15.sp,
+                            color: _primaryPurple,
+                          ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ]
+
+          // TAB 2: ENTER UPI ID / VPA
+          else if (currentTab == 'vpa') ...[
+            Container(
+              padding: EdgeInsets.all(12.w),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(14.r),
+                border: Border.all(
+                  color: customVpa.contains('@') && customVpa.length > 3
+                      ? const Color(0xFF16A34A)
+                      : const Color(0xFFCBD5E1),
+                  width: 1.2,
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.alternate_email_rounded,
+                        size: 18.sp,
+                        color: _primaryPurple,
+                      ),
+                      SizedBox(width: 8.w),
+                      Expanded(
+                        child: Text(
+                          "Enter Virtual Payment Address (VPA)",
+                          style: TextStyle(
+                            fontSize: 11.5.sp,
+                            fontFamily: FontFamily.interBold,
+                            color: _textDark,
+                          ),
+                        ),
+                      ),
+                      if (customVpa.contains('@') && customVpa.length > 3) ...[
+                        Icon(
+                          Icons.verified_rounded,
+                          size: 15.sp,
+                          color: const Color(0xFF16A34A),
+                        ),
+                        SizedBox(width: 3.w),
+                        Text(
+                          "Valid VPA",
+                          style: TextStyle(
+                            fontSize: 10.sp,
+                            fontFamily: FontFamily.interBold,
+                            color: const Color(0xFF16A34A),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                  SizedBox(height: 10.h),
+                  TextField(
+                    controller: controller.vpaTextController,
+                    onChanged: (val) {
+                      controller.customUpiVpa.value = val.trim();
+                    },
+                    keyboardType: TextInputType.emailAddress,
+                    style: TextStyle(
+                      fontSize: 13.5.sp,
+                      fontFamily: FontFamily.interBold,
+                      color: _textDark,
+                    ),
+                    decoration: InputDecoration(
+                      hintText: "mobile_number@upi or name@okhdfcbank",
+                      hintStyle: TextStyle(
+                        fontSize: 12.sp,
+                        fontFamily: FontFamily.interRegular,
+                        color: const Color(0xFF94A3B8),
+                      ),
+                      contentPadding:
+                          EdgeInsets.symmetric(horizontal: 12.w, vertical: 11.h),
+                      filled: true,
+                      fillColor: const Color(0xFFF8FAFC),
+                      suffixIcon: customVpa.isNotEmpty
+                          ? IconButton(
+                              icon: const Icon(Icons.clear_rounded, size: 18),
+                              color: _textSecondary,
+                              onPressed: () {
+                                controller.vpaTextController.clear();
+                                controller.customUpiVpa.value = '';
+                              },
+                            )
+                          : null,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10.r),
+                        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10.r),
+                        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10.r),
+                        borderSide:
+                            const BorderSide(color: _primaryPurple, width: 1.5),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 10.h),
+                  Text(
+                    "Quick Handles:",
+                    style: TextStyle(
+                      fontSize: 10.5.sp,
+                      fontFamily: FontFamily.interMedium,
+                      color: _textSecondary,
+                    ),
+                  ),
+                  SizedBox(height: 6.h),
+                  Wrap(
+                    spacing: 6.w,
+                    runSpacing: 6.h,
+                    children: upiSuffixes.map((suffix) {
+                      return GestureDetector(
+                        onTap: () {
+                          HapticFeedback.lightImpact();
+                          final currentText =
+                              controller.vpaTextController.text.trim();
+                          final username = currentText.contains('@')
+                              ? currentText.split('@')[0]
+                              : currentText;
+                          final newVpa =
+                              username.isEmpty ? "username$suffix" : "$username$suffix";
+                          controller.vpaTextController.text = newVpa;
+                          controller.vpaTextController.selection =
+                              TextSelection.fromPosition(
+                                  TextPosition(offset: newVpa.length));
+                          controller.customUpiVpa.value = newVpa;
+                        },
+                        child: Container(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 8.w, vertical: 4.h),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF1F5F9),
+                            borderRadius: BorderRadius.circular(6.r),
+                            border:
+                                Border.all(color: const Color(0xFFE2E8F0)),
+                          ),
+                          child: Text(
+                            suffix,
+                            style: TextStyle(
+                              fontSize: 10.5.sp,
+                              fontFamily: FontFamily.interBold,
+                              color: _primaryPurple,
+                            ),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ],
+              ),
+            ),
+          ]
+
+          // TAB 3: SCAN QR
+          else ...[
+            _buildLiveUpiQrCodeCard(),
+          ],
+        ],
+      );
+    });
+  }
+
+  Widget _buildLiveUpiQrCodeCard() {
+    final num totalPayable = controller.totalPayable;
+    final String upiString =
+        "upi://pay?pa=fgtracker.razorpay@icici&pn=FGTracker&am=$totalPayable&cu=INR&tn=WalkieTalkiePlan";
+
+    return Container(
+        width: double.infinity,
+        padding: EdgeInsets.all(12.w),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF8FAFC),
+          borderRadius: BorderRadius.circular(14.r),
+          border: Border.all(color: const Color(0xFFE2E8F0)),
+        ),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 32.w,
+                  height: 32.w,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEEF2FF),
+                    borderRadius: BorderRadius.circular(8.r),
+                  ),
+                  child: Icon(
+                    Icons.qr_code_scanner_rounded,
+                    color: _primaryPurple,
+                    size: 18.sp,
+                  ),
+                ),
+                SizedBox(width: 8.w),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Scan & Pay via UPI QR",
+                        style: TextStyle(
+                          fontSize: 12.5.sp,
+                          fontFamily: FontFamily.interBold,
+                          color: _textDark,
+                        ),
+                      ),
+                      SizedBox(height: 1.h),
+                      Text(
+                        "Scan with GPay, PhonePe, Paytm or BHIM",
+                        style: TextStyle(
+                          fontSize: 10.5.sp,
+                          fontFamily: FontFamily.interRegular,
+                          color: _textSecondary,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 7.w, vertical: 3.h),
+                  decoration: BoxDecoration(
+                    color: _greenBg,
+                    borderRadius: BorderRadius.circular(6.r),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.bolt_rounded,
+                        size: 10.sp,
+                        color: _greenText,
+                      ),
+                      Text(
+                        "INSTANT",
+                        style: TextStyle(
+                          fontSize: 8.5.sp,
+                          fontFamily: FontFamily.interBold,
+                          color: _greenText,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+
+            SizedBox(height: 10.h),
+
+            // Central QR Box with authentic styling
+            Container(
+              padding: EdgeInsets.all(10.w),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12.r),
+                border: Border.all(color: const Color(0xFFE2E8F0)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.03),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  SizedBox(
+                    width: 120.w,
+                    height: 120.w,
+                    child: PrettyQrView.data(
+                      data: upiString,
+                      errorCorrectLevel: QrErrorCorrectLevel.M,
+                      decoration: const PrettyQrDecoration(
+                        shape: PrettyQrSmoothSymbol(
+                          color: Color(0xFF0F172A),
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 8.h),
+                  Text(
+                    "₹${controller.formatCurrency(totalPayable)}",
+                    style: TextStyle(
+                      fontSize: 14.sp,
+                      fontFamily: FontFamily.interBold,
+                      color: _textDark,
+                    ),
+                  ),
+                  SizedBox(height: 2.h),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        "UPI ID: fgtracker.razorpay@icici",
+                        style: TextStyle(
+                          fontSize: 10.sp,
+                          fontFamily: FontFamily.interMedium,
+                          color: _textSecondary,
+                        ),
+                      ),
+                      SizedBox(width: 4.w),
+                      GestureDetector(
+                        onTap: () {
+                          HapticFeedback.lightImpact();
+                          Clipboard.setData(const ClipboardData(
+                              text: "fgtracker.razorpay@icici"));
+                          controller.showTopWhiteMessage(
+                              "UPI ID copied to clipboard!");
+                        },
+                        child: Icon(
+                          Icons.copy_rounded,
+                          size: 12.sp,
+                          color: _primaryPurple,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ));
+  }
+
+  Widget _buildBrandLogoBadge(String type) {
+    switch (type) {
+      case 'gpay':
+        return Container(
+          width: 28.w,
+          height: 28.w,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            shape: BoxShape.circle,
+            border: Border.all(color: const Color(0xFFE2E8F0)),
+          ),
+          child: Center(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  "G",
+                  style: TextStyle(
+                    fontSize: 13.sp,
+                    fontFamily: FontFamily.interBold,
+                    color: const Color(0xFF4285F4), // Google Blue
+                    height: 1.0,
+                  ),
+                ),
+                Text(
+                  "P",
+                  style: TextStyle(
+                    fontSize: 10.sp,
+                    fontFamily: FontFamily.interBold,
+                    color: const Color(0xFFEA4335), // Google Red
+                    height: 1.0,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+
+      case 'phonepe':
+        return Container(
+          width: 28.w,
+          height: 28.w,
+          decoration: const BoxDecoration(
+            color: Color(0xFF5F259F), // PhonePe Purple
+            shape: BoxShape.circle,
+          ),
+          child: Center(
+            child: Text(
+              "Pe",
+              style: TextStyle(
+                fontSize: 12.sp,
+                fontFamily: FontFamily.interBold,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+                height: 1.0,
+              ),
+            ),
+          ),
+        );
+
+      case 'paytm':
+        return Container(
+          width: 28.w,
+          height: 28.w,
+          decoration: BoxDecoration(
+            color: const Color(0xFF002E6E), // Paytm Navy
+            borderRadius: BorderRadius.circular(6.r),
+          ),
+          child: Center(
+            child: Text(
+              "tm",
+              style: TextStyle(
+                fontSize: 11.sp,
+                fontFamily: FontFamily.interBold,
+                color: const Color(0xFF00BAF2), // Paytm Cyan
+                height: 1.0,
+              ),
+            ),
+          ),
+        );
+
+      case 'bhim':
+        return Container(
+          width: 28.w,
+          height: 28.w,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(6.r),
+            border: Border.all(color: const Color(0xFFCBD5E1)),
+          ),
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  "UPI",
+                  style: TextStyle(
+                    fontSize: 8.5.sp,
+                    fontFamily: FontFamily.interBold,
+                    color: const Color(0xFF0C992B), // UPI Green
+                    letterSpacing: -0.2,
+                    height: 1.0,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+
+      case 'amazonpay':
+        return Container(
+          width: 28.w,
+          height: 28.w,
+          decoration: BoxDecoration(
+            color: const Color(0xFF232F3E), // Amazon Navy
+            borderRadius: BorderRadius.circular(6.r),
+          ),
+          child: Center(
+            child: Icon(
+              Icons.arrow_forward_rounded,
+              size: 14.sp,
+              color: const Color(0xFFFF9900), // Amazon Orange
+            ),
+          ),
+        );
+
+      case 'cred':
+        return Container(
+          width: 28.w,
+          height: 28.w,
+          decoration: BoxDecoration(
+            color: const Color(0xFF18181B), // CRED Dark
+            borderRadius: BorderRadius.circular(6.r),
+          ),
+          child: Center(
+            child: Text(
+              "C",
+              style: TextStyle(
+                fontSize: 14.sp,
+                fontFamily: FontFamily.interBold,
+                color: Colors.white,
+                height: 1.0,
+              ),
+            ),
+          ),
+        );
+
+      case 'mobikwik':
+        return Container(
+          width: 28.w,
+          height: 28.w,
+          decoration: BoxDecoration(
+            color: const Color(0xFF005DAA),
+            borderRadius: BorderRadius.circular(6.r),
+          ),
+          child: Center(
+            child: Text(
+              "M",
+              style: TextStyle(
+                fontSize: 13.sp,
+                fontFamily: FontFamily.interBold,
+                color: const Color(0xFFE5007D),
+                height: 1.0,
+              ),
+            ),
+          ),
+        );
+
+      case 'freecharge':
+        return Container(
+          width: 28.w,
+          height: 28.w,
+          decoration: BoxDecoration(
+            color: const Color(0xFF532E63),
+            borderRadius: BorderRadius.circular(6.r),
+          ),
+          child: Center(
+            child: Text(
+              "fc",
+              style: TextStyle(
+                fontSize: 11.sp,
+                fontFamily: FontFamily.interBold,
+                color: const Color(0xFFF05A22),
+                height: 1.0,
+              ),
+            ),
+          ),
+        );
+
+      case 'airtel':
+        return Container(
+          width: 28.w,
+          height: 28.w,
+          decoration: BoxDecoration(
+            color: const Color(0xFFE40000),
+            borderRadius: BorderRadius.circular(6.r),
+          ),
+          child: Center(
+            child: Text(
+              "a",
+              style: TextStyle(
+                fontSize: 13.sp,
+                fontFamily: FontFamily.interBold,
+                color: Colors.white,
+                height: 1.0,
+              ),
+            ),
+          ),
+        );
+
+      default:
+        return Icon(Icons.payment_rounded, size: 20.sp, color: _primaryPurple);
+    }
+  }
+
+  Widget _buildCardSubOptions() {
+    return Obx(() {
+      final String currentNetwork = controller.selectedCardNetwork.value;
+      final String currentType = controller.selectedCardType.value;
+
+      final cardTypes = [
+        {'id': 'debit', 'label': 'Debit Card', 'icon': Icons.payment_rounded},
+        {
+          'id': 'credit',
+          'label': 'Credit Card',
+          'icon': Icons.credit_card_rounded
+        },
+        {
+          'id': 'corporate',
+          'label': 'Corporate Card',
+          'icon': Icons.business_rounded
+        },
+      ];
+
+      final cardNetworks = [
+        {
+          'id': 'visa',
+          'name': 'VISA',
+          'bgColor': const Color(0xFF1A1F71),
+          'textColor': Colors.white,
+          'accentColor': const Color(0xFFF7B600),
+        },
+        {
+          'id': 'mastercard',
+          'name': 'Mastercard',
+          'isCustom': true,
+        },
+        {
+          'id': 'rupay',
+          'name': 'RuPay',
+          'bgColor': const Color(0xFF0B2A6B),
+          'textColor': Colors.white,
+          'accentColor': const Color(0xFFF26522),
+        },
+        {
+          'id': 'maestro',
+          'name': 'Maestro',
+          'bgColor': const Color(0xFF00A2E8),
+          'textColor': Colors.white,
+        },
+        {
+          'id': 'amex',
+          'name': 'AMEX',
+          'bgColor': const Color(0xFF006FCF),
+          'textColor': Colors.white,
+        },
+        {
+          'id': 'diners',
+          'name': 'Diners',
+          'bgColor': const Color(0xFF004A80),
+          'textColor': Colors.white,
+        },
+      ];
+
+      return Container(
+        padding: EdgeInsets.all(12.w),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF8FAFC),
+          borderRadius: BorderRadius.circular(14.r),
+          border: Border.all(color: const Color(0xFFE2E8F0)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Card Type Selector (Debit / Credit / Corporate)
+            Text(
+              "Select Card Type",
+              style: TextStyle(
+                fontSize: 11.5.sp,
+                fontFamily: FontFamily.interBold,
+                color: _textDark,
+              ),
+            ),
+            SizedBox(height: 7.h),
+            Row(
+              children: cardTypes.map((type) {
+                final bool isSelected = currentType == type['id'];
+                return Expanded(
+                  child: GestureDetector(
+                    onTap: () {
+                      HapticFeedback.selectionClick();
+                      controller.selectedCardType.value = type['id'] as String;
+                    },
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 180),
+                      margin: EdgeInsets.only(
+                          right: type['id'] == 'corporate' ? 0 : 6.w),
+                      padding: EdgeInsets.symmetric(vertical: 7.h),
+                      decoration: BoxDecoration(
+                        color: isSelected ? _primaryPurple : Colors.white,
+                        borderRadius: BorderRadius.circular(8.r),
+                        border: Border.all(
+                          color: isSelected
+                              ? _primaryPurple
+                              : const Color(0xFFCBD5E1),
+                          width: 1.0,
+                        ),
+                        boxShadow: isSelected
+                            ? [
+                                BoxShadow(
+                                  color: _primaryPurple.withValues(alpha: 0.2),
+                                  blurRadius: 4,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ]
+                            : [],
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            type['icon'] as IconData,
+                            size: 13.sp,
+                            color: isSelected ? Colors.white : _textSecondary,
+                          ),
+                          SizedBox(width: 4.w),
+                          Flexible(
+                            child: Text(
+                              type['label'] as String,
+                              style: TextStyle(
+                                fontSize: 10.5.sp,
+                                fontFamily: isSelected
+                                    ? FontFamily.interBold
+                                    : FontFamily.interMedium,
+                                color: isSelected ? Colors.white : _textDark,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+
+            SizedBox(height: 12.h),
+
+            // Card Network Selector (VISA, Mastercard, RuPay, Maestro, AMEX, Diners)
+            Text(
+              "Select Card Network",
+              style: TextStyle(
+                fontSize: 11.5.sp,
+                fontFamily: FontFamily.interBold,
+                color: _textDark,
+              ),
+            ),
+            SizedBox(height: 8.h),
+            Wrap(
+              spacing: 8.w,
+              runSpacing: 8.h,
+              children: cardNetworks.map((net) {
+                final bool isSelected = currentNetwork == net['id'];
+                return GestureDetector(
+                  onTap: () {
+                    HapticFeedback.selectionClick();
+                    controller.selectedCardNetwork.value = net['id'] as String;
+                  },
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 180),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+                    decoration: BoxDecoration(
+                      color:
+                          isSelected ? const Color(0xFFF1F3FE) : Colors.white,
+                      borderRadius: BorderRadius.circular(10.r),
+                      border: Border.all(
+                        color: isSelected
+                            ? _primaryPurple
+                            : const Color(0xFFE2E8F0),
+                        width: isSelected ? 1.6 : 1.0,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black
+                              .withValues(alpha: isSelected ? 0.05 : 0.02),
+                          blurRadius: isSelected ? 6 : 3,
+                          offset: const Offset(0, 1),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (net['isCustom'] == true)
+                          _buildMastercardBadge()
+                        else
+                          _buildAuthenticCardBadge(
+                            network: net['name'] as String,
+                            bgColor: net['bgColor'] as Color,
+                            textColor: net['textColor'] as Color,
+                            accentColor: net['accentColor'] as Color?,
+                          ),
+                        SizedBox(width: 6.w),
+                        Text(
+                          net['name'] as String,
+                          style: TextStyle(
+                            fontSize: 11.sp,
+                            fontFamily: isSelected
+                                ? FontFamily.interBold
+                                : FontFamily.interMedium,
+                            color: isSelected ? _primaryPurple : _textDark,
+                          ),
+                        ),
+                        if (isSelected) ...[
+                          SizedBox(width: 4.w),
+                          Icon(
+                            Icons.check_circle_rounded,
+                            size: 14.sp,
+                            color: _primaryPurple,
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+
+            SizedBox(height: 10.h),
+
+            // Selection summary indicator
+            Container(
+              width: double.infinity,
+              padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+              decoration: BoxDecoration(
+                color: const Color(0xFFEEF2FF),
+                borderRadius: BorderRadius.circular(8.r),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.verified_rounded,
+                    size: 14.sp,
+                    color: _primaryPurple,
+                  ),
+                  SizedBox(width: 6.w),
+                  Expanded(
+                    child: Text(
+                      "Selected: ${currentNetwork.toUpperCase()} ${currentType.capitalizeFirst} Card (256-bit 3D Secure)",
+                      style: TextStyle(
+                        fontSize: 10.5.sp,
+                        fontFamily: FontFamily.interSemiBold,
+                        color: _primaryPurple,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    });
+  }
+
+  Widget _buildAuthenticCardBadge({
+    required String network,
+    required Color bgColor,
+    required Color textColor,
+    Color? accentColor,
+  }) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 3.h),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(4.r),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 3,
+            offset: const Offset(0, 1),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            network,
+            style: TextStyle(
+              fontSize: 9.sp,
+              fontFamily: FontFamily.interBold,
+              fontWeight: FontWeight.w800,
+              color: textColor,
+              letterSpacing: 0.3,
+              fontStyle:
+                  network == "VISA" ? FontStyle.italic : FontStyle.normal,
+            ),
+          ),
+          if (accentColor != null) ...[
+            SizedBox(width: 2.w),
+            Container(
+              width: 2.5.w,
+              height: 6.h,
+              decoration: BoxDecoration(
+                color: accentColor,
+                borderRadius: BorderRadius.circular(1.r),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMastercardBadge() {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 3.h),
+      decoration: BoxDecoration(
+        color: const Color(0xFF222222),
+        borderRadius: BorderRadius.circular(4.r),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(
+            width: 12.w,
+            height: 8.h,
+            child: Stack(
+              children: [
+                Positioned(
+                  left: 0,
+                  child: Container(
+                    width: 7.5.w,
+                    height: 7.5.w,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFEB001B),
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ),
+                Positioned(
+                  right: 0,
+                  child: Container(
+                    width: 7.5.w,
+                    height: 7.5.w,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF79E1B).withValues(alpha: 0.9),
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNetBankingSubOptions() {
+    return Obx(() {
+      final selected = controller.selectedBank.value;
+      final banks = [
+        {'id': 'hdfc', 'name': 'HDFC Bank', 'color': const Color(0xFF004C8F)},
+        {'id': 'sbi', 'name': 'SBI', 'color': const Color(0xFF0072BB)},
+        {'id': 'icici', 'name': 'ICICI Bank', 'color': const Color(0xFFA21921)},
+        {'id': 'axis', 'name': 'Axis Bank', 'color': const Color(0xFF97144D)},
+        {
+          'id': 'kotak',
+          'name': 'Kotak Mahindra',
+          'color': const Color(0xFFED1C24)
+        },
+        {'id': 'pnb', 'name': 'PNB', 'color': const Color(0xFFA20A2A)},
+        {
+          'id': 'bob',
+          'name': 'Bank of Baroda',
+          'color': const Color(0xFFF26522)
+        },
+        {
+          'id': 'canara',
+          'name': 'Canara Bank',
+          'color': const Color(0xFF005DAA)
+        },
+        {
+          'id': 'indusind',
+          'name': 'IndusInd Bank',
+          'color': const Color(0xFF861F41)
+        },
+        {'id': 'yes', 'name': 'YES Bank', 'color': const Color(0xFF004A80)},
+        {'id': 'idfc', 'name': 'IDFC FIRST', 'color': const Color(0xFF990000)},
+        {
+          'id': 'other',
+          'name': 'Other Banks',
+          'color': const Color(0xFF475569)
+        },
+      ];
+
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                "Popular Indian Banks",
+                style: TextStyle(
+                  fontSize: 12.sp,
+                  fontFamily: FontFamily.interBold,
+                  color: _textDark,
+                ),
+              ),
+              Text(
+                "Instant NetBanking",
+                style: TextStyle(
+                  fontSize: 10.5.sp,
+                  fontFamily: FontFamily.interMedium,
+                  color: _textSecondary,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 8.h),
+          Wrap(
+            spacing: 6.w,
+            runSpacing: 6.h,
+            children: banks.map((bank) {
+              final bool isBankSelected = selected == bank['id'];
+              final bankColor = bank['color'] as Color;
+
+              return GestureDetector(
+                onTap: () {
+                  HapticFeedback.selectionClick();
+                  controller.selectedBank.value = bank['id'] as String;
+                },
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 180),
+                  padding: EdgeInsets.symmetric(horizontal: 9.w, vertical: 6.h),
+                  decoration: BoxDecoration(
+                    color:
+                        isBankSelected ? const Color(0xFFF1F3FE) : Colors.white,
+                    borderRadius: BorderRadius.circular(10.r),
+                    border: Border.all(
+                      color: isBankSelected
+                          ? _primaryPurple
+                          : const Color(0xFFE2E8F0),
+                      width: isBankSelected ? 1.5 : 1.0,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black
+                            .withValues(alpha: isBankSelected ? 0.04 : 0.02),
+                        blurRadius: 4,
+                        offset: const Offset(0, 1),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 14.w,
+                        height: 14.w,
+                        decoration: BoxDecoration(
+                          color: bankColor,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Center(
+                          child: Text(
+                            (bank['name'] as String).substring(0, 1),
+                            style: TextStyle(
+                              fontSize: 8.5.sp,
+                              fontFamily: FontFamily.interBold,
+                              color: Colors.white,
+                              height: 1.0,
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: 6.w),
+                      Text(
+                        bank['name'] as String,
+                        style: TextStyle(
+                          fontSize: 11.sp,
+                          fontFamily: isBankSelected
+                              ? FontFamily.interBold
+                              : FontFamily.interMedium,
+                          color: isBankSelected ? _primaryPurple : _textDark,
+                        ),
+                      ),
+                      if (isBankSelected) ...[
+                        SizedBox(width: 4.w),
+                        Icon(
+                          Icons.check_circle_rounded,
+                          size: 13.sp,
+                          color: _primaryPurple,
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ],
+      );
+    });
+  }
+
+  Widget _buildWalletSubOptions() {
+    return Obx(() {
+      final selected = controller.selectedWallet.value;
+      final wallets = [
+        {
+          'id': 'paytm',
+          'name': 'Paytm Wallet',
+          'type': 'paytm',
+        },
+        {
+          'id': 'amazonpay',
+          'name': 'Amazon Pay',
+          'type': 'amazonpay',
+        },
+        {
+          'id': 'phonepe',
+          'name': 'PhonePe Wallet',
+          'type': 'phonepe',
+        },
+        {
+          'id': 'mobikwik',
+          'name': 'MobiKwik',
+          'type': 'mobikwik',
+        },
+        {
+          'id': 'freecharge',
+          'name': 'Freecharge',
+          'type': 'freecharge',
+        },
+        {
+          'id': 'airtel',
+          'name': 'Airtel Money',
+          'type': 'airtel',
+        },
+      ];
+
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                "Select Digital Wallet",
+                style: TextStyle(
+                  fontSize: 12.sp,
+                  fontFamily: FontFamily.interBold,
+                  color: _textDark,
+                ),
+              ),
+              Text(
+                "Instant 1-Click Pay",
+                style: TextStyle(
+                  fontSize: 10.5.sp,
+                  fontFamily: FontFamily.interMedium,
+                  color: _textSecondary,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 8.h),
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              crossAxisSpacing: 8.w,
+              mainAxisSpacing: 8.h,
+              childAspectRatio: 2.3,
+            ),
+            itemCount: wallets.length,
+            itemBuilder: (context, idx) {
+              final wallet = wallets[idx];
+              final bool isWalletSelected = selected == wallet['id'];
+
+              return GestureDetector(
+                onTap: () {
+                  HapticFeedback.selectionClick();
+                  controller.selectedWallet.value = wallet['id'] as String;
+                },
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 180),
+                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 6.h),
+                  decoration: BoxDecoration(
+                    color: isWalletSelected
+                        ? const Color(0xFFF1F3FE)
+                        : Colors.white,
+                    borderRadius: BorderRadius.circular(12.r),
+                    border: Border.all(
+                      color: isWalletSelected
+                          ? _primaryPurple
+                          : const Color(0xFFE2E8F0),
+                      width: isWalletSelected ? 1.5 : 1.0,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black
+                            .withValues(alpha: isWalletSelected ? 0.04 : 0.02),
+                        blurRadius: 4,
+                        offset: const Offset(0, 1),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      _buildBrandLogoBadge(wallet['type'] as String),
+                      SizedBox(width: 8.w),
+                      Expanded(
+                        child: Text(
+                          wallet['name'] as String,
+                          style: TextStyle(
+                            fontSize: 11.sp,
+                            fontFamily: isWalletSelected
+                                ? FontFamily.interBold
+                                : FontFamily.interMedium,
+                            color:
+                                isWalletSelected ? _primaryPurple : _textDark,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      if (isWalletSelected)
+                        Icon(
+                          Icons.check_circle_rounded,
+                          size: 15.sp,
+                          color: _primaryPurple,
+                        ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
+      );
+    });
+  }
+
+  // ==========================================
+  // CARD 4: PAYMENT DETAILS SUMMARY CARD
   // ==========================================
   Widget _buildPaymentDetailsCard() {
     return Obx(() {
@@ -918,6 +2560,106 @@ class _WalkieOrderSummaryScreenState extends State<WalkieOrderSummaryScreen> {
     });
   }
 
+  String _getDynamicPayButtonLabel(num totalPayable) {
+    final method = controller.selectedPaymentMethod.value;
+    final formattedAmt = "₹${controller.formatCurrency(totalPayable)}";
+    if (method == 'upi') {
+      final tab = controller.selectedUpiTab.value;
+      if (tab == 'vpa') {
+        final vpa = controller.customUpiVpa.value.trim();
+        if (vpa.isNotEmpty) {
+          return "Pay via $vpa • $formattedAmt";
+        }
+        return "Verify & Pay via UPI • $formattedAmt";
+      } else if (tab == 'qr') {
+        return "Pay via QR Code • $formattedAmt";
+      }
+      final app = controller.selectedUpiApp.value;
+      if (app == 'gpay') return "Pay via Google Pay • $formattedAmt";
+      if (app == 'phonepe') return "Pay via PhonePe • $formattedAmt";
+      if (app == 'paytm') return "Pay via Paytm UPI • $formattedAmt";
+      if (app == 'bhim') return "Pay via BHIM UPI • $formattedAmt";
+      if (app == 'cred') return "Pay via CRED UPI • $formattedAmt";
+      if (app == 'amazonpay') return "Pay via Amazon Pay UPI • $formattedAmt";
+      return "Pay via UPI • $formattedAmt";
+    } else if (method == 'card') {
+      final network = controller.selectedCardNetwork.value.toUpperCase();
+      final type =
+          controller.selectedCardType.value == 'credit' ? 'Credit' : 'Debit';
+      return "Pay via $network $type • $formattedAmt";
+    } else if (method == 'netbanking') {
+      final bankId = controller.selectedBank.value;
+      final String bankName;
+      switch (bankId) {
+        case 'hdfc':
+          bankName = 'HDFC';
+          break;
+        case 'sbi':
+          bankName = 'SBI';
+          break;
+        case 'icici':
+          bankName = 'ICICI';
+          break;
+        case 'axis':
+          bankName = 'Axis';
+          break;
+        case 'kotak':
+          bankName = 'Kotak';
+          break;
+        case 'pnb':
+          bankName = 'PNB';
+          break;
+        case 'bob':
+          bankName = 'Bank of Baroda';
+          break;
+        case 'canara':
+          bankName = 'Canara Bank';
+          break;
+        case 'indusind':
+          bankName = 'IndusInd';
+          break;
+        case 'yes':
+          bankName = 'YES Bank';
+          break;
+        case 'idfc':
+          bankName = 'IDFC FIRST';
+          break;
+        default:
+          bankName = 'NetBanking';
+          break;
+      }
+      return "Pay via $bankName • $formattedAmt";
+    } else if (method == 'wallet') {
+      final walletId = controller.selectedWallet.value;
+      final String walletName;
+      switch (walletId) {
+        case 'paytm':
+          walletName = 'Paytm';
+          break;
+        case 'amazonpay':
+          walletName = 'Amazon Pay';
+          break;
+        case 'phonepe':
+          walletName = 'PhonePe';
+          break;
+        case 'mobikwik':
+          walletName = 'MobiKwik';
+          break;
+        case 'freecharge':
+          walletName = 'Freecharge';
+          break;
+        case 'airtel':
+          walletName = 'Airtel';
+          break;
+        default:
+          walletName = 'Wallet';
+          break;
+      }
+      return "Pay via $walletName Wallet • $formattedAmt";
+    }
+    return "Pay $formattedAmt";
+  }
+
   // ==========================================
   // BOTTOM FIXED ACTION BAR
   // ==========================================
@@ -989,12 +2731,17 @@ class _WalkieOrderSummaryScreenState extends State<WalkieOrderSummaryScreen> {
                             size: 17.sp,
                           ),
                           SizedBox(width: 8.w),
-                          Text(
-                            "Pay ₹${controller.formatCurrency(totalPayable)}",
-                            style: TextStyle(
-                              fontSize: 15.sp.clamp(14.0, 16.5),
-                              fontFamily: FontFamily.interBold,
-                              color: Colors.white,
+                          Flexible(
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(
+                                _getDynamicPayButtonLabel(totalPayable),
+                                style: TextStyle(
+                                  fontSize: 15.sp.clamp(13.5, 16.5),
+                                  fontFamily: FontFamily.interBold,
+                                  color: Colors.white,
+                                ),
+                              ),
                             ),
                           ),
                           SizedBox(width: 8.w),
@@ -1402,8 +3149,7 @@ class _WalkieOrderSummaryScreenState extends State<WalkieOrderSummaryScreen> {
                                 ),
                               ),
                               child: Row(
-                                crossAxisAlignment:
-                                    CrossAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Container(
                                     width: 36.w,
@@ -1440,7 +3186,8 @@ class _WalkieOrderSummaryScreenState extends State<WalkieOrderSummaryScreen> {
                                                 letterSpacing: 0.5,
                                               ),
                                             ),
-                                            if (coupon.discountDescription.isNotEmpty) ...[
+                                            if (coupon.discountDescription
+                                                .isNotEmpty) ...[
                                               SizedBox(width: 8.w),
                                               Container(
                                                 padding: EdgeInsets.symmetric(
@@ -1465,7 +3212,8 @@ class _WalkieOrderSummaryScreenState extends State<WalkieOrderSummaryScreen> {
                                             ],
                                           ],
                                         ),
-                                        if (coupon.formattedExpiry.isNotEmpty) ...[
+                                        if (coupon
+                                            .formattedExpiry.isNotEmpty) ...[
                                           SizedBox(height: 3.h),
                                           Text(
                                             coupon.formattedExpiry,
@@ -1610,6 +3358,7 @@ class _WalkieOrderSummaryScreenState extends State<WalkieOrderSummaryScreen> {
     );
   }
 }
+
 
 // Backwards compatibility alias
 typedef WalkieTalkiePaymentScreen = WalkieOrderSummaryScreen;

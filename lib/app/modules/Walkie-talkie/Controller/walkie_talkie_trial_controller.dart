@@ -103,14 +103,8 @@ class WalkieTalkieTrialController extends GetxController
   }
 
   String get trialDurationFormatted => formatDuration(totalSeconds);
-  String get trialDurationHuman =>
-      totalSeconds >= 3600 && totalSeconds % 3600 == 0
-          ? '${totalSeconds ~/ 3600} Hour'
-          : formatDuration(totalSeconds);
-  String get trialDurationFreeLabel =>
-      totalSeconds >= 3600 && totalSeconds % 3600 == 0
-          ? '${totalSeconds ~/ 3600} Hour Free'
-          : '${formatDuration(totalSeconds)} Free';
+  String get trialDurationHuman => formatDuration(totalSeconds);
+  String get trialDurationFreeLabel => '${formatDuration(totalSeconds)} Free';
 
   @override
   void onInit() {

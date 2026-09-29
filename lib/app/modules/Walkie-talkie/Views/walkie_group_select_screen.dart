@@ -642,10 +642,13 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
       backgroundColor: Colors.transparent,
       builder: (ctx) {
         return Container(
-          height: MediaQuery.of(context).size.height * 0.85,
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.88,
+          ),
           padding: EdgeInsets.only(
             bottom: MediaQuery.of(context).viewInsets.bottom,
           ),

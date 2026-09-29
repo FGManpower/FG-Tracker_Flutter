@@ -93,6 +93,7 @@ dependencies:
   emoji_picker_flutter: ^3.1.0
   flutter_linkify: ^6.0.0
   flutter_foreground_task: ^11.0.3
+  razorpay_flutter: ^1.4.7
 
 
 dependency_overrides:

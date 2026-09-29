@@ -1,5 +1,8 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
+import 'package:fgtracker/app/Core/constant/const_res.dart';
+import 'package:fgtracker/app/Core/constant/pref_res.dart';
+import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Data/Repositories/walkie_plan_repo.dart';
 import 'package:fgtracker/app/Model/walkie_coupon_model.dart';
 import 'package:fgtracker/app/Model/walkie_order_summary_model.dart';
@@ -8,8 +11,11 @@ import 'package:fgtracker/app/modules/Walkie-talkie/Views/walkie_talkie_purchase
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
+import 'package:razorpay_flutter/razorpay_flutter.dart';
 
 class WalkieOrderSummaryController extends GetxController {
+  late final Razorpay _razorpay;
   late final Rx<WalkiePaymentOrderModel> order;
 
   final RxBool isProcessingPayment = false.obs;
@@ -29,6 +35,17 @@ class WalkieOrderSummaryController extends GetxController {
   final RxnString dynamicCouponCode = RxnString();
   final RxBool userExplicitlyAppliedCoupon = false.obs;
 
+  // Selected Payment Method & Sub-options
+  final RxString selectedPaymentMethod = 'upi'.obs; // 'upi', 'card', 'netbanking', 'wallet'
+  final RxString selectedUpiApp = 'gpay'.obs; // 'gpay', 'phonepe', 'paytm', 'bhim', 'cred', 'amazonpay'
+  final RxString selectedUpiTab = 'apps'.obs; // 'apps', 'vpa', 'qr'
+  final RxString customUpiVpa = ''.obs;
+  final TextEditingController vpaTextController = TextEditingController();
+  final RxString selectedCardNetwork = 'visa'.obs; // 'visa', 'mastercard', 'rupay', 'maestro', 'amex'
+  final RxString selectedCardType = 'debit'.obs; // 'debit', 'credit', 'corporate'
+  final RxString selectedBank = 'hdfc'.obs; // 'hdfc', 'sbi', 'icici', 'axis', 'kotak', etc.
+  final RxString selectedWallet = 'paytm'.obs; // 'paytm', 'amazonpay', 'phonepe', 'mobikwik', etc.
+
   WalkieOrderSummaryController([WalkiePaymentOrderModel? initialOrder]) {
     final passedOrder = initialOrder ??
         (Get.arguments is WalkiePaymentOrderModel
@@ -40,6 +57,7 @@ class WalkieOrderSummaryController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    _initRazorpay();
     final bool hasInitialCoupon = (order.value.appliedCouponCode != null &&
         order.value.appliedCouponCode!.trim().isNotEmpty &&
         order.value.couponDiscount > 0);
@@ -391,6 +409,214 @@ class WalkieOrderSummaryController extends GetxController {
     showTopWhiteMessage("Coupon removed successfully");
   }
 
+  void _initRazorpay() {
+    _razorpay = Razorpay();
+    _razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, _handlePaymentSuccess);
+    _razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, _handlePaymentError);
+    _razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, _handleExternalWallet);
+  }
+
+  void _handlePaymentSuccess(PaymentSuccessResponse response) {
+    debugPrint("✅ Razorpay Payment Success: ${response.paymentId}");
+    isProcessingPayment.value = false;
+    HapticFeedback.heavyImpact();
+
+    String methodDesc = "Razorpay (UPI / Card)";
+    if (selectedPaymentMethod.value == 'upi') {
+      if (selectedUpiApp.value == 'gpay') {
+        methodDesc = "Google Pay (UPI)";
+      } else if (selectedUpiApp.value == 'phonepe') {
+        methodDesc = "PhonePe (UPI)";
+      } else if (selectedUpiApp.value == 'paytm') {
+        methodDesc = "Paytm (UPI)";
+      } else if (selectedUpiApp.value == 'bhim') {
+        methodDesc = "BHIM UPI";
+      } else if (selectedUpiApp.value == 'cred') {
+        methodDesc = "Cred (UPI)";
+      } else if (selectedUpiApp.value == 'amazonpay') {
+        methodDesc = "Amazon Pay (UPI)";
+      } else {
+        methodDesc = "UPI Payment";
+      }
+    } else if (selectedPaymentMethod.value == 'card') {
+      final cardTypeLabel = selectedCardType.value == 'credit' ? 'Credit Card' : 'Debit Card';
+      methodDesc = "$cardTypeLabel (${selectedCardNetwork.value.toUpperCase()})";
+    } else if (selectedPaymentMethod.value == 'netbanking') {
+      methodDesc = "NetBanking (${selectedBank.value.toUpperCase()})";
+    } else if (selectedPaymentMethod.value == 'wallet') {
+      methodDesc = "Wallet (${selectedWallet.value.capitalizeFirst})";
+    }
+
+    final String paymentIdStr = (response.paymentId != null && response.paymentId!.isNotEmpty)
+        ? response.paymentId!
+        : "pay_${DateTime.now().millisecondsSinceEpoch.toRadixString(36).toUpperCase()}";
+
+    final String nowFormatted = DateFormat('dd MMM yyyy, hh:mm a').format(DateTime.now());
+
+    // Navigate to purchase success screen with realistic payment metadata
+    Get.off(() => WalkieTalkiePurchaseSuccessScreen(
+          isTeam: order.value.isTeam || purchasedSeats > 1,
+          planTitle: planName,
+          memberCount: purchasedSeats,
+          validTill: order.value.validTill,
+          paymentId: paymentIdStr,
+          orderId: response.orderId,
+          amountPaid: totalPayable,
+          paymentMethod: methodDesc,
+          transactionTime: nowFormatted,
+        ));
+  }
+
+  void _handlePaymentError(PaymentFailureResponse response) {
+    debugPrint(
+        "❌ Razorpay Payment Error: Code ${response.code} | Message: ${response.message}");
+    isProcessingPayment.value = false;
+    HapticFeedback.mediumImpact();
+
+    final bool isCancelled = response.code == 2 ||
+        (response.message?.toLowerCase().contains("cancel") ?? false);
+    final String errorTitle =
+        isCancelled ? "Payment Cancelled" : "Payment Unsuccessful";
+    final String errorReason = isCancelled
+        ? "Payment was cancelled before completion. No amount was deducted from your bank account."
+        : (response.message != null && response.message!.isNotEmpty
+            ? response.message!
+            : "Your transaction could not be processed right now. Please verify your payment details or try a different payment method.");
+
+    showPaymentStatusModal(
+      title: errorTitle,
+      message: errorReason,
+      isCancelled: isCancelled,
+      errorCode: response.code,
+    );
+  }
+
+  void showPaymentStatusModal({
+    required String title,
+    required String message,
+    bool isCancelled = false,
+    int? errorCode,
+  }) {
+    Get.bottomSheet(
+      Container(
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: const Color(0xFFE2E8F0),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 18),
+            Container(
+              width: 58,
+              height: 58,
+              decoration: BoxDecoration(
+                color: isCancelled
+                    ? const Color(0xFFFFFBEB)
+                    : const Color(0xFFFEF2F2),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                isCancelled
+                    ? Icons.info_outline_rounded
+                    : Icons.error_outline_rounded,
+                size: 32,
+                color: isCancelled
+                    ? const Color(0xFFD97706)
+                    : const Color(0xFFDC2626),
+              ),
+            ),
+            const SizedBox(height: 14),
+            Text(
+              title,
+              style: const TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF0F172A),
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              message,
+              style: const TextStyle(
+                fontSize: 12.5,
+                color: Color(0xFF64748B),
+                height: 1.45,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 22),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: Color(0xFFCBD5E1)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 13),
+                    ),
+                    onPressed: () => Get.back(),
+                    child: const Text(
+                      "Change Method",
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF475569),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF5B4DF5),
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 13),
+                    ),
+                    onPressed: () {
+                      Get.back();
+                      processPayment();
+                    },
+                    child: const Text(
+                      "Retry Pay",
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+      isScrollControlled: true,
+    );
+  }
+
+  void _handleExternalWallet(ExternalWalletResponse response) {
+    debugPrint("💳 Razorpay External Wallet: ${response.walletName}");
+    isProcessingPayment.value = false;
+  }
+
   Future<void> processPayment() async {
     if (isProcessingPayment.value) return;
 
@@ -398,21 +624,236 @@ class WalkieOrderSummaryController extends GetxController {
       HapticFeedback.mediumImpact();
       isProcessingPayment.value = true;
 
-      // Simulate payment processing flow
-      await Future.delayed(const Duration(milliseconds: 1400));
+      final String? rawPhone =
+          Global.storageServices.get(PrefConst.userPhone)?.toString();
+      final String? userEmail =
+          Global.storageServices.get(PrefConst.userEmail)?.toString();
+      final String? userName =
+          Global.storageServices.get(PrefConst.userName)?.toString();
 
-      // Successfully processed -> Navigate to purchase success screen
-      Get.off(() => WalkieTalkiePurchaseSuccessScreen(
-            isTeam: order.value.isTeam || purchasedSeats > 1,
-            planTitle: planName,
-            memberCount: purchasedSeats,
-            validTill: order.value.validTill,
-          ));
+      // Sanitize phone to valid 10-digit format for Razorpay
+      String? cleanPhone;
+      if (rawPhone != null && rawPhone.isNotEmpty) {
+        final digits = rawPhone.replaceAll(RegExp(r'\D'), '');
+        if (digits.length >= 10) {
+          cleanPhone = digits.substring(digits.length - 10);
+        } else if (digits.isNotEmpty) {
+          cleanPhone = digits;
+        }
+      }
+
+      // Ensure minimum 100 paise (₹1) for INR transactions in Razorpay
+      final int amountInPaise = totalPayable > 0 ? (totalPayable * 100).round() : 100;
+
+      final Map<String, dynamic> razorpayOptions = {
+        'key': ConstRes.activePaymentKey,
+        'amount': amountInPaise,
+        'name': 'FG Tracker',
+        'description': '$planName ($durationName)',
+        'currency': 'INR',
+        'theme': {
+          'color': '#5B4DF5',
+        },
+        'config': _buildRazorpayConfig(),
+        'prefill': {
+          if (cleanPhone != null && cleanPhone.isNotEmpty) 'contact': cleanPhone,
+          if (userEmail != null && userEmail.isNotEmpty) 'email': userEmail,
+          if (userName != null && userName.isNotEmpty) 'name': userName,
+          if (selectedPaymentMethod.value == 'upi') ...{
+            'method': 'upi',
+            if (customUpiVpa.value.trim().isNotEmpty)
+              'vpa': customUpiVpa.value.trim(),
+          },
+          if (selectedPaymentMethod.value == 'card') 'method': 'card',
+          if (selectedPaymentMethod.value == 'netbanking') ...{
+            'method': 'netbanking',
+            if (selectedBank.value.isNotEmpty) 'bank': _getRazorpayBankCode(selectedBank.value),
+          },
+          if (selectedPaymentMethod.value == 'wallet') ...{
+            'method': 'wallet',
+            if (selectedWallet.value.isNotEmpty) 'wallet': _getRazorpayWalletCode(selectedWallet.value),
+          },
+        },
+        'retry': {
+          'enabled': true,
+          'max_count': 3,
+        },
+        'send_sms_hash': true,
+        'notes': {
+          'planTitle': planName,
+          'plan_id': (order.value.plan?.id ?? 1).toString(),
+          'duration': durationName,
+          'memberCount': purchasedSeats.toString(),
+          'selectedPaymentMode': selectedPaymentMethod.value,
+          if (selectedPaymentMethod.value == 'upi') ...{
+            'upiApp': selectedUpiApp.value,
+            if (customUpiVpa.value.trim().isNotEmpty)
+              'upiVpa': customUpiVpa.value.trim(),
+          },
+          if (selectedPaymentMethod.value == 'netbanking') 'bank': selectedBank.value,
+          if (selectedPaymentMethod.value == 'wallet') 'wallet': selectedWallet.value,
+          if (currentPromoCode != null) 'couponCode': currentPromoCode!,
+        },
+      };
+
+      debugPrint("🚀 [Razorpay] Opening Checkout with Key: ${ConstRes.activePaymentKey}");
+      debugPrint("📦 [Razorpay] Payload: $razorpayOptions");
+
+      _razorpay.open(razorpayOptions);
     } catch (e) {
-      showTopWhiteMessage(_parseErrorMessage(e));
-    } finally {
       isProcessingPayment.value = false;
+      debugPrint("❌ [Razorpay] Exception opening checkout: $e");
+      showTopWhiteMessage("Unable to open Razorpay gateway: $e");
     }
+  }
+
+  String _getRazorpayBankCode(String bankId) {
+    const bankCodeMap = {
+      'hdfc': 'HDFC',
+      'sbi': 'SBIN',
+      'icici': 'ICIC',
+      'axis': 'UTIB',
+      'kotak': 'KKBK',
+      'pnb': 'PUNB_R',
+      'bob': 'BARB_R',
+      'canara': 'CNRB',
+      'indusind': 'INDB',
+      'yes': 'YESB',
+      'idfc': 'IDFB',
+    };
+    return bankCodeMap[bankId.toLowerCase()] ?? bankId.toUpperCase();
+  }
+
+  String _getRazorpayWalletCode(String walletId) {
+    const walletMap = {
+      'paytm': 'paytm',
+      'amazonpay': 'amazonpay',
+      'phonepe': 'phonepe',
+      'mobikwik': 'mobikwik',
+      'freecharge': 'freecharge',
+      'airtel': 'airtelmoney',
+    };
+    return walletMap[walletId.toLowerCase()] ?? walletId.toLowerCase();
+  }
+
+  Map<String, dynamic> _buildRazorpayConfig() {
+    final method = selectedPaymentMethod.value;
+    if (method == 'upi') {
+      return {
+        'display': {
+          'blocks': {
+            'preferred': {
+              'name': 'Pay via UPI / QR',
+              'instruments': [
+                {'method': 'upi'},
+              ],
+            },
+            'other': {
+              'name': 'Other Payment Methods',
+              'instruments': [
+                {'method': 'card'},
+                {'method': 'netbanking'},
+                {'method': 'wallet'},
+              ],
+            },
+          },
+          'sequence': ['block.preferred', 'block.other'],
+          'preferences': {
+            'show_default_blocks': true,
+          },
+        },
+      };
+    } else if (method == 'card') {
+      return {
+        'display': {
+          'blocks': {
+            'preferred': {
+              'name': 'Debit / Credit Card',
+              'instruments': [
+                {'method': 'card'},
+              ],
+            },
+            'other': {
+              'name': 'Other Payment Methods',
+              'instruments': [
+                {'method': 'upi'},
+                {'method': 'netbanking'},
+                {'method': 'wallet'},
+              ],
+            },
+          },
+          'sequence': ['block.preferred', 'block.other'],
+          'preferences': {
+            'show_default_blocks': true,
+          },
+        },
+      };
+    } else if (method == 'netbanking') {
+      final bankCode = _getRazorpayBankCode(selectedBank.value);
+      return {
+        'display': {
+          'blocks': {
+            'preferred': {
+              'name': 'Pay via NetBanking (${selectedBank.value.toUpperCase()})',
+              'instruments': [
+                {
+                  'method': 'netbanking',
+                  'banks': [bankCode],
+                },
+              ],
+            },
+            'other': {
+              'name': 'Other Payment Methods',
+              'instruments': [
+                {'method': 'upi'},
+                {'method': 'card'},
+                {'method': 'wallet'},
+              ],
+            },
+          },
+          'sequence': ['block.preferred', 'block.other'],
+          'preferences': {
+            'show_default_blocks': true,
+          },
+        },
+      };
+    } else if (method == 'wallet') {
+      final walletCode = _getRazorpayWalletCode(selectedWallet.value);
+      return {
+        'display': {
+          'blocks': {
+            'preferred': {
+              'name': 'Pay via Digital Wallet',
+              'instruments': [
+                {
+                  'method': 'wallet',
+                  'wallets': [walletCode],
+                },
+              ],
+            },
+            'other': {
+              'name': 'Other Payment Methods',
+              'instruments': [
+                {'method': 'upi'},
+                {'method': 'card'},
+                {'method': 'netbanking'},
+              ],
+            },
+          },
+          'sequence': ['block.preferred', 'block.other'],
+          'preferences': {
+            'show_default_blocks': true,
+          },
+        },
+      };
+    }
+    return {};
+  }
+
+  @override
+  void onClose() {
+    _razorpay.clear();
+    super.onClose();
   }
 
   void showTopWhiteMessage(String message) {
