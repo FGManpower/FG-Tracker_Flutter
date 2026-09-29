@@ -46,7 +46,7 @@ class CallingController extends GetxController {
   int callDurationSeconds = 0;
 
   final Rxn<CallDetail> apiCallDetail = Rxn<CallDetail>();
-  final RxString callStartTime = "".obs;
+
 
   Timer? missedCallTimer;
   var missCallDurationSeconds = 40.obs;
@@ -90,15 +90,14 @@ class CallingController extends GetxController {
 
     if (callId != null) {
       fetchCallDetail();
-    } else {
-      callStartTime.value = DateFormat('hh:mm a').format(DateTime.now());
     }
 
     super.onInit();
   }
 
+  // --- FIXED: One-way video upgrade logic ---
   Future<void> upgradeToVideoCall() async {
-    if (isVideoCall.value || isUpgradingToVideo.value) return;
+    if (isUpgradingToVideo.value) return;
     if (peer == null || localStream == null) {
       Utils().fluttertoast("Call not ready");
       return;
@@ -106,68 +105,68 @@ class CallingController extends GetxController {
 
     try {
       isUpgradingToVideo.value = true;
-      final videoStream = await navigator.mediaDevices.getUserMedia({
-        'audio': false,
-        'video': {
-          'facingMode': isFrontCamera ? 'user' : 'environment',
-          'width': {'ideal': 640},
-          'height': {'ideal': 480},
-        },
-      });
 
-      final videoTrack = videoStream.getVideoTracks().firstOrNull;
-      if (videoTrack == null) {
-        throw Exception("No video track available");
+      final vids = localStream!.getVideoTracks();
+      if (vids.isEmpty) {
+        // 1. We don't have a camera track yet, acquire it
+        final videoStream = await navigator.mediaDevices.getUserMedia({
+          'audio': false,
+          'video': {
+            'facingMode': isFrontCamera ? 'user' : 'environment',
+            'width': {'ideal': 640},
+            'height': {'ideal': 480},
+          },
+        });
+
+        final videoTrack = videoStream.getVideoTracks().firstOrNull;
+        if (videoTrack == null) {
+          throw Exception("No video track available");
+        }
+        await localStream!.addTrack(videoTrack);
+        await peer!.addTrack(videoTrack, localStream!);
+      } else {
+        // We already have a track, just enable it
+        for (var t in vids) { t.enabled = true; }
       }
-      await localStream!.addTrack(videoTrack);
-      await peer!.addTrack(videoTrack, localStream!);
 
       localRenderer.srcObject = localStream;
       isVideoOn = true;
       is_video = true;
       isVideoCall.value = true;
 
+      // 2. Renegotiate with remote
+      final offer = await peer!.createOffer({
+        'offerToReceiveAudio': true,
+        'offerToReceiveVideo': true,
+      });
+      await peer!.setLocalDescription(offer);
+
       final myUserId = Global.storageServices.get(PrefConst.userId).toString();
-      final isCaller = myUserId == callerId.toString();
+      final targetUserId = (myUserId == callerId.toString()) ? remoteUserId : callerId;
 
-      if (isCaller || args["callType"] == "outGoing") {
-        final offer = await peer!.createOffer({
-          'offerToReceiveAudio': true,
-          'offerToReceiveVideo': true,
-        });
-        await peer!.setLocalDescription(offer);
-
-        socket?.emit("upgradeToVideo", {
-          "callId": callId,
-          "remoteUserId": remoteUserId,
-          "sdpOffer": offer.toMap(),
-          "callerId": myUserId,
-        });
-      } else {
-        socket?.emit("requestVideoUpgrade", {
-          "callId": callId,
-          "remoteUserId": callerId,
-          "callerId": myUserId,
-        });
-      }
+      // Force send upgrade (no requests anymore)
+      socket?.emit("upgradeToVideo", {
+        "callId": callId,
+        "remoteUserId": targetUserId,
+        "sdpOffer": offer.toMap(),
+        "callerId": myUserId,
+      });
 
       callStatus.value = "Video connecting";
       update();
     } catch (e) {
       log("upgradeToVideoCall error: $e");
-      isVideoCall.value = false;
-      is_video = false;
     } finally {
       isUpgradingToVideo.value = false;
     }
   }
 
+  // --- FIXED: Accept remote video WITHOUT turning on our camera ---
   void _listenVideoUpgradeEvents() {
     socket?.off("upgradeToVideo");
     socket?.off("upgradeToVideoAnswer");
     socket?.off("requestVideoUpgrade");
 
-    // Remote peer started upgrade → set remote offer + send answer
     socket?.on("upgradeToVideo", (data) async {
       try {
         if (peer == null) return;
@@ -178,22 +177,7 @@ class CallingController extends GetxController {
           RTCSessionDescription(sdp["sdp"], sdp["type"]),
         );
 
-        // Ensure we also have local camera if not yet
-        if (!isVideoCall.value) {
-          final videoStream = await navigator.mediaDevices.getUserMedia({
-            'audio': false,
-            'video': {
-              'facingMode': isFrontCamera ? 'user' : 'environment',
-            },
-          });
-          final videoTrack = videoStream.getVideoTracks().firstOrNull;
-          if (videoTrack != null) {
-            await localStream?.addTrack(videoTrack);
-            await peer!.addTrack(videoTrack, localStream!);
-            localRenderer.srcObject = localStream;
-          }
-        }
-
+        // DO NOT start local camera here. Just send answer to accept their video.
         final answer = await peer!.createAnswer({
           'offerToReceiveAudio': true,
           'offerToReceiveVideo': true,
@@ -207,8 +191,9 @@ class CallingController extends GetxController {
         });
 
         is_video = true;
-        isVideoOn = true;
         isVideoCall.value = true;
+        // NOTE: isVideoOn remains what it was (false), keeping local camera OFF
+
         callStatus.value = "Connected";
         update();
       } catch (e) {
@@ -235,10 +220,6 @@ class CallingController extends GetxController {
         log("upgradeToVideoAnswer error: $e");
       }
     });
-
-    socket?.on("requestVideoUpgrade", (data) async {
-      await upgradeToVideoCall();
-    });
   }
 
   void _listenForCallEvents() {
@@ -254,72 +235,46 @@ class CallingController extends GetxController {
 
     socket?.on("callError", (data) {
       log("CALL ERROR => $data");
-
       stopSound();
       _clearTimers();
       resetPeer();
-
       if (Get.isOverlaysOpen) {
         Get.back();
       }
-
-      Get.snackbar(
-        "Call Failed",
-        data?['message']?.toString() ?? "Unable to make call",
-      );
+      Get.snackbar("Call Failed", data?['message']?.toString() ?? "Unable to make call");
     });
 
     socket?.on("callBlocked", (data) {
       log("CALL BLOCKED => $data");
-
       stopSound();
       _clearTimers();
       resetPeer();
-
       if (Get.isOverlaysOpen) {
         Get.back();
       }
-
-      Get.snackbar(
-        "Call unavailable",
-        data?['message']?.toString() ??
-            "Communication is not available with this user",
-      );
+      Get.snackbar("Call unavailable", data?['message']?.toString() ?? "Communication is not available with this user");
     });
 
     socket?.on("sdpOfferFromCaller", (data) async {
       log("====== Received SDP Offer from Caller (CallKit flow) ======");
       log("Data: $data");
-
       if (peer == null) return;
 
       try {
         final sdp = data["sdpOffer"] ?? data["offer"];
         if (sdp == null) return;
-
         offer = sdp;
         callId = data["callId"] ?? callId;
 
-        await peer!.setRemoteDescription(
-          RTCSessionDescription(
-            sdp["sdp"],
-            sdp["type"],
-          ),
-        );
-
+        await peer!.setRemoteDescription(RTCSessionDescription(sdp["sdp"], sdp["type"]));
         final answer = await peer!.createAnswer();
         await peer!.setLocalDescription(answer);
 
         peer!.onIceCandidate = (c) {
           if (c.candidate == null) return;
-
           socket!.emit("IceCandidate", {
             "remoteUserId": callerId,
-            "iceCandidate": {
-              "id": c.sdpMid,
-              "label": c.sdpMLineIndex,
-              "candidate": c.candidate,
-            },
+            "iceCandidate": {"id": c.sdpMid, "label": c.sdpMLineIndex, "candidate": c.candidate},
           });
         };
 
@@ -328,7 +283,6 @@ class CallingController extends GetxController {
           "callerId": callerId,
           "sdpAnswer": answer.toMap(),
         });
-
         callStatus.value = "Connecting";
       } catch (e) {
         log("Error handling sdpOfferFromCaller: $e");
@@ -345,34 +299,22 @@ class CallingController extends GetxController {
 
     socket!.on("callRejected", (data) async {
       _clearTimers();
-
       if (CallSessionState.sessionId != null) {
-        callEnded(
-          CallSessionState.sessionId.toString(),
-          type: "CallRejectedFromController",
-        );
+        callEnded(CallSessionState.sessionId.toString(), type: "CallRejectedFromController");
       }
-
       resetPeer();
       Get.back();
     });
 
     socket!.on("callEnded", (data) async {
       _clearTimers();
-
       resetPeer();
-
       if (CallSessionState.sessionId != null) {
-        callEnded(
-          data['sessionId'].toString(),
-          type: "callEndedFromController",
-        );
+        callEnded(data['sessionId'].toString(), type: "callEndedFromController");
       }
-
       if (args["callType"] == "outGoing") {
         stopSound();
       }
-
       if (Get.currentRoute != Routes.Home_Screen) {
         Get.offAllNamed(Routes.Home_Screen);
       }
@@ -380,23 +322,16 @@ class CallingController extends GetxController {
 
     socket!.on("missedCall", (data) async {
       log("==========MissedCallCalled=======$data");
-
       _clearTimers();
-
       if (CallSessionState.sessionId != null) {
-        callEnded(
-          CallSessionState.sessionId.toString(),
-          type: "missedCallFromController",
-        );
+        callEnded(CallSessionState.sessionId.toString(), type: "missedCallFromController");
       }
-
       resetPeer();
       Get.back();
     });
 
     socket?.on("callStatus", (data) {
       log("CALL STATUS: $data");
-
       if (data['status'] != null) {
         callStatus.value = data['status'];
       }
@@ -404,7 +339,6 @@ class CallingController extends GetxController {
 
     socket?.on("callCreated", (data) {
       callId = data['callId'];
-
       fetchCallDetail();
       startMissedCallTimer();
     });
@@ -439,14 +373,8 @@ class CallingController extends GetxController {
 
     peer = await createPeerConnection({
       'iceServers': [
-        {
-          'urls': ['stun:stun.l.google.com:19302'],
-        },
-        {
-          'urls': Urls.rtcUrl,
-          'username': Urls.rtcUserName,
-          'credential': Urls.rtcCredential,
-        }
+        {'urls': ['stun:stun.l.google.com:19302']},
+        {'urls': Urls.rtcUrl, 'username': Urls.rtcUserName, 'credential': Urls.rtcCredential}
       ],
       'iceTransportPolicy': 'all',
     });
@@ -465,9 +393,7 @@ class CallingController extends GetxController {
 
     localStream = await navigator.mediaDevices.getUserMedia({
       'audio': true,
-      'video': is_video == true
-          ? {'facingMode': isFrontCamera ? 'user' : 'environment'}
-          : false,
+      'video': is_video == true ? {'facingMode': isFrontCamera ? 'user' : 'environment'} : false,
     });
 
     await enableSpeaker();
@@ -489,13 +415,9 @@ class CallingController extends GetxController {
       safeAddCandidate(data);
     });
 
-    // ========== INCOMING CALL (has SDP offer) ==========
+    // INCOMING CALL
     if (offer != null) {
-      log("====== Normal Incoming Call (has offer) ======");
-
-      await peer!.setRemoteDescription(
-        RTCSessionDescription(offer["sdp"], offer["type"]),
-      );
+      await peer!.setRemoteDescription(RTCSessionDescription(offer["sdp"], offer["type"]));
       final answer = await peer!.createAnswer();
       await peer!.setLocalDescription(answer);
 
@@ -503,11 +425,7 @@ class CallingController extends GetxController {
         if (c.candidate == null) return;
         socket!.emit("IceCandidate", {
           "remoteUserId": callerId,
-          "iceCandidate": {
-            "id": c.sdpMid,
-            "label": c.sdpMLineIndex,
-            "candidate": c.candidate,
-          },
+          "iceCandidate": {"id": c.sdpMid, "label": c.sdpMLineIndex, "candidate": c.candidate},
         });
       };
 
@@ -516,41 +434,27 @@ class CallingController extends GetxController {
         "callerId": callerId,
         "sdpAnswer": answer.toMap(),
       });
-    } else if (fromCallKit ||
-        (args["callType"] == "Incoming" && offer == null)) {
+    } else if (fromCallKit || (args["callType"] == "Incoming" && offer == null)) {
       callStatus.value = "Connecting...";
-
-      // Tell the caller that we accepted from CallKit and request the SDP
       socket!.emit("acceptCallFromCallKit", {
         "callerId": callerId,
         "sessionId": CallSessionState.sessionId ?? args["sessionId"],
         "callId": callId,
         "receiverId": Global.storageServices.get(PrefConst.userId),
       });
-
-      // We will receive the offer via "sdpOfferFromCaller" listener
     } else {
-      log("====== Outgoing Call ======");
-
       peer!.onIceCandidate = (c) => iceCandidates.add(c);
 
       socket!.on("callAnswered", (data) async {
         await peer!.setRemoteDescription(
-          RTCSessionDescription(
-            data["sdpAnswer"]["sdp"],
-            data["sdpAnswer"]["type"],
-          ),
+          RTCSessionDescription(data["sdpAnswer"]["sdp"], data["sdpAnswer"]["type"]),
         );
 
         for (var c in iceCandidates) {
           if (c.candidate == null) continue;
           socket!.emit("IceCandidate", {
             "remoteUserId": remoteUserId,
-            "iceCandidate": {
-              "id": c.sdpMid,
-              "label": c.sdpMLineIndex,
-              "candidate": c.candidate,
-            },
+            "iceCandidate": {"id": c.sdpMid, "label": c.sdpMLineIndex, "candidate": c.candidate},
           });
         }
         iceCandidates.clear();
@@ -559,11 +463,7 @@ class CallingController extends GetxController {
           if (c.candidate == null) return;
           socket!.emit("IceCandidate", {
             "remoteUserId": remoteUserId,
-            "iceCandidate": {
-              "id": c.sdpMid,
-              "label": c.sdpMLineIndex,
-              "candidate": c.candidate,
-            },
+            "iceCandidate": {"id": c.sdpMid, "label": c.sdpMLineIndex, "candidate": c.candidate},
           });
         };
       });
@@ -582,39 +482,27 @@ class CallingController extends GetxController {
 
   Future<void> endCall({String? type}) async {
     _clearTimers();
-
     final myUserId = Global.storageServices.get(PrefConst.userId).toString();
-    final targetUser =
-        (myUserId == callerId.toString()) ? remoteUserId : callerId;
+    final targetUser = (myUserId == callerId.toString()) ? remoteUserId : callerId;
 
     var param = {
       "callId": callId,
       "remoteUserId": targetUser.toString(),
     };
 
-    if (callStatus.value != "Connected") {}
     if (type != "missedCall") {
-      log("========CallEndParameterDetail:$param");
       socket?.emit("endCall", param);
     }
-
     resetPeer();
-
     if (CallSessionState.sessionId != null) {
-      log("========CallerSideSessionId:${CallSessionState.sessionId}");
-      callEnded(CallSessionState.sessionId.toString(),
-          type: "endCallMethodHittedFromController-Type:$type");
+      callEnded(CallSessionState.sessionId.toString(), type: "endCallMethodHittedFromController-Type:$type");
     }
-
     if (args["callType"] == "outGoing") {
       stopSound();
     }
-
     await WakelockPlus.disable();
-
     if (Get.currentRoute != Routes.Home_Screen) {
       Get.offAllNamed(Routes.Home_Screen);
-      log("========CallerSideSessionId2:${CallSessionState.sessionId}");
     }
   }
 
@@ -624,11 +512,22 @@ class CallingController extends GetxController {
     update();
   }
 
+  // --- FIXED: If video isn't active yet, get the camera. Otherwise, toggle it. ---
   void toggleCamera() {
     if (!isVideoCall.value) return;
-    isVideoOn = !isVideoOn;
-    localStream?.getVideoTracks().forEach((t) => t.enabled = isVideoOn);
-    update();
+
+    final vids = localStream?.getVideoTracks() ?? [];
+    if (vids.isEmpty) {
+      // The other person shared video, but we don't have a camera track yet. Turn it on!
+      upgradeToVideoCall();
+    } else {
+      // We already have a track, just toggle it locally.
+      isVideoOn = !isVideoOn;
+      for (var t in vids) {
+        t.enabled = isVideoOn;
+      }
+      update();
+    }
   }
 
   void switchCamera() {
@@ -649,13 +548,11 @@ class CallingController extends GetxController {
   Future<void> toggleSpeaker() async {
     isSpeakerOn = !isSpeakerOn;
     await Helper.setSpeakerphoneOn(isSpeakerOn);
-
     if (isSpeakerOn) {
       await ProximityScreenLock.setActive(false);
     } else {
       await ProximityScreenLock.setActive(true);
     }
-
     update();
   }
 
@@ -677,33 +574,18 @@ class CallingController extends GetxController {
       if (res.status == true && res.callDetail != null) {
         apiCallDetail.value = res.callDetail;
         final rawTime = res.callDetail?.startTime;
-        if (rawTime != null && rawTime.trim().isNotEmpty) {
-          callStartTime.value = _formatTime(rawTime);
-        }
+
       }
     } catch (e) {
       log("Error fetching call detail: $e");
     }
-    if (callStartTime.value.isEmpty) {
-      callStartTime.value = DateFormat('hh:mm a').format(DateTime.now());
-    }
+
   }
 
-  String _formatTime(String raw) {
-    try {
-      final dt = DateTime.tryParse(raw);
-      if (dt != null) {
-        return DateFormat('hh:mm a').format(dt.toLocal());
-      }
-      return raw;
-    } catch (_) {
-      return raw;
-    }
-  }
+
 
   void startCallTimer() {
     if (callTimer != null) return;
-
     callTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       callDurationSeconds++;
       update();
@@ -713,36 +595,24 @@ class CallingController extends GetxController {
   void startMissedCallTimer() {
     missedCallTimer?.cancel();
     missCallDurationSeconds.value = 40;
-
-    missedCallTimer = Timer.periodic(
-      const Duration(seconds: 1),
-      (timer) {
-        if (isClosed) {
-          timer.cancel();
-          return;
-        }
-
-        if (missCallDurationSeconds.value > 0) {
-          missCallDurationSeconds.value--;
-        }
-
-        if (missCallDurationSeconds.value == 0) {
-          timer.cancel();
-          missedCall();
-        }
-      },
-    );
+    missedCallTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (isClosed) {
+        timer.cancel();
+        return;
+      }
+      if (missCallDurationSeconds.value > 0) {
+        missCallDurationSeconds.value--;
+      }
+      if (missCallDurationSeconds.value == 0) {
+        timer.cancel();
+        missedCall();
+      }
+    });
   }
 
   void missedCall() {
-    var param = {
-      "callId": callId,
-      "remoteUserId": remoteUserId,
-    };
-    print("MISS CALL EMIT => $param");
+    var param = {"callId": callId, "remoteUserId": remoteUserId};
     socket?.emit("missCall", param);
-    log("=======MissedCallParam===$param");
-
     endCall(type: "missedCall");
   }
 
