@@ -32,7 +32,7 @@ class CallingScreen extends StatelessWidget {
                     child: RTCVideoView(
                       c.remoteRenderer,
                       objectFit:
-                          RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
+                      RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
                     ),
                   )
                 else
@@ -92,7 +92,7 @@ class CallingScreen extends StatelessWidget {
                             alignment: Alignment.bottomLeft,
                             child: Padding(
                               padding:
-                                  EdgeInsets.only(left: 20.w, bottom: 18.h),
+                              EdgeInsets.only(left: 20.w, bottom: 18.h),
                               child: _localPip(c),
                             ),
                           ),
@@ -115,7 +115,7 @@ class CallingScreen extends StatelessWidget {
   Widget _buildTopInfo(CallingController c, {required bool isVideo}) {
     final Color textColor = isVideo ? Colors.white : darkText;
     final Color subColor =
-        isVideo ? Colors.white70 : primaryPurple.withOpacity(0.9);
+    isVideo ? Colors.white70 : primaryPurple.withOpacity(0.9);
 
     final bool isOutgoing = c.args["callType"] == "outGoing";
 
@@ -194,15 +194,15 @@ class CallingScreen extends StatelessWidget {
           clipBehavior: Clip.antiAlias,
           child: c.isVideoOn
               ? RTCVideoView(
-                  c.localRenderer,
-                  mirror: c.isFrontCamera,
-                  objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
-                )
+            c.localRenderer,
+            mirror: c.isFrontCamera,
+            objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
+          )
               : Container(
-                  color: const Color(0xFF1A1A2E),
-                  child: Icon(Icons.videocam_off,
-                      color: Colors.white54, size: 32.sp),
-                ),
+            color: const Color(0xFF1A1A2E),
+            child: Icon(Icons.videocam_off,
+                color: Colors.white54, size: 32.sp),
+          ),
         ),
         Positioned(
           top: 6.h,
@@ -422,15 +422,46 @@ class CallingScreen extends StatelessWidget {
                     isVideo: isVideo,
                     onTap: () => _openMoreSheet(context, c),
                   ),
-                  _ctrl(
-                    icon: c.isSpeakerOn
-                        ? Icons.volume_up_rounded
-                        : Icons.volume_off_rounded,
-                    label: "Speaker",
-                    active: c.isSpeakerOn,
-                    isVideo: isVideo,
-                    onTap: c.toggleSpeaker,
-                  ),
+
+                  // ✅ DYNAMIC SPEAKER & BLUETOOTH BUTTON (WhatsApp Style)
+                  Obx(() {
+                    final String activeRoute = c.currentAudioRoute.value;
+
+                    IconData speakerIcon;
+                    String speakerLabel;
+                    Color? activeIconColor;
+                    bool isButtonActive = false;
+
+                    if (activeRoute == "bluetooth") {
+                      // Dynamic Bluetooth Output (WhatsApp Blue)
+                      speakerIcon = Icons.bluetooth_audio_rounded;
+                      speakerLabel = "Bluetooth";
+                      activeIconColor = const Color(0xFF2196F3); // Blue for BT Active
+                      isButtonActive = true;
+                    } else if (activeRoute == "speaker") {
+                      // Loudspeaker Output (Standard Purple Active)
+                      speakerIcon = Icons.volume_up_rounded;
+                      speakerLabel = "Speaker";
+                      activeIconColor = isVideo ? Colors.white : primaryPurple;
+                      isButtonActive = true;
+                    } else {
+                      // Earpiece Output (Gray Off Style)
+                      speakerIcon = Icons.volume_down_rounded;
+                      speakerLabel = "Earpiece";
+                      activeIconColor = isVideo ? Colors.white60 : darkText.withOpacity(0.6);
+                      isButtonActive = false;
+                    }
+
+                    return _ctrl(
+                      icon: speakerIcon,
+                      label: speakerLabel,
+                      active: isButtonActive,
+                      isVideo: isVideo,
+                      onTap: c.toggleSpeaker,
+                      iconColor: activeIconColor,
+                    );
+                  }),
+
                   Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -473,7 +504,7 @@ class CallingScreen extends StatelessWidget {
                   ),
                   _ctrl(
                     icon:
-                        c.isAudioOn ? Icons.mic_rounded : Icons.mic_off_rounded,
+                    c.isAudioOn ? Icons.mic_rounded : Icons.mic_off_rounded,
                     label: "Mute",
                     active: !c.isAudioOn,
                     isVideo: isVideo,

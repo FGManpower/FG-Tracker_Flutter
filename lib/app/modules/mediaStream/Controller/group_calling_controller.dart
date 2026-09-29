@@ -365,30 +365,41 @@ class GroupCallingController extends GetxController {
     }
   }
 
-  void notifyParticipant(MemberData participant) {
+  void notifyParticipant(GroupCallParticipant participant) {
     final svc = Socket_GroupCallService.instance;
+
     if (callId == null || callId!.isEmpty) {
       Utils().fluttertoast("Call not ready yet");
       return;
     }
+
     try {
-      svc.socket?.emitWithAck("group_call_notify", {
-        "callId": int.tryParse(callId!) ?? callId,
-        "groupId": int.tryParse(groupId) ?? groupId,
-        "userId": participant.userId,
-      }, ack: (res) {
-        if (res is Map && res["success"] == false) {
-          Utils().fluttertoast(res["message"]?.toString() ?? "Notify failed");
-        } else {
-          Utils().fluttertoast("Notified ${participant.name}");
-        }
-      });
+      svc.socket?.emitWithAck(
+        "group_call_notify",
+        {
+          "callId": int.tryParse(callId!) ?? callId,
+          "groupId": int.tryParse(groupId) ?? groupId,
+          "userId": participant.userId,
+        },
+        ack: (res) {
+          if (res is Map && res["success"] == false) {
+            Utils().fluttertoast(
+              res["message"]?.toString() ?? "Notify failed",
+            );
+          } else {
+            Utils().fluttertoast(
+              "Notified ${participant.name}",
+            );
+          }
+        },
+      );
     } catch (e) {
       _log("notify emit error: $e");
-      Utils().fluttertoast("Notified ${participant.name}");
+      Utils().fluttertoast(
+        "Notified ${participant.name}",
+      );
     }
   }
-
   void _refreshNotInCallList() {
     final activeIds = activeParticipants.map((e) => e.userId).toSet();
     Socket_GroupCallService.instance.participantMeta.forEach((uid, meta) {

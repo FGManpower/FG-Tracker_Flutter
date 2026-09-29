@@ -78,7 +78,7 @@ class LivesStatusController extends GetxController {
 
   void _loadMyPrivateStatus() {
     final bool? syncVal =
-        Global.storageServices.getBoolSync(PrefConst.locationSharing);
+    Global.storageServices.getBoolSync(PrefConst.locationSharing);
     if (syncVal != null) {
       isMyPrivateModeOn.value = !syncVal;
       return;
@@ -87,6 +87,9 @@ class LivesStatusController extends GetxController {
     if (rawSharing != null) {
       final s = rawSharing.trim().toLowerCase();
       isMyPrivateModeOn.value = (s == 'false' || s == '0');
+    } else {
+      isMyPrivateModeOn.value = false;
+      Global.storageServices.setBool(PrefConst.locationSharing, true);
     }
   }
 

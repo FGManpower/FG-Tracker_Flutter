@@ -54,6 +54,10 @@ class CallingController extends GetxController {
   final RxBool isVideoCall = false.obs;
   final RxBool isUpgradingToVideo = false.obs;
 
+  final RxBool isBluetoothConnected = false.obs;
+  final RxString currentAudioRoute = "earpiece".obs;
+  Timer? _deviceCheckTimer;
+
   @override
   void onInit() {
     callerId = args["callerId"]?.toString() ?? "";
@@ -97,6 +101,20 @@ class CallingController extends GetxController {
     super.onInit();
   }
 
+  Future<void> setDefaultAudioRouteForCallType({required bool isVideo}) async {
+    await checkAudioDevices();
+
+    if (isBluetoothConnected.value) {
+      await disableSpeaker();
+    } else {
+      if (isVideo) {
+        await enableSpeaker();
+      } else {
+        await disableSpeaker();
+      }
+    }
+  }
+
   Future<void> upgradeToVideoCall() async {
     if (isVideoCall.value || isUpgradingToVideo.value) return;
     if (peer == null || localStream == null) {
@@ -126,6 +144,8 @@ class CallingController extends GetxController {
       isVideoOn = true;
       is_video = true;
       isVideoCall.value = true;
+
+      await setDefaultAudioRouteForCallType(isVideo: true);
 
       final myUserId = Global.storageServices.get(PrefConst.userId).toString();
       final isCaller = myUserId == callerId.toString();
@@ -167,7 +187,6 @@ class CallingController extends GetxController {
     socket?.off("upgradeToVideoAnswer");
     socket?.off("requestVideoUpgrade");
 
-    // Remote peer started upgrade → set remote offer + send answer
     socket?.on("upgradeToVideo", (data) async {
       try {
         if (peer == null) return;
@@ -178,7 +197,6 @@ class CallingController extends GetxController {
           RTCSessionDescription(sdp["sdp"], sdp["type"]),
         );
 
-        // Ensure we also have local camera if not yet
         if (!isVideoCall.value) {
           final videoStream = await navigator.mediaDevices.getUserMedia({
             'audio': false,
@@ -210,6 +228,9 @@ class CallingController extends GetxController {
         isVideoOn = true;
         isVideoCall.value = true;
         callStatus.value = "Connected";
+
+        await setDefaultAudioRouteForCallType(isVideo: true);
+
         update();
       } catch (e) {
         log("upgradeToVideo handler error: $e");
@@ -230,6 +251,9 @@ class CallingController extends GetxController {
         isVideoOn = true;
         isVideoCall.value = true;
         callStatus.value = "Connected";
+
+        await setDefaultAudioRouteForCallType(isVideo: true);
+
         update();
       } catch (e) {
         log("upgradeToVideoAnswer error: $e");
@@ -289,8 +313,6 @@ class CallingController extends GetxController {
 
     socket?.on("sdpOfferFromCaller", (data) async {
       log("====== Received SDP Offer from Caller (CallKit flow) ======");
-      log("Data: $data");
-
       if (peer == null) return;
 
       try {
@@ -359,7 +381,6 @@ class CallingController extends GetxController {
 
     socket!.on("callEnded", (data) async {
       _clearTimers();
-
       resetPeer();
 
       if (CallSessionState.sessionId != null) {
@@ -379,8 +400,6 @@ class CallingController extends GetxController {
     });
 
     socket!.on("missedCall", (data) async {
-      log("==========MissedCallCalled=======$data");
-
       _clearTimers();
 
       if (CallSessionState.sessionId != null) {
@@ -395,8 +414,6 @@ class CallingController extends GetxController {
     });
 
     socket?.on("callStatus", (data) {
-      log("CALL STATUS: $data");
-
       if (data['status'] != null) {
         callStatus.value = data['status'];
       }
@@ -404,7 +421,6 @@ class CallingController extends GetxController {
 
     socket?.on("callCreated", (data) {
       callId = data['callId'];
-
       fetchCallDetail();
       startMissedCallTimer();
     });
@@ -470,7 +486,9 @@ class CallingController extends GetxController {
           : false,
     });
 
-    await enableSpeaker();
+    _startDeviceMonitoring();
+
+    await setDefaultAudioRouteForCallType(isVideo: is_video == true);
 
     for (var t in localStream!.getTracks()) {
       peer!.addTrack(t, localStream!);
@@ -489,10 +507,7 @@ class CallingController extends GetxController {
       safeAddCandidate(data);
     });
 
-    // ========== INCOMING CALL (has SDP offer) ==========
     if (offer != null) {
-      log("====== Normal Incoming Call (has offer) ======");
-
       await peer!.setRemoteDescription(
         RTCSessionDescription(offer["sdp"], offer["type"]),
       );
@@ -520,18 +535,13 @@ class CallingController extends GetxController {
         (args["callType"] == "Incoming" && offer == null)) {
       callStatus.value = "Connecting...";
 
-      // Tell the caller that we accepted from CallKit and request the SDP
       socket!.emit("acceptCallFromCallKit", {
         "callerId": callerId,
         "sessionId": CallSessionState.sessionId ?? args["sessionId"],
         "callId": callId,
         "receiverId": Global.storageServices.get(PrefConst.userId),
       });
-
-      // We will receive the offer via "sdpOfferFromCaller" listener
     } else {
-      log("====== Outgoing Call ======");
-
       peer!.onIceCandidate = (c) => iceCandidates.add(c);
 
       socket!.on("callAnswered", (data) async {
@@ -580,6 +590,60 @@ class CallingController extends GetxController {
     }
   }
 
+  void _startDeviceMonitoring() {
+    checkAudioDevices();
+
+    navigator.mediaDevices.ondevicechange = (event) {
+      log("🔄 Audio Routing Device Changed!");
+      checkAudioDevices();
+    };
+
+    _deviceCheckTimer?.cancel();
+    _deviceCheckTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
+      checkAudioDevices();
+    });
+  }
+
+  Future<void> checkAudioDevices() async {
+    try {
+      final List<MediaDeviceInfo> devices =
+          await navigator.mediaDevices.enumerateDevices();
+      bool isBtFound = false;
+
+      for (var device in devices) {
+        if (device.kind == 'audiooutput') {
+          final String label = device.label.toLowerCase();
+          if (label.contains('bluetooth') ||
+              label.contains('blue') ||
+              label.contains('buds') ||
+              label.contains('headset') ||
+              label.contains('freebuds') ||
+              label.contains('airpods') ||
+              label.contains('hands-free') ||
+              label.contains('wireless') ||
+              label.contains('hearing aid')) {
+            isBtFound = true;
+            break;
+          }
+        }
+      }
+
+      isBluetoothConnected.value = isBtFound;
+
+      // Active channel determination
+      if (isSpeakerOn) {
+        currentAudioRoute.value = "speaker";
+      } else if (isBtFound) {
+        currentAudioRoute.value = "bluetooth";
+      } else {
+        currentAudioRoute.value = "earpiece";
+      }
+      update();
+    } catch (e) {
+      log("❌ checkAudioDevices error: $e");
+    }
+  }
+
   Future<void> endCall({String? type}) async {
     _clearTimers();
 
@@ -592,16 +656,13 @@ class CallingController extends GetxController {
       "remoteUserId": targetUser.toString(),
     };
 
-    if (callStatus.value != "Connected") {}
     if (type != "missedCall") {
-      log("========CallEndParameterDetail:$param");
       socket?.emit("endCall", param);
     }
 
     resetPeer();
 
     if (CallSessionState.sessionId != null) {
-      log("========CallerSideSessionId:${CallSessionState.sessionId}");
       callEnded(CallSessionState.sessionId.toString(),
           type: "endCallMethodHittedFromController-Type:$type");
     }
@@ -611,10 +672,10 @@ class CallingController extends GetxController {
     }
 
     await WakelockPlus.disable();
+    await ProximityScreenLock.setActive(false);
 
     if (Get.currentRoute != Routes.Home_Screen) {
       Get.offAllNamed(Routes.Home_Screen);
-      log("========CallerSideSessionId2:${CallSessionState.sessionId}");
     }
   }
 
@@ -643,20 +704,31 @@ class CallingController extends GetxController {
   Future<void> enableSpeaker() async {
     await Helper.setSpeakerphoneOn(true);
     isSpeakerOn = true;
+    currentAudioRoute.value = "speaker";
+    await ProximityScreenLock.setActive(false);
+    update();
+  }
+
+  Future<void> disableSpeaker() async {
+    await Helper.setSpeakerphoneOn(false);
+    isSpeakerOn = false;
+    currentAudioRoute.value =
+        isBluetoothConnected.value ? "bluetooth" : "earpiece";
+
+    if (!isVideoCall.value && !isBluetoothConnected.value) {
+      await ProximityScreenLock.setActive(true);
+    } else {
+      await ProximityScreenLock.setActive(false);
+    }
     update();
   }
 
   Future<void> toggleSpeaker() async {
-    isSpeakerOn = !isSpeakerOn;
-    await Helper.setSpeakerphoneOn(isSpeakerOn);
-
     if (isSpeakerOn) {
-      await ProximityScreenLock.setActive(false);
+      await disableSpeaker();
     } else {
-      await ProximityScreenLock.setActive(true);
+      await enableSpeaker();
     }
-
-    update();
   }
 
   String get formattedDuration {
@@ -739,18 +811,17 @@ class CallingController extends GetxController {
       "callId": callId,
       "remoteUserId": remoteUserId,
     };
-    print("MISS CALL EMIT => $param");
     socket?.emit("missCall", param);
-    log("=======MissedCallParam===$param");
-
     endCall(type: "missedCall");
   }
 
   void _clearTimers() {
     callTimer?.cancel();
     missedCallTimer?.cancel();
+    _deviceCheckTimer?.cancel();
     callTimer = null;
     missedCallTimer = null;
+    _deviceCheckTimer = null;
     missCallDurationSeconds.value = 0;
   }
 
@@ -769,7 +840,9 @@ class CallingController extends GetxController {
 
   Future<void> startAudioCall() async {
     await WakelockPlus.enable();
-    await ProximityScreenLock.setActive(true);
+    if (!isBluetoothConnected.value) {
+      await ProximityScreenLock.setActive(true);
+    }
   }
 
   Future<void> endAudioCall() async {
@@ -787,6 +860,7 @@ class CallingController extends GetxController {
       stopSound();
     }
     WakelockPlus.disable();
+    ProximityScreenLock.setActive(false);
     super.onClose();
   }
 }

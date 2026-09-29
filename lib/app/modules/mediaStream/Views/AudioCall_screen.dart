@@ -28,7 +28,6 @@ class AudiocallScreen extends StatelessWidget {
     final bool isOutgoing = controller.args["callType"] == "outGoing";
 
     return Obx(() {
-
       final upgrading = controller.isUpgradingToVideo.value;
       final alreadyVideo = controller.isVideoCall.value;
 
@@ -38,6 +37,7 @@ class AudiocallScreen extends StatelessWidget {
           children: [
             SizedBox(height: 10.h),
             Text(
+
               isOutgoing ? "Calling" : "Call From",
               style: TextStyle(
                 color: primaryPurple.withOpacity(0.85),

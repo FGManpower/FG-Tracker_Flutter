@@ -234,8 +234,13 @@ class GroupTrackingController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    isLocationSharing.value =
-        Global.storageServices.getBoolSync(PrefConst.locationSharing) ?? true;
+    final bool? storedVal = Global.storageServices.getBoolSync(PrefConst.locationSharing);
+    if (storedVal == null) {
+      isLocationSharing.value = true;
+      Global.storageServices.setBool(PrefConst.locationSharing, true);
+    } else {
+      isLocationSharing.value = storedVal;
+    }
   }
 
   void removeUserMarker(String userId) {
@@ -853,11 +858,20 @@ class GroupTrackingController extends GetxController {
   }
 
   Future<void> loadLocationSharing() async {
-    final value = await Global.storageServices.getBool(
-      PrefConst.locationSharing,
-    );
+    try {
+      final value = await Global.storageServices.getBool(
+        PrefConst.locationSharing,
+      );
 
-    isLocationSharing.value = value;
+      if (value == null) {
+        isLocationSharing.value = true;
+        await Global.storageServices.setBool(PrefConst.locationSharing, true);
+      } else {
+        isLocationSharing.value = value;
+      }
+    } catch (e) {
+      isLocationSharing.value = true;
+    }
   }
 
   Future<void> toggleLocationSharing(bool value) async {
