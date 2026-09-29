@@ -111,6 +111,20 @@ class TrackingScreen extends StatelessWidget {
         children: [
           Positioned.fill(
             child: Obx(() {
+              final respErr = controller.responseError.value.toLowerCase();
+              final grpErr = controller.groupError.value.toLowerCase();
+              final bool isOffline = controller.isOffline.value ||
+                  respErr.contains('internet') ||
+                  respErr.contains('network') ||
+                  respErr.contains('connection') ||
+                  grpErr.contains('internet') ||
+                  grpErr.contains('network') ||
+                  grpErr.contains('connection');
+
+              if (isOffline) {
+                return _buildOfflineMapPlaceholder(context);
+              }
+
               final lat = controller.currentLat.value != 0.0
                   ? controller.currentLat.value
                   : 19.0760;
@@ -166,6 +180,18 @@ class TrackingScreen extends StatelessWidget {
           ),
 
           Obx(() {
+            final respErr = controller.responseError.value.toLowerCase();
+            final grpErr = controller.groupError.value.toLowerCase();
+            final bool isOffline = controller.isOffline.value ||
+                respErr.contains('internet') ||
+                respErr.contains('network') ||
+                respErr.contains('connection') ||
+                grpErr.contains('internet') ||
+                grpErr.contains('network') ||
+                grpErr.contains('connection');
+
+            if (isOffline) return const SizedBox.shrink();
+
             final double extent = _sheetExtent.value;
             final double fade =
                 (1.0 - ((extent - 0.55) / 0.12)).clamp(0.0, 1.0);
@@ -201,6 +227,18 @@ class TrackingScreen extends StatelessWidget {
           }),
 
           Obx(() {
+            final respErr = controller.responseError.value.toLowerCase();
+            final grpErr = controller.groupError.value.toLowerCase();
+            final bool isOffline = controller.isOffline.value ||
+                respErr.contains('internet') ||
+                respErr.contains('network') ||
+                respErr.contains('connection') ||
+                grpErr.contains('internet') ||
+                grpErr.contains('network') ||
+                grpErr.contains('connection');
+
+            if (isOffline) return const SizedBox.shrink();
+
             final double extent = _sheetExtent.value;
             final double fade =
                 (1.0 - ((extent - 0.52) / 0.10)).clamp(0.0, 1.0);
@@ -440,6 +478,76 @@ class TrackingScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           _buildTopAppBar(context),
+          Obx(() {
+            final respErr = controller.responseError.value.toLowerCase();
+            final grpErr = controller.groupError.value.toLowerCase();
+            final bool isOffline = controller.isOffline.value ||
+                respErr.contains('internet') ||
+                respErr.contains('network') ||
+                respErr.contains('connection') ||
+                grpErr.contains('internet') ||
+                grpErr.contains('network') ||
+                grpErr.contains('connection');
+
+            if (!isOffline) return const SizedBox.shrink();
+
+            return Container(
+              margin: EdgeInsets.only(top: 8.h),
+              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFEF2F2),
+                borderRadius: BorderRadius.circular(10.r),
+                border: Border.all(color: const Color(0xFFFECACA)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.04),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.wifi_off_rounded,
+                    size: 16.sp,
+                    color: const Color(0xFFDC2626),
+                  ),
+                  SizedBox(width: 8.w),
+                  Expanded(
+                    child: Text(
+                      "No internet connection. Map & tracking are offline.",
+                      style: TextStyle(
+                        fontSize: 11.5.sp,
+                        color: const Color(0xFF991B1B),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 6.w),
+                  GestureDetector(
+                    onTap: () => controller.retryAll(),
+                    child: Container(
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFEE2E2),
+                        borderRadius: BorderRadius.circular(6.r),
+                      ),
+                      child: Text(
+                        "Retry",
+                        style: TextStyle(
+                          fontSize: 11.sp,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFFDC2626),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
           Obx(() {
             final double extent = _sheetExtent.value;
             // Smoothly fade out search bar as sheet expands above mid (0.52 to 0.65)
@@ -836,6 +944,115 @@ class TrackingScreen extends StatelessWidget {
               color: const Color(0xFF94A3B8),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildOfflineMapPlaceholder(BuildContext context) {
+    final double screenH = MediaQuery.of(context).size.height;
+    final double extent = _sheetExtent.value;
+    final double progress = ((extent - 0.12) / (0.52 - 0.12)).clamp(0.0, 1.0);
+    final double mapOffsetY = -progress * (screenH * 0.18);
+
+    return Container(
+      color: const Color(0xFFF8FAFC),
+      child: Transform.translate(
+        offset: Offset(0, mapOffsetY),
+        child: Center(
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 28.w),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SizedBox(height: 70.h),
+                Container(
+                  width: 76.w,
+                  height: 76.w,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEEF2FF),
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF4338CA).withValues(alpha: 0.12),
+                        blurRadius: 18,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: const Center(
+                    child: Icon(
+                      Icons.wifi_off_rounded,
+                      size: 36,
+                      color: Color(0xFF4338CA),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 18.h),
+                Text(
+                  "Map Unavailable Offline",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 17.5.sp,
+                    fontFamily: 'Inter',
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF0F172A),
+                  ),
+                ),
+                SizedBox(height: 8.h),
+                Text(
+                  "Internet connection is required to load live map data and real-time member locations.",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 12.5.sp,
+                    fontFamily: 'Inter',
+                    fontWeight: FontWeight.w400,
+                    color: const Color(0xFF64748B),
+                    height: 1.4,
+                  ),
+                ),
+                SizedBox(height: 20.h),
+                GestureDetector(
+                  onTap: () => controller.retryAll(),
+                  child: Container(
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 22.w, vertical: 10.h),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF4338CA),
+                      borderRadius: BorderRadius.circular(12.r),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF4338CA).withValues(alpha: 0.25),
+                          blurRadius: 10,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.refresh_rounded,
+                          size: 17,
+                          color: Colors.white,
+                        ),
+                        SizedBox(width: 8.w),
+                        Text(
+                          "Retry Connection",
+                          style: TextStyle(
+                            fontSize: 13.sp,
+                            fontFamily: 'Inter',
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -1797,50 +2014,82 @@ class TrackingScreen extends StatelessWidget {
                 ),
               );
             } else if (membersToDisplay.isEmpty) {
+              final bool hasSearch = controller.searchQuery.value.trim().isNotEmpty;
+              final String err = controller.responseError.value;
+              final bool isOffline = err.toLowerCase().contains("internet") ||
+                  err.toLowerCase().contains("network") ||
+                  err.toLowerCase().contains("connection");
+              final bool hasError = err.isNotEmpty;
+
+              final IconData icon = isOffline
+                  ? Icons.wifi_off_rounded
+                  : (hasSearch
+                      ? Icons.person_search_rounded
+                      : (hasError
+                          ? Icons.error_outline_rounded
+                          : Icons.sensors_off_rounded));
+
+              final Color iconColor = const Color(0xFF4338CA);
+              final Color iconBg = const Color(0xFFEEF2FF);
+
+              final String title = isOffline
+                  ? "No Internet Connection"
+                  : (hasSearch
+                      ? "No Members Found"
+                      : (hasError
+                          ? "Unable to Load Members"
+                          : "No Active Members"));
+
+              final String subtitle = isOffline
+                  ? "Please check your network and try again to view nearby members."
+                  : (hasSearch
+                      ? "No members match '${controller.searchQuery.value}'"
+                      : (hasError
+                          ? err
+                          : "No active members found within ${controller.currentFormattedRadius}"));
+
               return Padding(
-                padding: EdgeInsets.symmetric(vertical: 24.h),
+                padding: EdgeInsets.symmetric(vertical: 24.h, horizontal: 16.w),
                 child: Center(
                   child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Container(
                         padding: EdgeInsets.all(14.r),
-                        decoration: const BoxDecoration(
-                          color: Color(0xFFF1F5F9),
+                        decoration: BoxDecoration(
+                          color: iconBg,
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
-                          Icons.sensors_off_rounded,
-                          color: const Color(0xFF94A3B8),
-                          size: 32.sp,
+                          icon,
+                          color: iconColor,
+                          size: 30.sp,
                         ),
                       ),
                       SizedBox(height: 10.h),
                       Text(
-                        controller.searchQuery.value.trim().isNotEmpty
-                            ? "No members match '${controller.searchQuery.value}'"
-                            : "No active members found within ${controller.currentFormattedRadius}",
+                        title,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: const Color(0xFF1E1B4B),
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      SizedBox(height: 4.h),
+                      Text(
+                        subtitle,
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           color: const Color(0xFF64748B),
-                          fontSize: 13.sp,
-                          fontWeight: FontWeight.w500,
+                          fontSize: 12.sp,
+                          fontWeight: FontWeight.w400,
                         ),
                       ),
-                      if (controller.responseError.isNotEmpty)
-                        Padding(
-                          padding: EdgeInsets.only(top: 6.h),
-                          child: Text(
-                            controller.responseError.value,
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: const Color(0xFFEF4444),
-                              fontSize: 11.sp,
-                            ),
-                          ),
-                        ),
                       SizedBox(height: 14.h),
                       GestureDetector(
-                        onTap: () => controller.getUsersWithinRadius(),
+                        onTap: () => controller.retryAll(),
                         child: Container(
                           padding: EdgeInsets.symmetric(
                               horizontal: 16.w, vertical: 8.h),
@@ -1863,11 +2112,11 @@ class TrackingScreen extends StatelessWidget {
                                   color: Colors.white, size: 16.sp),
                               SizedBox(width: 6.w),
                               Text(
-                                "Refresh Live Data",
+                                "Retry",
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 12.sp,
-                                  fontWeight: FontWeight.w700,
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
                             ],
@@ -1945,19 +2194,115 @@ class TrackingScreen extends StatelessWidget {
                 ),
               );
             } else if (controller.filteredGroups.isEmpty) {
+              final bool hasSearch = controller.searchQuery.value.trim().isNotEmpty;
+              final String err = controller.groupError.value;
+              final bool isOffline = err.toLowerCase().contains("internet") ||
+                  err.toLowerCase().contains("network") ||
+                  err.toLowerCase().contains("connection");
+              final bool hasError = err.isNotEmpty;
+
+              final IconData icon = isOffline
+                  ? Icons.wifi_off_rounded
+                  : (hasSearch
+                      ? Icons.search_off_rounded
+                      : (hasError ? Icons.error_outline_rounded : Icons.groups_outlined));
+
+              final Color iconColor = const Color(0xFF4338CA);
+              final Color iconBg = const Color(0xFFEEF2FF);
+
+              final String title = isOffline
+                  ? "No Internet Connection"
+                  : (hasSearch
+                      ? "No Groups Match"
+                      : (hasError ? "Unable to Load Groups" : "No Groups Found"));
+
+              final String subtitle = isOffline
+                  ? "Please check your network connection and try again."
+                  : (hasSearch
+                      ? "No groups match '${controller.searchQuery.value}'"
+                      : (hasError
+                          ? err
+                          : "You haven't joined or created any groups yet."));
+
               return Padding(
-                padding: EdgeInsets.symmetric(vertical: 30.h),
+                padding: EdgeInsets.symmetric(vertical: 24.h, horizontal: 16.w),
                 child: Center(
-                  child: Text(
-                    controller.searchQuery.value.trim().isNotEmpty
-                        ? "No groups match '${controller.searchQuery.value}'"
-                        : (controller.groupError.isNotEmpty
-                            ? controller.groupError.value
-                            : "No groups found"),
-                    style: TextStyle(
-                      color: AppColors.primaryThreeElementText,
-                      fontSize: 13.sp,
-                    ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Container(
+                        padding: EdgeInsets.all(14.r),
+                        decoration: BoxDecoration(
+                          color: iconBg,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          icon,
+                          color: iconColor,
+                          size: 28.sp,
+                        ),
+                      ),
+                      SizedBox(height: 10.h),
+                      Text(
+                        title,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: const Color(0xFF1E1B4B),
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      SizedBox(height: 4.h),
+                      Text(
+                        subtitle,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: const Color(0xFF64748B),
+                          fontSize: 12.sp,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                      if (hasError || isOffline) ...[
+                        SizedBox(height: 12.h),
+                        GestureDetector(
+                          onTap: () => controller.retryAll(),
+                          child: Container(
+                            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 7.h),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF4338CA),
+                              borderRadius: BorderRadius.circular(10.r),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFF4338CA).withValues(alpha: 0.2),
+                                  blurRadius: 6.r,
+                                  offset: Offset(0, 2.h),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.refresh_rounded,
+                                  color: Colors.white,
+                                  size: 14.sp,
+                                ),
+                                SizedBox(width: 6.w),
+                                Text(
+                                  "Retry",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 12.sp,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                 ),
               );

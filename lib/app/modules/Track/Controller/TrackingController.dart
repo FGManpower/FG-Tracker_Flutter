@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:math' as math;
 import 'package:dio/dio.dart';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
@@ -40,6 +41,7 @@ class TrackController extends GetxController {
   RxInt selectedTabIndex = 0.obs;
   RxBool isLoading = true.obs;
   RxString responseError = "".obs;
+  RxBool isOffline = false.obs;
 
   RxDouble currentLat = 0.0.obs;
   RxDouble currentLong = 0.0.obs;
@@ -117,6 +119,7 @@ class TrackController extends GetxController {
     }
     updateMapMarkersAndCircle();
 
+    checkInternetConnection();
 
     _initSockets();
 
@@ -124,6 +127,66 @@ class TrackController extends GetxController {
     fetchTotalMembers();
     getCurrentLocationAndFetchUsers();
     _startPositionListening();
+  }
+
+  Future<bool> checkInternetConnection() async {
+    try {
+      final result = await InternetAddress.lookup('google.com')
+          .timeout(const Duration(milliseconds: 2500));
+      if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
+        isOffline.value = false;
+        if (responseError.value.toLowerCase().contains('internet') ||
+            responseError.value.toLowerCase().contains('network') ||
+            responseError.value.toLowerCase().contains('connection')) {
+          responseError.value = "";
+        }
+        if (groupError.value.toLowerCase().contains('internet') ||
+            groupError.value.toLowerCase().contains('network') ||
+            groupError.value.toLowerCase().contains('connection')) {
+          groupError.value = "";
+        }
+        return true;
+      }
+    } catch (_) {}
+    isOffline.value = true;
+    responseError.value = "No internet connection. Please check your network.";
+    groupError.value = "No internet connection. Please check your network.";
+    return false;
+  }
+
+  /// Unified retry when connectivity is restored or user taps 'Retry'
+  Future<void> retryAll() async {
+    isLoading.value = true;
+    isGroupLoading.value = true;
+    responseError.value = "";
+    groupError.value = "";
+
+    final bool hasNet = await checkInternetConnection();
+    if (!hasNet) {
+      isLoading.value = false;
+      isGroupLoading.value = false;
+      return;
+    }
+
+    isOffline.value = false;
+    responseError.value = "";
+    groupError.value = "";
+
+    _initSockets();
+
+    await Future.wait([
+      fetchGroupData(),
+      fetchTotalMembers(),
+      getCurrentLocationAndFetchUsers(),
+    ]);
+
+    _refreshMembersAndMap();
+
+    if (isGroupMode.value && selectedGroupId.value.isNotEmpty) {
+      await fetchGroupLocationData(selectedGroupId.value);
+    } else {
+      fitAllMembers();
+    }
   }
 
 
@@ -593,8 +656,28 @@ class TrackController extends GetxController {
       } else {
         groupError.value = result.message ?? "Failed to load groups";
       }
+    } on SocketException {
+      groupError.value = "No internet connection. Please check your network.";
+    } on DioException catch (dioErr) {
+      if (dioErr.type == DioExceptionType.connectionError ||
+          dioErr.type == DioExceptionType.connectionTimeout ||
+          dioErr.type == DioExceptionType.sendTimeout ||
+          dioErr.type == DioExceptionType.receiveTimeout ||
+          dioErr.error is SocketException) {
+        groupError.value = "No internet connection. Please check your network.";
+      } else {
+        groupError.value = "Unable to connect to server. Please try again.";
+      }
     } catch (e) {
-      groupError.value = e.toString();
+      final str = e.toString().toLowerCase();
+      if (str.contains("socket") ||
+          str.contains("internet") ||
+          str.contains("connection") ||
+          str.contains("network")) {
+        groupError.value = "No internet connection. Please check your network.";
+      } else {
+        groupError.value = "Unable to load groups. Please try again.";
+      }
     } finally {
       isGroupLoading.value = false;
     }
@@ -1567,8 +1650,32 @@ class TrackController extends GetxController {
       }
       _refreshMembersAndMap();
       fitAllMembers();
+    } on SocketException {
+      responseError.value = "No internet connection. Please check your network.";
+      debugPrint("❌ SocketException in getUsersWithinRadius");
+      _refreshMembersAndMap();
+    } on DioException catch (dioErr) {
+      if (dioErr.type == DioExceptionType.connectionError ||
+          dioErr.type == DioExceptionType.connectionTimeout ||
+          dioErr.type == DioExceptionType.sendTimeout ||
+          dioErr.type == DioExceptionType.receiveTimeout ||
+          dioErr.error is SocketException) {
+        responseError.value = "No internet connection. Please check your network.";
+      } else {
+        responseError.value = "Unable to connect to server. Please try again.";
+      }
+      debugPrint("❌ DioException in getUsersWithinRadius: $dioErr");
+      _refreshMembersAndMap();
     } catch (e) {
-      responseError.value = e.toString();
+      final str = e.toString().toLowerCase();
+      if (str.contains("socket") ||
+          str.contains("internet") ||
+          str.contains("connection") ||
+          str.contains("network")) {
+        responseError.value = "No internet connection. Please check your network.";
+      } else {
+        responseError.value = "Unable to load nearby members. Please try again.";
+      }
       debugPrint("❌ Error in getUsersWithinRadius: $e");
       _refreshMembersAndMap();
     } finally {

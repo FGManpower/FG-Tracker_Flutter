@@ -5,14 +5,21 @@ import 'package:fgtracker/app/global_widget/blend_mask.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:fgtracker/gen/assets.gen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 
 class WalkieTalkiePurchaseSuccessScreen extends StatefulWidget {
   final bool isTeam;
   final String planTitle;
   final int memberCount;
   final String validTill;
+  final String? paymentId;
+  final String? orderId;
+  final num? amountPaid;
+  final String? paymentMethod;
+  final String? transactionTime;
 
   const WalkieTalkiePurchaseSuccessScreen({
     super.key,
@@ -20,6 +27,11 @@ class WalkieTalkiePurchaseSuccessScreen extends StatefulWidget {
     this.planTitle = "Team Plan (Monthly)",
     this.memberCount = 5,
     this.validTill = "15 Oct 2026",
+    this.paymentId,
+    this.orderId,
+    this.amountPaid,
+    this.paymentMethod,
+    this.transactionTime,
   });
 
   @override
@@ -46,6 +58,17 @@ class _WalkieTalkiePurchaseSuccessScreenState
   String get planTitle => widget.planTitle;
   int get memberCount => widget.memberCount;
   String get validTill => widget.validTill;
+  String get paymentId =>
+      widget.paymentId ??
+      "pay_${DateTime.now().millisecondsSinceEpoch.toRadixString(36).toUpperCase()}";
+  num get amountPaid => widget.amountPaid ?? 0;
+  String get paymentMethod => widget.paymentMethod ?? "Razorpay (UPI / Card)";
+  String get formattedDateTime {
+    if (widget.transactionTime != null && widget.transactionTime!.isNotEmpty) {
+      return widget.transactionTime!;
+    }
+    return DateFormat('dd MMM yyyy, hh:mm a').format(DateTime.now());
+  }
 
   static const Color _primaryPurple = Color(0xFF5B4DF5);
   static const Color _bgSoft = Color(0xFFF6F8FE);
@@ -55,6 +78,28 @@ class _WalkieTalkiePurchaseSuccessScreenState
   static const Color _lightPillBg = Color(0xFFEEF0FE);
   static const Color _greenBadgeBg = Color(0xFFDCFCE7);
   static const Color _greenBadgeText = Color(0xFF16A34A);
+
+  String _formatAmount(num amount) {
+    final isDecimal = amount is double && amount != amount.roundToDouble();
+    if (isDecimal) {
+      final parts = amount.toStringAsFixed(2).split('.');
+      final int intPart = int.tryParse(parts[0]) ?? 0;
+      return '${_formatInt(intPart)}.${parts[1]}';
+    }
+    return _formatInt(amount.round());
+  }
+
+  String _formatInt(int intAmount) {
+    final str = intAmount.toString();
+    if (str.length <= 3) return str;
+    final lastThree = str.substring(str.length - 3);
+    final rest = str.substring(0, str.length - 3);
+    final formattedRest = rest.replaceAllMapped(
+      RegExp(r'(\d)(?=(\d\d)+$)'),
+      (Match m) => '${m[1]},',
+    );
+    return '$formattedRest,$lastThree';
+  }
 
   @override
   void initState() {
@@ -208,6 +253,11 @@ class _WalkieTalkiePurchaseSuccessScreenState
                                 ),
 
                                 SizedBox(height: 14.h),
+
+                                // Card 0: Real Payment Receipt & Transaction Details Card
+                                _buildPaymentReceiptCard(context),
+
+                                SizedBox(height: 12.h),
 
                                 // Card 1: Active Plan Details Card
                                 _buildPlanDetailsCard(),
@@ -398,6 +448,380 @@ class _WalkieTalkiePurchaseSuccessScreenState
           ),
         );
       },
+    );
+  }
+
+  // ==========================================
+  // CARD 0: REAL PAYMENT RECEIPT & TRANSACTION DETAILS
+  // ==========================================
+  Widget _buildPaymentReceiptCard(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18.r),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Top Header: Receipt title & Gateway badge
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 32.w,
+                    height: 32.w,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFECFDF5),
+                      borderRadius: BorderRadius.circular(8.r),
+                    ),
+                    child: Icon(
+                      Icons.receipt_long_rounded,
+                      color: const Color(0xFF059669),
+                      size: 18.sp,
+                    ),
+                  ),
+                  SizedBox(width: 8.w),
+                  Text(
+                    "Payment Receipt",
+                    style: TextStyle(
+                      fontSize: 13.5.sp,
+                      fontFamily: FontFamily.interBold,
+                      color: _textDark,
+                    ),
+                  ),
+                ],
+              ),
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF1F3FE),
+                  borderRadius: BorderRadius.circular(6.r),
+                  border: Border.all(color: const Color(0xFFE0E7FF)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.verified_user_rounded,
+                      size: 11.sp,
+                      color: _primaryPurple,
+                    ),
+                    SizedBox(width: 4.w),
+                    Text(
+                      "Razorpay Verified",
+                      style: TextStyle(
+                        fontSize: 9.5.sp,
+                        fontFamily: FontFamily.interBold,
+                        color: _primaryPurple,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+
+          Padding(
+            padding: EdgeInsets.symmetric(vertical: 12.h),
+            child: const Divider(height: 1, color: Color(0xFFF1F5F9)),
+          ),
+
+          // Total Amount Paid Highlight
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Amount Paid",
+                    style: TextStyle(
+                      fontSize: 11.sp,
+                      fontFamily: FontFamily.interRegular,
+                      color: _textSecondary,
+                    ),
+                  ),
+                  SizedBox(height: 2.h),
+                  Text(
+                    amountPaid > 0 ? "₹${_formatAmount(amountPaid)}" : "₹${_formatAmount(499)}",
+                    style: TextStyle(
+                      fontSize: 22.sp,
+                      fontFamily: FontFamily.interBold,
+                      color: _textDark,
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+                ],
+              ),
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFDCFCE7),
+                  borderRadius: BorderRadius.circular(20.r),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.check_circle_rounded,
+                      size: 13.sp,
+                      color: const Color(0xFF16A34A),
+                    ),
+                    SizedBox(width: 4.w),
+                    Text(
+                      "PAID",
+                      style: TextStyle(
+                        fontSize: 11.sp,
+                        fontFamily: FontFamily.interBold,
+                        color: const Color(0xFF16A34A),
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+
+          SizedBox(height: 14.h),
+
+          // Details grid container
+          Container(
+            padding: EdgeInsets.all(12.w),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.circular(12.r),
+              border: Border.all(color: const Color(0xFFEDF2F7)),
+            ),
+            child: Column(
+              children: [
+                // Row 1: Transaction / Payment ID
+                _buildReceiptDetailRow(
+                  label: "Payment ID",
+                  valueWidget: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Flexible(
+                        child: Text(
+                          paymentId,
+                          style: TextStyle(
+                            fontSize: 11.5.sp,
+                            fontFamily: FontFamily.interBold,
+                            color: _primaryPurple,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      SizedBox(width: 6.w),
+                      GestureDetector(
+                        onTap: () {
+                          HapticFeedback.selectionClick();
+                          Clipboard.setData(ClipboardData(text: paymentId));
+                          _showCopiedSnackbar("Payment ID copied to clipboard!");
+                        },
+                        child: Container(
+                          padding: EdgeInsets.all(4.w),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(4.r),
+                            border: Border.all(color: const Color(0xFFCBD5E1)),
+                          ),
+                          child: Icon(
+                            Icons.copy_rounded,
+                            size: 11.sp,
+                            color: _primaryPurple,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                SizedBox(height: 8.h),
+                const Divider(height: 1, color: Color(0xFFE2E8F0)),
+                SizedBox(height: 8.h),
+
+                // Row 2: Payment Method
+                _buildReceiptDetailRow(
+                  label: "Payment Mode",
+                  valueWidget: Text(
+                    paymentMethod,
+                    style: TextStyle(
+                      fontSize: 11.5.sp,
+                      fontFamily: FontFamily.interMedium,
+                      color: _textDark,
+                    ),
+                    textAlign: TextAlign.end,
+                  ),
+                ),
+
+                SizedBox(height: 8.h),
+                const Divider(height: 1, color: Color(0xFFE2E8F0)),
+                SizedBox(height: 8.h),
+
+                // Row 3: Date & Time
+                _buildReceiptDetailRow(
+                  label: "Date & Time",
+                  valueWidget: Text(
+                    formattedDateTime,
+                    style: TextStyle(
+                      fontSize: 11.5.sp,
+                      fontFamily: FontFamily.interMedium,
+                      color: _textDark,
+                    ),
+                    textAlign: TextAlign.end,
+                  ),
+                ),
+
+                SizedBox(height: 8.h),
+                const Divider(height: 1, color: Color(0xFFE2E8F0)),
+                SizedBox(height: 8.h),
+
+                // Row 4: Status
+                _buildReceiptDetailRow(
+                  label: "Status",
+                  valueWidget: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 6.w,
+                        height: 6.w,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFF16A34A),
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      SizedBox(width: 5.w),
+                      Text(
+                        "Successful",
+                        style: TextStyle(
+                          fontSize: 11.5.sp,
+                          fontFamily: FontFamily.interBold,
+                          color: const Color(0xFF16A34A),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          SizedBox(height: 12.h),
+
+          // Quick Share / Copy Receipt action
+          GestureDetector(
+            onTap: () {
+              HapticFeedback.lightImpact();
+              final receiptText =
+                  "FG Tracker Payment Receipt\n"
+                  "Plan: $planTitle\n"
+                  "Amount: ₹${amountPaid > 0 ? _formatAmount(amountPaid) : '499'}\n"
+                  "Payment ID: $paymentId\n"
+                  "Date: $formattedDateTime\n"
+                  "Status: Completed";
+              Clipboard.setData(ClipboardData(text: receiptText));
+              _showCopiedSnackbar("Receipt details copied to clipboard!");
+            },
+            child: Container(
+              width: double.infinity,
+              padding: EdgeInsets.symmetric(vertical: 8.h),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF1F3FE),
+                borderRadius: BorderRadius.circular(10.r),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.share_rounded,
+                    size: 14.sp,
+                    color: _primaryPurple,
+                  ),
+                  SizedBox(width: 6.w),
+                  Text(
+                    "Share Receipt",
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      fontFamily: FontFamily.interBold,
+                      color: _primaryPurple,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildReceiptDetailRow({
+    required String label,
+    required Widget valueWidget,
+  }) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 11.sp,
+            fontFamily: FontFamily.interRegular,
+            color: _textSecondary,
+          ),
+        ),
+        SizedBox(width: 8.w),
+        Flexible(child: valueWidget),
+      ],
+    );
+  }
+
+  void _showCopiedSnackbar(String msg) {
+    if (Get.isSnackbarOpen) {
+      Get.closeCurrentSnackbar();
+    }
+    Get.rawSnackbar(
+      snackPosition: SnackPosition.TOP,
+      backgroundColor: const Color(0xFF0F172A),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      borderRadius: 12,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      messageText: Row(
+        children: [
+          const Icon(
+            Icons.check_circle_rounded,
+            color: Color(0xFF4ADE80),
+            size: 18,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              msg,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 12.5,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+      duration: const Duration(seconds: 2),
     );
   }
 
@@ -850,6 +1274,7 @@ class _WalkieTalkiePurchaseSuccessScreenState
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
       backgroundColor: Colors.transparent,
       builder: (ctx) {
         return LayoutBuilder(

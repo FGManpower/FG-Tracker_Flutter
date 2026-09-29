@@ -13,6 +13,23 @@ class ConstRes {
   static String DeepLink_Url = "https://fgtracker.in";
   static String gMapApiKey = "AIzaSyAgt-V8kmcQJb_6Cj6LHArWfhWjVPh7N_Q";
 
+  ///------------------------ Payment Gateway Credentials ------------------------///
+  // Razorpay Test & Production Keys
+  static const String razorpayTestKey = 'rzp_test_ThoFEwOj0pMgTH';
+  static const String razorpaySecretKey = '';
+  static const String razorpayLiveKey = '';
+
+  // Cashfree Credentials (for reference)
+  static const String paymentAppIdProd = '';
+  static const String paymentSecretKeyProd = '';
+  static const String paymentAppIdDev = '';
+  static const String paymentSecretKeyDev = '';
+
+  // Active Key for Razorpay Package
+  static const String activePaymentKey = razorpayTestKey;
+  static const String activePaymentSecret = razorpaySecretKey;
+  static const bool isPaymentLive = false;
+
   static BaseOptions networkOptions = BaseOptions(
     baseUrl: aBaseUrl,
   );

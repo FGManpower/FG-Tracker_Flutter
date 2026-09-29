@@ -1,3 +1,8 @@
+import 'dart:io';
+import 'package:dio/dio.dart';
+import 'package:fgtracker/app/Core/constant/const_res.dart';
+import 'package:fgtracker/app/Core/constant/pref_res.dart';
+import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Data/Repositories/walkie_plan_repo.dart';
 import 'package:fgtracker/app/Model/walkie_coupon_model.dart';
 import 'package:fgtracker/app/Model/walkie_order_summary_model.dart';
@@ -6,8 +11,11 @@ import 'package:fgtracker/app/modules/Walkie-talkie/Views/walkie_talkie_purchase
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
+import 'package:razorpay_flutter/razorpay_flutter.dart';
 
 class WalkieOrderSummaryController extends GetxController {
+  late final Razorpay _razorpay;
   late final Rx<WalkiePaymentOrderModel> order;
 
   final RxBool isProcessingPayment = false.obs;
@@ -15,6 +23,7 @@ class WalkieOrderSummaryController extends GetxController {
   final RxBool isLoadingSummary = false.obs;
   final RxBool isApplyingCoupon = false.obs;
   final RxnString applyingCouponCode = RxnString();
+  final RxString errorMessage = ''.obs;
 
   final RxList<WalkieCouponItem> eligibleCoupons = <WalkieCouponItem>[].obs;
   final Rxn<WalkieCouponItem> selectedCoupon = Rxn<WalkieCouponItem>();
@@ -24,6 +33,18 @@ class WalkieOrderSummaryController extends GetxController {
 
   final RxDouble dynamicDiscount = 0.0.obs;
   final RxnString dynamicCouponCode = RxnString();
+  final RxBool userExplicitlyAppliedCoupon = false.obs;
+
+  // Selected Payment Method & Sub-options
+  final RxString selectedPaymentMethod = 'upi'.obs; // 'upi', 'card', 'netbanking', 'wallet'
+  final RxString selectedUpiApp = 'gpay'.obs; // 'gpay', 'phonepe', 'paytm', 'bhim', 'cred', 'amazonpay'
+  final RxString selectedUpiTab = 'apps'.obs; // 'apps', 'vpa', 'qr'
+  final RxString customUpiVpa = ''.obs;
+  final TextEditingController vpaTextController = TextEditingController();
+  final RxString selectedCardNetwork = 'visa'.obs; // 'visa', 'mastercard', 'rupay', 'maestro', 'amex'
+  final RxString selectedCardType = 'debit'.obs; // 'debit', 'credit', 'corporate'
+  final RxString selectedBank = 'hdfc'.obs; // 'hdfc', 'sbi', 'icici', 'axis', 'kotak', etc.
+  final RxString selectedWallet = 'paytm'.obs; // 'paytm', 'amazonpay', 'phonepe', 'mobikwik', etc.
 
   WalkieOrderSummaryController([WalkiePaymentOrderModel? initialOrder]) {
     final passedOrder = initialOrder ??
@@ -36,10 +57,19 @@ class WalkieOrderSummaryController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    if (order.value.appliedCouponCode != null &&
-        order.value.appliedCouponCode!.isNotEmpty) {
-      dynamicCouponCode.value = order.value.appliedCouponCode;
+    _initRazorpay();
+    final bool hasInitialCoupon = (order.value.appliedCouponCode != null &&
+        order.value.appliedCouponCode!.trim().isNotEmpty &&
+        order.value.couponDiscount > 0);
+
+    userExplicitlyAppliedCoupon.value = hasInitialCoupon;
+
+    if (hasInitialCoupon) {
+      dynamicCouponCode.value = order.value.appliedCouponCode!.trim();
       dynamicDiscount.value = order.value.couponDiscount.toDouble();
+    } else {
+      dynamicCouponCode.value = null;
+      dynamicDiscount.value = 0.0;
     }
     fetchOrderSummary();
     fetchCoupons();
@@ -68,28 +98,41 @@ class WalkieOrderSummaryController extends GetxController {
       summaryData.value?.pricing?.subtotal ?? order.value.planAmount;
 
   num get discountAmount {
-    if (summaryData.value?.pricing?.discountAmount != null) {
-      return summaryData.value!.pricing!.discountAmount!;
+    if (!userExplicitlyAppliedCoupon.value) return 0;
+    if (summaryData.value != null) {
+      if (summaryData.value?.couponApplied == true) {
+        return summaryData.value?.pricing?.discountAmount ?? 0;
+      }
+      return 0;
     }
-    if (appliedCouponData.value?.pricing?.discountAmount != null) {
-      return appliedCouponData.value!.pricing!.discountAmount!;
+    if (appliedCouponData.value != null) {
+      return appliedCouponData.value?.pricing?.discountAmount ?? 0;
     }
-    if (dynamicDiscount.value > 0) {
+    if (dynamicCouponCode.value != null &&
+        dynamicCouponCode.value!.isNotEmpty &&
+        dynamicDiscount.value > 0) {
       return dynamicDiscount.value;
     }
-    return order.value.couponDiscount;
+    if (order.value.appliedCouponCode != null &&
+        order.value.appliedCouponCode!.isNotEmpty &&
+        order.value.couponDiscount > 0) {
+      return order.value.couponDiscount;
+    }
+    return 0;
   }
 
   num get amountAfterDiscount =>
       summaryData.value?.pricing?.amountAfterDiscount ??
-      (planAmount - discountAmount > 0 ? planAmount - discountAmount : 0);
+      (planAmount - (isCouponApplied ? discountAmount : 0) > 0
+          ? planAmount - (isCouponApplied ? discountAmount : 0)
+          : 0);
 
   num get gstPercent => summaryData.value?.pricing?.gstPercent ?? 0;
 
   num get gstAmount => summaryData.value?.pricing?.gstAmount ?? 0;
 
   num get totalSaving =>
-      summaryData.value?.pricing?.totalSaving ?? discountAmount;
+      summaryData.value?.pricing?.totalSaving ?? (isCouponApplied ? discountAmount : 0);
 
   num get totalPayable {
     if (summaryData.value?.pricing?.finalAmount != null) {
@@ -98,21 +141,35 @@ class WalkieOrderSummaryController extends GetxController {
     if (appliedCouponData.value?.pricing?.finalAmount != null) {
       return appliedCouponData.value!.pricing!.finalAmount!;
     }
-    final num total = planAmount - discountAmount;
+    final num total = planAmount - (isCouponApplied ? discountAmount : 0);
     return total < 0 ? 0 : total;
   }
 
-  bool get hasDiscount => discountAmount > 0;
+  bool get isCouponApplied {
+    if (!userExplicitlyAppliedCoupon.value) return false;
+    if (summaryData.value != null) {
+      return summaryData.value?.couponApplied == true &&
+          (summaryData.value?.pricing?.discountAmount ?? 0) > 0;
+    }
+    if (appliedCouponData.value != null) {
+      return (appliedCouponData.value?.pricing?.discountAmount ?? 0) > 0;
+    }
+    final code = dynamicCouponCode.value ?? order.value.appliedCouponCode;
+    return (code != null && code.isNotEmpty) &&
+        (dynamicDiscount.value > 0 || order.value.couponDiscount > 0);
+  }
+
+  bool get hasDiscount => isCouponApplied && discountAmount > 0;
+
   bool get hasGst => gstAmount > 0;
 
-  String? get currentPromoCode =>
-      summaryData.value?.coupon?.code ??
-      dynamicCouponCode.value ??
-      order.value.appliedCouponCode;
-
-  bool get isCouponApplied =>
-      summaryData.value?.couponApplied == true ||
-      (currentPromoCode != null && currentPromoCode!.isNotEmpty);
+  String? get currentPromoCode {
+    if (!isCouponApplied) return null;
+    return summaryData.value?.coupon?.code ??
+        appliedCouponData.value?.coupon?.code ??
+        dynamicCouponCode.value ??
+        order.value.appliedCouponCode;
+  }
 
   String formatCurrency(num amount) {
     final isDecimal = amount is double && amount != amount.roundToDouble();
@@ -136,12 +193,43 @@ class WalkieOrderSummaryController extends GetxController {
     return '$formattedRest,$lastThree';
   }
 
+  String _parseErrorMessage(dynamic error) {
+    if (error is DioException) {
+      if (error.type == DioExceptionType.connectionError ||
+          error.type == DioExceptionType.connectionTimeout ||
+          error.type == DioExceptionType.sendTimeout ||
+          error.type == DioExceptionType.receiveTimeout ||
+          error.error is SocketException) {
+        return "No internet connection. Please check your network.";
+      }
+      if (error.response?.data is Map &&
+          error.response?.data['message'] != null) {
+        return error.response!.data['message'].toString();
+      }
+      return "Unable to connect to server. Please try again.";
+    }
+    if (error is SocketException) {
+      return "No internet connection. Please check your network.";
+    }
+    final str = error.toString().toLowerCase();
+    if (str.contains("socket") ||
+        str.contains("internet") ||
+        str.contains("connection") ||
+        str.contains("network") ||
+        str.contains("failed host lookup")) {
+      return "No internet connection. Please check your network.";
+    }
+    return "Something went wrong. Please try again.";
+  }
+
   Future<void> fetchOrderSummary({String? couponCodeOverride}) async {
     try {
       isLoadingSummary.value = true;
       final int planId = order.value.plan?.id ?? (order.value.isTeam ? 4 : 1);
       final int seats = order.value.isTeam ? order.value.memberCount : 1;
-      final String? couponCode = couponCodeOverride ?? currentPromoCode;
+      final String? couponCode = couponCodeOverride != null
+          ? (couponCodeOverride.trim().isEmpty ? null : couponCodeOverride.trim())
+          : (userExplicitlyAppliedCoupon.value ? currentPromoCode : null);
 
       final response = await WalkiePlanRepo.getOrderSummary(
         planId: planId,
@@ -151,16 +239,28 @@ class WalkieOrderSummaryController extends GetxController {
 
       if (response.status == true && response.data != null) {
         summaryData.value = response.data;
-        if (response.data?.coupon?.code != null) {
+        errorMessage.value = '';
+        if (userExplicitlyAppliedCoupon.value &&
+            response.data?.couponApplied == true &&
+            response.data?.coupon?.code != null &&
+            (response.data?.pricing?.discountAmount ?? 0) > 0) {
           dynamicCouponCode.value = response.data!.coupon!.code;
-        }
-        if (response.data?.pricing?.discountAmount != null) {
           dynamicDiscount.value =
               response.data!.pricing!.discountAmount!.toDouble();
+        } else if (!userExplicitlyAppliedCoupon.value) {
+          dynamicCouponCode.value = null;
+          dynamicDiscount.value = 0.0;
+        }
+      } else {
+        if (summaryData.value == null) {
+          errorMessage.value = response.message ?? "Unable to load order summary.";
         }
       }
-    } catch (_) {
-      // Non-blocking
+    } catch (e) {
+      debugPrint("Error fetching order summary: $e");
+      if (summaryData.value == null) {
+        errorMessage.value = _parseErrorMessage(e);
+      }
     } finally {
       isLoadingSummary.value = false;
     }
@@ -180,8 +280,8 @@ class WalkieOrderSummaryController extends GetxController {
       if (response.status == true && response.data != null) {
         eligibleCoupons.assignAll(response.data!.coupons);
       }
-    } catch (_) {
-      // Non-blocking
+    } catch (e) {
+      debugPrint("Error fetching eligible coupons: $e");
     } finally {
       isLoadingCoupons.value = false;
     }
@@ -197,6 +297,7 @@ class WalkieOrderSummaryController extends GetxController {
     try {
       isApplyingCoupon.value = true;
       applyingCouponCode.value = cleanCode;
+      userExplicitlyAppliedCoupon.value = true;
 
       final int planId = order.value.plan?.id ?? (order.value.isTeam ? 4 : 1);
       final int seats = order.value.isTeam ? order.value.memberCount : 1;
@@ -284,7 +385,7 @@ class WalkieOrderSummaryController extends GetxController {
       }
     } catch (e) {
       if (!isSilent) {
-        showTopWhiteMessage("Failed to apply coupon. Please try again.");
+        showTopWhiteMessage(_parseErrorMessage(e));
       }
       return false;
     } finally {
@@ -299,12 +400,221 @@ class WalkieOrderSummaryController extends GetxController {
   }
 
   void removeCoupon() {
+    userExplicitlyAppliedCoupon.value = false;
     appliedCouponData.value = null;
     selectedCoupon.value = null;
     dynamicCouponCode.value = null;
     dynamicDiscount.value = 0.0;
     fetchOrderSummary(couponCodeOverride: "");
     showTopWhiteMessage("Coupon removed successfully");
+  }
+
+  void _initRazorpay() {
+    _razorpay = Razorpay();
+    _razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, _handlePaymentSuccess);
+    _razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, _handlePaymentError);
+    _razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, _handleExternalWallet);
+  }
+
+  void _handlePaymentSuccess(PaymentSuccessResponse response) {
+    debugPrint("✅ Razorpay Payment Success: ${response.paymentId}");
+    isProcessingPayment.value = false;
+    HapticFeedback.heavyImpact();
+
+    String methodDesc = "Razorpay (UPI / Card)";
+    if (selectedPaymentMethod.value == 'upi') {
+      if (selectedUpiApp.value == 'gpay') {
+        methodDesc = "Google Pay (UPI)";
+      } else if (selectedUpiApp.value == 'phonepe') {
+        methodDesc = "PhonePe (UPI)";
+      } else if (selectedUpiApp.value == 'paytm') {
+        methodDesc = "Paytm (UPI)";
+      } else if (selectedUpiApp.value == 'bhim') {
+        methodDesc = "BHIM UPI";
+      } else if (selectedUpiApp.value == 'cred') {
+        methodDesc = "Cred (UPI)";
+      } else if (selectedUpiApp.value == 'amazonpay') {
+        methodDesc = "Amazon Pay (UPI)";
+      } else {
+        methodDesc = "UPI Payment";
+      }
+    } else if (selectedPaymentMethod.value == 'card') {
+      final cardTypeLabel = selectedCardType.value == 'credit' ? 'Credit Card' : 'Debit Card';
+      methodDesc = "$cardTypeLabel (${selectedCardNetwork.value.toUpperCase()})";
+    } else if (selectedPaymentMethod.value == 'netbanking') {
+      methodDesc = "NetBanking (${selectedBank.value.toUpperCase()})";
+    } else if (selectedPaymentMethod.value == 'wallet') {
+      methodDesc = "Wallet (${selectedWallet.value.capitalizeFirst})";
+    }
+
+    final String paymentIdStr = (response.paymentId != null && response.paymentId!.isNotEmpty)
+        ? response.paymentId!
+        : "pay_${DateTime.now().millisecondsSinceEpoch.toRadixString(36).toUpperCase()}";
+
+    final String nowFormatted = DateFormat('dd MMM yyyy, hh:mm a').format(DateTime.now());
+
+    // Navigate to purchase success screen with realistic payment metadata
+    Get.off(() => WalkieTalkiePurchaseSuccessScreen(
+          isTeam: order.value.isTeam || purchasedSeats > 1,
+          planTitle: planName,
+          memberCount: purchasedSeats,
+          validTill: order.value.validTill,
+          paymentId: paymentIdStr,
+          orderId: response.orderId,
+          amountPaid: totalPayable,
+          paymentMethod: methodDesc,
+          transactionTime: nowFormatted,
+        ));
+  }
+
+  void _handlePaymentError(PaymentFailureResponse response) {
+    debugPrint(
+        "❌ Razorpay Payment Error: Code ${response.code} | Message: ${response.message}");
+    isProcessingPayment.value = false;
+    HapticFeedback.mediumImpact();
+
+    final bool isCancelled = response.code == 2 ||
+        (response.message?.toLowerCase().contains("cancel") ?? false);
+    final String errorTitle =
+        isCancelled ? "Payment Cancelled" : "Payment Unsuccessful";
+    final String errorReason = isCancelled
+        ? "Payment was cancelled before completion. No amount was deducted from your bank account."
+        : (response.message != null && response.message!.isNotEmpty
+            ? response.message!
+            : "Your transaction could not be processed right now. Please verify your payment details or try a different payment method.");
+
+    showPaymentStatusModal(
+      title: errorTitle,
+      message: errorReason,
+      isCancelled: isCancelled,
+      errorCode: response.code,
+    );
+  }
+
+  void showPaymentStatusModal({
+    required String title,
+    required String message,
+    bool isCancelled = false,
+    int? errorCode,
+  }) {
+    Get.bottomSheet(
+      Container(
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: const Color(0xFFE2E8F0),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 18),
+            Container(
+              width: 58,
+              height: 58,
+              decoration: BoxDecoration(
+                color: isCancelled
+                    ? const Color(0xFFFFFBEB)
+                    : const Color(0xFFFEF2F2),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                isCancelled
+                    ? Icons.info_outline_rounded
+                    : Icons.error_outline_rounded,
+                size: 32,
+                color: isCancelled
+                    ? const Color(0xFFD97706)
+                    : const Color(0xFFDC2626),
+              ),
+            ),
+            const SizedBox(height: 14),
+            Text(
+              title,
+              style: const TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF0F172A),
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              message,
+              style: const TextStyle(
+                fontSize: 12.5,
+                color: Color(0xFF64748B),
+                height: 1.45,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 22),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: Color(0xFFCBD5E1)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 13),
+                    ),
+                    onPressed: () => Get.back(),
+                    child: const Text(
+                      "Change Method",
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF475569),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF5B4DF5),
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 13),
+                    ),
+                    onPressed: () {
+                      Get.back();
+                      processPayment();
+                    },
+                    child: const Text(
+                      "Retry Pay",
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+      isScrollControlled: true,
+    );
+  }
+
+  void _handleExternalWallet(ExternalWalletResponse response) {
+    debugPrint("💳 Razorpay External Wallet: ${response.walletName}");
+    isProcessingPayment.value = false;
   }
 
   Future<void> processPayment() async {
@@ -314,21 +624,236 @@ class WalkieOrderSummaryController extends GetxController {
       HapticFeedback.mediumImpact();
       isProcessingPayment.value = true;
 
-      // Simulate payment processing flow
-      await Future.delayed(const Duration(milliseconds: 1400));
+      final String? rawPhone =
+          Global.storageServices.get(PrefConst.userPhone)?.toString();
+      final String? userEmail =
+          Global.storageServices.get(PrefConst.userEmail)?.toString();
+      final String? userName =
+          Global.storageServices.get(PrefConst.userName)?.toString();
 
-      // Successfully processed -> Navigate to purchase success screen
-      Get.off(() => WalkieTalkiePurchaseSuccessScreen(
-            isTeam: order.value.isTeam || purchasedSeats > 1,
-            planTitle: planName,
-            memberCount: purchasedSeats,
-            validTill: order.value.validTill,
-          ));
+      // Sanitize phone to valid 10-digit format for Razorpay
+      String? cleanPhone;
+      if (rawPhone != null && rawPhone.isNotEmpty) {
+        final digits = rawPhone.replaceAll(RegExp(r'\D'), '');
+        if (digits.length >= 10) {
+          cleanPhone = digits.substring(digits.length - 10);
+        } else if (digits.isNotEmpty) {
+          cleanPhone = digits;
+        }
+      }
+
+      // Ensure minimum 100 paise (₹1) for INR transactions in Razorpay
+      final int amountInPaise = totalPayable > 0 ? (totalPayable * 100).round() : 100;
+
+      final Map<String, dynamic> razorpayOptions = {
+        'key': ConstRes.activePaymentKey,
+        'amount': amountInPaise,
+        'name': 'FG Tracker',
+        'description': '$planName ($durationName)',
+        'currency': 'INR',
+        'theme': {
+          'color': '#5B4DF5',
+        },
+        'config': _buildRazorpayConfig(),
+        'prefill': {
+          if (cleanPhone != null && cleanPhone.isNotEmpty) 'contact': cleanPhone,
+          if (userEmail != null && userEmail.isNotEmpty) 'email': userEmail,
+          if (userName != null && userName.isNotEmpty) 'name': userName,
+          if (selectedPaymentMethod.value == 'upi') ...{
+            'method': 'upi',
+            if (customUpiVpa.value.trim().isNotEmpty)
+              'vpa': customUpiVpa.value.trim(),
+          },
+          if (selectedPaymentMethod.value == 'card') 'method': 'card',
+          if (selectedPaymentMethod.value == 'netbanking') ...{
+            'method': 'netbanking',
+            if (selectedBank.value.isNotEmpty) 'bank': _getRazorpayBankCode(selectedBank.value),
+          },
+          if (selectedPaymentMethod.value == 'wallet') ...{
+            'method': 'wallet',
+            if (selectedWallet.value.isNotEmpty) 'wallet': _getRazorpayWalletCode(selectedWallet.value),
+          },
+        },
+        'retry': {
+          'enabled': true,
+          'max_count': 3,
+        },
+        'send_sms_hash': true,
+        'notes': {
+          'planTitle': planName,
+          'plan_id': (order.value.plan?.id ?? 1).toString(),
+          'duration': durationName,
+          'memberCount': purchasedSeats.toString(),
+          'selectedPaymentMode': selectedPaymentMethod.value,
+          if (selectedPaymentMethod.value == 'upi') ...{
+            'upiApp': selectedUpiApp.value,
+            if (customUpiVpa.value.trim().isNotEmpty)
+              'upiVpa': customUpiVpa.value.trim(),
+          },
+          if (selectedPaymentMethod.value == 'netbanking') 'bank': selectedBank.value,
+          if (selectedPaymentMethod.value == 'wallet') 'wallet': selectedWallet.value,
+          if (currentPromoCode != null) 'couponCode': currentPromoCode!,
+        },
+      };
+
+      debugPrint("🚀 [Razorpay] Opening Checkout with Key: ${ConstRes.activePaymentKey}");
+      debugPrint("📦 [Razorpay] Payload: $razorpayOptions");
+
+      _razorpay.open(razorpayOptions);
     } catch (e) {
-      showTopWhiteMessage("Payment processing failed. Please retry.");
-    } finally {
       isProcessingPayment.value = false;
+      debugPrint("❌ [Razorpay] Exception opening checkout: $e");
+      showTopWhiteMessage("Unable to open Razorpay gateway: $e");
     }
+  }
+
+  String _getRazorpayBankCode(String bankId) {
+    const bankCodeMap = {
+      'hdfc': 'HDFC',
+      'sbi': 'SBIN',
+      'icici': 'ICIC',
+      'axis': 'UTIB',
+      'kotak': 'KKBK',
+      'pnb': 'PUNB_R',
+      'bob': 'BARB_R',
+      'canara': 'CNRB',
+      'indusind': 'INDB',
+      'yes': 'YESB',
+      'idfc': 'IDFB',
+    };
+    return bankCodeMap[bankId.toLowerCase()] ?? bankId.toUpperCase();
+  }
+
+  String _getRazorpayWalletCode(String walletId) {
+    const walletMap = {
+      'paytm': 'paytm',
+      'amazonpay': 'amazonpay',
+      'phonepe': 'phonepe',
+      'mobikwik': 'mobikwik',
+      'freecharge': 'freecharge',
+      'airtel': 'airtelmoney',
+    };
+    return walletMap[walletId.toLowerCase()] ?? walletId.toLowerCase();
+  }
+
+  Map<String, dynamic> _buildRazorpayConfig() {
+    final method = selectedPaymentMethod.value;
+    if (method == 'upi') {
+      return {
+        'display': {
+          'blocks': {
+            'preferred': {
+              'name': 'Pay via UPI / QR',
+              'instruments': [
+                {'method': 'upi'},
+              ],
+            },
+            'other': {
+              'name': 'Other Payment Methods',
+              'instruments': [
+                {'method': 'card'},
+                {'method': 'netbanking'},
+                {'method': 'wallet'},
+              ],
+            },
+          },
+          'sequence': ['block.preferred', 'block.other'],
+          'preferences': {
+            'show_default_blocks': true,
+          },
+        },
+      };
+    } else if (method == 'card') {
+      return {
+        'display': {
+          'blocks': {
+            'preferred': {
+              'name': 'Debit / Credit Card',
+              'instruments': [
+                {'method': 'card'},
+              ],
+            },
+            'other': {
+              'name': 'Other Payment Methods',
+              'instruments': [
+                {'method': 'upi'},
+                {'method': 'netbanking'},
+                {'method': 'wallet'},
+              ],
+            },
+          },
+          'sequence': ['block.preferred', 'block.other'],
+          'preferences': {
+            'show_default_blocks': true,
+          },
+        },
+      };
+    } else if (method == 'netbanking') {
+      final bankCode = _getRazorpayBankCode(selectedBank.value);
+      return {
+        'display': {
+          'blocks': {
+            'preferred': {
+              'name': 'Pay via NetBanking (${selectedBank.value.toUpperCase()})',
+              'instruments': [
+                {
+                  'method': 'netbanking',
+                  'banks': [bankCode],
+                },
+              ],
+            },
+            'other': {
+              'name': 'Other Payment Methods',
+              'instruments': [
+                {'method': 'upi'},
+                {'method': 'card'},
+                {'method': 'wallet'},
+              ],
+            },
+          },
+          'sequence': ['block.preferred', 'block.other'],
+          'preferences': {
+            'show_default_blocks': true,
+          },
+        },
+      };
+    } else if (method == 'wallet') {
+      final walletCode = _getRazorpayWalletCode(selectedWallet.value);
+      return {
+        'display': {
+          'blocks': {
+            'preferred': {
+              'name': 'Pay via Digital Wallet',
+              'instruments': [
+                {
+                  'method': 'wallet',
+                  'wallets': [walletCode],
+                },
+              ],
+            },
+            'other': {
+              'name': 'Other Payment Methods',
+              'instruments': [
+                {'method': 'upi'},
+                {'method': 'card'},
+                {'method': 'netbanking'},
+              ],
+            },
+          },
+          'sequence': ['block.preferred', 'block.other'],
+          'preferences': {
+            'show_default_blocks': true,
+          },
+        },
+      };
+    }
+    return {};
+  }
+
+  @override
+  void onClose() {
+    _razorpay.clear();
+    super.onClose();
   }
 
   void showTopWhiteMessage(String message) {
