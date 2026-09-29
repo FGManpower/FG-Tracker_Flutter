@@ -47,6 +47,9 @@ class CallingController extends GetxController {
 
   final Rxn<CallDetail> apiCallDetail = Rxn<CallDetail>();
 
+  final RxBool isBluetoothConnected = false.obs;
+  final RxString currentAudioRoute = "earpiece".obs;
+  Timer? _deviceCheckTimer;
 
   Timer? missedCallTimer;
   var missCallDurationSeconds = 40.obs;
@@ -140,6 +143,7 @@ class CallingController extends GetxController {
         'offerToReceiveVideo': true,
       });
       await peer!.setLocalDescription(offer);
+      await setDefaultAudioRouteForCallType(isVideo: true);
 
       final myUserId = Global.storageServices.get(PrefConst.userId).toString();
       final targetUserId = (myUserId == callerId.toString()) ? remoteUserId : callerId;
@@ -195,6 +199,7 @@ class CallingController extends GetxController {
         // NOTE: isVideoOn remains what it was (false), keeping local camera OFF
 
         callStatus.value = "Connected";
+        await setDefaultAudioRouteForCallType(isVideo: true);
         update();
       } catch (e) {
         log("upgradeToVideo handler error: $e");
@@ -215,6 +220,8 @@ class CallingController extends GetxController {
         isVideoOn = true;
         isVideoCall.value = true;
         callStatus.value = "Connected";
+        await setDefaultAudioRouteForCallType(isVideo: true);
+
         update();
       } catch (e) {
         log("upgradeToVideoAnswer error: $e");
@@ -396,7 +403,9 @@ class CallingController extends GetxController {
       'video': is_video == true ? {'facingMode': isFrontCamera ? 'user' : 'environment'} : false,
     });
 
-    await enableSpeaker();
+    _startDeviceMonitoring();
+
+    await setDefaultAudioRouteForCallType(isVideo: is_video == true);
 
     for (var t in localStream!.getTracks()) {
       peer!.addTrack(t, localStream!);
@@ -482,8 +491,10 @@ class CallingController extends GetxController {
 
   Future<void> endCall({String? type}) async {
     _clearTimers();
+
     final myUserId = Global.storageServices.get(PrefConst.userId).toString();
-    final targetUser = (myUserId == callerId.toString()) ? remoteUserId : callerId;
+    final targetUser =
+    (myUserId == callerId.toString()) ? remoteUserId : callerId;
 
     var param = {
       "callId": callId,
@@ -493,14 +504,21 @@ class CallingController extends GetxController {
     if (type != "missedCall") {
       socket?.emit("endCall", param);
     }
+
     resetPeer();
+
     if (CallSessionState.sessionId != null) {
-      callEnded(CallSessionState.sessionId.toString(), type: "endCallMethodHittedFromController-Type:$type");
+      callEnded(CallSessionState.sessionId.toString(),
+          type: "endCallMethodHittedFromController-Type:$type");
     }
+
     if (args["callType"] == "outGoing") {
       stopSound();
     }
+
     await WakelockPlus.disable();
+    await ProximityScreenLock.setActive(false);
+
     if (Get.currentRoute != Routes.Home_Screen) {
       Get.offAllNamed(Routes.Home_Screen);
     }
@@ -542,18 +560,34 @@ class CallingController extends GetxController {
   Future<void> enableSpeaker() async {
     await Helper.setSpeakerphoneOn(true);
     isSpeakerOn = true;
+    currentAudioRoute.value = "speaker";
+    await ProximityScreenLock.setActive(false);
     update();
   }
 
-  Future<void> toggleSpeaker() async {
-    isSpeakerOn = !isSpeakerOn;
-    await Helper.setSpeakerphoneOn(isSpeakerOn);
-    if (isSpeakerOn) {
-      await ProximityScreenLock.setActive(false);
-    } else {
+  Future<void> disableSpeaker() async {
+    await Helper.setSpeakerphoneOn(false);
+    isSpeakerOn = false;
+    currentAudioRoute.value =
+    isBluetoothConnected.value ? "bluetooth" : "earpiece";
+
+    if (!isVideoCall.value && !isBluetoothConnected.value) {
       await ProximityScreenLock.setActive(true);
+    } else {
+      await ProximityScreenLock.setActive(false);
     }
     update();
+  }
+
+
+
+
+  Future<void> toggleSpeaker() async {
+    if (isSpeakerOn) {
+      await disableSpeaker();
+    } else {
+      await enableSpeaker();
+    }
   }
 
   String get formattedDuration {
@@ -636,17 +670,83 @@ class CallingController extends GetxController {
   void stopSound() {
     FlutterRingtonePlayer().stop();
   }
-
   Future<void> startAudioCall() async {
     await WakelockPlus.enable();
-    await ProximityScreenLock.setActive(true);
+    if (!isBluetoothConnected.value) {
+      await ProximityScreenLock.setActive(true);
+    }
   }
 
+
+  Future<void> setDefaultAudioRouteForCallType({required bool isVideo}) async {
+    await checkAudioDevices();
+
+    if (isBluetoothConnected.value) {
+      await disableSpeaker();
+    } else {
+      if (isVideo) {
+        await enableSpeaker();
+      } else {
+        await disableSpeaker();
+      }
+    }
+  }
   Future<void> endAudioCall() async {
     await WakelockPlus.disable();
     await ProximityScreenLock.setActive(false);
   }
+  void _startDeviceMonitoring() {
+    checkAudioDevices();
 
+    navigator.mediaDevices.ondevicechange = (event) {
+      log("🔄 Audio Routing Device Changed!");
+      checkAudioDevices();
+    };
+
+    _deviceCheckTimer?.cancel();
+    _deviceCheckTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
+      checkAudioDevices();
+    });
+  }
+  Future<void> checkAudioDevices() async {
+    try {
+      final List<MediaDeviceInfo> devices =
+      await navigator.mediaDevices.enumerateDevices();
+      bool isBtFound = false;
+
+      for (var device in devices) {
+        if (device.kind == 'audiooutput') {
+          final String label = device.label.toLowerCase();
+          if (label.contains('bluetooth') ||
+              label.contains('blue') ||
+              label.contains('buds') ||
+              label.contains('headset') ||
+              label.contains('freebuds') ||
+              label.contains('airpods') ||
+              label.contains('hands-free') ||
+              label.contains('wireless') ||
+              label.contains('hearing aid')) {
+            isBtFound = true;
+            break;
+          }
+        }
+      }
+
+      isBluetoothConnected.value = isBtFound;
+
+      // Active channel determination
+      if (isSpeakerOn) {
+        currentAudioRoute.value = "speaker";
+      } else if (isBtFound) {
+        currentAudioRoute.value = "bluetooth";
+      } else {
+        currentAudioRoute.value = "earpiece";
+      }
+      update();
+    } catch (e) {
+      log("❌ checkAudioDevices error: $e");
+    }
+  }
   @override
   void onClose() {
     _clearTimers();
@@ -657,6 +757,7 @@ class CallingController extends GetxController {
       stopSound();
     }
     WakelockPlus.disable();
+    ProximityScreenLock.setActive(false);
     super.onClose();
   }
 }

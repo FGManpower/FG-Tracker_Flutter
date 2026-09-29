@@ -173,11 +173,25 @@ class CallController extends GetxController {
       contactLoading.value = true;
       responseError.value = "";
 
+      final startTime = DateTime.now();
+
       final contactNumbers = await _contactService.getMobileNumbers();
+
+      debugPrint(
+        "⏱️ Device Contacts: "
+            "${DateTime.now().difference(startTime).inMilliseconds} ms",
+      );
 
       isContactPermissionGranted.value = true;
 
+      final apiStartTime = DateTime.now();
+
       final result = await GroupRepo.getAllUserData();
+
+      debugPrint(
+        "⏱️ Contacts Users API: "
+            "${DateTime.now().difference(apiStartTime).inMilliseconds} ms",
+      );
 
       if (result.status == true) {
         final users = result.userData ?? [];
@@ -188,13 +202,13 @@ class CallController extends GetxController {
           return contactNumberSet.contains(mobileNo);
         }).toList();
 
-        // If contact book matched server users, show them; otherwise fallback to users
         final finalUsers = matchedUsers.isNotEmpty ? matchedUsers : users;
 
         allUserProfileData.value = finalUsers;
         filteredUsers.value = finalUsers;
       } else {
-        responseError.value = result.message ?? "Something went wrong";
+        responseError.value =
+            result.message ?? "Something went wrong";
       }
     } catch (e) {
       responseError.value = e.toString();
@@ -202,7 +216,6 @@ class CallController extends GetxController {
       contactLoading.value = false;
     }
   }
-
   void filterUsers(String value) {
     value = value.trim().toLowerCase();
 
@@ -408,17 +421,26 @@ class CallController extends GetxController {
   ];
   */
 
-  /// Dynamic API call to fetch real recent calls from backend
   Future<void> getRecentCall() async {
     if (recentCallLoading.value || recentCallLoadingMore.value) return;
+
     recentCallLoading.value = true;
     recentCallResponseError.value = "";
+
+    final stopwatch = Stopwatch()..start();
+
     try {
       final result = await CallRepo.getRecentCall(
         page: pagination.value.toString(),
       );
+
+      debugPrint(
+        "⏱️ Recent Calls API Time: ${stopwatch.elapsedMilliseconds} ms",
+      );
+
       if (result.status == true) {
         final data = result.data;
+
         if (data != null) {
           if (data.allSections.isNotEmpty) {
             data.allSections.forEach((sec, list) {
@@ -429,8 +451,11 @@ class CallController extends GetxController {
             _addBucket('yesterday', data.yesterday);
             _addBucket('older', data.older);
           }
+
           _rebuildRecentDisplay();
+
           final meta = result.pagination;
+
           if (meta != null) {
             hasMoreRecentCalls.value = meta.hasNextPage ??
                 (meta.totalRecords != null &&
@@ -446,6 +471,7 @@ class CallController extends GetxController {
     } catch (e) {
       recentCallResponseError.value = e.toString();
     } finally {
+      stopwatch.stop();
       recentCallLoading.value = false;
     }
   }
@@ -527,11 +553,10 @@ class CallController extends GetxController {
       contact?.lastName,
     ].whereType<String>().join(' ').trim();
 
-    String mobileNo = '';
+    String mobileNo = (contact?.phoneNumber ?? '').trim();
     String avatar = (contact?.avatar ?? '').trim();
     final String callerId = (contact?.id ?? call.callerId ?? '').trim();
 
-    // Check if this is a group call or matches any group in GroupController
     final String targetGroupId =
         (call.groupId ?? contact?.groupId ?? '').trim();
 
@@ -603,12 +628,17 @@ class CallController extends GetxController {
           );
 
           if (matchedUser != null) {
-            mobileNo = matchedUser.mobileNo ?? '';
+            if (mobileNo.isEmpty) {
+              mobileNo = (matchedUser.mobileNo ?? '').trim();
+            }
+
             if ((name.isEmpty || name.toLowerCase() == 'unknown') &&
                 (matchedUser.name ?? '').isNotEmpty) {
               name = matchedUser.name!.trim();
             }
-            if (avatar.isEmpty && (matchedUser.profileImage ?? '').isNotEmpty) {
+
+            if (avatar.isEmpty &&
+                (matchedUser.profileImage ?? '').isNotEmpty) {
               avatar = matchedUser.profileImage!.trim();
             }
           }

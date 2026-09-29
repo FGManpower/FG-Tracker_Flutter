@@ -28,7 +28,6 @@ class AudiocallScreen extends StatelessWidget {
     final bool isOutgoing = controller.args["callType"] == "outGoing";
 
     return Obx(() {
-
       final upgrading = controller.isUpgradingToVideo.value;
       final alreadyVideo = controller.isVideoCall.value;
 
@@ -38,6 +37,7 @@ class AudiocallScreen extends StatelessWidget {
           children: [
             SizedBox(height: 10.h),
             Text(
+
               isOutgoing ? "Calling" : "Call From",
               style: TextStyle(
                 color: primaryPurple.withOpacity(0.85),
@@ -57,46 +57,7 @@ class AudiocallScreen extends StatelessWidget {
               ),
             ),
             SizedBox(height: 8.h),
-            Obx(() {
-              final waiting = controller.formattedDuration == "00:00";
-              final startTime = controller.callStartTime.value;
-              return Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    waiting
-                        ? "${controller.callStatus.value}..."
-                        : controller.formattedDuration,
-                    style: TextStyle(
-                      color: primaryPurple,
-                      fontSize: 15.sp,
-                      fontFamily: FontFamily.interMedium,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  if (startTime.isNotEmpty) ...[
-                    SizedBox(height: 4.h),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.access_time_rounded,
-                            size: 13.sp,
-                            color: primaryPurple.withOpacity(0.7)),
-                        SizedBox(width: 4.w),
-                        Text(
-                          startTime,
-                          style: TextStyle(
-                            color: darkText.withOpacity(0.55),
-                            fontSize: 12.sp,
-                            fontFamily: FontFamily.interRegular,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ],
-              );
-            }),
+
             SizedBox(height: 30.h),
             Stack(
               alignment: Alignment.center,
