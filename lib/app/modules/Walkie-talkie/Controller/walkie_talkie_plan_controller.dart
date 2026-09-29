@@ -1,3 +1,5 @@
+import 'dart:io';
+import 'package:dio/dio.dart';
 import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/Data/Repositories/walkie_plan_repo.dart';
 import 'package:fgtracker/app/Model/walkie_plan_model.dart';
@@ -17,6 +19,7 @@ class WalkieTalkiePlanController extends GetxController {
   final RxBool isLoadingGroup = false.obs;
   final RxBool isLoadingCoupons = false.obs;
   final RxBool isSubmitting = false.obs;
+  final RxString errorMessage = ''.obs;
 
   // Plans lists from API
   final RxList<WalkiePlanItem> individualPlans = <WalkiePlanItem>[].obs;
@@ -296,7 +299,37 @@ class WalkieTalkiePlanController extends GetxController {
     }
   }
 
+  String _parseErrorMessage(dynamic error) {
+    if (error is DioException) {
+      if (error.type == DioExceptionType.connectionError ||
+          error.type == DioExceptionType.connectionTimeout ||
+          error.type == DioExceptionType.sendTimeout ||
+          error.type == DioExceptionType.receiveTimeout ||
+          error.error is SocketException) {
+        return "No internet connection. Please check your network.";
+      }
+      if (error.response?.data is Map &&
+          error.response?.data['message'] != null) {
+        return error.response!.data['message'].toString();
+      }
+      return "Unable to connect to server. Please try again.";
+    }
+    if (error is SocketException) {
+      return "No internet connection. Please check your network.";
+    }
+    final str = error.toString().toLowerCase();
+    if (str.contains("socket") ||
+        str.contains("internet") ||
+        str.contains("connection") ||
+        str.contains("network") ||
+        str.contains("failed host lookup")) {
+      return "No internet connection. Please check your network.";
+    }
+    return "Unable to load plans. Please try again.";
+  }
+
   Future<void> fetchBothPlans() async {
+    errorMessage.value = '';
     await Future.wait([
       fetchIndividualPlans(),
       fetchGroupPlans(),
@@ -312,9 +345,19 @@ class WalkieTalkiePlanController extends GetxController {
         if (selectedIndividualPlan.value >= individualPlans.length) {
           selectedIndividualPlan.value = 0;
         }
+        if (errorMessage.value.isNotEmpty && individualPlans.isNotEmpty) {
+          errorMessage.value = '';
+        }
+      } else {
+        if (individualPlans.isEmpty) {
+          errorMessage.value = res.message ?? "Unable to load plans. Please try again.";
+        }
       }
     } catch (e) {
       debugPrint("Error fetching individual plans: $e");
+      if (individualPlans.isEmpty && (selectedTab.value == 0 || groupPlans.isEmpty)) {
+        errorMessage.value = _parseErrorMessage(e);
+      }
     } finally {
       isLoadingIndividual.value = false;
     }
@@ -339,9 +382,19 @@ class WalkieTalkiePlanController extends GetxController {
             teamMemberCount.value = max;
           }
         }
+        if (errorMessage.value.isNotEmpty && groupPlans.isNotEmpty) {
+          errorMessage.value = '';
+        }
+      } else {
+        if (groupPlans.isEmpty && selectedTab.value == 1) {
+          errorMessage.value = res.message ?? "Unable to load plans. Please try again.";
+        }
       }
     } catch (e) {
       debugPrint("Error fetching group plans: $e");
+      if (groupPlans.isEmpty && (selectedTab.value == 1 || individualPlans.isEmpty)) {
+        errorMessage.value = _parseErrorMessage(e);
+      }
     } finally {
       isLoadingGroup.value = false;
     }
@@ -422,7 +475,7 @@ class WalkieTalkiePlanController extends GetxController {
     } catch (e) {
       debugPrint("Error applying coupon: $e");
       if (!isSilent) {
-        showTopWhiteMessage(e.toString());
+        showTopWhiteMessage(_parseErrorMessage(e));
       }
       return false;
     } finally {

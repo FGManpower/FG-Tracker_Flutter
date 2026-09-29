@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:dio/dio.dart';
 import 'package:fgtracker/app/Data/Services/walkie_talkie_trial_service.dart';
 import 'package:fgtracker/app/Model/walkie_talkie_trial_details_model.dart';
 import 'package:flutter/foundation.dart';
@@ -46,8 +47,11 @@ class WalkieTalkieTrialController extends GetxController
       data?.actions?.showTrialExpired == true || trial?.isExpired == true;
 
   int get totalSeconds {
-    final value = trial?.totalSeconds ?? trial?.durationSeconds ?? 0;
-    return value < 0 ? 0 : value;
+    final value = trial?.totalSeconds ?? trial?.durationSeconds;
+    if (value == null || value <= 0) {
+      return 3600;
+    }
+    return value;
   }
 
   int get usedSeconds {
@@ -70,7 +74,7 @@ class WalkieTalkieTrialController extends GetxController
   String get priceLabel {
     final amount = pricing?.price;
     if (amount == null) {
-      return 'Price unavailable';
+      return '₹49';
     }
     final formatted = amount == amount.roundToDouble()
         ? amount.toStringAsFixed(0)
@@ -82,11 +86,11 @@ class WalkieTalkieTrialController extends GetxController
   String get priceTypeLabel {
     switch (pricing?.priceType) {
       case 'individual':
-        return 'person';
+        return 'month';
       case 'team':
         return 'team';
       default:
-        return 'plan';
+        return 'month';
     }
   }
 
@@ -99,8 +103,14 @@ class WalkieTalkieTrialController extends GetxController
   }
 
   String get trialDurationFormatted => formatDuration(totalSeconds);
-  String get trialDurationHuman => formatDuration(totalSeconds);
-  String get trialDurationFreeLabel => '${formatDuration(totalSeconds)} Free';
+  String get trialDurationHuman =>
+      totalSeconds >= 3600 && totalSeconds % 3600 == 0
+          ? '${totalSeconds ~/ 3600} Hour'
+          : formatDuration(totalSeconds);
+  String get trialDurationFreeLabel =>
+      totalSeconds >= 3600 && totalSeconds % 3600 == 0
+          ? '${totalSeconds ~/ 3600} Hour Free'
+          : '${formatDuration(totalSeconds)} Free';
 
   @override
   void onInit() {
@@ -129,6 +139,21 @@ class WalkieTalkieTrialController extends GetxController
 
       overview.value = result;
       _configureCountdown(result);
+    } on DioException catch (dioError) {
+      if (isClosed || requestId != _requestVersion) {
+        return;
+      }
+      if (dioError.type == DioExceptionType.connectionError ||
+          dioError.type == DioExceptionType.connectionTimeout ||
+          dioError.type == DioExceptionType.sendTimeout ||
+          dioError.type == DioExceptionType.receiveTimeout ||
+          dioError.error is SocketException) {
+        errorMessage.value =
+            'No internet connection. Please check your network and try again.';
+      } else {
+        errorMessage.value =
+            'Unable to connect to server. Please try again later.';
+      }
     } on WalkieTrialException catch (error) {
       if (isClosed || requestId != _requestVersion) {
         return;
@@ -138,7 +163,8 @@ class WalkieTalkieTrialController extends GetxController
       if (isClosed || requestId != _requestVersion) {
         return;
       }
-      errorMessage.value = 'Please check your internet connection.';
+      errorMessage.value =
+          'No internet connection. Please check your network and try again.';
     } on TimeoutException {
       if (isClosed || requestId != _requestVersion) {
         return;
@@ -151,7 +177,7 @@ class WalkieTalkieTrialController extends GetxController
       debugPrint('Walkie-Talkie overview error: $error');
       debugPrintStack(stackTrace: stackTrace);
       errorMessage.value =
-          'Unable to load Walkie-Talkie details. Please try again.';
+          'Unable to load Walkie-Talkie details. Please check your connection.';
     } finally {
       if (!isClosed && requestId == _requestVersion) {
         isLoading.value = false;

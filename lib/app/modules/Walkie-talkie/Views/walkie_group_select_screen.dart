@@ -48,69 +48,12 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
   final RxString _searchQuery = ''.obs;
   final RxMap<String, bool> activeToggles = <String, bool>{}.obs;
   final RxBool isMembersLoading = false.obs;
+  final RxString membersError = ''.obs;
 
-  // Assigned and available members
-  final RxList<AssignedMemberItem> assignedMembers = <AssignedMemberItem>[
-    AssignedMemberItem(
-      id: "1",
-      name: "Rohit Sharma",
-      role: "Site Supervisor",
-      imageUrl:
-          "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
-    ),
-    AssignedMemberItem(
-      id: "2",
-      name: "Amit Verma",
-      role: "Electrician",
-      imageUrl:
-          "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80",
-    ),
-    AssignedMemberItem(
-      id: "3",
-      name: "Suresh Yadav",
-      role: "Carpenter",
-      imageUrl:
-          "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&auto=format&fit=crop&q=80",
-    ),
-    AssignedMemberItem(
-      id: "4",
-      name: "Imran Khan",
-      role: "Helper",
-      imageUrl:
-          "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=150&auto=format&fit=crop&q=80",
-    ),
-    AssignedMemberItem(
-      id: "5",
-      name: "Vikash Patel",
-      role: "Painter",
-      imageUrl:
-          "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=150&auto=format&fit=crop&q=80",
-    ),
-  ].obs;
-
-  final RxList<AssignedMemberItem> availableMembers = <AssignedMemberItem>[
-    AssignedMemberItem(
-      id: "6",
-      name: "Arjun Mehta",
-      role: "Helper",
-      imageUrl:
-          "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
-    ),
-    AssignedMemberItem(
-      id: "7",
-      name: "Sameer Shaikh",
-      role: "Electrician",
-      imageUrl:
-          "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=150&auto=format&fit=crop&q=80",
-    ),
-    AssignedMemberItem(
-      id: "8",
-      name: "Manoj Tiwari",
-      role: "Mason",
-      imageUrl:
-          "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&auto=format&fit=crop&q=80",
-    ),
-  ].obs;
+  // Assigned and available members (loaded dynamically from API)
+  final RxList<AssignedMemberItem> assignedMembers = <AssignedMemberItem>[].obs;
+  final RxList<AssignedMemberItem> availableMembers =
+      <AssignedMemberItem>[].obs;
 
   String get _currentGroupId {
     if (controller.groupData.isNotEmpty &&
@@ -210,12 +153,12 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                   img = "";
                 }
 
-                final String role = (m.department != null &&
-                        m.department!.trim().isNotEmpty)
-                    ? m.department!.trim()
-                    : ((m.team != null && m.team!.trim().isNotEmpty)
-                        ? m.team!.trim()
-                        : "Member");
+                final String role =
+                    (m.department != null && m.department!.trim().isNotEmpty)
+                        ? m.department!.trim()
+                        : ((m.team != null && m.team!.trim().isNotEmpty)
+                            ? m.team!.trim()
+                            : "Member");
 
                 loaded.add(
                   AssignedMemberItem(
@@ -244,9 +187,18 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
           assignedMembers.assignAll(loaded.sublist(0, 5));
           availableMembers.assignAll(loaded.sublist(5));
         }
+      } else {
+        if (assignedMembers.isEmpty && availableMembers.isEmpty) {
+          membersError.value =
+              "Unable to load members. Please check your internet connection.";
+        }
       }
     } catch (e) {
       debugPrint("Error in fetchMembersFromApi: $e");
+      if (assignedMembers.isEmpty && availableMembers.isEmpty) {
+        membersError.value =
+            "No internet connection. Please check your network.";
+      }
     } finally {
       isMembersLoading.value = false;
     }
@@ -526,7 +478,8 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
     return Skeletonizer(
       enabled: items == null,
       child: ListView.separated(
-        padding: EdgeInsets.only(left: 16.w, right: 16.w, top: 4.h, bottom: 12.h),
+        padding:
+            EdgeInsets.only(left: 16.w, right: 16.w, top: 4.h, bottom: 12.h),
         itemCount: itemCount,
         separatorBuilder: (_, __) => SizedBox(height: 12.h),
         itemBuilder: (context, index) {
@@ -682,7 +635,6 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
     );
   }
 
-
   void _showEditAssignedMembersBottomSheet(BuildContext context) {
     final TextEditingController sheetSearchController = TextEditingController();
     final RxString sheetQuery = ''.obs;
@@ -813,7 +765,8 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
               Padding(
                 padding: EdgeInsets.only(left: 20.w, right: 20.w, top: 12.h),
                 child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
                   decoration: BoxDecoration(
                     color: const Color(0xFFF0EFFF),
                     borderRadius: BorderRadius.circular(12.r),
@@ -852,16 +805,10 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
               ),
               Expanded(
                 child: Obx(() {
-                  if (isMembersLoading.value) {
-                    return const Center(
-                      child: Padding(
-                        padding: EdgeInsets.all(24.0),
-                        child: CupertinoActivityIndicator(
-                          radius: 14,
-                          color: Color(0xFF6B4DFF),
-                        ),
-                      ),
-                    );
+                  if (isMembersLoading.value &&
+                      assignedMembers.isEmpty &&
+                      availableMembers.isEmpty) {
+                    return _buildMembersSkeleton();
                   }
 
                   final q = sheetQuery.value.trim().toLowerCase();
@@ -877,8 +824,104 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                         m.role.toLowerCase().contains(q);
                   }).toList();
 
+                  if (assignedList.isEmpty && availableList.isEmpty) {
+                    final bool isOffline = membersError.value
+                            .toLowerCase()
+                            .contains("internet") ||
+                        membersError.value.toLowerCase().contains("network") ||
+                        membersError.value.toLowerCase().contains("connection");
+
+                    return Padding(
+                      padding: EdgeInsets.symmetric(
+                          vertical: 36.h, horizontal: 20.w),
+                      child: Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Container(
+                              padding: EdgeInsets.all(16.r),
+                              decoration: const BoxDecoration(
+                                color: Color(0xFFF0EFFF),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                isOffline
+                                    ? Icons.wifi_off_rounded
+                                    : (sheetQuery.value.isNotEmpty
+                                        ? Icons.search_off_rounded
+                                        : Icons.people_outline_rounded),
+                                color: const Color(0xFF6B4DFF),
+                                size: 32.sp,
+                              ),
+                            ),
+                            SizedBox(height: 12.h),
+                            Text(
+                              isOffline
+                                  ? "No Internet Connection"
+                                  : (sheetQuery.value.isNotEmpty
+                                      ? "No Members Match"
+                                      : "No Members Found"),
+                              style: TextStyle(
+                                color: const Color(0xFF1E1B4B),
+                                fontSize: 15.sp,
+                                fontFamily: FontFamily.interBold,
+                              ),
+                            ),
+                            SizedBox(height: 4.h),
+                            Text(
+                              isOffline
+                                  ? "Please check your network connection and try again."
+                                  : (sheetQuery.value.isNotEmpty
+                                      ? "No members match '${sheetQuery.value}'"
+                                      : "No group members available to assign."),
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: const Color(0xFF6B7280),
+                                fontSize: 12.sp,
+                                fontFamily: FontFamily.interRegular,
+                              ),
+                            ),
+                            SizedBox(height: 16.h),
+                            GestureDetector(
+                              onTap: () => fetchMembersFromApi(),
+                              child: Container(
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 18.w, vertical: 8.h),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF5B4DFF),
+                                  borderRadius: BorderRadius.circular(12.r),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.refresh_rounded,
+                                      color: Colors.white,
+                                      size: 16.sp,
+                                    ),
+                                    SizedBox(width: 6.w),
+                                    Text(
+                                      "Retry",
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 12.sp,
+                                        fontFamily: FontFamily.interSemiBold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }
+
                   return ListView(
-                    padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
                     children: [
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -948,7 +991,8 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                           ),
                         )
                       else
-                        ...availableList.map((m) => _buildAvailableMemberTile(m)),
+                        ...availableList
+                            .map((m) => _buildAvailableMemberTile(m)),
                     ],
                   );
                 }),
@@ -1000,6 +1044,54 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildMembersSkeleton() {
+    return Skeletonizer(
+      enabled: true,
+      child: ListView(
+        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
+        children: [
+          reausabletext(
+            "Currently Assigned (3)",
+            fontsize: 14.sp,
+            fontfamily: FontFamily.interBold,
+            color: const Color(0xFF1E1B4B),
+          ),
+          SizedBox(height: 8.h),
+          ...List.generate(
+            3,
+            (index) => _buildAssignedMemberTile(
+              AssignedMemberItem(
+                id: "sk_as_$index",
+                name: "Loading Member Name",
+                role: "Loading Role Title",
+                imageUrl: "",
+              ),
+            ),
+          ),
+          SizedBox(height: 16.h),
+          reausabletext(
+            "Available Members",
+            fontsize: 14.sp,
+            fontfamily: FontFamily.interBold,
+            color: const Color(0xFF1E1B4B),
+          ),
+          SizedBox(height: 8.h),
+          ...List.generate(
+            4,
+            (index) => _buildAvailableMemberTile(
+              AssignedMemberItem(
+                id: "sk_av_$index",
+                name: "Loading Member Name",
+                role: "Loading Role Title",
+                imageUrl: "",
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -1123,8 +1215,8 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
           GestureDetector(
             onTap: () {
               if (assignedMembers.length >= 5) {
-                Utils().fluttertoast(
-                    "You can have up to 5 members in this group");
+                Utils()
+                    .fluttertoast("You can have up to 5 members in this group");
               } else {
                 availableMembers.remove(member);
                 assignedMembers.add(member);

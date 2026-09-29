@@ -26,10 +26,15 @@ class WalkieTalkieTrialDetailsScreen extends StatefulWidget {
 
 class _WalkieTalkieTrialDetailsScreenState
     extends State<WalkieTalkieTrialDetailsScreen> {
-  final WalkieTalkieTrialController controller =
-      Get.isRegistered<WalkieTalkieTrialController>()
-          ? Get.find<WalkieTalkieTrialController>()
-          : Get.put(WalkieTalkieTrialController());
+  late final WalkieTalkieTrialController controller;
+
+  @override
+  void initState() {
+    super.initState();
+    controller = Get.isRegistered<WalkieTalkieTrialController>()
+        ? Get.find<WalkieTalkieTrialController>()
+        : Get.put(WalkieTalkieTrialController());
+  }
 
   static const Color primaryColor = Color(0xFF5B4DFF);
 
@@ -66,33 +71,9 @@ class _WalkieTalkieTrialDetailsScreenState
         top: false,
         bottom: false,
         child: Obx(() {
-          // Initial loading
-          if (controller.isLoading.value && controller.data == null) {
-            final loading = _buildLoadingState();
-            return isWideScreen
-                ? Center(
-                    child: Container(
-                      constraints: const BoxConstraints(maxWidth: 520),
-                      child: loading,
-                    ),
-                  )
-                : loading;
-          }
+          final bool isSkeletonLoading =
+              controller.isLoading.value && controller.data == null;
 
-          // Initial API error
-          if (controller.data == null) {
-            final error = _buildErrorState();
-            return isWideScreen
-                ? Center(
-                    child: Container(
-                      constraints: const BoxConstraints(maxWidth: 520),
-                      child: error,
-                    ),
-                  )
-                : error;
-          }
-
-          // Main screen
           final Widget scrollContent = RefreshIndicator(
             color: primaryColor,
             onRefresh: () async {
@@ -104,23 +85,27 @@ class _WalkieTalkieTrialDetailsScreenState
               physics: const AlwaysScrollableScrollPhysics(
                 parent: BouncingScrollPhysics(),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  if (controller.isRefreshing.value)
-                    const LinearProgressIndicator(
-                      color: primaryColor,
-                      minHeight: 2,
-                    ),
-                  _buildHeroGraphic(),
-                  SizedBox(height: 6.h),
-                  _buildHeadingSection(),
-                  SizedBox(height: 8.h),
-                  _buildFreeTrialStatusCard(),
-                  SizedBox(height: 8.h),
-                  _buildFeaturesAndCtaCard(context),
-                  SizedBox(height: 10.h),
-                ],
+              child: Skeletonizer(
+                enabled: isSkeletonLoading,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    if (controller.isRefreshing.value)
+                      const LinearProgressIndicator(
+                        color: primaryColor,
+                        minHeight: 2,
+                      ),
+                    _buildTopErrorBanner(),
+                    _buildHeroGraphic(),
+                    SizedBox(height: 6.h),
+                    _buildHeadingSection(),
+                    SizedBox(height: 8.h),
+                    _buildFreeTrialStatusCard(),
+                    SizedBox(height: 8.h),
+                    _buildFeaturesAndCtaCard(context),
+                    SizedBox(height: 10.h),
+                  ],
+                ),
               ),
             ),
           );
@@ -148,20 +133,30 @@ class _WalkieTalkieTrialDetailsScreenState
         }),
       ),
       bottomNavigationBar: Obx(() {
-        if (controller.isLoading.value && controller.data == null) {
+        if (controller.errorMessage.value.isNotEmpty) {
           return const SizedBox.shrink();
         }
 
+        final bool isSkeletonLoading =
+            controller.isLoading.value && controller.data == null;
+
         Widget bar = Padding(
           padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 10.h),
-          child: _buildPurchasePlanCard(isBottomBar: true),
+          child: Skeletonizer(
+            enabled: isSkeletonLoading,
+            child: _buildPurchasePlanCard(isBottomBar: true),
+          ),
         );
 
         if (isWideScreen) {
-          bar = Center(
+          return Center(
             child: Container(
               constraints: const BoxConstraints(maxWidth: 520),
-              child: bar,
+              color: backgroundColor,
+              child: SafeArea(
+                top: false,
+                child: bar,
+              ),
             ),
           );
         }
@@ -254,6 +249,74 @@ class _WalkieTalkieTrialDetailsScreenState
   }
 
   // =====================================================
+  // TOP ERROR / NO INTERNET BANNER
+  // =====================================================
+
+  Widget _buildTopErrorBanner() {
+    final msg = controller.errorMessage.value;
+    if (msg.isEmpty) return const SizedBox.shrink();
+
+    final bool isOffline = msg.toLowerCase().contains('internet') ||
+        msg.toLowerCase().contains('network') ||
+        msg.toLowerCase().contains('connection');
+
+    return Container(
+      width: double.infinity,
+      margin: EdgeInsets.fromLTRB(16.w, 6.h, 16.w, 6.h),
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 9.h),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFEF2F2),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(
+          color: const Color(0xFFFECACA),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            isOffline ? Icons.wifi_off_rounded : Icons.info_outline_rounded,
+            size: _sp(18),
+            color: const Color(0xFFDC2626),
+          ),
+          SizedBox(width: 10.w),
+          Expanded(
+            child: Text(
+              isOffline
+                  ? "No internet connection. Please check your network."
+                  : msg,
+              style: TextStyle(
+                fontSize: _sp(11.5),
+                color: const Color(0xFF991B1B),
+                fontFamily: FontFamily.interMedium,
+              ),
+            ),
+          ),
+          SizedBox(width: 8.w),
+          GestureDetector(
+            onTap: () => controller.fetchOverview(refresh: true),
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFEE2E2),
+                borderRadius: BorderRadius.circular(8.r),
+              ),
+              child: Text(
+                "Retry",
+                style: TextStyle(
+                  fontSize: _sp(11.5),
+                  fontFamily: FontFamily.interSemiBold,
+                  color: const Color(0xFFDC2626),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // =====================================================
   // HERO GRAPHIC
   // =====================================================
 
@@ -309,9 +372,8 @@ class _WalkieTalkieTrialDetailsScreenState
   // =====================================================
 
   Widget _buildFreeTrialStatusCard() {
-    return Obx(() {
-      final trial = controller.trial;
-      final bool hasSubscription = controller.hasActiveSubscription;
+    final trial = controller.trial;
+    final bool hasSubscription = controller.hasActiveSubscription;
       final bool trialActive = controller.isTrialActive;
       final bool trialExpired = controller.showTrialExpired;
       final bool trialEligible = controller.isTrialEligible;
@@ -333,7 +395,7 @@ class _WalkieTalkieTrialDetailsScreenState
         title = "TRIAL EXPIRED";
         subtitle = "Your Trial Has Ended";
         description = "Choose a subscription to continue.";
-      } else if (trialEligible) {
+      } else if (trialEligible || controller.data == null) {
         title = "FREE TRIAL";
         subtitle = controller.trialDurationFreeLabel;
         description =
@@ -506,7 +568,6 @@ class _WalkieTalkieTrialDetailsScreenState
           ],
         ),
       );
-    });
   }
 
   // =====================================================
@@ -568,57 +629,59 @@ class _WalkieTalkieTrialDetailsScreenState
           // -----------------------------------------
           // Dynamic CTA
           // -----------------------------------------
-          Obx(() {
-            final bool canUse = controller.canUseWalkie;
-            final bool eligible = controller.isTrialEligible;
+          Builder(
+            builder: (context) {
+              final bool canUse = controller.canUseWalkie;
+              final bool eligible = controller.isTrialEligible;
 
-            // Trial already used, no active access.
-            if (!canUse && !eligible) {
-              return const SizedBox.shrink();
-            }
+              // Trial already used and user has no active subscription
+              if (controller.data != null && !canUse && !eligible) {
+                return const SizedBox.shrink();
+              }
 
-            return SizedBox(
-              width: double.infinity,
-              height: 44.h,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: primaryColor,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12.r),
+              return SizedBox(
+                width: double.infinity,
+                height: 44.h,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: primaryColor,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
+                    elevation: 0,
                   ),
-                  elevation: 0,
+                  onPressed: () {
+                    if (canUse) {
+                      Get.to(
+                        () => const WalkieGroupSelectScreen(),
+                      );
+                      return;
+                    }
+                    _showStartFreeTrialBottomSheet(context);
+                  },
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        canUse ? Icons.mic_rounded : Icons.play_arrow_rounded,
+                        color: Colors.white,
+                        size: _sp(20),
+                      ),
+                      SizedBox(width: 8.w),
+                      reausabletext(
+                        canUse
+                            ? "Open Walkie Talkie"
+                            : "Start ${controller.trialDurationHuman} Free Trial",
+                        fontsize: _sp(15.5),
+                        fontfamily: FontFamily.interBold,
+                        color: Colors.white,
+                      ),
+                    ],
+                  ),
                 ),
-                onPressed: () {
-                  if (canUse) {
-                    Get.to(
-                      () => const WalkieGroupSelectScreen(),
-                    );
-                    return;
-                  }
-                  _showStartFreeTrialBottomSheet(context);
-                },
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      canUse ? Icons.mic_rounded : Icons.play_arrow_rounded,
-                      color: Colors.white,
-                      size: _sp(20),
-                    ),
-                    SizedBox(width: 8.w),
-                    reausabletext(
-                      canUse
-                          ? "Open Walkie Talkie"
-                          : "Start ${controller.trialDurationHuman} Free Trial",
-                      fontsize: _sp(15.5),
-                      fontfamily: FontFamily.interBold,
-                      color: Colors.white,
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }),
+              );
+            },
+          ),
         ],
       ),
     );
@@ -669,8 +732,7 @@ class _WalkieTalkieTrialDetailsScreenState
   // =====================================================
 
   Widget _buildPurchasePlanCard({bool isBottomBar = false}) {
-    return Obx(() {
-      return GestureDetector(
+    return GestureDetector(
         onTap: _openPlanDetails,
         child: Container(
           margin: isBottomBar
@@ -700,8 +762,8 @@ class _WalkieTalkieTrialDetailsScreenState
           child: Row(
             children: [
               Container(
-                width: 44.w,
-                height: 44.w,
+                width: 42.w.clamp(38.0, 46.0),
+                height: 42.w.clamp(38.0, 46.0),
                 padding: EdgeInsets.all(8.w),
                 decoration: BoxDecoration(
                   color: const Color(0xFFF0EFFF),
@@ -722,29 +784,33 @@ class _WalkieTalkieTrialDetailsScreenState
                       "After your free trial",
                       fontsize: _sp(10.5),
                       color: subtitleColor,
+                      maxline: 1,
                     ),
                     SizedBox(height: 2.h),
                     reausabletext(
                       "${controller.priceLabel} / ${controller.priceTypeLabel}",
-                      fontsize: _sp(15),
+                      fontsize: _sp(14.5),
                       fontfamily: FontFamily.interBold,
                       color: textColor,
+                      maxline: 1,
                     ),
                     SizedBox(height: 1.h),
                     reausabletext(
                       "Continue with Walkie Talkie",
                       fontsize: _sp(10),
                       color: subtitleColor,
+                      maxline: 1,
                     ),
                   ],
                 ),
               ),
+              SizedBox(width: 8.w),
               GestureDetector(
                 onTap: _openPlanDetails,
                 child: Container(
                   padding: EdgeInsets.symmetric(
-                    horizontal: 13.w,
-                    vertical: 10.h,
+                    horizontal: 12.w,
+                    vertical: 9.h,
                   ),
                   decoration: BoxDecoration(
                     color: const Color(0xFFF5F3FF),
@@ -756,9 +822,10 @@ class _WalkieTalkieTrialDetailsScreenState
                   ),
                   child: reausabletext(
                     "Purchase for ${controller.priceLabel}",
-                    fontsize: _sp(12),
+                    fontsize: _sp(11.5),
                     fontfamily: FontFamily.interSemiBold,
                     color: primaryColor,
+                    maxline: 1,
                   ),
                 ),
               ),
@@ -766,7 +833,6 @@ class _WalkieTalkieTrialDetailsScreenState
           ),
         ),
       );
-    });
   }
 
   void _openPlanDetails() {
@@ -1491,57 +1557,106 @@ class _WalkieTalkieTrialDetailsScreenState
   // =====================================================
 
   Widget _buildErrorState() {
-    return Center(
-      child: Padding(
-        padding: EdgeInsets.all(24.w),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.wifi_off_rounded,
-              size: _sp(52),
-              color: subtitleColor,
-            ),
-            SizedBox(height: 16.h),
-            reausabletext(
-              "Unable to Load Walkie Talkie",
-              fontsize: _sp(16.5),
-              fontfamily: FontFamily.interBold,
-              color: textColor,
-              align: TextAlign.center,
-            ),
-            SizedBox(height: 8.h),
-            Text(
-              controller.errorMessage.value.isNotEmpty
-                  ? controller.errorMessage.value
-                  : "Something went wrong. Please try again.",
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: _sp(12),
-                color: subtitleColor,
-              ),
-            ),
-            SizedBox(height: 20.h),
-            ElevatedButton(
-              onPressed: () {
-                controller.fetchOverview();
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: primaryColor,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12.r),
+    final msg = controller.errorMessage.value;
+    final bool isOffline = msg.toLowerCase().contains('internet') ||
+        msg.toLowerCase().contains('network') ||
+        msg.toLowerCase().contains('connection');
+
+      return Center(
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(
+            parent: BouncingScrollPhysics(),
+          ),
+          padding: EdgeInsets.symmetric(horizontal: 28.w, vertical: 24.h),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Container(
+                width: 84.w.clamp(74.0, 96.0),
+                height: 84.w.clamp(74.0, 96.0),
+                decoration: BoxDecoration(
+                  color: primaryColor.withValues(alpha: 0.08),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  isOffline
+                      ? Icons.wifi_off_rounded
+                      : Icons.cloud_off_rounded,
+                  size: _sp(40),
+                  color: primaryColor,
                 ),
               ),
-              child: Text(
-                "Try Again",
-                style: TextStyle(fontSize: _sp(13)),
+              SizedBox(height: 18.h),
+              reausabletext(
+                isOffline ? "No Internet Connection" : "Unable to Load Walkie Talkie",
+                fontsize: _sp(17),
+                fontfamily: FontFamily.interBold,
+                color: textColor,
+                align: TextAlign.center,
               ),
-            ),
-          ],
+              SizedBox(height: 8.h),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16.w),
+                child: Text(
+                  msg.isNotEmpty
+                      ? msg
+                      : "Please check your internet connection and try again.",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: _sp(12.5),
+                    color: subtitleColor,
+                    fontFamily: FontFamily.interRegular,
+                    height: 1.35,
+                  ),
+                ),
+              ),
+              SizedBox(height: 22.h),
+              SizedBox(
+                height: 44.h.clamp(40.0, 48.0),
+                child: ElevatedButton.icon(
+                  onPressed: controller.isLoading.value
+                      ? null
+                      : () {
+                          controller.fetchOverview();
+                        },
+                  icon: controller.isLoading.value
+                      ? SizedBox(
+                          width: 16.w,
+                          height: 16.w,
+                          child: const CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : Icon(
+                          Icons.refresh_rounded,
+                          size: _sp(17),
+                        ),
+                  label: Text(
+                    controller.isLoading.value ? "Retrying..." : "Try Again",
+                    style: TextStyle(
+                      fontSize: _sp(13.5),
+                      fontFamily: FontFamily.interSemiBold,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: primaryColor,
+                    foregroundColor: Colors.white,
+                    elevation: 1.5,
+                    shadowColor: primaryColor.withValues(alpha: 0.3),
+                    padding: EdgeInsets.symmetric(horizontal: 24.w),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
-      ),
-    );
+      );
   }
 
   // =====================================================

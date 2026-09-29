@@ -1,3 +1,5 @@
+import 'dart:io';
+import 'package:dio/dio.dart';
 import 'package:fgtracker/app/Data/Repositories/walkie_plan_repo.dart';
 import 'package:fgtracker/app/Model/walkie_coupon_model.dart';
 import 'package:fgtracker/app/Model/walkie_order_summary_model.dart';
@@ -15,6 +17,7 @@ class WalkieOrderSummaryController extends GetxController {
   final RxBool isLoadingSummary = false.obs;
   final RxBool isApplyingCoupon = false.obs;
   final RxnString applyingCouponCode = RxnString();
+  final RxString errorMessage = ''.obs;
 
   final RxList<WalkieCouponItem> eligibleCoupons = <WalkieCouponItem>[].obs;
   final Rxn<WalkieCouponItem> selectedCoupon = Rxn<WalkieCouponItem>();
@@ -136,6 +139,35 @@ class WalkieOrderSummaryController extends GetxController {
     return '$formattedRest,$lastThree';
   }
 
+  String _parseErrorMessage(dynamic error) {
+    if (error is DioException) {
+      if (error.type == DioExceptionType.connectionError ||
+          error.type == DioExceptionType.connectionTimeout ||
+          error.type == DioExceptionType.sendTimeout ||
+          error.type == DioExceptionType.receiveTimeout ||
+          error.error is SocketException) {
+        return "No internet connection. Please check your network.";
+      }
+      if (error.response?.data is Map &&
+          error.response?.data['message'] != null) {
+        return error.response!.data['message'].toString();
+      }
+      return "Unable to connect to server. Please try again.";
+    }
+    if (error is SocketException) {
+      return "No internet connection. Please check your network.";
+    }
+    final str = error.toString().toLowerCase();
+    if (str.contains("socket") ||
+        str.contains("internet") ||
+        str.contains("connection") ||
+        str.contains("network") ||
+        str.contains("failed host lookup")) {
+      return "No internet connection. Please check your network.";
+    }
+    return "Something went wrong. Please try again.";
+  }
+
   Future<void> fetchOrderSummary({String? couponCodeOverride}) async {
     try {
       isLoadingSummary.value = true;
@@ -151,6 +183,7 @@ class WalkieOrderSummaryController extends GetxController {
 
       if (response.status == true && response.data != null) {
         summaryData.value = response.data;
+        errorMessage.value = '';
         if (response.data?.coupon?.code != null) {
           dynamicCouponCode.value = response.data!.coupon!.code;
         }
@@ -158,9 +191,16 @@ class WalkieOrderSummaryController extends GetxController {
           dynamicDiscount.value =
               response.data!.pricing!.discountAmount!.toDouble();
         }
+      } else {
+        if (summaryData.value == null) {
+          errorMessage.value = response.message ?? "Unable to load order summary.";
+        }
       }
-    } catch (_) {
-      // Non-blocking
+    } catch (e) {
+      debugPrint("Error fetching order summary: $e");
+      if (summaryData.value == null) {
+        errorMessage.value = _parseErrorMessage(e);
+      }
     } finally {
       isLoadingSummary.value = false;
     }
@@ -180,8 +220,8 @@ class WalkieOrderSummaryController extends GetxController {
       if (response.status == true && response.data != null) {
         eligibleCoupons.assignAll(response.data!.coupons);
       }
-    } catch (_) {
-      // Non-blocking
+    } catch (e) {
+      debugPrint("Error fetching eligible coupons: $e");
     } finally {
       isLoadingCoupons.value = false;
     }
@@ -284,7 +324,7 @@ class WalkieOrderSummaryController extends GetxController {
       }
     } catch (e) {
       if (!isSilent) {
-        showTopWhiteMessage("Failed to apply coupon. Please try again.");
+        showTopWhiteMessage(_parseErrorMessage(e));
       }
       return false;
     } finally {
@@ -325,7 +365,7 @@ class WalkieOrderSummaryController extends GetxController {
             validTill: order.value.validTill,
           ));
     } catch (e) {
-      showTopWhiteMessage("Payment processing failed. Please retry.");
+      showTopWhiteMessage(_parseErrorMessage(e));
     } finally {
       isProcessingPayment.value = false;
     }

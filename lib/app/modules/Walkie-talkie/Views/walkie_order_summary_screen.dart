@@ -73,6 +73,9 @@ class _WalkieOrderSummaryScreenState extends State<WalkieOrderSummaryScreen> {
                           children: [
                             SizedBox(height: 8.h),
 
+                            // Top Error / Offline Banner
+                            _buildTopErrorBanner(),
+
                             // Card 1: Selected Plan Details Card
                             _buildPlanOverviewCard(),
 
@@ -230,6 +233,78 @@ class _WalkieOrderSummaryScreenState extends State<WalkieOrderSummaryScreen> {
             )
           : titleRow,
     );
+  }
+
+  // ==========================================
+  // TOP ERROR / NO INTERNET BANNER
+  // ==========================================
+  Widget _buildTopErrorBanner() {
+    return Obx(() {
+      final msg = controller.errorMessage.value;
+      if (msg.isEmpty) return const SizedBox.shrink();
+
+      final bool isOffline = msg.toLowerCase().contains('internet') ||
+          msg.toLowerCase().contains('network') ||
+          msg.toLowerCase().contains('connection');
+
+      return Container(
+        width: double.infinity,
+        margin: EdgeInsets.only(bottom: 12.h),
+        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 9.h),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFEF2F2),
+          borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(
+            color: const Color(0xFFFECACA),
+            width: 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              isOffline ? Icons.wifi_off_rounded : Icons.info_outline_rounded,
+              size: 18.sp.clamp(16.0, 20.0),
+              color: const Color(0xFFDC2626),
+            ),
+            SizedBox(width: 10.w),
+            Expanded(
+              child: Text(
+                isOffline
+                    ? "No internet connection. Please check your network."
+                    : msg,
+                style: TextStyle(
+                  fontSize: 11.5.sp.clamp(10.5, 12.5),
+                  color: const Color(0xFF991B1B),
+                  fontFamily: FontFamily.interMedium,
+                ),
+              ),
+            ),
+            SizedBox(width: 8.w),
+            GestureDetector(
+              onTap: () {
+                controller.fetchOrderSummary();
+                controller.fetchCoupons();
+              },
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFEE2E2),
+                  borderRadius: BorderRadius.circular(8.r),
+                ),
+                child: Text(
+                  "Retry",
+                  style: TextStyle(
+                    fontSize: 11.5.sp.clamp(10.5, 12.5),
+                    fontFamily: FontFamily.interSemiBold,
+                    color: const Color(0xFFDC2626),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    });
   }
 
   // ==========================================

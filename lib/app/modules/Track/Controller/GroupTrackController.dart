@@ -161,7 +161,16 @@ class GroupTrackingController extends GetxController {
     } catch (e) {
       Loading().dismissloading(context: context);
       print(e);
-      CommonDialog.errorMessage(e.toString());
+      final str = e.toString().toLowerCase();
+      if (str.contains("socket") ||
+          str.contains("internet") ||
+          str.contains("connection") ||
+          str.contains("network") ||
+          str.contains("failed host lookup")) {
+        CommonDialog.errorMessage("No internet connection. Please check your network.");
+      } else {
+        CommonDialog.errorMessage("Failed to load group locations. Please try again.");
+      }
     }
   }
 
@@ -884,9 +893,17 @@ class GroupTrackingController extends GetxController {
     } catch (e) {
       isLocationSharing.value = oldValue;
 
+      final str = e.toString().toLowerCase();
+      final isOffline = str.contains("socket") ||
+          str.contains("internet") ||
+          str.contains("connection") ||
+          str.contains("network");
+
       Get.snackbar(
         "Error",
-        "Something went wrong",
+        isOffline
+            ? "No internet connection. Unable to update Private Mode."
+            : "Something went wrong. Please try again.",
       );
     }
   }

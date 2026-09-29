@@ -99,6 +99,9 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
                           // Top Bar + Hero Section
                           _buildTopHeroSection(isTeam, isSmallScreen),
 
+                          // Top Error / Offline Banner
+                          _buildTopErrorBanner(),
+
                           SizedBox(height: 12.h),
 
                           // Feature Highlight Badges (Scrollable)
@@ -114,7 +117,7 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
                           // Content based on selected tab
                           AnimatedCrossFade(
                             firstChild:
-                            _buildIndividualTabContent(isSmallScreen),
+                                _buildIndividualTabContent(isSmallScreen),
                             secondChild: _buildTeamTabContent(isSmallScreen),
                             crossFadeState: isTeam
                                 ? CrossFadeState.showSecond
@@ -251,16 +254,85 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
           blendMode: BlendMode.multiply,
           child: isTeam
               ? Assets.walkieTalkie.walkieTeamHeader.image(
-            fit: BoxFit.contain,
-            alignment: Alignment.centerRight,
-          )
+                  fit: BoxFit.contain,
+                  alignment: Alignment.centerRight,
+                )
               : Assets.walkieTalkie.walkieIndividualHeader.image(
-            fit: BoxFit.contain,
-            alignment: Alignment.centerRight,
-          ),
+                  fit: BoxFit.contain,
+                  alignment: Alignment.centerRight,
+                ),
         ),
       ),
     );
+  }
+
+  // ==========================================
+  // TOP ERROR / NO INTERNET BANNER
+  // ==========================================
+  Widget _buildTopErrorBanner() {
+    return Obx(() {
+      final msg = controller.errorMessage.value;
+      if (msg.isEmpty) return const SizedBox.shrink();
+
+      final bool isOffline = msg.toLowerCase().contains('internet') ||
+          msg.toLowerCase().contains('network') ||
+          msg.toLowerCase().contains('connection');
+
+      return Container(
+        width: double.infinity,
+        margin: EdgeInsets.fromLTRB(16.w, 10.h, 16.w, 2.h),
+        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 9.h),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFEF2F2),
+          borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(
+            color: const Color(0xFFFECACA),
+            width: 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              isOffline ? Icons.wifi_off_rounded : Icons.info_outline_rounded,
+              size: 18.sp.clamp(16.0, 20.0),
+              color: const Color(0xFFDC2626),
+            ),
+            SizedBox(width: 10.w),
+            Expanded(
+              child: Text(
+                isOffline
+                    ? "No internet connection. Please check your network."
+                    : msg,
+                style: TextStyle(
+                  fontSize: 11.5.sp.clamp(10.5, 12.5),
+                  color: const Color(0xFF991B1B),
+                  fontFamily: FontFamily.interMedium,
+                ),
+              ),
+            ),
+            SizedBox(width: 8.w),
+            GestureDetector(
+              onTap: () => controller.fetchBothPlans(),
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFEE2E2),
+                  borderRadius: BorderRadius.circular(8.r),
+                ),
+                child: Text(
+                  "Retry",
+                  style: TextStyle(
+                    fontSize: 11.5.sp.clamp(10.5, 12.5),
+                    fontFamily: FontFamily.interSemiBold,
+                    color: const Color(0xFFDC2626),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    });
   }
 
   // ==========================================
@@ -269,44 +341,44 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
   Widget _buildFeaturePills(bool isTeam) {
     final List<Map<String, dynamic>> pills = isTeam
         ? [
-      {
-        "icon": Icons.bolt_rounded,
-        "title": "Unlimited",
-        "subtitle": "Walkie Talkie",
-      },
-      {
-        "icon": Icons.groups_rounded,
-        "title": "For Teams",
-        "subtitle": "of All Sizes",
-      },
-      {
-        "icon": Icons.shield_outlined,
-        "title": "Reliable &",
-        "subtitle": "Secure",
-      },
-      {
-        "icon": Icons.headset_mic_rounded,
-        "title": "Priority",
-        "subtitle": "Support",
-      },
-    ]
+            {
+              "icon": Icons.bolt_rounded,
+              "title": "Unlimited",
+              "subtitle": "Walkie Talkie",
+            },
+            {
+              "icon": Icons.groups_rounded,
+              "title": "For Teams",
+              "subtitle": "of All Sizes",
+            },
+            {
+              "icon": Icons.shield_outlined,
+              "title": "Reliable &",
+              "subtitle": "Secure",
+            },
+            {
+              "icon": Icons.headset_mic_rounded,
+              "title": "Priority",
+              "subtitle": "Support",
+            },
+          ]
         : [
-      {
-        "icon": Icons.bolt_rounded,
-        "title": "Instant",
-        "subtitle": "Communication",
-      },
-      {
-        "icon": Icons.groups_rounded,
-        "title": "For Teams",
-        "subtitle": "of All Sizes",
-      },
-      {
-        "icon": Icons.all_inclusive_rounded,
-        "title": "Reliable &",
-        "subtitle": "Secure",
-      },
-    ];
+            {
+              "icon": Icons.bolt_rounded,
+              "title": "Instant",
+              "subtitle": "Communication",
+            },
+            {
+              "icon": Icons.groups_rounded,
+              "title": "For Teams",
+              "subtitle": "of All Sizes",
+            },
+            {
+              "icon": Icons.all_inclusive_rounded,
+              "title": "Reliable &",
+              "subtitle": "Secure",
+            },
+          ];
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
@@ -444,12 +516,12 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
           borderRadius: BorderRadius.circular(12.r),
           boxShadow: isSelected
               ? [
-            BoxShadow(
-              color: _primaryPurple.withValues(alpha: 0.35),
-              blurRadius: 8,
-              offset: const Offset(0, 3),
-            ),
-          ]
+                  BoxShadow(
+                    color: _primaryPurple.withValues(alpha: 0.35),
+                    blurRadius: 8,
+                    offset: const Offset(0, 3),
+                  ),
+                ]
               : null,
         ),
         child: Row(
@@ -747,7 +819,7 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
                                       decoration: BoxDecoration(
                                         color: _greenBadgeBg,
                                         borderRadius:
-                                        BorderRadius.circular(5.r),
+                                            BorderRadius.circular(5.r),
                                       ),
                                       child: Text(
                                         discountBadge,
@@ -825,15 +897,15 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
                         ),
                         child: isSelected
                             ? Center(
-                          child: Container(
-                            width: 11.w,
-                            height: 11.w,
-                            decoration: const BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: _primaryPurple,
-                            ),
-                          ),
-                        )
+                                child: Container(
+                                  width: 11.w,
+                                  height: 11.w,
+                                  decoration: const BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: _primaryPurple,
+                                  ),
+                                ),
+                              )
                             : null,
                       ),
                     ],
@@ -1069,7 +1141,7 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
                 Expanded(
                   child: Container(
                     padding:
-                    EdgeInsets.symmetric(horizontal: 10.w, vertical: 8.h),
+                        EdgeInsets.symmetric(horizontal: 10.w, vertical: 8.h),
                     decoration: BoxDecoration(
                       color: const Color(0xFFF1F3FE),
                       borderRadius: BorderRadius.circular(13.r),
@@ -1136,7 +1208,7 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
           height: 38.w.clamp(35.0, 42.0),
           decoration: BoxDecoration(
             color:
-            isEnabled ? const Color(0xFFF1F5F9) : const Color(0xFFF8FAFC),
+                isEnabled ? const Color(0xFFF1F5F9) : const Color(0xFFF8FAFC),
             shape: BoxShape.circle,
             border: Border.all(
               color: isEnabled
@@ -1149,7 +1221,7 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
             child: Icon(
               isPlus ? Icons.add_rounded : Icons.remove_rounded,
               color:
-              isEnabled ? const Color(0xFF334155) : const Color(0xFFCBD5E1),
+                  isEnabled ? const Color(0xFF334155) : const Color(0xFFCBD5E1),
               size: 20.sp.clamp(18.0, 22.0),
             ),
           ),
@@ -1250,7 +1322,7 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
 
     return GestureDetector(
       onTap: onTap ??
-              () {
+          () {
             setState(() => _selectedTeamDuration = index);
             controller.setTeamDuration(index);
           },
@@ -1290,21 +1362,21 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
                     shape: BoxShape.circle,
                     border: Border.all(
                       color:
-                      selected ? _primaryPurple : const Color(0xFFCBD5E1),
+                          selected ? _primaryPurple : const Color(0xFFCBD5E1),
                       width: 1.8.w,
                     ),
                   ),
                   child: selected
                       ? Center(
-                    child: Container(
-                      width: 8.w,
-                      height: 8.w,
-                      decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: _primaryPurple,
-                      ),
-                    ),
-                  )
+                          child: Container(
+                            width: 8.w,
+                            height: 8.w,
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: _primaryPurple,
+                            ),
+                          ),
+                        )
                       : null,
                 ),
               ],
@@ -1622,7 +1694,7 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
                     Container(
                       width: double.infinity,
                       padding:
-                      EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                          EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                       decoration: BoxDecoration(
                         color: const Color(0xFFDCFCE7),
                         borderRadius: BorderRadius.circular(6.r),
@@ -1723,7 +1795,7 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
     final rest = str.substring(0, str.length - 3);
     final formattedRest = rest.replaceAllMapped(
       RegExp(r'(\d)(?=(\d\d)+$)'),
-          (Match m) => '${m[1]},',
+      (Match m) => '${m[1]},',
     );
     return '$formattedRest,$lastThree';
   }
@@ -1877,7 +1949,7 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
                         child: const CircularProgressIndicator(
                           strokeWidth: 2.2,
                           valueColor:
-                          AlwaysStoppedAnimation<Color>(Colors.white),
+                              AlwaysStoppedAnimation<Color>(Colors.white),
                         ),
                       ),
                       SizedBox(width: 10.w),
@@ -1942,7 +2014,7 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
   void _showPromoCodeBottomSheet() {
     controller.fetchEligibleCoupons();
     final TextEditingController promoController =
-    TextEditingController(text: controller.appliedPromoCode.value ?? "");
+        TextEditingController(text: controller.appliedPromoCode.value ?? "");
 
     showModalBottomSheet(
       context: context,
@@ -1962,7 +2034,8 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
                 constraints: BoxConstraints(maxHeight: maxHeight),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+                  borderRadius:
+                      BorderRadius.vertical(top: Radius.circular(24.r)),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withValues(alpha: 0.1),
@@ -2052,7 +2125,7 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
                                     child: TextField(
                                       controller: promoController,
                                       textCapitalization:
-                                      TextCapitalization.characters,
+                                          TextCapitalization.characters,
                                       onChanged: (_) => setSheetState(() {}),
                                       style: TextStyle(
                                         fontSize: 13.5.sp,
@@ -2098,9 +2171,10 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
                             final bool isApplying =
                                 controller.isApplyingCoupon.value;
                             final String typedCode =
-                            promoController.text.trim().toUpperCase();
-                            final String? appliedCode =
-                                controller.appliedPromoCode.value?.toUpperCase();
+                                promoController.text.trim().toUpperCase();
+                            final String? appliedCode = controller
+                                .appliedPromoCode.value
+                                ?.toUpperCase();
                             final bool isThisCodeApplied =
                                 appliedCode != null &&
                                     appliedCode.isNotEmpty &&
@@ -2118,67 +2192,67 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
                                   ),
                                   elevation: 0,
                                   padding:
-                                  EdgeInsets.symmetric(horizontal: 16.w),
+                                      EdgeInsets.symmetric(horizontal: 16.w),
                                 ),
                                 onPressed: isApplying
                                     ? null
                                     : () async {
-                                  if (isThisCodeApplied) {
-                                    HapticFeedback.lightImpact();
-                                    controller.removePromoCode();
-                                    promoController.clear();
-                                    setSheetState(() {});
-                                    return;
-                                  }
-                                  if (typedCode.isEmpty) {
-                                    controller.showTopWhiteMessage(
-                                        "Please enter a valid coupon code");
-                                    return;
-                                  }
-                                  final success = await controller
-                                      .applyPromoCode(typedCode);
-                                  if (success && ctx.mounted) {
-                                    Navigator.pop(ctx);
-                                  }
-                                },
+                                        if (isThisCodeApplied) {
+                                          HapticFeedback.lightImpact();
+                                          controller.removePromoCode();
+                                          promoController.clear();
+                                          setSheetState(() {});
+                                          return;
+                                        }
+                                        if (typedCode.isEmpty) {
+                                          controller.showTopWhiteMessage(
+                                              "Please enter a valid coupon code");
+                                          return;
+                                        }
+                                        final success = await controller
+                                            .applyPromoCode(typedCode);
+                                        if (success && ctx.mounted) {
+                                          Navigator.pop(ctx);
+                                        }
+                                      },
                                 child: isApplying &&
-                                    ((controller.applyingCouponCode.value ??
-                                        '') ==
-                                        typedCode ||
-                                        controller.applyingCouponCode
-                                            .value ==
-                                            null)
+                                        ((controller.applyingCouponCode.value ??
+                                                    '') ==
+                                                typedCode ||
+                                            controller
+                                                    .applyingCouponCode.value ==
+                                                null)
                                     ? SizedBox(
-                                  width: 18.w,
-                                  height: 18.w,
-                                  child: const CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: Colors.white,
-                                  ),
-                                )
+                                        width: 18.w,
+                                        height: 18.w,
+                                        child: const CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          color: Colors.white,
+                                        ),
+                                      )
                                     : Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    if (isThisCodeApplied) ...[
-                                      Icon(
-                                        Icons.check_rounded,
-                                        color: Colors.white,
-                                        size: 16.sp,
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          if (isThisCodeApplied) ...[
+                                            Icon(
+                                              Icons.check_rounded,
+                                              color: Colors.white,
+                                              size: 16.sp,
+                                            ),
+                                            SizedBox(width: 4.w),
+                                          ],
+                                          Text(
+                                            isThisCodeApplied
+                                                ? "Applied"
+                                                : "Apply",
+                                            style: TextStyle(
+                                              fontSize: 13.5.sp,
+                                              fontFamily: FontFamily.interBold,
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                      SizedBox(width: 4.w),
-                                    ],
-                                    Text(
-                                      isThisCodeApplied
-                                          ? "Applied"
-                                          : "Apply",
-                                      style: TextStyle(
-                                        fontSize: 13.5.sp,
-                                        fontFamily: FontFamily.interBold,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ],
-                                ),
                               ),
                             );
                           }),
@@ -2234,19 +2308,18 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
                           itemBuilder: (context, index) {
                             final coupon = controller.eligibleCoupons[index];
                             final String couponCode =
-                            (coupon.code ?? '').trim().toUpperCase();
+                                (coupon.code ?? '').trim().toUpperCase();
                             final bool isApplied =
                                 controller.appliedPromoCode.value != null &&
                                     controller.appliedPromoCode.value!
-                                        .toUpperCase() ==
+                                            .toUpperCase() ==
                                         couponCode;
                             final bool isEligible = coupon.eligible == true;
                             final bool isThisItemApplying =
                                 controller.isApplyingCoupon.value &&
-                                    (controller.applyingCouponCode.value ??
-                                        '')
-                                        .trim()
-                                        .toUpperCase() ==
+                                    (controller.applyingCouponCode.value ?? '')
+                                            .trim()
+                                            .toUpperCase() ==
                                         couponCode;
 
                             return AnimatedContainer(
@@ -2256,15 +2329,15 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
                                 color: isApplied
                                     ? const Color(0xFFF0FDF4)
                                     : (isEligible
-                                    ? _lightPillBg
-                                    : const Color(0xFFF8FAFC)),
+                                        ? _lightPillBg
+                                        : const Color(0xFFF8FAFC)),
                                 borderRadius: BorderRadius.circular(14.r),
                                 border: Border.all(
                                   color: isApplied
                                       ? const Color(0xFF86EFAC)
                                       : (isEligible
-                                      ? const Color(0xFFDCD7FE)
-                                      : const Color(0xFFE2E8F0)),
+                                          ? const Color(0xFFDCD7FE)
+                                          : const Color(0xFFE2E8F0)),
                                   width: isApplied ? 1.4 : 1.0,
                                 ),
                               ),
@@ -2278,8 +2351,8 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
                                       color: isApplied
                                           ? const Color(0xFFDCFCE7)
                                           : (isEligible
-                                          ? const Color(0xFFE0E7FF)
-                                          : const Color(0xFFF1F5F9)),
+                                              ? const Color(0xFFE0E7FF)
+                                              : const Color(0xFFF1F5F9)),
                                       shape: BoxShape.circle,
                                     ),
                                     child: Icon(
@@ -2290,29 +2363,29 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
                                       color: isApplied
                                           ? const Color(0xFF16A34A)
                                           : (isEligible
-                                          ? _primaryPurple
-                                          : const Color(0xFF94A3B8)),
+                                              ? _primaryPurple
+                                              : const Color(0xFF94A3B8)),
                                     ),
                                   ),
                                   SizedBox(width: 10.w),
                                   Expanded(
                                     child: Column(
                                       crossAxisAlignment:
-                                      CrossAxisAlignment.start,
+                                          CrossAxisAlignment.start,
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
                                         Wrap(
                                           spacing: 6.w,
                                           runSpacing: 4.h,
                                           crossAxisAlignment:
-                                          WrapCrossAlignment.center,
+                                              WrapCrossAlignment.center,
                                           children: [
                                             Text(
                                               coupon.code ?? '',
                                               style: TextStyle(
                                                 fontSize: 13.5.sp,
                                                 fontFamily:
-                                                FontFamily.interBold,
+                                                    FontFamily.interBold,
                                                 color: isEligible || isApplied
                                                     ? _textDark
                                                     : const Color(0xFF94A3B8),
@@ -2327,24 +2400,25 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
                                                 color: isApplied
                                                     ? const Color(0xFFDCFCE7)
                                                     : (isEligible
-                                                    ? const Color(0xFFE0E7FF)
-                                                    : const Color(
-                                                    0xFFF1F5F9)),
+                                                        ? const Color(
+                                                            0xFFE0E7FF)
+                                                        : const Color(
+                                                            0xFFF1F5F9)),
                                                 borderRadius:
-                                                BorderRadius.circular(6.r),
+                                                    BorderRadius.circular(6.r),
                                               ),
                                               child: Text(
                                                 coupon.discountDescription,
                                                 style: TextStyle(
                                                   fontSize: 10.sp,
                                                   fontFamily:
-                                                  FontFamily.interBold,
+                                                      FontFamily.interBold,
                                                   color: isApplied
                                                       ? const Color(0xFF16A34A)
                                                       : (isEligible
-                                                      ? _primaryPurple
-                                                      : const Color(
-                                                      0xFF94A3B8)),
+                                                          ? _primaryPurple
+                                                          : const Color(
+                                                              0xFF94A3B8)),
                                                 ),
                                               ),
                                             ),
@@ -2359,7 +2433,7 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
                                             style: TextStyle(
                                               fontSize: 11.sp,
                                               fontFamily:
-                                              FontFamily.interMedium,
+                                                  FontFamily.interMedium,
                                               color: const Color(0xFFEF4444),
                                             ),
                                           )
@@ -2372,7 +2446,7 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
                                             style: TextStyle(
                                               fontSize: 11.sp,
                                               fontFamily:
-                                              FontFamily.interRegular,
+                                                  FontFamily.interRegular,
                                               color: _textSecondary,
                                             ),
                                           ),
@@ -2397,7 +2471,7 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
                                         decoration: BoxDecoration(
                                           color: Colors.white,
                                           borderRadius:
-                                          BorderRadius.circular(8.r),
+                                              BorderRadius.circular(8.r),
                                           border: Border.all(
                                             color: const Color(0xFFEF4444),
                                           ),
@@ -2416,7 +2490,7 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
                                               style: TextStyle(
                                                 fontSize: 10.5.sp,
                                                 fontFamily:
-                                                FontFamily.interBold,
+                                                    FontFamily.interBold,
                                                 color: const Color(0xFFEF4444),
                                               ),
                                             ),
@@ -2428,24 +2502,24 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
                                     GestureDetector(
                                       behavior: HitTestBehavior.opaque,
                                       onTap: (controller
-                                          .isApplyingCoupon.value ||
-                                          !isEligible)
+                                                  .isApplyingCoupon.value ||
+                                              !isEligible)
                                           ? (!isEligible
-                                          ? () => controller
-                                          .showTopWhiteMessage(coupon
-                                          .formattedIneligibleReason)
-                                          : null)
+                                              ? () => controller
+                                                  .showTopWhiteMessage(coupon
+                                                      .formattedIneligibleReason)
+                                              : null)
                                           : () async {
-                                        HapticFeedback.lightImpact();
-                                        final ok = await controller
-                                            .applyCoupon(coupon);
-                                        if (ok && ctx.mounted) {
-                                          Navigator.pop(ctx);
-                                        }
-                                      },
+                                              HapticFeedback.lightImpact();
+                                              final ok = await controller
+                                                  .applyCoupon(coupon);
+                                              if (ok && ctx.mounted) {
+                                                Navigator.pop(ctx);
+                                              }
+                                            },
                                       child: AnimatedContainer(
                                         duration:
-                                        const Duration(milliseconds: 200),
+                                            const Duration(milliseconds: 200),
                                         padding: EdgeInsets.symmetric(
                                           horizontal: 12.w,
                                           vertical: 6.h,
@@ -2453,37 +2527,34 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
                                         decoration: BoxDecoration(
                                           color: isThisItemApplying
                                               ? _primaryPurple.withValues(
-                                              alpha: 0.8)
+                                                  alpha: 0.8)
                                               : (isEligible
-                                              ? _primaryPurple
-                                              : const Color(0xFFE2E8F0)),
+                                                  ? _primaryPurple
+                                                  : const Color(0xFFE2E8F0)),
                                           borderRadius:
-                                          BorderRadius.circular(8.r),
+                                              BorderRadius.circular(8.r),
                                         ),
                                         child: isThisItemApplying
                                             ? SizedBox(
-                                          width: 14.w,
-                                          height: 14.w,
-                                          child:
-                                          const CircularProgressIndicator(
-                                            strokeWidth: 2,
-                                            color: Colors.white,
-                                          ),
-                                        )
+                                                width: 14.w,
+                                                height: 14.w,
+                                                child:
+                                                    const CircularProgressIndicator(
+                                                  strokeWidth: 2,
+                                                  color: Colors.white,
+                                                ),
+                                              )
                                             : Text(
-                                          isEligible
-                                              ? "APPLY"
-                                              : "LOCKED",
-                                          style: TextStyle(
-                                            fontSize: 11.sp,
-                                            fontFamily:
-                                            FontFamily.interBold,
-                                            color: isEligible
-                                                ? Colors.white
-                                                : const Color(
-                                                0xFF94A3B8),
-                                          ),
-                                        ),
+                                                isEligible ? "APPLY" : "LOCKED",
+                                                style: TextStyle(
+                                                  fontSize: 11.sp,
+                                                  fontFamily:
+                                                      FontFamily.interBold,
+                                                  color: isEligible
+                                                      ? Colors.white
+                                                      : const Color(0xFF94A3B8),
+                                                ),
+                                              ),
                                       ),
                                     ),
                                 ],
@@ -2861,7 +2932,7 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
     Get.dialog(
       Dialog(
         shape:
-        RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
         child: Padding(
           padding: EdgeInsets.all(20.w),
           child: Column(
