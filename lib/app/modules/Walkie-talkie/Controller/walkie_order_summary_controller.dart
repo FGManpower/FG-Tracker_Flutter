@@ -27,6 +27,7 @@ class WalkieOrderSummaryController extends GetxController {
 
   final RxDouble dynamicDiscount = 0.0.obs;
   final RxnString dynamicCouponCode = RxnString();
+  final RxBool userExplicitlyAppliedCoupon = false.obs;
 
   WalkieOrderSummaryController([WalkiePaymentOrderModel? initialOrder]) {
     final passedOrder = initialOrder ??
@@ -39,10 +40,18 @@ class WalkieOrderSummaryController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    if (order.value.appliedCouponCode != null &&
-        order.value.appliedCouponCode!.isNotEmpty) {
-      dynamicCouponCode.value = order.value.appliedCouponCode;
+    final bool hasInitialCoupon = (order.value.appliedCouponCode != null &&
+        order.value.appliedCouponCode!.trim().isNotEmpty &&
+        order.value.couponDiscount > 0);
+
+    userExplicitlyAppliedCoupon.value = hasInitialCoupon;
+
+    if (hasInitialCoupon) {
+      dynamicCouponCode.value = order.value.appliedCouponCode!.trim();
       dynamicDiscount.value = order.value.couponDiscount.toDouble();
+    } else {
+      dynamicCouponCode.value = null;
+      dynamicDiscount.value = 0.0;
     }
     fetchOrderSummary();
     fetchCoupons();
@@ -71,28 +80,41 @@ class WalkieOrderSummaryController extends GetxController {
       summaryData.value?.pricing?.subtotal ?? order.value.planAmount;
 
   num get discountAmount {
-    if (summaryData.value?.pricing?.discountAmount != null) {
-      return summaryData.value!.pricing!.discountAmount!;
+    if (!userExplicitlyAppliedCoupon.value) return 0;
+    if (summaryData.value != null) {
+      if (summaryData.value?.couponApplied == true) {
+        return summaryData.value?.pricing?.discountAmount ?? 0;
+      }
+      return 0;
     }
-    if (appliedCouponData.value?.pricing?.discountAmount != null) {
-      return appliedCouponData.value!.pricing!.discountAmount!;
+    if (appliedCouponData.value != null) {
+      return appliedCouponData.value?.pricing?.discountAmount ?? 0;
     }
-    if (dynamicDiscount.value > 0) {
+    if (dynamicCouponCode.value != null &&
+        dynamicCouponCode.value!.isNotEmpty &&
+        dynamicDiscount.value > 0) {
       return dynamicDiscount.value;
     }
-    return order.value.couponDiscount;
+    if (order.value.appliedCouponCode != null &&
+        order.value.appliedCouponCode!.isNotEmpty &&
+        order.value.couponDiscount > 0) {
+      return order.value.couponDiscount;
+    }
+    return 0;
   }
 
   num get amountAfterDiscount =>
       summaryData.value?.pricing?.amountAfterDiscount ??
-      (planAmount - discountAmount > 0 ? planAmount - discountAmount : 0);
+      (planAmount - (isCouponApplied ? discountAmount : 0) > 0
+          ? planAmount - (isCouponApplied ? discountAmount : 0)
+          : 0);
 
   num get gstPercent => summaryData.value?.pricing?.gstPercent ?? 0;
 
   num get gstAmount => summaryData.value?.pricing?.gstAmount ?? 0;
 
   num get totalSaving =>
-      summaryData.value?.pricing?.totalSaving ?? discountAmount;
+      summaryData.value?.pricing?.totalSaving ?? (isCouponApplied ? discountAmount : 0);
 
   num get totalPayable {
     if (summaryData.value?.pricing?.finalAmount != null) {
@@ -101,21 +123,35 @@ class WalkieOrderSummaryController extends GetxController {
     if (appliedCouponData.value?.pricing?.finalAmount != null) {
       return appliedCouponData.value!.pricing!.finalAmount!;
     }
-    final num total = planAmount - discountAmount;
+    final num total = planAmount - (isCouponApplied ? discountAmount : 0);
     return total < 0 ? 0 : total;
   }
 
-  bool get hasDiscount => discountAmount > 0;
+  bool get isCouponApplied {
+    if (!userExplicitlyAppliedCoupon.value) return false;
+    if (summaryData.value != null) {
+      return summaryData.value?.couponApplied == true &&
+          (summaryData.value?.pricing?.discountAmount ?? 0) > 0;
+    }
+    if (appliedCouponData.value != null) {
+      return (appliedCouponData.value?.pricing?.discountAmount ?? 0) > 0;
+    }
+    final code = dynamicCouponCode.value ?? order.value.appliedCouponCode;
+    return (code != null && code.isNotEmpty) &&
+        (dynamicDiscount.value > 0 || order.value.couponDiscount > 0);
+  }
+
+  bool get hasDiscount => isCouponApplied && discountAmount > 0;
+
   bool get hasGst => gstAmount > 0;
 
-  String? get currentPromoCode =>
-      summaryData.value?.coupon?.code ??
-      dynamicCouponCode.value ??
-      order.value.appliedCouponCode;
-
-  bool get isCouponApplied =>
-      summaryData.value?.couponApplied == true ||
-      (currentPromoCode != null && currentPromoCode!.isNotEmpty);
+  String? get currentPromoCode {
+    if (!isCouponApplied) return null;
+    return summaryData.value?.coupon?.code ??
+        appliedCouponData.value?.coupon?.code ??
+        dynamicCouponCode.value ??
+        order.value.appliedCouponCode;
+  }
 
   String formatCurrency(num amount) {
     final isDecimal = amount is double && amount != amount.roundToDouble();
@@ -173,7 +209,9 @@ class WalkieOrderSummaryController extends GetxController {
       isLoadingSummary.value = true;
       final int planId = order.value.plan?.id ?? (order.value.isTeam ? 4 : 1);
       final int seats = order.value.isTeam ? order.value.memberCount : 1;
-      final String? couponCode = couponCodeOverride ?? currentPromoCode;
+      final String? couponCode = couponCodeOverride != null
+          ? (couponCodeOverride.trim().isEmpty ? null : couponCodeOverride.trim())
+          : (userExplicitlyAppliedCoupon.value ? currentPromoCode : null);
 
       final response = await WalkiePlanRepo.getOrderSummary(
         planId: planId,
@@ -184,12 +222,16 @@ class WalkieOrderSummaryController extends GetxController {
       if (response.status == true && response.data != null) {
         summaryData.value = response.data;
         errorMessage.value = '';
-        if (response.data?.coupon?.code != null) {
+        if (userExplicitlyAppliedCoupon.value &&
+            response.data?.couponApplied == true &&
+            response.data?.coupon?.code != null &&
+            (response.data?.pricing?.discountAmount ?? 0) > 0) {
           dynamicCouponCode.value = response.data!.coupon!.code;
-        }
-        if (response.data?.pricing?.discountAmount != null) {
           dynamicDiscount.value =
               response.data!.pricing!.discountAmount!.toDouble();
+        } else if (!userExplicitlyAppliedCoupon.value) {
+          dynamicCouponCode.value = null;
+          dynamicDiscount.value = 0.0;
         }
       } else {
         if (summaryData.value == null) {
@@ -237,6 +279,7 @@ class WalkieOrderSummaryController extends GetxController {
     try {
       isApplyingCoupon.value = true;
       applyingCouponCode.value = cleanCode;
+      userExplicitlyAppliedCoupon.value = true;
 
       final int planId = order.value.plan?.id ?? (order.value.isTeam ? 4 : 1);
       final int seats = order.value.isTeam ? order.value.memberCount : 1;
@@ -339,6 +382,7 @@ class WalkieOrderSummaryController extends GetxController {
   }
 
   void removeCoupon() {
+    userExplicitlyAppliedCoupon.value = false;
     appliedCouponData.value = null;
     selectedCoupon.value = null;
     dynamicCouponCode.value = null;

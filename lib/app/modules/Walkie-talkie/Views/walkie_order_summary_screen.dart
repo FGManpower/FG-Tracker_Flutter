@@ -1,7 +1,9 @@
+import 'package:fgtracker/app/Model/walkie_coupon_model.dart';
 import 'package:fgtracker/app/Model/walkie_payment_order_model.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Controller/walkie_order_summary_controller.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:skeletonizer/skeletonizer.dart';
@@ -81,10 +83,8 @@ class _WalkieOrderSummaryScreenState extends State<WalkieOrderSummaryScreen> {
 
                             SizedBox(height: 14.h),
 
-                            // Card 2: Promo / Coupon Code Section
+                            // Card 2: Applied Promo / Coupon Code Section (Only shown when applied)
                             _buildPromoCodeCard(),
-
-                            SizedBox(height: 14.h),
 
                             // Card 3: Payment Details Summary Card
                             _buildPaymentDetailsCard(),
@@ -602,22 +602,27 @@ class _WalkieOrderSummaryScreenState extends State<WalkieOrderSummaryScreen> {
   }
 
   // ==========================================
-  // CARD 2: PROMO / COUPON CODE SECTION
+  // CARD 2: APPLIED PROMO / COUPON CODE SECTION (Only shown when applied)
   // ==========================================
   Widget _buildPromoCodeCard() {
     return Obx(() {
-      final String? code = controller.currentPromoCode;
       final bool isApplied = controller.isCouponApplied;
+      if (!isApplied) {
+        return const SizedBox.shrink();
+      }
+
+      final String? code = controller.currentPromoCode;
       final num discount = controller.discountAmount;
 
       return Container(
         width: double.infinity,
+        margin: EdgeInsets.only(bottom: 14.h),
         padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16.r),
           border: Border.all(
-            color: isApplied ? const Color(0xFF86EFAC) : _cardBorder,
+            color: const Color(0xFF86EFAC),
           ),
           boxShadow: [
             BoxShadow(
@@ -632,16 +637,14 @@ class _WalkieOrderSummaryScreenState extends State<WalkieOrderSummaryScreen> {
             Container(
               width: 38.w,
               height: 38.w,
-              decoration: BoxDecoration(
-                color: isApplied ? _greenBg : _lightPillBg,
+              decoration: const BoxDecoration(
+                color: _greenBg,
                 shape: BoxShape.circle,
               ),
               child: Icon(
-                isApplied
-                    ? Icons.check_circle_outline_rounded
-                    : Icons.local_offer_outlined,
+                Icons.check_circle_outline_rounded,
                 size: 19.sp,
-                color: isApplied ? _greenText : _primaryPurple,
+                color: _greenText,
               ),
             ),
             SizedBox(width: 12.w),
@@ -651,20 +654,18 @@ class _WalkieOrderSummaryScreenState extends State<WalkieOrderSummaryScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    isApplied && code != null && code.isNotEmpty
+                    code != null && code.isNotEmpty
                         ? "Coupon Applied ($code)"
-                        : "Have a Promo Code?",
+                        : "Coupon Applied",
                     style: TextStyle(
                       fontSize: 13.sp,
                       fontFamily: FontFamily.interBold,
-                      color: isApplied ? _greenText : _textDark,
+                      color: _greenText,
                     ),
                   ),
                   SizedBox(height: 2.h),
                   Text(
-                    isApplied
-                        ? "You saved ₹${controller.formatCurrency(discount)} with this coupon"
-                        : "Apply code to get additional discount",
+                    "You saved ₹${controller.formatCurrency(discount)} with this coupon",
                     style: TextStyle(
                       fontSize: 11.sp,
                       fontFamily: FontFamily.interRegular,
@@ -675,18 +676,25 @@ class _WalkieOrderSummaryScreenState extends State<WalkieOrderSummaryScreen> {
               ),
             ),
             SizedBox(width: 8.w),
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
-              decoration: BoxDecoration(
-                color: isApplied ? _greenBg : const Color(0xFFF1F3FE),
-                borderRadius: BorderRadius.circular(8.r),
-              ),
-              child: Text(
-                isApplied ? "Applied" : "Apply",
-                style: TextStyle(
-                  fontSize: 12.sp,
-                  fontFamily: FontFamily.interBold,
-                  color: isApplied ? _greenText : _primaryPurple,
+            GestureDetector(
+              onTap: () {
+                HapticFeedback.lightImpact();
+                controller.removeCoupon();
+              },
+              child: Container(
+                padding:
+                    EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFEE2E2),
+                  borderRadius: BorderRadius.circular(8.r),
+                ),
+                child: Text(
+                  "Remove",
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    fontFamily: FontFamily.interBold,
+                    color: const Color(0xFFDC2626),
+                  ),
                 ),
               ),
             ),
@@ -1032,6 +1040,500 @@ class _WalkieOrderSummaryScreenState extends State<WalkieOrderSummaryScreen> {
         ),
       );
     });
+  }
+
+  // ==========================================
+  // PROMO CODE BOTTOM SHEET
+  // ==========================================
+  void _showPromoCodeBottomSheet(BuildContext context) {
+    controller.fetchCoupons();
+    final TextEditingController promoController =
+        TextEditingController(text: controller.currentPromoCode ?? "");
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        final double maxHeight = MediaQuery.of(ctx).size.height * 0.85;
+
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(ctx).viewInsets.bottom,
+              ),
+              child: Container(
+                constraints: BoxConstraints(maxHeight: maxHeight),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius:
+                      BorderRadius.vertical(top: Radius.circular(24.r)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.1),
+                      blurRadius: 20,
+                      offset: const Offset(0, -4),
+                    ),
+                  ],
+                ),
+                child: SingleChildScrollView(
+                  padding: EdgeInsets.fromLTRB(20.w, 14.h, 20.w, 24.h),
+                  physics: const ClampingScrollPhysics(),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Drag handle
+                      Center(
+                        child: Container(
+                          width: 40.w,
+                          height: 4.h,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFD1D5DB),
+                            borderRadius: BorderRadius.circular(2.r),
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 14.h),
+
+                      // Title Bar
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.local_offer_rounded,
+                                color: _primaryPurple,
+                                size: 20.sp,
+                              ),
+                              SizedBox(width: 8.w),
+                              Text(
+                                "Coupons & Offers",
+                                style: TextStyle(
+                                  fontSize: 17.sp,
+                                  fontFamily: FontFamily.interBold,
+                                  color: _textDark,
+                                ),
+                              ),
+                            ],
+                          ),
+                          GestureDetector(
+                            onTap: () => Navigator.pop(ctx),
+                            child: Container(
+                              padding: EdgeInsets.all(5.w),
+                              decoration: const BoxDecoration(
+                                color: Color(0xFFF3F4F6),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                Icons.close_rounded,
+                                size: 18.sp,
+                                color: _textSecondary,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 14.h),
+
+                      // Promo Code Input Box + Apply/Remove Button
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Container(
+                              height: 46.h,
+                              padding: EdgeInsets.symmetric(horizontal: 12.w),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF9FAFB),
+                                borderRadius: BorderRadius.circular(12.r),
+                                border: Border.all(
+                                  color: const Color(0xFFE2E8F0),
+                                ),
+                              ),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: TextField(
+                                      controller: promoController,
+                                      textCapitalization:
+                                          TextCapitalization.characters,
+                                      onChanged: (_) => setSheetState(() {}),
+                                      style: TextStyle(
+                                        fontSize: 13.5.sp,
+                                        fontFamily: FontFamily.interBold,
+                                        color: _textDark,
+                                        letterSpacing: 0.5,
+                                      ),
+                                      decoration: InputDecoration(
+                                        hintText: "Enter coupon code",
+                                        hintStyle: TextStyle(
+                                          fontSize: 12.5.sp,
+                                          color: const Color(0xFF94A3B8),
+                                          fontFamily: FontFamily.interRegular,
+                                          letterSpacing: 0,
+                                        ),
+                                        border: InputBorder.none,
+                                        isDense: true,
+                                        contentPadding: EdgeInsets.zero,
+                                      ),
+                                    ),
+                                  ),
+                                  if (promoController.text.isNotEmpty)
+                                    GestureDetector(
+                                      onTap: () {
+                                        promoController.clear();
+                                        setSheetState(() {});
+                                      },
+                                      child: Padding(
+                                        padding: EdgeInsets.all(4.w),
+                                        child: Icon(
+                                          Icons.cancel_rounded,
+                                          size: 16.sp,
+                                          color: const Color(0xFF94A3B8),
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: 10.w),
+                          Obx(() {
+                            final bool isApplying =
+                                controller.isApplyingCoupon.value;
+                            final String typedCode =
+                                promoController.text.trim().toUpperCase();
+                            final String? appliedCode =
+                                controller.currentPromoCode?.toUpperCase();
+                            final bool isThisCodeApplied =
+                                controller.isCouponApplied &&
+                                    appliedCode != null &&
+                                    appliedCode.isNotEmpty &&
+                                    typedCode == appliedCode;
+
+                            return SizedBox(
+                              height: 46.h,
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: isThisCodeApplied
+                                      ? const Color(0xFF16A34A)
+                                      : _primaryPurple,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12.r),
+                                  ),
+                                  elevation: 0,
+                                  padding:
+                                      EdgeInsets.symmetric(horizontal: 16.w),
+                                ),
+                                onPressed: isApplying
+                                    ? null
+                                    : () async {
+                                        if (isThisCodeApplied) {
+                                          HapticFeedback.lightImpact();
+                                          controller.removeCoupon();
+                                          promoController.clear();
+                                          setSheetState(() {});
+                                          return;
+                                        }
+                                        if (typedCode.isEmpty) {
+                                          controller.showTopWhiteMessage(
+                                              "Please enter a valid coupon code");
+                                          return;
+                                        }
+                                        final success = await controller
+                                            .applyPromoCode(typedCode);
+                                        if (success && ctx.mounted) {
+                                          Navigator.pop(ctx);
+                                        }
+                                      },
+                                child: isApplying &&
+                                        ((controller.applyingCouponCode.value ??
+                                                    '') ==
+                                                typedCode ||
+                                            controller
+                                                    .applyingCouponCode.value ==
+                                                null)
+                                    ? SizedBox(
+                                        width: 18.w,
+                                        height: 18.w,
+                                        child: const CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          color: Colors.white,
+                                        ),
+                                      )
+                                    : Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          if (isThisCodeApplied) ...[
+                                            Icon(
+                                              Icons.check_rounded,
+                                              color: Colors.white,
+                                              size: 16.sp,
+                                            ),
+                                            SizedBox(width: 4.w),
+                                          ],
+                                          Text(
+                                            isThisCodeApplied
+                                                ? "Applied"
+                                                : "Apply",
+                                            style: TextStyle(
+                                              fontSize: 13.5.sp,
+                                              fontFamily: FontFamily.interBold,
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                              ),
+                            );
+                          }),
+                        ],
+                      ),
+                      SizedBox(height: 18.h),
+
+                      // Available Coupons Header
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            "Available Coupons",
+                            style: TextStyle(
+                              fontSize: 14.sp,
+                              fontFamily: FontFamily.interBold,
+                              color: _textDark,
+                            ),
+                          ),
+                          Obx(() {
+                            if (controller.isLoadingCoupons.value) {
+                              return SizedBox(
+                                width: 14.w,
+                                height: 14.w,
+                                child: const CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: _primaryPurple,
+                                ),
+                              );
+                            }
+                            return const SizedBox.shrink();
+                          }),
+                        ],
+                      ),
+                      SizedBox(height: 10.h),
+
+                      // Coupons List
+                      Obx(() {
+                        final coupons = controller.eligibleCoupons;
+                        final bool isLoading =
+                            controller.isLoadingCoupons.value;
+
+                        if (isLoading && coupons.isEmpty) {
+                          return Padding(
+                            padding: EdgeInsets.symmetric(vertical: 24.h),
+                            child: Center(
+                              child: CircularProgressIndicator(
+                                color: _primaryPurple,
+                                strokeWidth: 2.5.w,
+                              ),
+                            ),
+                          );
+                        }
+
+                        if (coupons.isEmpty) {
+                          return Container(
+                            width: double.infinity,
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 16.w, vertical: 24.h),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF9FAFB),
+                              borderRadius: BorderRadius.circular(14.r),
+                              border:
+                                  Border.all(color: const Color(0xFFE2E8F0)),
+                            ),
+                            child: Column(
+                              children: [
+                                Icon(
+                                  Icons.local_offer_outlined,
+                                  size: 32.sp,
+                                  color: const Color(0xFF94A3B8),
+                                ),
+                                SizedBox(height: 8.h),
+                                Text(
+                                  "No coupons available at the moment",
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 13.sp,
+                                    fontFamily: FontFamily.interMedium,
+                                    color: _textSecondary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }
+
+                        return Column(
+                          children: List.generate(coupons.length, (index) {
+                            final coupon = coupons[index];
+                            final String couponCode =
+                                (coupon.code ?? '').toUpperCase();
+                            final String? appliedCode =
+                                controller.currentPromoCode?.toUpperCase();
+                            final bool isThisApplied =
+                                controller.isCouponApplied &&
+                                    appliedCode != null &&
+                                    appliedCode == couponCode;
+
+                            return Container(
+                              margin: EdgeInsets.only(bottom: 12.h),
+                              padding: EdgeInsets.all(14.w),
+                              decoration: BoxDecoration(
+                                color: isThisApplied
+                                    ? const Color(0xFFF0FDF4)
+                                    : Colors.white,
+                                borderRadius: BorderRadius.circular(14.r),
+                                border: Border.all(
+                                  color: isThisApplied
+                                      ? const Color(0xFF86EFAC)
+                                      : const Color(0xFFE2E8F0),
+                                  width: isThisApplied ? 1.5 : 1.0,
+                                ),
+                              ),
+                              child: Row(
+                                crossAxisAlignment:
+                                    CrossAxisAlignment.start,
+                                children: [
+                                  Container(
+                                    width: 36.w,
+                                    height: 36.w,
+                                    decoration: BoxDecoration(
+                                      color: isThisApplied
+                                          ? _greenBg
+                                          : const Color(0xFFEEF0FE),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Icon(
+                                      Icons.discount_rounded,
+                                      size: 18.sp,
+                                      color: isThisApplied
+                                          ? _greenText
+                                          : _primaryPurple,
+                                    ),
+                                  ),
+                                  SizedBox(width: 12.w),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            Text(
+                                              couponCode,
+                                              style: TextStyle(
+                                                fontSize: 14.sp,
+                                                fontFamily:
+                                                    FontFamily.interBold,
+                                                color: _textDark,
+                                                letterSpacing: 0.5,
+                                              ),
+                                            ),
+                                            if (coupon.discountDescription.isNotEmpty) ...[
+                                              SizedBox(width: 8.w),
+                                              Container(
+                                                padding: EdgeInsets.symmetric(
+                                                    horizontal: 6.w,
+                                                    vertical: 2.h),
+                                                decoration: BoxDecoration(
+                                                  color: _greenBg,
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          4.r),
+                                                ),
+                                                child: Text(
+                                                  coupon.discountDescription,
+                                                  style: TextStyle(
+                                                    fontSize: 10.sp,
+                                                    fontFamily:
+                                                        FontFamily.interBold,
+                                                    color: _greenText,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ],
+                                        ),
+                                        if (coupon.formattedExpiry.isNotEmpty) ...[
+                                          SizedBox(height: 3.h),
+                                          Text(
+                                            coupon.formattedExpiry,
+                                            style: TextStyle(
+                                              fontSize: 11.5.sp,
+                                              fontFamily:
+                                                  FontFamily.interRegular,
+                                              color: _textSecondary,
+                                              height: 1.3,
+                                            ),
+                                          ),
+                                        ],
+                                      ],
+                                    ),
+                                  ),
+                                  SizedBox(width: 8.w),
+                                  GestureDetector(
+                                    onTap: () async {
+                                      if (isThisApplied) {
+                                        HapticFeedback.lightImpact();
+                                        controller.removeCoupon();
+                                        promoController.clear();
+                                        setSheetState(() {});
+                                      } else {
+                                        final success = await controller
+                                            .applyCoupon(coupon);
+                                        if (success && ctx.mounted) {
+                                          Navigator.pop(ctx);
+                                        }
+                                      }
+                                    },
+                                    child: Container(
+                                      padding: EdgeInsets.symmetric(
+                                          horizontal: 10.w, vertical: 6.h),
+                                      decoration: BoxDecoration(
+                                        color: isThisApplied
+                                            ? _greenBg
+                                            : const Color(0xFFF1F3FE),
+                                        borderRadius:
+                                            BorderRadius.circular(8.r),
+                                      ),
+                                      child: Text(
+                                        isThisApplied ? "Remove" : "Apply",
+                                        style: TextStyle(
+                                          fontSize: 12.sp,
+                                          fontFamily: FontFamily.interBold,
+                                          color: isThisApplied
+                                              ? const Color(0xFFDC2626)
+                                              : _primaryPurple,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }),
+                        );
+                      }),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 
   // ==========================================

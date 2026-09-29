@@ -132,9 +132,19 @@ class TrackController extends GetxController {
   Future<bool> checkInternetConnection() async {
     try {
       final result = await InternetAddress.lookup('google.com')
-          .timeout(const Duration(milliseconds: 2000));
+          .timeout(const Duration(milliseconds: 2500));
       if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
         isOffline.value = false;
+        if (responseError.value.toLowerCase().contains('internet') ||
+            responseError.value.toLowerCase().contains('network') ||
+            responseError.value.toLowerCase().contains('connection')) {
+          responseError.value = "";
+        }
+        if (groupError.value.toLowerCase().contains('internet') ||
+            groupError.value.toLowerCase().contains('network') ||
+            groupError.value.toLowerCase().contains('connection')) {
+          groupError.value = "";
+        }
         return true;
       }
     } catch (_) {}
@@ -142,6 +152,41 @@ class TrackController extends GetxController {
     responseError.value = "No internet connection. Please check your network.";
     groupError.value = "No internet connection. Please check your network.";
     return false;
+  }
+
+  /// Unified retry when connectivity is restored or user taps 'Retry'
+  Future<void> retryAll() async {
+    isLoading.value = true;
+    isGroupLoading.value = true;
+    responseError.value = "";
+    groupError.value = "";
+
+    final bool hasNet = await checkInternetConnection();
+    if (!hasNet) {
+      isLoading.value = false;
+      isGroupLoading.value = false;
+      return;
+    }
+
+    isOffline.value = false;
+    responseError.value = "";
+    groupError.value = "";
+
+    _initSockets();
+
+    await Future.wait([
+      fetchGroupData(),
+      fetchTotalMembers(),
+      getCurrentLocationAndFetchUsers(),
+    ]);
+
+    _refreshMembersAndMap();
+
+    if (isGroupMode.value && selectedGroupId.value.isNotEmpty) {
+      await fetchGroupLocationData(selectedGroupId.value);
+    } else {
+      fitAllMembers();
+    }
   }
 
 

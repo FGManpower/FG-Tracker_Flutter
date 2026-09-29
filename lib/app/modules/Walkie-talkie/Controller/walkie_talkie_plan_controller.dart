@@ -612,6 +612,13 @@ class WalkieTalkiePlanController extends GetxController {
   void openPaymentScreen() {
     if (!hasPlans || isLoading) return;
 
+    final bool hasAppliedCoupon = (appliedPromoCode.value != null &&
+            appliedPromoCode.value!.trim().isNotEmpty) &&
+        couponDiscountAmount > 0;
+
+    final num effectivePlanAmount =
+        isTeam ? originalTotal : (activeIndividualPlan?.safePrice ?? 0);
+
     final order = WalkiePaymentOrderModel(
       plan: activePlan,
       isTeam: isTeam,
@@ -625,10 +632,13 @@ class WalkieTalkiePlanController extends GetxController {
               : 1),
       memberCount: effectiveMemberCount,
       ratePerMember: ratePerMember,
-      planAmount: originalTotal,
-      couponDiscount: couponDiscountAmount,
-      appliedCouponCode: appliedPromoCode.value,
-      totalPayable: discountedTotal,
+      planAmount: effectivePlanAmount,
+      couponDiscount: hasAppliedCoupon ? couponDiscountAmount : 0,
+      appliedCouponCode:
+          hasAppliedCoupon ? appliedPromoCode.value!.trim() : null,
+      totalPayable: hasAppliedCoupon
+          ? discountedTotal
+          : (effectivePlanAmount < 0 ? 0 : effectivePlanAmount),
       validTill: getValidTillDate(),
     );
 

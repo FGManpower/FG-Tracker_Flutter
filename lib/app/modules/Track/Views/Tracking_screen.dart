@@ -526,11 +526,7 @@ class TrackingScreen extends StatelessWidget {
                   ),
                   SizedBox(width: 6.w),
                   GestureDetector(
-                    onTap: () {
-                      controller.getCurrentLocationAndFetchUsers();
-                      controller.fetchGroupData();
-                      controller.fetchTotalMembers();
-                    },
+                    onTap: () => controller.retryAll(),
                     child: Container(
                       padding:
                           EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
@@ -1017,11 +1013,7 @@ class TrackingScreen extends StatelessWidget {
                 ),
                 SizedBox(height: 20.h),
                 GestureDetector(
-                  onTap: () {
-                    controller.getCurrentLocationAndFetchUsers();
-                    controller.fetchGroupData();
-                    controller.fetchTotalMembers();
-                  },
+                  onTap: () => controller.retryAll(),
                   child: Container(
                     padding:
                         EdgeInsets.symmetric(horizontal: 22.w, vertical: 10.h),
@@ -2097,7 +2089,7 @@ class TrackingScreen extends StatelessWidget {
                       ),
                       SizedBox(height: 14.h),
                       GestureDetector(
-                        onTap: () => controller.getUsersWithinRadius(),
+                        onTap: () => controller.retryAll(),
                         child: Container(
                           padding: EdgeInsets.symmetric(
                               horizontal: 16.w, vertical: 8.h),
@@ -2274,7 +2266,7 @@ class TrackingScreen extends StatelessWidget {
                       if (hasError || isOffline) ...[
                         SizedBox(height: 12.h),
                         GestureDetector(
-                          onTap: () => controller.fetchGroupData(),
+                          onTap: () => controller.retryAll(),
                           child: Container(
                             padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 7.h),
                             decoration: BoxDecoration(
