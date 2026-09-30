@@ -8,6 +8,7 @@ import 'package:get/get.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import '../../../Core/constant/const_res.dart';
 import '../../../Core/util/chatutil.dart';
+import '../../../Core/values/Dialog/Common_dialog.dart';
 import '../../../routes/app_pages.dart';
 import '../../Safe_Zone/views/safe_zone_view.dart';
 import '../../Safe_Zone/views/safety_dashboard_view.dart';
@@ -851,7 +852,17 @@ class _AllChatsBody extends StatelessWidget {
           title: "Delete Chat",
           isDestructive: true,
           onTap: () {
-            controller.deleteChat(chat);
+            CommonDialog.ConfirmationDialog(
+              title: "Delete Chat",
+              content: "Delete this conversation from your chat list?",
+              cancel: "No",
+              confirm: "Delete",
+              icon: Icons.delete_outline_rounded,
+              onConfirm: () {
+                Get.back();
+                controller.deleteChat(chat);
+              },
+            );
           },
         ),
       ],
