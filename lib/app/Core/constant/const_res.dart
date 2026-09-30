@@ -20,10 +20,10 @@ class ConstRes {
   static const String razorpayLiveKey = '';
 
   // Cashfree Credentials (for reference)
-  static const String paymentAppIdProd = '';
-  static const String paymentSecretKeyProd = '';
-  static const String paymentAppIdDev = '';
-  static const String paymentSecretKeyDev = '';
+  static const String paymentAppIdProd = 'rzp_test_ThoFEwOj0pMgTH';
+  static const String paymentSecretKeyProd = 'E0GZbrpaTrM37FAIJk8NXrKR';
+  static const String paymentAppIdDev = 'rzp_test_ThoFEwOj0pMgTH';
+  static const String paymentSecretKeyDev = 'E0GZbrpaTrM37FAIJk8NXrKR';
 
   // Active Key for Razorpay Package
   static const String activePaymentKey = razorpayTestKey;

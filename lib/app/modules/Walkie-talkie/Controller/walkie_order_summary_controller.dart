@@ -8,6 +8,7 @@ import 'package:fgtracker/app/Model/walkie_coupon_model.dart';
 import 'package:fgtracker/app/Model/walkie_create_order_model.dart';
 import 'package:fgtracker/app/Model/walkie_order_summary_model.dart';
 import 'package:fgtracker/app/Model/walkie_payment_order_model.dart';
+import 'package:fgtracker/app/modules/Walkie-talkie/Razorpay/Controller/razorpay_payment_controller.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Views/walkie_talkie_purchase_success_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -197,6 +198,8 @@ class WalkieOrderSummaryController extends GetxController {
   }
 
   String _parseErrorMessage(dynamic error) {
+    if (error == null) return "Something went wrong. Please try again.";
+
     if (error is DioException) {
       if (error.type == DioExceptionType.connectionError ||
           error.type == DioExceptionType.connectionTimeout ||
@@ -205,24 +208,60 @@ class WalkieOrderSummaryController extends GetxController {
           error.error is SocketException) {
         return "No internet connection. Please check your network.";
       }
-      if (error.response?.data is Map &&
-          error.response?.data['message'] != null) {
-        return error.response!.data['message'].toString();
+      if (error.response?.data != null) {
+        final data = error.response!.data;
+        if (data is Map) {
+          if (data['message'] != null &&
+              data['message'].toString().trim().isNotEmpty) {
+            return data['message'].toString().trim();
+          }
+          if (data['errors'] != null) {
+            final errors = data['errors'];
+            if (errors is Map) {
+              final msgs = errors.values
+                  .map((v) => v is List ? v.join("\n") : v.toString())
+                  .join("\n");
+              if (msgs.trim().isNotEmpty) return msgs.trim();
+            } else if (errors is List) {
+              return errors.join("\n");
+            }
+            return errors.toString();
+          }
+          if (data['error'] != null &&
+              data['error'].toString().trim().isNotEmpty) {
+            return data['error'].toString().trim();
+          }
+        } else if (data is String && data.trim().isNotEmpty) {
+          return data.trim();
+        }
       }
-      return "Unable to connect to server. Please try again.";
+      return error.message?.isNotEmpty == true
+          ? error.message!
+          : "Unable to connect to server. Please try again.";
     }
+
     if (error is SocketException) {
       return "No internet connection. Please check your network.";
     }
-    final str = error.toString().toLowerCase();
-    if (str.contains("socket") ||
-        str.contains("internet") ||
-        str.contains("connection") ||
-        str.contains("network") ||
-        str.contains("failed host lookup")) {
+
+    final str = error.toString().trim();
+    if (str.isEmpty) return "Something went wrong. Please try again.";
+
+    final lower = str.toLowerCase();
+    if (lower.contains("socket") ||
+        lower.contains("internet") ||
+        lower.contains("connection") ||
+        lower.contains("network") ||
+        lower.contains("failed host lookup") ||
+        lower.contains("connection refused")) {
       return "No internet connection. Please check your network.";
     }
-    return "Something went wrong. Please try again.";
+
+    if (str.startsWith("Exception: ")) {
+      return str.substring(11).trim();
+    }
+
+    return str;
   }
 
   Future<void> fetchOrderSummary({String? couponCodeOverride}) async {
@@ -361,30 +400,11 @@ class WalkieOrderSummaryController extends GetxController {
         }
         return true;
       } else {
-        // Fallback local discount simulation
-        num calculatedDiscount = 0;
-        if (cleanCode == 'SAVE20' || cleanCode == 'WELCOME20') {
-          calculatedDiscount = (planAmount * 0.20).round();
-        } else if (cleanCode == 'SPECIAL10' || cleanCode == 'WELCOME10') {
-          calculatedDiscount = (planAmount * 0.10).round();
-        } else if (cleanCode == 'FLAT150' || cleanCode == 'SAVE150') {
-          calculatedDiscount = 150;
-        } else {
-          calculatedDiscount = (planAmount * 0.15).round();
-        }
-
-        if (calculatedDiscount > planAmount) {
-          calculatedDiscount = planAmount;
-        }
-
-        dynamicCouponCode.value = cleanCode;
-        dynamicDiscount.value = calculatedDiscount.toDouble();
-
         if (!isSilent) {
           showTopWhiteMessage(
-              "Coupon '$cleanCode' applied! You saved ₹${formatCurrency(calculatedDiscount)}");
+              response.message ?? "Invalid or expired coupon code");
         }
-        return true;
+        return false;
       }
     } catch (e) {
       if (!isSilent) {
@@ -419,62 +439,10 @@ class WalkieOrderSummaryController extends GetxController {
     _razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, _handleExternalWallet);
   }
 
-  void _handlePaymentSuccess(PaymentSuccessResponse response) {
-    debugPrint("✅ Razorpay Payment Success: ${response.paymentId}");
+  Future<void> _handlePaymentSuccess(PaymentSuccessResponse response) async {
+    debugPrint("✅ [WalkieOrderSummaryController] Payment Success callback received: ${response.paymentId}");
     isProcessingPayment.value = false;
     HapticFeedback.heavyImpact();
-
-    String methodDesc = "Razorpay (UPI / Card)";
-    if (selectedPaymentMethod.value == 'upi') {
-      if (selectedUpiApp.value == 'gpay') {
-        methodDesc = "Google Pay (UPI)";
-      } else if (selectedUpiApp.value == 'phonepe') {
-        methodDesc = "PhonePe (UPI)";
-      } else if (selectedUpiApp.value == 'paytm') {
-        methodDesc = "Paytm (UPI)";
-      } else if (selectedUpiApp.value == 'bhim') {
-        methodDesc = "BHIM UPI";
-      } else if (selectedUpiApp.value == 'cred') {
-        methodDesc = "Cred (UPI)";
-      } else if (selectedUpiApp.value == 'amazonpay') {
-        methodDesc = "Amazon Pay (UPI)";
-      } else {
-        methodDesc = "UPI Payment";
-      }
-    } else if (selectedPaymentMethod.value == 'card') {
-      final cardTypeLabel = selectedCardType.value == 'credit' ? 'Credit Card' : 'Debit Card';
-      methodDesc = "$cardTypeLabel (${selectedCardNetwork.value.toUpperCase()})";
-    } else if (selectedPaymentMethod.value == 'netbanking') {
-      methodDesc = "NetBanking (${selectedBank.value.toUpperCase()})";
-    } else if (selectedPaymentMethod.value == 'wallet') {
-      methodDesc = "Wallet (${selectedWallet.value.capitalizeFirst})";
-    }
-
-    final String paymentIdStr = (response.paymentId != null && response.paymentId!.isNotEmpty)
-        ? response.paymentId!
-        : "pay_${DateTime.now().millisecondsSinceEpoch.toRadixString(36).toUpperCase()}";
-
-    final String nowFormatted = DateFormat('dd MMM yyyy, hh:mm a').format(DateTime.now());
-
-    final String? finalOrderId = response.orderId ??
-        createOrderData.value?.payment?.orderId ??
-        createOrderData.value?.razorpay?.orderId;
-
-    final num finalPaidAmount =
-        createOrderData.value?.pricing?.finalAmount ?? totalPayable;
-
-    // Navigate to purchase success screen with realistic payment metadata
-    Get.off(() => WalkieTalkiePurchaseSuccessScreen(
-          isTeam: order.value.isTeam || purchasedSeats > 1,
-          planTitle: planName,
-          memberCount: purchasedSeats,
-          validTill: order.value.validTill,
-          paymentId: paymentIdStr,
-          orderId: finalOrderId,
-          amountPaid: finalPaidAmount,
-          paymentMethod: methodDesc,
-          transactionTime: nowFormatted,
-        ));
   }
 
   void _handlePaymentError(PaymentFailureResponse response) {
@@ -695,11 +663,11 @@ class WalkieOrderSummaryController extends GetxController {
       final Map<String, dynamic> razorpayOptions = {
         'key': razorpayKey,
         'amount': amountInPaise,
-        'name': 'FG Tracker',
-        'description': '$planName ($durationName)',
+        'name': 'FG MANPOWER LLP',
+        'description': 'Walkie-Talkie Subscription',
         'currency': rzp?.currency ?? 'INR',
         if (rzp?.orderId != null && rzp!.orderId!.isNotEmpty)
-          'order_id': rzp.orderId!,
+          'order_id': rzp!.orderId!,
         'theme': {
           'color': '#5B4DF5',
         },
@@ -750,10 +718,52 @@ class WalkieOrderSummaryController extends GetxController {
         },
       };
 
-      debugPrint("🚀 [Razorpay] Opening Checkout with Key: $razorpayKey");
-      debugPrint("📦 [Razorpay] Payload: $razorpayOptions");
+      final razorpayController = Get.isRegistered<RazorpayPaymentController>()
+          ? Get.find<RazorpayPaymentController>()
+          : Get.put(RazorpayPaymentController());
 
-      _razorpay.open(razorpayOptions);
+      // Prepare user friendly payment method string
+      String methodDesc = "Razorpay Payment";
+      if (selectedPaymentMethod.value == 'upi') {
+        if (selectedUpiApp.value == 'gpay') {
+          methodDesc = "Google Pay (UPI)";
+        } else if (selectedUpiApp.value == 'phonepe') {
+          methodDesc = "PhonePe (UPI)";
+        } else if (selectedUpiApp.value == 'paytm') {
+          methodDesc = "Paytm (UPI)";
+        } else if (selectedUpiApp.value == 'bhim') {
+          methodDesc = "BHIM UPI";
+        } else if (selectedUpiApp.value == 'cred') {
+          methodDesc = "Cred (UPI)";
+        } else if (selectedUpiApp.value == 'amazonpay') {
+          methodDesc = "Amazon Pay (UPI)";
+        } else {
+          methodDesc = "UPI Payment";
+        }
+      } else if (selectedPaymentMethod.value == 'card') {
+        final cardTypeLabel =
+            selectedCardType.value == 'credit' ? 'Credit Card' : 'Debit Card';
+        methodDesc =
+            "$cardTypeLabel (${selectedCardNetwork.value.toUpperCase()})";
+      } else if (selectedPaymentMethod.value == 'netbanking') {
+        methodDesc = "NetBanking (${selectedBank.value.toUpperCase()})";
+      } else if (selectedPaymentMethod.value == 'wallet') {
+        methodDesc = "Wallet (${selectedWallet.value.capitalizeFirst})";
+      }
+
+      await razorpayController.openCheckoutMap(
+        optionsMap: razorpayOptions,
+        paymentId: payment?.id,
+        isTeamPlan: order.value.isTeam || purchasedSeats > 1,
+        planName: planName,
+        seats: purchasedSeats,
+        validity: order.value.validTill,
+        amount: (createOrderData.value?.pricing?.finalAmount ?? totalPayable).toDouble(),
+        method: methodDesc,
+        onSuccess: _handlePaymentSuccess,
+        onError: _handlePaymentError,
+        onWallet: _handleExternalWallet,
+      );
     } catch (e) {
       isProcessingPayment.value = false;
       debugPrint("❌ [Razorpay] Exception opening checkout: $e");

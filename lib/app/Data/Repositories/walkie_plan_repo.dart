@@ -6,6 +6,9 @@ import 'package:fgtracker/app/Model/walkie_coupon_model.dart';
 import 'package:fgtracker/app/Model/walkie_create_order_model.dart';
 import 'package:fgtracker/app/Model/walkie_order_summary_model.dart';
 
+import 'package:fgtracker/app/Model/walkie_verify_payment_model.dart';
+import 'package:flutter/cupertino.dart';
+
 class WalkiePlanRepo {
   static Future<WalkiePlansResponseModel> getPlans({required String planType}) async {
     var response = await HttpUtil().get(
@@ -79,5 +82,26 @@ class WalkiePlanRepo {
       data: body,
     );
     return WalkieCreateOrderResponseModel.fromJson(response);
+  }
+
+  static Future<WalkieVerifyPaymentResponseModel> verifyPayment({
+    required int paymentId,
+    required String razorpayOrderId,
+    required String razorpayPaymentId,
+    required String razorpaySignature,
+  }) async {
+    final Map<String, dynamic> body = {
+      'paymentId': paymentId,
+      'razorpayOrderId': razorpayOrderId,
+      'razorpayPaymentId': razorpayPaymentId,
+      'razorpaySignature': razorpaySignature,
+    };
+    debugPrint("🚀 [WalkiePlanRepo.verifyPayment] URL: ${Urls.walkieVerifyPayment} | Body: $body");
+    var response = await HttpUtil().Authpost(
+      Urls.walkieVerifyPayment,
+      data: body,
+    );
+    debugPrint("✅ [WalkiePlanRepo.verifyPayment] Raw Response: $response");
+    return WalkieVerifyPaymentResponseModel.fromJson(response);
   }
 }

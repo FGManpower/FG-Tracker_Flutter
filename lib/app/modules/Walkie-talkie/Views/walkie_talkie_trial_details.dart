@@ -1,3 +1,4 @@
+import 'package:fgtracker/app/Core/values/colors.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/global_widget/blend_mask.dart';
 
@@ -36,13 +37,13 @@ class _WalkieTalkieTrialDetailsScreenState
         : Get.put(WalkieTalkieTrialController());
   }
 
-  static const Color primaryColor = Color(0xFF5B4DFF);
+  static const Color primaryColor = AppColors.primaryDarkblue;
 
-  static const Color textColor = Color(0xFF1E1B4B);
+  static const Color textColor = AppColors.authTextNavy;
 
-  static const Color subtitleColor = Color(0xFF6B7280);
+  static const Color subtitleColor = AppColors.primarySecondaryElementText;
 
-  static const Color backgroundColor = Color(0xFFF6F8FE);
+  static const Color backgroundColor = AppColors.primarySecondaryBackground;
 
   // =====================================================
   // RESPONSIVE FONT SCALING HELPER (Mobile / Tab / PC)

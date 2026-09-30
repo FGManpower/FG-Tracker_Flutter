@@ -1,4 +1,6 @@
 import 'dart:math' as math;
+import 'package:fgtracker/app/Core/values/colors.dart';
+import 'package:fgtracker/app/modules/Walkie-talkie/Razorpay/Controller/razorpay_payment_controller.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Views/walkie_group_select_screen.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:fgtracker/app/global_widget/blend_mask.dart';
@@ -42,6 +44,7 @@ class WalkieTalkiePurchaseSuccessScreen extends StatefulWidget {
 class _WalkieTalkiePurchaseSuccessScreenState
     extends State<WalkieTalkiePurchaseSuccessScreen>
     with TickerProviderStateMixin {
+  late final RazorpayPaymentController controller;
   late final AnimationController _mainController;
   late final AnimationController _pulseController;
 
@@ -54,56 +57,52 @@ class _WalkieTalkiePurchaseSuccessScreenState
   late final Animation<double> _contentFade;
   late final Animation<Offset> _contentSlide;
 
-  bool get isTeam => widget.isTeam;
-  String get planTitle => widget.planTitle;
-  int get memberCount => widget.memberCount;
-  String get validTill => widget.validTill;
-  String get paymentId =>
-      widget.paymentId ??
-      "pay_${DateTime.now().millisecondsSinceEpoch.toRadixString(36).toUpperCase()}";
-  num get amountPaid => widget.amountPaid ?? 0;
-  String get paymentMethod => widget.paymentMethod ?? "Razorpay (UPI / Card)";
-  String get formattedDateTime {
-    if (widget.transactionTime != null && widget.transactionTime!.isNotEmpty) {
-      return widget.transactionTime!;
-    }
-    return DateFormat('dd MMM yyyy, hh:mm a').format(DateTime.now());
-  }
+  bool get isTeam => controller.isTeam.value;
+  String get planTitle => controller.planTitle.value;
+  int get memberCount => controller.memberCount.value;
+  String get validTill => controller.validTill.value.isNotEmpty ? controller.validTill.value : widget.validTill;
+  String get paymentId => controller.successPaymentId.value?.isNotEmpty == true ? controller.successPaymentId.value! : (widget.paymentId ?? "pay_SUCCESS");
+  num get amountPaid => controller.amountPaid.value > 0 ? controller.amountPaid.value : (widget.amountPaid ?? 0);
+  String get paymentMethod => controller.paymentMethod.value;
+  String get formattedDateTime => controller.transactionTime.value.isNotEmpty ? controller.transactionTime.value : (widget.transactionTime ?? DateFormat('dd MMM yyyy, hh:mm a').format(DateTime.now()));
 
-  static const Color _primaryPurple = Color(0xFF5B4DF5);
-  static const Color _bgSoft = Color(0xFFF6F8FE);
-  static const Color _textDark = Color(0xFF0F172A);
-  static const Color _textSecondary = Color(0xFF64748B);
-  static const Color _cardBorder = Color(0xFFEDF2F7);
-  static const Color _lightPillBg = Color(0xFFEEF0FE);
-  static const Color _greenBadgeBg = Color(0xFFDCFCE7);
-  static const Color _greenBadgeText = Color(0xFF16A34A);
+  static const Color _primaryPurple = AppColors.primaryDarkblue;
+  static const Color _bgSoft = AppColors.primarySecondaryBackground;
+  static const Color _textDark = AppColors.authTextNavy;
+  static const Color _textSecondary = AppColors.primarySecondaryElementText;
+  static const Color _cardBorder = AppColors.textbordercolor;
+  static const Color _lightPillBg = AppColors.authIconBgCircle;
+  static const Color _greenBadgeBg = AppColors.greenLight;
+  static const Color _greenBadgeText = AppColors.primaryElementStatus;
 
-  String _formatAmount(num amount) {
-    final isDecimal = amount is double && amount != amount.roundToDouble();
-    if (isDecimal) {
-      final parts = amount.toStringAsFixed(2).split('.');
-      final int intPart = int.tryParse(parts[0]) ?? 0;
-      return '${_formatInt(intPart)}.${parts[1]}';
-    }
-    return _formatInt(amount.round());
-  }
-
-  String _formatInt(int intAmount) {
-    final str = intAmount.toString();
-    if (str.length <= 3) return str;
-    final lastThree = str.substring(str.length - 3);
-    final rest = str.substring(0, str.length - 3);
-    final formattedRest = rest.replaceAllMapped(
-      RegExp(r'(\d)(?=(\d\d)+$)'),
-      (Match m) => '${m[1]},',
-    );
-    return '$formattedRest,$lastThree';
-  }
+  String _formatAmount(num amount) => controller.formatAmount(amount);
 
   @override
   void initState() {
     super.initState();
+    controller = Get.isRegistered<RazorpayPaymentController>()
+        ? Get.find<RazorpayPaymentController>()
+        : Get.put(RazorpayPaymentController());
+
+    controller.isTeam.value = widget.isTeam;
+    controller.planTitle.value = widget.planTitle;
+    controller.memberCount.value = widget.memberCount;
+    if (widget.validTill.isNotEmpty) controller.validTill.value = widget.validTill;
+    if (widget.paymentId != null && widget.paymentId!.isNotEmpty) {
+      controller.successPaymentId.value = widget.paymentId;
+    }
+    if (widget.orderId != null && widget.orderId!.isNotEmpty) {
+      controller.successOrderId.value = widget.orderId;
+    }
+    if (widget.amountPaid != null) {
+      controller.amountPaid.value = widget.amountPaid!.toDouble();
+    }
+    if (widget.paymentMethod != null && widget.paymentMethod!.isNotEmpty) {
+      controller.paymentMethod.value = widget.paymentMethod!;
+    }
+    if (widget.transactionTime != null && widget.transactionTime!.isNotEmpty) {
+      controller.transactionTime.value = widget.transactionTime!;
+    }
     _mainController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1500),
@@ -627,11 +626,7 @@ class _WalkieTalkiePurchaseSuccessScreenState
                       ),
                       SizedBox(width: 6.w),
                       GestureDetector(
-                        onTap: () {
-                          HapticFeedback.selectionClick();
-                          Clipboard.setData(ClipboardData(text: paymentId));
-                          _showCopiedSnackbar("Payment ID copied to clipboard!");
-                        },
+                        onTap: () => controller.copyPaymentId(),
                         child: Container(
                           padding: EdgeInsets.all(4.w),
                           decoration: BoxDecoration(
@@ -724,18 +719,7 @@ class _WalkieTalkiePurchaseSuccessScreenState
 
           // Quick Share / Copy Receipt action
           GestureDetector(
-            onTap: () {
-              HapticFeedback.lightImpact();
-              final receiptText =
-                  "FG Tracker Payment Receipt\n"
-                  "Plan: $planTitle\n"
-                  "Amount: ₹${amountPaid > 0 ? _formatAmount(amountPaid) : '499'}\n"
-                  "Payment ID: $paymentId\n"
-                  "Date: $formattedDateTime\n"
-                  "Status: Completed";
-              Clipboard.setData(ClipboardData(text: receiptText));
-              _showCopiedSnackbar("Receipt details copied to clipboard!");
-            },
+            onTap: () => controller.shareReceipt(),
             child: Container(
               width: double.infinity,
               padding: EdgeInsets.symmetric(vertical: 8.h),
@@ -1259,13 +1243,7 @@ class _WalkieTalkiePurchaseSuccessScreenState
   }
 
   // Navigate to Assign Members
-  void _navigateToAssignMembers() {
-    try {
-      Get.toNamed(Routes.WalkieGroupSelect);
-    } catch (_) {
-      Get.to(() => const WalkieGroupSelectScreen());
-    }
-  }
+  void _navigateToAssignMembers() => controller.navigateToAssignMembers();
 
   // ==========================================
   // "NOT NOW?" BOTTOM SHEET (Image 2)
@@ -1428,12 +1406,7 @@ class _WalkieTalkiePurchaseSuccessScreenState
                             ),
                             onPressed: () {
                               Navigator.pop(ctx);
-                              try {
-                                Get.offAllNamed(Routes.Home_Screen);
-                              } catch (_) {
-                                Get.back();
-                                Get.back();
-                              }
+                              controller.navigateToHome();
                             },
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
