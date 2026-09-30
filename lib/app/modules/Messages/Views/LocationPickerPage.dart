@@ -17,7 +17,7 @@ class LocationPickerPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: ToggleThemeData.Appcolor,
+        backgroundColor:Color(0xFF6B4DFF),
         centerTitle: true,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
@@ -107,7 +107,7 @@ class LocationPickerPage extends StatelessWidget {
                     height: 50.h,
                     child: ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: ToggleThemeData.Appcolor,
+                        backgroundColor:Color(0xFF6B4DFF),
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(14.r),

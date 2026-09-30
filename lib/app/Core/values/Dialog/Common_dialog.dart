@@ -296,7 +296,6 @@ class CommonDialog {
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) {
-        // Determine content based on the platform (Android or iOS)
         String titleText = Platform.isIOS
             ? AppText.allowLocationAccess.tr
             : AppText.locationPermissionReqrd.tr;
@@ -352,7 +351,6 @@ class CommonDialog {
                       ),
                     ),
                     const Spacer(),
-                    // Buttons
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
                       child: Row(

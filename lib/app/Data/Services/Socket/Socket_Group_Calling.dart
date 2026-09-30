@@ -38,8 +38,8 @@ class Socket_GroupCallService {
   Function()? onCallEnded;
   Function(String userId)? onParticipantJoined;
   Function(String userId)? onParticipantLeft;
-  Function(String userId)? onParticipantRejected;
-  Function(String userId, bool isMuted)? onParticipantMuteChanged;
+  Function(String userId, String? userName, String? userProfile)?
+  onParticipantRejected;  Function(String userId, bool isMuted)? onParticipantMuteChanged;
   Function(Map<String, dynamic> data)? onIncomingCallReceived;
 
 
@@ -233,9 +233,32 @@ class Socket_GroupCallService {
     });
 
     socket?.on("group_call_participant_rejected", (raw) {
-      _log(" group_call_participant_rejected: $raw");
-      final userId = raw is Map ? raw['userId']?.toString() : null;
-      if (userId != null) onParticipantRejected?.call(userId);
+      _log("group_call_participant_rejected: $raw");
+
+      if (raw == null) return;
+
+      final data = Map<String, dynamic>.from(raw);
+
+      final userId = data['userId']?.toString();
+      if (userId == null || userId.isEmpty) return;
+
+      final userName =
+      (data['userName'] ?? data['name'])?.toString();
+
+      final userProfile =
+      (data['userProfile'] ?? data['profileImage'])?.toString();
+
+      _saveParticipantMeta(
+        userId,
+        name: userName,
+        profileImage: userProfile,
+      );
+
+      onParticipantRejected?.call(
+        userId,
+        userName,
+        userProfile,
+      );
     });
 
     socket?.on("group_call_participant_mute", (raw) {

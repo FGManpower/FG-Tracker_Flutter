@@ -458,9 +458,19 @@ class GroupCallingController extends GetxController {
     _refreshNotInCallList();
   }
 
-  void _onParticipantRejected(String userId) {
-    final name = Socket_GroupCallService.instance.getParticipantName(userId);
+  void _onParticipantRejected(
+      String userId,
+      String? userName,
+      String? userProfile,
+      ) {
+    final svc = Socket_GroupCallService.instance;
+
+    final name = (userName != null && userName.trim().isNotEmpty)
+        ? userName.trim()
+        : svc.getParticipantName(userId);
+
     Utils().fluttertoast("$name rejected the call");
+
     _refreshNotInCallList();
   }
 

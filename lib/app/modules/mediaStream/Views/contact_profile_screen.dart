@@ -105,12 +105,12 @@ class ContactProfileScreen extends StatelessWidget {
           ),
         ],
       ),
-      bottomNavigationBar: _buildBottomActionsCard(
-        context,
-        name,
-        phone,
-        avatar,
-      ),
+      // bottomNavigationBar: _buildBottomActionsCard(
+      //   context,
+      //   name,
+      //   phone,
+      //   avatar,
+      // ),
     );
   }
 
@@ -146,15 +146,6 @@ class ContactProfileScreen extends StatelessWidget {
           ),
         ),
       ),
-      actions: [
-        Padding(
-          padding: EdgeInsets.only(right: 16.w),
-          child: Icon(
-            Icons.more_vert_rounded,
-            color: const Color(0xFF4818F0),
-          ),
-        ),
-      ],
     );
   }
 
@@ -436,19 +427,18 @@ class ContactProfileScreen extends StatelessWidget {
             Icons.call_rounded,
             phone,
             subtitle: "Mobile",
-            trailingIcon: Icons.call,
             onTap: () {},
           ),
           const Divider(
             color: Color(0xFFF1F1F5),
             height: 1,
           ),
-          _infoTile(
-            Icons.location_on_rounded,
-            location,
-            subtitle: "Location",
-            trailingIcon: Icons.near_me_rounded,
-          ),
+          // _infoTile(
+          //   Icons.location_on_rounded,
+          //   location,
+          //   subtitle: "Location",
+          //   trailingIcon: Icons.near_me_rounded,
+          // ),
         ],
       ),
     );
@@ -706,7 +696,6 @@ class ContactProfileScreen extends StatelessWidget {
               ],
             ),
           ),
-
           SizedBox(width: 8.w),
           InkWell(
             onTap: () {
@@ -1000,14 +989,14 @@ class ContactProfileScreen extends StatelessWidget {
               Icons.call_rounded,
             ),
             SizedBox(height: 16.h),
-            _bottomSheetTextField(
-              "Location",
-              selectedUser.location?.trim().isNotEmpty == true
-                  ? selectedUser.location!
-                  : "Location not available",
-              Icons.location_on_rounded,
-              isDropdown: true,
-            ),
+            // _bottomSheetTextField(
+            //   "Location",
+            //   selectedUser.location?.trim().isNotEmpty == true
+            //       ? selectedUser.location!
+            //       : "Location not available",
+            //   Icons.location_on_rounded,
+            //   isDropdown: true,
+            // ),
             SizedBox(height: 24.h),
             Container(
               width: double.infinity,

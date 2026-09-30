@@ -16,11 +16,18 @@ class ContactPickerPage extends StatelessWidget {
       appBar: AppBar(
         title: const Text("Share Contact"),
         centerTitle: true,
-        backgroundColor: ToggleThemeData.Appcolor,
+        backgroundColor: const Color(0xFF6B4DFF),
+
+        iconTheme: const IconThemeData(
+          color: Colors.white,
+        ),
+
         foregroundColor: Colors.white,
+
         actions: [
           Obx(() {
             if (controller.loading.value) return const SizedBox.shrink();
+
             return Padding(
               padding: const EdgeInsets.only(right: 12),
               child: Center(

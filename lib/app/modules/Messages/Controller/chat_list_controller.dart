@@ -313,23 +313,23 @@ class ChatListController extends GetxController {
 
       if (updatedChat.id != null) {
         index = privateChats.indexWhere(
-          (chat) => chat.id == updatedChat.id,
+              (chat) => chat.id == updatedChat.id,
         );
       }
 
       if (index == -1 && updatedChat.userId != null) {
         index = privateChats.indexWhere(
-          (chat) => chat.userId == updatedChat.userId,
+              (chat) => chat.userId == updatedChat.userId,
         );
       }
 
       if (updatedChat.isArchived == true) {
         privateChats.removeWhere(
-          (item) => item.id == updatedChat.id,
+              (item) => item.id == updatedChat.id,
         );
 
         final archivedIndex = archivedChats.indexWhere(
-          (item) => item.id == updatedChat.id,
+              (item) => item.id == updatedChat.id,
         );
 
         if (archivedIndex >= 0) {
@@ -343,33 +343,26 @@ class ChatListController extends GetxController {
 
         log(
           "PRIVATE CHAT ARCHIVED - REMOVED FROM ALL CHATS: "
-          "${updatedChat.name} | chatId=${updatedChat.id}",
+              "${updatedChat.name} | chatId=${updatedChat.id}",
         );
 
         return;
       }
 
-      if (updatedChat.isPinned == true) {
-        if (index != -1) {
-          privateChats.removeAt(index);
-        }
-
-        privateChats.insert(0, updatedChat);
-      } else {
-        if (index != -1) {
-          privateChats[index] = updatedChat;
-        } else {
-          privateChats.add(updatedChat);
-        }
+      if (index != -1) {
+        privateChats.removeAt(index);
       }
+
+      privateChats.insert(0, updatedChat);
 
       privateChats.refresh();
 
       log(
         "PRIVATE CHAT UPDATED: "
-        "${updatedChat.name} | "
-        "chatId=${updatedChat.id} | "
-        "isPinned=${updatedChat.isPinned}",
+            "${updatedChat.name} | "
+            "chatId=${updatedChat.id} | "
+            "isPinned=${updatedChat.isPinned} | "
+            "movedToTop=true",
       );
     } catch (e) {
       log(
@@ -377,7 +370,6 @@ class ChatListController extends GetxController {
       );
     }
   }
-
   void muteChat(
     PrivateChatModel chat, {
     String? mutedUntil,

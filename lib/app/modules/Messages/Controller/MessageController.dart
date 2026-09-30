@@ -83,6 +83,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
   RxInt privateCurrentPage = 1.obs;
   RxBool isLoadingOlderMessages = false.obs;
   RxBool hasMoreOlderMessages = true.obs;
+  RxBool isLoadingInitialMessages = false.obs;
 
   Timer? _floatingDateTimer;
 
@@ -231,6 +232,8 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     ChatStateTracker.isChatCallScreenOpen = true;
 
     if (isPrivateChat) {
+      isLoadingInitialMessages.value = true;
+
       socketService.initPrivateChat(
         ConstRes.socketUrl,
         userId: currentUserId,
@@ -843,7 +846,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
       privateCurrentPage.value = 1;
       hasMoreOlderMessages.value = true;
 
-      var result = await MessageRepo.privateChatHistory(
+      final result = await MessageRepo.privateChatHistory(
         chatId: chatId,
         page: 1,
         limit: 50,
@@ -852,59 +855,62 @@ class MessageController extends GetxController with WidgetsBindingObserver {
       if (result.status == true) {
         final messages = result.messageData ?? [];
 
-        if (result.status == true) {
-          final blockStatus = result.blockStatus;
+        final blockStatus = result.blockStatus;
 
-          if (blockStatus != null) {
-            isBlocked.value = blockStatus.isBlocked == true;
-            blockedByMe.value = blockStatus.blockedByMe == true;
-          } else {
-            isBlocked.value = false;
-            blockedByMe.value = false;
-          }
+        if (blockStatus != null) {
+          isBlocked.value = blockStatus.isBlocked == true;
+          blockedByMe.value = blockStatus.blockedByMe == true;
+        } else {
+          isBlocked.value = false;
+          blockedByMe.value = false;
+        }
 
-          final messages = result.messageData ?? [];
+        _messages
+          ..clear()
+          ..addAll(messages.reversed);
 
-          _messages
-            ..clear()
-            ..addAll(messages.reversed);
+        final pinnedId = result.pinnedMessageId;
 
-          final pinnedId = result.pinnedMessageId;
+        if (pinnedId != null) {
+          final pinned = _messages.firstWhereOrNull(
+                (message) => message.id == pinnedId,
+          );
 
-          if (pinnedId != null) {
-            final pinned = _messages.firstWhereOrNull(
-              (message) => message.id == pinnedId,
-            );
-
-            if (pinned != null) {
-              pinnedMessage.value = pinned;
-              showPinnedBanner.value = true;
-            } else {
-              pinnedMessage.value = null;
-              showPinnedBanner.value = false;
-            }
+          if (pinned != null) {
+            pinnedMessage.value = pinned;
+            showPinnedBanner.value = true;
           } else {
             pinnedMessage.value = null;
             showPinnedBanner.value = false;
           }
-
-          updateMessageStream();
-          isCreator.value = result.isCreator ?? false;
-
-          if (result.pagination != null) {
-            hasMoreOlderMessages.value = result.pagination!.hasNextPage == true;
-          }
-
-          scrollToBottom();
         } else {
-          CommonDialog.errorMessage(result.message);
+          pinnedMessage.value = null;
+          showPinnedBanner.value = false;
         }
+
+        updateMessageStream();
+
+        isCreator.value = result.isCreator ?? false;
+
+        if (result.pagination != null) {
+          hasMoreOlderMessages.value =
+              result.pagination!.hasNextPage == true;
+        } else {
+          hasMoreOlderMessages.value = false;
+        }
+
+        if (_messages.isNotEmpty) {
+          scrollToBottom();
+        }
+      } else {
+        CommonDialog.errorMessage(result.message);
       }
     } catch (e) {
       log("Private History Error: $e");
+    } finally {
+      isLoadingInitialMessages.value = false;
     }
   }
-
   void setReply(MessageData message) {
     replyMessage.value = message;
   }
