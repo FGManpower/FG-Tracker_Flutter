@@ -134,25 +134,54 @@ class _WalkieTalkieTrialDetailsScreenState
         }),
       ),
       bottomNavigationBar: Obx(() {
-        if (controller.errorMessage.value.isNotEmpty) {
+        if (controller.errorMessage.value.isNotEmpty &&
+            controller.data == null) {
+          return const SizedBox.shrink();
+        }
+
+        // ===============================================
+        // SUBSCRIBED USER
+        // ===============================================
+
+        if (controller.hasActiveSubscription) {
+          return const SizedBox.shrink();
+        }
+
+        // ===============================================
+        // BACKEND DOES NOT WANT SUBSCRIBE CTA
+        // ===============================================
+
+        if (controller.data != null &&
+            !controller.showSubscribe) {
           return const SizedBox.shrink();
         }
 
         final bool isSkeletonLoading =
-            controller.isLoading.value && controller.data == null;
+            controller.isLoading.value &&
+                controller.data == null;
 
         Widget bar = Padding(
-          padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 10.h),
+          padding: EdgeInsets.fromLTRB(
+            16.w,
+            0,
+            16.w,
+            10.h,
+          ),
           child: Skeletonizer(
             enabled: isSkeletonLoading,
-            child: _buildPurchasePlanCard(isBottomBar: true),
+            child: _buildPurchasePlanCard(
+              isBottomBar: true,
+            ),
           ),
         );
 
         if (isWideScreen) {
           return Center(
             child: Container(
-              constraints: const BoxConstraints(maxWidth: 520),
+              constraints:
+              const BoxConstraints(
+                maxWidth: 520,
+              ),
               color: backgroundColor,
               child: SafeArea(
                 top: false,

@@ -1,18 +1,20 @@
-
 import '../Repositories/walkie_talkie_trial_details_repository.dart';
 import '../../Model/walkie_talkie_trial_details_model.dart';
 
 class WalkieTrialException implements Exception {
   final String message;
 
-  const WalkieTrialException(this.message);
+  const WalkieTrialException(
+      this.message,
+      );
 
   @override
   String toString() => message;
 }
 
 class WalkieTalkieTrialService {
-  final WalkieTalkieTrialRepo _repository = const WalkieTalkieTrialRepo();
+  final WalkieTalkieTrialRepo _repository =
+  const WalkieTalkieTrialRepo();
 
   Future<WalkieOverviewData> getOverview() async {
     try {
@@ -34,9 +36,9 @@ class WalkieTalkieTrialService {
         );
       }
 
-      if (data.access == null || data.trial == null) {
+      if (data.access == null) {
         throw const WalkieTrialException(
-          'Incomplete Walkie-Talkie access information.',
+          'Walkie-Talkie access information is missing.',
         );
       }
 
@@ -48,9 +50,6 @@ class WalkieTalkieTrialService {
         'Invalid response received from the server.',
       );
     } catch (_) {
-      // Preserve networking exceptions so the controller
-      // can distinguish timeout, authorization and
-      // connection failures.
       rethrow;
     }
   }
