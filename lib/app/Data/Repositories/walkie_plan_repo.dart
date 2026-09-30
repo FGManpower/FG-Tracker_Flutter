@@ -3,7 +3,11 @@ import 'package:fgtracker/app/Core/util/http/http_util.dart';
 import 'package:fgtracker/app/Model/walkie_plan_model.dart';
 import 'package:fgtracker/app/Model/walkie_coupon_model.dart';
 
+import 'package:fgtracker/app/Model/walkie_create_order_model.dart';
 import 'package:fgtracker/app/Model/walkie_order_summary_model.dart';
+
+import 'package:fgtracker/app/Model/walkie_verify_payment_model.dart';
+import 'package:flutter/cupertino.dart';
 
 class WalkiePlanRepo {
   static Future<WalkiePlansResponseModel> getPlans({required String planType}) async {
@@ -61,5 +65,43 @@ class WalkiePlanRepo {
       data: body,
     );
     return WalkieOrderSummaryResponseModel.fromJson(response);
+  }
+
+  static Future<WalkieCreateOrderResponseModel> createOrder({
+    required int planId,
+    required int purchasedSeats,
+    String couponCode = "",
+  }) async {
+    final Map<String, dynamic> body = {
+      'planId': planId,
+      'purchasedSeats': purchasedSeats,
+      'couponCode': couponCode.trim().isNotEmpty ? couponCode.trim().toUpperCase() : "",
+    };
+    var response = await HttpUtil().Authpost(
+      Urls.walkieCreateOrder,
+      data: body,
+    );
+    return WalkieCreateOrderResponseModel.fromJson(response);
+  }
+
+  static Future<WalkieVerifyPaymentResponseModel> verifyPayment({
+    required int paymentId,
+    required String razorpayOrderId,
+    required String razorpayPaymentId,
+    required String razorpaySignature,
+  }) async {
+    final Map<String, dynamic> body = {
+      'paymentId': paymentId,
+      'razorpayOrderId': razorpayOrderId,
+      'razorpayPaymentId': razorpayPaymentId,
+      'razorpaySignature': razorpaySignature,
+    };
+    debugPrint("🚀 [WalkiePlanRepo.verifyPayment] URL: ${Urls.walkieVerifyPayment} | Body: $body");
+    var response = await HttpUtil().Authpost(
+      Urls.walkieVerifyPayment,
+      data: body,
+    );
+    debugPrint("✅ [WalkiePlanRepo.verifyPayment] Raw Response: $response");
+    return WalkieVerifyPaymentResponseModel.fromJson(response);
   }
 }

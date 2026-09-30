@@ -1,3 +1,4 @@
+import 'package:fgtracker/app/Core/values/colors.dart';
 import 'package:fgtracker/app/Model/walkie_payment_order_model.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Controller/walkie_order_summary_controller.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
@@ -24,14 +25,14 @@ class WalkieOrderSummaryScreen extends StatefulWidget {
 class _WalkieOrderSummaryScreenState extends State<WalkieOrderSummaryScreen> {
   late final WalkieOrderSummaryController controller;
 
-  static const Color _primaryPurple = Color(0xFF5B4DF5);
-  static const Color _bgSoft = Color(0xFFF8FAFC);
-  static const Color _textDark = Color(0xFF0F172A);
-  static const Color _textSecondary = Color(0xFF64748B);
-  static const Color _cardBorder = Color(0xFFEDF2F7);
-  static const Color _lightPillBg = Color(0xFFEEF0FE);
-  static const Color _greenText = Color(0xFF16A34A);
-  static const Color _greenBg = Color(0xFFDCFCE7);
+  static const Color _primaryPurple = AppColors.primaryDarkblue;
+  static const Color _bgSoft = AppColors.primarySecondaryBackground;
+  static const Color _textDark = AppColors.authTextNavy;
+  static const Color _textSecondary = AppColors.primarySecondaryElementText;
+  static const Color _cardBorder = AppColors.textbordercolor;
+  static const Color _lightPillBg = AppColors.authIconBgCircle;
+  static const Color _greenText = AppColors.primaryElementStatus;
+  static const Color _greenBg = AppColors.greenLight;
 
   @override
   void initState() {

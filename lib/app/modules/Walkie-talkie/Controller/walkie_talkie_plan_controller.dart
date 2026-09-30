@@ -300,6 +300,8 @@ class WalkieTalkiePlanController extends GetxController {
   }
 
   String _parseErrorMessage(dynamic error) {
+    if (error == null) return "Something went wrong. Please try again.";
+
     if (error is DioException) {
       if (error.type == DioExceptionType.connectionError ||
           error.type == DioExceptionType.connectionTimeout ||
@@ -308,24 +310,60 @@ class WalkieTalkiePlanController extends GetxController {
           error.error is SocketException) {
         return "No internet connection. Please check your network.";
       }
-      if (error.response?.data is Map &&
-          error.response?.data['message'] != null) {
-        return error.response!.data['message'].toString();
+      if (error.response?.data != null) {
+        final data = error.response!.data;
+        if (data is Map) {
+          if (data['message'] != null &&
+              data['message'].toString().trim().isNotEmpty) {
+            return data['message'].toString().trim();
+          }
+          if (data['errors'] != null) {
+            final errors = data['errors'];
+            if (errors is Map) {
+              final msgs = errors.values
+                  .map((v) => v is List ? v.join("\n") : v.toString())
+                  .join("\n");
+              if (msgs.trim().isNotEmpty) return msgs.trim();
+            } else if (errors is List) {
+              return errors.join("\n");
+            }
+            return errors.toString();
+          }
+          if (data['error'] != null &&
+              data['error'].toString().trim().isNotEmpty) {
+            return data['error'].toString().trim();
+          }
+        } else if (data is String && data.trim().isNotEmpty) {
+          return data.trim();
+        }
       }
-      return "Unable to connect to server. Please try again.";
+      return error.message?.isNotEmpty == true
+          ? error.message!
+          : "Unable to connect to server. Please try again.";
     }
+
     if (error is SocketException) {
       return "No internet connection. Please check your network.";
     }
-    final str = error.toString().toLowerCase();
-    if (str.contains("socket") ||
-        str.contains("internet") ||
-        str.contains("connection") ||
-        str.contains("network") ||
-        str.contains("failed host lookup")) {
+
+    final str = error.toString().trim();
+    if (str.isEmpty) return "Something went wrong. Please try again.";
+
+    final lower = str.toLowerCase();
+    if (lower.contains("socket") ||
+        lower.contains("internet") ||
+        lower.contains("connection") ||
+        lower.contains("network") ||
+        lower.contains("failed host lookup") ||
+        lower.contains("connection refused")) {
       return "No internet connection. Please check your network.";
     }
-    return "Unable to load plans. Please try again.";
+
+    if (str.startsWith("Exception: ")) {
+      return str.substring(11).trim();
+    }
+
+    return str;
   }
 
   Future<void> fetchBothPlans() async {
@@ -490,39 +528,15 @@ class WalkieTalkiePlanController extends GetxController {
       return false;
     }
     final String cleanCode = (coupon.code ?? '').trim().toUpperCase();
-    final bool ok = await applyCouponApi(cleanCode, isSilent: true);
+    final bool ok = await applyCouponApi(cleanCode, isSilent: false);
     if (ok) {
-      final saved = appliedCouponData.value?.pricing?.amountSaved ??
-          appliedCouponData.value?.pricing?.discountAmount;
-      if (saved != null && saved > 0) {
-        showTopWhiteMessage("Coupon applied! You save ₹${formatCurrency(saved)}");
-      } else {
-        showTopWhiteMessage("Coupon '$cleanCode' applied successfully!");
-      }
+      appliedPromoCode.refresh();
+      selectedCoupon.refresh();
+      teamMemberCount.refresh();
+      update();
       return true;
     }
-
-    // Fallback if backend API is not responding/fails: Apply directly using coupon definition
-    selectedCoupon.value = coupon;
-    appliedPromoCode.value = cleanCode;
-    if (coupon.isPercentage) {
-      promoDiscountPercent.value = ((coupon.discountValue ?? 0) / 100.0);
-      fixedDiscountAmount.value = 0.0;
-    } else if (coupon.isFixed) {
-      fixedDiscountAmount.value = (coupon.discountValue ?? 0).toDouble();
-      promoDiscountPercent.value = 0.0;
-    }
-    final num saved = couponDiscountAmount;
-    if (saved > 0) {
-      showTopWhiteMessage("Coupon applied! You save ₹${formatCurrency(saved)}");
-    } else {
-      showTopWhiteMessage("Coupon '$cleanCode' applied successfully!");
-    }
-    appliedPromoCode.refresh();
-    selectedCoupon.refresh();
-    teamMemberCount.refresh();
-    update();
-    return true;
+    return false;
   }
 
   Future<bool> applyPromoCode(String code) async {

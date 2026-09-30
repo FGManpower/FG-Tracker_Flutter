@@ -1,3 +1,4 @@
+import 'package:fgtracker/app/Core/values/colors.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/global_widget/blend_mask.dart';
 
@@ -36,13 +37,13 @@ class _WalkieTalkieTrialDetailsScreenState
         : Get.put(WalkieTalkieTrialController());
   }
 
-  static const Color primaryColor = Color(0xFF5B4DFF);
+  static const Color primaryColor = AppColors.primaryDarkblue;
 
-  static const Color textColor = Color(0xFF1E1B4B);
+  static const Color textColor = AppColors.authTextNavy;
 
-  static const Color subtitleColor = Color(0xFF6B7280);
+  static const Color subtitleColor = AppColors.primarySecondaryElementText;
 
-  static const Color backgroundColor = Color(0xFFF6F8FE);
+  static const Color backgroundColor = AppColors.primarySecondaryBackground;
 
   // =====================================================
   // RESPONSIVE FONT SCALING HELPER (Mobile / Tab / PC)
@@ -133,25 +134,54 @@ class _WalkieTalkieTrialDetailsScreenState
         }),
       ),
       bottomNavigationBar: Obx(() {
-        if (controller.errorMessage.value.isNotEmpty) {
+        if (controller.errorMessage.value.isNotEmpty &&
+            controller.data == null) {
+          return const SizedBox.shrink();
+        }
+
+        // ===============================================
+        // SUBSCRIBED USER
+        // ===============================================
+
+        if (controller.hasActiveSubscription) {
+          return const SizedBox.shrink();
+        }
+
+        // ===============================================
+        // BACKEND DOES NOT WANT SUBSCRIBE CTA
+        // ===============================================
+
+        if (controller.data != null &&
+            !controller.showSubscribe) {
           return const SizedBox.shrink();
         }
 
         final bool isSkeletonLoading =
-            controller.isLoading.value && controller.data == null;
+            controller.isLoading.value &&
+                controller.data == null;
 
         Widget bar = Padding(
-          padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 10.h),
+          padding: EdgeInsets.fromLTRB(
+            16.w,
+            0,
+            16.w,
+            10.h,
+          ),
           child: Skeletonizer(
             enabled: isSkeletonLoading,
-            child: _buildPurchasePlanCard(isBottomBar: true),
+            child: _buildPurchasePlanCard(
+              isBottomBar: true,
+            ),
           ),
         );
 
         if (isWideScreen) {
           return Center(
             child: Container(
-              constraints: const BoxConstraints(maxWidth: 520),
+              constraints:
+              const BoxConstraints(
+                maxWidth: 520,
+              ),
               color: backgroundColor,
               child: SafeArea(
                 top: false,

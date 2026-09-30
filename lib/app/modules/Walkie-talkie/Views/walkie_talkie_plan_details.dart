@@ -1,4 +1,5 @@
 import 'package:fgtracker/app/Core/values/Utils.dart';
+import 'package:fgtracker/app/Core/values/colors.dart';
 import 'package:fgtracker/app/Model/walkie_plan_model.dart';
 import 'package:fgtracker/app/Model/walkie_coupon_model.dart';
 import 'package:fgtracker/app/Model/walkie_payment_order_model.dart';
@@ -32,15 +33,15 @@ typedef WalkieTalkiePlanScreen = WalkieTalkiePlanDetails;
 typedef walkieTalkiePlanScreen = WalkieTalkiePlanDetails;
 
 class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
-  // Color Constants (Matching Screenshots Exactly)
-  static const Color _primaryPurple = Color(0xFF5B4DF5);
-  static const Color _bgSoft = Color(0xFFF6F8FE);
-  static const Color _textDark = Color(0xFF0F172A);
-  static const Color _textSecondary = Color(0xFF64748B);
-  static const Color _cardBorder = Color(0xFFEDF2F7);
-  static const Color _lightPillBg = Color(0xFFF1F3FE);
-  static const Color _greenBadgeBg = Color(0xFFDCFCE7);
-  static const Color _greenBadgeText = Color(0xFF16A34A);
+  // Theme Color Constants mapped directly to AppColors
+  static const Color _primaryPurple = AppColors.primaryDarkblue;
+  static const Color _bgSoft = AppColors.primarySecondaryBackground;
+  static const Color _textDark = AppColors.authTextNavy;
+  static const Color _textSecondary = AppColors.primarySecondaryElementText;
+  static const Color _cardBorder = AppColors.textbordercolor;
+  static const Color _lightPillBg = AppColors.authIconBgCircle;
+  static const Color _greenBadgeBg = AppColors.greenLight;
+  static const Color _greenBadgeText = AppColors.primaryElementStatus;
 
   late final WalkieTalkiePlanController controller;
 

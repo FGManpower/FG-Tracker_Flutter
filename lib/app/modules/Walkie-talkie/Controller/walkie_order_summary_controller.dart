@@ -5,8 +5,12 @@ import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Data/Repositories/walkie_plan_repo.dart';
 import 'package:fgtracker/app/Model/walkie_coupon_model.dart';
+import 'package:fgtracker/app/Model/walkie_create_order_model.dart';
 import 'package:fgtracker/app/Model/walkie_order_summary_model.dart';
 import 'package:fgtracker/app/Model/walkie_payment_order_model.dart';
+import 'package:fgtracker/app/modules/Walkie-talkie/Razorpay/Controller/razorpay_payment_controller.dart';
+import 'package:fgtracker/app/modules/Walkie-talkie/Views/walkie_talkie_payment_failed_screen.dart';
+import 'package:fgtracker/app/modules/Walkie-talkie/Views/walkie_talkie_payment_pending_screen.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Views/walkie_talkie_purchase_success_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -30,6 +34,8 @@ class WalkieOrderSummaryController extends GetxController {
   final Rxn<WalkieAppliedCouponData> appliedCouponData =
       Rxn<WalkieAppliedCouponData>();
   final Rxn<WalkieOrderSummaryData> summaryData = Rxn<WalkieOrderSummaryData>();
+  final Rxn<WalkieCreateOrderData> createOrderData =
+      Rxn<WalkieCreateOrderData>();
 
   final RxDouble dynamicDiscount = 0.0.obs;
   final RxnString dynamicCouponCode = RxnString();
@@ -194,6 +200,8 @@ class WalkieOrderSummaryController extends GetxController {
   }
 
   String _parseErrorMessage(dynamic error) {
+    if (error == null) return "Something went wrong. Please try again.";
+
     if (error is DioException) {
       if (error.type == DioExceptionType.connectionError ||
           error.type == DioExceptionType.connectionTimeout ||
@@ -202,24 +210,60 @@ class WalkieOrderSummaryController extends GetxController {
           error.error is SocketException) {
         return "No internet connection. Please check your network.";
       }
-      if (error.response?.data is Map &&
-          error.response?.data['message'] != null) {
-        return error.response!.data['message'].toString();
+      if (error.response?.data != null) {
+        final data = error.response!.data;
+        if (data is Map) {
+          if (data['message'] != null &&
+              data['message'].toString().trim().isNotEmpty) {
+            return data['message'].toString().trim();
+          }
+          if (data['errors'] != null) {
+            final errors = data['errors'];
+            if (errors is Map) {
+              final msgs = errors.values
+                  .map((v) => v is List ? v.join("\n") : v.toString())
+                  .join("\n");
+              if (msgs.trim().isNotEmpty) return msgs.trim();
+            } else if (errors is List) {
+              return errors.join("\n");
+            }
+            return errors.toString();
+          }
+          if (data['error'] != null &&
+              data['error'].toString().trim().isNotEmpty) {
+            return data['error'].toString().trim();
+          }
+        } else if (data is String && data.trim().isNotEmpty) {
+          return data.trim();
+        }
       }
-      return "Unable to connect to server. Please try again.";
+      return error.message?.isNotEmpty == true
+          ? error.message!
+          : "Unable to connect to server. Please try again.";
     }
+
     if (error is SocketException) {
       return "No internet connection. Please check your network.";
     }
-    final str = error.toString().toLowerCase();
-    if (str.contains("socket") ||
-        str.contains("internet") ||
-        str.contains("connection") ||
-        str.contains("network") ||
-        str.contains("failed host lookup")) {
+
+    final str = error.toString().trim();
+    if (str.isEmpty) return "Something went wrong. Please try again.";
+
+    final lower = str.toLowerCase();
+    if (lower.contains("socket") ||
+        lower.contains("internet") ||
+        lower.contains("connection") ||
+        lower.contains("network") ||
+        lower.contains("failed host lookup") ||
+        lower.contains("connection refused")) {
       return "No internet connection. Please check your network.";
     }
-    return "Something went wrong. Please try again.";
+
+    if (str.startsWith("Exception: ")) {
+      return str.substring(11).trim();
+    }
+
+    return str;
   }
 
   Future<void> fetchOrderSummary({String? couponCodeOverride}) async {
@@ -358,30 +402,11 @@ class WalkieOrderSummaryController extends GetxController {
         }
         return true;
       } else {
-        // Fallback local discount simulation
-        num calculatedDiscount = 0;
-        if (cleanCode == 'SAVE20' || cleanCode == 'WELCOME20') {
-          calculatedDiscount = (planAmount * 0.20).round();
-        } else if (cleanCode == 'SPECIAL10' || cleanCode == 'WELCOME10') {
-          calculatedDiscount = (planAmount * 0.10).round();
-        } else if (cleanCode == 'FLAT150' || cleanCode == 'SAVE150') {
-          calculatedDiscount = 150;
-        } else {
-          calculatedDiscount = (planAmount * 0.15).round();
-        }
-
-        if (calculatedDiscount > planAmount) {
-          calculatedDiscount = planAmount;
-        }
-
-        dynamicCouponCode.value = cleanCode;
-        dynamicDiscount.value = calculatedDiscount.toDouble();
-
         if (!isSilent) {
           showTopWhiteMessage(
-              "Coupon '$cleanCode' applied! You saved ₹${formatCurrency(calculatedDiscount)}");
+              response.message ?? "Invalid or expired coupon code");
         }
-        return true;
+        return false;
       }
     } catch (e) {
       if (!isSilent) {
@@ -416,79 +441,59 @@ class WalkieOrderSummaryController extends GetxController {
     _razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, _handleExternalWallet);
   }
 
-  void _handlePaymentSuccess(PaymentSuccessResponse response) {
-    debugPrint("✅ Razorpay Payment Success: ${response.paymentId}");
+  Future<void> _handlePaymentSuccess(PaymentSuccessResponse response) async {
+    debugPrint("✅ [WalkieOrderSummaryController] Payment Success callback received: ${response.paymentId}");
     isProcessingPayment.value = false;
     HapticFeedback.heavyImpact();
-
-    String methodDesc = "Razorpay (UPI / Card)";
-    if (selectedPaymentMethod.value == 'upi') {
-      if (selectedUpiApp.value == 'gpay') {
-        methodDesc = "Google Pay (UPI)";
-      } else if (selectedUpiApp.value == 'phonepe') {
-        methodDesc = "PhonePe (UPI)";
-      } else if (selectedUpiApp.value == 'paytm') {
-        methodDesc = "Paytm (UPI)";
-      } else if (selectedUpiApp.value == 'bhim') {
-        methodDesc = "BHIM UPI";
-      } else if (selectedUpiApp.value == 'cred') {
-        methodDesc = "Cred (UPI)";
-      } else if (selectedUpiApp.value == 'amazonpay') {
-        methodDesc = "Amazon Pay (UPI)";
-      } else {
-        methodDesc = "UPI Payment";
-      }
-    } else if (selectedPaymentMethod.value == 'card') {
-      final cardTypeLabel = selectedCardType.value == 'credit' ? 'Credit Card' : 'Debit Card';
-      methodDesc = "$cardTypeLabel (${selectedCardNetwork.value.toUpperCase()})";
-    } else if (selectedPaymentMethod.value == 'netbanking') {
-      methodDesc = "NetBanking (${selectedBank.value.toUpperCase()})";
-    } else if (selectedPaymentMethod.value == 'wallet') {
-      methodDesc = "Wallet (${selectedWallet.value.capitalizeFirst})";
-    }
-
-    final String paymentIdStr = (response.paymentId != null && response.paymentId!.isNotEmpty)
-        ? response.paymentId!
-        : "pay_${DateTime.now().millisecondsSinceEpoch.toRadixString(36).toUpperCase()}";
-
-    final String nowFormatted = DateFormat('dd MMM yyyy, hh:mm a').format(DateTime.now());
-
-    // Navigate to purchase success screen with realistic payment metadata
-    Get.off(() => WalkieTalkiePurchaseSuccessScreen(
-          isTeam: order.value.isTeam || purchasedSeats > 1,
-          planTitle: planName,
-          memberCount: purchasedSeats,
-          validTill: order.value.validTill,
-          paymentId: paymentIdStr,
-          orderId: response.orderId,
-          amountPaid: totalPayable,
-          paymentMethod: methodDesc,
-          transactionTime: nowFormatted,
-        ));
   }
 
   void _handlePaymentError(PaymentFailureResponse response) {
     debugPrint(
-        "❌ Razorpay Payment Error: Code ${response.code} | Message: ${response.message}");
+        "❌ [WalkieOrderSummaryController] Payment Error: Code ${response.code} | Message: ${response.message}");
     isProcessingPayment.value = false;
     HapticFeedback.mediumImpact();
 
-    final bool isCancelled = response.code == 2 ||
-        (response.message?.toLowerCase().contains("cancel") ?? false);
-    final String errorTitle =
-        isCancelled ? "Payment Cancelled" : "Payment Unsuccessful";
-    final String errorReason = isCancelled
-        ? "Payment was cancelled before completion. No amount was deducted from your bank account."
-        : (response.message != null && response.message!.isNotEmpty
-            ? response.message!
-            : "Your transaction could not be processed right now. Please verify your payment details or try a different payment method.");
+    final String nowFormatted =
+        DateFormat('dd MMM yyyy, hh:mm a').format(DateTime.now());
 
-    showPaymentStatusModal(
-      title: errorTitle,
-      message: errorReason,
-      isCancelled: isCancelled,
-      errorCode: response.code,
-    );
+    final String activePlanTitle = planName;
+    final double activeAmount =
+        (createOrderData.value?.pricing?.finalAmount ?? totalPayable).toDouble();
+    final String? activeOrderId = createOrderData.value?.razorpay?.orderId;
+    final String msg = response.message ?? '';
+    final String lowerMsg = msg.toLowerCase();
+    final int? code = response.code;
+
+    final bool isExplicitlyPending = (lowerMsg.contains("pending") ||
+            lowerMsg.contains("awaiting") ||
+            lowerMsg.contains("processing")) &&
+        !lowerMsg.contains("fail") &&
+        !lowerMsg.contains("decline") &&
+        !lowerMsg.contains("error") &&
+        !lowerMsg.contains("rejected");
+
+    if (isExplicitlyPending) {
+      Get.off(() => WalkieTalkiePaymentPendingScreen(
+            isTeam: order.value.isTeam || purchasedSeats > 1,
+            planTitle: activePlanTitle,
+            memberCount: purchasedSeats,
+            amountPaid: activeAmount,
+            transactionTime: nowFormatted,
+            orderId: activeOrderId,
+          ));
+    } else {
+      Get.off(() => WalkieTalkiePaymentFailedScreen(
+            isTeam: order.value.isTeam || purchasedSeats > 1,
+            planTitle: activePlanTitle,
+            memberCount: purchasedSeats,
+            amountPaid: activeAmount,
+            transactionTime: nowFormatted,
+            errorMessage: msg.isNotEmpty
+                ? msg
+                : "Your payment could not be completed. Please try again.",
+            orderId: activeOrderId,
+          ));
+    }
   }
 
   void showPaymentStatusModal({
@@ -624,6 +629,37 @@ class WalkieOrderSummaryController extends GetxController {
       HapticFeedback.mediumImpact();
       isProcessingPayment.value = true;
 
+      // 1. Prepare parameters for create-order API
+      final int planId = summaryData.value?.plan?.id ??
+          order.value.plan?.id ??
+          (order.value.isTeam ? 4 : 1);
+      final int seats = purchasedSeats;
+      final String couponCode =
+          isCouponApplied ? (currentPromoCode ?? "") : "";
+
+      debugPrint(
+          "🚀 [CreateOrder API] Request: planId=$planId, purchasedSeats=$seats, couponCode='$couponCode'");
+
+      // 2. Hit WalkiePlanRepo.createOrder API
+      final createOrderRes = await WalkiePlanRepo.createOrder(
+        planId: planId,
+        purchasedSeats: seats,
+        couponCode: couponCode,
+      );
+
+      if (createOrderRes.status != true || createOrderRes.data == null) {
+        isProcessingPayment.value = false;
+        final errorMsg = createOrderRes.message ??
+            "Failed to create payment order. Please try again.";
+        showTopWhiteMessage(errorMsg);
+        return;
+      }
+
+      createOrderData.value = createOrderRes.data;
+
+      final rzp = createOrderRes.data?.razorpay;
+      final payment = createOrderRes.data?.payment;
+
       final String? rawPhone =
           Global.storageServices.get(PrefConst.userPhone)?.toString();
       final String? userEmail =
@@ -642,15 +678,23 @@ class WalkieOrderSummaryController extends GetxController {
         }
       }
 
-      // Ensure minimum 100 paise (₹1) for INR transactions in Razorpay
-      final int amountInPaise = totalPayable > 0 ? (totalPayable * 100).round() : 100;
+      // Determine amount in paise from backend API or fallback
+      final int amountInPaise = rzp?.amount != null && (rzp!.amount! > 0)
+          ? rzp.amount!.round()
+          : (totalPayable > 0 ? (totalPayable * 100).round() : 100);
+
+      final String razorpayKey = (rzp?.keyId != null && rzp!.keyId!.isNotEmpty)
+          ? rzp.keyId!
+          : ConstRes.activePaymentKey;
 
       final Map<String, dynamic> razorpayOptions = {
-        'key': ConstRes.activePaymentKey,
+        'key': razorpayKey,
         'amount': amountInPaise,
-        'name': 'FG Tracker',
-        'description': '$planName ($durationName)',
-        'currency': 'INR',
+        'name': 'FG MANPOWER LLP',
+        'description': 'Walkie-Talkie Subscription',
+        'currency': rzp?.currency ?? 'INR',
+        if (rzp?.orderId != null && rzp!.orderId!.isNotEmpty)
+          'order_id': rzp!.orderId!,
         'theme': {
           'color': '#5B4DF5',
         },
@@ -667,11 +711,13 @@ class WalkieOrderSummaryController extends GetxController {
           if (selectedPaymentMethod.value == 'card') 'method': 'card',
           if (selectedPaymentMethod.value == 'netbanking') ...{
             'method': 'netbanking',
-            if (selectedBank.value.isNotEmpty) 'bank': _getRazorpayBankCode(selectedBank.value),
+            if (selectedBank.value.isNotEmpty)
+              'bank': _getRazorpayBankCode(selectedBank.value),
           },
           if (selectedPaymentMethod.value == 'wallet') ...{
             'method': 'wallet',
-            if (selectedWallet.value.isNotEmpty) 'wallet': _getRazorpayWalletCode(selectedWallet.value),
+            if (selectedWallet.value.isNotEmpty)
+              'wallet': _getRazorpayWalletCode(selectedWallet.value),
           },
         },
         'retry': {
@@ -681,29 +727,74 @@ class WalkieOrderSummaryController extends GetxController {
         'send_sms_hash': true,
         'notes': {
           'planTitle': planName,
-          'plan_id': (order.value.plan?.id ?? 1).toString(),
+          'plan_id': planId.toString(),
           'duration': durationName,
-          'memberCount': purchasedSeats.toString(),
+          'memberCount': seats.toString(),
           'selectedPaymentMode': selectedPaymentMethod.value,
+          if (payment?.orderId != null) 'backendOrderId': payment!.orderId!,
           if (selectedPaymentMethod.value == 'upi') ...{
             'upiApp': selectedUpiApp.value,
             if (customUpiVpa.value.trim().isNotEmpty)
               'upiVpa': customUpiVpa.value.trim(),
           },
-          if (selectedPaymentMethod.value == 'netbanking') 'bank': selectedBank.value,
-          if (selectedPaymentMethod.value == 'wallet') 'wallet': selectedWallet.value,
-          if (currentPromoCode != null) 'couponCode': currentPromoCode!,
+          if (selectedPaymentMethod.value == 'netbanking')
+            'bank': selectedBank.value,
+          if (selectedPaymentMethod.value == 'wallet')
+            'wallet': selectedWallet.value,
+          if (couponCode.isNotEmpty) 'couponCode': couponCode,
         },
       };
 
-      debugPrint("🚀 [Razorpay] Opening Checkout with Key: ${ConstRes.activePaymentKey}");
-      debugPrint("📦 [Razorpay] Payload: $razorpayOptions");
+      final razorpayController = Get.isRegistered<RazorpayPaymentController>()
+          ? Get.find<RazorpayPaymentController>()
+          : Get.put(RazorpayPaymentController());
 
-      _razorpay.open(razorpayOptions);
+      // Prepare user friendly payment method string
+      String methodDesc = "Razorpay Payment";
+      if (selectedPaymentMethod.value == 'upi') {
+        if (selectedUpiApp.value == 'gpay') {
+          methodDesc = "Google Pay (UPI)";
+        } else if (selectedUpiApp.value == 'phonepe') {
+          methodDesc = "PhonePe (UPI)";
+        } else if (selectedUpiApp.value == 'paytm') {
+          methodDesc = "Paytm (UPI)";
+        } else if (selectedUpiApp.value == 'bhim') {
+          methodDesc = "BHIM UPI";
+        } else if (selectedUpiApp.value == 'cred') {
+          methodDesc = "Cred (UPI)";
+        } else if (selectedUpiApp.value == 'amazonpay') {
+          methodDesc = "Amazon Pay (UPI)";
+        } else {
+          methodDesc = "UPI Payment";
+        }
+      } else if (selectedPaymentMethod.value == 'card') {
+        final cardTypeLabel =
+            selectedCardType.value == 'credit' ? 'Credit Card' : 'Debit Card';
+        methodDesc =
+            "$cardTypeLabel (${selectedCardNetwork.value.toUpperCase()})";
+      } else if (selectedPaymentMethod.value == 'netbanking') {
+        methodDesc = "NetBanking (${selectedBank.value.toUpperCase()})";
+      } else if (selectedPaymentMethod.value == 'wallet') {
+        methodDesc = "Wallet (${selectedWallet.value.capitalizeFirst})";
+      }
+
+      await razorpayController.openCheckoutMap(
+        optionsMap: razorpayOptions,
+        paymentId: payment?.id,
+        isTeamPlan: order.value.isTeam || purchasedSeats > 1,
+        planName: planName,
+        seats: purchasedSeats,
+        validity: order.value.validTill,
+        amount: (createOrderData.value?.pricing?.finalAmount ?? totalPayable).toDouble(),
+        method: methodDesc,
+        onSuccess: _handlePaymentSuccess,
+        onError: _handlePaymentError,
+        onWallet: _handleExternalWallet,
+      );
     } catch (e) {
       isProcessingPayment.value = false;
       debugPrint("❌ [Razorpay] Exception opening checkout: $e");
-      showTopWhiteMessage("Unable to open Razorpay gateway: $e");
+      showTopWhiteMessage(_parseErrorMessage(e));
     }
   }
 
