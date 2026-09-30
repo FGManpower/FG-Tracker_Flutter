@@ -12,97 +12,118 @@ class GroupCallingScreen extends GetView<GroupCallingController> {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async {
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
         if (controller.fullScreenShareUserId.value != null) {
           controller.closeFullScreenShare();
-          return false;
         }
-        return false;
       },
       child: Scaffold(
         backgroundColor: const Color(0xFF0F0B29),
-        body: Stack(
-          children: [
-            Positioned.fill(
-              child: Obx(() {
-                final fullUserId = controller.fullScreenShareUserId.value;
 
-                if (fullUserId != null && fullUserId.isNotEmpty) {
-                  final participant =
-                      controller.activeParticipants.firstWhereOrNull(
-                    (p) => p.userId.toString().trim() == fullUserId.trim(),
-                  );
+        body: GestureDetector(
+          onTap: controller.toggleControls,
+          behavior: HitTestBehavior.opaque,
+          child: Stack(
+            children: [
 
-                  if (participant != null) {
-                    return GroupScreenShareFullScreen(
-                      controller: controller,
-                      participant: participant,
+              Positioned.fill(
+                child: Obx(() {
+                  final fullUserId = controller.fullScreenShareUserId.value;
+
+                  if (fullUserId != null && fullUserId.isNotEmpty) {
+                    final participant = controller.activeParticipants.firstWhereOrNull(
+                          (p) => p.userId.toString().trim() == fullUserId.trim(),
                     );
+                    if (participant != null) {
+                      return GroupScreenShareFullScreen(
+                        controller: controller,
+                        participant: participant,
+                      );
+                    }
                   }
+
+                  return GroupParticipantGrid(
+                    pinnedUserId: controller.pinnedUserId.value,
+                    onTogglePin: controller.togglePinUser,
+                    participants: controller.activeParticipants.toList(),
+                    isVideoMode: controller.isVideo,
+                    screenSharingUserIds: controller.screenSharingUsers
+                        .map((e) => e.toString().trim())
+                        .toSet(),
+                  );
+                }),
+              ),
+
+
+              Obx(() {
+                if (controller.fullScreenShareUserId.value != null) {
+                  return const SizedBox.shrink();
                 }
 
-                return GroupParticipantGrid(
-                  participants: controller.activeParticipants.toList(),
-                  isVideoMode: controller.isVideo,
-                  isScreenShareExpanded: controller.isScreenShareExpanded.value,
-                  screenSharingUserIds: controller.screenSharingUsers
-                      .map((e) => e.toString().trim())
-                      .toSet(),
-                  onParticipantTap: (p) {
-                    if (controller.isUserScreenSharing(p.userId)) {
-                      controller.openFullScreenShare(p.userId);
-                    }
-                  },
-                  onViewScreenShare: (userId) {
-                    controller.openFullScreenShare(userId);
-                  },
-                  onZoomOut: () {
-                    if (controller.isScreenShareExpanded.value) {
-                      controller.isScreenShareExpanded.value = false;
-                    } else {
-                      controller.isScreenShareExpanded.value = true;
-                    }
-                  },
-                );
-              }),
-            ),
-            Obx(() {
-              if (controller.fullScreenShareUserId.value != null) {
-                return const SizedBox.shrink();
-              }
-              return Positioned(
-                top: 0,
-                left: 0,
-                right: 0,
-                child: Container(
-                  padding: EdgeInsets.only(
-                    top: MediaQuery.of(context).padding.top,
-                  ),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.black.withOpacity(0.7),
-                        Colors.transparent,
-                      ],
+                final show = controller.showControls.value;
+
+                return AnimatedPositioned(
+                  duration: const Duration(milliseconds: 300),
+                  top: show ? 0 : -150.h,
+                  left: 0,
+                  right: 0,
+                  child: AnimatedOpacity(
+                    duration: const Duration(milliseconds: 300),
+                    opacity: show ? 1.0 : 0.0,
+                    child: Listener(
+                      onPointerDown: (_) => controller.resetControlsTimer(),
+                      child: Container(
+                        padding: EdgeInsets.only(
+                          top: MediaQuery.of(context).padding.top,
+                        ),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.black.withOpacity(0.7),
+                              Colors.transparent,
+                            ],
+                          ),
+                        ),
+                        child: _buildHeader(),
+                      ),
                     ),
                   ),
-                  child: _buildHeader(),
-                ),
-              );
-            }),
-            Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
-              child: SafeArea(
-                top: false,
-                child: GroupCallControls(controller: controller),
-              ),
-            ),
-          ],
+                );
+              }),
+
+
+              Obx(() {
+                if (controller.fullScreenShareUserId.value != null) {
+                  return const SizedBox.shrink();
+                }
+
+                final show = controller.showControls.value;
+
+                return AnimatedPositioned(
+                  duration: const Duration(milliseconds: 300),
+                  bottom: show ? 0 : -200.h,
+                  left: 0,
+                  right: 0,
+                  child: AnimatedOpacity(
+                    duration: const Duration(milliseconds: 300),
+                    opacity: show ? 1.0 : 0.0,
+                    child: Listener(
+                      onPointerDown: (_) => controller.resetControlsTimer(),
+                      child: SafeArea(
+                        top: false,
+                        child: GroupCallControls(controller: controller),
+                      ),
+                    ),
+                  ),
+                );
+              }),
+            ],
+          ),
         ),
       ),
     );
@@ -197,13 +218,21 @@ class GroupCallingScreen extends GetView<GroupCallingController> {
               ),
               if (controller.isVideo) ...[
                 SizedBox(height: 8.h),
-                ControlItem(
-                  icon: Icons.cameraswitch_rounded,
-                  label: "Flip",
-                  bgColor: Colors.white,
-                  iconColor: const Color(0xFF6E5CA4),
-                  borderColor: const Color(0xFFE9E5FE),
+                GestureDetector(
                   onTap: controller.switchCamera,
+                  child: Container(
+                    padding: EdgeInsets.all(6.r),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: const Color(0xFFE9E5FE)),
+                    ),
+                    child: Icon(
+                      Icons.cameraswitch_rounded,
+                      color: const Color(0xFF6E5CA4),
+                      size: 20.sp,
+                    ),
+                  ),
                 ),
               ],
             ],
