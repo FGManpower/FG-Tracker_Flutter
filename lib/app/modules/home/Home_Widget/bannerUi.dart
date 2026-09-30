@@ -44,9 +44,7 @@ class BannerUi extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      // if (controller.BannerResponeMessage.value.isNotEmpty || controller.bannerList.isEmpty) {
-      //   return const SizedBox.shrink();
-      // }
+
        if (controller.isLoadingBanners.value) {
         return Padding(
           padding: EdgeInsets.only(bottom: 18.h),

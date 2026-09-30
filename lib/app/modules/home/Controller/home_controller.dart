@@ -27,7 +27,7 @@ class HomeController extends GetxController {
   Rx<GroupCountDetail> groupCount = GroupCountDetail().obs;
   StreamSubscription<dynamic>? _groupCountSubscription;
   RxList<BannerData> bannerList = <BannerData>[].obs;
-  RxString BannerResponeMessage = ''.obs;
+  RxString InitializeResponeMessage = ''.obs;
   RxBool isLoadingBanners = false.obs;
   final RxList<LiveLocationModel> liveLocations = <LiveLocationModel>[].obs;
   final Rx<LatLng?> currentLocation = Rx<LatLng?>(null);
@@ -44,10 +44,16 @@ class HomeController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    init();
+  }
+
+  init() {
+    fetchInitializeData();
     SocketDashboardService.instance.init();
     _listenGroupCount();
     fetchBanners();
-    fetchInitializeData();
+    getProfileData();
+    SocketDashboardService.instance.init();
   }
 
   void _listenGroupCount() {
@@ -101,13 +107,11 @@ class HomeController extends GetxController {
       if (result.success == true) {
         isLoadingBanners(false);
         bannerList.value = result.data!;
-        BannerResponeMessage.value = "";
       } else {
         isLoadingBanners(false);
       }
     } catch (e) {
       isLoadingBanners(false);
-      BannerResponeMessage.value = e.toString();
     }
   }
 
@@ -117,9 +121,10 @@ class HomeController extends GetxController {
       final result = await InitializeRepo.getInitializeData();
       if (result.status == true) {
         initializeModel.value = result;
+        InitializeResponeMessage.value = "";
       }
     } catch (e) {
-      debugPrint("[HomeController] fetchInitializeData error: $e");
+      InitializeResponeMessage.value = e.toString();
     } finally {
       isInitializing.value = false;
     }
