@@ -15,7 +15,7 @@ import 'package:intl/intl.dart';
 class WalkieTalkiePaymentPendingScreen extends StatefulWidget {
   final bool isTeam;
   final String planTitle;
-  final int memberCount;
+  final int? memberCount;
   final num? amountPaid;
   final String? transactionTime;
   final String? orderId;
@@ -51,7 +51,6 @@ class _WalkieTalkiePaymentPendingScreenState
   static const Color _textSecondary = Color(0xFF64748B);
   static const Color _cardBorder = Color(0xFFE2E8F0);
   static const Color _pendingAmber = Color(0xFFF59E0B);
-  static const Color _successGreen = Color(0xFF10B981);
 
   @override
   void initState() {
@@ -72,7 +71,7 @@ class _WalkieTalkiePaymentPendingScreenState
 
     _fadeController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 800),
+      duration: const Duration(milliseconds: 600),
     )..forward();
   }
 
@@ -163,62 +162,80 @@ class _WalkieTalkiePaymentPendingScreenState
       body: SafeArea(
         child: FadeTransition(
           opacity: _fadeController,
-          child: SingleChildScrollView(
-            physics: const BouncingScrollPhysics(),
-            padding: EdgeInsets.symmetric(
-              horizontal: isWideScreen ? (screenWidth - 540) / 2 : 20.w,
-              vertical: 16.h,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                SizedBox(height: 10.h),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                padding: EdgeInsets.symmetric(
+                  horizontal: isWideScreen ? (screenWidth - 520) / 2 : 18.w,
+                  vertical: 14.h,
+                ),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minHeight: constraints.maxHeight - 28.h,
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          SizedBox(height: 6.h),
 
-                // Top Animated Orbiting Clock Graphic
-                _buildTopPendingIllustration(),
+                          // Top Animated Orbiting Clock Graphic
+                          _buildTopPendingIllustration(),
 
-                SizedBox(height: 24.h),
+                          SizedBox(height: 18.h),
 
-                // Title & Subtitle
-                Text(
-                  "Payment Pending",
-                  style: TextStyle(
-                    fontSize: 22.sp,
-                    fontFamily: FontFamily.interBold,
-                    color: _textDark,
-                    letterSpacing: -0.5,
+                          // Title & Subtitle
+                          Text(
+                            "Payment Pending",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 20.sp,
+                              fontFamily: FontFamily.interBold,
+                              color: _textDark,
+                              letterSpacing: -0.4,
+                            ),
+                          ),
+                          SizedBox(height: 6.h),
+                          Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 8.w),
+                            child: Text(
+                              "Your payment is being processed by the payment provider.\nThis may take a few minutes.",
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 12.sp,
+                                fontFamily: FontFamily.interRegular,
+                                color: _textSecondary,
+                                height: 1.35,
+                              ),
+                            ),
+                          ),
+
+                          SizedBox(height: 20.h),
+
+                          // Plan Details Card
+                          _buildPlanDetailsCard(),
+
+                          SizedBox(height: 16.h),
+
+                          // Payment Status Stepper Card
+                          _buildPaymentStatusCard(),
+                        ],
+                      ),
+
+                      // Bottom Action Buttons
+                      Padding(
+                        padding: EdgeInsets.only(top: 24.h, bottom: 12.h),
+                        child: _buildActionButtons(),
+                      ),
+                    ],
                   ),
                 ),
-                SizedBox(height: 8.h),
-                Text(
-                  "Your payment is being processed by the payment provider.\nThis may take a few minutes.",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 13.sp,
-                    fontFamily: FontFamily.interRegular,
-                    color: _textSecondary,
-                    height: 1.4,
-                  ),
-                ),
-
-                SizedBox(height: 24.h),
-
-                // Plan Details Card
-                _buildPlanDetailsCard(),
-
-                SizedBox(height: 20.h),
-
-                // Payment Status Stepper Card
-                _buildPaymentStatusCard(),
-
-                SizedBox(height: 32.h),
-
-                // Bottom Buttons
-                _buildActionButtons(),
-
-                SizedBox(height: 24.h),
-              ],
-            ),
+              );
+            },
           ),
         ),
       ),
@@ -230,30 +247,31 @@ class _WalkieTalkiePaymentPendingScreenState
       backgroundColor: _bgSoft,
       elevation: 0,
       scrolledUnderElevation: 0,
+      leadingWidth: 56.w,
       leading: Padding(
         padding: EdgeInsets.only(left: 16.w),
         child: Center(
           child: InkWell(
             onTap: () => Get.back(),
-            borderRadius: BorderRadius.circular(12.r),
+            borderRadius: BorderRadius.circular(10.r),
             child: Container(
-              height: 40.w,
-              width: 40.w,
+              height: 38.w,
+              width: 38.w,
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(12.r),
+                borderRadius: BorderRadius.circular(10.r),
                 border: Border.all(color: _cardBorder),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withValues(alpha: 0.04),
-                    blurRadius: 6,
+                    blurRadius: 5,
                     offset: const Offset(0, 2),
                   ),
                 ],
               ),
               child: const Icon(
                 Icons.arrow_back_ios_new_rounded,
-                size: 16,
+                size: 15,
                 color: _textDark,
               ),
             ),
@@ -262,11 +280,12 @@ class _WalkieTalkiePaymentPendingScreenState
       ),
       title: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
           Text(
             "Payment Pending",
             style: TextStyle(
-              fontSize: 16.sp,
+              fontSize: 15.sp,
               fontFamily: FontFamily.interBold,
               color: _textDark,
             ),
@@ -274,7 +293,7 @@ class _WalkieTalkiePaymentPendingScreenState
           Text(
             "Your payment is being processed",
             style: TextStyle(
-              fontSize: 11.sp,
+              fontSize: 10.5.sp,
               fontFamily: FontFamily.interRegular,
               color: _textSecondary,
             ),
@@ -295,20 +314,20 @@ class _WalkieTalkiePaymentPendingScreenState
         final double orbit = _orbitController.value * 2 * math.pi;
 
         return SizedBox(
-          width: 260.w,
-          height: 120.h,
+          width: 240.w,
+          height: 110.h,
           child: Stack(
             alignment: Alignment.center,
             children: [
               // Ambient soft golden/orange background glow
               Container(
-                width: 130.w + (pulse * 20.w),
-                height: 90.h + (pulse * 15.h),
+                width: 110.w + (pulse * 20.w),
+                height: 80.h + (pulse * 15.h),
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   gradient: RadialGradient(
                     colors: [
-                      _pendingAmber.withValues(alpha: 0.28),
+                      _pendingAmber.withValues(alpha: 0.25),
                       _pendingAmber.withValues(alpha: 0.0),
                     ],
                   ),
@@ -317,16 +336,16 @@ class _WalkieTalkiePaymentPendingScreenState
 
               // Orbiting curved dotted ring
               CustomPaint(
-                size: Size(240.w, 100.h),
+                size: Size(220.w, 90.h),
                 painter: _OrbitRingPainter(pulse: pulse),
               ),
 
               // Left floating Card badge
               Positioned(
-                left: 12.w + math.sin(orbit) * 3.w,
+                left: 10.w + math.sin(orbit) * 3.w,
                 child: Container(
-                  width: 44.w,
-                  height: 44.w,
+                  width: 40.w,
+                  height: 40.w,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: const Color(0xFFEFF2FE),
@@ -334,8 +353,8 @@ class _WalkieTalkiePaymentPendingScreenState
                     boxShadow: [
                       BoxShadow(
                         color: const Color(0xFF6366F1).withValues(alpha: 0.15),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
+                        blurRadius: 8,
+                        offset: const Offset(0, 3),
                       ),
                     ],
                   ),
@@ -343,7 +362,7 @@ class _WalkieTalkiePaymentPendingScreenState
                     child: Icon(
                       Icons.credit_card_rounded,
                       color: const Color(0xFF4F46E5),
-                      size: 20.sp,
+                      size: 18.sp,
                     ),
                   ),
                 ),
@@ -351,10 +370,10 @@ class _WalkieTalkiePaymentPendingScreenState
 
               // Right floating Shield badge
               Positioned(
-                right: 12.w - math.sin(orbit) * 3.w,
+                right: 10.w - math.sin(orbit) * 3.w,
                 child: Container(
-                  width: 44.w,
-                  height: 44.w,
+                  width: 40.w,
+                  height: 40.w,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: const Color(0xFFEFF6FF),
@@ -362,8 +381,8 @@ class _WalkieTalkiePaymentPendingScreenState
                     boxShadow: [
                       BoxShadow(
                         color: const Color(0xFF3B82F6).withValues(alpha: 0.15),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
+                        blurRadius: 8,
+                        offset: const Offset(0, 3),
                       ),
                     ],
                   ),
@@ -371,7 +390,7 @@ class _WalkieTalkiePaymentPendingScreenState
                     child: Icon(
                       Icons.shield_rounded,
                       color: const Color(0xFF2563EB),
-                      size: 20.sp,
+                      size: 18.sp,
                     ),
                   ),
                 ),
@@ -379,8 +398,8 @@ class _WalkieTalkiePaymentPendingScreenState
 
               // Center Glowing Clock
               Container(
-                width: 72.w,
-                height: 72.w,
+                width: 66.w,
+                height: 66.w,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   gradient: const LinearGradient(
@@ -391,9 +410,9 @@ class _WalkieTalkiePaymentPendingScreenState
                   boxShadow: [
                     BoxShadow(
                       color: _pendingAmber.withValues(alpha: 0.45),
-                      blurRadius: 20,
+                      blurRadius: 18,
                       spreadRadius: 2,
-                      offset: const Offset(0, 6),
+                      offset: const Offset(0, 5),
                     ),
                   ],
                 ),
@@ -401,7 +420,7 @@ class _WalkieTalkiePaymentPendingScreenState
                   child: Icon(
                     Icons.access_time_filled_rounded,
                     color: Colors.white,
-                    size: 38.sp,
+                    size: 34.sp,
                   ),
                 ),
               ),
@@ -418,16 +437,16 @@ class _WalkieTalkiePaymentPendingScreenState
   Widget _buildPlanDetailsCard() {
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.all(18.w),
+      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(18.r),
+        borderRadius: BorderRadius.circular(16.r),
         border: Border.all(color: _cardBorder),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
@@ -437,31 +456,31 @@ class _WalkieTalkiePaymentPendingScreenState
           Text(
             "Plan Details",
             style: TextStyle(
-              fontSize: 15.sp,
+              fontSize: 14.sp,
               fontFamily: FontFamily.interBold,
               color: _textDark,
             ),
           ),
-          SizedBox(height: 14.h),
+          SizedBox(height: 12.h),
 
-          // Plan Item Row 1
+          // Plan Item Row
           Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Container(
-                width: 38.w,
-                height: 38.w,
+                width: 36.w,
+                height: 36.w,
                 decoration: BoxDecoration(
                   color: const Color(0xFFEEF2FF),
-                  borderRadius: BorderRadius.circular(12.r),
+                  borderRadius: BorderRadius.circular(10.r),
                 ),
                 child: Icon(
                   Icons.near_me_rounded,
                   color: _primaryPurple,
-                  size: 20.sp,
+                  size: 18.sp,
                 ),
               ),
-              SizedBox(width: 12.w),
+              SizedBox(width: 10.w),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -472,7 +491,7 @@ class _WalkieTalkiePaymentPendingScreenState
                           child: Text(
                             _displayTitle,
                             style: TextStyle(
-                              fontSize: 13.5.sp,
+                              fontSize: 13.sp,
                               fontFamily: FontFamily.interBold,
                               color: _textDark,
                             ),
@@ -480,18 +499,18 @@ class _WalkieTalkiePaymentPendingScreenState
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        SizedBox(width: 8.w),
+                        SizedBox(width: 6.w),
                         Container(
                           padding: EdgeInsets.symmetric(
-                              horizontal: 7.w, vertical: 2.h),
+                              horizontal: 6.w, vertical: 2.h),
                           decoration: BoxDecoration(
                             color: const Color(0xFFEDE9FE),
-                            borderRadius: BorderRadius.circular(6.r),
+                            borderRadius: BorderRadius.circular(5.r),
                           ),
                           child: Text(
                             "Monthly Plan",
                             style: TextStyle(
-                              fontSize: 9.5.sp,
+                              fontSize: 9.sp,
                               fontFamily: FontFamily.interMedium,
                               color: const Color(0xFF6D28D9),
                             ),
@@ -499,22 +518,25 @@ class _WalkieTalkiePaymentPendingScreenState
                         ),
                       ],
                     ),
-                    SizedBox(height: 4.h),
+                    SizedBox(height: 3.h),
                     Text(
                       "Real-time monitoring • Instant alerts",
                       style: TextStyle(
-                        fontSize: 11.sp,
+                        fontSize: 10.5.sp,
                         fontFamily: FontFamily.interRegular,
                         color: _textSecondary,
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ),
               ),
+              SizedBox(width: 8.w),
               Text(
                 "₹${controller.formatAmount(_displayAmount)}",
                 style: TextStyle(
-                  fontSize: 14.sp,
+                  fontSize: 13.5.sp,
                   fontFamily: FontFamily.interBold,
                   color: _textDark,
                 ),
@@ -522,44 +544,49 @@ class _WalkieTalkiePaymentPendingScreenState
             ],
           ),
 
-          SizedBox(height: 14.h),
+          SizedBox(height: 12.h),
           const Divider(color: _cardBorder, height: 1),
-          SizedBox(height: 14.h),
+          SizedBox(height: 12.h),
 
-          // Total Amount Row
+          // Total Amount Row (Responsive with Expanded)
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Total Amount",
-                    style: TextStyle(
-                      fontSize: 13.5.sp,
-                      fontFamily: FontFamily.interBold,
-                      color: _textDark,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Total Amount",
+                      style: TextStyle(
+                        fontSize: 13.sp,
+                        fontFamily: FontFamily.interBold,
+                        color: _textDark,
+                      ),
                     ),
-                  ),
-                  SizedBox(height: 3.h),
-                  Text(
-                    "Payment initiated on $_displayTime",
-                    style: TextStyle(
-                      fontSize: 10.5.sp,
-                      fontFamily: FontFamily.interRegular,
-                      color: _textSecondary,
+                    SizedBox(height: 2.h),
+                    Text(
+                      "Payment initiated on $_displayTime",
+                      style: TextStyle(
+                        fontSize: 10.sp,
+                        fontFamily: FontFamily.interRegular,
+                        color: _textSecondary,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
+              SizedBox(width: 8.w),
               RichText(
                 text: TextSpan(
                   children: [
                     TextSpan(
                       text: "₹${controller.formatAmount(_displayAmount)}",
                       style: TextStyle(
-                        fontSize: 18.sp,
+                        fontSize: 16.sp,
                         fontFamily: FontFamily.interBold,
                         color: _primaryPurple,
                       ),
@@ -567,7 +594,7 @@ class _WalkieTalkiePaymentPendingScreenState
                     TextSpan(
                       text: " / month",
                       style: TextStyle(
-                        fontSize: 11.5.sp,
+                        fontSize: 10.5.sp,
                         fontFamily: FontFamily.interRegular,
                         color: _textSecondary,
                       ),
@@ -588,16 +615,16 @@ class _WalkieTalkiePaymentPendingScreenState
   Widget _buildPaymentStatusCard() {
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.all(18.w),
+      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(18.r),
+        borderRadius: BorderRadius.circular(16.r),
         border: Border.all(color: _cardBorder),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
@@ -607,15 +634,15 @@ class _WalkieTalkiePaymentPendingScreenState
           Text(
             "Payment Status",
             style: TextStyle(
-              fontSize: 15.sp,
+              fontSize: 14.sp,
               fontFamily: FontFamily.interBold,
               color: _textDark,
             ),
           ),
-          SizedBox(height: 16.h),
+          SizedBox(height: 14.h),
 
           // Step 1: Payment Initiated (Completed)
-          _buildStepRow(
+          _buildStepItem(
             icon: Icons.check_circle_rounded,
             iconColor: _pendingAmber,
             title: "Payment Initiated",
@@ -623,12 +650,12 @@ class _WalkieTalkiePaymentPendingScreenState
             statusBadgeText: "Completed",
             statusBadgeBg: const Color(0xFFDCFCE7),
             statusBadgeTextColor: const Color(0xFF15803D),
-            isLast: false,
+            showBottomLine: true,
             isCompleted: true,
           ),
 
           // Step 2: Processing Payment (In Progress)
-          _buildStepRow(
+          _buildStepItem(
             icon: Icons.radio_button_checked_rounded,
             iconColor: _pendingAmber,
             title: "Processing Payment",
@@ -636,13 +663,13 @@ class _WalkieTalkiePaymentPendingScreenState
             statusBadgeText: "In Progress",
             statusBadgeBg: const Color(0xFFFEF3C7),
             statusBadgeTextColor: const Color(0xFFB45309),
-            isLast: false,
+            showBottomLine: true,
             isCompleted: false,
             isActive: true,
           ),
 
           // Step 3: Activate Plan (Pending)
-          _buildStepRow(
+          _buildStepItem(
             icon: Icons.circle_outlined,
             iconColor: const Color(0xFFCBD5E1),
             title: "Activate Plan",
@@ -650,18 +677,18 @@ class _WalkieTalkiePaymentPendingScreenState
             statusBadgeText: "Pending",
             statusBadgeBg: const Color(0xFFF1F5F9),
             statusBadgeTextColor: const Color(0xFF64748B),
-            isLast: true,
+            showBottomLine: false,
             isCompleted: false,
           ),
 
-          SizedBox(height: 14.h),
+          SizedBox(height: 12.h),
 
           // Notice Info Container
           Container(
-            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
             decoration: BoxDecoration(
               color: const Color(0xFFF8FAFC),
-              borderRadius: BorderRadius.circular(12.r),
+              borderRadius: BorderRadius.circular(10.r),
               border: Border.all(color: const Color(0xFFE2E8F0)),
             ),
             child: Row(
@@ -670,17 +697,17 @@ class _WalkieTalkiePaymentPendingScreenState
                 Icon(
                   Icons.info_outline_rounded,
                   color: _primaryPurple,
-                  size: 18.sp,
+                  size: 16.sp,
                 ),
-                SizedBox(width: 10.w),
+                SizedBox(width: 8.w),
                 Expanded(
                   child: Text(
                     "Please do not close the app. We will notify you once the payment is confirmed and your plan is activated.",
                     style: TextStyle(
-                      fontSize: 11.5.sp,
+                      fontSize: 11.sp,
                       fontFamily: FontFamily.interRegular,
                       color: _textSecondary,
-                      height: 1.4,
+                      height: 1.35,
                     ),
                   ),
                 ),
@@ -692,7 +719,7 @@ class _WalkieTalkiePaymentPendingScreenState
     );
   }
 
-  Widget _buildStepRow({
+  Widget _buildStepItem({
     required IconData icon,
     required Color iconColor,
     required String title,
@@ -700,106 +727,103 @@ class _WalkieTalkiePaymentPendingScreenState
     required String statusBadgeText,
     required Color statusBadgeBg,
     required Color statusBadgeTextColor,
-    required bool isLast,
+    required bool showBottomLine,
     bool isCompleted = false,
     bool isActive = false,
   }) {
-    return IntrinsicHeight(
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Step Icon and Vertical Line
-          Column(
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Icon and vertical connector column
+        SizedBox(
+          width: 22.w,
+          child: Column(
             children: [
               Container(
-                width: 22.w,
-                height: 22.w,
+                width: 20.w,
+                height: 20.w,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: isActive
+                  color: (isActive || isCompleted)
                       ? _pendingAmber.withValues(alpha: 0.15)
-                      : (isCompleted
-                          ? _pendingAmber.withValues(alpha: 0.15)
-                          : Colors.transparent),
+                      : Colors.transparent,
                 ),
                 child: Center(
-                  child: Icon(
-                    icon,
-                    color: iconColor,
-                    size: isActive ? 18.sp : 18.sp,
-                  ),
+                  child: Icon(icon, color: iconColor, size: 16.sp),
                 ),
               ),
-              if (!isLast)
-                Expanded(
-                  child: Container(
-                    width: 2.w,
-                    margin: EdgeInsets.symmetric(vertical: 4.h),
-                    color: isCompleted
-                        ? _pendingAmber.withValues(alpha: 0.6)
-                        : const Color(0xFFE2E8F0),
-                  ),
+              if (showBottomLine)
+                Container(
+                  width: 2.w,
+                  height: 28.h,
+                  margin: EdgeInsets.symmetric(vertical: 2.h),
+                  color: isCompleted
+                      ? _pendingAmber.withValues(alpha: 0.6)
+                      : const Color(0xFFE2E8F0),
                 ),
             ],
           ),
+        ),
 
-          SizedBox(width: 12.w),
+        SizedBox(width: 10.w),
 
-          // Texts and Status Badge
-          Expanded(
-            child: Padding(
-              padding: EdgeInsets.only(bottom: isLast ? 0 : 18.h),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          title,
-                          style: TextStyle(
-                            fontSize: 13.sp,
-                            fontFamily: FontFamily.interBold,
-                            color: _textDark,
-                          ),
+        // Text & Badge Row
+        Expanded(
+          child: Padding(
+            padding: EdgeInsets.only(bottom: showBottomLine ? 10.h : 0),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: TextStyle(
+                          fontSize: 12.5.sp,
+                          fontFamily: FontFamily.interBold,
+                          color: _textDark,
                         ),
-                        SizedBox(height: 3.h),
-                        Text(
-                          subtitle,
-                          style: TextStyle(
-                            fontSize: 11.sp,
-                            fontFamily: FontFamily.interRegular,
-                            color: _textSecondary,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  SizedBox(width: 8.w),
-                  Container(
-                    padding:
-                        EdgeInsets.symmetric(horizontal: 9.w, vertical: 4.h),
-                    decoration: BoxDecoration(
-                      color: statusBadgeBg,
-                      borderRadius: BorderRadius.circular(8.r),
-                    ),
-                    child: Text(
-                      statusBadgeText,
-                      style: TextStyle(
-                        fontSize: 10.5.sp,
-                        fontFamily: FontFamily.interMedium,
-                        color: statusBadgeTextColor,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
+                      SizedBox(height: 2.h),
+                      Text(
+                        subtitle,
+                        style: TextStyle(
+                          fontSize: 10.5.sp,
+                          fontFamily: FontFamily.interRegular,
+                          color: _textSecondary,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(width: 6.w),
+                Container(
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+                  decoration: BoxDecoration(
+                    color: statusBadgeBg,
+                    borderRadius: BorderRadius.circular(6.r),
+                  ),
+                  child: Text(
+                    statusBadgeText,
+                    style: TextStyle(
+                      fontSize: 10.sp,
+                      fontFamily: FontFamily.interMedium,
+                      color: statusBadgeTextColor,
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -808,29 +832,30 @@ class _WalkieTalkiePaymentPendingScreenState
   // ============================================================
   Widget _buildActionButtons() {
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
         // Refresh Status Primary Button
         Obx(() {
           final bool loading = _isRefreshing.value;
           return SizedBox(
             width: double.infinity,
-            height: 52.h,
+            height: 48.h,
             child: ElevatedButton(
               onPressed: loading ? null : _handleRefreshStatus,
               style: ElevatedButton.styleFrom(
                 backgroundColor: _primaryPurple,
                 elevation: 0,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14.r),
+                  borderRadius: BorderRadius.circular(12.r),
                 ),
               ),
               child: loading
                   ? SizedBox(
-                      width: 22.w,
-                      height: 22.w,
+                      width: 20.w,
+                      height: 20.w,
                       child: const CircularProgressIndicator(
                         color: Colors.white,
-                        strokeWidth: 2.5,
+                        strokeWidth: 2.2,
                       ),
                     )
                   : Row(
@@ -839,7 +864,7 @@ class _WalkieTalkiePaymentPendingScreenState
                         Text(
                           "Refresh Status",
                           style: TextStyle(
-                            fontSize: 15.sp,
+                            fontSize: 14.5.sp,
                             fontFamily: FontFamily.interBold,
                             color: Colors.white,
                           ),
@@ -848,7 +873,7 @@ class _WalkieTalkiePaymentPendingScreenState
                         Icon(
                           Icons.refresh_rounded,
                           color: Colors.white,
-                          size: 19.sp,
+                          size: 18.sp,
                         ),
                       ],
                     ),
@@ -856,12 +881,12 @@ class _WalkieTalkiePaymentPendingScreenState
           );
         }),
 
-        SizedBox(height: 12.h),
+        SizedBox(height: 10.h),
 
         // View Plan Details Secondary Button
         SizedBox(
           width: double.infinity,
-          height: 52.h,
+          height: 48.h,
           child: OutlinedButton(
             onPressed: () {
               Get.to(() => WalkieTalkiePlanScreen(
@@ -872,13 +897,13 @@ class _WalkieTalkiePaymentPendingScreenState
               backgroundColor: Colors.transparent,
               side: const BorderSide(color: Color(0xFFCBD5E1)),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14.r),
+                borderRadius: BorderRadius.circular(12.r),
               ),
             ),
             child: Text(
               "View Plan Details",
               style: TextStyle(
-                fontSize: 14.5.sp,
+                fontSize: 14.sp,
                 fontFamily: FontFamily.interMedium,
                 color: _primaryPurple,
               ),

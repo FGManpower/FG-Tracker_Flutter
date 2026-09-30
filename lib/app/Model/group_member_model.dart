@@ -113,6 +113,243 @@ class Pagination {
   }
 }
 
+class IndividualPlanDetails {
+  int? subscriptionId;
+  int? planId;
+  String? planName;
+  String? planType;
+  String? billingInterval;
+  String? startsAt;
+  String? expiresAt;
+
+  IndividualPlanDetails({
+    this.subscriptionId,
+    this.planId,
+    this.planName,
+    this.planType,
+    this.billingInterval,
+    this.startsAt,
+    this.expiresAt,
+  });
+
+  IndividualPlanDetails.fromJson(Map<String, dynamic> json) {
+    subscriptionId = _toInt(json['subscriptionId'] ?? json['id']);
+    planId = _toInt(json['planId'] ?? json['plan_id']);
+    planName = json['planName']?.toString() ?? json['name']?.toString();
+    planType = json['planType']?.toString();
+    billingInterval = json['billingInterval']?.toString();
+    startsAt = json['startsAt']?.toString();
+    expiresAt = json['expiresAt']?.toString();
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'subscriptionId': subscriptionId,
+      'planId': planId,
+      'planName': planName,
+      'planType': planType,
+      'billingInterval': billingInterval,
+      'startsAt': startsAt,
+      'expiresAt': expiresAt,
+    };
+  }
+
+  static int? _toInt(dynamic value) {
+    if (value == null) return null;
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    return int.tryParse(value.toString());
+  }
+}
+
+class TeamPlanDetails {
+  int? subscriptionId;
+  int? planId;
+  String? planName;
+  String? planType;
+  String? billingInterval;
+  int? purchasedSeats;
+  int? assignedSeats;
+  int? availableSeats;
+  bool? canAssignMember;
+  String? startsAt;
+  String? expiresAt;
+
+  TeamPlanDetails({
+    this.subscriptionId,
+    this.planId,
+    this.planName,
+    this.planType,
+    this.billingInterval,
+    this.purchasedSeats,
+    this.assignedSeats,
+    this.availableSeats,
+    this.canAssignMember,
+    this.startsAt,
+    this.expiresAt,
+  });
+
+  TeamPlanDetails.fromJson(Map<String, dynamic> json) {
+    subscriptionId = _toInt(json['subscriptionId'] ?? json['id']);
+    planId = _toInt(json['planId'] ?? json['plan_id']);
+    planName = json['planName']?.toString() ?? json['name']?.toString();
+    planType = json['planType']?.toString();
+    billingInterval = json['billingInterval']?.toString();
+    purchasedSeats = _toInt(json['purchasedSeats'] ??
+        json['seats'] ??
+        json['memberCount'] ??
+        json['seatsCount']);
+    assignedSeats = _toInt(json['assignedSeats']);
+    availableSeats = _toInt(json['availableSeats']);
+    canAssignMember = json['canAssignMember'] == true ||
+        (purchasedSeats != null && purchasedSeats! > 1);
+    startsAt = json['startsAt']?.toString();
+    expiresAt = json['expiresAt']?.toString();
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'subscriptionId': subscriptionId,
+      'planId': planId,
+      'planName': planName,
+      'planType': planType,
+      'billingInterval': billingInterval,
+      'purchasedSeats': purchasedSeats,
+      'assignedSeats': assignedSeats,
+      'availableSeats': availableSeats,
+      'canAssignMember': canAssignMember,
+      'startsAt': startsAt,
+      'expiresAt': expiresAt,
+    };
+  }
+
+  static int? _toInt(dynamic value) {
+    if (value == null) return null;
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    return int.tryParse(value.toString());
+  }
+}
+
+class UserSubscription {
+  int? subscriptionId;
+  int? planId;
+  String? planName;
+  String? planType;
+  String? billingInterval;
+  String? accessType;
+  int? purchasedSeats;
+  int? assignedSeats;
+  int? availableSeats;
+  bool? canAssignMember;
+  String? startsAt;
+  String? expiresAt;
+  IndividualPlanDetails? individual;
+  TeamPlanDetails? teamPlan;
+
+  UserSubscription({
+    this.subscriptionId,
+    this.planId,
+    this.planName,
+    this.planType,
+    this.billingInterval,
+    this.accessType,
+    this.purchasedSeats,
+    this.assignedSeats,
+    this.availableSeats,
+    this.canAssignMember,
+    this.startsAt,
+    this.expiresAt,
+    this.individual,
+    this.teamPlan,
+  });
+
+  UserSubscription.fromJson(Map<String, dynamic> json) {
+    if (json['individual'] is Map) {
+      individual = IndividualPlanDetails.fromJson(
+          Map<String, dynamic>.from(json['individual']));
+    }
+    if (json['teamPlan'] is Map) {
+      teamPlan = TeamPlanDetails.fromJson(
+          Map<String, dynamic>.from(json['teamPlan']));
+    }
+
+    subscriptionId = _toInt(json['subscriptionId'] ??
+        json['id'] ??
+        teamPlan?.subscriptionId ??
+        individual?.subscriptionId);
+    planId = _toInt(json['planId'] ??
+        json['plan_id'] ??
+        teamPlan?.planId ??
+        individual?.planId);
+    planName = json['planName']?.toString() ??
+        json['name']?.toString() ??
+        teamPlan?.planName ??
+        individual?.planName;
+    planType = json['planType']?.toString() ??
+        teamPlan?.planType ??
+        individual?.planType;
+    billingInterval = json['billingInterval']?.toString() ??
+        teamPlan?.billingInterval ??
+        individual?.billingInterval;
+    accessType = json['accessType']?.toString();
+    purchasedSeats = _toInt(json['purchasedSeats'] ??
+        json['seats'] ??
+        json['memberCount'] ??
+        teamPlan?.purchasedSeats);
+    assignedSeats = _toInt(json['assignedSeats'] ?? teamPlan?.assignedSeats);
+    availableSeats = _toInt(json['availableSeats'] ?? teamPlan?.availableSeats);
+    canAssignMember = json['canAssignMember'] == true ||
+        (teamPlan?.canAssignMember == true) ||
+        (purchasedSeats != null && purchasedSeats! > 1);
+    startsAt = json['startsAt']?.toString() ??
+        teamPlan?.startsAt ??
+        individual?.startsAt;
+    expiresAt = json['expiresAt']?.toString() ??
+        teamPlan?.expiresAt ??
+        individual?.expiresAt;
+  }
+
+  bool get isTeamPlanActive =>
+      teamPlan != null ||
+      planType == 'group' ||
+      (purchasedSeats != null && purchasedSeats! > 1);
+
+  bool get isIndividualOnly =>
+      !isTeamPlanActive &&
+      (individual != null || planType == 'individual');
+
+  bool get allowAssign =>
+      canAssignMember == true ||
+      (isTeamPlanActive && (purchasedSeats ?? 0) > 1);
+
+  Map<String, dynamic> toJson() {
+    return {
+      'subscriptionId': subscriptionId,
+      'planId': planId,
+      'planName': planName,
+      'planType': planType,
+      'billingInterval': billingInterval,
+      'accessType': accessType,
+      'purchasedSeats': purchasedSeats,
+      'assignedSeats': assignedSeats,
+      'availableSeats': availableSeats,
+      'canAssignMember': canAssignMember,
+      'startsAt': startsAt,
+      'expiresAt': expiresAt,
+      if (individual != null) 'individual': individual!.toJson(),
+      if (teamPlan != null) 'teamPlan': teamPlan!.toJson(),
+    };
+  }
+
+  static int? _toInt(dynamic value) {
+    if (value == null) return null;
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    return int.tryParse(value.toString());
+  }
+}
+
 class User {
   int? userId;
   String? name;
@@ -121,6 +358,9 @@ class User {
   bool? isLocationSharing;
   bool? isOnline;
   String? lastSeen;
+  bool? isSubscribed;
+  String? subscriptionStatus;
+  UserSubscription? subscription;
 
   User({
     this.userId,
@@ -130,6 +370,9 @@ class User {
     this.isLocationSharing,
     this.isOnline,
     this.lastSeen,
+    this.isSubscribed,
+    this.subscriptionStatus,
+    this.subscription,
   });
 
   User.fromJson(Map<String, dynamic> json) {
@@ -140,6 +383,12 @@ class User {
     isLocationSharing = _toBool(json['isLocationSharing'] ?? json['locationSharing']);
     isOnline = _toBool(json['isOnline'] ?? json['online']);
     lastSeen = json['lastSeen']?.toString();
+    isSubscribed = _toBool(json['isSubscribed']);
+    subscriptionStatus = json['subscriptionStatus']?.toString();
+    if (json['subscription'] != null && json['subscription'] is Map) {
+      subscription = UserSubscription.fromJson(
+          Map<String, dynamic>.from(json['subscription']));
+    }
   }
 
   Map<String, dynamic> toJson() {
@@ -151,6 +400,9 @@ class User {
       'isLocationSharing': isLocationSharing,
       'isOnline': isOnline,
       'lastSeen': lastSeen,
+      if (isSubscribed != null) 'isSubscribed': isSubscribed,
+      if (subscriptionStatus != null) 'subscriptionStatus': subscriptionStatus,
+      if (subscription != null) 'subscription': subscription!.toJson(),
     };
   }
 
@@ -170,25 +422,112 @@ class User {
   }
 }
 
+class SubscriptionGroupData {
+  List<GroupMemberData>? subscribed;
+  List<GroupMemberData>? expired;
+
+  SubscriptionGroupData({this.subscribed, this.expired});
+
+  SubscriptionGroupData.fromJson(Map<String, dynamic> json) {
+    if (json['subscribed'] != null && json['subscribed'] is List) {
+      subscribed = (json['subscribed'] as List)
+          .whereType<Map>()
+          .map((v) => GroupMemberData.fromJson(Map<String, dynamic>.from(v)))
+          .toList();
+    }
+    if (json['expired'] != null && json['expired'] is List) {
+      expired = (json['expired'] as List)
+          .whereType<Map>()
+          .map((v) => GroupMemberData.fromJson(Map<String, dynamic>.from(v)))
+          .toList();
+    }
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = <String, dynamic>{};
+    if (subscribed != null) {
+      data['subscribed'] = subscribed!.map((v) => v.toJson()).toList();
+    }
+    if (expired != null) {
+      data['expired'] = expired!.map((v) => v.toJson()).toList();
+    }
+    return data;
+  }
+
+  List<GroupMemberData> get allMembers => [
+        if (subscribed != null) ...subscribed!,
+        if (expired != null) ...expired!,
+      ];
+}
+
 class Data {
   List<GroupMemberData>? private;
   List<GroupMemberData>? active;
   List<GroupMemberData>? recentActive;
+  SubscriptionGroupData? subscriptionData;
+  List<GroupMemberData>? subscription;
+  List<GroupMemberData>? members;
   AllMember? allMember;
 
   Data({
     this.private,
     this.active,
     this.recentActive,
+    this.subscriptionData,
+    this.subscription,
+    this.members,
     this.allMember,
   });
 
   List<GroupMemberData> get currentOnline => active ?? [];
   List<GroupMemberData> get recentOnline => recentActive ?? [];
-  List<GroupMemberData> get allMemberList => allMember?.memberList ?? [];
-
+  List<GroupMemberData> get allMemberList =>
+      subscription ??
+      subscriptionData?.allMembers ??
+      members ??
+      allMember?.memberList ??
+      active ??
+      recentActive ??
+      private ??
+      [];
 
   Data.fromJson(Map<String, dynamic> json) {
+    if (json['subscription'] != null) {
+      if (json['subscription'] is Map) {
+        subscriptionData = SubscriptionGroupData.fromJson(
+            Map<String, dynamic>.from(json['subscription']));
+        subscription = subscriptionData?.allMembers;
+      } else if (json['subscription'] is List) {
+        subscription = (json['subscription'] as List)
+            .whereType<Map>()
+            .map((v) => GroupMemberData.fromJson(Map<String, dynamic>.from(v)))
+            .toList();
+      }
+    }
+    if (json['subscribed'] != null && json['subscribed'] is List) {
+      subscription = (json['subscribed'] as List)
+          .whereType<Map>()
+          .map((v) => GroupMemberData.fromJson(Map<String, dynamic>.from(v)))
+          .toList();
+    }
+    if (json['members'] != null && json['members'] is List) {
+      members = (json['members'] as List)
+          .whereType<Map>()
+          .map((v) => GroupMemberData.fromJson(Map<String, dynamic>.from(v)))
+          .toList();
+    }
+    if (json['memberList'] != null && json['memberList'] is List) {
+      members = (json['memberList'] as List)
+          .whereType<Map>()
+          .map((v) => GroupMemberData.fromJson(Map<String, dynamic>.from(v)))
+          .toList();
+    }
+    if (json['list'] != null && json['list'] is List) {
+      members = (json['list'] as List)
+          .whereType<Map>()
+          .map((v) => GroupMemberData.fromJson(Map<String, dynamic>.from(v)))
+          .toList();
+    }
     if (json['private'] != null && json['private'] is List) {
       private = (json['private'] as List)
           .whereType<Map>()
@@ -214,6 +553,14 @@ class Data {
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
+    if (subscriptionData != null) {
+      data['subscription'] = subscriptionData!.toJson();
+    } else if (subscription != null) {
+      data['subscription'] = subscription!.map((v) => v.toJson()).toList();
+    }
+    if (members != null) {
+      data['members'] = members!.map((v) => v.toJson()).toList();
+    }
     if (private != null) {
       data['private'] = private!.map((v) => v.toJson()).toList();
     }
@@ -319,6 +666,8 @@ class GroupMemberData {
   String? joinedAt;
   String? startedAt;
   String? createdAt;
+  String? subscriptionStatus;
+  UserSubscription? subscription;
   List<GroupList>? groupList;
 
   GroupMemberData({
@@ -337,6 +686,8 @@ class GroupMemberData {
     this.joinedAt,
     this.startedAt,
     this.createdAt,
+    this.subscriptionStatus,
+    this.subscription,
     this.groupList,
   }) {
     if (mobileNo != null && (phone == null || phone!.isEmpty)) {
@@ -384,6 +735,11 @@ class GroupMemberData {
     joinedAt = json['joinedAt']?.toString() ?? json['joined_at']?.toString() ?? json['joiningDate']?.toString();
     startedAt = json['startedAt']?.toString() ?? json['started_at']?.toString();
     createdAt = json['createdAt']?.toString() ?? json['created_at']?.toString();
+    subscriptionStatus = json['subscriptionStatus']?.toString() ?? json['subscription_status']?.toString();
+    if (json['subscription'] != null && json['subscription'] is Map) {
+      subscription = UserSubscription.fromJson(
+          Map<String, dynamic>.from(json['subscription']));
+    }
 
     final dynamic rawGroupList = json['groupList'] ?? json['groups'];
     if (rawGroupList != null && rawGroupList is List) {
@@ -411,6 +767,12 @@ class GroupMemberData {
     data['joinedAt'] = joinedAt;
     data['startedAt'] = startedAt;
     data['createdAt'] = createdAt;
+    if (subscriptionStatus != null) {
+      data['subscriptionStatus'] = subscriptionStatus;
+    }
+    if (subscription != null) {
+      data['subscription'] = subscription!.toJson();
+    }
     if (groupList != null) {
       data['groupList'] = groupList!.map((v) => v.toJson()).toList();
     }

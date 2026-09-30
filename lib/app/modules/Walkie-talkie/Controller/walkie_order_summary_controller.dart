@@ -9,6 +9,8 @@ import 'package:fgtracker/app/Model/walkie_create_order_model.dart';
 import 'package:fgtracker/app/Model/walkie_order_summary_model.dart';
 import 'package:fgtracker/app/Model/walkie_payment_order_model.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Razorpay/Controller/razorpay_payment_controller.dart';
+import 'package:fgtracker/app/modules/Walkie-talkie/Views/walkie_talkie_payment_failed_screen.dart';
+import 'package:fgtracker/app/modules/Walkie-talkie/Views/walkie_talkie_payment_pending_screen.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Views/walkie_talkie_purchase_success_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -447,26 +449,51 @@ class WalkieOrderSummaryController extends GetxController {
 
   void _handlePaymentError(PaymentFailureResponse response) {
     debugPrint(
-        "❌ Razorpay Payment Error: Code ${response.code} | Message: ${response.message}");
+        "❌ [WalkieOrderSummaryController] Payment Error: Code ${response.code} | Message: ${response.message}");
     isProcessingPayment.value = false;
     HapticFeedback.mediumImpact();
 
-    final bool isCancelled = response.code == 2 ||
-        (response.message?.toLowerCase().contains("cancel") ?? false);
-    final String errorTitle =
-        isCancelled ? "Payment Cancelled" : "Payment Unsuccessful";
-    final String errorReason = isCancelled
-        ? "Payment was cancelled before completion. No amount was deducted from your bank account."
-        : (response.message != null && response.message!.isNotEmpty
-            ? response.message!
-            : "Your transaction could not be processed right now. Please verify your payment details or try a different payment method.");
+    final String nowFormatted =
+        DateFormat('dd MMM yyyy, hh:mm a').format(DateTime.now());
 
-    showPaymentStatusModal(
-      title: errorTitle,
-      message: errorReason,
-      isCancelled: isCancelled,
-      errorCode: response.code,
-    );
+    final String activePlanTitle = planName;
+    final double activeAmount =
+        (createOrderData.value?.pricing?.finalAmount ?? totalPayable).toDouble();
+    final String? activeOrderId = createOrderData.value?.razorpay?.orderId;
+    final String msg = response.message ?? '';
+    final String lowerMsg = msg.toLowerCase();
+    final int? code = response.code;
+
+    final bool isExplicitlyPending = (lowerMsg.contains("pending") ||
+            lowerMsg.contains("awaiting") ||
+            lowerMsg.contains("processing")) &&
+        !lowerMsg.contains("fail") &&
+        !lowerMsg.contains("decline") &&
+        !lowerMsg.contains("error") &&
+        !lowerMsg.contains("rejected");
+
+    if (isExplicitlyPending) {
+      Get.off(() => WalkieTalkiePaymentPendingScreen(
+            isTeam: order.value.isTeam || purchasedSeats > 1,
+            planTitle: activePlanTitle,
+            memberCount: purchasedSeats,
+            amountPaid: activeAmount,
+            transactionTime: nowFormatted,
+            orderId: activeOrderId,
+          ));
+    } else {
+      Get.off(() => WalkieTalkiePaymentFailedScreen(
+            isTeam: order.value.isTeam || purchasedSeats > 1,
+            planTitle: activePlanTitle,
+            memberCount: purchasedSeats,
+            amountPaid: activeAmount,
+            transactionTime: nowFormatted,
+            errorMessage: msg.isNotEmpty
+                ? msg
+                : "Your payment could not be completed. Please try again.",
+            orderId: activeOrderId,
+          ));
+    }
   }
 
   void showPaymentStatusModal({

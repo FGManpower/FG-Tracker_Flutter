@@ -72,12 +72,15 @@ class RazorpayPaymentController extends GetxController {
         DateFormat('dd MMM yyyy, hh:mm a').format(DateTime.now());
     transactionTime.value = nowFormatted;
 
-    // 1. Call Backend Payment Verification API
-    bool isVerified = true;
+    // 1. Verify Payment with Backend API
+    bool isSuccess = true;
+    bool isPending = false;
+    String verifyMsg = '';
+
     if (createdPaymentId != null && createdPaymentId! > 0) {
       try {
         debugPrint(
-            "🚀 [RazorpayPaymentController] Calling verify API with paymentId: $createdPaymentId, orderId: $finalOrdId, paymentId: $finalPayId");
+            "🚀 [RazorpayPaymentController] Calling verify API: paymentId=$createdPaymentId, orderId=$finalOrdId, payId=$finalPayId");
         final verifyRes = await WalkiePlanRepo.verifyPayment(
           paymentId: createdPaymentId!,
           razorpayOrderId: finalOrdId,
@@ -86,19 +89,48 @@ class RazorpayPaymentController extends GetxController {
         );
         debugPrint(
             "✅ [RazorpayPaymentController] Verification response: ${verifyRes.toJson()}");
+
         if (verifyRes.status == false) {
-          isVerified = false;
+          isSuccess = false;
+          verifyMsg = verifyRes.message ?? "Payment verification failed.";
+          final lower = verifyMsg.toLowerCase();
+          if (lower.contains("pending") ||
+              lower.contains("process") ||
+              lower.contains("awaiting")) {
+            isPending = true;
+          }
         }
       } catch (e) {
-        debugPrint("⚠️ [RazorpayPaymentController] Verification error: $e");
+        debugPrint("⚠️ [RazorpayPaymentController] Verification API Error: $e");
+        // If network error occurred during verification, classify as pending check
+        isSuccess = false;
+        isPending = true;
+        verifyMsg = "Payment was initiated. We are confirming with the bank.";
       }
     }
 
     isProcessing.value = false;
 
-    if (!isVerified) {
+    // Flow 1: Verification Pending
+    if (isPending) {
+      status.value = PaymentProcessStatus.cancelled;
+      errorMessage.value = verifyMsg;
+      Get.off(() => WalkieTalkiePaymentPendingScreen(
+            isTeam: isTeam.value,
+            planTitle: planTitle.value,
+            memberCount: memberCount.value,
+            amountPaid: amountPaid.value,
+            transactionTime: nowFormatted,
+            orderId: finalOrdId,
+          ));
+      return;
+    }
+
+    // Flow 2: Verification Failed
+    if (!isSuccess) {
       status.value = PaymentProcessStatus.failed;
-      errorMessage.value = "Payment verification failed. Please contact support.";
+      errorMessage.value =
+          verifyMsg.isNotEmpty ? verifyMsg : "Payment verification failed.";
       Get.off(() => WalkieTalkiePaymentFailedScreen(
             isTeam: isTeam.value,
             planTitle: planTitle.value,
@@ -111,18 +143,16 @@ class RazorpayPaymentController extends GetxController {
       return;
     }
 
+    // Flow 3: Verification Success
     status.value = PaymentProcessStatus.success;
     errorMessage.value = '';
 
-    // 2. Custom Callback if provided
     if (_customSuccessCallback != null) {
       _customSuccessCallback!(response);
     }
 
-    // 3. Silent overview refresh
     refreshWalkieOverviewSilently();
 
-    // 4. Auto-navigate to Success Screen
     final String currentRoute = Get.currentRoute;
     if (!currentRoute.contains("WalkieTalkiePurchaseSuccessScreen")) {
       Get.off(() => WalkieTalkiePurchaseSuccessScreen(
@@ -152,10 +182,25 @@ class RazorpayPaymentController extends GetxController {
         DateFormat('dd MMM yyyy, hh:mm a').format(DateTime.now());
     transactionTime.value = nowFormatted;
 
-    // Razorpay code 2 = User cancelled transaction -> Route to Payment Pending Screen
-    if (response.code == 2) {
+    final String msg = response.message ?? '';
+    final String lowerMsg = msg.toLowerCase();
+    final int? code = response.code;
+
+    // Check if error is strictly an in-progress / pending state from gateway
+    final bool isExplicitlyPending = (lowerMsg.contains("pending") ||
+            lowerMsg.contains("awaiting") ||
+            lowerMsg.contains("processing")) &&
+        !lowerMsg.contains("fail") &&
+        !lowerMsg.contains("decline") &&
+        !lowerMsg.contains("error") &&
+        !lowerMsg.contains("rejected");
+
+    if (isExplicitlyPending) {
+      debugPrint(
+          "⏱️ [RazorpayPaymentController] Routing to Payment Pending Screen (Code: $code | Message: $msg)");
       status.value = PaymentProcessStatus.cancelled;
-      errorMessage.value = "Payment was cancelled.";
+      errorMessage.value =
+          msg.isNotEmpty ? msg : "Payment is pending confirmation.";
 
       if (_customFailureCallback != null) {
         _customFailureCallback!(response);
@@ -170,10 +215,12 @@ class RazorpayPaymentController extends GetxController {
             orderId: createdRazorpayOrderId ?? successOrderId.value,
           ));
     } else {
-      // Payment Failed (code != 2) -> Route to Payment Failed Screen
+      // Payment Failed (Bank decline, card error, invalid auth, payment failed, cancelled checkout, etc.)
+      debugPrint(
+          "❌ [RazorpayPaymentController] Routing to Payment Failed Screen (Code: $code | Message: $msg)");
       status.value = PaymentProcessStatus.failed;
       errorMessage.value =
-          response.message ?? "Payment failed. Please try again.";
+          msg.isNotEmpty ? msg : "Payment failed. Please try again.";
 
       if (_customFailureCallback != null) {
         _customFailureCallback!(response);
