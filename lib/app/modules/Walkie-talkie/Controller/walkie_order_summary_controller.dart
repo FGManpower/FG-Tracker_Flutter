@@ -5,6 +5,7 @@ import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Data/Repositories/walkie_plan_repo.dart';
 import 'package:fgtracker/app/Model/walkie_coupon_model.dart';
+import 'package:fgtracker/app/Model/walkie_create_order_model.dart';
 import 'package:fgtracker/app/Model/walkie_order_summary_model.dart';
 import 'package:fgtracker/app/Model/walkie_payment_order_model.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Views/walkie_talkie_purchase_success_screen.dart';
@@ -30,6 +31,8 @@ class WalkieOrderSummaryController extends GetxController {
   final Rxn<WalkieAppliedCouponData> appliedCouponData =
       Rxn<WalkieAppliedCouponData>();
   final Rxn<WalkieOrderSummaryData> summaryData = Rxn<WalkieOrderSummaryData>();
+  final Rxn<WalkieCreateOrderData> createOrderData =
+      Rxn<WalkieCreateOrderData>();
 
   final RxDouble dynamicDiscount = 0.0.obs;
   final RxnString dynamicCouponCode = RxnString();
@@ -453,6 +456,13 @@ class WalkieOrderSummaryController extends GetxController {
 
     final String nowFormatted = DateFormat('dd MMM yyyy, hh:mm a').format(DateTime.now());
 
+    final String? finalOrderId = response.orderId ??
+        createOrderData.value?.payment?.orderId ??
+        createOrderData.value?.razorpay?.orderId;
+
+    final num finalPaidAmount =
+        createOrderData.value?.pricing?.finalAmount ?? totalPayable;
+
     // Navigate to purchase success screen with realistic payment metadata
     Get.off(() => WalkieTalkiePurchaseSuccessScreen(
           isTeam: order.value.isTeam || purchasedSeats > 1,
@@ -460,8 +470,8 @@ class WalkieOrderSummaryController extends GetxController {
           memberCount: purchasedSeats,
           validTill: order.value.validTill,
           paymentId: paymentIdStr,
-          orderId: response.orderId,
-          amountPaid: totalPayable,
+          orderId: finalOrderId,
+          amountPaid: finalPaidAmount,
           paymentMethod: methodDesc,
           transactionTime: nowFormatted,
         ));
@@ -624,6 +634,37 @@ class WalkieOrderSummaryController extends GetxController {
       HapticFeedback.mediumImpact();
       isProcessingPayment.value = true;
 
+      // 1. Prepare parameters for create-order API
+      final int planId = summaryData.value?.plan?.id ??
+          order.value.plan?.id ??
+          (order.value.isTeam ? 4 : 1);
+      final int seats = purchasedSeats;
+      final String couponCode =
+          isCouponApplied ? (currentPromoCode ?? "") : "";
+
+      debugPrint(
+          "🚀 [CreateOrder API] Request: planId=$planId, purchasedSeats=$seats, couponCode='$couponCode'");
+
+      // 2. Hit WalkiePlanRepo.createOrder API
+      final createOrderRes = await WalkiePlanRepo.createOrder(
+        planId: planId,
+        purchasedSeats: seats,
+        couponCode: couponCode,
+      );
+
+      if (createOrderRes.status != true || createOrderRes.data == null) {
+        isProcessingPayment.value = false;
+        final errorMsg = createOrderRes.message ??
+            "Failed to create payment order. Please try again.";
+        showTopWhiteMessage(errorMsg);
+        return;
+      }
+
+      createOrderData.value = createOrderRes.data;
+
+      final rzp = createOrderRes.data?.razorpay;
+      final payment = createOrderRes.data?.payment;
+
       final String? rawPhone =
           Global.storageServices.get(PrefConst.userPhone)?.toString();
       final String? userEmail =
@@ -642,15 +683,23 @@ class WalkieOrderSummaryController extends GetxController {
         }
       }
 
-      // Ensure minimum 100 paise (₹1) for INR transactions in Razorpay
-      final int amountInPaise = totalPayable > 0 ? (totalPayable * 100).round() : 100;
+      // Determine amount in paise from backend API or fallback
+      final int amountInPaise = rzp?.amount != null && (rzp!.amount! > 0)
+          ? rzp.amount!.round()
+          : (totalPayable > 0 ? (totalPayable * 100).round() : 100);
+
+      final String razorpayKey = (rzp?.keyId != null && rzp!.keyId!.isNotEmpty)
+          ? rzp.keyId!
+          : ConstRes.activePaymentKey;
 
       final Map<String, dynamic> razorpayOptions = {
-        'key': ConstRes.activePaymentKey,
+        'key': razorpayKey,
         'amount': amountInPaise,
         'name': 'FG Tracker',
         'description': '$planName ($durationName)',
-        'currency': 'INR',
+        'currency': rzp?.currency ?? 'INR',
+        if (rzp?.orderId != null && rzp!.orderId!.isNotEmpty)
+          'order_id': rzp.orderId!,
         'theme': {
           'color': '#5B4DF5',
         },
@@ -667,11 +716,13 @@ class WalkieOrderSummaryController extends GetxController {
           if (selectedPaymentMethod.value == 'card') 'method': 'card',
           if (selectedPaymentMethod.value == 'netbanking') ...{
             'method': 'netbanking',
-            if (selectedBank.value.isNotEmpty) 'bank': _getRazorpayBankCode(selectedBank.value),
+            if (selectedBank.value.isNotEmpty)
+              'bank': _getRazorpayBankCode(selectedBank.value),
           },
           if (selectedPaymentMethod.value == 'wallet') ...{
             'method': 'wallet',
-            if (selectedWallet.value.isNotEmpty) 'wallet': _getRazorpayWalletCode(selectedWallet.value),
+            if (selectedWallet.value.isNotEmpty)
+              'wallet': _getRazorpayWalletCode(selectedWallet.value),
           },
         },
         'retry': {
@@ -681,29 +732,32 @@ class WalkieOrderSummaryController extends GetxController {
         'send_sms_hash': true,
         'notes': {
           'planTitle': planName,
-          'plan_id': (order.value.plan?.id ?? 1).toString(),
+          'plan_id': planId.toString(),
           'duration': durationName,
-          'memberCount': purchasedSeats.toString(),
+          'memberCount': seats.toString(),
           'selectedPaymentMode': selectedPaymentMethod.value,
+          if (payment?.orderId != null) 'backendOrderId': payment!.orderId!,
           if (selectedPaymentMethod.value == 'upi') ...{
             'upiApp': selectedUpiApp.value,
             if (customUpiVpa.value.trim().isNotEmpty)
               'upiVpa': customUpiVpa.value.trim(),
           },
-          if (selectedPaymentMethod.value == 'netbanking') 'bank': selectedBank.value,
-          if (selectedPaymentMethod.value == 'wallet') 'wallet': selectedWallet.value,
-          if (currentPromoCode != null) 'couponCode': currentPromoCode!,
+          if (selectedPaymentMethod.value == 'netbanking')
+            'bank': selectedBank.value,
+          if (selectedPaymentMethod.value == 'wallet')
+            'wallet': selectedWallet.value,
+          if (couponCode.isNotEmpty) 'couponCode': couponCode,
         },
       };
 
-      debugPrint("🚀 [Razorpay] Opening Checkout with Key: ${ConstRes.activePaymentKey}");
+      debugPrint("🚀 [Razorpay] Opening Checkout with Key: $razorpayKey");
       debugPrint("📦 [Razorpay] Payload: $razorpayOptions");
 
       _razorpay.open(razorpayOptions);
     } catch (e) {
       isProcessingPayment.value = false;
       debugPrint("❌ [Razorpay] Exception opening checkout: $e");
-      showTopWhiteMessage("Unable to open Razorpay gateway: $e");
+      showTopWhiteMessage(_parseErrorMessage(e));
     }
   }
 
