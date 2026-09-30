@@ -875,13 +875,15 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            _buildCheckItem("Unlimited Walkie Talkie"),
+                            _buildCheckItem("Unlimited Range", _primaryPurple),
                             SizedBox(height: 4.h),
-                            _buildCheckItem("High Quality Voice"),
+                            _buildCheckItem("Unlimited Walkie Talkie", Color(0xFF334155)),
                             SizedBox(height: 4.h),
-                            _buildCheckItem("Group Communication"),
+                            _buildCheckItem("High Quality Voice", Color(0xFF334155)),
                             SizedBox(height: 4.h),
-                            _buildCheckItem("Priority Support"),
+                            _buildCheckItem("Group Communication", Color(0xFF334155)),
+                            SizedBox(height: 4.h),
+                            _buildCheckItem("Priority Support", Color(0xFF334155)),
                           ],
                         ),
                       ),
@@ -950,7 +952,7 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
     });
   }
 
-  Widget _buildCheckItem(String label) {
+  Widget _buildCheckItem(String label, Color colorsUse) {
     return Row(
       children: [
         Icon(
@@ -967,7 +969,8 @@ class _WalkieTalkiePlanDetailsState extends State<WalkieTalkiePlanDetails> {
             style: TextStyle(
               fontSize: 10.sp.clamp(9.0, 11.5),
               fontFamily: FontFamily.interMedium,
-              color: const Color(0xFF334155),
+              color: colorsUse,
+              // color: const Color(0xFF334155),
             ),
           ),
         ),
