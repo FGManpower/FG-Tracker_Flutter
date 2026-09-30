@@ -1,4 +1,3 @@
-
 import 'package:fgtracker/app/Core/constant/urls.dart';
 import 'package:fgtracker/app/Core/util/http/http_util.dart';
 import 'package:fgtracker/app/Model/walkie_talkie_trial_details_model.dart';
