@@ -4,6 +4,8 @@ import 'package:fgtracker/app/Model/walkie_verify_payment_model.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Controller/walkie_talkie_trial_controller.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Razorpay/Model/razorpay_payment_model.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Views/walkie_group_select_screen.dart';
+import 'package:fgtracker/app/modules/Walkie-talkie/Views/walkie_talkie_payment_failed_screen.dart';
+import 'package:fgtracker/app/modules/Walkie-talkie/Views/walkie_talkie_payment_pending_screen.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Views/walkie_talkie_purchase_success_screen.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:flutter/material.dart';
@@ -71,6 +73,7 @@ class RazorpayPaymentController extends GetxController {
     transactionTime.value = nowFormatted;
 
     // 1. Call Backend Payment Verification API
+    bool isVerified = true;
     if (createdPaymentId != null && createdPaymentId! > 0) {
       try {
         debugPrint(
@@ -83,12 +86,31 @@ class RazorpayPaymentController extends GetxController {
         );
         debugPrint(
             "✅ [RazorpayPaymentController] Verification response: ${verifyRes.toJson()}");
+        if (verifyRes.status == false) {
+          isVerified = false;
+        }
       } catch (e) {
         debugPrint("⚠️ [RazorpayPaymentController] Verification error: $e");
       }
     }
 
     isProcessing.value = false;
+
+    if (!isVerified) {
+      status.value = PaymentProcessStatus.failed;
+      errorMessage.value = "Payment verification failed. Please contact support.";
+      Get.off(() => WalkieTalkiePaymentFailedScreen(
+            isTeam: isTeam.value,
+            planTitle: planTitle.value,
+            memberCount: memberCount.value,
+            amountPaid: amountPaid.value,
+            transactionTime: nowFormatted,
+            errorMessage: errorMessage.value,
+            orderId: finalOrdId,
+          ));
+      return;
+    }
+
     status.value = PaymentProcessStatus.success;
     errorMessage.value = '';
 
@@ -100,7 +122,7 @@ class RazorpayPaymentController extends GetxController {
     // 3. Silent overview refresh
     refreshWalkieOverviewSilently();
 
-    // 4. Auto-navigate to Success Screen if not already routed
+    // 4. Auto-navigate to Success Screen
     final String currentRoute = Get.currentRoute;
     if (!currentRoute.contains("WalkieTalkiePurchaseSuccessScreen")) {
       Get.off(() => WalkieTalkiePurchaseSuccessScreen(
@@ -126,18 +148,46 @@ class RazorpayPaymentController extends GetxController {
     isProcessing.value = false;
     HapticFeedback.mediumImpact();
 
-    // Razorpay code 2 = User cancelled transaction
+    final String nowFormatted =
+        DateFormat('dd MMM yyyy, hh:mm a').format(DateTime.now());
+    transactionTime.value = nowFormatted;
+
+    // Razorpay code 2 = User cancelled transaction -> Route to Payment Pending Screen
     if (response.code == 2) {
       status.value = PaymentProcessStatus.cancelled;
       errorMessage.value = "Payment was cancelled.";
+
+      if (_customFailureCallback != null) {
+        _customFailureCallback!(response);
+      }
+
+      Get.off(() => WalkieTalkiePaymentPendingScreen(
+            isTeam: isTeam.value,
+            planTitle: planTitle.value,
+            memberCount: memberCount.value,
+            amountPaid: amountPaid.value,
+            transactionTime: nowFormatted,
+            orderId: createdRazorpayOrderId ?? successOrderId.value,
+          ));
     } else {
+      // Payment Failed (code != 2) -> Route to Payment Failed Screen
       status.value = PaymentProcessStatus.failed;
       errorMessage.value =
           response.message ?? "Payment failed. Please try again.";
-    }
 
-    if (_customFailureCallback != null) {
-      _customFailureCallback!(response);
+      if (_customFailureCallback != null) {
+        _customFailureCallback!(response);
+      }
+
+      Get.off(() => WalkieTalkiePaymentFailedScreen(
+            isTeam: isTeam.value,
+            planTitle: planTitle.value,
+            memberCount: memberCount.value,
+            amountPaid: amountPaid.value,
+            transactionTime: nowFormatted,
+            errorMessage: errorMessage.value,
+            orderId: createdRazorpayOrderId ?? successOrderId.value,
+          ));
     }
   }
 
