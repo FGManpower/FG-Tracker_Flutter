@@ -31,8 +31,6 @@ import 'app/modules/Track/Controller/GroupTrackController.dart';
 import 'app/modules/Track/Controller/LocationService.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
-
-
 final socket = SignallingService.instance.socket;
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
@@ -42,12 +40,17 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
   log("====Background-Bg===${message.data}");
   if (message.data['screen_name'] == "incomingCall") {
+    final callData = jsonDecode(message.data['callData']);
+    final originalCallId = callData['callId'].toString();
+    socket?.emit("CallingStatus", {
+      "callId": originalCallId,
+      "remoteUserId": int.tryParse(callData['callerId'].toString()) ?? 0,
+      "callingStatus": "Ringing",
+    });
     if (Platform.isIOS) {
       // await RemoteLoggerTest.log("FCM_BG_HANDLER", "iOS detected in FCM background handler: ${message.data}");
       return;
     }
-    final callData = jsonDecode(message.data['callData']);
-    final originalCallId = callData['callId'].toString();
 
     final Map<String, String> userInfo = {
       "callId": originalCallId,
@@ -78,12 +81,18 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   }
 
   if (message.data['screen_name'] == "incomingGroupCall") {
+    final callData = jsonDecode(message.data['callData']);
+    final originalCallId = callData['callId'].toString();
+    socket?.emit("CallingStatus", {
+      "callId": originalCallId,
+      "remoteUserId": int.tryParse(callData['callerId'].toString()) ?? 0,
+      "callingStatus": "Ringing",
+    });
+
     if (Platform.isIOS) {
       // await RemoteLoggerTest.log("FCM_BG_HANDLER", "iOS detected in FCM background handler: ${message.data}");
       return;
     }
-    final callData = jsonDecode(message.data['callData']);
-    final originalCallId = callData['callId'].toString();
 
     final Map<String, String> userInfo = callData.map<String, String>(
         (key, value) => MapEntry(key.toString(), value.toString()));

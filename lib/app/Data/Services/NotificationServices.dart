@@ -9,6 +9,7 @@ import 'package:fgtracker/app/Model/MemberDataRes.dart';
 import 'package:fgtracker/app/Model/call_model.dart';
 import 'package:fgtracker/app/modules/Notification/Controller/Notification_Controller.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
+import 'package:fgtracker/main.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
@@ -224,33 +225,30 @@ class firebaseNotificationServices {
         );
       }
       // else if (message.data['screen_name'] == 'groupCallNotify') {
-        // FlutterRingtonePlayer().stop();
-        // if (CallStateTracker.isIncomingCallScreenOpen) return;
-        //
-        // final data = jsonDecode(message.data['callData']);
-        //
-        // print("=========againCalledgroupIncommingScreen");
-        // CallStateTracker.isIncomingCallScreenOpen = true;
-        // Get.toNamed(
-        //   Routes.groupIncomingCallScreen,
-        //   arguments: {
-        //     "callId": data['callId']?.toString(),
-        //     "groupId": data['groupId']?.toString() ?? "",
-        //     "groupName": (data['groupName'] ?? "Group Call").toString(),
-        //     "callerName": data['callerName'],
-        //     "groupProfile": data['callerProfileImage'],
-        //     "callerProfileImage": data['callerProfileImage'],
-        //     "activeMemberCount": 1,
-        //     "totalMemberCount": data['totalGroupMember'] ?? 0,
-        //     "isVideo": data['isVideo'] == true,
-        //     "callType": "incoming",
-        //   },
-        // );
-        // flutterLocalNotificationsPlugin.cancelAll();
+      // FlutterRingtonePlayer().stop();
+      // if (CallStateTracker.isIncomingCallScreenOpen) return;
+      //
+      // final data = jsonDecode(message.data['callData']);
+      //
+      // print("=========againCalledgroupIncommingScreen");
+      // CallStateTracker.isIncomingCallScreenOpen = true;
+      // Get.toNamed(
+      //   Routes.groupIncomingCallScreen,
+      //   arguments: {
+      //     "callId": data['callId']?.toString(),
+      //     "groupId": data['groupId']?.toString() ?? "",
+      //     "groupName": (data['groupName'] ?? "Group Call").toString(),
+      //     "callerName": data['callerName'],
+      //     "groupProfile": data['callerProfileImage'],
+      //     "callerProfileImage": data['callerProfileImage'],
+      //     "activeMemberCount": 1,
+      //     "totalMemberCount": data['totalGroupMember'] ?? 0,
+      //     "isVideo": data['isVideo'] == true,
+      //     "callType": "incoming",
+      //   },
+      // );
+      // flutterLocalNotificationsPlugin.cancelAll();
       // }
-
-
-
 
       else if (message.data['screen_name'] == "missedCall") {
         Get.toNamed(Routes.notificationScreen);
@@ -270,46 +268,59 @@ class firebaseNotificationServices {
         // );
       }
     } else {
-      if (Platform.isAndroid) {
-        if (message.data['screen_name'] == "incomingCall" &&
-            Platform.isAndroid) {
+
+        if (message.data['screen_name'] == "incomingCall") {
           final callData = jsonDecode(message.data['callData']);
 
-          final Map<String, String> userInfo = callData.map<String, String>(
-              (key, value) => MapEntry(key.toString(), value.toString()));
-          await ConnectycubeFlutterCallKit.showCallNotification(
-            CallEvent(
-              sessionId: callIdToUuid(callData['callId'].toString()),
-              callerName: callData['callerName'],
-              callType: callData['isVideo'] == true ? 1 : 0,
-              opponentsIds: {int.parse(callData['callerId'])},
-              callerId: int.parse(callData['callerId']),
-              userInfo: userInfo,
-            ),
-          );
-          CallSessionState.sessionId = callData['callId'].toString();
+          final originalCallId = callData['callId'].toString();
+          socket?.emit("CallingStatus", {
+            "callId": originalCallId,
+            "remoteUserId": int.tryParse(callData['callerId'].toString()) ?? 0,
+            "callingStatus": "Ringing",
+          });
+          if (Platform.isAndroid) {
+            final Map<String, String> userInfo = callData.map<String, String>(
+                (key, value) => MapEntry(key.toString(), value.toString()));
+            await ConnectycubeFlutterCallKit.showCallNotification(
+              CallEvent(
+                sessionId: callIdToUuid(callData['callId'].toString()),
+                callerName: callData['callerName'],
+                callType: callData['isVideo'] == true ? 1 : 0,
+                opponentsIds: {int.parse(callData['callerId'])},
+                callerId: int.parse(callData['callerId']),
+                userInfo: userInfo,
+              ),
+            );
+            CallSessionState.sessionId = callData['callId'].toString();
+          }
         }
-      }
-      if (Platform.isAndroid) {
-        if (message.data['screen_name'] == "incomingGroupCall" &&
-            Platform.isAndroid) {
-          final callData = jsonDecode(message.data['callData']);
 
-          final Map<String, String> userInfo = callData.map<String, String>(
-              (key, value) => MapEntry(key.toString(), value.toString()));
-          await ConnectycubeFlutterCallKit.showCallNotification(
-            CallEvent(
-              sessionId: callIdToUuid(callData['callId'].toString()),
-              callerName: callData['groupName'],
-              callType: callData['isVideo'] == true ? 1 : 0,
-              opponentsIds: {int.parse(callData['callerId'])},
-              callerId: int.parse(callData['callerId']),
-              userInfo: userInfo,
-            ),
-          );
-          CallSessionState.sessionId = callData['callId'].toString();
+
+        if (message.data['screen_name'] == "incomingGroupCall") {
+          final callData = jsonDecode(message.data['callData']);
+          final originalCallId = callData['callId'].toString();
+          socket?.emit("CallingStatus", {
+            "callId": originalCallId,
+            "remoteUserId": int.tryParse(callData['callerId'].toString()) ?? 0,
+            "callingStatus": "Ringing",
+          });
+          if (Platform.isAndroid) {
+            final Map<String, String> userInfo = callData.map<String, String>(
+                (key, value) => MapEntry(key.toString(), value.toString()));
+            await ConnectycubeFlutterCallKit.showCallNotification(
+              CallEvent(
+                sessionId: callIdToUuid(callData['callId'].toString()),
+                callerName: callData['groupName'],
+                callType: callData['isVideo'] == true ? 1 : 0,
+                opponentsIds: {int.parse(callData['callerId'])},
+                callerId: int.parse(callData['callerId']),
+                userInfo: userInfo,
+              ),
+            );
+            CallSessionState.sessionId = callData['callId'].toString();
+          }
         }
-      }
+
 
       if (message.data['screen_name'] == "missedCall") {
         final callData = jsonDecode(message.data['callData']);
@@ -321,15 +332,7 @@ class firebaseNotificationServices {
         CallStateTracker.isIncomingCallScreenOpen = false;
         flutterLocalNotificationsPlugin.cancelAll();
       }
-      // else if (message.data['screen_name'] == 'groupCallNotify') {
-      //   FlutterRingtonePlayer().play(
-      //     asAlarm: false,
-      //     fromAsset: Assets.music.incomingCall,
-      //   );
-      //   Future.delayed(const Duration(seconds: 10), () {
-      //     FlutterRingtonePlayer().stop();
-      //   });
-      // }
+
     }
   }
 }

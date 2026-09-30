@@ -14,6 +14,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
+import '../../../Model/MemberDataRes.dart';
 import 'contact_profile_screen.dart';
 
 class CallRecentCallsTab extends StatefulWidget {
@@ -143,24 +144,35 @@ class _CallRecentCallsTabState extends State<CallRecentCallsTab> {
                       InkWell(
                         onTap: () {
                           final isGroup = entry.value[i]['isGroup'] == 'true';
+
                           if (isGroup) {
                             final gId = entry.value[i]['groupId'] ??
                                 entry.value[i]['callerId'];
+
                             if (gId != null && gId.isNotEmpty) {
                               Get.toNamed(
                                 Routes.groupChatScreen,
                                 arguments: {
                                   "groupId": gId,
-                                  "groupName":
-                                  entry.value[i]['name'] ?? "Group",
+                                  "groupName": entry.value[i]['name'] ?? "Group",
                                   "groupProfile": entry.value[i]['avatar'],
                                 },
                               );
                             }
                           } else {
-                            Get.to(() => ContactProfileScreen(
-                              contactData: entry.value[i],
-                            ));
+                            final call = entry.value[i];
+
+                            Get.to(
+                                  () => ContactProfileScreen(
+                                contactData: MemberData(
+                                  userId: int.tryParse(call['callerId'] ?? ''),
+                                  name: call['name'],
+                                  mobileNo: call['mobileNo'],
+                                  profileImage: call['avatar'],
+                                  isOnline: call['isOnline'] == 'true',
+                                ),
+                              ),
+                            );
                           }
                         },
                         borderRadius: BorderRadius.vertical(
