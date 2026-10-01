@@ -79,6 +79,7 @@ class GroupWalkieController extends GetxController {
   bool get isTalking => audioState.value == WalkieAudioState.talking;
   bool get isListening => audioState.value == WalkieAudioState.listening;
   bool get hasActiveSpeaker => activeSpeakerId.value.isNotEmpty;
+  bool get isVoiceActive => isTalking || hasActiveSpeaker;
 
   List<WalkieParticipant> get sortedParticipants {
     if (participants.isEmpty) return const [];
@@ -323,6 +324,10 @@ class GroupWalkieController extends GetxController {
 
   void showLockExpiredMessage() {
     _displayBanner("Lock timeout — Mic released", Colors.orange);
+  }
+
+  void showTrialEndedMessage() {
+    _displayBanner("Free trial ended — Please subscribe to continue", Colors.redAccent);
   }
 
   void onChannelLocked({required bool isLocked}) {

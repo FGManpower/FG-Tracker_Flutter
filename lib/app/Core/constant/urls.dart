@@ -31,6 +31,8 @@ class Urls {
       '${ConstRes.aBaseUrl}walkie/payment/create-order';
   static const String walkieVerifyPayment =
       '${ConstRes.aBaseUrl}walkie/payment/verify';
+  static const String walkieUpdateMemberSubscription =
+      '${ConstRes.aBaseUrl}walkie/update-member-subscription';
 
   ///------------------------ Params ------------------------///
   static const String rtcUserName = 'fgtracker';

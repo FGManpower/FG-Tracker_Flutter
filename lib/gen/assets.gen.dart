@@ -135,8 +135,8 @@ class $AssetsWalkieTalkieGen {
       const AssetGenImage('assets/walkie_talkie/worker_yellow_helmet.png');
 
   /// File path: assets/walkie_talkie/worker_yellow_helmet_right.png
-  AssetGenImage get workerYellowHelmetRight =>
-      const AssetGenImage('assets/walkie_talkie/worker_yellow_helmet_right.png');
+  AssetGenImage get workerYellowHelmetRight => const AssetGenImage(
+      'assets/walkie_talkie/worker_yellow_helmet_right.png');
 
   /// File path: assets/walkie_talkie/worker_blue_cap.png
   AssetGenImage get workerBlueCap =>

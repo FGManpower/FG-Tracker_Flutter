@@ -12,6 +12,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Views/walkie_talkie_trial_details.dart';
+import 'package:fgtracker/app/modules/Walkie-talkie/Views/walkie_talkie_plan_details.dart';
+import 'package:fgtracker/app/Data/Services/walkie_talkie_trial_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../../Core/constant/pref_res.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import '../../Core/constant/const_res.dart';
 import '../../Core/constant/notification_holder.dart';
@@ -42,8 +46,10 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
   double _startY = 0.0;
 
   Timer? _trialTimer;
-  int _trialRemainingSeconds = 60;
+  int _trialRemainingSeconds = 3600; // 1 hour trial allocated (3600 seconds)
+  bool _isSubscribed = false;
   bool _trialDialogShown = false;
+  String? _userId;
 
   final Color _bgLight = const Color(0xFFF6F8FD);
   final Color _cardWhite = Colors.white;
@@ -68,14 +74,18 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
     super.initState();
     _log('initState() initiated');
     WalkieLaunchTracker.fromWalkieCall = true;
-    _startTrialCountdown();
 
     if (Get.arguments is Map<String, dynamic>) {
       args = Get.arguments as Map<String, dynamic>;
       _log('Arguments parsed successfully: $args');
+      if (args?['isSubscribed'] != null) {
+        _isSubscribed = args!['isSubscribed'] == true;
+      }
     } else {
       _log('Warning: No arguments map passed to view.');
     }
+
+    _initTrialAndSubscription();
 
     _rippleController = AnimationController(
       vsync: this,
@@ -164,6 +174,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
     _rippleWorker.dispose();
     _pulseWorker.dispose();
     _trialTimer?.cancel();
+    _saveTrialRemainingSeconds();
     WalkieLaunchTracker.fromWalkieCall = false;
     _safeLeave();
     _rippleController.dispose();
@@ -208,6 +219,14 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
     }
     if (controller.isChannelLocked.value) {
       _log('Block: Channel is locked by admin.');
+      return;
+    }
+
+    if (!_isSubscribed && _trialRemainingSeconds <= 0) {
+      _log('Block: Free trial ended.');
+      HapticFeedback.heavyImpact();
+      controller.showTrialEndedMessage();
+      _showFreeTrialEndedDialog();
       return;
     }
 
@@ -569,9 +588,51 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
     );
   }
 
+  Future<void> _initTrialAndSubscription() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      _userId = prefs.getString(PrefConst.userId) ?? '';
+
+      // Load locally persisted trial seconds (default: 3600s = 1 hour)
+      final localRemaining = prefs.getInt('walkie_trial_remaining_seconds_$_userId');
+      if (localRemaining != null) {
+        _trialRemainingSeconds = localRemaining;
+      } else {
+        _trialRemainingSeconds = 3600;
+        await prefs.setInt('walkie_trial_remaining_seconds_$_userId', 3600);
+      }
+      if (mounted) setState(() {});
+
+      // Sync with overview backend API if reachable
+      try {
+        final overview = await WalkieTalkieTrialService().getOverview();
+        final bool subActive = overview.subscription?.hasActiveSubscription == true ||
+            (overview.access?.canUseWalkie == true &&
+                overview.access?.accessType.toLowerCase() == 'subscription');
+        if (subActive) {
+          _isSubscribed = true;
+        } else if (overview.trial != null) {
+          if (overview.trial!.isExpired == true || overview.trial!.remainingSeconds <= 0) {
+            _trialRemainingSeconds = 0;
+          } else if (overview.trial!.remainingSeconds > 0) {
+            _trialRemainingSeconds = overview.trial!.remainingSeconds;
+          }
+          await prefs.setInt('walkie_trial_remaining_seconds_$_userId', _trialRemainingSeconds);
+        }
+        if (mounted) setState(() {});
+      } catch (e) {
+        _log('Backend overview check skipped: $e');
+      }
+
+      _startTrialCountdown();
+    } catch (e) {
+      _log('Trial init error: $e');
+      _startTrialCountdown();
+    }
+  }
+
   void _startTrialCountdown() {
     _trialTimer?.cancel();
-    _trialRemainingSeconds = 60;
     _trialDialogShown = false;
 
     _trialTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
@@ -579,81 +640,180 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
         timer.cancel();
         return;
       }
-      if (_trialRemainingSeconds > 0) {
-        setState(() {
-          _trialRemainingSeconds--;
-        });
+
+      // If user is subscribed, trial is NOT consumed
+      if (_isSubscribed) {
+        return;
       }
-      if (_trialRemainingSeconds == 0) {
-        timer.cancel();
-        if (!_trialDialogShown && mounted) {
-          _trialDialogShown = true;
-          _showFreeTrialEndedDialog();
+
+      // Trail SHOULD ONLY CONSUME WHEN:
+      // 1. User is joined in that socket (connected && groupId matches)
+      // 2. Active voice transmission occurs (walkie_speaker_active or local user is talking)
+      final bool isSocketConnected = GroupWalkieService.instance.socket?.connected == true;
+      final bool isGroupJoined = GroupWalkieService.instance.currentGroupId != null;
+      final bool isVoiceActive = controller.isTalking || controller.hasActiveSpeaker;
+
+      if (isSocketConnected && isGroupJoined && isVoiceActive) {
+        if (_trialRemainingSeconds > 0) {
+          setState(() {
+            _trialRemainingSeconds--;
+          });
+
+          if (_trialRemainingSeconds % 5 == 0 || _trialRemainingSeconds == 0) {
+            _saveTrialRemainingSeconds();
+          }
+        }
+
+        if (_trialRemainingSeconds <= 0) {
+          _trialRemainingSeconds = 0;
+          _saveTrialRemainingSeconds();
+          if (controller.isTalking || controller.isPressed.value) {
+            _stopTalking();
+          }
+          if (!_trialDialogShown && mounted) {
+            _trialDialogShown = true;
+            _showFreeTrialEndedDialog();
+          }
         }
       }
     });
   }
 
+  Future<void> _saveTrialRemainingSeconds() async {
+    if (_userId != null && _userId!.isNotEmpty) {
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setInt('walkie_trial_remaining_seconds_$_userId', _trialRemainingSeconds);
+      } catch (_) {}
+    }
+  }
+
   String get _trialFormattedTime {
-    final int minutes = _trialRemainingSeconds ~/ 60;
+    if (_trialRemainingSeconds <= 0) return "00:00";
+    final int hours = _trialRemainingSeconds ~/ 3600;
+    final int minutes = (_trialRemainingSeconds % 3600) ~/ 60;
     final int seconds = _trialRemainingSeconds % 60;
+    if (hours > 0) {
+      return "${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}";
+    }
     return "${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}";
   }
 
   Widget _buildTrialTimerPill() {
-    final bool isEnded = _trialRemainingSeconds == 0;
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
-      decoration: BoxDecoration(
-        color: const Color(0xFFFFF0ED),
-        borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(
-          color: const Color(0xFFFFD6CF),
-          width: 1,
+    if (_isSubscribed) {
+      return Container(
+        padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF0FDF4),
+          borderRadius: BorderRadius.circular(20.r),
+          border: Border.all(
+            color: const Color(0xFFBBF7D0),
+            width: 1,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.green.withOpacity(0.04),
+              blurRadius: 4,
+              offset: const Offset(0, 1),
+            ),
+          ],
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.red.withOpacity(0.04),
-            blurRadius: 4,
-            offset: const Offset(0, 1),
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            Icons.access_time_rounded,
-            color: const Color(0xFFEF4444),
-            size: 18.sp,
-          ),
-          SizedBox(width: 6.w),
-          Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                _trialFormattedTime,
-                style: TextStyle(
-                  color: const Color(0xFFEF4444),
-                  fontSize: 11.5.sp,
-                  fontWeight: FontWeight.w700,
-                  fontFamily: FontFamily.interBold,
-                ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.verified_rounded,
+              color: const Color(0xFF16A34A),
+              size: 16.sp,
+            ),
+            SizedBox(width: 5.w),
+            Text(
+              "Subscribed",
+              style: TextStyle(
+                color: const Color(0xFF16A34A),
+                fontSize: 11.5.sp,
+                fontWeight: FontWeight.w700,
+                fontFamily: FontFamily.interBold,
               ),
-              Text(
-                isEnded ? "Free trial ended" : "Free trial ends",
-                style: TextStyle(
-                  color: Colors.grey.shade600,
-                  fontSize: 8.5.sp,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Obx(() {
+      final bool isEnded = _trialRemainingSeconds <= 0;
+      final bool isSocketConnected = GroupWalkieService.instance.socket?.connected == true;
+      final bool isGroupJoined = GroupWalkieService.instance.currentGroupId != null;
+      final bool isConsuming = isSocketConnected &&
+          isGroupJoined &&
+          (controller.isTalking || controller.hasActiveSpeaker);
+
+      return Container(
+        padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+        decoration: BoxDecoration(
+          color: isEnded
+              ? const Color(0xFFFFF0ED)
+              : (isConsuming ? const Color(0xFFFEF2F2) : const Color(0xFFF5F3FF)),
+          borderRadius: BorderRadius.circular(20.r),
+          border: Border.all(
+            color: isEnded
+                ? const Color(0xFFFFD6CF)
+                : (isConsuming ? const Color(0xFFFCA5A5) : const Color(0xFFDDD6FE)),
+            width: 1,
           ),
-        ],
-      ),
-    );
+          boxShadow: [
+            BoxShadow(
+              color: (isConsuming ? Colors.red : Colors.deepPurple).withOpacity(0.04),
+              blurRadius: 4,
+              offset: const Offset(0, 1),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              isEnded
+                  ? Icons.access_time_filled_rounded
+                  : (isConsuming ? Icons.record_voice_over_rounded : Icons.access_time_rounded),
+              color: isEnded
+                  ? const Color(0xFFEF4444)
+                  : (isConsuming ? const Color(0xFFDC2626) : const Color(0xFF6D28D9)),
+              size: 18.sp,
+            ),
+            SizedBox(width: 6.w),
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  _trialFormattedTime,
+                  style: TextStyle(
+                    color: isEnded
+                        ? const Color(0xFFEF4444)
+                        : (isConsuming ? const Color(0xFFDC2626) : const Color(0xFF6D28D9)),
+                    fontSize: 11.5.sp,
+                    fontWeight: FontWeight.w700,
+                    fontFamily: FontFamily.interBold,
+                  ),
+                ),
+                Text(
+                  isEnded
+                      ? "Free trial ended"
+                      : (isConsuming ? "Consuming trial..." : "1 hr trial active"),
+                  style: TextStyle(
+                    color: isConsuming ? const Color(0xFFDC2626) : Colors.grey.shade600,
+                    fontSize: 8.5.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+    });
   }
 
   void _showFreeTrialEndedDialog() {
@@ -793,6 +953,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                       borderRadius: BorderRadius.circular(16.r),
                       onTap: () {
                         Navigator.pop(ctx);
+                        Get.to(() => const WalkieTalkiePlanDetails());
                       },
                       child: Padding(
                         padding: EdgeInsets.symmetric(horizontal: 16.w),

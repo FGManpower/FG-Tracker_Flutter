@@ -5,12 +5,18 @@ import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/Core/values/colorPool.dart';
 import 'package:fgtracker/app/Data/Repositories/GroupRepo.dart';
 import 'package:fgtracker/app/Data/Repositories/TrackRepo.dart';
+import 'package:fgtracker/app/Data/Repositories/walkie_plan_repo.dart';
 import 'package:fgtracker/app/Model/GroupRes.dart';
 import 'package:fgtracker/app/Model/MemberDataRes.dart';
 import 'package:fgtracker/app/Model/group_member_model.dart';
+import 'package:fgtracker/app/Data/Services/walkie_talkie_trial_service.dart';
+import 'package:fgtracker/app/Model/walkie_talkie_trial_details_model.dart';
+import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Views/walkie_talkie_plan_details.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/WalkieTalkieScreen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/gen/assets.gen.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/cupertino.dart';
@@ -31,6 +37,8 @@ class AssignedMemberItem {
   final bool canAssignTeamSeat;
   final String? existingAccessType;
   final bool hasExistingAccess;
+  final bool isSelfPurchased;
+  final bool isPurchasedByOtherAdmin;
 
   AssignedMemberItem({
     required this.id,
@@ -42,6 +50,8 @@ class AssignedMemberItem {
     this.canAssignTeamSeat = true,
     this.existingAccessType,
     this.hasExistingAccess = false,
+    this.isSelfPurchased = false,
+    this.isPurchasedByOtherAdmin = false,
   });
 }
 
@@ -67,6 +77,15 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
   final RxBool hasNoPlan = false.obs;
   final RxString planTitleName = "".obs;
 
+  // Pagination state for members
+  final RxInt _currentMemberPage = 1.obs;
+  final RxBool _hasNextMemberPage = false.obs;
+  final RxBool _isLoadingMoreMembers = false.obs;
+
+  // Active Subscription ID & in-progress updates
+  final RxnInt activeSubscriptionId = RxnInt();
+  final RxBool isSubmittingMembers = false.obs;
+
   // Assigned and available members (loaded dynamically from API)
   final RxList<AssignedMemberItem> assignedMembers = <AssignedMemberItem>[].obs;
   final RxList<AssignedMemberItem> availableMembers =
@@ -90,21 +109,40 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
     }).toList();
   }
 
-  Future<void> fetchMembersFromApi() async {
-    try {
+  Future<void> fetchMembersFromApi({bool loadMore = false}) async {
+    if (loadMore) {
+      if (_isLoadingMoreMembers.value || !_hasNextMemberPage.value) return;
+      _isLoadingMoreMembers.value = true;
+    } else {
       isMembersLoading.value = true;
+      _currentMemberPage.value = 1;
+    }
+
+    try {
+      final int pageToFetch = loadMore ? _currentMemberPage.value + 1 : 1;
       final List<AssignedMemberItem> loaded = [];
 
       // 1. Primary: All Group Members API (filter=subscription)
       try {
-        debugPrint("🚀 [Walkie] Fetching subscription group members (filter=subscription)...");
+        debugPrint(
+            "🚀 [Walkie] Fetching subscription group members (filter=subscription, page=$pageToFetch)...");
         final GroupMemberModel subRes = await TrackRepo.getGroupMember(
-          page: '1',
+          page: pageToFetch.toString(),
           filter: 'subscription',
-          limit: 50,
+          limit: 20,
+          groupId: _currentGroupId.isNotEmpty ? _currentGroupId : null,
         );
 
         if (subRes.status == true && subRes.data != null) {
+          // Update pagination metadata from API
+          if (subRes.pagination != null) {
+            _hasNextMemberPage.value = subRes.pagination?.hasNextPage ?? false;
+            _currentMemberPage.value =
+                subRes.pagination?.currentPage ?? pageToFetch;
+          } else {
+            _hasNextMemberPage.value = false;
+          }
+
           final List<GroupMemberData> subscribedList =
               subRes.data?.subscriptionData?.subscribed ?? [];
           final List<GroupMemberData> expiredList =
@@ -112,104 +150,185 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
           final List<GroupMemberData> members =
               subRes.data?.allMemberList ?? [...subscribedList, ...expiredList];
 
-          // Extract subscription plan type and permissions
-          final userSub = subRes.user?.subscription;
-          final subMeta = subRes.data?.subscriptionData?.metaData;
-
-          final bool isSubscribed = subRes.user?.isSubscribed == true ||
-              userSub?.subscriptionId != null ||
-              userSub?.planId != null ||
-              (subMeta?.totalPurchasedSeats != null &&
-                  subMeta!.totalPurchasedSeats! > 0);
-
-          final bool hasTeamPlan = isSubscribed &&
-              (userSub?.isTeamPlanActive == true ||
-                  userSub?.teamPlan != null ||
-                  (userSub?.teamPlans != null &&
-                      userSub!.teamPlans!.isNotEmpty) ||
-                  (subMeta?.teamPlans != null &&
-                      subMeta!.teamPlans!.isNotEmpty) ||
-                  (subMeta?.canAssignMember == true) ||
-                  userSub?.planType == 'group' ||
-                  userSub?.planType == 'team' ||
-                  (userSub?.purchasedSeats != null &&
-                      userSub!.purchasedSeats! > 1) ||
-                  (subMeta?.totalPurchasedSeats != null &&
-                      subMeta!.totalPurchasedSeats! > 1));
-
-          final bool isIndiv = isSubscribed &&
-              !hasTeamPlan &&
-              (userSub?.isIndividualOnly == true ||
-                  userSub?.individual != null ||
-                  userSub?.planType?.toLowerCase() == 'individual' ||
-                  userSub?.purchasedSeats == 1);
-
-          final bool isNoSub = !hasTeamPlan && !isIndiv;
-          final bool allowAssign = hasTeamPlan &&
-              ((subMeta?.canAssignMember ?? userSub?.allowAssign) ?? true);
-
-          isIndividualPlan.value = isIndiv;
-          hasNoPlan.value = isNoSub;
-          canAssignMembers.value = allowAssign;
-
-          if (userSub?.planName != null && userSub!.planName!.isNotEmpty) {
-            planTitleName.value = userSub.planName!;
-          } else if (hasTeamPlan && userSub?.teamPlan?.planName != null) {
-            planTitleName.value = userSub!.teamPlan!.planName!;
-          } else if (hasTeamPlan &&
-              userSub?.teamPlans != null &&
-              userSub!.teamPlans!.isNotEmpty) {
-            planTitleName.value =
-                userSub!.teamPlans!.first.planName ?? "Team Plan";
-          } else if (hasTeamPlan &&
-              subMeta?.teamPlans != null &&
-              subMeta!.teamPlans!.isNotEmpty) {
-            planTitleName.value =
-                subMeta!.teamPlans!.first.planName ?? "Team Plan";
-          } else if (isIndiv && userSub?.individual?.planName != null) {
-            planTitleName.value = userSub!.individual!.planName!;
-          } else {
-            planTitleName.value = "";
-          }
-
-          int? apiSeats = subMeta?.totalPurchasedSeats ??
-              userSub?.teamPlan?.purchasedSeats ??
-              userSub?.purchasedSeats;
-          if (apiSeats == null || apiSeats <= 0) {
-            if (userSub?.teamPlans != null && userSub!.teamPlans!.isNotEmpty) {
-              apiSeats = userSub!.teamPlans!.first.purchasedSeats;
+          if (!loadMore) {
+            WalkieCurrentSubscription? activeTeamSub;
+            WalkieCurrentSubscription? activeIndivSub;
+            try {
+              final overviewData =
+                  await WalkieTalkieTrialService().getOverview();
+              final myId = int.tryParse(
+                  Global.storageServices.get(PrefConst.userId)?.toString() ??
+                      '');
+              final allSubs =
+                  overviewData.subscription?.activeSubscriptions ?? [];
+              final ownedSubs = myId != null
+                  ? allSubs.where((s) => s.ownerUserId == myId).toList()
+                  : allSubs;
+              activeTeamSub = ownedSubs.firstWhereOrNull((s) =>
+                  s.isGroup ||
+                  s.purchasedSeats > 1 ||
+                  s.plan?.planType.toLowerCase() == 'group' ||
+                  s.plan?.planType.toLowerCase() == 'team');
+              if (activeTeamSub == null && allSubs.isNotEmpty) {
+                activeTeamSub = allSubs.firstWhereOrNull((s) =>
+                    s.isGroup ||
+                    s.purchasedSeats > 1 ||
+                    s.plan?.planType.toLowerCase() == 'group' ||
+                    s.plan?.planType.toLowerCase() == 'team');
+              }
+              activeIndivSub = ownedSubs.firstWhereOrNull((s) =>
+                  s.isIndividual ||
+                  s.plan?.planType.toLowerCase() == 'individual');
+            } catch (e) {
+              debugPrint("Overview fetch error in group select: $e");
             }
-          }
-          if (apiSeats == null || apiSeats <= 0) {
-            for (var m in subscribedList) {
-              if (m.subscription?.teamPlan?.purchasedSeats != null &&
-                  m.subscription!.teamPlan!.purchasedSeats! > 0) {
-                apiSeats = m.subscription!.teamPlan!.purchasedSeats;
-                break;
-              } else if (m.subscription?.purchasedSeats != null &&
-                  m.subscription!.purchasedSeats! > 0) {
-                apiSeats = m.subscription!.purchasedSeats;
-                break;
+
+            final user = subRes.user;
+            final userSub = subRes.user?.subscription;
+            final subMeta = subRes.data?.subscriptionData?.metaData;
+
+            final bool hasTeamPlan = activeTeamSub != null ||
+                user?.accessType?.toLowerCase() == 'team' ||
+                userSub?.isTeamPlanActive == true ||
+                userSub?.teamPlan != null ||
+                (userSub?.teamPlans != null &&
+                    userSub!.teamPlans!.isNotEmpty) ||
+                (subMeta?.teamPlans != null &&
+                    subMeta!.teamPlans!.isNotEmpty) ||
+                (subMeta?.canAssignMember == true) ||
+                userSub?.planType?.toLowerCase() == 'group' ||
+                userSub?.planType?.toLowerCase() == 'team' ||
+                (userSub?.purchasedSeats != null &&
+                    userSub!.purchasedSeats! > 1) ||
+                (subMeta?.totalPurchasedSeats != null &&
+                    subMeta!.totalPurchasedSeats! > 1);
+
+            final bool isIndiv = !hasTeamPlan &&
+                (activeIndivSub != null ||
+                    user?.accessType?.toLowerCase() == 'individual' ||
+                    userSub?.isIndividualOnly == true ||
+                    userSub?.individual != null ||
+                    userSub?.planType?.toLowerCase() == 'individual' ||
+                    userSub?.purchasedSeats == 1);
+
+            final bool isSubscribed = activeTeamSub != null ||
+                activeIndivSub != null ||
+                user?.isSubscribed == true ||
+                user?.subscriptionStatus?.toLowerCase() == 'active' ||
+                userSub?.subscriptionId != null ||
+                userSub?.planId != null;
+
+            final bool isNoSub = !isSubscribed || (!hasTeamPlan && !isIndiv);
+            final bool allowAssign = hasTeamPlan &&
+                ((subMeta?.canAssignMember ?? userSub?.allowAssign) ?? true);
+
+            isIndividualPlan.value = isIndiv;
+            hasNoPlan.value = isNoSub;
+            canAssignMembers.value = allowAssign;
+
+            if (activeTeamSub != null) {
+              planTitleName.value =
+                  activeTeamSub.plan?.name.isNotEmpty == true
+                      ? activeTeamSub.plan!.name
+                      : "Team Plan";
+              activeSubscriptionId.value = activeTeamSub.id;
+              maxAllowedSeats.value = activeTeamSub.purchasedSeats > 0
+                  ? activeTeamSub.purchasedSeats
+                  : 1;
+            } else if (isIndiv && activeIndivSub != null) {
+              planTitleName.value =
+                  activeIndivSub.plan?.name.isNotEmpty == true
+                      ? activeIndivSub.plan!.name
+                      : "Individual Plan";
+              activeSubscriptionId.value = activeIndivSub.id;
+              maxAllowedSeats.value = 1;
+            } else {
+              // Fallback to subRes
+              if (userSub?.teamPlan?.planName != null) {
+                planTitleName.value = userSub!.teamPlan!.planName!;
+              } else if (userSub?.teamPlans != null &&
+                  userSub!.teamPlans!.isNotEmpty) {
+                planTitleName.value =
+                    userSub!.teamPlans!.first.planName ?? "Team Plan";
+              } else if (subMeta?.teamPlans != null &&
+                  subMeta!.teamPlans!.isNotEmpty) {
+                planTitleName.value =
+                    subMeta!.teamPlans!.first.planName ?? "Team Plan";
+              } else if (userSub?.planName != null &&
+                  userSub!.planName!.isNotEmpty) {
+                planTitleName.value = userSub.planName!;
+              } else if (isIndiv && userSub?.individual?.planName != null) {
+                planTitleName.value = userSub!.individual!.planName!;
+              } else {
+                planTitleName.value = "";
+              }
+
+              int? detectedSubId = userSub?.teamPlan?.subscriptionId;
+              if (detectedSubId == null &&
+                  userSub?.teamPlans != null &&
+                  userSub!.teamPlans!.isNotEmpty) {
+                detectedSubId = userSub.teamPlans!.first.subscriptionId;
+              }
+              if (detectedSubId == null &&
+                  subMeta?.teamPlans != null &&
+                  subMeta!.teamPlans!.isNotEmpty) {
+                detectedSubId = subMeta.teamPlans!.first.subscriptionId;
+              }
+              detectedSubId ??= userSub?.subscriptionId ??
+                  userSub?.individual?.subscriptionId;
+
+              if (detectedSubId == null) {
+                for (var m in subscribedList) {
+                  if (m.subscription?.subscriptionId != null) {
+                    detectedSubId = m.subscription!.subscriptionId;
+                    break;
+                  }
+                }
+              }
+              activeSubscriptionId.value = detectedSubId;
+
+              // Compute team-specific seats
+              int? teamSeats = userSub?.teamPlan?.purchasedSeats;
+              if (teamSeats == null || teamSeats <= 0) {
+                if (userSub?.teamPlans != null &&
+                    userSub!.teamPlans!.isNotEmpty) {
+                  teamSeats = userSub!.teamPlans!.first.purchasedSeats;
+                }
+              }
+              if (teamSeats == null || teamSeats <= 0) {
+                if (subMeta?.teamPlans != null &&
+                    subMeta!.teamPlans!.isNotEmpty) {
+                  teamSeats = subMeta!.teamPlans!.first.purchasedSeats;
+                }
+              }
+              if (teamSeats == null || teamSeats <= 0) {
+                for (var m in subscribedList) {
+                  if (m.subscription?.teamPlan?.purchasedSeats != null &&
+                      m.subscription!.teamPlan!.purchasedSeats! > 0) {
+                    teamSeats = m.subscription!.teamPlan!.purchasedSeats;
+                    break;
+                  }
+                }
+              }
+
+              if (isNoSub) {
+                maxAllowedSeats.value = 0;
+              } else if (isIndiv) {
+                maxAllowedSeats.value = 1;
+              } else if (teamSeats != null && teamSeats > 0) {
+                maxAllowedSeats.value = teamSeats;
+              } else if (subMeta?.totalPurchasedSeats != null &&
+                  subMeta!.totalPurchasedSeats! > 0) {
+                maxAllowedSeats.value = subMeta!.totalPurchasedSeats!;
+              } else if (subscribedList.isNotEmpty) {
+                maxAllowedSeats.value = subscribedList.length;
+              } else {
+                maxAllowedSeats.value = 1;
               }
             }
-          }
 
-          if (isNoSub) {
-            maxAllowedSeats.value = 0;
             debugPrint(
-                "🎯 [Walkie] No Plan detected: Member assignment disabled");
-          } else if (isIndiv) {
-            maxAllowedSeats.value = 1;
-            debugPrint(
-                "🎯 [Walkie] Individual Plan detected: 1 seat (Assignment disabled)");
-          } else if (apiSeats != null && apiSeats > 0) {
-            maxAllowedSeats.value = apiSeats;
-            debugPrint(
-                "🎯 [Walkie] Bound purchasedSeats: $apiSeats | allowAssign: $allowAssign");
-          } else if (subscribedList.isNotEmpty) {
-            maxAllowedSeats.value = subscribedList.length;
-          } else {
-            maxAllowedSeats.value = 5;
+                "🎯 [Walkie] Plan: ${planTitleName.value} | SubId: ${activeSubscriptionId.value} | MaxSeats: ${maxAllowedSeats.value} | AllowAssign: $allowAssign");
           }
 
           final List<AssignedMemberItem> loadedSubscribed = [];
@@ -217,7 +336,17 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
 
           for (var m in members) {
             final String uid = m.userId?.toString() ?? "";
-            if (uid.isNotEmpty && loaded.any((e) => e.id == uid)) continue;
+            if (uid.isNotEmpty) {
+              if (loadMore) {
+                if (assignedMembers.any((e) => e.id == uid) ||
+                    availableMembers.any((e) => e.id == uid) ||
+                    loaded.any((e) => e.id == uid)) {
+                  continue;
+                }
+              } else {
+                if (loaded.any((e) => e.id == uid)) continue;
+              }
+            }
 
             String img = m.resolvedImageUrl;
             if (img.isEmpty) {
@@ -239,11 +368,26 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                         ? m.displayDepartment
                         : "Member"));
 
-            final bool isSub = subscribedList.any((s) => s.userId == m.userId) ||
-                m.isSubscribedByAdmin == true;
+            final bool isSub =
+                subscribedList.any((s) => s.userId == m.userId) ||
+                    m.isSubscribedByAdmin == true;
 
             final bool hasAccess = m.existingAccess?.hasAccess == true;
-            final String? accessType = m.existingAccess?.accessType?.toLowerCase();
+            final String? accessType =
+                m.existingAccess?.accessType?.toLowerCase();
+
+            // Self purchased if explicitly marked or if existing access is individual
+            final bool selfPurchased =
+                m.existingAccess?.individual?.isSelfPurchased == true ||
+                    (hasAccess && accessType == "individual");
+
+            // Other admin's plan if member has active access, but wasn't assigned by current admin and isn't self-purchased
+            final bool otherAdmin = hasAccess && !isSub && !selfPurchased;
+
+            // If someone else already assigned a seat to this member, do NOT show in the list at all
+            if (otherAdmin) {
+              continue;
+            }
 
             final item = AssignedMemberItem(
               id: uid.isNotEmpty ? uid : UniqueKey().toString(),
@@ -251,10 +395,15 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
               role: role,
               imageUrl: img,
               isSubscribedByAdmin: isSub,
-              canRemoveTeam: m.canRemoveTeam ?? m.canRemove ?? true,
+              canRemoveTeam: m.canRemoveTeam ??
+                  m.canRemove ??
+                  m.adminSubscription?.canRemoveTeam ??
+                  true,
               canAssignTeamSeat: m.canAssignTeamSeat ?? true,
               existingAccessType: accessType,
               hasExistingAccess: hasAccess,
+              isSelfPurchased: selfPurchased,
+              isPurchasedByOtherAdmin: otherAdmin,
             );
 
             loaded.add(item);
@@ -266,26 +415,35 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
             }
           }
 
-          if (loadedSubscribed.isNotEmpty || loadedExpired.isNotEmpty) {
-            if (isIndiv && loadedSubscribed.length > 1) {
-              assignedMembers.assignAll([loadedSubscribed.first]);
-              final extra = loadedSubscribed.skip(1);
-              availableMembers.assignAll([...extra, ...loadedExpired]);
-            } else {
-              assignedMembers.assignAll(loadedSubscribed);
-              availableMembers.assignAll(loadedExpired);
+          if (loadMore) {
+            if (loadedSubscribed.isNotEmpty) {
+              assignedMembers.addAll(loadedSubscribed);
+            }
+            if (loadedExpired.isNotEmpty) {
+              availableMembers.addAll(loadedExpired);
+            }
+          } else {
+            if (loadedSubscribed.isNotEmpty || loadedExpired.isNotEmpty) {
+              if (isIndividualPlan.value && loadedSubscribed.length > 1) {
+                assignedMembers.assignAll([loadedSubscribed.first]);
+                final extra = loadedSubscribed.skip(1);
+                availableMembers.assignAll([...extra, ...loadedExpired]);
+              } else {
+                assignedMembers.assignAll(loadedSubscribed);
+                availableMembers.assignAll(loadedExpired);
+              }
             }
           }
 
           debugPrint(
-              "✅ [Walkie] Loaded ${loaded.length} members (Subscribed: ${loadedSubscribed.length}, Expired/Available: ${loadedExpired.length})");
+              "✅ [Walkie] ${loadMore ? 'Page $pageToFetch' : 'Initial'} Loaded ${loaded.length} members (Subscribed: ${loadedSubscribed.length}, Expired/Available: ${loadedExpired.length})");
         }
       } catch (e) {
         debugPrint("❌ Error fetching filter=subscription members: $e");
       }
 
-      // 2. Secondary fallback: GroupRepo.getMemberData if available
-      if (loaded.isEmpty && controller.groupData.isNotEmpty) {
+      // 2. Secondary fallback: GroupRepo.getMemberData if available (only on initial load)
+      if (!loadMore && loaded.isEmpty && controller.groupData.isNotEmpty) {
         for (var grp in controller.groupData) {
           final gId = grp.id?.toString() ?? "";
           if (gId.isEmpty) continue;
@@ -334,8 +492,8 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
         }
       }
 
-      // 3. Fallback: try TrackRepo.getGroupMember without filter (filter='all')
-      if (loaded.isEmpty) {
+      // 3. Fallback: try TrackRepo.getGroupMember without filter (filter='all') (only on initial load)
+      if (!loadMore && loaded.isEmpty) {
         try {
           final GroupMemberModel allRes = await TrackRepo.getGroupMember(
             page: '1',
@@ -379,7 +537,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
         }
       }
 
-      if (loaded.isNotEmpty) {
+      if (!loadMore && loaded.isNotEmpty) {
         if (assignedMembers.isEmpty && availableMembers.isEmpty) {
           if (loaded.length <= 5) {
             assignedMembers.assignAll(loaded);
@@ -389,7 +547,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
             availableMembers.assignAll(loaded.sublist(5));
           }
         }
-      } else {
+      } else if (!loadMore) {
         membersError.value = "";
       }
     } catch (e) {
@@ -405,6 +563,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
       }
     } finally {
       isMembersLoading.value = false;
+      _isLoadingMoreMembers.value = false;
     }
   }
 
@@ -696,14 +855,30 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
     );
   }
 
+  Future<bool> _canAccessWalkie() async {
+    if (!hasNoPlan.value) return true;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final userId = prefs.getString(PrefConst.userId) ?? '';
+      final trialRemaining = prefs.getInt('walkie_trial_remaining_seconds_$userId');
+      if (trialRemaining == null || trialRemaining > 0) {
+        return true;
+      }
+      return false;
+    } catch (_) {
+      return true;
+    }
+  }
+
   Widget _apiGroupCard(GroupsResData group, int index) {
     final colors = colorPool[index % colorPool.length];
     final String groupId = group.id?.toString() ?? "unknown";
     final bool isOnline = (index % 2 == 0);
 
     return InkWell(
-      onTap: () {
-        if (hasNoPlan.value) {
+      onTap: () async {
+        final canAccess = await _canAccessWalkie();
+        if (!canAccess) {
           _showUpgradePrompt(context: context, isNoPlan: true);
           return;
         }
@@ -714,6 +889,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
             'groupName': group.groupName ?? "Unknown Group",
             'groupDesc': group.groupDesc ?? "",
             'groupCode': group.groupCode ?? "",
+            'isSubscribed': !hasNoPlan.value,
           },
         );
       },
@@ -806,8 +982,9 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
             }),
             SizedBox(width: 10.w),
             GestureDetector(
-              onTap: () {
-                if (hasNoPlan.value) {
+              onTap: () async {
+                final canAccess = await _canAccessWalkie();
+                if (!canAccess) {
                   _showUpgradePrompt(context: context, isNoPlan: true);
                   return;
                 }
@@ -818,6 +995,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                     'groupName': group.groupName ?? "Unknown Group",
                     'groupDesc': group.groupDesc ?? "",
                     'groupCode': group.groupCode ?? "",
+                    'isSubscribed': !hasNoPlan.value,
                   },
                 );
               },
@@ -1114,7 +1292,20 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
 
   void _showEditAssignedMembersBottomSheet(BuildContext context) {
     final TextEditingController sheetSearchController = TextEditingController();
+    final ScrollController sheetScrollController = ScrollController();
     final RxString sheetQuery = ''.obs;
+
+    sheetScrollController.addListener(() {
+      if (sheetScrollController.hasClients &&
+          sheetScrollController.position.pixels >=
+              sheetScrollController.position.maxScrollExtent - 200) {
+        if (_hasNextMemberPage.value &&
+            !_isLoadingMoreMembers.value &&
+            !isMembersLoading.value) {
+          fetchMembersFromApi(loadMore: true);
+        }
+      }
+    });
 
     showModalBottomSheet(
       context: context,
@@ -1167,7 +1358,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                               hasNoPlan.value
                                   ? "No active plan • Subscribe to assign members"
                                   : (isIndividualPlan.value
-                                      ? "Individual Plan (1 Seat) • Upgrade to Team for more"
+                                      ? "Individual Plan (Self Access Only) • Upgrade to Team to assign members"
                                       : (maxAllowedSeats.value > 0
                                           ? "You can assign up to ${maxAllowedSeats.value} members in this group"
                                           : "Assign members to communicate in this group")),
@@ -1270,8 +1461,146 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                   ],
                 ),
               ),
+
+              // Basic Plan Details Banner
               Padding(
-                padding: EdgeInsets.only(left: 20.w, right: 20.w, top: 14.h),
+                padding: EdgeInsets.only(left: 20.w, right: 20.w, top: 12.h),
+                child: Obx(() {
+                  final bool noPlan = hasNoPlan.value;
+                  final bool isIndiv = isIndividualPlan.value;
+                  final String title = planTitleName.value.isNotEmpty
+                      ? planTitleName.value
+                      : (isIndiv
+                          ? "Individual Plan"
+                          : (noPlan ? "No Active Plan" : "Team Plan"));
+                  final int totalSeats = maxAllowedSeats.value > 0
+                      ? maxAllowedSeats.value
+                      : (isIndiv ? 1 : 0);
+                  final int assignedCount = assignedMembers.length;
+                  final int remainingSeats =
+                      (totalSeats - assignedCount).clamp(0, totalSeats);
+
+                  return Container(
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 12.w, vertical: 9.h),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: noPlan
+                            ? [
+                                const Color(0xFFFFF1F2),
+                                const Color(0xFFFFE4E6)
+                              ]
+                            : (isIndiv
+                                ? [
+                                    const Color(0xFFFFF7ED),
+                                    const Color(0xFFFFEDD5)
+                                  ]
+                                : [
+                                    const Color(0xFFF5F3FF),
+                                    const Color(0xFFEDE9FE)
+                                  ]),
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(14.r),
+                      border: Border.all(
+                        color: noPlan
+                            ? const Color(0xFFFECDD3)
+                            : (isIndiv
+                                ? const Color(0xFFFED7AA)
+                                : const Color(0xFFDDD6FE)),
+                        width: 0.8,
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 36.w,
+                          height: 36.w,
+                          decoration: BoxDecoration(
+                            color: noPlan
+                                ? const Color(0xFFE11D48)
+                                : (isIndiv
+                                    ? const Color(0xFFEA580C)
+                                    : const Color(0xFF5B4DFF)),
+                            borderRadius: BorderRadius.circular(10.r),
+                          ),
+                          child: Icon(
+                            noPlan
+                                ? Icons.lock_outline_rounded
+                                : (isIndiv
+                                    ? Icons.person_rounded
+                                    : Icons.workspace_premium_rounded),
+                            color: Colors.white,
+                            size: 18.sp,
+                          ),
+                        ),
+                        SizedBox(width: 10.w),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      title,
+                                      style: TextStyle(
+                                        fontSize: 13.sp,
+                                        fontFamily: FontFamily.interBold,
+                                        color: const Color(0xFF1E1B4B),
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  if (!noPlan)
+                                    Container(
+                                      padding: EdgeInsets.symmetric(
+                                          horizontal: 6.w, vertical: 2.h),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFECFDF5),
+                                        borderRadius:
+                                            BorderRadius.circular(10.r),
+                                        border: Border.all(
+                                            color: const Color(0xFFA7F3D0),
+                                            width: 0.6),
+                                      ),
+                                      child: Text(
+                                        "Active",
+                                        style: TextStyle(
+                                          fontSize: 9.sp,
+                                          fontFamily: FontFamily.interBold,
+                                          color: const Color(0xFF047857),
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                              SizedBox(height: 2.h),
+                              Text(
+                                noPlan
+                                    ? "Subscribe to a Team Plan to assign seats"
+                                    : (isIndiv
+                                        ? "1 Seat Included (Self Access Only)"
+                                        : "$totalSeats Total Seats • $assignedCount Assigned • $remainingSeats Available"),
+                                style: TextStyle(
+                                  fontSize: 11.sp,
+                                  fontFamily: FontFamily.interRegular,
+                                  color: const Color(0xFF6B7280),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }),
+              ),
+
+              Padding(
+                padding: EdgeInsets.only(left: 20.w, right: 20.w, top: 10.h),
                 child: Container(
                   height: 44.h,
                   padding: EdgeInsets.symmetric(horizontal: 12.w),
@@ -1442,6 +1771,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                   }
 
                   return ListView(
+                    controller: sheetScrollController,
                     padding:
                         EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
                     children: [
@@ -1517,6 +1847,17 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                       else
                         ...availableList
                             .map((m) => _buildAvailableMemberTile(m)),
+                      Obx(() {
+                        if (_isLoadingMoreMembers.value) {
+                          return Padding(
+                            padding: EdgeInsets.symmetric(vertical: 14.h),
+                            child: const Center(
+                              child: CupertinoActivityIndicator(),
+                            ),
+                          );
+                        }
+                        return const SizedBox.shrink();
+                      }),
                     ],
                   );
                 }),
@@ -1573,118 +1914,96 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                     }
 
                     if (isIndividualPlan.value) {
-                      return Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          SizedBox(
-                            width: double.infinity,
-                            height: 48.h,
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF5B4DFF),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(14.r),
-                                ),
-                                elevation: 0,
-                              ),
-                              onPressed: () {
-                                Get.back();
-                                Utils().fluttertoast(
-                                    "Assigned member saved (${assignedMembers.length}/1)");
-                              },
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.check_circle_outline_rounded,
-                                    size: 19.sp,
-                                    color: Colors.white,
-                                  ),
-                                  SizedBox(width: 8.w),
-                                  reausabletext(
-                                    "Save Member (${assignedMembers.length}/1)",
-                                    fontsize: 14.5.sp,
-                                    fontfamily: FontFamily.interSemiBold,
-                                    color: Colors.white,
-                                  ),
-                                ],
-                              ),
+                      return SizedBox(
+                        width: double.infinity,
+                        height: 50.h,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFEA580C),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14.r),
                             ),
+                            elevation: 0,
                           ),
-                          SizedBox(height: 8.h),
-                          SizedBox(
-                            width: double.infinity,
-                            height: 44.h,
-                            child: OutlinedButton(
-                              style: OutlinedButton.styleFrom(
-                                side: const BorderSide(
-                                    color: Color(0xFFEA580C), width: 1.2),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(14.r),
-                                ),
+                          onPressed: () {
+                            Get.back();
+                            Get.to(() => const WalkieTalkiePlanScreen(
+                                  initialTabIndex: 1,
+                                ));
+                          },
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.groups_rounded,
+                                size: 20.sp,
+                                color: Colors.white,
                               ),
-                              onPressed: () {
-                                Get.back();
-                                Get.to(() => const WalkieTalkiePlanScreen(
-                                      initialTabIndex: 1,
-                                    ));
-                              },
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.upgrade_rounded,
-                                    size: 19.sp,
-                                    color: const Color(0xFFEA580C),
-                                  ),
-                                  SizedBox(width: 6.w),
-                                  reausabletext(
-                                    "Upgrade to Team Plan (Add More)",
-                                    fontsize: 13.5.sp,
-                                    fontfamily: FontFamily.interSemiBold,
-                                    color: const Color(0xFFEA580C),
-                                  ),
-                                ],
+                              SizedBox(width: 8.w),
+                              reausabletext(
+                                "Upgrade to Team Plan (Assign Members)",
+                                fontsize: 14.5.sp,
+                                fontfamily: FontFamily.interSemiBold,
+                                color: Colors.white,
                               ),
-                            ),
+                            ],
                           ),
-                        ],
+                        ),
                       );
                     }
 
                     return SizedBox(
                       width: double.infinity,
                       height: 50.h,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF5B4DFF),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14.r),
+                      child: Obx(() {
+                        final bool isSubmitting = isSubmittingMembers.value;
+                        return ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF5B4DFF),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14.r),
+                            ),
+                            elevation: 0,
                           ),
-                          elevation: 0,
-                        ),
-                        onPressed: () {
-                          Get.back();
-                          Utils().fluttertoast("Assigned members updated");
-                        },
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            reausabletext(
-                              "Update Members (${assignedMembers.length}/${maxAllowedSeats.value})",
-                              fontsize: 15.sp,
-                              fontfamily: FontFamily.interSemiBold,
-                              color: Colors.white,
-                            ),
-                            SizedBox(width: 8.w),
-                            Icon(
-                              Icons.arrow_forward_rounded,
-                              size: 18.sp,
-                              color: Colors.white,
-                            ),
-                          ],
-                        ),
-                      ),
+                          onPressed: isSubmitting
+                              ? null
+                              : () => _submitAssignedMembers(),
+                          child: isSubmitting
+                              ? Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    CupertinoActivityIndicator(
+                                      color: Colors.white,
+                                      radius: 9.r,
+                                    ),
+                                    SizedBox(width: 8.w),
+                                    reausabletext(
+                                      "Updating Members...",
+                                      fontsize: 15.sp,
+                                      fontfamily: FontFamily.interSemiBold,
+                                      color: Colors.white,
+                                    ),
+                                  ],
+                                )
+                              : Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    reausabletext(
+                                      "Update Members (${assignedMembers.length}/${maxAllowedSeats.value})",
+                                      fontsize: 15.sp,
+                                      fontfamily: FontFamily.interSemiBold,
+                                      color: Colors.white,
+                                    ),
+                                    SizedBox(width: 8.w),
+                                    Icon(
+                                      Icons.arrow_forward_rounded,
+                                      size: 18.sp,
+                                      color: Colors.white,
+                                    ),
+                                  ],
+                                ),
+                        );
+                      }),
                     );
                   }),
                 ),
@@ -1703,14 +2022,14 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
         padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
         children: [
           reausabletext(
-            "Currently Assigned (3)",
+            "Currently Assigned (2)",
             fontsize: 14.sp,
             fontfamily: FontFamily.interBold,
             color: const Color(0xFF1E1B4B),
           ),
           SizedBox(height: 8.h),
           ...List.generate(
-            3,
+            2,
             (index) => _buildAssignedMemberTile(
               AssignedMemberItem(
                 id: "sk_as_$index",
@@ -1729,7 +2048,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
           ),
           SizedBox(height: 8.h),
           ...List.generate(
-            4,
+            8,
             (index) => _buildAvailableMemberTile(
               AssignedMemberItem(
                 id: "sk_av_$index",
@@ -1788,6 +2107,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
   Widget _buildAssignedMemberTile(AssignedMemberItem member) {
     return Obx(() {
       final bool isNoSub = hasNoPlan.value;
+      final bool isIndiv = isIndividualPlan.value;
       return Padding(
         padding: EdgeInsets.symmetric(vertical: 6.h),
         child: Row(
@@ -1804,41 +2124,94 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                     fontfamily: FontFamily.interSemiBold,
                     color: const Color(0xFF1E1B4B),
                   ),
-                  SizedBox(height: 2.h),
-                  reausabletext(
-                    member.role,
-                    fontsize: 12.sp,
-                    color: const Color(0xFF6B7280),
-                  ),
+                  // SizedBox(height: 2.h),
+                  // reausabletext(
+                  //   member.role,
+                  //   fontsize: 12.sp,
+                  //   color: const Color(0xFF6B7280),
+                  // ),
                 ],
               ),
             ),
-            GestureDetector(
-              onTap: () {
-                if (isNoSub) {
-                  _showUpgradePrompt(context: context, isNoPlan: true);
-                } else if (!member.canRemoveTeam) {
-                  Utils().fluttertoast(
-                      "Cannot remove seat assigned by another admin");
-                } else {
-                  assignedMembers.remove(member);
-                  availableMembers.insert(0, member);
-                }
-              },
-              child: Container(
-                width: 28.w,
-                height: 28.w,
-                decoration: const BoxDecoration(
-                  color: Color(0xFFFFECEE),
-                  shape: BoxShape.circle,
+            if (isIndiv || member.isSelfPurchased)
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 9.w, vertical: 4.h),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEFF6FF),
+                  borderRadius: BorderRadius.circular(12.r),
+                  border:
+                      Border.all(color: const Color(0xFFBFDBFE), width: 0.8),
                 ),
-                child: Icon(
-                  Icons.remove_rounded,
-                  size: 16.sp,
-                  color: const Color(0xFFEF4444),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.person_rounded,
+                        size: 13.sp, color: const Color(0xFF1D4ED8)),
+                    SizedBox(width: 4.w),
+                    Text(
+                      "Self Access",
+                      style: TextStyle(
+                        fontSize: 10.5.sp,
+                        color: const Color(0xFF1D4ED8),
+                        fontFamily: FontFamily.interSemiBold,
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            else if (member.isPurchasedByOtherAdmin || !member.canRemoveTeam)
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 9.w, vertical: 4.h),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFEF3C7),
+                  borderRadius: BorderRadius.circular(12.r),
+                  border:
+                      Border.all(color: const Color(0xFFFDE68A), width: 0.8),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.shield_outlined,
+                        size: 13.sp, color: const Color(0xFFB45309)),
+                    SizedBox(width: 4.w),
+                    Text(
+                      "Other Team",
+                      style: TextStyle(
+                        fontSize: 10.5.sp,
+                        color: const Color(0xFFB45309),
+                        fontFamily: FontFamily.interSemiBold,
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            else
+              GestureDetector(
+                onTap: () {
+                  if (isNoSub) {
+                    _showUpgradePrompt(context: context, isNoPlan: true);
+                  } else if (!member.canRemoveTeam) {
+                    Utils().fluttertoast(
+                        "Cannot remove seat assigned by another admin");
+                  } else {
+                    assignedMembers.remove(member);
+                    availableMembers.insert(0, member);
+                  }
+                },
+                child: Container(
+                  width: 28.w,
+                  height: 28.w,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFFFECEE),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.remove_rounded,
+                    size: 16.sp,
+                    color: const Color(0xFFEF4444),
+                  ),
                 ),
               ),
-            ),
           ],
         ),
       );
@@ -1849,7 +2222,6 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
     return Obx(() {
       final bool isNoSub = hasNoPlan.value;
       final bool isIndiv = isIndividualPlan.value;
-      final bool isIndivLimitReached = isIndiv && assignedMembers.length >= 1;
       final bool isTeamLimitReached = !isIndiv &&
           !isNoSub &&
           (assignedMembers.length >= maxAllowedSeats.value);
@@ -1870,109 +2242,224 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                     fontfamily: FontFamily.interSemiBold,
                     color: const Color(0xFF1E1B4B),
                   ),
-                  SizedBox(height: 2.h),
-                  Row(
-                    children: [
-                      Flexible(
-                        child: reausabletext(
-                          member.role,
-                          fontsize: 12.sp,
-                          color: const Color(0xFF6B7280),
-                        ),
-                      ),
-                      if (member.hasExistingAccess) ...[
-                        SizedBox(width: 6.w),
-                        Container(
-                          padding: EdgeInsets.symmetric(
-                              horizontal: 6.w, vertical: 1.5.h),
-                          decoration: BoxDecoration(
-                            color: member.existingAccessType == "individual"
-                                ? const Color(0xFFEFF6FF)
-                                : const Color(0xFFFEF3C7),
-                            borderRadius: BorderRadius.circular(6.r),
-                            border: Border.all(
-                              color: member.existingAccessType == "individual"
-                                  ? const Color(0xFFBFDBFE)
-                                  : const Color(0xFFFDE68A),
-                              width: 0.8,
-                            ),
-                          ),
-                          child: Text(
-                            member.existingAccessType == "individual"
-                                ? "Self Plan"
-                                : "Other Team",
-                            style: TextStyle(
-                              fontSize: 9.5.sp,
-                              color: member.existingAccessType == "individual"
-                                  ? const Color(0xFF1D4ED8)
-                                  : const Color(0xFFB45309),
-                              fontFamily: FontFamily.interSemiBold,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
+                  // SizedBox(height: 2.h),
+                  // reausabletext(
+                  //   member.role,
+                  //   fontsize: 12.sp,
+                  //   color: const Color(0xFF6B7280),
+                  // ),
                 ],
               ),
             ),
-            GestureDetector(
-              onTap: () {
-                if (isNoSub) {
-                  _showUpgradePrompt(context: context, isNoPlan: true);
-                } else if (isIndivLimitReached) {
-                  _showUpgradePrompt(context: context, isNoPlan: false);
-                } else if (isTeamLimitReached) {
-                  _showUpgradePrompt(context: context, isNoPlan: false);
-                } else {
-                  availableMembers.remove(member);
-                  assignedMembers.add(member);
-                }
-              },
-              child: Container(
-                width: 28.w,
-                height: 28.w,
+            if (member.isSelfPurchased)
+              // User has already purchased plan by herself -> No Add/Remove option visible
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                 decoration: BoxDecoration(
-                  color: isNoSub
-                      ? const Color(0xFFF3F4F6)
-                      : (isIndivLimitReached
-                          ? const Color(0xFFFFF7ED)
-                          : (isTeamLimitReached
-                              ? const Color(0xFFF3F4F6)
-                              : Colors.white)),
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: isNoSub
-                        ? const Color(0xFFD1D5DB)
-                        : (isIndivLimitReached
-                            ? const Color(0xFFFDBA74)
-                            : (isTeamLimitReached
-                                ? const Color(0xFFD1D5DB)
-                                : const Color(0xFF6366F1))),
-                    width: 1.5,
+                  color: const Color(0xFFEFF6FF),
+                  borderRadius: BorderRadius.circular(12.r),
+                  border:
+                      Border.all(color: const Color(0xFFBFDBFE), width: 0.8),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.person_rounded,
+                        size: 12.sp, color: const Color(0xFF1D4ED8)),
+                    SizedBox(width: 3.w),
+                    Text(
+                      "Self Plan",
+                      style: TextStyle(
+                        fontSize: 10.sp,
+                        color: const Color(0xFF1D4ED8),
+                        fontFamily: FontFamily.interSemiBold,
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            else if (member.isPurchasedByOtherAdmin)
+              // Plan purchased by someone else -> Current user cannot Add/Remove
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFEF3C7),
+                  borderRadius: BorderRadius.circular(12.r),
+                  border:
+                      Border.all(color: const Color(0xFFFDE68A), width: 0.8),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.shield_outlined,
+                        size: 12.sp, color: const Color(0xFFB45309)),
+                    SizedBox(width: 3.w),
+                    Text(
+                      "Other Team",
+                      style: TextStyle(
+                        fontSize: 10.sp,
+                        color: const Color(0xFFB45309),
+                        fontFamily: FontFamily.interSemiBold,
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            else if (isIndiv)
+              // Admin has Individual Plan -> Show Team Plan lock prompt
+              GestureDetector(
+                onTap: () {
+                  _showUpgradePrompt(context: context, isNoPlan: false);
+                },
+                child: Container(
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFF7ED),
+                    borderRadius: BorderRadius.circular(12.r),
+                    border:
+                        Border.all(color: const Color(0xFFFFEDD5), width: 0.8),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.lock_outline_rounded,
+                          size: 12.sp, color: const Color(0xFFEA580C)),
+                      SizedBox(width: 3.w),
+                      Text(
+                        "Team Plan",
+                        style: TextStyle(
+                          fontSize: 10.sp,
+                          color: const Color(0xFFEA580C),
+                          fontFamily: FontFamily.interSemiBold,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                child: Icon(
-                  isIndivLimitReached
-                      ? Icons.upgrade_rounded
-                      : (isNoSub
-                          ? Icons.lock_outline_rounded
-                          : Icons.add_rounded),
-                  size: (isIndivLimitReached || isNoSub) ? 15.sp : 18.sp,
-                  color: isNoSub
-                      ? const Color(0xFF9CA3AF)
-                      : (isIndivLimitReached
-                          ? const Color(0xFFEA580C)
-                          : (isTeamLimitReached
-                              ? const Color(0xFF9CA3AF)
-                              : const Color(0xFF6366F1))),
+              )
+            else if (isNoSub)
+              // No plan -> Show Get Plan prompt
+              GestureDetector(
+                onTap: () {
+                  _showUpgradePrompt(context: context, isNoPlan: true);
+                },
+                child: Container(
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFF1F2),
+                    borderRadius: BorderRadius.circular(12.r),
+                    border:
+                        Border.all(color: const Color(0xFFFECDD3), width: 0.8),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.lock_outline_rounded,
+                          size: 12.sp, color: const Color(0xFFE11D48)),
+                      SizedBox(width: 3.w),
+                      Text(
+                        "Get Plan",
+                        style: TextStyle(
+                          fontSize: 10.sp,
+                          color: const Color(0xFFE11D48),
+                          fontFamily: FontFamily.interSemiBold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            else
+              // Person whose plan is expired or not subscribed -> Add (+) button
+              GestureDetector(
+                onTap: () {
+                  if (isTeamLimitReached) {
+                    _showUpgradePrompt(context: context, isNoPlan: false);
+                  } else {
+                    availableMembers.remove(member);
+                    assignedMembers.add(member);
+                  }
+                },
+                child: Container(
+                  width: 28.w,
+                  height: 28.w,
+                  decoration: BoxDecoration(
+                    color: isTeamLimitReached
+                        ? const Color(0xFFF3F4F6)
+                        : Colors.white,
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: isTeamLimitReached
+                          ? const Color(0xFFD1D5DB)
+                          : const Color(0xFF6B4DFF),
+                      width: 1.5,
+                    ),
+                  ),
+                  child: Icon(
+                    Icons.add_rounded,
+                    size: 18.sp,
+                    color: isTeamLimitReached
+                        ? const Color(0xFF9CA3AF)
+                        : const Color(0xFF6B4DFF),
+                  ),
                 ),
               ),
-            ),
           ],
         ),
       );
     });
+  }
+
+  Future<void> _submitAssignedMembers() async {
+    final int? subId = activeSubscriptionId.value;
+    if (subId == null) {
+      Utils().fluttertoast("No active subscription found");
+      return;
+    }
+
+    if (assignedMembers.isEmpty) {
+      Utils().fluttertoast("Please select at least one member to assign");
+      return;
+    }
+
+    final List<int> targetUserIds = assignedMembers
+        .map((m) => int.tryParse(m.id))
+        .whereType<int>()
+        .toList();
+
+    if (targetUserIds.isEmpty) {
+      Utils().fluttertoast("No valid members selected to assign");
+      return;
+    }
+
+    try {
+      isSubmittingMembers.value = true;
+      final res = await WalkiePlanRepo.updateMemberSubscription(
+        subscriptionId: subId,
+        targetUserIds: targetUserIds,
+      );
+
+      if (res.status == true) {
+        final msg = res.message;
+        Utils().fluttertoast((msg != null && msg.isNotEmpty)
+            ? msg
+            : "Assigned members updated successfully");
+        Get.back();
+        fetchMembersFromApi();
+      } else {
+        final msg = res.message;
+        Utils().fluttertoast((msg != null && msg.isNotEmpty)
+            ? msg
+            : "Failed to update assigned members");
+      }
+    } catch (e) {
+      debugPrint("❌ [Walkie] Error submitting member subscriptions: $e");
+      Utils().fluttertoast("Error: ${e.toString()}");
+    } finally {
+      isSubmittingMembers.value = false;
+    }
   }
 }
 

@@ -58,19 +58,22 @@ class BannerUi extends StatelessWidget {
             height: 160.h,
             child: Swiper(
               itemCount: controller.bannerList.length,
-              autoplay: true,
+              loop: false,
+              autoplay: controller.bannerList.length > 1,
               autoplayDelay: 3500,
               duration: 800,
-              pagination: SwiperPagination(
-                alignment: Alignment.bottomCenter,
-                builder: DotSwiperPaginationBuilder(
-                  activeColor: const Color(0xFF6B4DFF),
-                  color: Colors.white.withValues(alpha: 0.6),
-                  size: 6.0.r,
-                  activeSize: 8.0.r,
-                  space: 4.0.w,
-                ),
-              ),
+              pagination: controller.bannerList.length > 1
+                  ? SwiperPagination(
+                      alignment: Alignment.bottomCenter,
+                      builder: DotSwiperPaginationBuilder(
+                        activeColor: const Color(0xFF6B4DFF),
+                        color: Colors.white.withValues(alpha: 0.6),
+                        size: 6.0.r,
+                        activeSize: 8.0.r,
+                        space: 4.0.w,
+                      ),
+                    )
+                  : null,
               itemBuilder: (BuildContext context, int index) {
                 BannerData banner = controller.bannerList[index];
 

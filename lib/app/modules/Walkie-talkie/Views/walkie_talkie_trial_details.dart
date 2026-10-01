@@ -1,4 +1,5 @@
 import 'package:fgtracker/app/Core/values/colors.dart';
+import 'package:fgtracker/app/Model/walkie_talkie_trial_details_model.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/global_widget/blend_mask.dart';
 
@@ -13,6 +14,7 @@ import 'package:flutter/cupertino.dart' show CupertinoIcons;
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 class WalkieTalkieTrialDetailsScreen extends StatefulWidget {
@@ -398,63 +400,351 @@ class _WalkieTalkieTrialDetailsScreenState
   }
 
   // =====================================================
-  // TRIAL STATUS CARD
+  // TRIAL OR SUBSCRIPTION STATUS CARD
   // =====================================================
 
   Widget _buildFreeTrialStatusCard() {
-    final trial = controller.trial;
-    final bool hasSubscription = controller.hasActiveSubscription;
-      final bool trialActive = controller.isTrialActive;
-      final bool trialExpired = controller.showTrialExpired;
-      final bool trialEligible = controller.isTrialEligible;
+    if (controller.hasActiveSubscription) {
+      return _buildActiveSubscriptionCard();
+    }
 
-      String title = "FREE TRIAL";
-      String? subtitle;
-      String description =
+    final bool trialActive = controller.isTrialActive;
+    final bool trialExpired = controller.showTrialExpired;
+    final bool trialEligible = controller.isTrialEligible;
+
+    String title = "FREE TRIAL";
+    String? subtitle;
+    String description =
+        "Use your ${controller.trialDurationFormatted} trial anytime within 7 days.";
+
+    if (trialActive) {
+      title = "TRIAL ACTIVE";
+      subtitle = "Free Trial Running";
+      description = "Enjoy Walkie Talkie during your trial.";
+    } else if (trialExpired) {
+      title = "TRIAL EXPIRED";
+      subtitle = "Your Trial Has Ended";
+      description = "Choose a subscription to continue.";
+    } else if (trialEligible || controller.data == null) {
+      title = "FREE TRIAL";
+      subtitle = null;
+      description =
           "Use your ${controller.trialDurationFormatted} trial anytime within 7 days.";
+    }
 
-      if (hasSubscription) {
-        title = "ACTIVE SUBSCRIPTION";
-        subtitle = "Walkie Talkie Active";
-        description = "Your subscription is currently active.";
-      } else if (trialActive) {
-        title = "TRIAL ACTIVE";
-        subtitle = "Free Trial Running";
-        description = "Enjoy Walkie Talkie during your trial.";
-      } else if (trialExpired) {
-        title = "TRIAL EXPIRED";
-        subtitle = "Your Trial Has Ended";
-        description = "Choose a subscription to continue.";
-      } else if (trialEligible || controller.data == null) {
-        title = "FREE TRIAL";
-        subtitle = null;
-        description =
-            "Use your ${controller.trialDurationFormatted} trial anytime within 7 days.";
+    return Container(
+      margin: EdgeInsets.symmetric(
+        horizontal: 16.w,
+      ),
+      padding: EdgeInsets.all(14.w),
+      decoration: _cardDecoration(),
+      child: Column(
+        children: [
+          // -----------------------------------------
+          // Trial header
+          // -----------------------------------------
+          Row(
+            children: [
+              Container(
+                width: 44.w,
+                height: 44.w,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF0EFFF),
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                child: Icon(
+                  CupertinoIcons.gift_fill,
+                  color: primaryColor,
+                  size: _sp(24),
+                ),
+              ),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        reausabletext(
+                          title,
+                          fontsize: _sp(12.5),
+                          fontfamily: FontFamily.interBold,
+                          color: textColor,
+                        ),
+                        if (title == "FREE TRIAL") ...[
+                          SizedBox(width: 8.w),
+                          Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 6.w,
+                              vertical: 2.h,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF0EFFF),
+                              borderRadius: BorderRadius.circular(6.r),
+                              border: Border.all(
+                                color: const Color(0xFFDDD6FE),
+                                width: 0.8,
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.timer_outlined,
+                                  size: _sp(11),
+                                  color: primaryColor,
+                                ),
+                                SizedBox(width: 3.w),
+                                Text(
+                                  controller.trialDurationFormatted,
+                                  style: TextStyle(
+                                    fontSize: _sp(10.5),
+                                    fontFamily: FontFamily.interBold,
+                                    color: primaryColor,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                    if (subtitle != null && subtitle.isNotEmpty) ...[
+                      SizedBox(height: 3.h),
+                      reausabletext(
+                        subtitle,
+                        fontsize: _sp(14.5),
+                        fontfamily: FontFamily.interBold,
+                        color: primaryColor,
+                      ),
+                    ],
+                    SizedBox(height: 3.h),
+                    Text(
+                      description,
+                      style: TextStyle(
+                        fontSize: _sp(11),
+                        color: subtitleColor,
+                        fontFamily: FontFamily.interRegular,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 10.h),
+
+          // -----------------------------------------
+          // Trial usage
+          // -----------------------------------------
+          Container(
+            padding: EdgeInsets.symmetric(
+              horizontal: 12.w,
+              vertical: 10.h,
+            ),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFBFBFE),
+              borderRadius: BorderRadius.circular(12.r),
+              border: Border.all(
+                color: const Color(0xFFEFF0F6),
+              ),
+            ),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    reausabletext(
+                      "Trial Usage",
+                      fontsize: _sp(11.5),
+                      fontfamily: FontFamily.interMedium,
+                      color: textColor,
+                    ),
+                    reausabletext(
+                      controller.usageLabel,
+                      fontsize: _sp(11.5),
+                      fontfamily: FontFamily.interSemiBold,
+                      color: textColor,
+                    ),
+                  ],
+                ),
+                SizedBox(height: 6.h),
+
+                // Dynamic progress bar
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(3.r),
+                  child: LinearProgressIndicator(
+                    value: controller.usageProgress,
+                    minHeight: 5.h,
+                    backgroundColor: const Color(0xFFE5E7EB),
+                    valueColor: const AlwaysStoppedAnimation<Color>(
+                      primaryColor,
+                    ),
+                  ),
+                ),
+                SizedBox(height: 8.h),
+
+                // -----------------------------------
+                // Countdown / trial status
+                // -----------------------------------
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: EdgeInsets.all(3.w),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF0EFFF),
+                            borderRadius: BorderRadius.circular(4.r),
+                          ),
+                          child: Icon(
+                            trialExpired
+                                ? Icons.timer_off_outlined
+                                : Icons.hourglass_empty_rounded,
+                            size: _sp(13),
+                            color: primaryColor,
+                          ),
+                        ),
+                        SizedBox(width: 6.w),
+                        reausabletext(
+                          trialActive
+                              ? "Trial Time Remaining"
+                              : trialExpired
+                                  ? "Trial Expired"
+                                  : "7 Days Trial Period",
+                          fontsize: _sp(11),
+                          fontfamily: FontFamily.interMedium,
+                          color: textColor,
+                        ),
+                      ],
+                    ),
+                    reausabletext(
+                      trialActive
+                          ? controller.remainingLabel
+                          : trialExpired
+                              ? "Expired"
+                              : "Expires in 7 days",
+                      fontsize: _sp(11),
+                      color: trialExpired ? Colors.red : subtitleColor,
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // =====================================================
+  // ACTIVE SUBSCRIPTION CARD (REDESIGNED)
+  // =====================================================
+
+  Widget _buildActiveSubscriptionCard() {
+    final allSubs = controller.allActiveSubscriptions;
+    final bool isOwned = controller.isCurrentSubscriptionOwnedByMe;
+
+    final String planName = controller.subscriptionPlanName.isNotEmpty
+        ? controller.subscriptionPlanName
+        : "Walkie Talkie Plan";
+    final bool isTeam =
+        controller.isGroupSubscription || (controller.purchasedSeats > 1);
+    final int seats =
+        controller.purchasedSeats > 0 ? controller.purchasedSeats : 1;
+    final String interval = controller.subscriptionBillingInterval.isNotEmpty
+        ? (controller.subscriptionBillingInterval[0].toUpperCase() +
+            controller.subscriptionBillingInterval.substring(1))
+        : "Subscription";
+
+    final DateTime? expiresAt = controller.subscriptionExpiresAt;
+    final DateTime? startsAt = controller.subscriptionStartsAt;
+
+    String expiryDateFormatted = "Active";
+    String daysLeftText = "";
+    bool isExpiringSoon = false;
+
+    if (expiresAt != null) {
+      expiryDateFormatted =
+          DateFormat('dd MMM yyyy').format(expiresAt.toLocal());
+      final difference = expiresAt.difference(DateTime.now());
+      final days = difference.inDays;
+      if (days > 0) {
+        daysLeftText = "$days days left";
+        if (days <= 5) isExpiringSoon = true;
+      } else if (difference.inHours > 0) {
+        daysLeftText = "${difference.inHours} hours left";
+        isExpiringSoon = true;
+      } else {
+        daysLeftText = "Expiring today";
+        isExpiringSoon = true;
       }
+    }
 
-      return Container(
-        margin: EdgeInsets.symmetric(
-          horizontal: 16.w,
+    String startsDateFormatted = "";
+    if (startsAt != null) {
+      startsDateFormatted =
+          DateFormat('dd MMM yyyy').format(startsAt.toLocal());
+    }
+
+    final bool hasMultipleSubs = allSubs.length > 1;
+
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 16.w),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20.r),
+        border: Border.all(
+          color: const Color(0xFFE2E8F0),
+          width: 1.0,
         ),
-        padding: EdgeInsets.all(13.w),
-        decoration: _cardDecoration(),
-        child: Column(
-          children: [
-            // -----------------------------------------
-            // Trial header
-            // -----------------------------------------
-            Row(
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF5B4DFF).withValues(alpha: 0.07),
+            blurRadius: 18,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          // If user has multiple active subscriptions, display horizontal selector
+          if (hasMultipleSubs) _buildSubscriptionSwitcher(allSubs),
+
+          // Top header with plan name, active pill, and ownership badge
+          Container(
+            padding: EdgeInsets.all(14.w),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFFF5F3FF), Color(0xFFEDE9FE)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.only(
+                topLeft: hasMultipleSubs ? Radius.zero : Radius.circular(20.r),
+                topRight: hasMultipleSubs ? Radius.zero : Radius.circular(20.r),
+              ),
+            ),
+            child: Row(
               children: [
                 Container(
                   width: 44.w,
                   height: 44.w,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF0EFFF),
-                    borderRadius: BorderRadius.circular(12.r),
+                    color: primaryColor,
+                    borderRadius: BorderRadius.circular(14.r),
+                    boxShadow: [
+                      BoxShadow(
+                        color: primaryColor.withValues(alpha: 0.3),
+                        blurRadius: 8,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
                   ),
                   child: Icon(
-                    CupertinoIcons.gift_fill,
-                    color: primaryColor,
+                    Icons.workspace_premium_rounded,
+                    color: Colors.white,
                     size: _sp(24),
                   ),
                 ),
@@ -465,181 +755,499 @@ class _WalkieTalkieTrialDetailsScreenState
                     children: [
                       Row(
                         children: [
-                          reausabletext(
-                            title,
-                            fontsize: _sp(12.5),
-                            fontfamily: FontFamily.interBold,
-                            color: textColor,
+                          Expanded(
+                            child: Text(
+                              planName,
+                              style: TextStyle(
+                                fontSize: _sp(15),
+                                fontFamily: FontFamily.interBold,
+                                color: textColor,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                            ),
                           ),
-                          if (title == "FREE TRIAL") ...[
-                            SizedBox(width: 8.w),
-                            Container(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: 6.w,
-                                vertical: 2.h,
-                              ),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFF0EFFF),
-                                borderRadius: BorderRadius.circular(6.r),
-                                border: Border.all(
-                                  color: const Color(0xFFDDD6FE),
-                                  width: 0.8,
-                                ),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    Icons.timer_outlined,
-                                    size: _sp(11),
-                                    color: primaryColor,
-                                  ),
-                                  SizedBox(width: 3.w),
-                                  Text(
-                                    controller.trialDurationFormatted,
-                                    style: TextStyle(
-                                      fontSize: _sp(10.5),
-                                      fontFamily: FontFamily.interBold,
-                                      color: primaryColor,
-                                    ),
-                                  ),
-                                ],
+                          Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 8.w,
+                              vertical: 3.h,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFECFDF5),
+                              borderRadius: BorderRadius.circular(20.r),
+                              border: Border.all(
+                                color: const Color(0xFFA7F3D0),
+                                width: 0.8,
                               ),
                             ),
-                          ],
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  width: 6.w,
+                                  height: 6.w,
+                                  decoration: const BoxDecoration(
+                                    color: Color(0xFF10B981),
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                                SizedBox(width: 4.w),
+                                Text(
+                                  "ACTIVE",
+                                  style: TextStyle(
+                                    fontSize: _sp(9.5),
+                                    fontFamily: FontFamily.interBold,
+                                    color: const Color(0xFF047857),
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ],
                       ),
-                      if (subtitle != null && subtitle.isNotEmpty) ...[
-                        SizedBox(height: 3.h),
-                        reausabletext(
-                          subtitle,
-                          fontsize: _sp(14.5),
-                          fontfamily: FontFamily.interBold,
-                          color: primaryColor,
-                        ),
-                      ],
-                      SizedBox(height: 3.h),
-                      Text(
-                        description,
-                        style: TextStyle(
-                          fontSize: _sp(11),
-                          color: subtitleColor,
-                          fontFamily: FontFamily.interRegular,
-                        ),
+                      SizedBox(height: 4.h),
+                      Wrap(
+                        spacing: 6.w,
+                        runSpacing: 4.h,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        children: [
+                          Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 6.w,
+                              vertical: 2.h,
+                            ),
+                            decoration: BoxDecoration(
+                              color: isTeam
+                                  ? const Color(0xFFEFF6FF)
+                                  : const Color(0xFFFFF7ED),
+                              borderRadius: BorderRadius.circular(6.r),
+                            ),
+                            child: Text(
+                              isTeam ? "Team Plan" : "Individual Plan",
+                              style: TextStyle(
+                                fontSize: _sp(10.5),
+                                fontFamily: FontFamily.interSemiBold,
+                                color: isTeam
+                                    ? const Color(0xFF1D4ED8)
+                                    : const Color(0xFFC2410C),
+                              ),
+                            ),
+                          ),
+                          Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 6.w,
+                              vertical: 2.h,
+                            ),
+                            decoration: BoxDecoration(
+                              color: isOwned
+                                  ? const Color(0xFFF0FDF4)
+                                  : const Color(0xFFF8FAFC),
+                              borderRadius: BorderRadius.circular(6.r),
+                              border: Border.all(
+                                color: isOwned
+                                    ? const Color(0xFF86EFAC)
+                                    : const Color(0xFFE2E8F0),
+                                width: 0.7,
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  isOwned
+                                      ? Icons.check_circle_rounded
+                                      : Icons.info_outline_rounded,
+                                  size: _sp(10.5),
+                                  color: isOwned
+                                      ? const Color(0xFF16A34A)
+                                      : const Color(0xFF64748B),
+                                ),
+                                SizedBox(width: 3.w),
+                                Text(
+                                  isOwned ? "Subscribed by You" : "Assigned to You",
+                                  style: TextStyle(
+                                    fontSize: _sp(9.5),
+                                    fontFamily: FontFamily.interSemiBold,
+                                    color: isOwned
+                                        ? const Color(0xFF15803D)
+                                        : const Color(0xFF475569),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Text(
+                            "•  $interval",
+                            style: TextStyle(
+                              fontSize: _sp(11),
+                              color: subtitleColor,
+                              fontFamily: FontFamily.interRegular,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
                 ),
               ],
             ),
-            SizedBox(height: 10.h),
+          ),
 
-            // -----------------------------------------
-            // Trial usage
-            // -----------------------------------------
-            Container(
-              padding: EdgeInsets.symmetric(
-                horizontal: 12.w,
-                vertical: 10.h,
-              ),
-              decoration: BoxDecoration(
-                color: const Color(0xFFFBFBFE),
-                borderRadius: BorderRadius.circular(12.r),
-                border: Border.all(
-                  color: const Color(0xFFEFF0F6),
+          // Plan details summary grid
+          Padding(
+            padding: EdgeInsets.all(14.w),
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildSubDetailTile(
+                        icon: Icons.calendar_today_rounded,
+                        label: "Valid Until",
+                        value: expiryDateFormatted,
+                        badge: daysLeftText.isNotEmpty ? daysLeftText : null,
+                        isWarningBadge: isExpiringSoon,
+                      ),
+                    ),
+                    SizedBox(width: 10.w),
+                    Expanded(
+                      child: _buildSubDetailTile(
+                        icon: isTeam
+                            ? Icons.groups_rounded
+                            : Icons.person_rounded,
+                        label: "Seats / Members",
+                        value: isTeam ? "$seats Seats" : "1 Seat (Self)",
+                        badge: isTeam ? "Team Access" : "Personal",
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      reausabletext(
-                        "Trial Usage",
-                        fontsize: _sp(11.5),
-                        fontfamily: FontFamily.interMedium,
-                        color: textColor,
-                      ),
-                      reausabletext(
-                        controller.usageLabel,
-                        fontsize: _sp(11.5),
-                        fontfamily: FontFamily.interSemiBold,
-                        color: textColor,
-                      ),
-                    ],
+                if (startsDateFormatted.isNotEmpty) ...[
+                  SizedBox(height: 10.h),
+                  Container(
+                    width: double.infinity,
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 10.w, vertical: 7.h),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF8FAFC),
+                      borderRadius: BorderRadius.circular(10.r),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.verified_user_outlined,
+                          size: _sp(14),
+                          color: const Color(0xFF64748B),
+                        ),
+                        SizedBox(width: 6.w),
+                        Text(
+                          "Active since $startsDateFormatted",
+                          style: TextStyle(
+                            fontSize: _sp(10.5),
+                            color: const Color(0xFF64748B),
+                            fontFamily: FontFamily.interMedium,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  SizedBox(height: 6.h),
+                ],
+                SizedBox(height: 12.h),
 
-                  // Dynamic progress bar
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(3.r),
-                    child: LinearProgressIndicator(
-                      value: controller.usageProgress,
-                      minHeight: 5.h,
-                      backgroundColor: const Color(0xFFE5E7EB),
-                      valueColor: const AlwaysStoppedAnimation<Color>(
-                        primaryColor,
+                // Quick actions row
+                Row(
+                  children: [
+                    if (isTeam && isOwned) ...[
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          style: OutlinedButton.styleFrom(
+                            padding: EdgeInsets.symmetric(vertical: 9.h),
+                            side: const BorderSide(color: Color(0xFF5B4DFF)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12.r),
+                            ),
+                          ),
+                          onPressed: () {
+                            Get.to(() => const WalkieGroupSelectScreen());
+                          },
+                          icon: Icon(
+                            Icons.group_add_rounded,
+                            size: _sp(15),
+                            color: const Color(0xFF5B4DFF),
+                          ),
+                          label: Text(
+                            "Assign Members",
+                            style: TextStyle(
+                              fontSize: _sp(11.5),
+                              fontFamily: FontFamily.interSemiBold,
+                              color: const Color(0xFF5B4DFF),
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: 8.w),
+                    ],
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        style: OutlinedButton.styleFrom(
+                          padding: EdgeInsets.symmetric(vertical: 9.h),
+                          side: const BorderSide(color: Color(0xFFE2E8F0)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12.r),
+                          ),
+                        ),
+                        onPressed: _openPlanDetails,
+                        icon: Icon(
+                          Icons.sync_alt_rounded,
+                          size: _sp(15),
+                          color: textColor,
+                        ),
+                        label: Text(
+                          "Change Plan",
+                          style: TextStyle(
+                            fontSize: _sp(11.5),
+                            fontFamily: FontFamily.interSemiBold,
+                            color: textColor,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSubscriptionSwitcher(
+    List<WalkieCurrentSubscription> allSubs,
+  ) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.fromLTRB(12.w, 10.h, 12.w, 8.h),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF1F3FD),
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(20.r),
+          topRight: Radius.circular(20.r),
+        ),
+        border: const Border(
+          bottom: BorderSide(
+            color: Color(0xFFE2E8F0),
+            width: 1.0,
+          ),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.layers_outlined,
+                size: _sp(14),
+                color: const Color(0xFF4338CA),
+              ),
+              SizedBox(width: 5.w),
+              reausabletext(
+                "Subscribed Plans (${allSubs.length})",
+                fontsize: _sp(11.5),
+                fontfamily: FontFamily.interBold,
+                color: const Color(0xFF312E81),
+              ),
+            ],
+          ),
+          SizedBox(height: 8.h),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            child: Row(
+              children: allSubs.map((sub) {
+                final isSelected =
+                    controller.currentSubscription?.id == sub.id;
+                final isOwned = controller.isOwnedByCurrentUser(sub);
+                final String planTitle = sub.plan?.name.isNotEmpty == true
+                    ? sub.plan!.name
+                    : (sub.isGroup ? "Team Plan" : "Individual Plan");
+
+                return Padding(
+                  padding: EdgeInsets.only(right: 8.w),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(10.r),
+                      onTap: () {
+                        controller.selectSubscription(sub);
+                      },
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 10.w,
+                          vertical: 6.h,
+                        ),
+                        decoration: BoxDecoration(
+                          color: isSelected ? primaryColor : Colors.white,
+                          borderRadius: BorderRadius.circular(10.r),
+                          border: Border.all(
+                            color: isSelected
+                                ? primaryColor
+                                : const Color(0xFFD1D5DB),
+                            width: isSelected ? 1.4 : 1.0,
+                          ),
+                          boxShadow: isSelected
+                              ? [
+                                  BoxShadow(
+                                    color:
+                                        primaryColor.withValues(alpha: 0.25),
+                                    blurRadius: 6,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ]
+                              : null,
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              sub.isGroup || sub.purchasedSeats > 1
+                                  ? Icons.groups_rounded
+                                  : Icons.person_rounded,
+                              size: _sp(13),
+                              color: isSelected
+                                  ? Colors.white
+                                  : const Color(0xFF4B5563),
+                            ),
+                            SizedBox(width: 5.w),
+                            Text(
+                              planTitle,
+                              style: TextStyle(
+                                fontSize: _sp(11),
+                                fontFamily: isSelected
+                                    ? FontFamily.interBold
+                                    : FontFamily.interMedium,
+                                color: isSelected
+                                    ? Colors.white
+                                    : const Color(0xFF1F2937),
+                              ),
+                            ),
+                            SizedBox(width: 6.w),
+                            Container(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 5.w,
+                                vertical: 1.5.h,
+                              ),
+                              decoration: BoxDecoration(
+                                color: isSelected
+                                    ? Colors.white.withValues(alpha: 0.22)
+                                    : isOwned
+                                        ? const Color(0xFFECFDF5)
+                                        : const Color(0xFFF3F4F6),
+                                borderRadius: BorderRadius.circular(4.r),
+                              ),
+                              child: Text(
+                                isOwned ? "Subscribed by You" : "Assigned",
+                                style: TextStyle(
+                                  fontSize: _sp(9),
+                                  fontFamily: FontFamily.interSemiBold,
+                                  color: isSelected
+                                      ? Colors.white
+                                      : isOwned
+                                          ? const Color(0xFF047857)
+                                          : const Color(0xFF6B7280),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                  SizedBox(height: 8.h),
+                );
+              }).toList(),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
-                  // -----------------------------------
-                  // Countdown / trial status
-                  // -----------------------------------
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
-                        children: [
-                          Container(
-                            padding: EdgeInsets.all(3.w),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFF0EFFF),
-                              borderRadius: BorderRadius.circular(4.r),
-                            ),
-                            child: Icon(
-                              trialExpired
-                                  ? Icons.timer_off_outlined
-                                  : Icons.hourglass_empty_rounded,
-                              size: _sp(13),
-                              color: primaryColor,
-                            ),
-                          ),
-                          SizedBox(width: 6.w),
-                          reausabletext(
-                            trialActive
-                                ? "Trial Time Remaining"
-                                : trialExpired
-                                    ? "Trial Expired"
-                                    : hasSubscription
-                                        ? "Subscription Active"
-                                        : "7 Days Trial Period",
-                            fontsize: _sp(11),
-                            fontfamily: FontFamily.interMedium,
-                            color: textColor,
-                          ),
-                        ],
-                      ),
-                      reausabletext(
-                        trialActive
-                            ? controller.remainingLabel
-                            : trialExpired
-                                ? "Expired"
-                                : hasSubscription
-                                    ? "Active"
-                                    : "Expires in 7 days",
-                        fontsize: _sp(11),
-                        color: trialExpired ? Colors.red : subtitleColor,
-                      ),
-                    ],
+  Widget _buildSubDetailTile({
+    required IconData icon,
+    required String label,
+    required String value,
+    String? badge,
+    bool isWarningBadge = false,
+  }) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 9.h),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: const Color(0xFFF1F5F9)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                icon,
+                size: _sp(13),
+                color: const Color(0xFF5B4DFF),
+              ),
+              SizedBox(width: 5.w),
+              Expanded(
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: _sp(10.5),
+                    fontFamily: FontFamily.interMedium,
+                    color: subtitleColor,
                   ),
-                ],
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 5.h),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: _sp(12.5),
+              fontFamily: FontFamily.interBold,
+              color: textColor,
+            ),
+            overflow: TextOverflow.ellipsis,
+            maxLines: 1,
+          ),
+          if (badge != null && badge.isNotEmpty) ...[
+            SizedBox(height: 3.h),
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 1.5.h),
+              decoration: BoxDecoration(
+                color: isWarningBadge
+                    ? const Color(0xFFFEF2F2)
+                    : const Color(0xFFEDE9FE),
+                borderRadius: BorderRadius.circular(4.r),
+              ),
+              child: Text(
+                badge,
+                style: TextStyle(
+                  fontSize: _sp(9.5),
+                  fontFamily: FontFamily.interSemiBold,
+                  color: isWarningBadge
+                      ? const Color(0xFFDC2626)
+                      : const Color(0xFF5B4DFF),
+                ),
               ),
             ),
           ],
-        ),
-      );
+        ],
+      ),
+    );
   }
 
   // =====================================================
@@ -651,7 +1259,7 @@ class _WalkieTalkieTrialDetailsScreenState
       margin: EdgeInsets.symmetric(
         horizontal: 16.w,
       ),
-      padding: EdgeInsets.all(13.w),
+      padding: EdgeInsets.all(14.w),
       decoration: _cardDecoration(),
       child: Column(
         children: [
@@ -676,7 +1284,7 @@ class _WalkieTalkieTrialDetailsScreenState
                 Container(
                   width: 1,
                   color: const Color(0xFFF0F1F6),
-                  margin: EdgeInsets.symmetric(horizontal: 8.w),
+                  margin: EdgeInsets.symmetric(horizontal: 10.w),
                 ),
                 Expanded(
                   child: Column(
@@ -696,7 +1304,7 @@ class _WalkieTalkieTrialDetailsScreenState
               ],
             ),
           ),
-          SizedBox(height: 12.h),
+          SizedBox(height: 14.h),
 
           // -----------------------------------------
           // Dynamic CTA
@@ -710,12 +1318,12 @@ class _WalkieTalkieTrialDetailsScreenState
               if (controller.data != null && !canUse && !eligible) {
                 return SizedBox(
                   width: double.infinity,
-                  height: 44.h,
+                  height: 48.h,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: primaryColor,
+                      backgroundColor: const Color(0xFF5B4DFF),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12.r),
+                        borderRadius: BorderRadius.circular(14.r),
                       ),
                       elevation: 0,
                     ),
@@ -731,7 +1339,7 @@ class _WalkieTalkieTrialDetailsScreenState
                         SizedBox(width: 8.w),
                         reausabletext(
                           "Purchase / Upgrade Plan",
-                          fontsize: _sp(15.5),
+                          fontsize: _sp(15),
                           fontfamily: FontFamily.interBold,
                           color: Colors.white,
                         ),
@@ -743,12 +1351,12 @@ class _WalkieTalkieTrialDetailsScreenState
 
               return SizedBox(
                 width: double.infinity,
-                height: 44.h,
+                height: 48.h,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: primaryColor,
+                    backgroundColor: const Color(0xFF5B4DFF),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12.r),
+                      borderRadius: BorderRadius.circular(14.r),
                     ),
                     elevation: 0,
                   ),
@@ -774,7 +1382,7 @@ class _WalkieTalkieTrialDetailsScreenState
                         canUse
                             ? "Open Walkie Talkie"
                             : "Start ${controller.trialDurationHuman} Free Trial",
-                        fontsize: _sp(15.5),
+                        fontsize: _sp(15),
                         fontfamily: FontFamily.interBold,
                         color: Colors.white,
                       ),
@@ -801,16 +1409,16 @@ class _WalkieTalkieTrialDetailsScreenState
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Container(
-          width: 34.w.clamp(30.0, 40.0),
-          height: 34.w.clamp(30.0, 40.0),
-          decoration: const BoxDecoration(
-            color: Color(0xFFF0EFFF),
-            shape: BoxShape.circle,
+          width: 36.w.clamp(32.0, 42.0),
+          height: 36.w.clamp(32.0, 42.0),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF0EFFF),
+            borderRadius: BorderRadius.circular(10.r),
           ),
           child: Icon(
             icon,
             color: primaryColor,
-            size: _sp(17),
+            size: _sp(18),
           ),
         ),
         SizedBox(width: 8.w),
@@ -821,7 +1429,7 @@ class _WalkieTalkieTrialDetailsScreenState
               fontSize: _sp(11.5),
               fontFamily: FontFamily.interMedium,
               color: textColor,
-              height: 1.2,
+              height: 1.25,
             ),
           ),
         ),

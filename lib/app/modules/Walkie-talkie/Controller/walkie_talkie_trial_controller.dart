@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:fgtracker/app/Core/constant/pref_res.dart';
+import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Data/Services/walkie_talkie_trial_service.dart';
 import 'package:fgtracker/app/Model/walkie_talkie_trial_details_model.dart';
 import 'package:flutter/foundation.dart';
@@ -19,6 +21,9 @@ class WalkieTalkieTrialController extends GetxController
 
   final Rxn<WalkieOverviewData> overview =
   Rxn<WalkieOverviewData>();
+
+  final Rxn<WalkieCurrentSubscription> selectedSubscription =
+  Rxn<WalkieCurrentSubscription>();
 
   final RxInt remainingSeconds = 0.obs;
 
@@ -44,8 +49,100 @@ class WalkieTalkieTrialController extends GetxController
 
   WalkieActions? get actions => data?.actions;
 
-  WalkieCurrentSubscription? get currentSubscription =>
-      subscription?.currentSubscription;
+  int? get currentLoggedInUserId {
+    try {
+      final raw = Global.storageServices.get(PrefConst.userId);
+      if (raw != null && raw.isNotEmpty) {
+        return int.tryParse(raw.toString());
+      }
+    } catch (_) {}
+    return null;
+  }
+
+  List<WalkieCurrentSubscription> get allActiveSubscriptions =>
+      subscription?.activeSubscriptions ?? [];
+
+  WalkieCurrentSubscription? get currentSubscription {
+    if (selectedSubscription.value != null) {
+      return selectedSubscription.value;
+    }
+
+    final allSubs = allActiveSubscriptions;
+    if (allSubs.isNotEmpty) {
+      final myId = currentLoggedInUserId;
+      if (myId != null) {
+        final ownedSubs =
+            allSubs.where((s) => s.ownerUserId == myId).toList();
+        if (ownedSubs.isNotEmpty) {
+          final teamSub = ownedSubs.firstWhereOrNull(
+              (s) => s.isGroup || s.purchasedSeats > 1);
+          return teamSub ?? ownedSubs.first;
+        }
+      }
+
+      final directSubs = allSubs
+          .where((s) => s.source.toLowerCase() != 'admin_assigned')
+          .toList();
+      if (directSubs.isNotEmpty) {
+        final teamSub = directSubs.firstWhereOrNull(
+            (s) => s.isGroup || s.purchasedSeats > 1);
+        return teamSub ?? directSubs.first;
+      }
+
+      return allSubs.first;
+    }
+
+    return subscription?.currentSubscription;
+  }
+
+  void selectSubscription(WalkieCurrentSubscription sub) {
+    selectedSubscription.value = sub;
+  }
+
+  void _autoSelectSubscription(WalkieOverviewData result) {
+    final allSubs = result.subscription?.activeSubscriptions ?? [];
+    if (allSubs.isEmpty) {
+      selectedSubscription.value = result.subscription?.currentSubscription;
+      return;
+    }
+
+    final myId = currentLoggedInUserId;
+    if (myId != null) {
+      final ownedSubs =
+          allSubs.where((s) => s.ownerUserId == myId).toList();
+      if (ownedSubs.isNotEmpty) {
+        final teamSub = ownedSubs.firstWhereOrNull(
+            (s) => s.isGroup || s.purchasedSeats > 1);
+        selectedSubscription.value = teamSub ?? ownedSubs.first;
+        return;
+      }
+    }
+
+    final directSubs = allSubs
+        .where((s) => s.source.toLowerCase() != 'admin_assigned')
+        .toList();
+    if (directSubs.isNotEmpty) {
+      final teamSub = directSubs.firstWhereOrNull(
+          (s) => s.isGroup || s.purchasedSeats > 1);
+      selectedSubscription.value = teamSub ?? directSubs.first;
+      return;
+    }
+
+    selectedSubscription.value =
+        result.subscription?.currentSubscription ?? allSubs.first;
+  }
+
+  bool isOwnedByCurrentUser(WalkieCurrentSubscription? sub) {
+    if (sub == null) return false;
+    final myId = currentLoggedInUserId;
+    if (myId != null && sub.ownerUserId == myId) {
+      return true;
+    }
+    return sub.source.toLowerCase() != 'admin_assigned';
+  }
+
+  bool get isCurrentSubscriptionOwnedByMe =>
+      isOwnedByCurrentUser(currentSubscription);
 
   WalkieSubscriptionPlan? get subscriptionPlan =>
       currentSubscription?.plan;
@@ -402,6 +499,7 @@ class WalkieTalkieTrialController extends GetxController
       }
 
       overview.value = result;
+      _autoSelectSubscription(result);
 
       // =====================================================
       // SUBSCRIPTION HAS PRIORITY OVER TRIAL
