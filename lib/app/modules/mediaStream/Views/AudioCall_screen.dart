@@ -23,8 +23,8 @@ class AudiocallScreen extends StatelessWidget {
     final String imageUrl = Utility.isNullEmptyOrFalse(profilePath)
         ? MyAppTheme.ProfilenotFoundImg
         : (profilePath.startsWith('http')
-        ? profilePath
-        : ConstRes.aImageBaseUrl + profilePath);
+            ? profilePath
+            : ConstRes.aImageBaseUrl + profilePath);
 
     final bool isOutgoing = controller.args["callType"] == "outGoing";
 
@@ -38,7 +38,6 @@ class AudiocallScreen extends StatelessWidget {
           children: [
             SizedBox(height: 10.h),
             Text(
-
               isOutgoing ? "Calling" : "Call From",
               style: TextStyle(
                 color: primaryPurple.withOpacity(0.85),
@@ -62,7 +61,9 @@ class AudiocallScreen extends StatelessWidget {
               final waiting = controller.formattedDuration == "00:00";
 
               return Text(
-                waiting ? "${controller.callStatus.value}..." : controller.formattedDuration,
+                waiting
+                    ? "${controller.callStatus.value}..."
+                    : controller.formattedDuration,
                 style: TextStyle(
                   color: AppColors.primaryPurple.withOpacity(0.9),
                   fontSize: 14.sp,
@@ -71,7 +72,6 @@ class AudiocallScreen extends StatelessWidget {
                 ),
               );
             }),
-
             SizedBox(height: 30.h),
             Stack(
               alignment: Alignment.center,
@@ -113,8 +113,6 @@ class AudiocallScreen extends StatelessWidget {
             SizedBox(height: 35.h),
             _AudioWave(),
             SizedBox(height: 28.h),
-
-
             const Spacer(),
           ],
         ),
@@ -147,15 +145,15 @@ class _AudioWave extends StatelessWidget {
       children: heights
           .map(
             (h) => Container(
-          margin: EdgeInsets.symmetric(horizontal: 3.5.w),
-          width: 4.5.w,
-          height: h.h,
-          decoration: BoxDecoration(
-            color: const Color(0xFF7B58FF).withOpacity(0.85),
-            borderRadius: BorderRadius.circular(8.r),
-          ),
-        ),
-      )
+              margin: EdgeInsets.symmetric(horizontal: 3.5.w),
+              width: 4.5.w,
+              height: h.h,
+              decoration: BoxDecoration(
+                color: const Color(0xFF7B58FF).withOpacity(0.85),
+                borderRadius: BorderRadius.circular(8.r),
+              ),
+            ),
+          )
           .toList(),
     );
   }
