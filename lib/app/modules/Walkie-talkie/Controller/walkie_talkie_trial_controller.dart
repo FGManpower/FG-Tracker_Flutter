@@ -154,11 +154,7 @@ class WalkieTalkieTrialController extends GetxController
   // SUBSCRIBE ACTION
   // =====================================================
 
-  bool get showSubscribe =>
-      !hasActiveSubscription &&
-          !canUseWalkie &&
-          actions?.showSubscribe == true &&
-          pricing?.available == true;
+  bool get showSubscribe => !hasActiveSubscription;
 
   // =====================================================
   // UI STATE HELPERS
@@ -240,8 +236,8 @@ class WalkieTalkieTrialController extends GetxController
   String get priceLabel {
     final amount = pricing?.price;
 
-    if (amount == null) {
-      return 'Price unavailable';
+    if (amount == null || amount <= 0) {
+      return '₹500';
     }
 
     final formatted =

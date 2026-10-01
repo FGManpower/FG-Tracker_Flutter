@@ -26,12 +26,22 @@ class AssignedMemberItem {
   final String name;
   final String role;
   final String imageUrl;
+  final bool isSubscribedByAdmin;
+  final bool canRemoveTeam;
+  final bool canAssignTeamSeat;
+  final String? existingAccessType;
+  final bool hasExistingAccess;
 
   AssignedMemberItem({
     required this.id,
     required this.name,
     required this.role,
     required this.imageUrl,
+    this.isSubscribedByAdmin = false,
+    this.canRemoveTeam = true,
+    this.canAssignTeamSeat = true,
+    this.existingAccessType,
+    this.hasExistingAccess = false,
   });
 }
 
@@ -54,6 +64,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
   final RxInt maxAllowedSeats = 5.obs;
   final RxBool canAssignMembers = true.obs;
   final RxBool isIndividualPlan = false.obs;
+  final RxBool hasNoPlan = false.obs;
   final RxString planTitleName = "".obs;
 
   // Assigned and available members (loaded dynamically from API)
@@ -103,29 +114,72 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
 
           // Extract subscription plan type and permissions
           final userSub = subRes.user?.subscription;
-          final bool hasTeamPlan = userSub?.teamPlan != null ||
-              userSub?.planType == 'group' ||
-              (userSub?.purchasedSeats != null && userSub!.purchasedSeats! > 1);
-          final bool isIndiv = !hasTeamPlan &&
+          final subMeta = subRes.data?.subscriptionData?.metaData;
+
+          final bool isSubscribed = subRes.user?.isSubscribed == true ||
+              userSub?.subscriptionId != null ||
+              userSub?.planId != null ||
+              (subMeta?.totalPurchasedSeats != null &&
+                  subMeta!.totalPurchasedSeats! > 0);
+
+          final bool hasTeamPlan = isSubscribed &&
+              (userSub?.isTeamPlanActive == true ||
+                  userSub?.teamPlan != null ||
+                  (userSub?.teamPlans != null &&
+                      userSub!.teamPlans!.isNotEmpty) ||
+                  (subMeta?.teamPlans != null &&
+                      subMeta!.teamPlans!.isNotEmpty) ||
+                  (subMeta?.canAssignMember == true) ||
+                  userSub?.planType == 'group' ||
+                  userSub?.planType == 'team' ||
+                  (userSub?.purchasedSeats != null &&
+                      userSub!.purchasedSeats! > 1) ||
+                  (subMeta?.totalPurchasedSeats != null &&
+                      subMeta!.totalPurchasedSeats! > 1));
+
+          final bool isIndiv = isSubscribed &&
+              !hasTeamPlan &&
               (userSub?.isIndividualOnly == true ||
                   userSub?.individual != null ||
-                  userSub?.planType?.toLowerCase() == 'individual');
-          final bool allowAssign =
-              hasTeamPlan && (userSub?.allowAssign ?? true);
+                  userSub?.planType?.toLowerCase() == 'individual' ||
+                  userSub?.purchasedSeats == 1);
+
+          final bool isNoSub = !hasTeamPlan && !isIndiv;
+          final bool allowAssign = hasTeamPlan &&
+              ((subMeta?.canAssignMember ?? userSub?.allowAssign) ?? true);
 
           isIndividualPlan.value = isIndiv;
+          hasNoPlan.value = isNoSub;
           canAssignMembers.value = allowAssign;
 
           if (userSub?.planName != null && userSub!.planName!.isNotEmpty) {
             planTitleName.value = userSub.planName!;
           } else if (hasTeamPlan && userSub?.teamPlan?.planName != null) {
             planTitleName.value = userSub!.teamPlan!.planName!;
+          } else if (hasTeamPlan &&
+              userSub?.teamPlans != null &&
+              userSub!.teamPlans!.isNotEmpty) {
+            planTitleName.value =
+                userSub!.teamPlans!.first.planName ?? "Team Plan";
+          } else if (hasTeamPlan &&
+              subMeta?.teamPlans != null &&
+              subMeta!.teamPlans!.isNotEmpty) {
+            planTitleName.value =
+                subMeta!.teamPlans!.first.planName ?? "Team Plan";
           } else if (isIndiv && userSub?.individual?.planName != null) {
             planTitleName.value = userSub!.individual!.planName!;
+          } else {
+            planTitleName.value = "";
           }
 
-          int? apiSeats =
-              userSub?.teamPlan?.purchasedSeats ?? userSub?.purchasedSeats;
+          int? apiSeats = subMeta?.totalPurchasedSeats ??
+              userSub?.teamPlan?.purchasedSeats ??
+              userSub?.purchasedSeats;
+          if (apiSeats == null || apiSeats <= 0) {
+            if (userSub?.teamPlans != null && userSub!.teamPlans!.isNotEmpty) {
+              apiSeats = userSub!.teamPlans!.first.purchasedSeats;
+            }
+          }
           if (apiSeats == null || apiSeats <= 0) {
             for (var m in subscribedList) {
               if (m.subscription?.teamPlan?.purchasedSeats != null &&
@@ -140,7 +194,11 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
             }
           }
 
-          if (isIndiv) {
+          if (isNoSub) {
+            maxAllowedSeats.value = 0;
+            debugPrint(
+                "🎯 [Walkie] No Plan detected: Member assignment disabled");
+          } else if (isIndiv) {
             maxAllowedSeats.value = 1;
             debugPrint(
                 "🎯 [Walkie] Individual Plan detected: 1 seat (Assignment disabled)");
@@ -177,19 +235,30 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                 ? m.role!.trim()
                 : ((m.department != null && m.department!.trim().isNotEmpty)
                     ? m.department!.trim()
-                    : "Member");
+                    : (m.displayDepartment.isNotEmpty
+                        ? m.displayDepartment
+                        : "Member"));
+
+            final bool isSub = subscribedList.any((s) => s.userId == m.userId) ||
+                m.isSubscribedByAdmin == true;
+
+            final bool hasAccess = m.existingAccess?.hasAccess == true;
+            final String? accessType = m.existingAccess?.accessType?.toLowerCase();
 
             final item = AssignedMemberItem(
               id: uid.isNotEmpty ? uid : UniqueKey().toString(),
               name: m.displayName.isNotEmpty ? m.displayName : "Member",
               role: role,
               imageUrl: img,
+              isSubscribedByAdmin: isSub,
+              canRemoveTeam: m.canRemoveTeam ?? m.canRemove ?? true,
+              canAssignTeamSeat: m.canAssignTeamSeat ?? true,
+              existingAccessType: accessType,
+              hasExistingAccess: hasAccess,
             );
 
             loaded.add(item);
 
-            final isSub = subscribedList.any((s) => s.userId == m.userId) ||
-                m.subscriptionStatus?.toLowerCase() == "active";
             if (isSub) {
               loadedSubscribed.add(item);
             } else {
@@ -198,8 +267,14 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
           }
 
           if (loadedSubscribed.isNotEmpty || loadedExpired.isNotEmpty) {
-            assignedMembers.assignAll(loadedSubscribed);
-            availableMembers.assignAll(loadedExpired);
+            if (isIndiv && loadedSubscribed.length > 1) {
+              assignedMembers.assignAll([loadedSubscribed.first]);
+              final extra = loadedSubscribed.skip(1);
+              availableMembers.assignAll([...extra, ...loadedExpired]);
+            } else {
+              assignedMembers.assignAll(loadedSubscribed);
+              availableMembers.assignAll(loadedExpired);
+            }
           }
 
           debugPrint(
@@ -259,6 +334,51 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
         }
       }
 
+      // 3. Fallback: try TrackRepo.getGroupMember without filter (filter='all')
+      if (loaded.isEmpty) {
+        try {
+          final GroupMemberModel allRes = await TrackRepo.getGroupMember(
+            page: '1',
+            filter: 'all',
+            limit: 50,
+          );
+          final allList = allRes.data?.allMemberList ?? [];
+          for (var m in allList) {
+            final String uid = m.userId?.toString() ?? "";
+            if (uid.isNotEmpty && loaded.any((e) => e.id == uid)) continue;
+
+            String img = m.resolvedImageUrl;
+            if (img.isEmpty) {
+              img = m.profileImage?.toString() ?? "";
+              if (img.isNotEmpty &&
+                  !img.startsWith("http") &&
+                  img.toLowerCase() != "null") {
+                img = "${ConstRes.aImageBaseUrl}$img";
+              } else if (img.toLowerCase() == "null") {
+                img = "";
+              }
+            }
+
+            final String role = (m.role != null && m.role!.trim().isNotEmpty)
+                ? m.role!.trim()
+                : ((m.department != null && m.department!.trim().isNotEmpty)
+                    ? m.department!.trim()
+                    : "Member");
+
+            final item = AssignedMemberItem(
+              id: uid.isNotEmpty ? uid : UniqueKey().toString(),
+              name: m.displayName.isNotEmpty ? m.displayName : "Member",
+              role: role,
+              imageUrl: img,
+            );
+            loaded.add(item);
+            availableMembers.add(item);
+          }
+        } catch (e) {
+          debugPrint("Fallback filter=all error: $e");
+        }
+      }
+
       if (loaded.isNotEmpty) {
         if (assignedMembers.isEmpty && availableMembers.isEmpty) {
           if (loaded.length <= 5) {
@@ -270,16 +390,18 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
           }
         }
       } else {
-        if (assignedMembers.isEmpty && availableMembers.isEmpty) {
-          membersError.value =
-              "Unable to load members. Please check your internet connection.";
-        }
+        membersError.value = "";
       }
     } catch (e) {
       debugPrint("Error in fetchMembersFromApi: $e");
-      if (assignedMembers.isEmpty && availableMembers.isEmpty) {
+      final errStr = e.toString().toLowerCase();
+      if (errStr.contains("socketexception") ||
+          errStr.contains("network is unreachable") ||
+          errStr.contains("failed host lookup")) {
         membersError.value =
             "No internet connection. Please check your network.";
+      } else {
+        membersError.value = "";
       }
     } finally {
       isMembersLoading.value = false;
@@ -323,7 +445,8 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                 ],
               ),
             ),
-            SizedBox(height: 8.h),
+            _buildPlanStatusBanner(),
+            SizedBox(height: 4.h),
             Expanded(
               child: Obx(() {
                 if (controller.responseError.value.isNotEmpty) {
@@ -580,6 +703,10 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
 
     return InkWell(
       onTap: () {
+        if (hasNoPlan.value) {
+          _showUpgradePrompt(context: context, isNoPlan: true);
+          return;
+        }
         Get.to(
           () => const GroupWalkieScreen(),
           arguments: {
@@ -680,6 +807,10 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
             SizedBox(width: 10.w),
             GestureDetector(
               onTap: () {
+                if (hasNoPlan.value) {
+                  _showUpgradePrompt(context: context, isNoPlan: true);
+                  return;
+                }
                 Get.to(
                   () => const GroupWalkieScreen(),
                   arguments: {
@@ -714,6 +845,270 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildPlanStatusBanner() {
+    return Obx(() {
+      if (hasNoPlan.value) {
+        return Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF5B4DFF), Color(0xFF7C3AED)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(16.r),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF5B4DFF).withValues(alpha: 0.25),
+                  blurRadius: 8,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: EdgeInsets.all(8.r),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.workspace_premium_rounded,
+                    color: Colors.white,
+                    size: 20.sp,
+                  ),
+                ),
+                SizedBox(width: 10.w),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      reausabletext(
+                        "Plan Required to Talk",
+                        fontsize: 13.5.sp,
+                        fontfamily: FontFamily.interBold,
+                        color: Colors.white,
+                      ),
+                      SizedBox(height: 2.h),
+                      Text(
+                        "Subscribe to start voice talk & assign members",
+                        style: TextStyle(
+                          fontSize: 11.sp,
+                          color: Colors.white.withValues(alpha: 0.9),
+                          fontFamily: FontFamily.interRegular,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () => _showUpgradePrompt(
+                      context: context, isNoPlan: true),
+                  child: Container(
+                    padding: EdgeInsets.symmetric(
+                        horizontal: 12.w, vertical: 6.h),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20.r),
+                    ),
+                    child: reausabletext(
+                      "Get Plan",
+                      fontsize: 11.5.sp,
+                      fontfamily: FontFamily.interSemiBold,
+                      color: const Color(0xFF5B4DFF),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      }
+
+      if (isIndividualPlan.value) {
+        return Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFFF7ED),
+              borderRadius: BorderRadius.circular(14.r),
+              border: Border.all(color: const Color(0xFFFFEDD5)),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.info_outline_rounded,
+                    color: const Color(0xFFEA580C), size: 18.sp),
+                SizedBox(width: 8.w),
+                Expanded(
+                  child: Text(
+                    "Individual Plan (1 Member). Upgrade to Team Plan to connect more members.",
+                    style: TextStyle(
+                      fontSize: 11.5.sp,
+                      color: const Color(0xFF9A3412),
+                      fontFamily: FontFamily.interMedium,
+                    ),
+                  ),
+                ),
+                SizedBox(width: 8.w),
+                GestureDetector(
+                  onTap: () => _showUpgradePrompt(
+                      context: context, isNoPlan: false),
+                  child: Container(
+                    padding: EdgeInsets.symmetric(
+                        horizontal: 10.w, vertical: 5.h),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFEA580C),
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
+                    child: reausabletext(
+                      "Upgrade",
+                      fontsize: 11.sp,
+                      fontfamily: FontFamily.interSemiBold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      }
+
+      return const SizedBox.shrink();
+    });
+  }
+
+  void _showUpgradePrompt({
+    required BuildContext context,
+    required bool isNoPlan,
+  }) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return Container(
+          padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 20.h),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(28.r)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 44.w,
+                height: 4.h,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE5E7EB),
+                  borderRadius: BorderRadius.circular(2.r),
+                ),
+              ),
+              SizedBox(height: 20.h),
+              Container(
+                width: 64.w,
+                height: 64.w,
+                decoration: BoxDecoration(
+                  color: isNoPlan
+                      ? const Color(0xFFEEF2FF)
+                      : const Color(0xFFFFF7ED),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  isNoPlan
+                      ? Icons.workspace_premium_rounded
+                      : Icons.groups_rounded,
+                  color: isNoPlan
+                      ? const Color(0xFF6366F1)
+                      : const Color(0xFFEA580C),
+                  size: 32.sp,
+                ),
+              ),
+              SizedBox(height: 16.h),
+              reausabletext(
+                isNoPlan ? "Walkie Talkie Plan Required" : "Team Plan Required",
+                fontsize: 18.sp,
+                fontfamily: FontFamily.interBold,
+                color: const Color(0xFF1E1B4B),
+                align: TextAlign.center,
+              ),
+              SizedBox(height: 8.h),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 8.w),
+                child: Text(
+                  isNoPlan
+                      ? "You do not have an active Walkie Talkie subscription. Subscribe to a plan to assign members and start instant voice communication."
+                      : "Your Individual Plan allows 1 member seat only. To assign multiple members and connect your entire team, please upgrade to a Team Plan.",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 13.sp,
+                    color: const Color(0xFF6B7280),
+                    fontFamily: FontFamily.interRegular,
+                    height: 1.4,
+                  ),
+                ),
+              ),
+              SizedBox(height: 22.h),
+              SizedBox(
+                width: double.infinity,
+                height: 50.h,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF5B4DFF),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14.r),
+                    ),
+                    elevation: 0,
+                  ),
+                  onPressed: () {
+                    Get.back();
+                    Get.to(() => WalkieTalkiePlanScreen(
+                          initialTabIndex: isNoPlan ? 0 : 1,
+                        ));
+                  },
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        isNoPlan
+                            ? Icons.shopping_bag_outlined
+                            : Icons.upgrade_rounded,
+                        color: Colors.white,
+                        size: 20.sp,
+                      ),
+                      SizedBox(width: 8.w),
+                      reausabletext(
+                        isNoPlan ? "Choose a Plan" : "Upgrade to Team Plan",
+                        fontsize: 15.sp,
+                        fontfamily: FontFamily.interSemiBold,
+                        color: Colors.white,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              SizedBox(height: 10.h),
+              TextButton(
+                onPressed: () => Get.back(),
+                child: reausabletext(
+                  "Maybe Later",
+                  fontsize: 13.sp,
+                  color: const Color(0xFF9CA3AF),
+                  fontfamily: FontFamily.interMedium,
+                ),
+              ),
+              SizedBox(height: 6.h),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -769,64 +1164,109 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                           SizedBox(height: 4.h),
                           Obx(
                             () => reausabletext(
-                              isIndividualPlan.value || !canAssignMembers.value
-                                  ? "Individual Plan active. Member assignment is only available with Team Plan."
-                                  : "You can assign up to ${maxAllowedSeats.value} members in this group",
+                              hasNoPlan.value
+                                  ? "No active plan • Subscribe to assign members"
+                                  : (isIndividualPlan.value
+                                      ? "Individual Plan (1 Seat) • Upgrade to Team for more"
+                                      : (maxAllowedSeats.value > 0
+                                          ? "You can assign up to ${maxAllowedSeats.value} members in this group"
+                                          : "Assign members to communicate in this group")),
                               fontsize: 12.sp,
-                              color: isIndividualPlan.value || !canAssignMembers.value
-                                  ? const Color(0xFFDC2626)
-                                  : const Color(0xFF6B7280),
+                              color: const Color(0xFF6B7280),
                             ),
                           ),
                         ],
                       ),
                     ),
                     SizedBox(width: 8.w),
-                    Obx(() {
-                      if (isIndividualPlan.value || !canAssignMembers.value) {
-                        return Container(
-                          padding: EdgeInsets.symmetric(
-                              horizontal: 10.w, vertical: 6.h),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFFEF2F2),
-                            borderRadius: BorderRadius.circular(10.r),
-                            border: Border.all(color: const Color(0xFFFECACA)),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              reausabletext(
-                                "Individual",
-                                fontsize: 13.sp,
-                                fontfamily: FontFamily.interBold,
-                                color: const Color(0xFFDC2626),
+                    Obx(
+                      () {
+                        if (hasNoPlan.value) {
+                          return GestureDetector(
+                            onTap: () {
+                              _showUpgradePrompt(
+                                  context: context, isNoPlan: true);
+                            },
+                            child: Container(
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 10.w, vertical: 5.h),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFFF1F2),
+                                borderRadius: BorderRadius.circular(20.r),
+                                border:
+                                    Border.all(color: const Color(0xFFFECDD3)),
                               ),
-                              reausabletext(
-                                "1 Seat",
-                                fontsize: 10.sp,
-                                color: const Color(0xFF991B1B),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.lock_outline_rounded,
+                                      size: 13.sp,
+                                      color: const Color(0xFFE11D48)),
+                                  SizedBox(width: 4.w),
+                                  reausabletext(
+                                    "Get Plan",
+                                    fontsize: 11.sp,
+                                    fontfamily: FontFamily.interSemiBold,
+                                    color: const Color(0xFFE11D48),
+                                  ),
+                                ],
                               ),
-                            ],
-                          ),
+                            ),
+                          );
+                        }
+
+                        if (isIndividualPlan.value) {
+                          return GestureDetector(
+                            onTap: () {
+                              _showUpgradePrompt(
+                                  context: context, isNoPlan: false);
+                            },
+                            child: Container(
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 10.w, vertical: 5.h),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF3F0FF),
+                                borderRadius: BorderRadius.circular(20.r),
+                                border:
+                                    Border.all(color: const Color(0xFFDDD6FE)),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.workspace_premium_rounded,
+                                      size: 13.sp,
+                                      color: const Color(0xFF5B4DFF)),
+                                  SizedBox(width: 4.w),
+                                  reausabletext(
+                                    "${assignedMembers.length}/1 (Individual)",
+                                    fontsize: 11.sp,
+                                    fontfamily: FontFamily.interSemiBold,
+                                    color: const Color(0xFF5B4DFF),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        }
+
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            reausabletext(
+                              "${assignedMembers.length}/${maxAllowedSeats.value > 0 ? maxAllowedSeats.value : 5}",
+                              fontsize: 18.sp,
+                              fontfamily: FontFamily.interBold,
+                              color: const Color(0xFF5B4DFF),
+                            ),
+                            reausabletext(
+                              "Selected",
+                              fontsize: 11.sp,
+                              color: const Color(0xFF6B7280),
+                            ),
+                          ],
                         );
-                      }
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          reausabletext(
-                            "${assignedMembers.length}/${maxAllowedSeats.value}",
-                            fontsize: 18.sp,
-                            fontfamily: FontFamily.interBold,
-                            color: const Color(0xFF5B4DFF),
-                          ),
-                          reausabletext(
-                            "Assigned",
-                            fontsize: 11.sp,
-                            color: const Color(0xFF6B7280),
-                          ),
-                        ],
-                      );
-                    }),
+                      },
+                    ),
                   ],
                 ),
               ),
@@ -881,54 +1321,8 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                   ),
                 ),
               ),
-              Obx(() {
-                if (isIndividualPlan.value || !canAssignMembers.value) {
-                  return Padding(
-                    padding:
-                        EdgeInsets.only(left: 20.w, right: 20.w, top: 12.h),
-                    child: Container(
-                      padding: EdgeInsets.symmetric(
-                          horizontal: 14.w, vertical: 12.h),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFFFF7ED),
-                        borderRadius: BorderRadius.circular(14.r),
-                        border: Border.all(color: const Color(0xFFFFEDD5)),
-                      ),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Icon(
-                            Icons.info_outline_rounded,
-                            color: const Color(0xFFEA580C),
-                            size: 20.sp,
-                          ),
-                          SizedBox(width: 10.w),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                reausabletext(
-                                  "Team Plan Required",
-                                  fontsize: 13.sp,
-                                  fontfamily: FontFamily.interSemiBold,
-                                  color: const Color(0xFF9A3412),
-                                ),
-                                SizedBox(height: 2.h),
-                                reausabletext(
-                                  "Member assignment is exclusive to Team Plans. Upgrade your plan to assign multiple members to your walkie channels.",
-                                  fontsize: 11.5.sp,
-                                  color: const Color(0xFFC2410C),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                }
-                return const SizedBox.shrink();
-              }),
+              // Clean UI: No error/warning banners shown here
+              const SizedBox.shrink(),
               Expanded(
                 child: Obx(() {
                   if (isMembersLoading.value &&
@@ -951,11 +1345,13 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                   }).toList();
 
                   if (assignedList.isEmpty && availableList.isEmpty) {
-                    final bool isOffline = membersError.value
-                            .toLowerCase()
-                            .contains("internet") ||
-                        membersError.value.toLowerCase().contains("network") ||
-                        membersError.value.toLowerCase().contains("connection");
+                    final bool isOffline = membersError.value.isNotEmpty &&
+                        (membersError.value
+                                .toLowerCase()
+                                .contains("internet") ||
+                            membersError.value
+                                .toLowerCase()
+                                .contains("network"));
 
                     return Padding(
                       padding: EdgeInsets.symmetric(
@@ -1131,10 +1527,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                   padding: EdgeInsets.only(
                       left: 20.w, right: 20.w, bottom: 16.h, top: 8.h),
                   child: Obx(() {
-                    final bool isBlocked =
-                        isIndividualPlan.value || !canAssignMembers.value;
-
-                    if (isBlocked) {
+                    if (hasNoPlan.value) {
                       return SizedBox(
                         width: double.infinity,
                         height: 50.h,
@@ -1149,7 +1542,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                           onPressed: () {
                             Get.back();
                             Get.to(() => const WalkieTalkiePlanScreen(
-                                  initialTabIndex: 1,
+                                  initialTabIndex: 0,
                                 ));
                           },
                           child: Row(
@@ -1162,7 +1555,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                               ),
                               SizedBox(width: 8.w),
                               reausabletext(
-                                "Upgrade to Team Plan",
+                                "Choose a Plan",
                                 fontsize: 15.sp,
                                 fontfamily: FontFamily.interSemiBold,
                                 color: Colors.white,
@@ -1176,6 +1569,86 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                             ],
                           ),
                         ),
+                      );
+                    }
+
+                    if (isIndividualPlan.value) {
+                      return Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          SizedBox(
+                            width: double.infinity,
+                            height: 48.h,
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF5B4DFF),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(14.r),
+                                ),
+                                elevation: 0,
+                              ),
+                              onPressed: () {
+                                Get.back();
+                                Utils().fluttertoast(
+                                    "Assigned member saved (${assignedMembers.length}/1)");
+                              },
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.check_circle_outline_rounded,
+                                    size: 19.sp,
+                                    color: Colors.white,
+                                  ),
+                                  SizedBox(width: 8.w),
+                                  reausabletext(
+                                    "Save Member (${assignedMembers.length}/1)",
+                                    fontsize: 14.5.sp,
+                                    fontfamily: FontFamily.interSemiBold,
+                                    color: Colors.white,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: 8.h),
+                          SizedBox(
+                            width: double.infinity,
+                            height: 44.h,
+                            child: OutlinedButton(
+                              style: OutlinedButton.styleFrom(
+                                side: const BorderSide(
+                                    color: Color(0xFFEA580C), width: 1.2),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(14.r),
+                                ),
+                              ),
+                              onPressed: () {
+                                Get.back();
+                                Get.to(() => const WalkieTalkiePlanScreen(
+                                      initialTabIndex: 1,
+                                    ));
+                              },
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.upgrade_rounded,
+                                    size: 19.sp,
+                                    color: const Color(0xFFEA580C),
+                                  ),
+                                  SizedBox(width: 6.w),
+                                  reausabletext(
+                                    "Upgrade to Team Plan (Add More)",
+                                    fontsize: 13.5.sp,
+                                    fontfamily: FontFamily.interSemiBold,
+                                    color: const Color(0xFFEA580C),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
                       );
                     }
 
@@ -1314,7 +1787,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
 
   Widget _buildAssignedMemberTile(AssignedMemberItem member) {
     return Obx(() {
-      final bool isBlocked = isIndividualPlan.value || !canAssignMembers.value;
+      final bool isNoSub = hasNoPlan.value;
       return Padding(
         padding: EdgeInsets.symmetric(vertical: 6.h),
         child: Row(
@@ -1342,28 +1815,27 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
             ),
             GestureDetector(
               onTap: () {
-                if (isBlocked) {
+                if (isNoSub) {
+                  _showUpgradePrompt(context: context, isNoPlan: true);
+                } else if (!member.canRemoveTeam) {
                   Utils().fluttertoast(
-                      "Individual plan active. Upgrade to Team Plan to assign members.");
+                      "Cannot remove seat assigned by another admin");
                 } else {
                   assignedMembers.remove(member);
                   availableMembers.insert(0, member);
                 }
               },
-              child: Opacity(
-                opacity: isBlocked ? 0.35 : 1.0,
-                child: Container(
-                  width: 28.w,
-                  height: 28.w,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFFFECEE),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    Icons.remove_rounded,
-                    size: 16.sp,
-                    color: const Color(0xFFEF4444),
-                  ),
+              child: Container(
+                width: 28.w,
+                height: 28.w,
+                decoration: const BoxDecoration(
+                  color: Color(0xFFFFECEE),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.remove_rounded,
+                  size: 16.sp,
+                  color: const Color(0xFFEF4444),
                 ),
               ),
             ),
@@ -1375,10 +1847,12 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
 
   Widget _buildAvailableMemberTile(AssignedMemberItem member) {
     return Obx(() {
-      final bool isBlocked = isIndividualPlan.value || !canAssignMembers.value;
-      final bool isMaxReached =
-          assignedMembers.length >= maxAllowedSeats.value;
-      final bool isAddDisabled = isBlocked || isMaxReached;
+      final bool isNoSub = hasNoPlan.value;
+      final bool isIndiv = isIndividualPlan.value;
+      final bool isIndivLimitReached = isIndiv && assignedMembers.length >= 1;
+      final bool isTeamLimitReached = !isIndiv &&
+          !isNoSub &&
+          (assignedMembers.length >= maxAllowedSeats.value);
 
       return Padding(
         padding: EdgeInsets.symmetric(vertical: 6.h),
@@ -1397,50 +1871,101 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                     color: const Color(0xFF1E1B4B),
                   ),
                   SizedBox(height: 2.h),
-                  reausabletext(
-                    member.role,
-                    fontsize: 12.sp,
-                    color: const Color(0xFF6B7280),
+                  Row(
+                    children: [
+                      Flexible(
+                        child: reausabletext(
+                          member.role,
+                          fontsize: 12.sp,
+                          color: const Color(0xFF6B7280),
+                        ),
+                      ),
+                      if (member.hasExistingAccess) ...[
+                        SizedBox(width: 6.w),
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 6.w, vertical: 1.5.h),
+                          decoration: BoxDecoration(
+                            color: member.existingAccessType == "individual"
+                                ? const Color(0xFFEFF6FF)
+                                : const Color(0xFFFEF3C7),
+                            borderRadius: BorderRadius.circular(6.r),
+                            border: Border.all(
+                              color: member.existingAccessType == "individual"
+                                  ? const Color(0xFFBFDBFE)
+                                  : const Color(0xFFFDE68A),
+                              width: 0.8,
+                            ),
+                          ),
+                          child: Text(
+                            member.existingAccessType == "individual"
+                                ? "Self Plan"
+                                : "Other Team",
+                            style: TextStyle(
+                              fontSize: 9.5.sp,
+                              color: member.existingAccessType == "individual"
+                                  ? const Color(0xFF1D4ED8)
+                                  : const Color(0xFFB45309),
+                              fontFamily: FontFamily.interSemiBold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                 ],
               ),
             ),
             GestureDetector(
               onTap: () {
-                if (isBlocked) {
-                  Utils().fluttertoast(
-                      "Individual plan active. Upgrade to Team Plan to assign members.");
-                } else if (isMaxReached) {
-                  Utils().fluttertoast(
-                      "All ${maxAllowedSeats.value} seats are assigned. Upgrade to add more members.");
+                if (isNoSub) {
+                  _showUpgradePrompt(context: context, isNoPlan: true);
+                } else if (isIndivLimitReached) {
+                  _showUpgradePrompt(context: context, isNoPlan: false);
+                } else if (isTeamLimitReached) {
+                  _showUpgradePrompt(context: context, isNoPlan: false);
                 } else {
                   availableMembers.remove(member);
                   assignedMembers.add(member);
                 }
               },
-              child: Opacity(
-                opacity: isAddDisabled ? 0.35 : 1.0,
-                child: Container(
-                  width: 28.w,
-                  height: 28.w,
-                  decoration: BoxDecoration(
-                    color:
-                        isAddDisabled ? Colors.grey.shade100 : Colors.white,
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: isAddDisabled
-                          ? Colors.grey.shade400
-                          : const Color(0xFF6366F1),
-                      width: 1.5,
-                    ),
+              child: Container(
+                width: 28.w,
+                height: 28.w,
+                decoration: BoxDecoration(
+                  color: isNoSub
+                      ? const Color(0xFFF3F4F6)
+                      : (isIndivLimitReached
+                          ? const Color(0xFFFFF7ED)
+                          : (isTeamLimitReached
+                              ? const Color(0xFFF3F4F6)
+                              : Colors.white)),
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: isNoSub
+                        ? const Color(0xFFD1D5DB)
+                        : (isIndivLimitReached
+                            ? const Color(0xFFFDBA74)
+                            : (isTeamLimitReached
+                                ? const Color(0xFFD1D5DB)
+                                : const Color(0xFF6366F1))),
+                    width: 1.5,
                   ),
-                  child: Icon(
-                    Icons.add_rounded,
-                    size: 18.sp,
-                    color: isAddDisabled
-                        ? Colors.grey.shade500
-                        : const Color(0xFF6366F1),
-                  ),
+                ),
+                child: Icon(
+                  isIndivLimitReached
+                      ? Icons.upgrade_rounded
+                      : (isNoSub
+                          ? Icons.lock_outline_rounded
+                          : Icons.add_rounded),
+                  size: (isIndivLimitReached || isNoSub) ? 15.sp : 18.sp,
+                  color: isNoSub
+                      ? const Color(0xFF9CA3AF)
+                      : (isIndivLimitReached
+                          ? const Color(0xFFEA580C)
+                          : (isTeamLimitReached
+                              ? const Color(0xFF9CA3AF)
+                              : const Color(0xFF6366F1))),
                 ),
               ),
             ),

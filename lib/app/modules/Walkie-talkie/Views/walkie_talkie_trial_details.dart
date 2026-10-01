@@ -706,9 +706,39 @@ class _WalkieTalkieTrialDetailsScreenState
               final bool canUse = controller.canUseWalkie;
               final bool eligible = controller.isTrialEligible;
 
-              // Trial already used and user has no active subscription
+              // Trial already used and user has no active subscription -> Show Purchase CTA
               if (controller.data != null && !canUse && !eligible) {
-                return const SizedBox.shrink();
+                return SizedBox(
+                  width: double.infinity,
+                  height: 44.h,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: primaryColor,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                      elevation: 0,
+                    ),
+                    onPressed: _openPlanDetails,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.workspace_premium_rounded,
+                          color: Colors.white,
+                          size: _sp(20),
+                        ),
+                        SizedBox(width: 8.w),
+                        reausabletext(
+                          "Purchase / Upgrade Plan",
+                          fontsize: _sp(15.5),
+                          fontfamily: FontFamily.interBold,
+                          color: Colors.white,
+                        ),
+                      ],
+                    ),
+                  ),
+                );
               }
 
               return SizedBox(

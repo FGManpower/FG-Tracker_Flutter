@@ -34,6 +34,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
 
   static const double _lockThreshold = 80.0;
   bool _hasLeft = false;
+  bool _isDisposed = false;
   bool _pttInProgress = false;
   final bool _allowPop = false;
 
@@ -116,13 +117,14 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
       _log('Error: Invalid Group ID. Returning to previous screen.');
       WidgetsBinding.instance.addPostFrameCallback((_) {
         Get.back();
-        Get.snackbar("Error", "Invalid Group Information",
+        Get.snackbar("Error", "Please select a group first",
             snackPosition: SnackPosition.BOTTOM);
       });
     }
 
     _rippleWorker =
         everAll([controller.activeSpeakerId, controller.audioState], (_) {
+      if (_isDisposed || !mounted) return;
       final isTalking = controller.isTalking;
       final hasActive = controller.hasActiveSpeaker;
       _log(
@@ -141,6 +143,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
     });
 
     _pulseWorker = ever(controller.isPressed, (bool pressed) {
+      if (_isDisposed || !mounted) return;
       _log('Pulse worker triggered. PTT Button pressed state: $pressed');
       if (pressed && !controller.isSelfLocked.value) {
         _log('PTT active. Starting pulsing animation');
@@ -157,14 +160,15 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
   @override
   void dispose() {
     _log('dispose() called');
+    _isDisposed = true;
     _rippleWorker.dispose();
     _pulseWorker.dispose();
-    _rippleController.dispose();
-    _pulseController.dispose();
-    _lockHintController.dispose();
     _trialTimer?.cancel();
     WalkieLaunchTracker.fromWalkieCall = false;
     _safeLeave();
+    _rippleController.dispose();
+    _pulseController.dispose();
+    _lockHintController.dispose();
     super.dispose();
   }
 
@@ -175,9 +179,15 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
     }
     _log('Leaving room and cleaning assets...');
     _hasLeft = true;
-    _rippleController.stop();
-    _pulseController.stop();
-    _lockHintController.stop();
+    if (!_isDisposed) {
+      try {
+        if (_rippleController.isAnimating) _rippleController.stop();
+        if (_pulseController.isAnimating) _pulseController.stop();
+        if (_lockHintController.isAnimating) _lockHintController.stop();
+      } catch (e) {
+        _log('Error stopping animations in _safeLeave: $e');
+      }
+    }
     await GroupWalkieService.instance.leaveGroup();
     controller.reset();
   }
