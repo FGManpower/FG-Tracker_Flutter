@@ -13,6 +13,7 @@ import '../../../routes/app_pages.dart';
 import '../../Safe_Zone/views/safe_zone_view.dart';
 import '../../Safe_Zone/views/safety_dashboard_view.dart';
 import '../../Track/Views/Tracking_screen.dart';
+import '../../status/views/add_status_screen.dart';
 import '../Controller/MessageController.dart';
 import '../Controller/chat_list_controller.dart';
 import '../widgets/custom_dropdown_menu.dart';
@@ -71,7 +72,7 @@ class ChatListScreen extends StatelessWidget {
         children: [
           _circleIcon(
             Icons.arrow_back,
-            () => Get.back(),
+                () => Get.back(),
           ),
           SizedBox(width: 12.w),
           Expanded(
@@ -96,7 +97,7 @@ class ChatListScreen extends StatelessWidget {
           ),
           _circleIcon(
             Icons.more_vert,
-            () {},
+                () {},
           ),
         ],
       ),
@@ -104,9 +105,9 @@ class ChatListScreen extends StatelessWidget {
   }
 
   Widget _circleIcon(
-    IconData icon,
-    VoidCallback onTap,
-  ) {
+      IconData icon,
+      VoidCallback onTap,
+      ) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -298,84 +299,96 @@ class _AllChatsBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return RefreshIndicator(
-      color: const Color(0xFF6B4DFF),
-      onRefresh: controller.refreshChats,
-      child: SingleChildScrollView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Obx(
-            () => controller.archivedChats.isNotEmpty
-                ? _archivedChatsRow()
-                : const SizedBox.shrink(),
-          ),
-          _sectionTitle("All Chats"),
-          Obx(() {
-            if (controller.isLoading.value && controller.privateChats.isEmpty) {
-              return _buildSkeletonList();
-            }
-
-            if (controller.privateChats.isEmpty) {
-              return _emptyChats();
-            }
-
-            return Container(
-              margin: EdgeInsets.symmetric(
-                horizontal: 16.w,
-              ),
-              padding: EdgeInsets.symmetric(
-                vertical: 4.h,
-              ),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(18.r),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(
-                      alpha: 0.03,
-                    ),
-                    blurRadius: 12,
-                    offset: const Offset(0, 3),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const _StatusSection(),
+        Expanded(
+          child: RefreshIndicator(
+            color: const Color(0xFF6B4DFF),
+            onRefresh: controller.refreshChats,
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Obx(
+                        () => controller.archivedChats.isNotEmpty
+                        ? _archivedChatsRow()
+                        : const SizedBox.shrink(),
                   ),
+                  _sectionTitle("All Chats"),
+                  Obx(() {
+                    if (controller.isLoading.value &&
+                        controller.privateChats.isEmpty) {
+                      return _buildSkeletonList();
+                    }
+
+                    if (controller.privateChats.isEmpty) {
+                      return _emptyChats();
+                    }
+
+                    return Container(
+                      margin: EdgeInsets.symmetric(
+                        horizontal: 16.w,
+                      ),
+                      padding: EdgeInsets.symmetric(
+                        vertical: 4.h,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(18.r),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(
+                              alpha: 0.03,
+                            ),
+                            blurRadius: 12,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: ListView.separated(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        padding: EdgeInsets.zero,
+                        itemCount: controller.privateChats.length,
+                        separatorBuilder: (_, __) => Divider(
+                          color: Colors.grey.withValues(
+                            alpha: 0.12,
+                          ),
+                          height: 1,
+                          indent: 16.w,
+                          endIndent: 16.w,
+                        ),
+                        itemBuilder: (context, index) {
+                          final chat = controller.privateChats[index];
+
+                          return _chatRow(
+                            context: context,
+                            chat: chat,
+                            name: chat.name ?? "Unknown User",
+                            role: chat.role ?? "",
+                            msg: ChatUtil.formatLastMessage(chat.message),
+                            time: _formatChatTime(
+                              chat.time ?? "",
+                            ),
+                            unreadCount: chat.unreadCount ?? 0,
+                            statusColor: _statusColor(chat.status),
+                            isGroup: chat.isGroup ?? false,
+                            image: chat.image,
+                          );
+                        },
+                      ),
+                    );
+                  }),
+                  SizedBox(height: 150.h),
                 ],
               ),
-              child: ListView.separated(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                padding: EdgeInsets.zero,
-                itemCount: controller.privateChats.length,
-                separatorBuilder: (_, __) => Divider(
-                  color: Colors.grey.withValues(
-                    alpha: 0.12,
-                  ),
-                  height: 1,
-                  indent: 16.w,
-                  endIndent: 16.w,
-                ),
-                itemBuilder: (context, index) {
-                  final chat = controller.privateChats[index];
-
-                  return _chatRow(
-                    context: context,
-                    chat: chat,
-                    name: chat.name ?? "Unknown User",
-                    role: chat.role ?? "",
-                    msg: ChatUtil.formatLastMessage(chat.message),
-                    time: _formatChatTime(
-                      chat.time ?? "",
-                    ),
-                    unreadCount: chat.unreadCount ?? 0,
-                    statusColor: _statusColor(chat.status),
-                    isGroup: chat.isGroup ?? false,
-                    image: chat.image,
-                  );
-                },
-              ),
-            );
-          }),
-          SizedBox(height: 150.h),
-        ]),
-      ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -463,7 +476,6 @@ class _AllChatsBody extends StatelessWidget {
   }
 
   Widget _emptyChats() {
-    // ... same as your previous code ...
     return Container(
       margin: EdgeInsets.symmetric(
         horizontal: 16.w,
@@ -504,12 +516,11 @@ class _AllChatsBody extends StatelessWidget {
   }
 
   Widget _sectionTitle(
-    String title, {
-    bool showViewAll = false,
-    int? badgeCount,
-    bool showDropdown = false,
-  }) {
-    // ... same as your previous code ...
+      String title, {
+        bool showViewAll = false,
+        int? badgeCount,
+        bool showDropdown = false,
+      }) {
     final bool isPinned = title == "Pinned Chats 📌";
 
     return Padding(
@@ -583,7 +594,6 @@ class _AllChatsBody extends StatelessWidget {
     bool isGroup = false,
     String? image,
   }) {
-    // ... same as your previous code ...
     Offset tapPos = Offset.zero;
 
     return GestureDetector(
@@ -592,7 +602,7 @@ class _AllChatsBody extends StatelessWidget {
       },
       onTap: () async {
         final chat = controller.privateChats.firstWhere(
-          (item) => item.name == name && item.image == image,
+              (item) => item.name == name && item.image == image,
           orElse: () => controller.privateChats.first,
         );
 
@@ -601,7 +611,7 @@ class _AllChatsBody extends StatelessWidget {
         }
 
         await Get.to(
-          () => ChatScreen(),
+              () => ChatScreen(),
           arguments: {
             "userData": MemberData(
               userId: chat.userId,
@@ -663,28 +673,28 @@ class _AllChatsBody extends StatelessWidget {
             CircleAvatar(
               radius: 26.r,
               backgroundColor:
-                  isGroup ? const Color(0xFF6B4DFF) : Colors.grey.shade300,
+              isGroup ? const Color(0xFF6B4DFF) : Colors.grey.shade300,
               backgroundImage: (!isGroup && image != null && image.isNotEmpty)
                   ? NetworkImage(
-                      image.startsWith("http://") ||
-                              image.startsWith("https://")
-                          ? image
-                          : "${ConstRes.production}$image",
-                    )
+                image.startsWith("http://") ||
+                    image.startsWith("https://")
+                    ? image
+                    : "${ConstRes.production}$image",
+              )
                   : null,
               child: isGroup
                   ? Icon(
-                      Icons.groups,
-                      color: Colors.white,
-                      size: 24.sp,
-                    )
+                Icons.groups,
+                color: Colors.white,
+                size: 24.sp,
+              )
                   : (image == null || image.isEmpty
-                      ? Icon(
-                          Icons.person,
-                          color: Colors.white,
-                          size: 26.sp,
-                        )
-                      : null),
+                  ? Icon(
+                Icons.person,
+                color: Colors.white,
+                size: 26.sp,
+              )
+                  : null),
             ),
             if (statusColor != null)
               Positioned(
@@ -798,10 +808,10 @@ class _AllChatsBody extends StatelessWidget {
   }
 
   void _showChatOptions(
-    BuildContext context,
-    Offset position,
-    PrivateChatModel chat,
-  ) {
+      BuildContext context,
+      Offset position,
+      PrivateChatModel chat,
+      ) {
     final bool isPinned = chat.isPinned == true;
     final bool isMuted = chat.isMuted == true;
     CustomDropdownMenu.show(
@@ -906,9 +916,9 @@ class _AllChatsBody extends StatelessWidget {
   }
 
   void _showMuteOptions(
-    BuildContext context,
-    PrivateChatModel chat,
-  ) {
+      BuildContext context,
+      PrivateChatModel chat,
+      ) {
     String selectedOption = "1_hour";
 
     showDialog(
@@ -1093,15 +1103,15 @@ class _AllChatsBody extends StatelessWidget {
               ),
               child: selected
                   ? Center(
-                      child: Container(
-                        width: 10.w,
-                        height: 10.w,
-                        decoration: const BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Color(0xFF8080EE),
-                        ),
-                      ),
-                    )
+                child: Container(
+                  width: 10.w,
+                  height: 10.w,
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Color(0xFF8080EE),
+                  ),
+                ),
+              )
                   : null,
             ),
             SizedBox(width: 14.w),
@@ -1131,7 +1141,7 @@ class _AllChatsBody extends StatelessWidget {
       child: GestureDetector(
         onTap: () {
           Get.to(
-            () => const ArchivedChatsScreen(),
+                () => const ArchivedChatsScreen(),
           );
         },
         child: Container(
@@ -1193,6 +1203,350 @@ class _AllChatsBody extends StatelessWidget {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _StatusSection extends StatefulWidget {
+  const _StatusSection();
+
+  @override
+  State<_StatusSection> createState() => _StatusSectionState();
+}
+
+class _StatusSectionState extends State<_StatusSection> {
+  final GlobalKey _myStatusKey = GlobalKey();
+  OverlayEntry? _popupEntry;
+
+  final List<Map<String, dynamic>> statusList = [
+    {
+      "name": "My Status",
+      "subtitle": "",
+      "image": null,
+      "borderColor": const Color(0xFF6B4DFF),
+      "dotColor": null,
+      "isMe": true,
+    },
+    {
+      "name": "Priya",
+      "subtitle": "Online",
+      "image": "https://i.pravatar.cc/150?img=5",
+      "borderColor": const Color(0xFF22C55E),
+      "dotColor": const Color(0xFF22C55E),
+      "isMe": false,
+    },
+    {
+      "name": "Rohit",
+      "subtitle": "Away",
+      "image": "https://i.pravatar.cc/150?img=12",
+      "borderColor": const Color(0xFFF59E0B),
+      "dotColor": const Color(0xFFF59E0B),
+      "isMe": false,
+    },
+    {
+      "name": "Imran",
+      "subtitle": "Offline",
+      "image": "https://i.pravatar.cc/150?img=33",
+      "borderColor": const Color(0xFF9CA3AF),
+      "dotColor": const Color(0xFF9CA3AF),
+      "isMe": false,
+    },
+    {
+      "name": "Neha",
+      "subtitle": "Do Not Disturb",
+      "image": "https://i.pravatar.cc/150?img=9",
+      "borderColor": const Color(0xFFEF4444),
+      "dotColor": const Color(0xFFEF4444),
+      "isMe": false,
+    },
+    {
+      "name": "Pooja",
+      "subtitle": "Online",
+      "image": "https://i.pravatar.cc/150?img=10",
+      "borderColor": const Color(0xFF22C55E),
+      "dotColor": const Color(0xFF22C55E),
+      "isMe": false,
+    },
+  ];
+
+  @override
+  void dispose() {
+    _removePopup();
+    super.dispose();
+  }
+
+  void _removePopup() {
+    _popupEntry?.remove();
+    _popupEntry = null;
+  }
+
+  void _showMyStatusPopup() {
+    _removePopup();
+
+    final RenderBox? box =
+    _myStatusKey.currentContext?.findRenderObject() as RenderBox?;
+    if (box == null) return;
+
+    final Offset pos = box.localToGlobal(Offset.zero);
+    final Size size = box.size;
+
+    _popupEntry = OverlayEntry(
+      builder: (context) {
+        return Stack(
+          children: [
+            Positioned.fill(
+              child: GestureDetector(
+                behavior: HitTestBehavior.translucent,
+                onTap: _removePopup,
+                child: const SizedBox.expand(),
+              ),
+            ),
+            Positioned(
+              left: pos.dx.clamp(8.0, MediaQuery.of(context).size.width - 190.w),
+              top: pos.dy + size.height - 18.h,
+              child: Material(
+                color: Colors.transparent,
+                child: Container(
+                  width: 175.w,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(14.r),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.10),
+                        blurRadius: 18,
+                        offset: const Offset(0, 6),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _popupTile(
+                        icon: Icons.add_circle_outline_rounded,
+                        title: "Add to My Status",
+                        onTap: () {
+                          _removePopup();
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const AddStatusScreen(),
+                            ),
+                          );
+                        },
+                      ),
+                      Divider(
+                        height: 1,
+                        color: Colors.grey.withValues(alpha: 0.15),
+                        indent: 12.w,
+                        endIndent: 12.w,
+                      ),
+                      _popupTile(
+                        icon: Icons.lock_outline_rounded,
+                        title: "Status Privacy",
+                        color: Colors.black87,
+                        onTap: () {
+                          _removePopup();
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),          ],
+        );
+      },
+    );
+
+    Overlay.of(context).insert(_popupEntry!);
+  }
+  Widget _popupTile({
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+    Color color = const Color(0xFF6B4DFF),
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(14.r),
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+        child: Row(
+          children: [
+            Icon(icon, size: 18.sp, color: color),
+            SizedBox(width: 10.w),
+            Flexible(
+              child: Text(
+                title,
+                style: TextStyle(
+                  fontSize: 12.sp,
+                  fontFamily: FontFamily.interMedium,
+                  color: color,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: EdgeInsets.only(left: 16.w, top: 4.h, bottom: 10.h),
+          child: reausabletext(
+            "Status",
+            fontsize: 13.sp,
+            fontfamily: FontFamily.interBold,
+            color: Colors.black87,
+          ),
+        ),
+        SizedBox(
+          height: 100.h,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            padding: EdgeInsets.symmetric(horizontal: 16.w),
+            itemCount: statusList.length,
+            separatorBuilder: (_, __) => SizedBox(width: 14.w),
+            itemBuilder: (context, index) {
+              final item = statusList[index];
+              final bool isMe = item["isMe"] == true;
+
+              return _statusItem(
+                key: isMe ? _myStatusKey : null,
+                name: item["name"],
+                subtitle: item["subtitle"],
+                image: item["image"],
+                borderColor: item["borderColor"],
+                dotColor: item["dotColor"],
+                isMe: isMe,
+                onTap: () {
+                  if (isMe) {
+                    if (_popupEntry != null) {
+                      _removePopup();
+                    } else {
+                      _showMyStatusPopup();
+                    }
+                  }
+                },
+              );
+            },
+          ),
+        ),
+        SizedBox(height: 4.h),
+      ],
+    );
+  }
+
+  Widget _statusItem({
+    Key? key,
+    required String name,
+    required String subtitle,
+    required String? image,
+    required Color borderColor,
+    required Color? dotColor,
+    required bool isMe,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      key: key,
+      onTap: onTap,
+      child: SizedBox(
+        width: 64.w,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Container(
+                  width: 56.w,
+                  height: 56.w,
+                  padding: EdgeInsets.all(2.5.w),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: borderColor,
+                      width: 2.2,
+                    ),
+                  ),
+                  child: CircleAvatar(
+                    radius: 26.r,
+                    backgroundColor: isMe
+                        ? const Color(0xFFE9E7FF)
+                        : Colors.grey.shade300,
+                    backgroundImage:
+                    (!isMe && image != null) ? NetworkImage(image) : null,
+                    child: isMe
+                        ? Icon(
+                      Icons.person,
+                      color: const Color(0xFF6B4DFF),
+                      size: 26.sp,
+                    )
+                        : null,
+                  ),
+                ),
+                if (isMe)
+                  Positioned(
+                    bottom: -2,
+                    right: -2,
+                    child: Container(
+                      width: 20.w,
+                      height: 20.w,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF6B4DFF),
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 2),
+                      ),
+                      child: Icon(
+                        Icons.add,
+                        size: 12.sp,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                if (!isMe && dotColor != null)
+                  Positioned(
+                    bottom: 2,
+                    right: 2,
+                    child: Container(
+                      width: 12.w,
+                      height: 12.w,
+                      decoration: BoxDecoration(
+                        color: dotColor,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 2),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            SizedBox(height: 6.h),
+            Center(
+              child: reausabletext(
+                name,
+                fontsize: 10.sp,
+                fontfamily: FontFamily.interBold,
+                color: Colors.black87,
+                maxline: 1,
+              ),
+            ),
+            if (subtitle.isNotEmpty)
+              Center(
+                child: reausabletext(
+                  subtitle,
+                  fontsize: 8.sp,
+                  color: borderColor,
+                  maxline: 1,
+                ),
+              ),
+          ],
         ),
       ),
     );
