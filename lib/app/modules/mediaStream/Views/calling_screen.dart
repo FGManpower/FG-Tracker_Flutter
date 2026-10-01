@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:fgtracker/app/Core/values/colors.dart';
 import 'package:fgtracker/app/modules/mediaStream/Views/AudioCall_screen.dart';
 import 'package:fgtracker/app/modules/mediaStream/Widget/call_widget.dart';
+import 'package:fgtracker/app/modules/mediaStream/Widget/draggableVideoPip.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
@@ -95,6 +96,7 @@ class CallingScreen extends StatelessWidget {
                 if (isVideo)
                   Positioned.fill(
                     child: DraggableVideoPip(
+                      controller: c,
                       child: _videoPip(c),
                     ),
                   ),
@@ -343,20 +345,20 @@ class CallingScreen extends StatelessWidget {
                               ),
                               sheetDivider(),
                             ],
-                            sheetTile(
-                              icon: Icons.present_to_all_rounded,
-                              title: "Share screen",
-                              onTap: () {
-                                Navigator.pop(ctx);
-                                Get.snackbar(
-                                  "Share screen",
-                                  "Coming soon",
-                                  snackPosition: SnackPosition.BOTTOM,
-                                  duration: const Duration(seconds: 1),
-                                );
-                              },
-                            ),
-                            sheetDivider(),
+                            // sheetTile(
+                            //   icon: Icons.present_to_all_rounded,
+                            //   title: "Share screen",
+                            //   onTap: () {
+                            //     Navigator.pop(ctx);
+                            //     Get.snackbar(
+                            //       "Share screen",
+                            //       "Coming soon",
+                            //       snackPosition: SnackPosition.BOTTOM,
+                            //       duration: const Duration(seconds: 1),
+                            //     );
+                            //   },
+                            // ),
+                            // sheetDivider(),
                             sheetTile(
                               icon: Icons.chat_bubble_outline_rounded,
                               title: "Send message",
@@ -584,99 +586,4 @@ class CallingScreen extends StatelessWidget {
   }
 }
 
-class DraggableVideoPip extends StatefulWidget {
-  final Widget child;
 
-  const DraggableVideoPip({
-    super.key,
-    required this.child,
-  });
-
-  @override
-  State<DraggableVideoPip> createState() => _DraggableVideoPipState();
-}
-
-class _DraggableVideoPipState extends State<DraggableVideoPip> {
-  Offset? _position;
-
-  double get _pipWidth => 110.w;
-  double get _pipHeight => 150.h;
-
-  @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final double screenWidth = constraints.maxWidth;
-        final double screenHeight = constraints.maxHeight;
-
-        final double safeTop = MediaQuery.of(context).padding.top;
-
-        final double minLeft = 8.w;
-        final double maxLeft = screenWidth - _pipWidth - 8.w;
-
-        final double minTop = safeTop + 12.h;
-
-        // Keep the PIP above the bottom controls.
-        final double maxTop = screenHeight - _pipHeight - 145.h;
-
-        final double defaultTop = maxTop > minTop ? maxTop : minTop;
-
-        final Offset currentPosition = _position ??
-            Offset(
-              20.w,
-              defaultTop,
-            );
-
-        final double boundedMaxLeft = maxLeft < minLeft ? minLeft : maxLeft;
-
-        final double boundedMaxTop = maxTop < minTop ? minTop : maxTop;
-
-        final Offset safePosition = Offset(
-          currentPosition.dx.clamp(
-            minLeft,
-            boundedMaxLeft,
-          ),
-          currentPosition.dy.clamp(
-            minTop,
-            boundedMaxTop,
-          ),
-        );
-
-        return Stack(
-          fit: StackFit.expand,
-          children: [
-            Positioned(
-              left: safePosition.dx,
-              top: safePosition.dy,
-              child: GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onPanStart: (_) {
-                  setState(() {});
-                },
-                onPanUpdate: (details) {
-                  final double newLeft = safePosition.dx + details.delta.dx;
-
-                  final double newTop = safePosition.dy + details.delta.dy;
-
-                  setState(() {
-                    _position = Offset(
-                      newLeft.clamp(
-                        minLeft,
-                        boundedMaxLeft,
-                      ),
-                      newTop.clamp(
-                        minTop,
-                        boundedMaxTop,
-                      ),
-                    );
-                  });
-                },
-                child: widget.child,
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-}

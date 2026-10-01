@@ -7,6 +7,7 @@ import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Core/values/utility.dart';
 import 'package:fgtracker/app/modules/Track/Controller/GroupTrackController.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
+import 'package:flutter/animation.dart';
 import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'package:get/get.dart' hide navigator;
 import 'package:flutter_webrtc/flutter_webrtc.dart';
@@ -44,7 +45,7 @@ class CallingController extends GetxController {
   final args = Get.arguments;
   Timer? callTimer;
   int callDurationSeconds = 0;
-
+  Offset? pipPosition;
   final Rxn<CallDetail> apiCallDetail = Rxn<CallDetail>();
 
   final RxBool isBluetoothConnected = false.obs;
@@ -134,6 +135,7 @@ class CallingController extends GetxController {
     is_video = true;
     isVideoCall.value = true;
     isLocalVideoMain = false;
+    pipPosition = null;
     if (isUpgradingToVideo.value) return;
     if (peer == null || localStream == null) {
       Utils().fluttertoast("Call not ready");
@@ -777,8 +779,43 @@ class CallingController extends GetxController {
       }
       update();
     } catch (e) {
-      log("❌ checkAudioDevices error: $e");
+      log("checkAudioDevices error: $e");
     }
+  }
+
+  void updatePipPosition({
+    required Offset delta,
+    required double pipWidth,
+    required double pipHeight,
+    required double minLeft,
+    required double maxLeft,
+    required double minTop,
+    required double maxTop,
+  }) {
+    final Offset currentPosition = pipPosition ??
+        Offset(
+          minLeft,
+          maxTop,
+        );
+
+    final double boundedMaxLeft =
+    maxLeft < minLeft ? minLeft : maxLeft;
+
+    final double boundedMaxTop =
+    maxTop < minTop ? minTop : maxTop;
+
+    pipPosition = Offset(
+      (currentPosition.dx + delta.dx).clamp(
+        minLeft,
+        boundedMaxLeft,
+      ),
+      (currentPosition.dy + delta.dy).clamp(
+        minTop,
+        boundedMaxTop,
+      ),
+    );
+
+    update();
   }
   @override
   void onClose() {
