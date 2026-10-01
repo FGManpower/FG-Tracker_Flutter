@@ -236,7 +236,7 @@ class CallingScreen extends StatelessWidget {
                       ),
           ),
 
-          // Camera switch button
+
           Positioned(
             top: 6.h,
             right: 6.w,

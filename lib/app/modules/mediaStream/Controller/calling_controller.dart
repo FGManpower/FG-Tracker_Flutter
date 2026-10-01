@@ -145,7 +145,7 @@ class CallingController extends GetxController {
 
       final vids = localStream!.getVideoTracks();
       if (vids.isEmpty) {
-        // 1. We don't have a camera track yet, acquire it
+
         final videoStream = await navigator.mediaDevices.getUserMedia({
           'audio': false,
           'video': {
@@ -162,7 +162,7 @@ class CallingController extends GetxController {
         await localStream!.addTrack(videoTrack);
         await peer!.addTrack(videoTrack, localStream!);
       } else {
-        // We already have a track, just enable it
+
         for (var t in vids) { t.enabled = true; }
       }
 
@@ -171,7 +171,7 @@ class CallingController extends GetxController {
       is_video = true;
       isVideoCall.value = true;
 
-      // 2. Renegotiate with remote
+
       final offer = await peer!.createOffer({
         'offerToReceiveAudio': true,
         'offerToReceiveVideo': true,
@@ -182,7 +182,7 @@ class CallingController extends GetxController {
       final myUserId = Global.storageServices.get(PrefConst.userId).toString();
       final targetUserId = (myUserId == callerId.toString()) ? remoteUserId : callerId;
 
-      // Force send upgrade (no requests anymore)
+
       socket?.emit("upgradeToVideo", {
         "callId": callId,
         "remoteUserId": targetUserId,
@@ -199,7 +199,7 @@ class CallingController extends GetxController {
     }
   }
 
-  // --- FIXED: Accept remote video WITHOUT turning on our camera ---
+
   void _listenVideoUpgradeEvents() {
     socket?.off("upgradeToVideo");
     socket?.off("upgradeToVideoAnswer");
@@ -215,7 +215,7 @@ class CallingController extends GetxController {
           RTCSessionDescription(sdp["sdp"], sdp["type"]),
         );
 
-        // DO NOT start local camera here. Just send answer to accept their video.
+
         final answer = await peer!.createAnswer({
           'offerToReceiveAudio': true,
           'offerToReceiveVideo': true,
@@ -230,7 +230,7 @@ class CallingController extends GetxController {
 
         is_video = true;
         isVideoCall.value = true;
-        // NOTE: isVideoOn remains what it was (false), keeping local camera OFF
+
 
         callStatus.value = "Connected";
         await setDefaultAudioRouteForCallType(isVideo: true);
@@ -458,7 +458,7 @@ class CallingController extends GetxController {
       safeAddCandidate(data);
     });
 
-    // INCOMING CALL
+
     if (offer != null) {
       await peer!.setRemoteDescription(RTCSessionDescription(offer["sdp"], offer["type"]));
       final answer = await peer!.createAnswer();
@@ -564,16 +564,15 @@ class CallingController extends GetxController {
     update();
   }
 
-  // --- FIXED: If video isn't active yet, get the camera. Otherwise, toggle it. ---
+
   void toggleCamera() {
     if (!isVideoCall.value) return;
 
     final vids = localStream?.getVideoTracks() ?? [];
     if (vids.isEmpty) {
-      // The other person shared video, but we don't have a camera track yet. Turn it on!
+
       upgradeToVideoCall();
     } else {
-      // We already have a track, just toggle it locally.
       isVideoOn = !isVideoOn;
       for (var t in vids) {
         t.enabled = isVideoOn;
