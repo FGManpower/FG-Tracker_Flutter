@@ -34,7 +34,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   final firebaseNotificationServices notificationServices =
-      firebaseNotificationServices();
+  firebaseNotificationServices();
 
   @override
   void initState() {
@@ -73,53 +73,55 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return UpgradeAlert(
-        child: Obx(
-      () => Scaffold(
-        backgroundColor: Colors.white,
-        key: _scaffoldKey,
-        drawer: Sidemenu(scaffoldKey: _scaffoldKey),
-        appBar: Utility.isNotNullEmptyOrFalse(
-                controller.InitializeResponeMessage.isNotEmpty)
-            ? null
-            : HomeAppBar(
-                scaffoldKey: _scaffoldKey,
-                controller: controller,
-                trackingController: trackingController,
+      child: Obx(
+            () => Scaffold(
+          resizeToAvoidBottomInset: false,
+          backgroundColor: Colors.white,
+          key: _scaffoldKey,
+          drawer: Sidemenu(scaffoldKey: _scaffoldKey),
+          appBar: Utility.isNotNullEmptyOrFalse(
+              controller.InitializeResponeMessage.isNotEmpty)
+              ? null
+              : HomeAppBar(
+            scaffoldKey: _scaffoldKey,
+            controller: controller,
+            trackingController: trackingController,
+          ),
+          body: Utility.isNotNullEmptyOrFalse(
+              controller.InitializeResponeMessage.isNotEmpty)
+              ? LostinternetConnection(
+            retry: () async {
+              controller.init();
+            },
+            messgae: controller.InitializeResponeMessage.value,
+          )
+              : RefreshIndicator(
+            onRefresh: () async {
+              controller.init();
+            },
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16.w),
+              child: ListView(
+                padding: EdgeInsets.only(bottom: 20.h),
+                children: [
+                  BannerUi(),
+                  const StatsGrid(),
+                  SizedBox(height: 10.h),
+                  QuickActionsSection(),
+                  SizedBox(height: 6.h),
+                ],
               ),
-        body: Utility.isNotNullEmptyOrFalse(
-                controller.InitializeResponeMessage.isNotEmpty)
-            ? LostinternetConnection(
-                retry: () async {
-                  controller.init();
-                },
-                messgae: controller.InitializeResponeMessage.value,
-              )
-            : RefreshIndicator(
-                onRefresh: () async {
-                  controller.init();
-                },
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16.w),
-                  child: ListView(
-                    padding: EdgeInsets.only(bottom: 20.h),
-                    children: [
-                      BannerUi(),
-                      StatsGrid(controller: controller),
-                      SizedBox(height: 10.h),
-                      QuickActionsSection(),
-                      SizedBox(height: 6.h),
-                    ],
-                  ),
-                ),
-              ),
-        bottomNavigationBar: Utility.isNotNullEmptyOrFalse(
-                controller.InitializeResponeMessage.isNotEmpty)
-            ? null
-            : BottomActionsBar(
-                groupController: groupController,
-                joinGroupController: joinGroupController,
-              ),
+            ),
+          ),
+          bottomNavigationBar: Utility.isNotNullEmptyOrFalse(
+              controller.InitializeResponeMessage.isNotEmpty)
+              ? null
+              : BottomActionsBar(
+            groupController: groupController,
+            joinGroupController: joinGroupController,
+          ),
+        ),
       ),
-    ));
+    );
   }
 }
