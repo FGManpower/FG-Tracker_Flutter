@@ -35,6 +35,9 @@ class AppColors {
   //state color
   static const Color primaryElementStatus = Color.fromARGB(255, 88, 174, 127);
 
+
+  static const Color primaryPurple = Color(0xFF7B58FF);
+  static const Color darkText = Color(0xFF0F0B4C);
   static const Color primaryElementBg = Color.fromARGB(255, 238, 121, 99);
 
   static const Color selectedtabcolor = Colors.white;

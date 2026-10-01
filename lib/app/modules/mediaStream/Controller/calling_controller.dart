@@ -57,6 +57,36 @@ class CallingController extends GetxController {
   final RxBool isVideoCall = false.obs;
   final RxBool isUpgradingToVideo = false.obs;
 
+  bool isLocalVideoMain = false;
+
+  final RxBool areControlsVisible = true.obs;
+  Timer? _controlsTimer;
+
+  void toggleVideoViews() {
+    if (!isVideoCall.value) return;
+
+    isLocalVideoMain = !isLocalVideoMain;
+    showControlsTemporarily();
+    update();
+  }
+
+  void showControlsTemporarily() {
+    areControlsVisible.value = true;
+
+    _controlsTimer?.cancel();
+
+    _controlsTimer = Timer(
+      const Duration(seconds: 5),
+          () {
+        if (!isClosed) {
+          areControlsVisible.value = false;
+        }
+      },
+    );
+
+    update();
+  }
+
   @override
   void onInit() {
     callerId = args["callerId"]?.toString() ?? "";
@@ -98,8 +128,12 @@ class CallingController extends GetxController {
     super.onInit();
   }
 
-  // --- FIXED: One-way video upgrade logic ---
+
   Future<void> upgradeToVideoCall() async {
+    isVideoOn = true;
+    is_video = true;
+    isVideoCall.value = true;
+    isLocalVideoMain = false;
     if (isUpgradingToVideo.value) return;
     if (peer == null || localStream == null) {
       Utils().fluttertoast("Call not ready");
@@ -749,15 +783,20 @@ class CallingController extends GetxController {
   }
   @override
   void onClose() {
+    _controlsTimer?.cancel();
+
     _clearTimers();
     resetPeer();
     localRenderer.dispose();
     remoteRenderer.dispose();
+
     if (args["callType"] == "outGoing") {
       stopSound();
     }
+
     WakelockPlus.disable();
     ProximityScreenLock.setActive(false);
+
     super.onClose();
   }
 }

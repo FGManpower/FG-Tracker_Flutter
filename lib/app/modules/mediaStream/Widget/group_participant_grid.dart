@@ -232,7 +232,7 @@ class GroupParticipantGrid extends StatelessWidget {
               ),
 
 
-            if (!isPinned && !isFullScreen && !isThumbnail)
+            if (!isPinned && !isFullScreen && !isThumbnail && isVideoMode==true)
               Positioned(
                 top: 10.h,
                 right: 10.w,
@@ -242,7 +242,7 @@ class GroupParticipantGrid extends StatelessWidget {
                 ),
               ),
 
-            if (isPinned && !isFullScreen && !isThumbnail)
+            if (isPinned && !isFullScreen && !isThumbnail && isVideoMode==true)
               Positioned(
                 right: 12.w,
                 bottom: 12.h,
