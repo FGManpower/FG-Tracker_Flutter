@@ -115,7 +115,8 @@ class CallingScreen extends StatelessWidget {
                         else
                           const Spacer(),
                         Obx(() {
-                          if (!c.areControlsVisible.value) {
+                          if (!c.areControlsVisible.value &&
+                              c.is_video == true) {
                             return const SizedBox.shrink();
                           }
 
@@ -182,6 +183,17 @@ class CallingScreen extends StatelessWidget {
           ),
         ),
         SizedBox(height: 6.h),
+        Text(
+          c.formattedDuration == "00:00"
+              ? "${c.callStatus.value}..."
+              : c.formattedDuration,
+          style: TextStyle(
+            color: subColor,
+            fontSize: 14.sp,
+            fontFamily: FontFamily.interMedium,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
       ],
     );
   }
@@ -235,8 +247,6 @@ class CallingScreen extends StatelessWidget {
                         ),
                       ),
           ),
-
-
           Positioned(
             top: 6.h,
             right: 6.w,

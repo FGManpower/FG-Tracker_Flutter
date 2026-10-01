@@ -1,3 +1,4 @@
+import 'package:fgtracker/app/Core/values/colors.dart';
 import 'package:fgtracker/app/modules/mediaStream/Controller/calling_controller.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
@@ -57,6 +58,19 @@ class AudiocallScreen extends StatelessWidget {
               ),
             ),
             SizedBox(height: 8.h),
+            Obx(() {
+              final waiting = controller.formattedDuration == "00:00";
+
+              return Text(
+                waiting ? "${controller.callStatus.value}..." : controller.formattedDuration,
+                style: TextStyle(
+                  color: AppColors.primaryPurple.withOpacity(0.9),
+                  fontSize: 14.sp,
+                  fontFamily: FontFamily.interMedium,
+                  fontWeight: FontWeight.w600,
+                ),
+              );
+            }),
 
             SizedBox(height: 30.h),
             Stack(
@@ -99,47 +113,7 @@ class AudiocallScreen extends StatelessWidget {
             SizedBox(height: 35.h),
             _AudioWave(),
             SizedBox(height: 28.h),
-            if (!alreadyVideo)
-              GestureDetector(
-                onTap: upgrading ? null : controller.upgradeToVideoCall,
-                child: Container(
-                  padding:
-                  EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
-                  decoration: BoxDecoration(
-                    color: primaryPurple.withOpacity(0.12),
-                    borderRadius: BorderRadius.circular(30.r),
-                    border: Border.all(
-                      color: primaryPurple.withOpacity(0.35),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (upgrading)
-                        SizedBox(
-                          width: 18.r,
-                          height: 18.r,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: primaryPurple,
-                          ),
-                        )
-                      else
-                        Icon(Icons.videocam_rounded,
-                            color: primaryPurple, size: 22.sp),
-                      SizedBox(width: 10.w),
-                      Text(
-                        upgrading ? "Switching to video..." : "Switch to Video",
-                        style: TextStyle(
-                          color: primaryPurple,
-                          fontSize: 14.sp,
-                          fontFamily: FontFamily.interSemiBold,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+
 
             const Spacer(),
           ],
