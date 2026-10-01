@@ -6,6 +6,7 @@ import 'package:connectycube_flutter_call_kit/connectycube_flutter_call_kit.dart
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Data/Services/CallStateTracker.dart';
+import 'package:fgtracker/app/Data/Services/Socket/Socket_Dashboard_Service.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Group_Calling.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Walkie-Talkie-Service.dart';
 import 'package:fgtracker/app/Data/Services/screen_share_service.dart';
@@ -22,6 +23,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'app/Core/util/CallKit/callkit_service.dart';
 import 'app/Core/values/Context_Utility.dart';
 import 'app/Core/values/global.dart';
+import 'app/Data/Services/GroupCountService.dart';
 import 'app/Data/Services/NotificationServices.dart';
 import 'app/Data/Services/Socket/Socket_SignallingService.dart';
 import 'app/modules/Notification/Controller/cubit/notification_count_cubit.dart';
@@ -217,6 +219,7 @@ Future<void> main() async {
 
   Get.put<LocationService>(LocationService());
   Get.put<SocketService>(SocketService());
+  Get.put<GroupCountService>(GroupCountService(), permanent: true);
 
   final shared = await SharedPreferences.getInstance();
 
@@ -229,6 +232,7 @@ Future<void> main() async {
     );
     groupWalkieInitialize(userId);
     Socket_GroupCallService.instance.init(userId.toString());
+    SocketDashboardService().init();
   }
   ScreenShareForegroundService.init();
   runApp(const MyApp());

@@ -722,9 +722,25 @@ class GroupMessageController extends GetxController {
       );
 
       if (result.status == true) {
+
+        final messages = List<MessageData>.from(
+          result.messageData ?? [],
+        );
+
+        messages.sort((a, b) {
+          final aTime = DateTime.tryParse(a.timestamp ?? '');
+          final bTime = DateTime.tryParse(b.timestamp ?? '');
+
+          if (aTime == null || bTime == null) {
+            return 0;
+          }
+
+          return aTime.compareTo(bTime);
+        });
+
         _messages
           ..clear()
-          ..addAll(result.messageData ?? []);
+          ..addAll(messages);
 
         final pinnedId = result.pinnedMessageId;
 
@@ -746,6 +762,7 @@ class GroupMessageController extends GetxController {
         }
 
         updateMessageStream();
+
         scrollToBottom();
       } else {
         CommonDialog.errorMessage(result.message);
@@ -768,7 +785,6 @@ class GroupMessageController extends GetxController {
       isLoading.value = false;
     }
   }
-
   Future getGroupMembers() async {
     print(
       "MY USER ID => ${Global.storageServices.get(PrefConst.userId)}",

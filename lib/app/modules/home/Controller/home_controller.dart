@@ -24,7 +24,7 @@ class HomeController extends GetxController {
   RxBool ProfileData_loading = false.obs;
   RxString Respone_Error = ''.obs;
   Rx<UserData> userData = UserData().obs;
-  Rx<GroupCountDetail> groupCount = GroupCountDetail().obs;
+
   StreamSubscription<dynamic>? _groupCountSubscription;
   RxList<BannerData> bannerList = <BannerData>[].obs;
   RxString InitializeResponeMessage = ''.obs;
@@ -49,39 +49,11 @@ class HomeController extends GetxController {
 
   init() {
     fetchInitializeData();
-    SocketDashboardService.instance.init();
-    _listenGroupCount();
+
+
     fetchBanners();
     getProfileData();
-    SocketDashboardService.instance.init();
-  }
-
-  void _listenGroupCount() {
-    _groupCountSubscription?.cancel();
-    _groupCountSubscription =
-        SocketDashboardService.instance.groupCountStream.listen((data) {
-      if (data != null) {
-        try {
-          final incoming = GroupCountDetail.fromJson(data);
-          groupCount.value = groupCount.value.copyWith(
-            totalGroups: incoming.totalGroups > 0
-                ? incoming.totalGroups
-                : groupCount.value.totalGroups,
-            totalMembers: incoming.totalMembers > 0
-                ? incoming.totalMembers
-                : groupCount.value.totalMembers,
-            activeMembers: incoming.activeMembers > 0
-                ? incoming.activeMembers
-                : groupCount.value.activeMembers,
-            locationDisabledMembers: incoming.locationDisabledMembers > 0
-                ? incoming.locationDisabledMembers
-                : groupCount.value.locationDisabledMembers,
-          );
-        } catch (e) {
-          debugPrint("[HomeController] Error parsing groupCount: $e");
-        }
-      }
-    });
+    SocketDashboardService().init();
   }
 
   Future<void> getProfileData() async {
