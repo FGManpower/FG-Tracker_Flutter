@@ -1,3 +1,5 @@
+import 'package:fgtracker/app/Core/values/colors.dart';
+import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -37,4 +39,112 @@ class CallActionChip extends StatelessWidget {
       ),
     );
   }
+}
+
+class AudioBackground extends StatelessWidget {
+  const AudioBackground();
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0xFFE9E6FF),
+            Color(0xFFF4F2FF),
+            Color(0xFFEDE9FF),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+Widget ctrl({
+  required IconData icon,
+  required String label,
+  required bool isVideo,
+  required VoidCallback onTap,
+  bool active = false,
+  Color? iconColor,
+}) {
+  final Color baseIcon =
+      iconColor ?? (isVideo ? Colors.white : AppColors.primaryPurple);
+  final Color bg = isVideo
+      ? Colors.white.withOpacity(active ? 0.28 : 0.14)
+      : Colors.white.withOpacity(active ? 0.95 : 0.85);
+
+  return Column(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      GestureDetector(
+        onTap: onTap,
+        child: Container(
+          width: 46.r,
+          height: 46.r,
+          decoration: BoxDecoration(
+            color: bg,
+            shape: BoxShape.circle,
+          ),
+          child: Icon(icon, color: baseIcon, size: 22.sp),
+        ),
+      ),
+      SizedBox(height: 6.h),
+      Text(
+        label,
+        style: TextStyle(
+          fontSize: 11.sp,
+          color: isVideo ? Colors.white : AppColors.darkText,
+          fontFamily: FontFamily.interMedium,
+        ),
+      ),
+    ],
+  );
+}
+
+Widget sheetDivider() {
+  return Divider(
+    height: 1,
+    thickness: 1,
+    color: const Color(0xFFF0EEF8),
+    indent: 18.w,
+    endIndent: 18.w,
+  );
+}
+
+Widget sheetTile({
+  required IconData icon,
+  required String title,
+  required VoidCallback onTap,
+}) {
+  return InkWell(
+    onTap: onTap,
+    borderRadius: BorderRadius.circular(18.r),
+    child: Padding(
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+      child: Row(
+        children: [
+          Icon(icon, color: AppColors.primaryPurple, size: 24.sp),
+          SizedBox(width: 14.w),
+          Expanded(
+            child: Text(
+              title,
+              style: TextStyle(
+                color: AppColors.primaryPurple,
+                fontSize: 16.sp,
+                fontFamily: FontFamily.interMedium,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          Icon(
+            Icons.chevron_right_rounded,
+            color: AppColors.primaryPurple.withOpacity(0.7),
+            size: 24.sp,
+          ),
+        ],
+      ),
+    ),
+  );
 }

@@ -10,8 +10,15 @@ import 'package:get/get.dart';
 
 Future<void> showCreateGroupSheet() {
   return Get.bottomSheet(
-    const CreateGroupSheet(),
-    isScrollControlled: true,
+    Builder(
+      builder: (context) {
+        return MediaQuery(
+          data: MediaQuery.of(context).copyWith(viewInsets: EdgeInsets.zero),
+          child: const CreateGroupSheet(),
+        );
+      },
+    ),
+    isScrollControlled: false,
     isDismissible: true,
     enableDrag: true,
     backgroundColor: Colors.transparent,
@@ -81,74 +88,69 @@ class _CreateGroupSheetState extends State<CreateGroupSheet> {
       ),
       child: SafeArea(
         top: false,
-        child: Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
-          ),
-          child: SingleChildScrollView(
-            padding: EdgeInsets.fromLTRB(24.w, 10.h, 24.w, 24.h),
-            child: Obx(() => Form(
-              key: _controller.createGroupKey,
-              autovalidateMode: _attemptedSubmit.value
-                  ? AutovalidateMode.onUserInteraction
-                  : AutovalidateMode.disabled,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const _SheetHandle(),
-                  SizedBox(height: 18.h),
-                  _SheetHeader(),
-                  SizedBox(height: 18.h),
-                  const Divider(height: 1, color: Color(0xFFF0EEF7)),
-                  SizedBox(height: 24.h),
-                  _FieldLabel(
-                    icon: Icons.groups_outlined,
-                    title: AppText.groupName,
-                    required: true,
+        child: SingleChildScrollView(
+          padding: EdgeInsets.fromLTRB(24.w, 10.h, 24.w, 24.h),
+          child: Obx(() => Form(
+            key: _controller.createGroupKey,
+            autovalidateMode: _attemptedSubmit.value
+                ? AutovalidateMode.onUserInteraction
+                : AutovalidateMode.disabled,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const _SheetHandle(),
+                SizedBox(height: 18.h),
+                _SheetHeader(),
+                SizedBox(height: 18.h),
+                const Divider(height: 1, color: Color(0xFFF0EEF7)),
+                SizedBox(height: 24.h),
+                _FieldLabel(
+                  icon: Icons.groups_outlined,
+                  title: AppText.groupName,
+                  required: true,
+                ),
+                SizedBox(height: 12.h),
+                _RoundedField(
+                  controller: _controller.groupName,
+                  hint: AppText.enterGroupName,
+                  icon: Icons.groups_outlined,
+                  maxLength: 50,
+                  maxLines: 1,
+                  focusNode: _nameFocus,
+                  textInputAction: TextInputAction.next,
+                  validator: (value) => Validator.validate(
+                    value: value,
+                    title: "Group Name",
                   ),
-                  SizedBox(height: 12.h),
-                  _RoundedField(
-                    controller: _controller.groupName,
-                    hint: AppText.enterGroupName,
-                    icon: Icons.groups_outlined,
-                    maxLength: 50,
-                    maxLines: 1,
-                    focusNode: _nameFocus,
-                    textInputAction: TextInputAction.next,
-                    validator: (value) => Validator.validate(
-                      value: value,
-                      title: "Group Name",
-                    ),
-                    onFieldSubmitted: (_) => _descFocus.requestFocus(),
-                  ),
-                  SizedBox(height: 20.h),
-                  _FieldLabel(
-                    icon: Icons.description_outlined,
-                    title: "Group Description",
-                    required: false,
-                  ),
-                  SizedBox(height: 12.h),
-                  _RoundedField(
-                    controller: _controller.groupDesc,
-                    hint: "Enter Group Description",
-                    icon: Icons.description_outlined,
-                    maxLength: 200,
-                    maxLines: 1,
-                    focusNode: _descFocus,
-                    textInputAction: TextInputAction.done,
-                    onFieldSubmitted: (_) => _submit(),
-                  ),
-                  _CharacterCounter(controller: _controller.groupDesc),
-                  SizedBox(height: 24.h),
-                  _SubmitButton(
-                    isSubmitting: _isSubmitting.value,
-                    onTap: _submit,
-                  ),
-                ],
-              ),
-            )),
-          ),
+                  onFieldSubmitted: (_) => _descFocus.requestFocus(),
+                ),
+                SizedBox(height: 5.h),
+                // _FieldLabel(
+                //   icon: Icons.description_outlined,
+                //   title: "Group Description",
+                //   required: false,
+                // ),
+                // SizedBox(height: 12.h),
+                // _RoundedField(
+                //   controller: _controller.groupDesc,
+                //   hint: "Enter Group Description",
+                //   icon: Icons.description_outlined,
+                //   maxLength: 200,
+                //   maxLines: 1,
+                //   focusNode: _descFocus,
+                //   textInputAction: TextInputAction.done,
+                //   onFieldSubmitted: (_) => _submit(),
+                // ),
+                _CharacterCounter(controller: _controller.groupDesc),
+                SizedBox(height: 24.h),
+                _SubmitButton(
+                  isSubmitting: _isSubmitting.value,
+                  onTap: _submit,
+                ),
+              ],
+            ),
+          )),
         ),
       ),
     );
@@ -385,7 +387,7 @@ class _RoundedField extends StatelessWidget {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(50.r),
-          borderSide: BorderSide(color: Color(0xFF6B4DFF), width: 1.2.w),
+          borderSide: BorderSide(color: const Color(0xFF6B4DFF), width: 1.2.w),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(50.r),

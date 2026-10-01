@@ -1,6 +1,6 @@
+import 'package:fgtracker/app/Data/Services/GroupCountService.dart';
 import 'package:fgtracker/app/Model/group_count_detail.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
-import 'package:fgtracker/app/modules/home/Controller/home_controller.dart';
 import 'package:fgtracker/app/modules/home/Views/LiveStatus/components/online_member.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
@@ -12,14 +12,13 @@ import 'components/ghost_member.dart';
 import 'components/total_member.dart';
 
 class StatsGrid extends StatelessWidget {
-  const StatsGrid({super.key, required this.controller});
-
-  final HomeController controller;
+  const StatsGrid({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      final GroupCountDetail detail = controller.groupCount.value;
+      final GroupCountDetail detail = GroupCountService.instance.groupCount.value;
+
       return Row(
         children: [
           Expanded(

@@ -1,18 +1,21 @@
 import 'dart:ui';
+
+import 'package:fgtracker/app/Core/values/colors.dart';
 import 'package:fgtracker/app/modules/mediaStream/Views/AudioCall_screen.dart';
+import 'package:fgtracker/app/modules/mediaStream/Widget/call_widget.dart';
+import 'package:fgtracker/app/modules/mediaStream/Widget/draggableVideoPip.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:get/get.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
+import 'package:get/get.dart';
+
 import '../../../../gen/fonts.gen.dart';
 import '../Controller/calling_controller.dart';
 
 class CallingScreen extends StatelessWidget {
   final controller = Get.put(CallingController());
-  CallingScreen({super.key});
 
-  static const Color primaryPurple = Color(0xFF7B58FF);
-  static const Color darkText = Color(0xFF0F0B4C);
+  CallingScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -29,29 +32,42 @@ class CallingScreen extends StatelessWidget {
               children: [
                 if (isVideo)
                   Positioned.fill(
-                    child: RTCVideoView(
-                      c.remoteRenderer,
-                      objectFit:
-                      RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: c.showControlsTemporarily,
+                      child: RTCVideoView(
+                        c.isLocalVideoMain ? c.localRenderer : c.remoteRenderer,
+                        mirror: c.isLocalVideoMain && c.isFrontCamera,
+                        objectFit:
+                            RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
+                      ),
                     ),
                   )
                 else
-                  const Positioned.fill(child: _AudioBackground()),
+                  Positioned.fill(
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: c.showControlsTemporarily,
+                      child: const AudioBackground(),
+                    ),
+                  ),
                 if (isVideo) ...[
                   Positioned(
                     top: 0,
                     left: 0,
                     right: 0,
                     height: 180.h,
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Colors.black.withOpacity(0.55),
-                            Colors.transparent,
-                          ],
+                    child: IgnorePointer(
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.black.withOpacity(0.55),
+                              Colors.transparent,
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -61,45 +77,69 @@ class CallingScreen extends StatelessWidget {
                     left: 0,
                     right: 0,
                     height: 220.h,
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.bottomCenter,
-                          end: Alignment.topCenter,
-                          colors: [
-                            Colors.black.withOpacity(0.55),
-                            Colors.transparent,
-                          ],
+                    child: IgnorePointer(
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.bottomCenter,
+                            end: Alignment.topCenter,
+                            colors: [
+                              Colors.black.withOpacity(0.55),
+                              Colors.transparent,
+                            ],
+                          ),
                         ),
                       ),
                     ),
                   ),
                 ],
+                if (isVideo)
+                  Positioned.fill(
+                    child: DraggableVideoPip(
+                      controller: c,
+                      child: _videoPip(c),
+                    ),
+                  ),
                 SafeArea(
                   child: Padding(
                     padding: EdgeInsets.only(top: 12.h),
                     child: Column(
                       children: [
-                        if (isVideo) _buildTopInfo(c, isVideo: true),
+                        if (isVideo)
+                          _buildTopInfo(
+                            c,
+                            isVideo: true,
+                          ),
                         if (!isVideo)
                           Expanded(
                             child: AudiocallScreen(controller: c),
                           )
                         else
                           const Spacer(),
-                        if (isVideo)
-                          Align(
-                            alignment: Alignment.bottomLeft,
+                        Obx(() {
+                          if (!c.areControlsVisible.value &&
+                              c.is_video == true) {
+                            return const SizedBox.shrink();
+                          }
+
+                          return GestureDetector(
+                            behavior: HitTestBehavior.opaque,
+                            onTap: c.showControlsTemporarily,
                             child: Padding(
-                              padding:
-                              EdgeInsets.only(left: 20.w, bottom: 18.h),
-                              child: _localPip(c),
+                              padding: EdgeInsets.fromLTRB(
+                                18.w,
+                                8.h,
+                                18.w,
+                                22.h,
+                              ),
+                              child: _bottomControls(
+                                context,
+                                c,
+                                isVideo: isVideo,
+                              ),
                             ),
-                          ),
-                        Padding(
-                          padding: EdgeInsets.fromLTRB(18.w, 8.h, 18.w, 22.h),
-                          child: _bottomControls(c, isVideo: isVideo),
-                        ),
+                          );
+                        }),
                       ],
                     ),
                   ),
@@ -112,10 +152,14 @@ class CallingScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildTopInfo(CallingController c, {required bool isVideo}) {
-    final Color textColor = isVideo ? Colors.white : darkText;
+  Widget _buildTopInfo(
+    CallingController c, {
+    required bool isVideo,
+  }) {
+    final Color textColor = isVideo ? Colors.white : AppColors.darkText;
+
     final Color subColor =
-    isVideo ? Colors.white70 : primaryPurple.withOpacity(0.9);
+        isVideo ? Colors.white70 : AppColors.primaryPurple.withOpacity(0.9);
 
     final bool isOutgoing = c.args["callType"] == "outGoing";
 
@@ -141,62 +185,105 @@ class CallingScreen extends StatelessWidget {
           ),
         ),
         SizedBox(height: 6.h),
-
+        Text(
+          c.formattedDuration == "00:00"
+              ? "${c.callStatus.value}..."
+              : c.formattedDuration,
+          style: TextStyle(
+            color: subColor,
+            fontSize: 14.sp,
+            fontFamily: FontFamily.interMedium,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
       ],
     );
   }
 
-  Widget _localPip(CallingController c) {
-    return Stack(
-      children: [
-        Container(
-          width: 110.w,
-          height: 150.h,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(14.r),
-            border: Border.all(color: Colors.white.withOpacity(0.85), width: 2),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.25),
-                blurRadius: 12,
-                offset: const Offset(0, 6),
+  Widget _videoPip(CallingController c) {
+    final bool showingRemote = c.isLocalVideoMain;
+
+    return GestureDetector(
+      onTap: () {
+        c.toggleVideoViews();
+        c.showControlsTemporarily();
+      },
+      child: Stack(
+        children: [
+          Container(
+            width: 110.w,
+            height: 150.h,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(14.r),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.85),
+                width: 2,
               ),
-            ],
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.25),
+                  blurRadius: 12,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: showingRemote
+                ? RTCVideoView(
+                    c.remoteRenderer,
+                    objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
+                  )
+                : c.isVideoOn
+                    ? RTCVideoView(
+                        c.localRenderer,
+                        mirror: c.isFrontCamera,
+                        objectFit:
+                            RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
+                      )
+                    : Container(
+                        color: const Color(0xFF1A1A2E),
+                        child: Icon(
+                          Icons.videocam_off,
+                          color: Colors.white54,
+                          size: 32.sp,
+                        ),
+                      ),
           ),
-          clipBehavior: Clip.antiAlias,
-          child: c.isVideoOn
-              ? RTCVideoView(
-            c.localRenderer,
-            mirror: c.isFrontCamera,
-            objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
-          )
-              : Container(
-            color: const Color(0xFF1A1A2E),
-            child: Icon(Icons.videocam_off,
-                color: Colors.white54, size: 32.sp),
-          ),
-        ),
-        Positioned(
-          top: 6.h,
-          right: 6.w,
-          child: GestureDetector(
-            onTap: c.switchCamera,
-            child: Container(
-              padding: EdgeInsets.all(6.r),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.92),
-                shape: BoxShape.circle,
+          Positioned(
+            top: 6.h,
+            right: 6.w,
+            child: GestureDetector(
+              onTap: showingRemote
+                  ? null
+                  : () {
+                      c.switchCamera();
+                      c.showControlsTemporarily();
+                    },
+              child: Container(
+                padding: EdgeInsets.all(6.r),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.92),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  showingRemote
+                      ? Icons.swap_horiz_rounded
+                      : Icons.cameraswitch_rounded,
+                  size: 16.sp,
+                  color: AppColors.primaryPurple,
+                ),
               ),
-              child: Icon(Icons.cameraswitch_rounded,
-                  size: 16.sp, color: primaryPurple),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
-  void _openMoreSheet(BuildContext context, CallingController c) {
+  void _openMoreSheet(
+    BuildContext context,
+    CallingController c,
+  ) {
     final bool isVideo = c.is_video || c.isVideoCall.value;
 
     showModalBottomSheet(
@@ -206,7 +293,12 @@ class CallingScreen extends StatelessWidget {
       builder: (ctx) {
         return SafeArea(
           child: Padding(
-            padding: EdgeInsets.fromLTRB(14.w, 0, 14.w, 14.h),
+            padding: EdgeInsets.fromLTRB(
+              14.w,
+              0,
+              14.w,
+              14.h,
+            ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -229,7 +321,12 @@ class CallingScreen extends StatelessWidget {
                       ),
                       SizedBox(height: 8.h),
                       Container(
-                        margin: EdgeInsets.fromLTRB(12.w, 6.h, 12.w, 12.h),
+                        margin: EdgeInsets.fromLTRB(
+                          12.w,
+                          6.h,
+                          12.w,
+                          12.h,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(18.r),
@@ -237,31 +334,32 @@ class CallingScreen extends StatelessWidget {
                         child: Column(
                           children: [
                             if (isVideo) ...[
-                              _sheetTile(
+                              sheetTile(
                                 icon: Icons.cameraswitch_rounded,
                                 title: "Switch camera",
                                 onTap: () {
                                   Navigator.pop(ctx);
                                   c.switchCamera();
+                                  c.showControlsTemporarily();
                                 },
                               ),
-                              _sheetDivider(),
+                              sheetDivider(),
                             ],
-                            _sheetTile(
-                              icon: Icons.present_to_all_rounded,
-                              title: "Share screen",
-                              onTap: () {
-                                Navigator.pop(ctx);
-                                Get.snackbar(
-                                  "Share screen",
-                                  "Coming soon",
-                                  snackPosition: SnackPosition.BOTTOM,
-                                  duration: const Duration(seconds: 1),
-                                );
-                              },
-                            ),
-                            _sheetDivider(),
-                            _sheetTile(
+                            // sheetTile(
+                            //   icon: Icons.present_to_all_rounded,
+                            //   title: "Share screen",
+                            //   onTap: () {
+                            //     Navigator.pop(ctx);
+                            //     Get.snackbar(
+                            //       "Share screen",
+                            //       "Coming soon",
+                            //       snackPosition: SnackPosition.BOTTOM,
+                            //       duration: const Duration(seconds: 1),
+                            //     );
+                            //   },
+                            // ),
+                            // sheetDivider(),
+                            sheetTile(
                               icon: Icons.chat_bubble_outline_rounded,
                               title: "Send message",
                               onTap: () {
@@ -290,12 +388,14 @@ class CallingScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(18.r),
                       onTap: () => Navigator.pop(ctx),
                       child: Padding(
-                        padding: EdgeInsets.symmetric(vertical: 16.h),
+                        padding: EdgeInsets.symmetric(
+                          vertical: 16.h,
+                        ),
                         child: Center(
                           child: Text(
                             "Cancel",
                             style: TextStyle(
-                              color: primaryPurple,
+                              color: AppColors.primaryPurple,
                               fontSize: 16.sp,
                               fontFamily: FontFamily.interSemiBold,
                               fontWeight: FontWeight.w600,
@@ -314,262 +414,176 @@ class CallingScreen extends StatelessWidget {
     );
   }
 
-  Widget _sheetDivider() {
-    return Divider(
-      height: 1,
-      thickness: 1,
-      color: const Color(0xFFF0EEF8),
-      indent: 18.w,
-      endIndent: 18.w,
-    );
-  }
-
-  Widget _sheetTile({
-    required IconData icon,
-    required String title,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(18.r),
-      child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
-        child: Row(
-          children: [
-            Icon(icon, color: primaryPurple, size: 24.sp),
-            SizedBox(width: 14.w),
-            Expanded(
-              child: Text(
-                title,
-                style: TextStyle(
-                  color: primaryPurple,
-                  fontSize: 16.sp,
-                  fontFamily: FontFamily.interMedium,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-            Icon(
-              Icons.chevron_right_rounded,
-              color: primaryPurple.withOpacity(0.7),
-              size: 24.sp,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _bottomControls(CallingController c, {required bool isVideo}) {
-    return Builder(
-      builder: (context) {
-        return ClipRRect(
-          borderRadius: BorderRadius.circular(28.r),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
-            child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 14.h),
-              decoration: BoxDecoration(
-                color: isVideo
-                    ? Colors.white.withOpacity(0.14)
-                    : Colors.white.withOpacity(0.72),
-                borderRadius: BorderRadius.circular(28.r),
-                border: Border.all(
-                  color: Colors.white.withOpacity(isVideo ? 0.22 : 0.9),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.08),
-                    blurRadius: 16,
-                    offset: const Offset(0, 6),
-                  ),
-                ],
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _ctrl(
-                    icon: Icons.more_horiz_rounded,
-                    label: "More",
-                    isVideo: isVideo,
-                    onTap: () => _openMoreSheet(context, c),
-                  ),
-
-                  // ✅ DYNAMIC SPEAKER & BLUETOOTH BUTTON (WhatsApp Style)
-                  Obx(() {
-                    final String activeRoute = c.currentAudioRoute.value;
-
-                    IconData speakerIcon;
-                    String speakerLabel;
-                    Color? activeIconColor;
-                    bool isButtonActive = false;
-
-                    if (activeRoute == "bluetooth") {
-                      // Dynamic Bluetooth Output (WhatsApp Blue)
-                      speakerIcon = Icons.bluetooth_audio_rounded;
-                      speakerLabel = "Bluetooth";
-                      activeIconColor = const Color(0xFF2196F3); // Blue for BT Active
-                      isButtonActive = true;
-                    } else if (activeRoute == "speaker") {
-                      // Loudspeaker Output (Standard Purple Active)
-                      speakerIcon = Icons.volume_up_rounded;
-                      speakerLabel = "Speaker";
-                      activeIconColor = isVideo ? Colors.white : primaryPurple;
-                      isButtonActive = true;
-                    } else {
-                      // Earpiece Output (Gray Off Style)
-                      speakerIcon = Icons.volume_down_rounded;
-                      speakerLabel = "Earpiece";
-                      activeIconColor = isVideo ? Colors.white60 : darkText.withOpacity(0.6);
-                      isButtonActive = false;
-                    }
-
-                    return _ctrl(
-                      icon: speakerIcon,
-                      label: speakerLabel,
-                      active: isButtonActive,
-                      isVideo: isVideo,
-                      onTap: c.toggleSpeaker,
-                      iconColor: activeIconColor,
-                    );
-                  }),
-
-                  Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      GestureDetector(
-                        onTap: () {
-                          if (c.callStatus.value != "Connected") {
-                            c.missedCall();
-                          } else {
-                            c.endCall();
-                          }
-                        },
-                        child: Container(
-                          width: 58.r,
-                          height: 58.r,
-                          decoration: const BoxDecoration(
-                            color: Color(0xFFFF3B30),
-                            shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(
-                                color: Color(0x66FF3B30),
-                                blurRadius: 12,
-                                offset: Offset(0, 4),
-                              ),
-                            ],
-                          ),
-                          child: Icon(Icons.call_end_rounded,
-                              color: Colors.white, size: 28.sp),
-                        ),
-                      ),
-                      SizedBox(height: 6.h),
-                      Text(
-                        "Decline",
-                        style: TextStyle(
-                          fontSize: 11.sp,
-                          color: isVideo ? Colors.white : darkText,
-                          fontFamily: FontFamily.interMedium,
-                        ),
-                      ),
-                    ],
-                  ),
-                  _ctrl(
-                    icon:
-                    c.isAudioOn ? Icons.mic_rounded : Icons.mic_off_rounded,
-                    label: "Mute",
-                    active: !c.isAudioOn,
-                    isVideo: isVideo,
-                    onTap: c.toggleMic,
-                  ),
-                  if (isVideo)
-                    _ctrl(
-                      icon: c.isVideoOn
-                          ? Icons.videocam_rounded
-                          : Icons.videocam_off_rounded,
-                      label: c.isVideoOn ? "Camera" : "Camera Off",
-                      active: !c.isVideoOn,
-                      isVideo: isVideo,
-                      onTap: c.toggleCamera,
-                    )
-                  else
-                    _ctrl(
-                      icon: Icons.videocam_rounded,
-                      label: "Video",
-                      isVideo: isVideo,
-                      iconColor: primaryPurple,
-                      onTap: () {
-                        c.upgradeToVideoCall();
-                      },
-                    ),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _ctrl({
-    required IconData icon,
-    required String label,
+  Widget _bottomControls(
+    BuildContext context,
+    CallingController c, {
     required bool isVideo,
-    required VoidCallback onTap,
-    bool active = false,
-    Color? iconColor,
   }) {
-    final Color baseIcon =
-        iconColor ?? (isVideo ? Colors.white : primaryPurple);
-    final Color bg = isVideo
-        ? Colors.white.withOpacity(active ? 0.28 : 0.14)
-        : Colors.white.withOpacity(active ? 0.95 : 0.85);
-
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        GestureDetector(
-          onTap: onTap,
-          child: Container(
-            width: 46.r,
-            height: 46.r,
-            decoration: BoxDecoration(
-              color: bg,
-              shape: BoxShape.circle,
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(28.r),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(
+          sigmaX: 18,
+          sigmaY: 18,
+        ),
+        child: Container(
+          padding: EdgeInsets.symmetric(
+            horizontal: 10.w,
+            vertical: 14.h,
+          ),
+          decoration: BoxDecoration(
+            color: isVideo
+                ? Colors.white.withOpacity(0.14)
+                : Colors.white.withOpacity(0.72),
+            borderRadius: BorderRadius.circular(28.r),
+            border: Border.all(
+              color: Colors.white.withOpacity(
+                isVideo ? 0.22 : 0.9,
+              ),
             ),
-            child: Icon(icon, color: baseIcon, size: 22.sp),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.08),
+                blurRadius: 16,
+                offset: const Offset(0, 6),
+              ),
+            ],
           ),
-        ),
-        SizedBox(height: 6.h),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 11.sp,
-            color: isVideo ? Colors.white : darkText,
-            fontFamily: FontFamily.interMedium,
-          ),
-        ),
-      ],
-    );
-  }
-}
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              ctrl(
+                icon: Icons.more_horiz_rounded,
+                label: "More",
+                isVideo: isVideo,
+                onTap: () {
+                  c.showControlsTemporarily();
+                  _openMoreSheet(context, c);
+                },
+              ),
+              Obx(() {
+                final String activeRoute = c.currentAudioRoute.value;
 
-class _AudioBackground extends StatelessWidget {
-  const _AudioBackground();
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Color(0xFFE9E6FF),
-            Color(0xFFF4F2FF),
-            Color(0xFFEDE9FF),
-          ],
+                IconData speakerIcon;
+                String speakerLabel;
+                Color? activeIconColor;
+                bool isButtonActive = false;
+
+                if (activeRoute == "bluetooth") {
+                  speakerIcon = Icons.bluetooth_audio_rounded;
+                  speakerLabel = "Bluetooth";
+                  activeIconColor = const Color(0xFF2196F3);
+                  isButtonActive = true;
+                } else if (activeRoute == "speaker") {
+                  speakerIcon = Icons.volume_up_rounded;
+                  speakerLabel = "Speaker";
+                  activeIconColor =
+                      isVideo ? Colors.white : AppColors.primaryPurple;
+                  isButtonActive = true;
+                } else {
+                  speakerIcon = Icons.volume_down_rounded;
+                  speakerLabel = "Earpiece";
+                  activeIconColor = isVideo
+                      ? Colors.white60
+                      : AppColors.darkText.withOpacity(0.6);
+                  isButtonActive = false;
+                }
+
+                return ctrl(
+                  icon: speakerIcon,
+                  label: speakerLabel,
+                  active: isButtonActive,
+                  isVideo: isVideo,
+                  onTap: () {
+                    c.toggleSpeaker();
+                    c.showControlsTemporarily();
+                  },
+                  iconColor: activeIconColor,
+                );
+              }),
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  GestureDetector(
+                    onTap: () {
+                      if (c.callStatus.value != "Connected") {
+                        c.missedCall();
+                      } else {
+                        c.endCall();
+                      }
+                    },
+                    child: Container(
+                      width: 58.r,
+                      height: 58.r,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFFF3B30),
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Color(0x66FF3B30),
+                            blurRadius: 12,
+                            offset: Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Icon(
+                        Icons.call_end_rounded,
+                        color: Colors.white,
+                        size: 28.sp,
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 6.h),
+                  Text(
+                    "Decline",
+                    style: TextStyle(
+                      fontSize: 11.sp,
+                      color: isVideo ? Colors.white : AppColors.darkText,
+                      fontFamily: FontFamily.interMedium,
+                    ),
+                  ),
+                ],
+              ),
+              ctrl(
+                icon: c.isAudioOn ? Icons.mic_rounded : Icons.mic_off_rounded,
+                label: "Mute",
+                active: !c.isAudioOn,
+                isVideo: isVideo,
+                onTap: () {
+                  c.toggleMic();
+                  c.showControlsTemporarily();
+                },
+              ),
+              if (isVideo)
+                ctrl(
+                  icon: c.isVideoOn
+                      ? Icons.videocam_rounded
+                      : Icons.videocam_off_rounded,
+                  label: c.isVideoOn ? "Camera" : "Camera Off",
+                  active: !c.isVideoOn,
+                  isVideo: isVideo,
+                  onTap: () {
+                    c.toggleCamera();
+                    c.showControlsTemporarily();
+                  },
+                )
+              else
+                ctrl(
+                  icon: Icons.videocam_rounded,
+                  label: "Video",
+                  isVideo: isVideo,
+                  iconColor: AppColors.primaryPurple,
+                  onTap: () {
+                    c.upgradeToVideoCall();
+                    c.showControlsTemporarily();
+                  },
+                ),
+            ],
+          ),
         ),
       ),
     );
   }
 }
+
+

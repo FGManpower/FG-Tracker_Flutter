@@ -7,6 +7,7 @@ import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Core/values/utility.dart';
 import 'package:fgtracker/app/modules/Track/Controller/GroupTrackController.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
+import 'package:flutter/animation.dart';
 import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'package:get/get.dart' hide navigator;
 import 'package:flutter_webrtc/flutter_webrtc.dart';
@@ -44,7 +45,7 @@ class CallingController extends GetxController {
   final args = Get.arguments;
   Timer? callTimer;
   int callDurationSeconds = 0;
-
+  Offset? pipPosition;
   final Rxn<CallDetail> apiCallDetail = Rxn<CallDetail>();
 
   final RxBool isBluetoothConnected = false.obs;
@@ -56,6 +57,36 @@ class CallingController extends GetxController {
 
   final RxBool isVideoCall = false.obs;
   final RxBool isUpgradingToVideo = false.obs;
+
+  bool isLocalVideoMain = false;
+
+  final RxBool areControlsVisible = true.obs;
+  Timer? _controlsTimer;
+
+  void toggleVideoViews() {
+    if (!isVideoCall.value) return;
+
+    isLocalVideoMain = !isLocalVideoMain;
+    showControlsTemporarily();
+    update();
+  }
+
+  void showControlsTemporarily() {
+    areControlsVisible.value = true;
+
+    _controlsTimer?.cancel();
+
+    _controlsTimer = Timer(
+      const Duration(seconds: 5),
+          () {
+        if (!isClosed) {
+          areControlsVisible.value = false;
+        }
+      },
+    );
+
+    update();
+  }
 
   @override
   void onInit() {
@@ -98,8 +129,13 @@ class CallingController extends GetxController {
     super.onInit();
   }
 
-  // --- FIXED: One-way video upgrade logic ---
+
   Future<void> upgradeToVideoCall() async {
+    isVideoOn = true;
+    is_video = true;
+    isVideoCall.value = true;
+    isLocalVideoMain = false;
+    pipPosition = null;
     if (isUpgradingToVideo.value) return;
     if (peer == null || localStream == null) {
       Utils().fluttertoast("Call not ready");
@@ -111,7 +147,7 @@ class CallingController extends GetxController {
 
       final vids = localStream!.getVideoTracks();
       if (vids.isEmpty) {
-        // 1. We don't have a camera track yet, acquire it
+
         final videoStream = await navigator.mediaDevices.getUserMedia({
           'audio': false,
           'video': {
@@ -128,7 +164,7 @@ class CallingController extends GetxController {
         await localStream!.addTrack(videoTrack);
         await peer!.addTrack(videoTrack, localStream!);
       } else {
-        // We already have a track, just enable it
+
         for (var t in vids) { t.enabled = true; }
       }
 
@@ -137,7 +173,7 @@ class CallingController extends GetxController {
       is_video = true;
       isVideoCall.value = true;
 
-      // 2. Renegotiate with remote
+
       final offer = await peer!.createOffer({
         'offerToReceiveAudio': true,
         'offerToReceiveVideo': true,
@@ -148,7 +184,7 @@ class CallingController extends GetxController {
       final myUserId = Global.storageServices.get(PrefConst.userId).toString();
       final targetUserId = (myUserId == callerId.toString()) ? remoteUserId : callerId;
 
-      // Force send upgrade (no requests anymore)
+
       socket?.emit("upgradeToVideo", {
         "callId": callId,
         "remoteUserId": targetUserId,
@@ -165,7 +201,7 @@ class CallingController extends GetxController {
     }
   }
 
-  // --- FIXED: Accept remote video WITHOUT turning on our camera ---
+
   void _listenVideoUpgradeEvents() {
     socket?.off("upgradeToVideo");
     socket?.off("upgradeToVideoAnswer");
@@ -181,7 +217,7 @@ class CallingController extends GetxController {
           RTCSessionDescription(sdp["sdp"], sdp["type"]),
         );
 
-        // DO NOT start local camera here. Just send answer to accept their video.
+
         final answer = await peer!.createAnswer({
           'offerToReceiveAudio': true,
           'offerToReceiveVideo': true,
@@ -196,7 +232,7 @@ class CallingController extends GetxController {
 
         is_video = true;
         isVideoCall.value = true;
-        // NOTE: isVideoOn remains what it was (false), keeping local camera OFF
+
 
         callStatus.value = "Connected";
         await setDefaultAudioRouteForCallType(isVideo: true);
@@ -424,7 +460,7 @@ class CallingController extends GetxController {
       safeAddCandidate(data);
     });
 
-    // INCOMING CALL
+
     if (offer != null) {
       await peer!.setRemoteDescription(RTCSessionDescription(offer["sdp"], offer["type"]));
       final answer = await peer!.createAnswer();
@@ -530,16 +566,15 @@ class CallingController extends GetxController {
     update();
   }
 
-  // --- FIXED: If video isn't active yet, get the camera. Otherwise, toggle it. ---
+
   void toggleCamera() {
     if (!isVideoCall.value) return;
 
     final vids = localStream?.getVideoTracks() ?? [];
     if (vids.isEmpty) {
-      // The other person shared video, but we don't have a camera track yet. Turn it on!
+
       upgradeToVideoCall();
     } else {
-      // We already have a track, just toggle it locally.
       isVideoOn = !isVideoOn;
       for (var t in vids) {
         t.enabled = isVideoOn;
@@ -744,20 +779,60 @@ class CallingController extends GetxController {
       }
       update();
     } catch (e) {
-      log("❌ checkAudioDevices error: $e");
+      log("checkAudioDevices error: $e");
     }
+  }
+
+  void updatePipPosition({
+    required Offset delta,
+    required double pipWidth,
+    required double pipHeight,
+    required double minLeft,
+    required double maxLeft,
+    required double minTop,
+    required double maxTop,
+  }) {
+    final Offset currentPosition = pipPosition ??
+        Offset(
+          minLeft,
+          maxTop,
+        );
+
+    final double boundedMaxLeft =
+    maxLeft < minLeft ? minLeft : maxLeft;
+
+    final double boundedMaxTop =
+    maxTop < minTop ? minTop : maxTop;
+
+    pipPosition = Offset(
+      (currentPosition.dx + delta.dx).clamp(
+        minLeft,
+        boundedMaxLeft,
+      ),
+      (currentPosition.dy + delta.dy).clamp(
+        minTop,
+        boundedMaxTop,
+      ),
+    );
+
+    update();
   }
   @override
   void onClose() {
+    _controlsTimer?.cancel();
+
     _clearTimers();
     resetPeer();
     localRenderer.dispose();
     remoteRenderer.dispose();
+
     if (args["callType"] == "outGoing") {
       stopSound();
     }
+
     WakelockPlus.disable();
     ProximityScreenLock.setActive(false);
+
     super.onClose();
   }
 }

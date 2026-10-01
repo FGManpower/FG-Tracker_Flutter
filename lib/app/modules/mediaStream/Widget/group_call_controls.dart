@@ -32,78 +32,64 @@ class GroupCallControls extends StatelessWidget {
         final isSpeakerOn = controller.isSpeakerOn.value;
         final isScreenSharing = controller.isScreenSharing.value;
 
-        return SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          physics: const BouncingScrollPhysics(),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              SizedBox(width: 4.w),
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            SizedBox(width: 4.w),
+            ControlItem(
+              icon: Icons.more_horiz_rounded,
+              label: "More",
+              bgColor: Colors.white,
+              iconColor: const Color(0xFF6E5CA4),
+              borderColor: const Color(0xFFE9E5FE),
+              onTap: controller.openMoreSheet,
+            ),
+            SizedBox(width: 8.w),
+            if (isVideo) ...[
               ControlItem(
-                icon: Icons.more_horiz_rounded,
-                label: "More",
+                icon: isVideoOn
+                    ? Icons.videocam_rounded
+                    : Icons.videocam_off_rounded,
+                label: isVideoOn ? "Camera on" : "Camera off",
                 bgColor: Colors.white,
                 iconColor: const Color(0xFF6E5CA4),
                 borderColor: const Color(0xFFE9E5FE),
-                onTap: controller.openMoreSheet,
+                onTap: controller.toggleCamera,
               ),
               SizedBox(width: 8.w),
-              if (isVideo) ...[
-                ControlItem(
-                  icon: isVideoOn
-                      ? Icons.videocam_rounded
-                      : Icons.videocam_off_rounded,
-                  label: isVideoOn ? "Camera on" : "Camera off",
-                  bgColor: Colors.white,
-                  iconColor: const Color(0xFF6E5CA4),
-                  borderColor: const Color(0xFFE9E5FE),
-                  onTap: controller.toggleCamera,
-                ),
-                SizedBox(width: 8.w),
-              ],
-              // if (isVideo && isVideoOn && !isScreenSharing) ...[
-              //   _ControlItem(
-              //     icon: Icons.cameraswitch_rounded,
-              //     label: "Flip",
-              //     bgColor: Colors.white,
-              //     iconColor: const Color(0xFF6E5CA4),
-              //     borderColor: const Color(0xFFE9E5FE),
-              //     onTap: controller.switchCamera,
-              //   ),
-              //   SizedBox(width: 8.w),
-              // ],
-              ControlItem(
-                icon: Icons.call_end_rounded,
-                label: "End call",
-                bgColor: const Color(0xFFFF3B30),
-                iconColor: Colors.white,
-                size: 54,
-                iconSize: 26,
-                onTap: controller.endCall,
-              ),
-              SizedBox(width: 8.w),
-              ControlItem(
-                icon: isAudioOn ? Icons.mic_rounded : Icons.mic_off_rounded,
-                label: isAudioOn ? "Mute" : "Unmute",
-                bgColor: Colors.white,
-                iconColor: const Color(0xFF6E5CA4),
-                borderColor: const Color(0xFFE9E5FE),
-                onTap: controller.toggleMic,
-              ),
-              SizedBox(width: 8.w),
-              ControlItem(
-                icon: isSpeakerOn
-                    ? Icons.volume_up_rounded
-                    : Icons.volume_off_rounded,
-                label: "Speaker",
-                bgColor: Colors.white,
-                iconColor: const Color(0xFF6E5CA4),
-                borderColor: const Color(0xFFE9E5FE),
-                onTap: controller.toggleSpeaker,
-              ),
-              SizedBox(width: 4.w),
             ],
-          ),
+
+            ControlItem(
+              icon: Icons.call_end_rounded,
+              label: "End call",
+              bgColor: const Color(0xFFFF3B30),
+              iconColor: Colors.white,
+              size: 54,
+              iconSize: 26,
+              onTap: controller.endCall,
+            ),
+            SizedBox(width: 8.w),
+            ControlItem(
+              icon: isAudioOn ? Icons.mic_rounded : Icons.mic_off_rounded,
+              label: isAudioOn ? "Mute" : "Unmute",
+              bgColor: Colors.white,
+              iconColor: const Color(0xFF6E5CA4),
+              borderColor: const Color(0xFFE9E5FE),
+              onTap: controller.toggleMic,
+            ),
+            SizedBox(width: 8.w),
+            ControlItem(
+              icon: isSpeakerOn
+                  ? Icons.volume_up_rounded
+                  : Icons.volume_off_rounded,
+              label: "Speaker",
+              bgColor: Colors.white,
+              iconColor: const Color(0xFF6E5CA4),
+              borderColor: const Color(0xFFE9E5FE),
+              onTap: controller.toggleSpeaker,
+            ),
+            SizedBox(width: 4.w),
+          ],
         );
       }),
     );

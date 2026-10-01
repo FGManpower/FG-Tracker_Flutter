@@ -8,6 +8,8 @@ import 'package:fgtracker/app/Model/live_location_model.dart';
 import 'package:get/get.dart';
 import 'package:socket_io_client/socket_io_client.dart';
 
+import '../GroupCountService.dart';
+
 class SocketDashboardService extends GetxService {
   static SocketDashboardService get instance =>
       Get.put(SocketDashboardService());
@@ -60,12 +62,13 @@ class SocketDashboardService extends GetxService {
 
     _socket!.on('group_dashboard_counts', (data) {
       log('[DashboardSocket] group_dashboard_counts received: $data');
-      if (!_groupCountController.isClosed) {
-        dynamic payload = data;
-        if (data is Map && data.containsKey('data') && data['data'] != null) {
-          payload = data['data'];
-        }
-        _groupCountController.add(payload);
+      dynamic payload = data;
+      if (data is Map && data.containsKey('data') && data['data'] != null) {
+        payload = data['data'];
+      }
+
+      if (Get.isRegistered<GroupCountService>()) {
+        GroupCountService.instance.updateFromSocket(payload);
       }
     });
     _socket?.onAny((event, dynamic data) {

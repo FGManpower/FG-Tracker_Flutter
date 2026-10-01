@@ -9,6 +9,7 @@ import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Data/Repositories/Auth_repo.dart';
 import 'package:fgtracker/app/Data/Services/NotificationServices.dart';
+import 'package:fgtracker/app/Data/Services/Socket/Socket_Dashboard_Service.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Group_Calling.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Walkie-Talkie-Service.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
@@ -163,7 +164,7 @@ class OtpController extends GetxController {
         'Voip_Device': voipDeviceId.value ?? "",
         'Platform': Platform.isAndroid ? "android" : "ios",
       };
-      print("==================VeriefyParam==========$param");
+
       var result = await AuthRepo.VeriefyOtp(param);
       if (result.status == true) {
         Loading().dismissloading();
@@ -183,6 +184,8 @@ class OtpController extends GetxController {
 
             Socket_GroupCallService.instance
                 .init(result.data!.userId.toString());
+
+            SocketDashboardService().init();
           }
         } catch (e) {
           log("login_SocketException====$e");
