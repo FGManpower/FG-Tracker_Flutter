@@ -212,10 +212,14 @@ class TeamPlanDetails {
   String? planName;
   String? planType;
   String? billingInterval;
+  String? status;
   int? purchasedSeats;
   int? assignedSeats;
   int? availableSeats;
+  bool? hasStarted;
+  bool? canManageMembers;
   bool? canAssignMember;
+  int? ownerUserId;
   String? purchasedAt;
   String? startsAt;
   String? expiresAt;
@@ -226,10 +230,14 @@ class TeamPlanDetails {
     this.planName,
     this.planType,
     this.billingInterval,
+    this.status,
     this.purchasedSeats,
     this.assignedSeats,
     this.availableSeats,
+    this.hasStarted,
+    this.canManageMembers,
     this.canAssignMember,
+    this.ownerUserId,
     this.purchasedAt,
     this.startsAt,
     this.expiresAt,
@@ -241,14 +249,20 @@ class TeamPlanDetails {
     planName = json['planName']?.toString() ?? json['name']?.toString();
     planType = json['planType']?.toString();
     billingInterval = json['billingInterval']?.toString();
+    status = json['status']?.toString();
     purchasedSeats = _toInt(json['purchasedSeats'] ??
         json['seats'] ??
         json['memberCount'] ??
         json['seatsCount']);
     assignedSeats = _toInt(json['assignedSeats']);
     availableSeats = _toInt(json['availableSeats']);
-    canAssignMember = json['canAssignMember'] == true ||
+    hasStarted = _toBool(json['hasStarted']) ??
+        (json['startsAt'] != null && json['startsAt'].toString().isNotEmpty);
+    canManageMembers = _toBool(json['canManageMembers']);
+    canAssignMember = _toBool(json['canAssignMember']) ??
+        (availableSeats != null && availableSeats! > 0) ||
         (purchasedSeats != null && purchasedSeats! > 1);
+    ownerUserId = _toInt(json['ownerUserId']);
     purchasedAt =
         json['purchasedAt']?.toString() ?? json['purchased_at']?.toString();
     startsAt = json['startsAt']?.toString();
@@ -262,10 +276,14 @@ class TeamPlanDetails {
       'planName': planName,
       'planType': planType,
       'billingInterval': billingInterval,
+      'status': status,
       'purchasedSeats': purchasedSeats,
       'assignedSeats': assignedSeats,
       'availableSeats': availableSeats,
+      'hasStarted': hasStarted,
+      'canManageMembers': canManageMembers,
       'canAssignMember': canAssignMember,
+      'ownerUserId': ownerUserId,
       'purchasedAt': purchasedAt,
       'startsAt': startsAt,
       'expiresAt': expiresAt,
@@ -277,6 +295,20 @@ class TeamPlanDetails {
     if (value is int) return value;
     if (value is num) return value.toInt();
     return int.tryParse(value.toString());
+  }
+
+  static bool? _toBool(dynamic value) {
+    if (value == null) return null;
+    if (value is bool) return value;
+    if (value == 1 || value == '1' || value.toString().toLowerCase() == 'true') {
+      return true;
+    }
+    if (value == 0 ||
+        value == '0' ||
+        value.toString().toLowerCase() == 'false') {
+      return false;
+    }
+    return null;
   }
 }
 
@@ -773,14 +805,234 @@ class SubscriptionMetaData {
   }
 }
 
+class SubscriptionManagement {
+  bool? hasTeamPlan;
+  bool? canManageMembers;
+  bool? canAssignMember;
+  String? reason;
+  String? message;
+
+  SubscriptionManagement({
+    this.hasTeamPlan,
+    this.canManageMembers,
+    this.canAssignMember,
+    this.reason,
+    this.message,
+  });
+
+  SubscriptionManagement.fromJson(Map<String, dynamic> json) {
+    hasTeamPlan = _toBool(json['hasTeamPlan']);
+    canManageMembers = _toBool(json['canManageMembers']);
+    canAssignMember = _toBool(json['canAssignMember']);
+    reason = json['reason']?.toString();
+    message = json['message']?.toString();
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'hasTeamPlan': hasTeamPlan,
+      'canManageMembers': canManageMembers,
+      'canAssignMember': canAssignMember,
+      'reason': reason,
+      'message': message,
+    };
+  }
+
+  static bool? _toBool(dynamic value) {
+    if (value == null) return null;
+    if (value is bool) return value;
+    if (value == 1 || value == '1' || value.toString().toLowerCase() == 'true') {
+      return true;
+    }
+    if (value == 0 ||
+        value == '0' ||
+        value.toString().toLowerCase() == 'false') {
+      return false;
+    }
+    return null;
+  }
+}
+
+class MemberAccess {
+  bool? hasActiveAccess;
+  String? accessType;
+
+  MemberAccess({this.hasActiveAccess, this.accessType});
+
+  MemberAccess.fromJson(Map<String, dynamic> json) {
+    hasActiveAccess = _toBool(json['hasActiveAccess'] ?? json['hasAccess']);
+    accessType = json['accessType']?.toString();
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'hasActiveAccess': hasActiveAccess,
+      'accessType': accessType,
+    };
+  }
+
+  static bool? _toBool(dynamic value) {
+    if (value == null) return null;
+    if (value is bool) return value;
+    if (value == 1 || value == '1' || value.toString().toLowerCase() == 'true') {
+      return true;
+    }
+    if (value == 0 ||
+        value == '0' ||
+        value.toString().toLowerCase() == 'false') {
+      return false;
+    }
+    return null;
+  }
+}
+
+class MemberManagement {
+  bool? isManagedByCurrentUser;
+  bool? canAssign;
+  bool? canRemove;
+  bool? canReplace;
+  String? reason;
+
+  MemberManagement({
+    this.isManagedByCurrentUser,
+    this.canAssign,
+    this.canRemove,
+    this.canReplace,
+    this.reason,
+  });
+
+  MemberManagement.fromJson(Map<String, dynamic> json) {
+    isManagedByCurrentUser = _toBool(json['isManagedByCurrentUser']);
+    canAssign = _toBool(json['canAssign']);
+    canRemove = _toBool(json['canRemove']);
+    canReplace = _toBool(json['canReplace']);
+    reason = json['reason']?.toString();
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'isManagedByCurrentUser': isManagedByCurrentUser,
+      'canAssign': canAssign,
+      'canRemove': canRemove,
+      'canReplace': canReplace,
+      'reason': reason,
+    };
+  }
+
+  static bool? _toBool(dynamic value) {
+    if (value == null) return null;
+    if (value is bool) return value;
+    if (value == 1 || value == '1' || value.toString().toLowerCase() == 'true') {
+      return true;
+    }
+    if (value == 0 ||
+        value == '0' ||
+        value.toString().toLowerCase() == 'false') {
+      return false;
+    }
+    return null;
+  }
+}
+
+class TeamAssignmentDetails {
+  int? subscriptionMemberId;
+  int? subscriptionId;
+  String? planName;
+  String? status;
+  int? ownerUserId;
+  int? assignedBy;
+  bool? isOwnedByCurrentUser;
+  String? assignedAt;
+  String? startsAt;
+  String? expiresAt;
+
+  TeamAssignmentDetails({
+    this.subscriptionMemberId,
+    this.subscriptionId,
+    this.planName,
+    this.status,
+    this.ownerUserId,
+    this.assignedBy,
+    this.isOwnedByCurrentUser,
+    this.assignedAt,
+    this.startsAt,
+    this.expiresAt,
+  });
+
+  TeamAssignmentDetails.fromJson(Map<String, dynamic> json) {
+    subscriptionMemberId = _toInt(json['subscriptionMemberId'] ?? json['id']);
+    subscriptionId = _toInt(json['subscriptionId']);
+    planName = json['planName']?.toString();
+    status = json['status']?.toString();
+    ownerUserId = _toInt(json['ownerUserId']);
+    assignedBy = _toInt(json['assignedBy']);
+    isOwnedByCurrentUser = _toBool(json['isOwnedByCurrentUser']);
+    assignedAt = json['assignedAt']?.toString();
+    startsAt = json['startsAt']?.toString();
+    expiresAt = json['expiresAt']?.toString();
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'subscriptionMemberId': subscriptionMemberId,
+      'subscriptionId': subscriptionId,
+      'planName': planName,
+      'status': status,
+      'ownerUserId': ownerUserId,
+      'assignedBy': assignedBy,
+      'isOwnedByCurrentUser': isOwnedByCurrentUser,
+      'assignedAt': assignedAt,
+      'startsAt': startsAt,
+      'expiresAt': expiresAt,
+    };
+  }
+
+  static int? _toInt(dynamic value) {
+    if (value == null) return null;
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    return int.tryParse(value.toString());
+  }
+
+  static bool? _toBool(dynamic value) {
+    if (value == null) return null;
+    if (value is bool) return value;
+    if (value == 1 || value == '1' || value.toString().toLowerCase() == 'true') {
+      return true;
+    }
+    if (value == 0 ||
+        value == '0' ||
+        value.toString().toLowerCase() == 'false') {
+      return false;
+    }
+    return null;
+  }
+}
+
 class SubscriptionGroupData {
+  SubscriptionManagement? management;
+  TeamPlanDetails? teamPlan;
   SubscriptionMetaData? metaData;
   List<GroupMemberData>? subscribed;
   List<GroupMemberData>? expired;
 
-  SubscriptionGroupData({this.metaData, this.subscribed, this.expired});
+  SubscriptionGroupData({
+    this.management,
+    this.teamPlan,
+    this.metaData,
+    this.subscribed,
+    this.expired,
+  });
 
   SubscriptionGroupData.fromJson(Map<String, dynamic> json) {
+    if (json['management'] is Map) {
+      management = SubscriptionManagement.fromJson(
+          Map<String, dynamic>.from(json['management']));
+    }
+    if (json['teamPlan'] is Map) {
+      teamPlan = TeamPlanDetails.fromJson(
+          Map<String, dynamic>.from(json['teamPlan']));
+    }
     if (json['metaData'] is Map) {
       metaData = SubscriptionMetaData.fromJson(
           Map<String, dynamic>.from(json['metaData']));
@@ -804,6 +1056,12 @@ class SubscriptionGroupData {
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
+    if (management != null) {
+      data['management'] = management!.toJson();
+    }
+    if (teamPlan != null) {
+      data['teamPlan'] = teamPlan!.toJson();
+    }
     if (metaData != null) {
       data['metaData'] = metaData!.toJson();
     }
@@ -1043,6 +1301,11 @@ class GroupMemberData {
   List<GroupList>? groupList;
 
   // New Subscription/Assignment Fields from API
+  MemberAccess? access;
+  IndividualPlanDetails? individualSubscription;
+  TeamAssignmentDetails? teamAssignment;
+  MemberManagement? management;
+
   bool? isSubscribedByAdmin;
   String? adminSubscriptionStatus;
   String? adminAccessType;
@@ -1071,6 +1334,10 @@ class GroupMemberData {
     this.subscriptionStatus,
     this.subscription,
     this.groupList,
+    this.access,
+    this.individualSubscription,
+    this.teamAssignment,
+    this.management,
     this.isSubscribedByAdmin,
     this.adminSubscriptionStatus,
     this.adminAccessType,
@@ -1146,9 +1413,30 @@ class GroupMemberData {
           .toList();
     }
 
-    isSubscribedByAdmin = _toBool(json['isSubscribedByAdmin']);
-    adminSubscriptionStatus = json['adminSubscriptionStatus']?.toString();
-    adminAccessType = json['adminAccessType']?.toString();
+    if (json['access'] != null && json['access'] is Map) {
+      access = MemberAccess.fromJson(Map<String, dynamic>.from(json['access']));
+    }
+    if (json['individualSubscription'] != null &&
+        json['individualSubscription'] is Map) {
+      individualSubscription = IndividualPlanDetails.fromJson(
+          Map<String, dynamic>.from(json['individualSubscription']));
+    }
+    if (json['teamAssignment'] != null && json['teamAssignment'] is Map) {
+      teamAssignment = TeamAssignmentDetails.fromJson(
+          Map<String, dynamic>.from(json['teamAssignment']));
+    }
+    if (json['management'] != null && json['management'] is Map) {
+      management = MemberManagement.fromJson(
+          Map<String, dynamic>.from(json['management']));
+    }
+
+    isSubscribedByAdmin = _toBool(json['isSubscribedByAdmin']) ??
+        management?.isManagedByCurrentUser ??
+        (teamAssignment != null && teamAssignment?.isOwnedByCurrentUser == true);
+    adminSubscriptionStatus = json['adminSubscriptionStatus']?.toString() ??
+        teamAssignment?.status;
+    adminAccessType = json['adminAccessType']?.toString() ??
+        access?.accessType;
     if (json['adminSubscription'] != null &&
         json['adminSubscription'] is Map) {
       adminSubscription = AdminSubscription.fromJson(
@@ -1158,9 +1446,12 @@ class GroupMemberData {
       existingAccess = ExistingAccess.fromJson(
           Map<String, dynamic>.from(json['existingAccess']));
     }
-    canAssignTeamSeat = _toBool(json['canAssignTeamSeat']);
-    canRemoveTeam = _toBool(json['canRemoveTeam']);
-    canRemove = _toBool(json['canRemove'] ?? json['canRemoveTeam']);
+    canAssignTeamSeat = _toBool(json['canAssignTeamSeat']) ??
+        management?.canAssign;
+    canRemoveTeam = _toBool(json['canRemoveTeam']) ??
+        management?.canRemove;
+    canRemove = _toBool(json['canRemove'] ?? json['canRemoveTeam']) ??
+        management?.canRemove;
   }
 
   Map<String, dynamic> toJson() {
@@ -1188,6 +1479,18 @@ class GroupMemberData {
     }
     if (groupList != null) {
       data['groupList'] = groupList!.map((v) => v.toJson()).toList();
+    }
+    if (access != null) {
+      data['access'] = access!.toJson();
+    }
+    if (individualSubscription != null) {
+      data['individualSubscription'] = individualSubscription!.toJson();
+    }
+    if (teamAssignment != null) {
+      data['teamAssignment'] = teamAssignment!.toJson();
+    }
+    if (management != null) {
+      data['management'] = management!.toJson();
     }
     if (isSubscribedByAdmin != null) {
       data['isSubscribedByAdmin'] = isSubscribedByAdmin;

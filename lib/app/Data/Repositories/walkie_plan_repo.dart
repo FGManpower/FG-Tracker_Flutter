@@ -18,10 +18,18 @@ class WalkiePlanRepo {
     int? targetUserId,
     List<int>? replaceUserIds,
     int? replaceUserId,
+    int? removeUserId,
+    int? oldUserId,
+    int? newUserId,
+    String? action,
   }) async {
     final Map<String, dynamic> body = {
       'subscriptionId': subscriptionId,
     };
+
+    if (action != null && action.isNotEmpty) {
+      body['action'] = action;
+    }
 
     if (targetUserIds != null && targetUserIds.isNotEmpty) {
       body['targetUserIds'] = targetUserIds;
@@ -33,6 +41,18 @@ class WalkiePlanRepo {
       body['replaceUserIds'] = replaceUserIds;
     } else if (replaceUserId != null) {
       body['replaceUserId'] = replaceUserId;
+    }
+
+    if (removeUserId != null) {
+      body['removeUserId'] = removeUserId;
+    }
+
+    if (oldUserId != null) {
+      body['oldUserId'] = oldUserId;
+    }
+
+    if (newUserId != null) {
+      body['newUserId'] = newUserId;
     }
 
     debugPrint(
