@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/theme/appTheme.dart';
 import 'package:fgtracker/app/Core/values/utility.dart';
+import 'package:fgtracker/app/global_widget/crown_icon.dart';
 import 'package:fgtracker/app/modules/Notification/Controller/Notification_Controller.dart';
 import 'package:fgtracker/app/modules/Track/Controller/GroupTrackController.dart';
 import 'package:fgtracker/app/modules/home/Controller/home_controller.dart';
@@ -10,6 +11,7 @@ import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
 import '../modules/home/Views/LiveStatus/components/ghost_member.dart';
@@ -55,9 +57,9 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
       scrolledUnderElevation: 0,
       shadowColor: Colors.transparent,
       surfaceTintColor: Colors.transparent,
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFF4F6FC),
       automaticallyImplyLeading: false,
-      titleSpacing: 14.w,
+      titleSpacing: 16.w,
       title: Row(
         children: [
           Obx(() {
@@ -73,8 +75,8 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
                 }
               },
               child: SizedBox(
-                width: 48.w,
-                height: 48.w,
+                width: 44.w,
+                height: 44.w,
                 child: Stack(
                   children: [
                     ClipOval(
@@ -82,19 +84,19 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
                         imageUrl: hasImage
                             ? '${ConstRes.aImageBaseUrl}$profileImage'
                             : MyAppTheme.ProfilenotFoundImg,
-                        width: 48.w,
-                        height: 48.w,
+                        width: 44.w,
+                        height: 44.w,
                         fit: BoxFit.cover,
                       ),
                     ),
                     Positioned(
-                      right: 0,
-                      bottom: 0,
+                      right: 1.w,
+                      bottom: 1.h,
                       child: Container(
-                        width: 14.w,
-                        height: 14.w,
+                        width: 12.w,
+                        height: 12.w,
                         decoration: BoxDecoration(
-                          color: _Palette.green,
+                          color: const Color(0xFF10B981),
                           shape: BoxShape.circle,
                           border: Border.all(
                             color: Colors.white,
@@ -115,12 +117,40 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
         ],
       ),
       actions: [
+        GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () {
+            Get.toNamed(Routes.walkieTalkieTrialDetails);
+          },
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CrownIcon(
+                width: 21.w,
+                height: 15.5.h,
+                color: const Color(0xFF5338EE),
+              ),
+              SizedBox(height: 2.h),
+              Text(
+                'Premium',
+                style: TextStyle(
+                  fontFamily: FontFamily.interBold,
+                  fontSize: 10.sp,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF5338EE),
+                  height: 1.1,
+                ),
+              ),
+            ],
+          ),
+        ),
+        SizedBox(width: 10.w),
         _LocationStatus(trackingController: trackingController),
-        SizedBox(width: 14.w),
+        SizedBox(width: 8.w),
         _NotificationBell(
           notificationController: notificationController,
         ),
-        SizedBox(width: 15.w),
+        SizedBox(width: 16.w),
       ],
     );
   }
@@ -134,23 +164,35 @@ class _WelcomeTitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      final String name = controller.userData.value.name ?? '';
+      final String rawName = controller.userData.value.name?.trim() ?? '';
+      final String name = rawName.isNotEmpty ? rawName : 'User';
 
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(
-            name,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              fontFamily: FontFamily.interSemiBold,
-              fontSize: 16.sp,
-              fontWeight: FontWeight.w600,
-              color: _Palette.ink,
-              height: 1.2,
-            ),
+          Row(
+            children: [
+              Flexible(
+                child: Text(
+                  'Welcome Back, $name!',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontFamily: FontFamily.interBold,
+                    fontSize: 14.5.sp,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF10153D),
+                    height: 1.2,
+                  ),
+                ),
+              ),
+              SizedBox(width: 3.w),
+              Text(
+                '👋',
+                style: TextStyle(fontSize: 13.sp),
+              ),
+            ],
           ),
           SizedBox(height: 2.h),
           Text(
@@ -161,7 +203,7 @@ class _WelcomeTitle extends StatelessWidget {
               fontFamily: FontFamily.interRegular,
               fontSize: 10.sp,
               fontWeight: FontWeight.w400,
-              color: _Palette.muted,
+              color: const Color(0xFF6B7280),
               height: 1.2,
             ),
           ),
@@ -185,16 +227,20 @@ class _LocationStatus extends StatelessWidget {
           trackingController.isLocationSharing.value;
 
       final Color dotColor = isSharing
-          ? const Color(0xFF16A765)
+          ? _Palette.green
           : const Color(0xFFE53935);
 
       final Color backgroundColor = isSharing
-          ? const Color(0xFFEAF8EF)
+          ? _Palette.pillLive
           : const Color(0xFFFFEEEE);
 
       final Color borderColor = isSharing
-          ? const Color(0xFFD5EFDE)
+          ? _Palette.pillBorderLive
           : const Color(0xFFF5D0D0);
+
+      final Color textColor = isSharing
+          ? _Palette.textLive
+          : const Color(0xFFD32F2F);
 
       return GestureDetector(
         behavior: HitTestBehavior.opaque,
@@ -202,11 +248,11 @@ class _LocationStatus extends StatelessWidget {
           Get.to(() => const GhostMember());
         },
         child: Container(
-          height: 31.h,
+          height: 32.h,
           padding: EdgeInsets.symmetric(horizontal: 11.w),
           decoration: BoxDecoration(
             color: backgroundColor,
-            borderRadius: BorderRadius.circular(18.r),
+            borderRadius: BorderRadius.circular(20.r),
             border: Border.all(
               color: borderColor,
               width: 1,
@@ -223,16 +269,14 @@ class _LocationStatus extends StatelessWidget {
                   shape: BoxShape.circle,
                 ),
               ),
-
-              SizedBox(width: 7.w),
-
+              SizedBox(width: 6.w),
               Text(
                 isSharing ? 'Live' : 'Private',
                 style: TextStyle(
                   fontFamily: FontFamily.interSemiBold,
-                  fontSize: 12.sp,
+                  fontSize: 11.5.sp,
                   fontWeight: FontWeight.w600,
-                  color: Colors.black,
+                  color: textColor,
                   height: 1,
                 ),
               ),
