@@ -227,8 +227,20 @@ class _LocationStatus extends StatelessWidget {
           trackingController.isLocationSharing.value;
 
       final Color dotColor = isSharing
-          ? const Color(0xFF5338EE)
-          : const Color(0xFF9CA3AF);
+          ? _Palette.green
+          : const Color(0xFFE53935);
+
+      final Color backgroundColor = isSharing
+          ? _Palette.pillLive
+          : const Color(0xFFFFEEEE);
+
+      final Color borderColor = isSharing
+          ? _Palette.pillBorderLive
+          : const Color(0xFFF5D0D0);
+
+      final Color textColor = isSharing
+          ? _Palette.textLive
+          : const Color(0xFFD32F2F);
 
       return GestureDetector(
         behavior: HitTestBehavior.opaque,
@@ -237,28 +249,21 @@ class _LocationStatus extends StatelessWidget {
         },
         child: Container(
           height: 32.h,
-          padding: EdgeInsets.symmetric(horizontal: 10.w),
+          padding: EdgeInsets.symmetric(horizontal: 11.w),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: backgroundColor,
             borderRadius: BorderRadius.circular(20.r),
             border: Border.all(
-              color: const Color(0xFFE5E7EB),
+              color: borderColor,
               width: 1,
             ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.03),
-                blurRadius: 4,
-                offset: const Offset(0, 1),
-              ),
-            ],
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                width: 7.w,
-                height: 7.w,
+                width: 8.w,
+                height: 8.w,
                 decoration: BoxDecoration(
                   color: dotColor,
                   shape: BoxShape.circle,
@@ -271,7 +276,7 @@ class _LocationStatus extends StatelessWidget {
                   fontFamily: FontFamily.interSemiBold,
                   fontSize: 11.5.sp,
                   fontWeight: FontWeight.w600,
-                  color: const Color(0xFF4B5563),
+                  color: textColor,
                   height: 1,
                 ),
               ),
