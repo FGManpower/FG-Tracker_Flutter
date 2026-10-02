@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
+import '../views/StatusViewScreen.dart';
 
 class AddStatusController extends GetxController with WidgetsBindingObserver {
   CameraController? cameraController;
@@ -31,7 +32,6 @@ class AddStatusController extends GetxController with WidgetsBindingObserver {
     const Color(0xFF0EA5E9),
   ];
   var selectedBgIndex = 0.obs;
-
   var whoCanSee = "My Team".obs;
 
   var recordDuration = Duration.zero.obs;
@@ -290,7 +290,19 @@ class AddStatusController extends GetxController with WidgetsBindingObserver {
       backgroundColor: const Color(0xFF6B4DFF),
       colorText: Colors.white,
     );
+
     Get.back();
+
+    Get.to(() => const StatusViewScreen(
+      isOwnStatus: true,
+      userName: "My Status",
+      timeText: "Just now",
+      caption: "New Day\nStronger Team 💪",
+      location: "Hyderabad",
+      viewsCount: 0,
+      totalStatuses: 1,
+      currentIndex: 0,
+    ));
   }
 
   String formatDuration(Duration d) {

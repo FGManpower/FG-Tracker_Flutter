@@ -13,6 +13,7 @@ import '../../../routes/app_pages.dart';
 import '../../Safe_Zone/views/safe_zone_view.dart';
 import '../../Safe_Zone/views/safety_dashboard_view.dart';
 import '../../Track/Views/Tracking_screen.dart';
+import '../../status/views/StatusViewScreen.dart';
 import '../../status/views/add_status_screen.dart';
 import '../Controller/MessageController.dart';
 import '../Controller/chat_list_controller.dart';
@@ -1325,6 +1326,29 @@ class _StatusSectionState extends State<_StatusSection> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       _popupTile(
+                        icon: Icons.visibility_outlined,
+                        title: "View My Status",
+                        onTap: () {
+                          _removePopup();
+                          Get.to(() => const StatusViewScreen(
+                            isOwnStatus: true,
+                            userName: "My Status",
+                            timeText: "Today, 9:30 AM",
+                            caption: "New Day\nStronger Team 💪",
+                            location: "Hyderabad",
+                            viewsCount: 24,
+                            totalStatuses: 5,
+                            currentIndex: 0,
+                          ));
+                        },
+                      ),
+                      Divider(
+                        height: 1,
+                        color: Colors.grey.withValues(alpha: 0.15),
+                        indent: 12.w,
+                        endIndent: 12.w,
+                      ),
+                      _popupTile(
                         icon: Icons.add_circle_outline_rounded,
                         title: "Add to My Status",
                         onTap: () {
@@ -1355,7 +1379,8 @@ class _StatusSectionState extends State<_StatusSection> {
                   ),
                 ),
               ),
-            ),          ],
+            ),
+          ],
         );
       },
     );
@@ -1433,6 +1458,17 @@ class _StatusSectionState extends State<_StatusSection> {
                     } else {
                       _showMyStatusPopup();
                     }
+                  } else {
+                    Get.to(() => StatusViewScreen(
+                      isOwnStatus: false,
+                      userName: item["name"],
+                      timeText: "Today, 9:30 AM",
+                      caption: "New Day\nStronger Team 💪",
+                      location: "Hyderabad",
+                      imageUrl: item["image"],
+                      totalStatuses: 3,
+                      currentIndex: 0,
+                    ));
                   }
                 },
               );
