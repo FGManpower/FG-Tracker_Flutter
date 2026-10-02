@@ -10,6 +10,7 @@ import 'package:fgtracker/app/Data/Services/Socket/Socket_Dashboard_Service.dart
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Group_Calling.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Walkie-Talkie-Service.dart';
 import 'package:fgtracker/app/Data/Services/screen_share_service.dart';
+import 'package:fgtracker/app/modules/status/binding/status_binding.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -233,6 +234,10 @@ Future<void> main() async {
     groupWalkieInitialize(userId);
     Socket_GroupCallService.instance.init(userId.toString());
     SocketDashboardService().init();
+
+
+    StatusBinding(
+    ).dependencies();
   }
   ScreenShareForegroundService.init();
   runApp(const MyApp());
