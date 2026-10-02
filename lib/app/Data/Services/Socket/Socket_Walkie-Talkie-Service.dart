@@ -433,6 +433,10 @@ class GroupWalkieService {
 
     socket?.on('walkie_speaker_active', (data) {
       if (_isDisposed || data == null) return;
+      final gId = data is Map ? data['groupId']?.toString() : null;
+      if (gId != null && _currentGroupId != null && gId != _currentGroupId) {
+        return;
+      }
       if (Get.isRegistered<GroupWalkieController>()) {
         Get.find<GroupWalkieController>().onSpeakerActive(
           speakerId: data['speakerId']?.toString() ?? '',
@@ -442,8 +446,23 @@ class GroupWalkieService {
       }
     });
 
-    socket?.on('walkie_speaker_stopped', (_) {
+    socket?.on('ptt_release', (data) {
       if (_isDisposed) return;
+      final gId = data is Map ? data['groupId']?.toString() : null;
+      if (gId != null && _currentGroupId != null && gId != _currentGroupId) {
+        return;
+      }
+      if (Get.isRegistered<GroupWalkieController>()) {
+        Get.find<GroupWalkieController>().onSpeakerStopped();
+      }
+    });
+
+    socket?.on('walkie_speaker_stopped', (data) {
+      if (_isDisposed) return;
+      final gId = data is Map ? data['groupId']?.toString() : null;
+      if (gId != null && _currentGroupId != null && gId != _currentGroupId) {
+        return;
+      }
       if (Get.isRegistered<GroupWalkieController>()) {
         Get.find<GroupWalkieController>().onSpeakerStopped();
       }

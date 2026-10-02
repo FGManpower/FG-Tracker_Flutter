@@ -49,32 +49,7 @@ class QuickActionsSection extends StatelessWidget {
               "Walkie Talkie",
               Icons.settings_cell,
               onTap: () {
-                final homeCtrl = Get.isRegistered<HomeController>()
-                    ? Get.find<HomeController>()
-                    : null;
-                final bool canUse = homeCtrl?.canUseWalkie ?? false;
-                if (canUse) {
-                  final groupCtrl = Get.isRegistered<GroupController>()
-                      ? Get.find<GroupController>()
-                      : null;
-                  final activeGroup = (groupCtrl?.groupData.isNotEmpty == true)
-                      ? groupCtrl!.groupData.first
-                      : null;
-                  Get.to(
-                    () => const GroupWalkieScreen(),
-                    arguments: activeGroup != null
-                        ? {
-                            'groupId': activeGroup.id?.toString() ?? '',
-                            'groupName':
-                                activeGroup.groupName ?? 'Walkie Group',
-                            'groupDesc': activeGroup.groupDesc ?? '',
-                            'groupCode': activeGroup.groupCode ?? '',
-                          }
-                        : null,
-                  );
-                } else {
-                  Get.toNamed(Routes.walkieTalkieTrialDetails);
-                }
+                Get.toNamed(Routes.walkieTalkieTrialDetails);
               },
             ),
             _QuickActionCard(
