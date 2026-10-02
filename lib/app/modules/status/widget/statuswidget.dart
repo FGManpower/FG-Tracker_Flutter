@@ -398,102 +398,226 @@ class StatusOwnFooter extends StatelessWidget {
     required this.onCloseViewers,
   });
 
+  Map<String, int> _reactionSummary() {
+    final map = <String, int>{};
+    for (final v in status.viewers) {
+      final emoji = v.reactionEmoji;
+      if (emoji != null && emoji.trim().isNotEmpty) {
+        map[emoji] = (map[emoji] ?? 0) + 1;
+      }
+    }
+    return map;
+  }
+
   void _showViewersBottomSheet() {
     onOpenViewers();
+
+    final reactions = _reactionSummary();
+
     Get.bottomSheet(
       Container(
-        constraints: BoxConstraints(maxHeight: 420.h),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+        constraints: BoxConstraints(
+          maxHeight: Get.height * 0.78,
+          minHeight: Get.height * 0.32,
         ),
-        padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 20.h),
+        decoration: BoxDecoration(
+          color: const Color(0xFF0B141A), // WhatsApp dark
+          borderRadius: BorderRadius.vertical(top: Radius.circular(16.r)),
+        ),
         child: SafeArea(
           top: false,
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Center(
-                child: Container(
-                  width: 40.w,
-                  height: 4.h,
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade300,
-                    borderRadius: BorderRadius.circular(10.r),
-                  ),
+              SizedBox(height: 10.h),
+
+              Container(
+                width: 40.w,
+                height: 4.h,
+                decoration: BoxDecoration(
+                  color: Colors.white24,
+                  borderRadius: BorderRadius.circular(10.r),
                 ),
               ),
               SizedBox(height: 14.h),
-              reausabletext(
-                'Viewed by ${status.viewsCount}',
-                fontsize: 15.sp,
-                fontfamily: FontFamily.interBold,
-                color: Colors.black87,
+
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16.w),
+                child: Row(
+                  children: [
+                    Icon(Icons.visibility_rounded,
+                        color: Colors.white70, size: 20.sp),
+                    SizedBox(width: 8.w),
+                    reausabletext(
+                      'Viewed by ${status.viewsCount}',
+                      fontsize: 15.sp,
+                      fontfamily: FontFamily.interBold,
+                      color: Colors.white,
+                    ),
+                  ],
+                ),
               ),
-              SizedBox(height: 12.h),
-              if (status.viewers.isEmpty)
-                Padding(
-                  padding: EdgeInsets.symmetric(vertical: 24.h),
-                  child: Center(
-                    child: reausabletext(
-                      'No views yet',
-                      fontsize: 13.sp,
-                      color: Colors.grey,
-                    ),
-                  ),
-                )
-              else
-                Flexible(
+
+              if (reactions.isNotEmpty) ...[
+                SizedBox(height: 14.h),
+                SizedBox(
+                  height: 38.h,
                   child: ListView.separated(
-                    shrinkWrap: true,
-                    itemCount: status.viewers.length,
-                    separatorBuilder: (_, __) => Divider(
-                      height: 1,
-                      color: Colors.grey.withValues(alpha: 0.15),
-                    ),
-                    itemBuilder: (_, index) {
-                      final viewer = status.viewers[index];
-                      return ListTile(
-                        contentPadding: EdgeInsets.zero,
-                        leading: CircleAvatar(
-                          radius: 20.r,
-                          backgroundColor: const Color(0xFFE9E7FF),
-                          backgroundImage: (viewer.profileImage != null &&
-                              viewer.profileImage!.isNotEmpty)
-                              ? NetworkImage(viewer.profileImage!)
-                              : null,
-                          child: (viewer.profileImage == null ||
-                              viewer.profileImage!.isEmpty)
-                              ? Icon(
-                            Icons.person,
-                            color: const Color(0xFF6B4DFF),
-                            size: 20.sp,
-                          )
-                              : null,
+                    scrollDirection: Axis.horizontal,
+                    padding: EdgeInsets.symmetric(horizontal: 16.w),
+                    itemCount: reactions.length,
+                    separatorBuilder: (_, __) => SizedBox(width: 8.w),
+                    itemBuilder: (_, i) {
+                      final emoji = reactions.keys.elementAt(i);
+                      final count = reactions[emoji]!;
+                      return Container(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 12.w, vertical: 6.h),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1F2C34),
+                          borderRadius: BorderRadius.circular(20.r),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.06),
+                          ),
                         ),
-                        title: reausabletext(
-                          viewer.name,
-                          fontsize: 13.sp,
-                          fontfamily: FontFamily.interMedium,
-                          color: Colors.black87,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(emoji, style: TextStyle(fontSize: 16.sp)),
+                            SizedBox(width: 6.w),
+                            reausabletext(
+                              '$count',
+                              fontsize: 13.sp,
+                              fontfamily: FontFamily.interMedium,
+                              color: Colors.white70,
+                            ),
+                          ],
                         ),
-                        trailing: (viewer.reactionEmoji != null &&
-                            viewer.reactionEmoji!.isNotEmpty)
-                            ? Text(
-                          viewer.reactionEmoji!,
-                          style: TextStyle(fontSize: 20.sp),
-                        )
-                            : null,
                       );
                     },
                   ),
                 ),
+              ],
+
+              SizedBox(height: 12.h),
+              Divider(
+                height: 1,
+                thickness: 0.5,
+                color: Colors.white.withValues(alpha: 0.08),
+              ),
+
+              // List
+              Flexible(
+                child: status.viewers.isEmpty
+                    ? _buildEmptyState()
+                    : _buildViewersList(),
+              ),
             ],
           ),
         ),
       ),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      barrierColor: Colors.black.withValues(alpha: 0.6),
+      enterBottomSheetDuration: const Duration(milliseconds: 220),
+      exitBottomSheetDuration: const Duration(milliseconds: 180),
     ).whenComplete(onCloseViewers);
+  }
+
+  Widget _buildEmptyState() {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 48.h),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.visibility_off_outlined,
+              color: Colors.white24, size: 48.sp),
+          SizedBox(height: 12.h),
+          reausabletext(
+            'No views yet',
+            fontsize: 13.sp,
+            fontfamily: FontFamily.interMedium,
+            color: Colors.white38,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildViewersList() {
+    return ListView.builder(
+      physics: const BouncingScrollPhysics(),
+      shrinkWrap: true,
+      padding: EdgeInsets.only(top: 6.h, bottom: 16.h),
+      itemCount: status.viewers.length,
+      itemBuilder: (_, index) {
+        final viewer = status.viewers[index];
+        final hasReaction = viewer.reactionEmoji != null &&
+            viewer.reactionEmoji!.trim().isNotEmpty;
+
+
+        final timeText = '';
+
+        return Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () {
+            },
+            splashColor: Colors.white.withValues(alpha: 0.05),
+            highlightColor: Colors.white.withValues(alpha: 0.03),
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 22.r,
+                    backgroundColor: const Color(0xFF1F2C34),
+                    backgroundImage: (viewer.profileImage != null &&
+                        viewer.profileImage!.isNotEmpty)
+                        ? NetworkImage(viewer.profileImage!)
+                        : null,
+                    child: (viewer.profileImage == null ||
+                        viewer.profileImage!.isEmpty)
+                        ? Icon(Icons.person_rounded,
+                        color: Colors.white54, size: 22.sp)
+                        : null,
+                  ),
+                  SizedBox(width: 14.w),
+
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        reausabletext(
+                          viewer.name,
+                          fontsize: 14.sp,
+                          fontfamily: FontFamily.interMedium,
+                          color: Colors.white,
+                        ),
+                        if (timeText.isNotEmpty) ...[
+                          SizedBox(height: 3.h),
+                          reausabletext(
+                            timeText,
+                            fontsize: 11.sp,
+                            color: Colors.white38,
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+
+                  if (hasReaction)
+                    Text(
+                      viewer.reactionEmoji!,
+                      style: TextStyle(fontSize: 22.sp),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -513,11 +637,8 @@ class StatusOwnFooter extends StatelessWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
-                    Icons.visibility_rounded,
-                    color: Colors.white,
-                    size: 16.sp,
-                  ),
+                  Icon(Icons.visibility_rounded,
+                      color: Colors.white, size: 16.sp),
                   SizedBox(width: 6.w),
                   reausabletext(
                     '${status.viewsCount} Views',
@@ -534,7 +655,6 @@ class StatusOwnFooter extends StatelessWidget {
     );
   }
 }
-
 class StatusOtherFooter extends StatelessWidget {
   final StatusViewController controller;
 

@@ -22,19 +22,18 @@ class GroupCallingScreen extends GetView<GroupCallingController> {
       },
       child: Scaffold(
         backgroundColor: const Color(0xFF0F0B29),
-
         body: GestureDetector(
           onTap: controller.toggleControls,
           behavior: HitTestBehavior.opaque,
           child: Stack(
             children: [
-
               Positioned.fill(
                 child: Obx(() {
                   final fullUserId = controller.fullScreenShareUserId.value;
 
                   if (fullUserId != null && fullUserId.isNotEmpty) {
-                    final participant = controller.activeParticipants.firstWhereOrNull(
+                    final participant =
+                    controller.activeParticipants.firstWhereOrNull(
                           (p) => p.userId.toString().trim() == fullUserId.trim(),
                     );
                     if (participant != null) {
@@ -53,11 +52,10 @@ class GroupCallingScreen extends GetView<GroupCallingController> {
                     screenSharingUserIds: controller.screenSharingUsers
                         .map((e) => e.toString().trim())
                         .toSet(),
+                    onSwitchCamera: controller.switchCamera,
                   );
                 }),
               ),
-
-
               Obx(() {
                 if (controller.fullScreenShareUserId.value != null) {
                   return const SizedBox.shrink();
@@ -95,8 +93,6 @@ class GroupCallingScreen extends GetView<GroupCallingController> {
                   ),
                 );
               }),
-
-
               Obx(() {
                 if (controller.fullScreenShareUserId.value != null) {
                   return const SizedBox.shrink();
@@ -216,25 +212,6 @@ class GroupCallingScreen extends GetView<GroupCallingController> {
                   onPressed: controller.openParticipantsSheet,
                 ),
               ),
-              if (controller.isVideo) ...[
-                SizedBox(height: 8.h),
-                GestureDetector(
-                  onTap: controller.switchCamera,
-                  child: Container(
-                    padding: EdgeInsets.all(6.r),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: const Color(0xFFE9E5FE)),
-                    ),
-                    child: Icon(
-                      Icons.cameraswitch_rounded,
-                      color: const Color(0xFF6E5CA4),
-                      size: 20.sp,
-                    ),
-                  ),
-                ),
-              ],
             ],
           ),
         ],

@@ -12,6 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../Core/constant/const_res.dart';
 import 'package:get/get.dart';
+import '../../../../routes/app_pages.dart';
 import '../../Controller/GroupChatController.dart';
 import '../ContactPickerPage.dart';
 import '../LocationPickerPage.dart';
@@ -272,7 +273,34 @@ class GroupChatScreen extends GetView<GroupMessageController> {
       ],
     );
   }
-
+  Future<void> _initiateGroupCall({
+    required bool isVideo,
+  }) async {
+    try {
+      Get.toNamed(
+        Routes.groupCallingScreen,
+        arguments: {
+          "groupId": controller.groupId.toString(),
+          "groupName": controller.groupName.isEmpty
+              ? "Unknown Group"
+              : controller.groupName,
+          "groupProfile": controller.groupImage,
+          "isVideo": isVideo,
+          "memberCount": controller.groupMembers.length,
+          "callType": "outgoing",
+        },
+      );
+    } catch (e) {
+      debugPrint("Error initiating group call: $e");
+      Get.snackbar(
+        "Error",
+        "Could not start group call. Please try again.",
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    }
+  }
   Widget _buildNormalAppBar(BuildContext context) {
     return AppBar(
       elevation: 0,
@@ -382,16 +410,16 @@ class GroupChatScreen extends GetView<GroupMessageController> {
             SizedBox(width: 4.w),
             _roundIconBtn(
               icon: Icons.call_rounded,
-              onTap: () {
-                // TODO: call
-              },
+              onTap: () => _initiateGroupCall(
+                isVideo: false,
+              ),
             ),
             SizedBox(width: 6.w),
             _roundIconBtn(
               icon: Icons.videocam_rounded,
-              onTap: () {
-                // TODO: video
-              },
+              onTap: () => _initiateGroupCall(
+                isVideo: true,
+              ),
             ),
             SizedBox(width: 2.w),
 
@@ -402,11 +430,11 @@ class GroupChatScreen extends GetView<GroupMessageController> {
                 highlightColor: Colors.transparent,
               ),
               child: PopupMenuButton<int>(
-                offset: const Offset(0, 50), // Position dropdown below the Appbar
-                color: const Color(0xFFF9F8FF), // Screenshot like soft background
+                offset: const Offset(0, 50),
+                color: const Color(0xFFF9F8FF),
                 elevation: 4,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16.r), // Rounded exactly like screenshot
+                  borderRadius: BorderRadius.circular(16.r),
                 ),
                 icon: Padding(
                   padding: EdgeInsets.symmetric(vertical: 8.h),
