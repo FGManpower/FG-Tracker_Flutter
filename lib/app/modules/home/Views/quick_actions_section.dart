@@ -20,7 +20,7 @@ class QuickActionsSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 10.h),
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 8.h),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12.r),
@@ -86,45 +86,47 @@ class QuickActionsSection extends StatelessWidget {
               ),
             ],
           ),
-          SizedBox(height: 8.h),
+          SizedBox(height: 6.h),
           GridView.count(
             crossAxisCount: 3,
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            mainAxisSpacing: 8.h,
+            mainAxisSpacing: 6.h,
             crossAxisSpacing: 8.w,
-            childAspectRatio: 0.94,
+            childAspectRatio: 0.98,
             children: [
               _QuickActionCard(
                 title: "Audio/Video Call",
-                imagePath: "assets/icons/action_audio_video_call.png",
+                imagePath: "assets/icons/new_action_call.png",
                 onTap: () => Get.to(() => CallScreen()),
               ),
               _QuickActionCard(
                 title: "Walkie Talkie",
-                imagePath: "assets/icons/action_walkie_talkie.png",
+                subtitle: "1 hr free",
+                imagePath: "assets/icons/new_action_walkie_talkie.png",
                 onTap: () {
                   Get.toNamed(Routes.walkieTalkieTrialDetails);
                 },
               ),
               _QuickActionCard(
                 title: "Tracking",
-                imagePath: "assets/icons/action_tracking.png",
+                imagePath: "assets/icons/new_action_tracking.png",
                 onTap: () => Get.to(() => TrackingScreen()),
               ),
               _QuickActionCard(
                 title: "Chatting",
-                imagePath: "assets/icons/action_chatting.png",
+                imagePath: "assets/icons/new_action_chat.png",
                 onTap: () => Get.to(() => ChatListScreen()),
               ),
               _QuickActionCard(
                 title: "Group Chat",
-                imagePath: "assets/icons/action_group_chat.png",
+                imagePath: "assets/icons/new_action_group_chat.png",
                 onTap: () => Get.to(() => const totalGroup()),
               ),
               _QuickActionCard(
                 title: "Safe Zone",
-                imagePath: "assets/icons/action_safe_zone.png",
+                subtitle: "2 people free",
+                imagePath: "assets/icons/new_action_safe_zone.png",
                 onTap: () => Get.to(() => SafetyDashboardView()),
               ),
             ],
@@ -139,28 +141,18 @@ class _QuickActionCard extends StatelessWidget {
   const _QuickActionCard({
     required this.title,
     required this.imagePath,
+    this.subtitle,
     this.onTap,
   });
 
   final String title;
   final String imagePath;
+  final String? subtitle;
   final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    final bool isBlackBgIcon = imagePath.contains('action_audio_video_call') ||
-        imagePath.contains('action_group_chat') ||
-        imagePath.contains('action_safe_zone');
-
-    double scale = 1.16;
-    if (imagePath.contains('action_walkie_talkie') ||
-        imagePath.contains('action_safe_zone') ||
-        imagePath.contains('action_tracking') ||
-        imagePath.contains('action_chatting')) {
-      scale = 1.28;
-    } else if (isBlackBgIcon) {
-      scale = 1.16;
-    }
+    final bool isCallIcon = imagePath.contains('new_action_call');
 
     return Material(
       color: Colors.transparent,
@@ -168,15 +160,15 @@ class _QuickActionCard extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(12.r),
         child: Container(
-          padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 5.h),
+          padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 3.h),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(12.r),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF2B1F70).withValues(alpha: 0.05),
-                blurRadius: 10,
-                offset: const Offset(0, 3),
+                color: const Color(0xFF2B1F70).withValues(alpha: 0.04),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
               ),
             ],
             border: Border.all(
@@ -190,47 +182,36 @@ class _QuickActionCard extends StatelessWidget {
             children: [
               Expanded(
                 child: Center(
-                  child: SizedBox(
-                    width: 68.w,
-                    height: 68.w,
-                    child: isBlackBgIcon
-                        ? ClipOval(
-                            clipBehavior: Clip.antiAlias,
-                            child: Transform.scale(
-                              scale: scale,
-                              child: Image.asset(
-                                imagePath,
-                                fit: BoxFit.cover,
-                                filterQuality: FilterQuality.high,
-                                errorBuilder: (context, error, stackTrace) {
-                                  return Icon(
-                                    Icons.apps_rounded,
-                                    color: const Color(0xFF6B4DFF),
-                                    size: 34.sp,
-                                  );
-                                },
-                              ),
-                            ),
-                          )
-                        : Transform.scale(
-                            scale: scale,
-                            child: Image.asset(
-                              imagePath,
-                              fit: BoxFit.contain,
-                              filterQuality: FilterQuality.high,
-                              errorBuilder: (context, error, stackTrace) {
-                                return Icon(
-                                  Icons.apps_rounded,
-                                  color: const Color(0xFF6B4DFF),
-                                  size: 34.sp,
-                                );
-                              },
-                            ),
-                          ),
+                  child: Container(
+                    width: 62.w,
+                    height: 62.w,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFF1F3FE),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Center(
+                      child: Transform.scale(
+                        scale: isCallIcon ? 1.2 : 1.12,
+                        child: Image.asset(
+                          imagePath,
+                          width: 54.w,
+                          height: 54.w,
+                          fit: BoxFit.contain,
+                          filterQuality: FilterQuality.high,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Icon(
+                              Icons.apps_rounded,
+                              color: const Color(0xFF6B4DFF),
+                              size: 32.sp,
+                            );
+                          },
+                        ),
+                      ),
+                    ),
                   ),
                 ),
               ),
-              SizedBox(height: 1.h),
+              SizedBox(height: 1.5.h),
               Text(
                 title,
                 maxLines: 1,
@@ -238,18 +219,34 @@ class _QuickActionCard extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontFamily: FontFamily.interSemiBold,
-                  fontSize: 10.5.sp,
+                  fontSize: 10.sp,
                   fontWeight: FontWeight.w600,
                   color: const Color(0xFF10153D),
                   height: 1.1,
                 ),
               ),
-              SizedBox(height: 3.h),
+              if (subtitle != null) ...[
+                SizedBox(height: 1.h),
+                Text(
+                  subtitle!,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontFamily: FontFamily.interSemiBold,
+                    fontSize: 8.5.sp,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF5338EE),
+                    height: 1.0,
+                  ),
+                ),
+              ],
+              SizedBox(height: 2.h),
               Container(
-                width: 16.w,
-                height: 2.5.h,
+                width: 14.w,
+                height: 2.2.h,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF6B4DFF),
+                  color: const Color(0xFF5338EE),
                   borderRadius: BorderRadius.circular(2.r),
                 ),
               ),
