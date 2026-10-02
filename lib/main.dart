@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:connectycube_flutter_call_kit/connectycube_flutter_call_kit.dart';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
+import 'package:fgtracker/app/Data/Repositories/call_repo.dart';
 import 'package:fgtracker/app/Data/Services/CallStateTracker.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Dashboard_Service.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Group_Calling.dart';
@@ -45,11 +46,6 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   if (message.data['screen_name'] == "incomingCall") {
     final callData = jsonDecode(message.data['callData']);
     final originalCallId = callData['callId'].toString();
-    socket?.emit("CallingStatus", {
-      "callId": originalCallId,
-      "remoteUserId": int.tryParse(callData['callerId'].toString()) ?? 0,
-      "callingStatus": "Ringing",
-    });
     if (Platform.isIOS) {
       // await RemoteLoggerTest.log("FCM_BG_HANDLER", "iOS detected in FCM background handler: ${message.data}");
       return;
@@ -81,16 +77,19 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     } catch (e) {
       log("showCallNotification error: $e");
     }
+    try {
+      await CallRepo.updateCallingStatus(
+          callId: originalCallId,
+          callingStatus: "Ringing",
+          remoteUserId: int.tryParse(callData['callerId'].toString()) ?? 0);
+    } catch (e) {
+      log(e.toString());
+    }
   }
 
   if (message.data['screen_name'] == "incomingGroupCall") {
     final callData = jsonDecode(message.data['callData']);
     final originalCallId = callData['callId'].toString();
-    socket?.emit("CallingStatus", {
-      "callId": originalCallId,
-      "remoteUserId": int.tryParse(callData['callerId'].toString()) ?? 0,
-      "callingStatus": "Ringing",
-    });
 
     if (Platform.isIOS) {
       // await RemoteLoggerTest.log("FCM_BG_HANDLER", "iOS detected in FCM background handler: ${message.data}");
@@ -112,6 +111,14 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
       );
     } catch (e) {
       log("showCallNotification error: $e");
+    }
+    try {
+      await CallRepo.updateCallingStatus(
+          callId: originalCallId,
+          callingStatus: "Ringing",
+          remoteUserId: int.tryParse(callData['callerId'].toString()) ?? 0);
+    } catch (e) {
+      log(e.toString());
     }
   } else if (message.data['screen_name'] == "missedCall") {
     final callData = jsonDecode(message.data['callData']);
@@ -235,9 +242,7 @@ Future<void> main() async {
     Socket_GroupCallService.instance.init(userId.toString());
     SocketDashboardService().init();
 
-
-    StatusBinding(
-    ).dependencies();
+    StatusBinding().dependencies();
   }
   ScreenShareForegroundService.init();
   runApp(const MyApp());

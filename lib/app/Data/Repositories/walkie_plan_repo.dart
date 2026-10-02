@@ -35,8 +35,7 @@ class WalkiePlanRepo {
       body['replaceUserId'] = replaceUserId;
     }
 
-    debugPrint(
-        "🚀 [WalkiePlanRepo.updateMemberSubscription] URL: ${Urls.walkieUpdateMemberSubscription} | Body: $body");
+    debugPrint("🚀 [WalkiePlanRepo.updateMemberSubscription] URL: ${Urls.walkieUpdateMemberSubscription} | Body: $body");
     var response = await HttpUtil().Authpost(
       Urls.walkieUpdateMemberSubscription,
       data: body,
