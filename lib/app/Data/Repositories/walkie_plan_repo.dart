@@ -18,10 +18,18 @@ class WalkiePlanRepo {
     int? targetUserId,
     List<int>? replaceUserIds,
     int? replaceUserId,
+    int? removeUserId,
+    int? oldUserId,
+    int? newUserId,
+    String? action,
   }) async {
     final Map<String, dynamic> body = {
       'subscriptionId': subscriptionId,
     };
+
+    if (action != null && action.isNotEmpty) {
+      body['action'] = action;
+    }
 
     if (targetUserIds != null && targetUserIds.isNotEmpty) {
       body['targetUserIds'] = targetUserIds;
@@ -35,7 +43,20 @@ class WalkiePlanRepo {
       body['replaceUserId'] = replaceUserId;
     }
 
-    debugPrint("🚀 [WalkiePlanRepo.updateMemberSubscription] URL: ${Urls.walkieUpdateMemberSubscription} | Body: $body");
+    if (removeUserId != null) {
+      body['removeUserId'] = removeUserId;
+    }
+
+    if (oldUserId != null) {
+      body['oldUserId'] = oldUserId;
+    }
+
+    if (newUserId != null) {
+      body['newUserId'] = newUserId;
+    }
+
+    debugPrint(
+        "🚀 [WalkiePlanRepo.updateMemberSubscription] URL: ${Urls.walkieUpdateMemberSubscription} | Body: $body");
     var response = await HttpUtil().Authpost(
       Urls.walkieUpdateMemberSubscription,
       data: body,

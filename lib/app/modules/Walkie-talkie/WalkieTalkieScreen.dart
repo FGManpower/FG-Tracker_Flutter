@@ -742,12 +742,12 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
     }
 
     return Obx(() {
+      final isConnected = controller.isConnected.value;
+      final isTalking = controller.isTalking;
+      final hasActiveSpeaker = controller.hasActiveSpeaker;
       final bool isEnded = _trialRemainingSeconds <= 0;
-      final bool isSocketConnected = GroupWalkieService.instance.socket?.connected == true;
       final bool isGroupJoined = GroupWalkieService.instance.currentGroupId != null;
-      final bool isConsuming = isSocketConnected &&
-          isGroupJoined &&
-          (controller.isTalking || controller.hasActiveSpeaker);
+      final bool isConsuming = isConnected && isGroupJoined && (isTalking || hasActiveSpeaker);
 
       return Container(
         padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
@@ -1935,6 +1935,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                     if (controller.isMuted.value) {
                       return _buildMutedListeningView(size: buttonSize);
                     }
+                    final dragOffset = controller.dragOffset.value.clamp(0.0, _lockThreshold);
                     return Listener(
                       behavior: HitTestBehavior.opaque,
                       onPointerDown: (PointerDownEvent event) {
@@ -1968,24 +1969,20 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                             _unlockAndStop();
                           }
                         },
-                        child: Obx(() {
-                          final dragOffset = controller.dragOffset.value
-                              .clamp(0.0, _lockThreshold);
-                          return Transform.translate(
-                            offset: Offset(0, -dragOffset),
-                            child: _buildPTTButton(size: buttonSize),
-                          );
-                        }),
+                        child: Transform.translate(
+                          offset: Offset(0, -dragOffset),
+                          child: _buildPTTButton(size: buttonSize),
+                        ),
                       ),
                     );
                   }),
-                  Obx(() {
-                    if (!controller.isSelfLocked.value) {
-                      return const SizedBox.shrink();
-                    }
-                    return Positioned(
-                      top: lockTargetTop + 10.0,
-                      child: GestureDetector(
+                  Positioned(
+                    top: lockTargetTop + 10.0,
+                    child: Obx(() {
+                      if (!controller.isSelfLocked.value) {
+                        return const SizedBox.shrink();
+                      }
+                      return GestureDetector(
                         onTap: _unlockAndStop,
                         child: Container(
                           padding: EdgeInsets.symmetric(
@@ -1997,7 +1994,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                             borderRadius: BorderRadius.circular(20.r),
                             boxShadow: [
                               BoxShadow(
-                                color: _primaryPurple.withOpacity(0.35),
+                                color: _primaryPurple.withValues(alpha: 0.35),
                                 blurRadius: 10,
                                 offset: const Offset(0, 4),
                               ),
@@ -2010,20 +2007,20 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                                   color: Colors.white,
                                   size: 13.sp.clamp(11.0, 15.0)),
                               SizedBox(width: 6.w.clamp(4.0, 8.0)),
-                              Obx(() => Text(
-                                    "Auto-unlock in ${controller.lockRemainingSeconds.value}s",
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 11.5.sp.clamp(10.5, 13.0),
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  )),
+                              Text(
+                                "Auto-unlock in ${controller.lockRemainingSeconds.value}s",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 11.5.sp.clamp(10.5, 13.0),
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
                             ],
                           ),
                         ),
-                      ),
-                    );
-                  }),
+                      );
+                    }),
+                  ),
                 ],
               ),
             ),

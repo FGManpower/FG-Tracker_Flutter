@@ -9,9 +9,7 @@ import 'package:fgtracker/app/Data/Repositories/walkie_plan_repo.dart';
 import 'package:fgtracker/app/Model/GroupRes.dart';
 import 'package:fgtracker/app/Model/MemberDataRes.dart';
 import 'package:fgtracker/app/Model/group_member_model.dart';
-import 'package:fgtracker/app/Data/Services/walkie_talkie_trial_service.dart';
-import 'package:fgtracker/app/Model/walkie_talkie_trial_details_model.dart';
-import 'package:fgtracker/app/Core/values/global.dart';
+import 'package:fgtracker/app/modules/Walkie-talkie/Controller/walkie_talkie_trial_controller.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Views/walkie_talkie_plan_details.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/WalkieTalkieScreen.dart';
@@ -21,7 +19,6 @@ import 'package:fgtracker/gen/assets.gen.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:skeletonizer/skeletonizer.dart';
@@ -35,10 +32,14 @@ class AssignedMemberItem {
   final bool isSubscribedByAdmin;
   final bool canRemoveTeam;
   final bool canAssignTeamSeat;
+  final bool canReplaceTeamSeat;
+  final String? reason;
   final String? existingAccessType;
   final bool hasExistingAccess;
   final bool isSelfPurchased;
   final bool isPurchasedByOtherAdmin;
+  final String? planName;
+  final String? expiresAt;
 
   AssignedMemberItem({
     required this.id,
@@ -48,10 +49,14 @@ class AssignedMemberItem {
     this.isSubscribedByAdmin = false,
     this.canRemoveTeam = true,
     this.canAssignTeamSeat = true,
+    this.canReplaceTeamSeat = true,
+    this.reason,
     this.existingAccessType,
     this.hasExistingAccess = false,
     this.isSelfPurchased = false,
     this.isPurchasedByOtherAdmin = false,
+    this.planName,
+    this.expiresAt,
   });
 }
 
@@ -76,6 +81,16 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
   final RxBool isIndividualPlan = false.obs;
   final RxBool hasNoPlan = false.obs;
   final RxString planTitleName = "".obs;
+
+  // Backend-driven Team Subscription State
+  final RxBool hasTeamPlan = false.obs;
+  final RxBool canManageMembers = false.obs;
+  final RxBool teamHasStarted = false.obs;
+  final RxString teamStartsAt = ''.obs;
+  final RxString teamExpiresAt = ''.obs;
+  final RxInt teamPurchasedSeats = 0.obs;
+  final RxInt teamAssignedSeats = 0.obs;
+  final RxInt teamAvailableSeats = 0.obs;
 
   // Pagination state for members
   final RxInt _currentMemberPage = 1.obs;
@@ -147,205 +162,95 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
               subRes.data?.subscriptionData?.subscribed ?? [];
           final List<GroupMemberData> expiredList =
               subRes.data?.subscriptionData?.expired ?? [];
-          final List<GroupMemberData> members =
-              subRes.data?.allMemberList ?? [...subscribedList, ...expiredList];
 
           if (!loadMore) {
-            WalkieCurrentSubscription? activeTeamSub;
-            WalkieCurrentSubscription? activeIndivSub;
-            try {
-              final overviewData =
-                  await WalkieTalkieTrialService().getOverview();
-              final myId = int.tryParse(
-                  Global.storageServices.get(PrefConst.userId)?.toString() ??
-                      '');
-              final allSubs =
-                  overviewData.subscription?.activeSubscriptions ?? [];
-              final ownedSubs = myId != null
-                  ? allSubs.where((s) => s.ownerUserId == myId).toList()
-                  : allSubs;
-              activeTeamSub = ownedSubs.firstWhereOrNull((s) =>
-                  s.isGroup ||
-                  s.purchasedSeats > 1 ||
-                  s.plan?.planType.toLowerCase() == 'group' ||
-                  s.plan?.planType.toLowerCase() == 'team');
-              if (activeTeamSub == null && allSubs.isNotEmpty) {
-                activeTeamSub = allSubs.firstWhereOrNull((s) =>
-                    s.isGroup ||
-                    s.purchasedSeats > 1 ||
-                    s.plan?.planType.toLowerCase() == 'group' ||
-                    s.plan?.planType.toLowerCase() == 'team');
-              }
-              activeIndivSub = ownedSubs.firstWhereOrNull((s) =>
-                  s.isIndividual ||
-                  s.plan?.planType.toLowerCase() == 'individual');
-            } catch (e) {
-              debugPrint("Overview fetch error in group select: $e");
-            }
+            final subData = subRes.data?.subscriptionData;
+            final mgmt = subData?.management;
+            final teamPlan = subData?.teamPlan;
 
             final user = subRes.user;
             final userSub = subRes.user?.subscription;
-            final subMeta = subRes.data?.subscriptionData?.metaData;
 
-            final bool hasTeamPlan = activeTeamSub != null ||
-                user?.accessType?.toLowerCase() == 'team' ||
-                userSub?.isTeamPlanActive == true ||
-                userSub?.teamPlan != null ||
-                (userSub?.teamPlans != null &&
-                    userSub!.teamPlans!.isNotEmpty) ||
-                (subMeta?.teamPlans != null &&
-                    subMeta!.teamPlans!.isNotEmpty) ||
-                (subMeta?.canAssignMember == true) ||
-                userSub?.planType?.toLowerCase() == 'group' ||
-                userSub?.planType?.toLowerCase() == 'team' ||
-                (userSub?.purchasedSeats != null &&
-                    userSub!.purchasedSeats! > 1) ||
-                (subMeta?.totalPurchasedSeats != null &&
-                    subMeta!.totalPurchasedSeats! > 1);
+            // 1. Backend Authoritative Team Management State
+            final bool bHasTeam = mgmt?.hasTeamPlan ??
+                (teamPlan != null && teamPlan.subscriptionId != null) ||
+                (userSub?.teamPlan != null || userSub?.isTeamPlanActive == true);
 
-            final bool isIndiv = !hasTeamPlan &&
-                (activeIndivSub != null ||
-                    user?.accessType?.toLowerCase() == 'individual' ||
+            final bool bCanManage = mgmt?.canManageMembers ??
+                teamPlan?.canManageMembers ??
+                bHasTeam;
+
+            final bool bCanAssign = mgmt?.canAssignMember ??
+                teamPlan?.canAssignMember ??
+                (bHasTeam && (teamPlan?.availableSeats ?? 1) > 0);
+
+            hasTeamPlan.value = bHasTeam;
+            canManageMembers.value = bCanManage;
+            canAssignMembers.value = bCanAssign;
+
+            // 2. Individual / No Plan flags
+            final bool isIndiv = !bHasTeam &&
+                (user?.accessType?.toLowerCase() == 'individual' ||
                     userSub?.isIndividualOnly == true ||
-                    userSub?.individual != null ||
-                    userSub?.planType?.toLowerCase() == 'individual' ||
-                    userSub?.purchasedSeats == 1);
-
-            final bool isSubscribed = activeTeamSub != null ||
-                activeIndivSub != null ||
-                user?.isSubscribed == true ||
-                user?.subscriptionStatus?.toLowerCase() == 'active' ||
-                userSub?.subscriptionId != null ||
-                userSub?.planId != null;
-
-            final bool isNoSub = !isSubscribed || (!hasTeamPlan && !isIndiv);
-            final bool allowAssign = hasTeamPlan &&
-                ((subMeta?.canAssignMember ?? userSub?.allowAssign) ?? true);
+                    userSub?.individual != null);
+            final bool isNoSub = !bHasTeam && !isIndiv;
 
             isIndividualPlan.value = isIndiv;
             hasNoPlan.value = isNoSub;
-            canAssignMembers.value = allowAssign;
 
-            if (activeTeamSub != null) {
-              planTitleName.value =
-                  activeTeamSub.plan?.name.isNotEmpty == true
-                      ? activeTeamSub.plan!.name
-                      : "Team Plan";
-              activeSubscriptionId.value = activeTeamSub.id;
-              maxAllowedSeats.value = activeTeamSub.purchasedSeats > 0
-                  ? activeTeamSub.purchasedSeats
+            // 3. Team Plan Dates & Seats
+            if (teamPlan != null) {
+              planTitleName.value = teamPlan.planName?.isNotEmpty == true
+                  ? teamPlan.planName!
+                  : "Team Plan";
+              activeSubscriptionId.value = teamPlan.subscriptionId;
+              teamHasStarted.value = teamPlan.hasStarted ??
+                  (teamPlan.startsAt != null && teamPlan.startsAt!.isNotEmpty);
+              teamStartsAt.value = teamPlan.startsAt ?? '';
+              teamExpiresAt.value = teamPlan.expiresAt ?? '';
+              teamPurchasedSeats.value = teamPlan.purchasedSeats ?? 1;
+              teamAssignedSeats.value =
+                  teamPlan.assignedSeats ?? subscribedList.length;
+              teamAvailableSeats.value = teamPlan.availableSeats ??
+                  (teamPurchasedSeats.value - teamAssignedSeats.value)
+                      .clamp(0, teamPurchasedSeats.value);
+              maxAllowedSeats.value = teamPurchasedSeats.value > 0
+                  ? teamPurchasedSeats.value
                   : 1;
-            } else if (isIndiv && activeIndivSub != null) {
-              planTitleName.value =
-                  activeIndivSub.plan?.name.isNotEmpty == true
-                      ? activeIndivSub.plan!.name
-                      : "Individual Plan";
-              activeSubscriptionId.value = activeIndivSub.id;
-              maxAllowedSeats.value = 1;
-            } else {
-              // Fallback to subRes
-              if (userSub?.teamPlan?.planName != null) {
-                planTitleName.value = userSub!.teamPlan!.planName!;
-              } else if (userSub?.teamPlans != null &&
-                  userSub!.teamPlans!.isNotEmpty) {
-                planTitleName.value =
-                    userSub!.teamPlans!.first.planName ?? "Team Plan";
-              } else if (subMeta?.teamPlans != null &&
-                  subMeta!.teamPlans!.isNotEmpty) {
-                planTitleName.value =
-                    subMeta!.teamPlans!.first.planName ?? "Team Plan";
-              } else if (userSub?.planName != null &&
-                  userSub!.planName!.isNotEmpty) {
-                planTitleName.value = userSub.planName!;
-              } else if (isIndiv && userSub?.individual?.planName != null) {
-                planTitleName.value = userSub!.individual!.planName!;
-              } else {
-                planTitleName.value = "";
-              }
-
-              int? detectedSubId = userSub?.teamPlan?.subscriptionId;
-              if (detectedSubId == null &&
-                  userSub?.teamPlans != null &&
-                  userSub!.teamPlans!.isNotEmpty) {
-                detectedSubId = userSub.teamPlans!.first.subscriptionId;
-              }
-              if (detectedSubId == null &&
-                  subMeta?.teamPlans != null &&
-                  subMeta!.teamPlans!.isNotEmpty) {
-                detectedSubId = subMeta.teamPlans!.first.subscriptionId;
-              }
-              detectedSubId ??= userSub?.subscriptionId ??
+            } else if (isIndiv) {
+              planTitleName.value = "Individual Plan";
+              activeSubscriptionId.value = userSub?.subscriptionId ??
                   userSub?.individual?.subscriptionId;
-
-              if (detectedSubId == null) {
-                for (var m in subscribedList) {
-                  if (m.subscription?.subscriptionId != null) {
-                    detectedSubId = m.subscription!.subscriptionId;
-                    break;
-                  }
-                }
-              }
-              activeSubscriptionId.value = detectedSubId;
-
-              // Compute team-specific seats
-              int? teamSeats = userSub?.teamPlan?.purchasedSeats;
-              if (teamSeats == null || teamSeats <= 0) {
-                if (userSub?.teamPlans != null &&
-                    userSub!.teamPlans!.isNotEmpty) {
-                  teamSeats = userSub!.teamPlans!.first.purchasedSeats;
-                }
-              }
-              if (teamSeats == null || teamSeats <= 0) {
-                if (subMeta?.teamPlans != null &&
-                    subMeta!.teamPlans!.isNotEmpty) {
-                  teamSeats = subMeta!.teamPlans!.first.purchasedSeats;
-                }
-              }
-              if (teamSeats == null || teamSeats <= 0) {
-                for (var m in subscribedList) {
-                  if (m.subscription?.teamPlan?.purchasedSeats != null &&
-                      m.subscription!.teamPlan!.purchasedSeats! > 0) {
-                    teamSeats = m.subscription!.teamPlan!.purchasedSeats;
-                    break;
-                  }
-                }
-              }
-
-              if (isNoSub) {
-                maxAllowedSeats.value = 0;
-              } else if (isIndiv) {
-                maxAllowedSeats.value = 1;
-              } else if (teamSeats != null && teamSeats > 0) {
-                maxAllowedSeats.value = teamSeats;
-              } else if (subMeta?.totalPurchasedSeats != null &&
-                  subMeta!.totalPurchasedSeats! > 0) {
-                maxAllowedSeats.value = subMeta!.totalPurchasedSeats!;
-              } else if (subscribedList.isNotEmpty) {
-                maxAllowedSeats.value = subscribedList.length;
-              } else {
-                maxAllowedSeats.value = 1;
-              }
+              maxAllowedSeats.value = 1;
+              teamHasStarted.value = true;
+              teamPurchasedSeats.value = 1;
+              teamAssignedSeats.value = 1;
+              teamAvailableSeats.value = 0;
+            } else {
+              planTitleName.value = "No Active Plan";
+              activeSubscriptionId.value = null;
+              maxAllowedSeats.value = 0;
+              teamHasStarted.value = false;
+              teamPurchasedSeats.value = 0;
+              teamAssignedSeats.value = 0;
+              teamAvailableSeats.value = 0;
             }
 
             debugPrint(
-                "🎯 [Walkie] Plan: ${planTitleName.value} | SubId: ${activeSubscriptionId.value} | MaxSeats: ${maxAllowedSeats.value} | AllowAssign: $allowAssign");
+                "🎯 [Walkie] HasTeam: ${hasTeamPlan.value} | CanManage: ${canManageMembers.value} | Started: ${teamHasStarted.value} | Seats: ${teamAssignedSeats.value}/${teamPurchasedSeats.value} (Avail: ${teamAvailableSeats.value})");
           }
 
           final List<AssignedMemberItem> loadedSubscribed = [];
           final List<AssignedMemberItem> loadedExpired = [];
 
-          for (var m in members) {
+          // Process Subscribed members (Active assignments owned by logged-in user)
+          for (var m in subscribedList) {
             final String uid = m.userId?.toString() ?? "";
-            if (uid.isNotEmpty) {
-              if (loadMore) {
-                if (assignedMembers.any((e) => e.id == uid) ||
-                    availableMembers.any((e) => e.id == uid) ||
-                    loaded.any((e) => e.id == uid)) {
-                  continue;
-                }
-              } else {
-                if (loaded.any((e) => e.id == uid)) continue;
-              }
+            if (uid.isEmpty) continue;
+            if (loadMore &&
+                (assignedMembers.any((e) => e.id == uid) ||
+                    loadedSubscribed.any((e) => e.id == uid))) {
+              continue;
             }
 
             String img = m.resolvedImageUrl;
@@ -368,51 +273,101 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                         ? m.displayDepartment
                         : "Member"));
 
-            final bool isSub =
-                subscribedList.any((s) => s.userId == m.userId) ||
-                    m.isSubscribedByAdmin == true;
-
-            final bool hasAccess = m.existingAccess?.hasAccess == true;
-            final String? accessType =
-                m.existingAccess?.accessType?.toLowerCase();
-
-            // Self purchased if explicitly marked or if existing access is individual
-            final bool selfPurchased =
-                m.existingAccess?.individual?.isSelfPurchased == true ||
-                    (hasAccess && accessType == "individual");
-
-            // Other admin's plan if member has active access, but wasn't assigned by current admin and isn't self-purchased
-            final bool otherAdmin = hasAccess && !isSub && !selfPurchased;
-
-            // If someone else already assigned a seat to this member, do NOT show in the list at all
-            if (otherAdmin) {
-              continue;
-            }
-
             final item = AssignedMemberItem(
-              id: uid.isNotEmpty ? uid : UniqueKey().toString(),
+              id: uid,
               name: m.displayName.isNotEmpty ? m.displayName : "Member",
               role: role,
               imageUrl: img,
-              isSubscribedByAdmin: isSub,
-              canRemoveTeam: m.canRemoveTeam ??
-                  m.canRemove ??
-                  m.adminSubscription?.canRemoveTeam ??
-                  true,
-              canAssignTeamSeat: m.canAssignTeamSeat ?? true,
-              existingAccessType: accessType,
-              hasExistingAccess: hasAccess,
-              isSelfPurchased: selfPurchased,
-              isPurchasedByOtherAdmin: otherAdmin,
+              isSubscribedByAdmin: true,
+              canRemoveTeam:
+                  m.management?.canRemove ?? m.canRemoveTeam ?? true,
+              canAssignTeamSeat: false,
+              canReplaceTeamSeat: m.management?.canReplace ?? true,
+              reason: m.management?.reason,
+              existingAccessType: m.access?.accessType ?? "team",
+              hasExistingAccess: true,
+              isSelfPurchased: false,
+              isPurchasedByOtherAdmin: false,
+              planName: m.teamAssignment?.planName ?? "Team Plan",
+              expiresAt: m.teamAssignment?.expiresAt,
             );
 
             loaded.add(item);
+            loadedSubscribed.add(item);
+          }
 
-            if (isSub) {
-              loadedSubscribed.add(item);
-            } else {
-              loadedExpired.add(item);
+          // Process Expired/Available members (Other group members)
+          for (var m in expiredList) {
+            final String uid = m.userId?.toString() ?? "";
+            if (uid.isEmpty) continue;
+            if (loadMore &&
+                (availableMembers.any((e) => e.id == uid) ||
+                    loadedExpired.any((e) => e.id == uid))) {
+              continue;
             }
+
+            String img = m.resolvedImageUrl;
+            if (img.isEmpty) {
+              img = m.profileImage?.toString() ?? "";
+              if (img.isNotEmpty &&
+                  !img.startsWith("http") &&
+                  img.toLowerCase() != "null") {
+                img = "${ConstRes.aImageBaseUrl}$img";
+              } else if (img.toLowerCase() == "null") {
+                img = "";
+              }
+            }
+
+            final String role = (m.role != null && m.role!.trim().isNotEmpty)
+                ? m.role!.trim()
+                : ((m.department != null && m.department!.trim().isNotEmpty)
+                    ? m.department!.trim()
+                    : (m.displayDepartment.isNotEmpty
+                        ? m.displayDepartment
+                        : "Member"));
+
+            final String? accType = m.access?.accessType?.toLowerCase() ??
+                m.existingAccess?.accessType?.toLowerCase();
+            final bool hasAcc = m.access?.hasActiveAccess ??
+                m.existingAccess?.hasAccess ??
+                false;
+
+            final bool selfPurchased =
+                m.individualSubscription?.isSelfPurchased == true ||
+                    m.existingAccess?.individual?.isSelfPurchased == true ||
+                    (hasAcc && accType == "individual");
+
+            final bool otherAdmin =
+                m.management?.reason == "assigned_by_another_team_owner" ||
+                    (hasAcc &&
+                        accType == "team" &&
+                        m.management?.isManagedByCurrentUser != true);
+
+            final bool canAssign = m.management?.canAssign ??
+                (!hasAcc && (m.canAssignTeamSeat ?? true));
+
+            final item = AssignedMemberItem(
+              id: uid,
+              name: m.displayName.isNotEmpty ? m.displayName : "Member",
+              role: role,
+              imageUrl: img,
+              isSubscribedByAdmin: false,
+              canRemoveTeam: false,
+              canAssignTeamSeat: canAssign,
+              canReplaceTeamSeat: false,
+              reason: m.management?.reason,
+              existingAccessType: accType,
+              hasExistingAccess: hasAcc,
+              isSelfPurchased: selfPurchased,
+              isPurchasedByOtherAdmin: otherAdmin,
+              planName: m.individualSubscription?.planName ??
+                  m.teamAssignment?.planName,
+              expiresAt: m.individualSubscription?.expiresAt ??
+                  m.teamAssignment?.expiresAt,
+            );
+
+            loaded.add(item);
+            loadedExpired.add(item);
           }
 
           if (loadMore) {
@@ -423,20 +378,12 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
               availableMembers.addAll(loadedExpired);
             }
           } else {
-            if (loadedSubscribed.isNotEmpty || loadedExpired.isNotEmpty) {
-              if (isIndividualPlan.value && loadedSubscribed.length > 1) {
-                assignedMembers.assignAll([loadedSubscribed.first]);
-                final extra = loadedSubscribed.skip(1);
-                availableMembers.assignAll([...extra, ...loadedExpired]);
-              } else {
-                assignedMembers.assignAll(loadedSubscribed);
-                availableMembers.assignAll(loadedExpired);
-              }
-            }
+            assignedMembers.assignAll(loadedSubscribed);
+            availableMembers.assignAll(loadedExpired);
           }
 
           debugPrint(
-              "✅ [Walkie] ${loadMore ? 'Page $pageToFetch' : 'Initial'} Loaded ${loaded.length} members (Subscribed: ${loadedSubscribed.length}, Expired/Available: ${loadedExpired.length})");
+              "✅ [Walkie] ${loadMore ? 'Page $pageToFetch' : 'Initial'} Loaded ${loaded.length} members (Subscribed: ${loadedSubscribed.length}, Available: ${loadedExpired.length})");
         }
       } catch (e) {
         debugPrint("❌ Error fetching filter=subscription members: $e");
@@ -1468,11 +1415,18 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                 child: Obx(() {
                   final bool noPlan = hasNoPlan.value;
                   final bool isIndiv = isIndividualPlan.value;
-                  final String title = planTitleName.value.isNotEmpty
+                  final bool hasTeam = hasTeamPlan.value;
+                  final bool started = teamHasStarted.value;
+
+                  String title = planTitleName.value.isNotEmpty
                       ? planTitleName.value
-                      : (isIndiv
-                          ? "Individual Plan"
-                          : (noPlan ? "No Active Plan" : "Team Plan"));
+                      : (hasTeam
+                          ? "Team Plan"
+                          : (isIndiv ? "Individual Plan" : "No Active Plan"));
+                  if (!hasTeam && isIndiv) {
+                    title = "Team Plan Required";
+                  }
+
                   final int totalSeats = maxAllowedSeats.value > 0
                       ? maxAllowedSeats.value
                       : (isIndiv ? 1 : 0);
@@ -1480,35 +1434,43 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                   final int remainingSeats =
                       (totalSeats - assignedCount).clamp(0, totalSeats);
 
+                  String subtitle = "";
+                  if (noPlan) {
+                    subtitle =
+                        "Purchase a Team Plan to assign Walkie-Talkie access to members.";
+                  } else if (isIndiv) {
+                    subtitle =
+                        "Individual Plan active (Self access only) • Upgrade to Team Plan to assign members.";
+                  } else if (hasTeam && !started) {
+                    subtitle =
+                        "$totalSeats Total Seats • $assignedCount Assigned • $remainingSeats Available\nPlan starts when the first member is assigned.";
+                  } else {
+                    subtitle =
+                        "$totalSeats Total Seats • $assignedCount Assigned • $remainingSeats Available";
+                  }
+
                   return Container(
                     padding:
                         EdgeInsets.symmetric(horizontal: 12.w, vertical: 9.h),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: noPlan
+                        colors: (noPlan || (!hasTeam && isIndiv))
                             ? [
                                 const Color(0xFFFFF1F2),
                                 const Color(0xFFFFE4E6)
                               ]
-                            : (isIndiv
-                                ? [
-                                    const Color(0xFFFFF7ED),
-                                    const Color(0xFFFFEDD5)
-                                  ]
-                                : [
-                                    const Color(0xFFF5F3FF),
-                                    const Color(0xFFEDE9FE)
-                                  ]),
+                            : [
+                                const Color(0xFFF5F3FF),
+                                const Color(0xFFEDE9FE)
+                              ],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
                       borderRadius: BorderRadius.circular(14.r),
                       border: Border.all(
-                        color: noPlan
+                        color: (noPlan || (!hasTeam && isIndiv))
                             ? const Color(0xFFFECDD3)
-                            : (isIndiv
-                                ? const Color(0xFFFED7AA)
-                                : const Color(0xFFDDD6FE)),
+                            : const Color(0xFFDDD6FE),
                         width: 0.8,
                       ),
                     ),
@@ -1518,19 +1480,15 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                           width: 36.w,
                           height: 36.w,
                           decoration: BoxDecoration(
-                            color: noPlan
+                            color: (noPlan || (!hasTeam && isIndiv))
                                 ? const Color(0xFFE11D48)
-                                : (isIndiv
-                                    ? const Color(0xFFEA580C)
-                                    : const Color(0xFF5B4DFF)),
+                                : const Color(0xFF5B4DFF),
                             borderRadius: BorderRadius.circular(10.r),
                           ),
                           child: Icon(
-                            noPlan
+                            (noPlan || (!hasTeam && isIndiv))
                                 ? Icons.lock_outline_rounded
-                                : (isIndiv
-                                    ? Icons.person_rounded
-                                    : Icons.workspace_premium_rounded),
+                                : Icons.workspace_premium_rounded,
                             color: Colors.white,
                             size: 18.sp,
                           ),
@@ -1554,7 +1512,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                                       overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
-                                  if (!noPlan)
+                                  if (hasTeam && started)
                                     Container(
                                       padding: EdgeInsets.symmetric(
                                           horizontal: 6.w, vertical: 2.h),
@@ -1574,20 +1532,38 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                                           color: const Color(0xFF047857),
                                         ),
                                       ),
+                                    )
+                                  else if (hasTeam && !started)
+                                    Container(
+                                      padding: EdgeInsets.symmetric(
+                                          horizontal: 6.w, vertical: 2.h),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFF0FDF4),
+                                        borderRadius:
+                                            BorderRadius.circular(10.r),
+                                        border: Border.all(
+                                            color: const Color(0xFFBBF7D0),
+                                            width: 0.6),
+                                      ),
+                                      child: Text(
+                                        "Ready",
+                                        style: TextStyle(
+                                          fontSize: 9.sp,
+                                          fontFamily: FontFamily.interBold,
+                                          color: const Color(0xFF15803D),
+                                        ),
+                                      ),
                                     ),
                                 ],
                               ),
                               SizedBox(height: 2.h),
                               Text(
-                                noPlan
-                                    ? "Subscribe to a Team Plan to assign seats"
-                                    : (isIndiv
-                                        ? "1 Seat Included (Self Access Only)"
-                                        : "$totalSeats Total Seats • $assignedCount Assigned • $remainingSeats Available"),
+                                subtitle,
                                 style: TextStyle(
                                   fontSize: 11.sp,
                                   fontFamily: FontFamily.interRegular,
                                   color: const Color(0xFF6B7280),
+                                  height: 1.25,
                                 ),
                               ),
                             ],
@@ -2108,6 +2084,8 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
     return Obx(() {
       final bool isNoSub = hasNoPlan.value;
       final bool isIndiv = isIndividualPlan.value;
+      final bool canRemove = member.canRemoveTeam && !isIndiv && !isNoSub;
+
       return Padding(
         padding: EdgeInsets.symmetric(vertical: 6.h),
         child: Row(
@@ -2124,12 +2102,19 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                     fontfamily: FontFamily.interSemiBold,
                     color: const Color(0xFF1E1B4B),
                   ),
-                  // SizedBox(height: 2.h),
-                  // reausabletext(
-                  //   member.role,
-                  //   fontsize: 12.sp,
-                  //   color: const Color(0xFF6B7280),
-                  // ),
+                  SizedBox(height: 2.h),
+                  Text(
+                    member.isSubscribedByAdmin
+                        ? "Assigned by You"
+                        : (member.planName?.isNotEmpty == true
+                            ? member.planName!
+                            : "Active Member"),
+                    style: TextStyle(
+                      fontSize: 11.sp,
+                      color: const Color(0xFF6B7280),
+                      fontFamily: FontFamily.interRegular,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -2190,7 +2175,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                 onTap: () {
                   if (isNoSub) {
                     _showUpgradePrompt(context: context, isNoPlan: true);
-                  } else if (!member.canRemoveTeam) {
+                  } else if (!canRemove) {
                     Utils().fluttertoast(
                         "Cannot remove seat assigned by another admin");
                   } else {
@@ -2242,17 +2227,50 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                     fontfamily: FontFamily.interSemiBold,
                     color: const Color(0xFF1E1B4B),
                   ),
-                  // SizedBox(height: 2.h),
-                  // reausabletext(
-                  //   member.role,
-                  //   fontsize: 12.sp,
-                  //   color: const Color(0xFF6B7280),
-                  // ),
+                  if (member.isSelfPurchased ||
+                      member.existingAccessType == 'individual')
+                    Padding(
+                      padding: EdgeInsets.only(top: 2.h),
+                      child: Text(
+                        "Individual Plan • Subscribed by Self",
+                        style: TextStyle(
+                          fontSize: 11.sp,
+                          color: const Color(0xFF1D4ED8),
+                          fontFamily: FontFamily.interRegular,
+                        ),
+                      ),
+                    )
+                  else if (member.isPurchasedByOtherAdmin ||
+                      member.reason == 'assigned_by_another_team_owner')
+                    Padding(
+                      padding: EdgeInsets.only(top: 2.h),
+                      child: Text(
+                        "Team Plan • Assigned Elsewhere",
+                        style: TextStyle(
+                          fontSize: 11.sp,
+                          color: const Color(0xFFB45309),
+                          fontFamily: FontFamily.interRegular,
+                        ),
+                      ),
+                    )
+                  else
+                    Padding(
+                      padding: EdgeInsets.only(top: 2.h),
+                      child: Text(
+                        member.hasExistingAccess ? "Active Access" : "No Active Plan",
+                        style: TextStyle(
+                          fontSize: 11.sp,
+                          color: const Color(0xFF6B7280),
+                          fontFamily: FontFamily.interRegular,
+                        ),
+                      ),
+                    ),
                 ],
               ),
             ),
-            if (member.isSelfPurchased)
-              // User has already purchased plan by herself -> No Add/Remove option visible
+            if (member.isSelfPurchased ||
+                member.existingAccessType == 'individual')
+              // User has already purchased plan by herself -> No Add option visible
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                 decoration: BoxDecoration(
@@ -2278,7 +2296,8 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                   ],
                 ),
               )
-            else if (member.isPurchasedByOtherAdmin)
+            else if (member.isPurchasedByOtherAdmin ||
+                member.reason == 'assigned_by_another_team_owner')
               // Plan purchased by someone else -> Current user cannot Add/Remove
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
@@ -2305,32 +2324,44 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                   ],
                 ),
               )
-            else if (isIndiv)
-              // Admin has Individual Plan -> Show Team Plan lock prompt
+            else if (isIndiv || !hasTeamPlan.value || !canManageMembers.value)
+              // Admin has Individual Plan / No Team Plan -> Show Team Plan lock prompt
               GestureDetector(
                 onTap: () {
-                  _showUpgradePrompt(context: context, isNoPlan: false);
+                  _showUpgradePrompt(
+                      context: context, isNoPlan: !isIndiv && isNoSub);
                 },
                 child: Container(
                   padding:
                       EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFFFF7ED),
+                    color: isIndiv
+                        ? const Color(0xFFFFF7ED)
+                        : const Color(0xFFFFF1F2),
                     borderRadius: BorderRadius.circular(12.r),
-                    border:
-                        Border.all(color: const Color(0xFFFFEDD5), width: 0.8),
+                    border: Border.all(
+                      color: isIndiv
+                          ? const Color(0xFFFFEDD5)
+                          : const Color(0xFFFECDD3),
+                      width: 0.8,
+                    ),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(Icons.lock_outline_rounded,
-                          size: 12.sp, color: const Color(0xFFEA580C)),
+                          size: 12.sp,
+                          color: isIndiv
+                              ? const Color(0xFFEA580C)
+                              : const Color(0xFFE11D48)),
                       SizedBox(width: 3.w),
                       Text(
-                        "Team Plan",
+                        isIndiv ? "Team Plan" : "Get Plan",
                         style: TextStyle(
                           fontSize: 10.sp,
-                          color: const Color(0xFFEA580C),
+                          color: isIndiv
+                              ? const Color(0xFFEA580C)
+                              : const Color(0xFFE11D48),
                           fontFamily: FontFamily.interSemiBold,
                         ),
                       ),
@@ -2338,41 +2369,27 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                   ),
                 ),
               )
-            else if (isNoSub)
-              // No plan -> Show Get Plan prompt
-              GestureDetector(
-                onTap: () {
-                  _showUpgradePrompt(context: context, isNoPlan: true);
-                },
-                child: Container(
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFFF1F2),
-                    borderRadius: BorderRadius.circular(12.r),
-                    border:
-                        Border.all(color: const Color(0xFFFECDD3), width: 0.8),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.lock_outline_rounded,
-                          size: 12.sp, color: const Color(0xFFE11D48)),
-                      SizedBox(width: 3.w),
-                      Text(
-                        "Get Plan",
-                        style: TextStyle(
-                          fontSize: 10.sp,
-                          color: const Color(0xFFE11D48),
-                          fontFamily: FontFamily.interSemiBold,
-                        ),
-                      ),
-                    ],
+            else if (!member.canAssignTeamSeat)
+              // Member is not assignable according to backend
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF3F4F6),
+                  borderRadius: BorderRadius.circular(12.r),
+                  border:
+                      Border.all(color: const Color(0xFFE5E7EB), width: 0.8),
+                ),
+                child: Text(
+                  "Unavailable",
+                  style: TextStyle(
+                    fontSize: 10.sp,
+                    color: const Color(0xFF9CA3AF),
+                    fontFamily: FontFamily.interMedium,
                   ),
                 ),
               )
             else
-              // Person whose plan is expired or not subscribed -> Add (+) button
+              // Eligible member -> Add (+) button
               GestureDetector(
                 onTap: () {
                   if (isTeamLimitReached) {
@@ -2415,7 +2432,12 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
   Future<void> _submitAssignedMembers() async {
     final int? subId = activeSubscriptionId.value;
     if (subId == null) {
-      Utils().fluttertoast("No active subscription found");
+      Utils().fluttertoast("No active team subscription found");
+      return;
+    }
+
+    if (!hasTeamPlan.value || !canManageMembers.value) {
+      Utils().fluttertoast("Team Plan required to assign members");
       return;
     }
 
@@ -2447,16 +2469,26 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
             ? msg
             : "Assigned members updated successfully");
         Get.back();
-        fetchMembersFromApi();
+        await fetchMembersFromApi();
+        if (Get.isRegistered<WalkieTalkieTrialController>()) {
+          Get.find<WalkieTalkieTrialController>().fetchOverview(refresh: true);
+        }
       } else {
         final msg = res.message;
         Utils().fluttertoast((msg != null && msg.isNotEmpty)
             ? msg
             : "Failed to update assigned members");
+        await fetchMembersFromApi();
       }
     } catch (e) {
       debugPrint("❌ [Walkie] Error submitting member subscriptions: $e");
-      Utils().fluttertoast("Error: ${e.toString()}");
+      final String errStr = e.toString();
+      if (errStr.contains("409") || errStr.toLowerCase().contains("seat")) {
+        Utils().fluttertoast("No team seats available. Refreshing member list...");
+      } else {
+        Utils().fluttertoast("Error: $errStr");
+      }
+      await fetchMembersFromApi();
     } finally {
       isSubmittingMembers.value = false;
     }

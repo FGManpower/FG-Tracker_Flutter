@@ -24,10 +24,10 @@ class BottomActionsBar extends StatelessWidget {
         padding: EdgeInsets.only(
           left: 16.w,
           right: 16.w,
-          bottom: 15.h,
-          top: 10.h,
+          bottom: 12.h,
+          top: 8.h,
         ),
-        color: Colors.white,
+        color: const Color(0xFFF4F6FC),
         child: Row(
           children: [
             Expanded(
@@ -59,6 +59,7 @@ class _JoinGroupButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
+      behavior: HitTestBehavior.opaque,
       onTap: () {
         DialogBox().showQRScanOptions(
           context,
@@ -67,37 +68,60 @@ class _JoinGroupButton extends StatelessWidget {
         );
       },
       child: Container(
-        padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 7.w),
+        padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 10.w),
         decoration: BoxDecoration(
           gradient: const LinearGradient(
-            colors: [Color(0xFF8B78FF), Color(0xFF5A3FFF)],
+            colors: [Color(0xFF6B4DFF), Color(0xFF5338EE)],
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
           ),
           borderRadius: BorderRadius.circular(16.r),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF5338EE).withValues(alpha: 0.25),
+              blurRadius: 8,
+              offset: const Offset(0, 3),
+            ),
+          ],
         ),
         child: Row(
           children: [
-            Icon(Icons.group_add, color: Colors.white, size: 22.sp),
-            SizedBox(width: 6.w),
+            Icon(
+              Icons.person_add_alt_1_rounded,
+              color: Colors.white,
+              size: 22.sp,
+            ),
+            SizedBox(width: 8.w),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  reausabletext(
+                  Text(
                     "Join Group",
-                    color: Colors.white,
-                    fontsize: 13.sp,
-                    fontfamily: FontFamily.interBold,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 13.sp,
+                      fontFamily: FontFamily.interBold,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
-                  reausabletext(
+                  Text(
                     "Join existing group",
-                    color: Colors.white70,
-                    fontsize: 9.sp,
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.8),
+                      fontSize: 9.5.sp,
+                      fontFamily: FontFamily.interRegular,
+                    ),
                   ),
                 ],
               ),
             ),
-            Icon(Icons.arrow_forward, color: Colors.white, size: 16.sp),
+            Icon(
+              Icons.arrow_forward_rounded,
+              color: Colors.white,
+              size: 16.sp,
+            ),
           ],
         ),
       ),
@@ -124,11 +148,21 @@ class _CreateGroupButton extends StatelessWidget {
         showCreateGroupSheet();
       },
       child: Container(
-        padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 7.w),
+        padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 10.w),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16.r),
-          border: Border.all(color: const Color(0xFF6B4DFF), width: 1.5.w),
+          border: Border.all(
+            color: const Color(0xFF6B4DFF),
+            width: 1.5.w,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF2B1F70).withValues(alpha: 0.04),
+              blurRadius: 8,
+              offset: const Offset(0, 3),
+            ),
+          ],
         ),
         child: Row(
           children: [
@@ -141,30 +175,40 @@ class _CreateGroupButton extends StatelessWidget {
                   width: 1.5.w,
                 ),
               ),
-              child: Icon(Icons.add, color: const Color(0xFF6B4DFF), size: 16.sp),
+              child: Icon(
+                Icons.add_rounded,
+                color: const Color(0xFF6B4DFF),
+                size: 16.sp,
+              ),
             ),
-            SizedBox(width: 6.w),
+            SizedBox(width: 8.w),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  reausabletext(
+                  Text(
                     "Create Group",
-                    color: const Color(0xFF6B4DFF),
-                    fontsize: 13.sp,
-                    fontfamily: FontFamily.interBold,
+                    style: TextStyle(
+                      color: const Color(0xFF6B4DFF),
+                      fontSize: 13.sp,
+                      fontFamily: FontFamily.interBold,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
-                  reausabletext(
+                  Text(
                     "Create new group",
-                    color: Colors.grey,
-                    fontsize: 9.sp,
+                    style: TextStyle(
+                      color: const Color(0xFF7E84A3),
+                      fontSize: 9.5.sp,
+                      fontFamily: FontFamily.interRegular,
+                    ),
                   ),
                 ],
               ),
             ),
             Icon(
-              Icons.arrow_forward,
+              Icons.arrow_forward_rounded,
               color: const Color(0xFF6B4DFF),
               size: 16.sp,
             ),
