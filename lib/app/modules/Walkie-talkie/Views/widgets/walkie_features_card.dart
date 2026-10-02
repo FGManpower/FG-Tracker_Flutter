@@ -95,10 +95,13 @@ class WalkieFeaturesCard extends StatelessWidget {
           // Dynamic Primary Action CTA
           Obx(() {
             final bool canUse = controller.canUseWalkieTalkie;
+            final bool hasTeamPlan = controller.hasActiveTeamSubscription;
+            final bool canOpenWalkie = canUse || hasTeamPlan;
+
             final bool eligible = controller.isTrialEligible &&
                 controller.trial?.status.toLowerCase() == 'not_started';
 
-            if (!canUse && !eligible && controller.data != null) {
+            if (!canOpenWalkie && !eligible && controller.data != null) {
               return SizedBox(
                 width: double.infinity,
                 height: 48.h,
@@ -146,7 +149,7 @@ class WalkieFeaturesCard extends StatelessWidget {
                   elevation: 0,
                 ),
                 onPressed: () {
-                  if (canUse) {
+                  if (canOpenWalkie) {
                     Get.to(() => const WalkieGroupSelectScreen());
                     return;
                   }
@@ -156,13 +159,13 @@ class WalkieFeaturesCard extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(
-                      canUse ? Icons.mic_rounded : Icons.play_arrow_rounded,
+                      canOpenWalkie ? Icons.mic_rounded : Icons.play_arrow_rounded,
                       color: Colors.white,
                       size: _sp(context, 20),
                     ),
                     SizedBox(width: 8.w),
                     reausabletext(
-                      canUse
+                      canOpenWalkie
                           ? "Open Walkie Talkie"
                           : "Start ${controller.trialDurationHuman} Free Trial",
                       fontsize: _sp(context, 15),
