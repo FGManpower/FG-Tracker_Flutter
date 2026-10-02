@@ -11,14 +11,14 @@ import 'package:flutter_webrtc/flutter_webrtc.dart' as webrtc;
 import 'package:get/get.dart' hide navigator;
 import 'package:wakelock_plus/wakelock_plus.dart';
 import 'package:proximity_screen_lock/proximity_screen_lock.dart';
-
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
-
 import 'package:fgtracker/app/Model/group_call_participant.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Group_Calling.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import '../Widget/group_call_sheets.dart';
+
+enum AudioRoute { speaker, earpiece, bluetooth }
 
 class GroupCallingController extends GetxController {
   final args = Get.arguments;
@@ -39,6 +39,9 @@ class GroupCallingController extends GetxController {
   RxBool isVideoOn = true.obs;
   RxBool isSpeakerOn = false.obs;
   RxBool isFrontCamera = true.obs;
+
+  final Rx<AudioRoute> audioRoute = AudioRoute.speaker.obs;
+  final RxBool isBluetoothConnected = false.obs;
 
   RxBool isScreenSharing = false.obs;
   webrtc.MediaStream? screenStream;
@@ -231,6 +234,82 @@ class GroupCallingController extends GetxController {
     _refreshNotInCallList();
   }
 
+  Future<void> initAudioRouting() async {
+    await _refreshBluetoothState();
+
+    if (isBluetoothConnected.value) {
+      await _applyAudioRoute(AudioRoute.bluetooth);
+    } else if (isVideo) {
+      await _applyAudioRoute(AudioRoute.speaker);
+    } else {
+      await _applyAudioRoute(AudioRoute.earpiece);
+    }
+  }
+
+  Future<void> _refreshBluetoothState() async {
+    try {
+      final devices = await webrtc.navigator.mediaDevices.enumerateDevices();
+      final hasBt = devices.any((d) {
+        final label = (d.label).toLowerCase();
+        final kind = (d.kind)?.toLowerCase();
+        return kind!.contains('audiooutput') &&
+            (label.contains('bluetooth') ||
+                label.contains('headset') ||
+                label.contains('airpods') ||
+                label.contains('buds'));
+      });
+      isBluetoothConnected.value = hasBt;
+    } catch (_) {}
+  }
+
+  Future<void> _applyAudioRoute(AudioRoute route) async {
+    audioRoute.value = route;
+    switch (route) {
+      case AudioRoute.speaker:
+        await webrtc.Helper.setSpeakerphoneOn(true);
+        isSpeakerOn.value = true;
+        await ProximityScreenLock.setActive(false);
+        break;
+      case AudioRoute.earpiece:
+        await webrtc.Helper.setSpeakerphoneOn(false);
+        isSpeakerOn.value = false;
+        await ProximityScreenLock.setActive(true);
+        break;
+      case AudioRoute.bluetooth:
+        await webrtc.Helper.setSpeakerphoneOn(false);
+        isSpeakerOn.value = false;
+        await ProximityScreenLock.setActive(false);
+        break;
+    }
+  }
+
+  Future<void> toggleSpeaker() async {
+    await _refreshBluetoothState();
+    final hasBt = isBluetoothConnected.value;
+    final current = audioRoute.value;
+    late AudioRoute next;
+
+    if (hasBt) {
+      switch (current) {
+        case AudioRoute.bluetooth:
+          next = AudioRoute.earpiece;
+          break;
+        case AudioRoute.earpiece:
+          next = AudioRoute.speaker;
+          break;
+        case AudioRoute.speaker:
+          next = AudioRoute.bluetooth;
+          break;
+      }
+    } else {
+      next = current == AudioRoute.speaker
+          ? AudioRoute.earpiece
+          : AudioRoute.speaker;
+    }
+
+    await _applyAudioRoute(next);
+  }
+
   Future<void> _setupLocalMedia() async {
     await localRenderer.initialize();
     final mediaConstraints = {
@@ -278,6 +357,7 @@ class GroupCallingController extends GetxController {
       ));
     }
     _refreshNotInCallList();
+    await initAudioRouting();
   }
 
   void togglePinUser(String userId) {
@@ -336,8 +416,7 @@ class GroupCallingController extends GetxController {
       if (fullScreenShareUserId.value == myUserId) closeFullScreenShare();
     } else {
       try {
-        final bool granted =
-        await webrtc.Helper.requestCapturePermission();
+        final bool granted = await webrtc.Helper.requestCapturePermission();
 
         if (!granted) {
           Utils().fluttertoast(
@@ -356,32 +435,27 @@ class GroupCallingController extends GetxController {
 
         final constraints = webrtc.WebRTC.platformIsIOS
             ? {
-          'video': {
-            'deviceId': 'broadcast',
-          },
-        }
+                'video': {
+                  'deviceId': 'broadcast',
+                },
+              }
             : {
-          'video': true,
-          'audio': false,
-        };
+                'video': true,
+                'audio': false,
+              };
 
-        screenStream = await webrtc
-            .navigator
-            .mediaDevices
-            .getDisplayMedia(constraints);
+        screenStream =
+            await webrtc.navigator.mediaDevices.getDisplayMedia(constraints);
 
-        final screenTrack =
-            screenStream!.getVideoTracks().first;
+        final screenTrack = screenStream!.getVideoTracks().first;
 
         isScreenSharing.value = true;
         screenSharingUsers.add(myUserId);
         pinnedUserId.value = myUserId;
 
-        Socket_GroupCallService.instance
-            .emitStartScreenShare();
+        Socket_GroupCallService.instance.emitStartScreenShare();
 
-        await Socket_GroupCallService.instance
-            .replaceVideoTrack(screenTrack);
+        await Socket_GroupCallService.instance.replaceVideoTrack(screenTrack);
 
         localRenderer.srcObject = screenStream;
       } catch (e, stackTrace) {
@@ -636,12 +710,6 @@ class GroupCallingController extends GetxController {
     } catch (e) {
       Utils().fluttertoast("Unable to switch camera");
     }
-  }
-
-  Future<void> toggleSpeaker() async {
-    isSpeakerOn.value = !isSpeakerOn.value;
-    await webrtc.Helper.setSpeakerphoneOn(isSpeakerOn.value);
-    await ProximityScreenLock.setActive(!isSpeakerOn.value);
   }
 
   Future<void> endCall() async {

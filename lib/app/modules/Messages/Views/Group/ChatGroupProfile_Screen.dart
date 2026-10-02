@@ -260,24 +260,51 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
       ],
     );
   }
-
+  Future<void> _initiateGroupCall({
+    required bool isVideo,
+  }) async {
+    try {
+      Get.toNamed(
+        Routes.groupCallingScreen,
+        arguments: {
+          "groupId": chatController.groupId.toString(),
+          "groupName": chatController.groupName.isEmpty
+              ? "Unknown Group"
+              : chatController.groupName,
+          "groupProfile": chatController.groupImage,
+          "isVideo": isVideo,
+          "memberCount": chatController.groupMembers.length,
+          "callType": "outgoing",
+        },
+      );
+    } catch (e) {
+      debugPrint("Error initiating group call: $e");
+      Get.snackbar(
+        "Error",
+        "Could not start group call. Please try again.",
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    }
+  }
   Widget _buildQuickActions(BuildContext context) {
     return Row(
       children: [
         _quickAction(
           icon: Icons.call_outlined,
           label: "Audio Call",
-          onTap: () {
-            Utils().fluttertoast("Select a member to call");
-          },
+          onTap: () => _initiateGroupCall(
+            isVideo: false,
+          ),
         ),
         SizedBox(width: 10.w),
         _quickAction(
           icon: Icons.videocam_outlined,
           label: "Video Call",
-          onTap: () {
-            Utils().fluttertoast("Select a member for video call");
-          },
+          onTap: () => _initiateGroupCall(
+            isVideo: true,
+          ),
         ),
         SizedBox(width: 10.w),
         _quickAction(
@@ -868,7 +895,7 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
             color: _purple.withValues(alpha: 0.12),
             blurRadius: 12,
             spreadRadius: 2,
-            offset: const Offset(0, 0), // chaaro taraf equal shadow
+            offset: const Offset(0, 0),
           ),
         ],
       ),

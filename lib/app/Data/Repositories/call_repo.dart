@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:fgtracker/app/Core/constant/urls.dart';
 import 'package:fgtracker/app/Core/util/http/http_util.dart';
+import 'package:fgtracker/app/Model/CommonRes.dart';
 import 'package:fgtracker/app/Model/callDetailRes.dart';
 import 'package:fgtracker/app/Model/recent_call.dart';
 import 'dart:convert';
@@ -21,8 +22,20 @@ class CallRepo {
       {String page = "0", String type = "all"}) async {
     var response =
         await HttpUtil().get("${Urls.recentCallHistory}?page=$page&type=$type");
-    log("🟢 [CallRepo] Recent Calls Response: $response");
+    log("[CallRepo] Recent Calls Response: $response");
     return recent_Call_Res.fromJson(response);
+  }
+
+  static Future<CommonResponse> updateCallingStatus({required dynamic callId,remoteUserId,callingStatus}) async {
+    dynamic param = {
+      "callId":callId,
+      "remoteUserId":remoteUserId,
+      "callingStatus":callingStatus,
+    };
+    var response =
+    await HttpUtil().updateCallingStatusPost(Urls.callingStatus,data: param);
+    log("[CallRepo] Recent Calls Response: $response");
+    return CommonResponse.fromJson(response);
   }
 
   Future<bool> isCallActive(String callId) async {
