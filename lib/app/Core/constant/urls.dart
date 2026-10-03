@@ -35,14 +35,12 @@ class Urls {
   static const String walkieUpdateMemberSubscription =
       '${ConstRes.aBaseUrl}walkie/update-member-subscription';
 
-
   static const String createStatus = "status/create";
   static const String statusFeed = "status/feed";
   static const String myStatus = "status/my-status";
   static String viewStatus(int id) => "status/$id/view";
   static String replyStatus(int id) => "status/$id/reply";
   static String deleteStatus(int id) => "status/$id";
-
 
   ///------------------------ Params ------------------------///
   static const String rtcUserName = 'fgtracker';

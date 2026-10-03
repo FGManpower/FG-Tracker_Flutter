@@ -368,7 +368,7 @@ class RegistrationScreen extends GetView<RegistrationController> {
             shape: BoxShape.circle,
           ),
           child: Icon(
-            Icons.person_rounded, // Person icon yahan change kar diya hai
+            Icons.person_rounded,
             color: Colors.white,
             size: 26.sp,
           ),
