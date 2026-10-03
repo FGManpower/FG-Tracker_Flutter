@@ -1,7 +1,7 @@
 import 'package:fgtracker/app/Model/MemberDataRes.dart';
 import 'package:fgtracker/app/Model/PrivateChatModel.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
-import 'package:fgtracker/app/modules/status/views/status_list.dart';
+import 'package:fgtracker/app/modules/status/views/status_section.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';

@@ -6,6 +6,7 @@ import 'package:fgtracker/app/Model/recent_call.dart';
 import 'package:fgtracker/app/Model/user_profileList_res.dart';
 import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:get/get.dart' hide navigator;
 import 'package:permission_handler/permission_handler.dart';
 
@@ -139,9 +140,10 @@ class CallController extends GetxController {
 
   Future<void> checkContactPermission() async {
     try {
-      final status = await Permission.contacts.status;
-      final bool granted = status.isGranted;
+      final bool granted =
+          await FlutterContacts.requestPermission(readonly: true);
       isContactPermissionGranted.value = granted;
+
       if (granted) {
         hasAllowedContacts.value = true;
         await getRegisteredContacts();
@@ -179,7 +181,7 @@ class CallController extends GetxController {
 
       debugPrint(
         "⏱️ Device Contacts: "
-            "${DateTime.now().difference(startTime).inMilliseconds} ms",
+        "${DateTime.now().difference(startTime).inMilliseconds} ms",
       );
 
       isContactPermissionGranted.value = true;
@@ -190,7 +192,7 @@ class CallController extends GetxController {
 
       debugPrint(
         "⏱️ Contacts Users API: "
-            "${DateTime.now().difference(apiStartTime).inMilliseconds} ms",
+        "${DateTime.now().difference(apiStartTime).inMilliseconds} ms",
       );
 
       if (result.status == true) {
@@ -207,8 +209,7 @@ class CallController extends GetxController {
         allUserProfileData.value = finalUsers;
         filteredUsers.value = finalUsers;
       } else {
-        responseError.value =
-            result.message ?? "Something went wrong";
+        responseError.value = result.message ?? "Something went wrong";
       }
     } catch (e) {
       responseError.value = e.toString();
@@ -216,6 +217,7 @@ class CallController extends GetxController {
       contactLoading.value = false;
     }
   }
+
   void filterUsers(String value) {
     value = value.trim().toLowerCase();
 
@@ -565,8 +567,7 @@ class CallController extends GetxController {
       final int? gId = int.tryParse(targetGroupId);
       matchedGroup = _groupController.groupData.firstWhereOrNull(
         (g) =>
-            (g.id != null && g.id == gId) ||
-            g.id?.toString() == targetGroupId,
+            (g.id != null && g.id == gId) || g.id?.toString() == targetGroupId,
       );
     }
 
@@ -606,10 +607,8 @@ class CallController extends GetxController {
             : 'Group Call';
       }
 
-      final String groupImg = (matchedGroup?.groupProfile ??
-              call.groupProfile ??
-              '')
-          .trim();
+      final String groupImg =
+          (matchedGroup?.groupProfile ?? call.groupProfile ?? '').trim();
       if (groupImg.isNotEmpty) {
         avatar = groupImg;
       }
@@ -637,8 +636,7 @@ class CallController extends GetxController {
               name = matchedUser.name!.trim();
             }
 
-            if (avatar.isEmpty &&
-                (matchedUser.profileImage ?? '').isNotEmpty) {
+            if (avatar.isEmpty && (matchedUser.profileImage ?? '').isNotEmpty) {
               avatar = matchedUser.profileImage!.trim();
             }
           }
@@ -707,13 +705,17 @@ class CallController extends GetxController {
           (call.date ?? '').toLowerCase().contains('today') ||
           (call.day ?? '').toLowerCase().contains('today');
       if (isToday) {
-        dt = dt.replaceAll(RegExp(r'^today,?\s*', caseSensitive: false), '').trim();
+        dt = dt
+            .replaceAll(RegExp(r'^today,?\s*', caseSensitive: false), '')
+            .trim();
       }
       final bool isYesterday = entry.section.toLowerCase() == 'yesterday' ||
           (call.date ?? '').toLowerCase().contains('yesterday') ||
           (call.day ?? '').toLowerCase().contains('yesterday');
       if (isYesterday) {
-        dt = dt.replaceAll(RegExp(r'^yesterday,?\s*', caseSensitive: false), '').trim();
+        dt = dt
+            .replaceAll(RegExp(r'^yesterday,?\s*', caseSensitive: false), '')
+            .trim();
       }
       return dt;
     }
@@ -727,7 +729,8 @@ class CallController extends GetxController {
 
     // Clean any leading "Today, " or "Yesterday, " prefix from time
     String cleanTime = apiTime
-        .replaceAll(RegExp(r'^(today|yesterday),?\s*', caseSensitive: false), '')
+        .replaceAll(
+            RegExp(r'^(today|yesterday),?\s*', caseSensitive: false), '')
         .trim();
 
     // Fallback if time is completely empty in API
@@ -765,7 +768,9 @@ class CallController extends GetxController {
       final String timeWithoutYesterday = apiTime
           .replaceAll(RegExp(r'^yesterday,?\s*', caseSensitive: false), '')
           .trim();
-      return timeWithoutYesterday.isNotEmpty ? timeWithoutYesterday : 'Yesterday';
+      return timeWithoutYesterday.isNotEmpty
+          ? timeWithoutYesterday
+          : 'Yesterday';
     }
 
     // Weekday name from API (e.g. "Monday, 5:05 AM")
@@ -779,7 +784,9 @@ class CallController extends GetxController {
     // Date from API (e.g. "15 Sep, 5:19 PM")
     if (apiDate.isNotEmpty) {
       final String formattedDate = _formatDate(apiDate);
-      return cleanTime.isNotEmpty ? '$formattedDate, $cleanTime' : formattedDate;
+      return cleanTime.isNotEmpty
+          ? '$formattedDate, $cleanTime'
+          : formattedDate;
     }
 
     // Week from API (e.g. "This Week")
@@ -789,7 +796,9 @@ class CallController extends GetxController {
 
     if ((call.calledAt ?? '').isNotEmpty) {
       final String formattedDate = _formatDate(call.calledAt!);
-      return cleanTime.isNotEmpty ? '$formattedDate, $cleanTime' : formattedDate;
+      return cleanTime.isNotEmpty
+          ? '$formattedDate, $cleanTime'
+          : formattedDate;
     }
 
     return cleanTime.isNotEmpty ? cleanTime : apiTime;
@@ -849,16 +858,13 @@ class CallController extends GetxController {
       final String normalizedCallerId = _normalizePhone(callerId);
       final String normalizedMobileNo = _normalizePhone(mobileNo);
 
-      final bool nameMatch =
-          query.isNotEmpty && name.contains(query);
+      final bool nameMatch = query.isNotEmpty && name.contains(query);
 
       final bool callerIdMatch =
-          queryDigits.isNotEmpty &&
-              normalizedCallerId.contains(queryDigits);
+          queryDigits.isNotEmpty && normalizedCallerId.contains(queryDigits);
 
       final bool mobileMatch =
-          queryDigits.isNotEmpty &&
-              normalizedMobileNo.contains(queryDigits);
+          queryDigits.isNotEmpty && normalizedMobileNo.contains(queryDigits);
 
       final bool groupMatch =
           query.isNotEmpty && (groupId.contains(query) || name.contains(query));
@@ -874,14 +880,13 @@ class CallController extends GetxController {
         "MATCH => name=$nameMatch | callerId=$callerIdMatch | mobile=$mobileMatch | group=$groupMatch",
       );
 
-      final bool matchQuery =
-          query.isEmpty ||
-              nameMatch ||
-              callerIdMatch ||
-              mobileMatch ||
-              groupMatch ||
-              apiDateMatch ||
-              type.contains(query);
+      final bool matchQuery = query.isEmpty ||
+          nameMatch ||
+          callerIdMatch ||
+          mobileMatch ||
+          groupMatch ||
+          apiDateMatch ||
+          type.contains(query);
 
       bool matchFilter = filter == 'All';
 

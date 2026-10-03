@@ -2,7 +2,6 @@ import 'package:fgtracker/app/Data/Repositories/status_repo.dart';
 import 'package:fgtracker/app/Data/Services/Socket/status_socket_service.dart';
 import 'package:fgtracker/app/Model/status_model.dart';
 import 'package:fgtracker/app/modules/status/controller/status_feed_controller.dart';
-
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -14,13 +13,25 @@ class StatusViewController extends GetxController
   final bool isOwnStatus;
   final RxList<StatusItemModel> statuses;
   final int initialIndex;
+  final List<ContactStatusGroupModel> allContactGroups;
+  final RxInt currentGroupIndex;
+  final RxString activeUserName;
+  final RxnString activeUserAvatar;
 
   StatusViewController({
     required this.isOwnStatus,
     required List<StatusItemModel> initialStatuses,
     this.initialIndex = 0,
-  }) : statuses = initialStatuses.obs;
+    this.allContactGroups = const [],
+    int initialGroupIndex = 0,
+    String initialUserName = 'My Status',
+    String? initialUserAvatar,
+  })  : statuses = initialStatuses.obs,
+        currentGroupIndex = initialGroupIndex.obs,
+        activeUserName = initialUserName.obs,
+        activeUserAvatar = RxnString(initialUserAvatar);
 
+  late final PageController userPageController;
   late final AnimationController progressController;
   final TextEditingController replyController = TextEditingController();
   final LayerLink menuLink = LayerLink();
@@ -30,7 +41,13 @@ class StatusViewController extends GetxController
   final RxBool isVideoInitialized = false.obs;
   final RxBool isVideoBuffering = false.obs;
   final RxBool hasVideoError = false.obs;
+  final RxDouble currentPageValue = 0.0.obs;
+
   bool _isPausedByUser = false;
+  bool _isClosing = false;
+  bool _isTransitioning = false;
+  bool _isProgrammaticPageChange = false;
+  bool _startTargetPageFromLast = false;
 
   final RxInt currentIndex = 0.obs;
   final RxBool hasText = false.obs;
@@ -46,6 +63,9 @@ class StatusViewController extends GetxController
     '😢',
     '🙏',
   ];
+
+  int get totalGroups =>
+      (!isOwnStatus && allContactGroups.isNotEmpty) ? allContactGroups.length : 1;
 
   int get totalStatuses => statuses.length;
 
@@ -67,6 +87,24 @@ class StatusViewController extends GetxController
   @override
   void onInit() {
     super.onInit();
+    final safeGroupIndex = (!isOwnStatus && allContactGroups.isNotEmpty)
+        ? currentGroupIndex.value.clamp(0, allContactGroups.length - 1)
+        : 0;
+    currentGroupIndex.value = safeGroupIndex;
+    currentPageValue.value = safeGroupIndex.toDouble();
+
+    userPageController = PageController(initialPage: safeGroupIndex)
+      ..addListener(_onPageScroll);
+
+    if (!isOwnStatus &&
+        allContactGroups.isNotEmpty &&
+        safeGroupIndex < allContactGroups.length) {
+      final grp = allContactGroups[safeGroupIndex];
+      statuses.assignAll(grp.statuses);
+      activeUserName.value = grp.user.name;
+      activeUserAvatar.value = grp.user.profilePic;
+    }
+
     currentIndex.value = initialIndex.clamp(
       0,
       statuses.isEmpty ? 0 : statuses.length - 1,
@@ -75,21 +113,63 @@ class StatusViewController extends GetxController
     progressController = AnimationController(
       vsync: this,
       duration: Duration(seconds: currentStatus?.durationSeconds ?? 5),
-    )..addStatusListener((status) {
-      if (status == AnimationStatus.completed) {
-        goNext();
-      }
-    });
+    )..addStatusListener(_onProgressStatusChanged);
 
     replyController.addListener(() {
       hasText.value = replyController.text.trim().isNotEmpty;
     });
   }
 
+  void _onPageScroll() {
+    if (!userPageController.hasClients) return;
+    final page = userPageController.page ?? currentGroupIndex.value.toDouble();
+    currentPageValue.value = page;
+
+    final isDragging = (page - page.roundToDouble()).abs() > 0.01;
+    if (isDragging && progressController.isAnimating) {
+      progressController.stop();
+      videoController?.pause();
+    } else if (!isDragging &&
+        !_isPausedByUser &&
+        !_isTransitioning &&
+        !_isClosing &&
+        _menuOverlay == null) {
+      if (videoController != null && videoController!.value.isInitialized) {
+        if (!videoController!.value.isPlaying) {
+          videoController!.play();
+        }
+      } else if (!progressController.isAnimating &&
+          progressController.value < 1.0) {
+        progressController.forward();
+      }
+    }
+  }
+
+  void _onProgressStatusChanged(AnimationStatus status) {
+    if (_isClosing || _isTransitioning) return;
+    if (status == AnimationStatus.completed) {
+      goNext();
+    }
+  }
+
   @override
   void onReady() {
     super.onReady();
     _loadCurrentStatus();
+  }
+
+  void closeViewer() {
+    if (_isClosing) return;
+    _isClosing = true;
+    _removeMenu();
+    progressController.removeStatusListener(_onProgressStatusChanged);
+    progressController.stop();
+    videoController?.removeListener(_onVideoListener);
+    videoController?.pause();
+    if (Get.isOverlaysOpen) {
+      Get.back();
+    }
+    Get.back();
   }
 
   Future<void> _disposeVideo() async {
@@ -106,6 +186,7 @@ class StatusViewController extends GetxController
   }
 
   void _onVideoListener() {
+    if (_isClosing || _isTransitioning) return;
     final vc = videoController;
     if (vc == null || !vc.value.isInitialized) return;
 
@@ -121,33 +202,33 @@ class StatusViewController extends GetxController
       return;
     }
 
-    if (!_isPausedByUser &&
-        _menuOverlay == null &&
-        !progressController.isAnimating &&
-        progressController.value < 1.0) {
-      progressController.forward();
-    }
-
     final totalMs = vc.value.duration.inMilliseconds;
     final posMs = vc.value.position.inMilliseconds;
     if (totalMs > 0) {
-      final ratio = (posMs / totalMs).clamp(0.0, 1.0);
+      final ratio = (posMs / totalMs).clamp(0.0, 0.999);
       progressController.value = ratio;
-      if (posMs >= totalMs && !vc.value.isPlaying) {
+      if (posMs >= totalMs) {
         goNext();
       }
     }
   }
 
   Future<void> _loadCurrentStatus() async {
+    if (_isClosing) return;
+    _isTransitioning = true;
     progressController.stop();
     progressController.reset();
     _isPausedByUser = false;
 
     await _disposeVideo();
+    if (_isClosing) return;
 
     final item = currentStatus;
-    if (item == null) return;
+    if (item == null) {
+      _isTransitioning = false;
+      closeViewer();
+      return;
+    }
 
     selectedReaction.value = item.myReaction ?? '';
     isLiked.value = item.myReaction == '❤️';
@@ -164,7 +245,7 @@ class StatusViewController extends GetxController
         videoController = vc;
         await vc.initialize();
 
-        if (currentStatus?.id != item.id) {
+        if (_isClosing || currentStatus?.id != item.id) {
           await vc.dispose();
           return;
         }
@@ -178,27 +259,31 @@ class StatusViewController extends GetxController
 
         vc.addListener(_onVideoListener);
         isVideoInitialized.value = true;
+        _isTransitioning = false;
 
-        if (!_isPausedByUser && _menuOverlay == null) {
+        if (!_isPausedByUser && _menuOverlay == null && !_isClosing) {
           await vc.play();
-          progressController.forward();
         }
       } catch (_) {
+        if (_isClosing) return;
         hasVideoError.value = true;
         progressController.duration = Duration(
           seconds: item.durationSeconds > 0 ? item.durationSeconds : 5,
         );
+        _isTransitioning = false;
         progressController.forward();
       }
     } else {
       progressController.duration = Duration(
         seconds: item.durationSeconds > 0 ? item.durationSeconds : 5,
       );
+      _isTransitioning = false;
       progressController.forward();
     }
   }
 
   void pause() {
+    if (_isClosing) return;
     _isPausedByUser = true;
     if (progressController.isAnimating) {
       progressController.stop();
@@ -209,35 +294,165 @@ class StatusViewController extends GetxController
   }
 
   void resume() {
-    if (_menuOverlay != null) return;
+    if (_isClosing || _menuOverlay != null) return;
     _isPausedByUser = false;
 
     if (videoController != null && videoController!.value.isInitialized) {
       videoController!.play();
+      return;
     }
     if (!progressController.isAnimating && progressController.value < 1.0) {
       progressController.forward();
     }
   }
 
-  void goNext() {
+  void onUserPageChanged(int groupIndex) {
+    if (_isClosing) return;
     _removeMenu();
+
+    final startFromLast =
+    _isProgrammaticPageChange ? _startTargetPageFromLast : false;
+    _isProgrammaticPageChange = false;
+    _startTargetPageFromLast = false;
+
+    if (groupIndex < 0 || groupIndex >= allContactGroups.length) return;
+    final nextGroup = allContactGroups[groupIndex];
+    if (nextGroup.statuses.isEmpty) return;
+
+    currentGroupIndex.value = groupIndex;
+    activeUserName.value = nextGroup.user.name;
+    activeUserAvatar.value = nextGroup.user.profilePic;
+    statuses.assignAll(nextGroup.statuses);
+
+    if (startFromLast) {
+      currentIndex.value = nextGroup.statuses.length - 1;
+    } else {
+      final firstUnviewed =
+      nextGroup.statuses.indexWhere((s) => !s.isViewed);
+      currentIndex.value = firstUnviewed >= 0 ? firstUnviewed : 0;
+    }
+
+    replyController.clear();
+    _loadCurrentStatus();
+  }
+
+  Future<void> _animateToGroupPage(
+      int targetGroupIndex, {
+        bool startFromLast = false,
+      }) async {
+    if (_isClosing) return;
+    if (targetGroupIndex < 0 || targetGroupIndex >= allContactGroups.length) {
+      closeViewer();
+      return;
+    }
+
+    if (!userPageController.hasClients) {
+      onUserPageChanged(targetGroupIndex);
+      return;
+    }
+
+    _isProgrammaticPageChange = true;
+    _startTargetPageFromLast = startFromLast;
+    progressController.stop();
+    videoController?.pause();
+
+    await userPageController.animateToPage(
+      targetGroupIndex,
+      duration: const Duration(milliseconds: 360),
+      curve: Curves.easeOutCubic,
+    );
+  }
+
+  void goNext() {
+    if (_isClosing) return;
+    _removeMenu();
+
     if (currentIndex.value < statuses.length - 1) {
       currentIndex.value++;
       _loadCurrentStatus();
-    } else {
-      Get.back();
+      return;
     }
+
+    if (!isOwnStatus &&
+        allContactGroups.isNotEmpty &&
+        currentGroupIndex.value < allContactGroups.length - 1) {
+      int nextGroupIdx = currentGroupIndex.value + 1;
+      while (nextGroupIdx < allContactGroups.length &&
+          allContactGroups[nextGroupIdx].statuses.isEmpty) {
+        nextGroupIdx++;
+      }
+      if (nextGroupIdx < allContactGroups.length) {
+        _animateToGroupPage(nextGroupIdx, startFromLast: false);
+        return;
+      }
+    }
+
+    closeViewer();
   }
 
   void goPrev() {
+    if (_isClosing) return;
     _removeMenu();
+
     if (currentIndex.value > 0) {
       currentIndex.value--;
       _loadCurrentStatus();
-    } else {
-      _loadCurrentStatus();
+      return;
     }
+
+    if (!isOwnStatus &&
+        allContactGroups.isNotEmpty &&
+        currentGroupIndex.value > 0) {
+      int prevGroupIdx = currentGroupIndex.value - 1;
+      while (prevGroupIdx >= 0 &&
+          allContactGroups[prevGroupIdx].statuses.isEmpty) {
+        prevGroupIdx--;
+      }
+      if (prevGroupIdx >= 0) {
+        _animateToGroupPage(prevGroupIdx, startFromLast: true);
+        return;
+      }
+    }
+
+    _loadCurrentStatus();
+  }
+
+  void goNextUser() {
+    if (_isClosing) return;
+    _removeMenu();
+    if (!isOwnStatus &&
+        allContactGroups.isNotEmpty &&
+        currentGroupIndex.value < allContactGroups.length - 1) {
+      int nextGroupIdx = currentGroupIndex.value + 1;
+      while (nextGroupIdx < allContactGroups.length &&
+          allContactGroups[nextGroupIdx].statuses.isEmpty) {
+        nextGroupIdx++;
+      }
+      if (nextGroupIdx < allContactGroups.length) {
+        _animateToGroupPage(nextGroupIdx, startFromLast: false);
+        return;
+      }
+    }
+    closeViewer();
+  }
+
+  void goPrevUser() {
+    if (_isClosing) return;
+    _removeMenu();
+    if (!isOwnStatus &&
+        allContactGroups.isNotEmpty &&
+        currentGroupIndex.value > 0) {
+      int prevGroupIdx = currentGroupIndex.value - 1;
+      while (prevGroupIdx >= 0 &&
+          allContactGroups[prevGroupIdx].statuses.isEmpty) {
+        prevGroupIdx--;
+      }
+      if (prevGroupIdx >= 0) {
+        _animateToGroupPage(prevGroupIdx, startFromLast: false);
+        return;
+      }
+    }
+    _loadCurrentStatus();
   }
 
   void _recordView({required int statusId, String? reactionEmoji}) {
@@ -258,6 +473,19 @@ class StatusViewController extends GetxController
       }
     } else {
       StatusRepo.viewStatus(statusId, reactionEmoji: reactionEmoji);
+    }
+
+    if (!isOwnStatus &&
+        currentGroupIndex.value >= 0 &&
+        currentGroupIndex.value < allContactGroups.length) {
+      final grp = allContactGroups[currentGroupIndex.value];
+      final idx = grp.statuses.indexWhere((s) => s.id == statusId);
+      if (idx != -1) {
+        grp.statuses[idx] = grp.statuses[idx].copyWith(
+          isViewed: true,
+          myReaction: reactionEmoji ?? grp.statuses[idx].myReaction,
+        );
+      }
     }
 
     if (Get.isRegistered<StatusFeedController>()) {
@@ -339,7 +567,7 @@ class StatusViewController extends GetxController
     if (deleted) {
       statuses.removeAt(currentIndex.value);
       if (statuses.isEmpty) {
-        Get.back();
+        closeViewer();
         return;
       }
       if (currentIndex.value >= statuses.length) {
@@ -438,7 +666,11 @@ class StatusViewController extends GetxController
 
   @override
   void onClose() {
+    _isClosing = true;
     _removeMenu();
+    userPageController.removeListener(_onPageScroll);
+    userPageController.dispose();
+    progressController.removeStatusListener(_onProgressStatusChanged);
     _disposeVideo();
     progressController.dispose();
     replyController.dispose();

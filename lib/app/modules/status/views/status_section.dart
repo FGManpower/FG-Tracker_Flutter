@@ -1,5 +1,5 @@
-import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/Model/status_model.dart';
+import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/modules/status/controller/status_feed_controller.dart';
 import 'package:fgtracker/app/modules/status/views/StatusViewScreen.dart';
 import 'package:fgtracker/app/modules/status/views/add_status_screen.dart';
@@ -304,8 +304,9 @@ class _StatusSectionState extends State<StatusSection> {
         SizedBox(
           height: 100.h,
           child: Obx(() {
-            final groups = controller.contactGroups;
-            final hasMyStatus = controller.myStatuses.isNotEmpty;
+            final groups = controller.contactGroups.toList();
+            final myStatuses = controller.myStatuses.toList();
+            final hasMyStatus = myStatuses.isNotEmpty;
 
             return ListView.separated(
               scrollDirection: Axis.horizontal,
@@ -314,7 +315,7 @@ class _StatusSectionState extends State<StatusSection> {
               separatorBuilder: (_, __) => SizedBox(width: 14.w),
               itemBuilder: (context, index) {
                 if (index == 0) {
-                  final lastStatus = hasMyStatus ? controller.myStatuses.last : null;
+                  final lastStatus = hasMyStatus ? myStatuses.last : null;
                   final myPreviewImage = lastStatus == null
                       ? null
                       : (lastStatus.type == 'video'
@@ -324,7 +325,7 @@ class _StatusSectionState extends State<StatusSection> {
                   return _statusItem(
                     key: _myStatusKey,
                     name: 'My Status',
-                    subtitle: hasMyStatus ? '${controller.myStatuses.length} active' : '',
+                    subtitle: hasMyStatus ? '${myStatuses.length} active' : '',
                     image: myPreviewImage,
                     borderColor: const Color(0xFF6B4DFF),
                     dotColor: null,
@@ -339,7 +340,12 @@ class _StatusSectionState extends State<StatusSection> {
                   );
                 }
 
-                final ContactStatusGroupModel group = groups[index - 1];
+                final int groupIndex = index - 1;
+                if (groupIndex < 0 || groupIndex >= groups.length) {
+                  return const SizedBox.shrink();
+                }
+
+                final ContactStatusGroupModel group = groups[groupIndex];
                 final bool isHighlighted =
                 controller.highlightedUserIds.contains(group.user.id);
 
@@ -361,9 +367,11 @@ class _StatusSectionState extends State<StatusSection> {
                         isOwnStatus: false,
                         userName: group.user.name,
                         userAvatar: group.user.profilePic,
-                        statuses: group.statuses,
+                        statuses: group.statuses.toList(),
                         currentIndex:
                         firstUnviewedIndex >= 0 ? firstUnviewedIndex : 0,
+                        allContactGroups: groups,
+                        initialGroupIndex: groupIndex,
                       ),
                     );
                   },

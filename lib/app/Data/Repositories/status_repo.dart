@@ -5,7 +5,7 @@ import 'package:fgtracker/app/Core/constant/urls.dart';
 import 'package:fgtracker/app/Core/util/http/http_util.dart';
 import 'package:fgtracker/app/Model/CommonRes.dart';
 import 'package:fgtracker/app/Model/status_model.dart';
-import 'package:http/http.dart' hide MultipartFile;
+
 
 class StatusRepo {
   static Future<StatusCreateRes> createStatus({
