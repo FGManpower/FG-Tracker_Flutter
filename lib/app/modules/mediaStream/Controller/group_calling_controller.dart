@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:developer';
+import 'dart:io';
 import 'package:fgtracker/app/Core/global/launchedFromCall.dart';
 import 'package:fgtracker/app/Core/util/CallKit/callkit_service.dart';
 import 'package:fgtracker/app/Core/values/Utils.dart';
@@ -416,13 +417,15 @@ class GroupCallingController extends GetxController {
       if (fullScreenShareUserId.value == myUserId) closeFullScreenShare();
     } else {
       try {
-        final bool granted = await webrtc.Helper.requestCapturePermission();
+        if (Platform.isAndroid) {
+          final bool granted = await webrtc.Helper.requestCapturePermission();
 
-        if (!granted) {
-          Utils().fluttertoast(
-            "Screen sharing permission was denied",
-          );
-          return;
+          if (!granted) {
+            Utils().fluttertoast(
+              "Screen sharing permission was denied",
+            );
+            return;
+          }
         }
 
         await ScreenShareForegroundService.start(

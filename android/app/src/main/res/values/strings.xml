@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="app_name">FG Tracker</string>
+    <string name="facebook_app_id">2087541501869419</string>
+    <string name="facebook_client_token">a2d6fe7b6b7dbb9a1ed1faa6d2218509</string>
+
     <string name="bubbles_activity">FG Tracker Overlay</string>
     <string name="foreground_service_special_use">Foreground service for overlay notification and communication</string>
 </resources>

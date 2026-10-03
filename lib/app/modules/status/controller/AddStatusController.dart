@@ -7,6 +7,7 @@ import 'package:fgtracker/app/modules/status/controller/status_feed_controller.d
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:video_compress/video_compress.dart';
 import 'package:video_player/video_player.dart';
 
 class AddStatusController extends GetxController {
@@ -250,10 +251,11 @@ class AddStatusController extends GetxController {
       _recordTimer?.cancel();
       final XFile video = await cameraController!.stopVideoRecording();
       isRecording.value = false;
-      final file = File(video.path);
+      final rawFile = File(video.path);
+      final preparedFile = await prepareVideoFile(rawFile);
       isVideoFile.value = true;
-      capturedFile.value = file;
-      await _initVideoPreview(file);
+      capturedFile.value = preparedFile;
+      await _initVideoPreview(preparedFile);
     } catch (_) {
       isRecording.value = false;
     }
@@ -351,8 +353,8 @@ class AddStatusController extends GetxController {
 
       final durationSeconds = backendType == 'video'
           ? (videoTotalSeconds.value > 0
-          ? videoTotalSeconds.value
-          : (recordDuration.value > 0 ? recordDuration.value : 15))
+              ? videoTotalSeconds.value
+              : (recordDuration.value > 0 ? recordDuration.value : 15))
           : 5;
 
       final response = await StatusRepo.createStatus(
@@ -362,8 +364,7 @@ class AddStatusController extends GetxController {
         fontStyle: 'default',
         durationSeconds: durationSeconds,
         privacyType: privacyType.value,
-        targetUserIds:
-        targetUserIds.isNotEmpty ? targetUserIds.toList() : null,
+        targetUserIds: targetUserIds.isNotEmpty ? targetUserIds.toList() : null,
         mediaFile: mode.value == 'text' ? null : capturedFile.value,
       );
 
@@ -392,6 +393,24 @@ class AddStatusController extends GetxController {
     } finally {
       isPosting.value = false;
     }
+  }
+
+  Future<File> prepareVideoFile(File rawFile) async {
+    if (!Platform.isIOS && !rawFile.path.toLowerCase().endsWith('.mov')) {
+      return rawFile;
+    }
+    try {
+      final info = await VideoCompress.compressVideo(
+        rawFile.path,
+        quality: VideoQuality.MediumQuality,
+        deleteOrigin: false,
+        includeAudio: true,
+      );
+      if (info != null && info.file != null) {
+        return info.file!;
+      }
+    } catch (_) {}
+    return rawFile;
   }
 
   @override

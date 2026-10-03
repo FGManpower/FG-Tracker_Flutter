@@ -7,7 +7,56 @@ import 'package:fgtracker/app/Model/CommonRes.dart';
 import 'package:fgtracker/app/Model/status_model.dart';
 
 
+import 'dart:convert';
+import 'dart:io';
+import 'package:dio/dio.dart';
+import 'package:fgtracker/app/Core/constant/urls.dart';
+import 'package:fgtracker/app/Core/util/http/http_util.dart';
+import 'package:fgtracker/app/Model/CommonRes.dart';
+import 'package:fgtracker/app/Model/status_model.dart';
+
 class StatusRepo {
+  static DioMediaType _resolveMediaType(String filePath, String statusType) {
+    final lower = filePath.toLowerCase();
+    if (statusType == 'video' ||
+        lower.endsWith('.mp4') ||
+        lower.endsWith('.mov') ||
+        lower.endsWith('.m4v') ||
+        lower.endsWith('.mkv') ||
+        lower.endsWith('.webm')) {
+      return DioMediaType('video', 'mp4');
+    }
+    if (lower.endsWith('.png')) {
+      return DioMediaType('image', 'png');
+    }
+    if (lower.endsWith('.gif')) {
+      return DioMediaType('image', 'gif');
+    }
+    if (lower.endsWith('.webp')) {
+      return DioMediaType('image', 'webp');
+    }
+    return DioMediaType('image', 'jpeg');
+  }
+
+  static String _normalizeFileName(String originalPath, String statusType) {
+    final rawName = originalPath.split('/').last;
+    final dotIndex = rawName.lastIndexOf('.');
+    final baseName = dotIndex != -1 ? rawName.substring(0, dotIndex) : rawName;
+    final ext = dotIndex != -1 ? rawName.substring(dotIndex).toLowerCase() : '';
+
+    if (statusType == 'video') {
+      if (ext == '.mov' || ext == '.m4v' || ext.isEmpty) {
+        return '$baseName.mp4';
+      }
+      return rawName;
+    }
+
+    if (ext == '.heic' || ext == '.heif' || ext.isEmpty) {
+      return '$baseName.jpg';
+    }
+    return rawName;
+  }
+
   static Future<StatusCreateRes> createStatus({
     required String type,
     required String content,
@@ -30,10 +79,13 @@ class StatusRepo {
     };
 
     if (mediaFile != null) {
-      final fileName = mediaFile.path.split('/').last;
+      final fileName = _normalizeFileName(mediaFile.path, type);
+      final mediaType = _resolveMediaType(mediaFile.path, type);
+
       map['media'] = await MultipartFile.fromFile(
         mediaFile.path,
         filename: fileName,
+        contentType: mediaType,
       );
     }
 
