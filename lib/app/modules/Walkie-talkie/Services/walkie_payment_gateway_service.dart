@@ -50,16 +50,18 @@ class WalkiePaymentGatewayService {
   }) async {
     final String orderId = 'FG_${DateTime.now().millisecondsSinceEpoch}';
     final String cleanPhone = customerPhone.replaceAll(RegExp(r'\D'), '');
-    final String formattedPhone =
-        cleanPhone.length >= 10 ? cleanPhone.substring(cleanPhone.length - 10) : '9876543210';
+    final String formattedPhone = cleanPhone.length >= 10
+        ? cleanPhone.substring(cleanPhone.length - 10)
+        : '9876543210';
     final String formattedEmail =
         customerEmail.isNotEmpty && customerEmail.contains('@')
             ? customerEmail
             : 'support@fgtracker.in';
     final String formattedName =
         customerName.isNotEmpty ? customerName : 'FG Tracker User';
-    final String formattedCustId =
-        customerId.isNotEmpty ? customerId : 'cust_${DateTime.now().millisecondsSinceEpoch}';
+    final String formattedCustId = customerId.isNotEmpty
+        ? customerId
+        : 'cust_${DateTime.now().millisecondsSinceEpoch}';
 
     final Map<String, dynamic> requestData = {
       'order_id': orderId,
@@ -87,14 +89,15 @@ class WalkiePaymentGatewayService {
 
     final Map<String, String> headers = {
       'x-client-id': ConstRes.activePaymentKey,
-      'x-client-secret': ConstRes.activePaymentSecret,
+      'x-client-secret': '',
       'x-api-version': '2023-08-01',
       'Content-Type': 'application/json',
       'Accept': 'application/json',
     };
 
     try {
-      debugPrint("🚀 [Cashfree] Creating Order: $orderId at $cashfreeBaseUrl/orders");
+      debugPrint(
+          "🚀 [Cashfree] Creating Order: $orderId at $cashfreeBaseUrl/orders");
       debugPrint("📋 [Cashfree] Payload: ${jsonEncode(requestData)}");
 
       final response = await _dio.post(
@@ -132,11 +135,13 @@ class WalkiePaymentGatewayService {
       } else {
         return CashfreeOrderResult(
           isSuccess: false,
-          errorMessage: "Failed to create payment session: ${response.statusMessage}",
+          errorMessage:
+              "Failed to create payment session: ${response.statusMessage}",
         );
       }
     } on DioException catch (dioErr) {
-      debugPrint("❌ [Cashfree] DioException: ${dioErr.message} | Response: ${dioErr.response?.data}");
+      debugPrint(
+          "❌ [Cashfree] DioException: ${dioErr.message} | Response: ${dioErr.response?.data}");
       String msg = "Payment initiation failed.";
       if (dioErr.response?.data is Map) {
         final map = dioErr.response!.data as Map;
@@ -166,7 +171,7 @@ class WalkiePaymentGatewayService {
   static Future<String?> checkOrderStatus(String orderId) async {
     final Map<String, String> headers = {
       'x-client-id': ConstRes.activePaymentKey,
-      'x-client-secret': ConstRes.activePaymentSecret,
+      'x-client-secret': '',
       'x-api-version': '2023-08-01',
       'Accept': 'application/json',
     };

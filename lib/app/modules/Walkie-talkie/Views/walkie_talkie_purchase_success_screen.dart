@@ -1195,7 +1195,7 @@ class _WalkieTalkiePurchaseSuccessScreenState
                 ),
                 elevation: 0,
               ),
-              onPressed: () => _showNotNowBottomSheet(context),
+              onPressed: () => _navigateToAssignMembers(),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [

@@ -14,21 +14,16 @@ class ConstRes {
   static String gMapApiKey = "AIzaSyAgt-V8kmcQJb_6Cj6LHArWfhWjVPh7N_Q";
 
   ///------------------------ Payment Gateway Credentials ------------------------///
-  // Razorpay Test & Production Keys
-  static const String razorpayTestKey = 'rzp_test_ThoFEwOj0pMgTH';
-  static const String razorpaySecretKey = '';
-  static const String razorpayLiveKey = '';
-
-  // Cashfree Credentials (for reference)
-  static const String paymentAppIdProd = 'rzp_test_ThoFEwOj0pMgTH';
-  static const String paymentSecretKeyProd = 'E0GZbrpaTrM37FAIJk8NXrKR';
-  static const String paymentAppIdDev = 'rzp_test_ThoFEwOj0pMgTH';
-  static const String paymentSecretKeyDev = 'E0GZbrpaTrM37FAIJk8NXrKR';
-
-  // Active Key for Razorpay Package
-  static const String activePaymentKey = razorpayTestKey;
-  static const String activePaymentSecret = razorpaySecretKey;
+  // Environment Switch: true = Production (Live), false = Testing (Sandbox)
   static const bool isPaymentLive = false;
+
+  // Razorpay Key IDs (Public Keys for Mobile SDK)
+  static const String razorpayTestKey = 'rzp_test_ThoFEwOj0pMgTH';
+  static const String razorpayLiveKey = 'rzp_live_TjQUIgRmscuMhF';
+
+  // Active Key for Razorpay Package (dynamically switches based on isPaymentLive)
+  static const String activePaymentKey =
+      isPaymentLive ? razorpayLiveKey : razorpayTestKey;
 
   static BaseOptions networkOptions = BaseOptions(
     baseUrl: aBaseUrl,

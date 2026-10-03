@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
@@ -12,6 +13,7 @@ import 'package:fgtracker/app/modules/Walkie-talkie/Razorpay/Controller/razorpay
 import 'package:fgtracker/app/modules/Walkie-talkie/Views/walkie_talkie_payment_failed_screen.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Views/walkie_talkie_payment_pending_screen.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Views/walkie_talkie_purchase_success_screen.dart';
+import 'package:fgtracker/app/modules/home/Controller/home_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -457,6 +459,9 @@ class WalkieOrderSummaryController extends GetxController {
         DateFormat('dd MMM yyyy, hh:mm a').format(DateTime.now());
 
     final String activePlanTitle = planName;
+    final String activeDuration = (summaryData.value?.plan?.billingInterval ??
+            order.value.durationName)
+        .trim();
     final double activeAmount =
         (createOrderData.value?.pricing?.finalAmount ?? totalPayable).toDouble();
     final String? activeOrderId = createOrderData.value?.razorpay?.orderId;
@@ -472,6 +477,8 @@ class WalkieOrderSummaryController extends GetxController {
         !lowerMsg.contains("error") &&
         !lowerMsg.contains("rejected");
 
+    final String cleanError = _cleanErrorMessage(msg, code);
+
     if (isExplicitlyPending) {
       Get.off(() => WalkieTalkiePaymentPendingScreen(
             isTeam: order.value.isTeam || purchasedSeats > 1,
@@ -485,15 +492,41 @@ class WalkieOrderSummaryController extends GetxController {
       Get.off(() => WalkieTalkiePaymentFailedScreen(
             isTeam: order.value.isTeam || purchasedSeats > 1,
             planTitle: activePlanTitle,
+            durationName: activeDuration,
             memberCount: purchasedSeats,
             amountPaid: activeAmount,
             transactionTime: nowFormatted,
-            errorMessage: msg.isNotEmpty
-                ? msg
-                : "Your payment could not be completed. Please try again.",
+            errorMessage: cleanError,
             orderId: activeOrderId,
           ));
     }
+  }
+
+  String _cleanErrorMessage(String? msg, int? code) {
+    if (msg == null ||
+        msg.trim().isEmpty ||
+        msg.toLowerCase() == 'undefined' ||
+        msg.toLowerCase() == 'null') {
+      if (code == Razorpay.PAYMENT_CANCELLED) {
+        return "Payment was cancelled by user. No amount has been charged to your account.";
+      } else if (code == Razorpay.NETWORK_ERROR) {
+        return "Network connection issue during payment. Please check your internet and try again.";
+      }
+      return "Your payment was not completed. No amount has been charged to your account.";
+    }
+
+    if (msg.contains('{') && msg.contains('}')) {
+      try {
+        final decoded = jsonDecode(msg);
+        if (decoded is Map && decoded['error'] != null) {
+          final err = decoded['error'];
+          if (err is Map && err['description'] != null) {
+            return err['description'].toString();
+          }
+        }
+      } catch (_) {}
+    }
+    return msg;
   }
 
   void showPaymentStatusModal({
@@ -683,9 +716,31 @@ class WalkieOrderSummaryController extends GetxController {
           ? rzp.amount!.round()
           : (totalPayable > 0 ? (totalPayable * 100).round() : 100);
 
-      final String razorpayKey = (rzp?.keyId != null && rzp!.keyId!.isNotEmpty)
-          ? rzp.keyId!
-          : ConstRes.activePaymentKey;
+      // Determine active Razorpay Key (Order response -> /api/initialize -> ConstRes fallback)
+      final initPayment = Get.isRegistered<HomeController>()
+          ? Get.find<HomeController>().initializeModel.value?.data?.payment
+          : null;
+
+      // Determine active Razorpay Key:
+      // Priority 1: Key paired directly with the created order_id from backend
+      // Priority 2: Key from GET /api/initialize
+      // Priority 3: Local ConstRes fallback
+      String razorpayKey = ConstRes.activePaymentKey;
+      if (rzp?.keyId != null && rzp!.keyId!.isNotEmpty) {
+        razorpayKey = rzp.keyId!;
+      } else if (initPayment?.razorpay?.keyId != null &&
+          initPayment!.razorpay!.keyId!.isNotEmpty) {
+        razorpayKey = initPayment.razorpay!.keyId!;
+      }
+
+      debugPrint("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+      debugPrint("🔍 [Payment Debug] createOrder.razorpay.keyId : '${rzp?.keyId}'");
+      debugPrint("🔍 [Payment Debug] createOrder.razorpay.orderId: '${rzp?.orderId}'");
+      debugPrint("🔍 [Payment Debug] initialize.razorpay.keyId  : '${initPayment?.razorpay?.keyId}'");
+      debugPrint("🔍 [Payment Debug] initialize.razorpay.mode   : '${initPayment?.razorpay?.mode}'");
+      debugPrint("🔍 [Payment Debug] ConstRes.activePaymentKey  : '${ConstRes.activePaymentKey}'");
+      debugPrint("👉 [Payment Debug] FINAL KEY PASSED TO SDK    : '$razorpayKey'");
+      debugPrint("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
 
       final Map<String, dynamic> razorpayOptions = {
         'key': razorpayKey,
@@ -694,7 +749,7 @@ class WalkieOrderSummaryController extends GetxController {
         'description': 'Walkie-Talkie Subscription',
         'currency': rzp?.currency ?? 'INR',
         if (rzp?.orderId != null && rzp!.orderId!.isNotEmpty)
-          'order_id': rzp!.orderId!,
+          'order_id': rzp.orderId!,
         'theme': {
           'color': '#5B4DF5',
         },
