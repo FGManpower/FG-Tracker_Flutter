@@ -184,6 +184,33 @@ class GroupWalkieController extends GetxController {
     }
   }
 
+  void addOrUpdateParticipant(WalkieParticipant p) {
+    if (p.userId.isEmpty) return;
+    final index = participants.indexWhere((item) => item.userId == p.userId);
+    if (index != -1) {
+      final existing = participants[index];
+      participants[index] = WalkieParticipant(
+        userId: p.userId,
+        name: (p.name.isNotEmpty && p.name != 'User') ? p.name : existing.name,
+        image: p.image.isNotEmpty ? p.image : existing.image,
+        isMuted: p.isMuted,
+        isListening: p.isListening,
+        isSpeaking: p.isSpeaking,
+      );
+    } else {
+      participants.add(p);
+    }
+    totalParticipants.value = participants.length;
+    participants.refresh();
+  }
+
+  void removeParticipant(String userId) {
+    if (userId.isEmpty) return;
+    participants.removeWhere((p) => p.userId == userId);
+    totalParticipants.value = participants.length;
+    participants.refresh();
+  }
+
   void updateParticipants(
     List<WalkieParticipant> list, {
     String? activeSpeaker,
@@ -226,9 +253,38 @@ class GroupWalkieController extends GetxController {
       audioState.value = WalkieAudioState.listening;
     }
 
-    for (final p in participants) {
-      p.isSpeaking = p.userId == speakerId;
+    if (speakerId.isNotEmpty) {
+      final index = participants.indexWhere((p) => p.userId == speakerId);
+      if (index != -1) {
+        participants[index].isSpeaking = true;
+        if (speakerName.isNotEmpty && speakerName != 'User') {
+          final existing = participants[index];
+          participants[index] = WalkieParticipant(
+            userId: speakerId,
+            name: speakerName,
+            image: speakerImage.isNotEmpty ? speakerImage : existing.image,
+            isMuted: existing.isMuted,
+            isListening: existing.isListening,
+            isSpeaking: true,
+          );
+        }
+      } else {
+        participants.add(WalkieParticipant(
+          userId: speakerId,
+          name: speakerName.isNotEmpty ? speakerName : "User",
+          image: speakerImage,
+          isSpeaking: true,
+          isListening: true,
+        ));
+      }
     }
+
+    for (final p in participants) {
+      if (p.userId != speakerId) {
+        p.isSpeaking = false;
+      }
+    }
+    totalParticipants.value = participants.length;
     participants.refresh();
   }
 
@@ -328,6 +384,14 @@ class GroupWalkieController extends GetxController {
 
   void showTrialEndedMessage() {
     _displayBanner("Free trial ended — Please subscribe to continue", Colors.redAccent);
+  }
+
+  void showNoVoiceSeatMessage() {
+    _displayBanner("No voice seat assigned — You are in Listen-Only mode", Colors.orange.shade800);
+  }
+
+  void showGenericErrorMessage(String msg) {
+    _displayBanner(msg, Colors.redAccent);
   }
 
   void onChannelLocked({required bool isLocked}) {

@@ -6,6 +6,7 @@ import 'package:fgtracker/app/Core/values/colorPool.dart';
 import 'package:fgtracker/app/Data/Repositories/GroupRepo.dart';
 import 'package:fgtracker/app/Data/Repositories/TrackRepo.dart';
 import 'package:fgtracker/app/Data/Repositories/walkie_plan_repo.dart';
+import 'package:fgtracker/app/Data/Services/walkie_talkie_trial_service.dart';
 import 'package:fgtracker/app/Model/GroupRes.dart';
 import 'package:fgtracker/app/Model/MemberDataRes.dart';
 import 'package:fgtracker/app/Model/group_member_model.dart';
@@ -171,7 +172,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
             final user = subRes.user;
             final userSub = subRes.user?.subscription;
 
-            // 1. Backend Authoritative Team Management State
+            // 1. Backend Authoritative Team Management State (for team owners)
             final bool bHasTeam = mgmt?.hasTeamPlan ??
                 (teamPlan != null && teamPlan.subscriptionId != null) ||
                 (userSub?.teamPlan != null || userSub?.isTeamPlanActive == true);
@@ -188,17 +189,30 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
             canManageMembers.value = bCanManage;
             canAssignMembers.value = bCanAssign;
 
-            // 2. Individual / No Plan flags
+            // 2. Assigned Team Member (User assigned to another admin's team plan)
+            final bool isAssignedTeamMember = user?.accessType?.toLowerCase() == 'team' ||
+                user?.accessType?.toLowerCase() == 'team_seat' ||
+                user?.accessType?.toLowerCase() == 'team_member' ||
+                (userSub?.teamSeats != null && userSub!.teamSeats!.isNotEmpty) ||
+                (user?.isSubscribed == true && !bHasTeam && user?.accessType?.toLowerCase() != 'individual');
+
+            // 3. Individual / No Plan flags
             final bool isIndiv = !bHasTeam &&
+                !isAssignedTeamMember &&
                 (user?.accessType?.toLowerCase() == 'individual' ||
                     userSub?.isIndividualOnly == true ||
                     userSub?.individual != null);
-            final bool isNoSub = !bHasTeam && !isIndiv;
+
+            final bool hasAnyActivePlan = bHasTeam ||
+                isIndiv ||
+                isAssignedTeamMember ||
+                (user?.isSubscribed == true && (user?.subscriptionStatus?.toLowerCase() == 'active' || user?.subscriptionStatus == null));
+            final bool isNoSub = !hasAnyActivePlan;
 
             isIndividualPlan.value = isIndiv;
             hasNoPlan.value = isNoSub;
 
-            // 3. Team Plan Dates & Seats
+            // 4. Team Plan Dates & Seats
             if (teamPlan != null) {
               planTitleName.value = teamPlan.planName?.isNotEmpty == true
                   ? teamPlan.planName!
@@ -217,6 +231,17 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
               maxAllowedSeats.value = teamPurchasedSeats.value > 0
                   ? teamPurchasedSeats.value
                   : 1;
+            } else if (isAssignedTeamMember) {
+              planTitleName.value = "Team Seat Member";
+              activeSubscriptionId.value = userSub?.subscriptionId ??
+                  (userSub?.teamSeats != null && userSub!.teamSeats!.isNotEmpty
+                      ? userSub!.teamSeats!.first.subscriptionId
+                      : null);
+              maxAllowedSeats.value = 1;
+              teamHasStarted.value = true;
+              teamPurchasedSeats.value = 1;
+              teamAssignedSeats.value = 1;
+              teamAvailableSeats.value = 0;
             } else if (isIndiv) {
               planTitleName.value = "Individual Plan";
               activeSubscriptionId.value = userSub?.subscriptionId ??
@@ -237,7 +262,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
             }
 
             debugPrint(
-                "🎯 [Walkie] HasTeam: ${hasTeamPlan.value} | CanManage: ${canManageMembers.value} | Started: ${teamHasStarted.value} | Seats: ${teamAssignedSeats.value}/${teamPurchasedSeats.value} (Avail: ${teamAvailableSeats.value})");
+                "🎯 [Walkie] HasTeam: ${hasTeamPlan.value} | AssignedMember: $isAssignedTeamMember | CanManage: ${canManageMembers.value} | Started: ${teamHasStarted.value} | Seats: ${teamAssignedSeats.value}/${teamPurchasedSeats.value} (Avail: ${teamAvailableSeats.value})");
           }
 
           final List<AssignedMemberItem> loadedSubscribed = [];
@@ -805,6 +830,14 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
   Future<bool> _canAccessWalkie() async {
     if (!hasNoPlan.value) return true;
     try {
+      final overview = await WalkieTalkieTrialService().getOverview();
+      if (overview.access?.canUseWalkie == true ||
+          overview.access?.hasTeamAccess == true ||
+          overview.access?.accessType == 'team' ||
+          overview.subscriptions?.team.currentSubscription?.isAssignedMember == true) {
+        hasNoPlan.value = false;
+        return true;
+      }
       final prefs = await SharedPreferences.getInstance();
       final userId = prefs.getString(PrefConst.userId) ?? '';
       final trialRemaining = prefs.getInt('walkie_trial_remaining_seconds_$userId');

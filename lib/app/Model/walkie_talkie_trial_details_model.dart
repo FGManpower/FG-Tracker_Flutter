@@ -75,11 +75,82 @@ class WalkieOverviewData {
       parsedSubs = WalkieSubscriptionsState.fromJson(
         Map<String, dynamic>.from(json['subscriptions']),
       );
+    } else if (json['subscriptions'] is List) {
+      parsedSubs = WalkieSubscriptionsState.fromList(
+        json['subscriptions'] as List,
+      );
     } else if (json['subscription'] is Map) {
       // Dual-support for previous schema variant
       parsedSubs = WalkieSubscriptionsState.fromLegacyJson(
         Map<String, dynamic>.from(json['subscription']),
       );
+    } else if (json['subscription'] is List) {
+      parsedSubs = WalkieSubscriptionsState.fromList(
+        json['subscription'] as List,
+      );
+    }
+
+    // Also merge any root-level plan arrays if present
+    final List<dynamic>? rootTeamList = json['teamPlans'] is List
+        ? json['teamPlans'] as List
+        : (json['activeSubscriptions'] is List
+            ? json['activeSubscriptions'] as List
+            : (json['teamSubscriptions'] is List
+                ? json['teamSubscriptions'] as List
+                : (json['mySubscriptions'] is List
+                    ? json['mySubscriptions'] as List
+                    : null)));
+
+    if (rootTeamList != null && rootTeamList.isNotEmpty) {
+      final List<WalkieTeamSubscriptionDetails> extraTeamSubs = [];
+      for (final item in rootTeamList) {
+        if (item is Map) {
+          extraTeamSubs.add(
+            WalkieTeamSubscriptionDetails.fromJson(
+              Map<String, dynamic>.from(item),
+            ),
+          );
+        }
+      }
+      if (extraTeamSubs.isNotEmpty) {
+        if (parsedSubs == null) {
+          parsedSubs = WalkieSubscriptionsState(
+            individual: const WalkieIndividualSubscriptionState(
+              hasPurchasedBefore: false,
+              hasActiveSubscription: false,
+              currentSubscription: null,
+            ),
+            team: WalkieTeamSubscriptionState(
+              hasPurchasedBefore: true,
+              hasActiveSubscription: extraTeamSubs.any((s) => s.isActive),
+              currentSubscription: extraTeamSubs.first,
+              subscriptions: extraTeamSubs,
+            ),
+          );
+        } else {
+          final merged = [...parsedSubs.team.subscriptions];
+          for (final item in extraTeamSubs) {
+            if (!merged.any((e) =>
+                e.subscriptionId == item.subscriptionId &&
+                item.subscriptionId != 0)) {
+              merged.add(item);
+            }
+          }
+          parsedSubs = WalkieSubscriptionsState(
+            individual: parsedSubs.individual,
+            team: WalkieTeamSubscriptionState(
+              hasPurchasedBefore:
+                  parsedSubs.team.hasPurchasedBefore || merged.isNotEmpty,
+              hasActiveSubscription:
+                  parsedSubs.team.hasActiveSubscription ||
+                      merged.any((s) => s.isActive),
+              currentSubscription: parsedSubs.team.currentSubscription ??
+                  (merged.isNotEmpty ? merged.first : null),
+              subscriptions: merged,
+            ),
+          );
+        }
+      }
     }
 
     WalkieAvailablePlans? parsedAvailable;
@@ -136,10 +207,16 @@ class WalkieOverviewData {
 class WalkieAccess {
   final bool canUseWalkie;
   final String accessType;
+  final bool hasIndividualAccess;
+  final bool hasTeamAccess;
+  final bool hasTrialAccess;
 
   const WalkieAccess({
     required this.canUseWalkie,
     required this.accessType,
+    this.hasIndividualAccess = false,
+    this.hasTeamAccess = false,
+    this.hasTrialAccess = false,
   });
 
   bool get canUseWalkieTalkie => canUseWalkie;
@@ -149,9 +226,17 @@ class WalkieAccess {
         json['canUseWalkieTalkie'] == true ||
         json['hasAccess'] == true;
 
+    final accType = json['accessType']?.toString() ?? 'none';
+    final hasIndiv = json['hasIndividualAccess'] == true || accType == 'individual';
+    final hasTeam = json['hasTeamAccess'] == true || accType == 'team' || accType == 'team_seat' || accType == 'team_member';
+    final hasTrial = json['hasTrialAccess'] == true || accType == 'trial';
+
     return WalkieAccess(
       canUseWalkie: canUse,
-      accessType: json['accessType']?.toString() ?? 'none',
+      accessType: accType,
+      hasIndividualAccess: hasIndiv,
+      hasTeamAccess: hasTeam,
+      hasTrialAccess: hasTrial,
     );
   }
 
@@ -159,6 +244,9 @@ class WalkieAccess {
     return {
       'canUseWalkie': canUseWalkie,
       'accessType': accessType,
+      'hasIndividualAccess': hasIndividualAccess,
+      'hasTeamAccess': hasTeamAccess,
+      'hasTrialAccess': hasTrialAccess,
     };
   }
 }
@@ -312,31 +400,88 @@ class WalkieSubscriptionsState {
       individual.hasActiveSubscription || team.hasActiveSubscription;
 
   factory WalkieSubscriptionsState.fromJson(Map<String, dynamic> json) {
+    WalkieIndividualSubscriptionState parsedIndiv;
+    if (json['individual'] is Map) {
+      parsedIndiv = WalkieIndividualSubscriptionState.fromJson(
+        Map<String, dynamic>.from(json['individual']),
+      );
+    } else {
+      parsedIndiv = const WalkieIndividualSubscriptionState(
+        hasPurchasedBefore: false,
+        hasActiveSubscription: false,
+        currentSubscription: null,
+      );
+    }
+
+    WalkieTeamSubscriptionState parsedTeam;
+    if (json['team'] is Map) {
+      parsedTeam = WalkieTeamSubscriptionState.fromJson(
+        Map<String, dynamic>.from(json['team']),
+      );
+    } else if (json['teamPlans'] is List) {
+      final List<WalkieTeamSubscriptionDetails> list = [];
+      for (final item in json['teamPlans'] as List) {
+        if (item is Map) {
+          list.add(
+            WalkieTeamSubscriptionDetails.fromJson(
+              Map<String, dynamic>.from(item),
+            ),
+          );
+        }
+      }
+      parsedTeam = WalkieTeamSubscriptionState(
+        hasPurchasedBefore: list.isNotEmpty,
+        hasActiveSubscription: list.any((s) => s.isActive),
+        currentSubscription: list.isNotEmpty ? list.first : null,
+        subscriptions: list,
+      );
+    } else {
+      parsedTeam = const WalkieTeamSubscriptionState(
+        hasPurchasedBefore: false,
+        hasActiveSubscription: false,
+        currentSubscription: null,
+      );
+    }
+
+    if (json['teamPlans'] is List && (json['teamPlans'] as List).isNotEmpty) {
+      final List<WalkieTeamSubscriptionDetails> extraList = [];
+      for (final item in json['teamPlans'] as List) {
+        if (item is Map) {
+          extraList.add(
+            WalkieTeamSubscriptionDetails.fromJson(
+              Map<String, dynamic>.from(item),
+            ),
+          );
+        }
+      }
+      final merged = [...parsedTeam.subscriptions];
+      for (final item in extraList) {
+        if (!merged.any((e) =>
+            e.subscriptionId == item.subscriptionId &&
+            item.subscriptionId != 0)) {
+          merged.add(item);
+        }
+      }
+      parsedTeam = WalkieTeamSubscriptionState(
+        hasPurchasedBefore: parsedTeam.hasPurchasedBefore || merged.isNotEmpty,
+        hasActiveSubscription:
+            parsedTeam.hasActiveSubscription || merged.any((s) => s.isActive),
+        currentSubscription: parsedTeam.currentSubscription ??
+            (merged.isNotEmpty ? merged.first : null),
+        subscriptions: merged,
+      );
+    }
+
     return WalkieSubscriptionsState(
-      individual: json['individual'] is Map
-          ? WalkieIndividualSubscriptionState.fromJson(
-              Map<String, dynamic>.from(json['individual']),
-            )
-          : const WalkieIndividualSubscriptionState(
-              hasPurchasedBefore: false,
-              hasActiveSubscription: false,
-              currentSubscription: null,
-            ),
-      team: json['team'] is Map
-          ? WalkieTeamSubscriptionState.fromJson(
-              Map<String, dynamic>.from(json['team']),
-            )
-          : const WalkieTeamSubscriptionState(
-              hasPurchasedBefore: false,
-              hasActiveSubscription: false,
-              currentSubscription: null,
-            ),
+      individual: parsedIndiv,
+      team: parsedTeam,
     );
   }
 
   factory WalkieSubscriptionsState.fromLegacyJson(Map<String, dynamic> json) {
     WalkieIndividualSubscriptionDetails? indivSub;
     WalkieTeamSubscriptionDetails? teamSub;
+    final List<WalkieTeamSubscriptionDetails> teamSubs = [];
 
     if (json['individual'] is Map) {
       indivSub = WalkieIndividualSubscriptionDetails.fromJson(
@@ -345,11 +490,17 @@ class WalkieSubscriptionsState {
     }
 
     if (json['teamPlans'] is List && (json['teamPlans'] as List).isNotEmpty) {
-      final first = (json['teamPlans'] as List).first;
-      if (first is Map) {
-        teamSub = WalkieTeamSubscriptionDetails.fromJson(
-          Map<String, dynamic>.from(first),
-        );
+      for (final item in json['teamPlans'] as List) {
+        if (item is Map) {
+          teamSubs.add(
+            WalkieTeamSubscriptionDetails.fromJson(
+              Map<String, dynamic>.from(item),
+            ),
+          );
+        }
+      }
+      if (teamSubs.isNotEmpty) {
+        teamSub = teamSubs.first;
       }
     }
 
@@ -360,9 +511,47 @@ class WalkieSubscriptionsState {
         currentSubscription: indivSub,
       ),
       team: WalkieTeamSubscriptionState(
-        hasPurchasedBefore: teamSub != null,
-        hasActiveSubscription: teamSub?.isActive == true,
+        hasPurchasedBefore: teamSub != null || teamSubs.isNotEmpty,
+        hasActiveSubscription:
+            teamSub?.isActive == true || teamSubs.any((s) => s.isActive),
         currentSubscription: teamSub,
+        subscriptions: teamSubs,
+      ),
+    );
+  }
+
+  factory WalkieSubscriptionsState.fromList(List list) {
+    WalkieIndividualSubscriptionDetails? indivSub;
+    final List<WalkieTeamSubscriptionDetails> teamSubs = [];
+
+    for (final item in list) {
+      if (item is Map) {
+        final map = Map<String, dynamic>.from(item);
+        final pType = (map['planType'] ??
+                (map['plan'] is Map ? map['plan']['planType'] : null) ??
+                '')
+            .toString()
+            .toLowerCase();
+
+        if (pType == 'individual') {
+          indivSub ??= WalkieIndividualSubscriptionDetails.fromJson(map);
+        } else {
+          teamSubs.add(WalkieTeamSubscriptionDetails.fromJson(map));
+        }
+      }
+    }
+
+    return WalkieSubscriptionsState(
+      individual: WalkieIndividualSubscriptionState(
+        hasPurchasedBefore: indivSub != null,
+        hasActiveSubscription: indivSub?.isActive == true,
+        currentSubscription: indivSub,
+      ),
+      team: WalkieTeamSubscriptionState(
+        hasPurchasedBefore: teamSubs.isNotEmpty,
+        hasActiveSubscription: teamSubs.any((s) => s.isActive),
+        currentSubscription: teamSubs.isNotEmpty ? teamSubs.first : null,
+        subscriptions: teamSubs,
       ),
     );
   }
@@ -523,11 +712,13 @@ class WalkieTeamSubscriptionState {
   final bool hasPurchasedBefore;
   final bool hasActiveSubscription;
   final WalkieTeamSubscriptionDetails? currentSubscription;
+  final List<WalkieTeamSubscriptionDetails> subscriptions;
 
   const WalkieTeamSubscriptionState({
     required this.hasPurchasedBefore,
     required this.hasActiveSubscription,
     this.currentSubscription,
+    this.subscriptions = const [],
   });
 
   factory WalkieTeamSubscriptionState.fromJson(Map<String, dynamic> json) {
@@ -538,11 +729,44 @@ class WalkieTeamSubscriptionState {
       );
     }
 
+    final List<WalkieTeamSubscriptionDetails> list = [];
+    final rawList = json['subscriptions'] ??
+        json['activeSubscriptions'] ??
+        json['currentSubscriptions'] ??
+        json['teamPlans'] ??
+        json['plans'];
+
+    if (rawList is List) {
+      for (final item in rawList) {
+        if (item is Map) {
+          list.add(
+            WalkieTeamSubscriptionDetails.fromJson(
+              Map<String, dynamic>.from(item),
+            ),
+          );
+        }
+      }
+    }
+
+    if (sub != null &&
+        !list.any((s) =>
+            s.subscriptionId == sub!.subscriptionId && s.subscriptionId != 0)) {
+      list.insert(0, sub);
+    }
+
+    if (sub == null && list.isNotEmpty) {
+      sub = list.first;
+    }
+
     return WalkieTeamSubscriptionState(
-      hasPurchasedBefore: json['hasPurchasedBefore'] == true,
+      hasPurchasedBefore: json['hasPurchasedBefore'] == true ||
+          sub != null ||
+          list.isNotEmpty,
       hasActiveSubscription: json['hasActiveSubscription'] == true ||
-          (sub != null && sub.isActive),
+          (sub != null && sub.isActive) ||
+          list.any((s) => s.isActive),
       currentSubscription: sub,
+      subscriptions: list,
     );
   }
 
@@ -551,6 +775,7 @@ class WalkieTeamSubscriptionState {
       'hasPurchasedBefore': hasPurchasedBefore,
       'hasActiveSubscription': hasActiveSubscription,
       'currentSubscription': currentSubscription?.toJson(),
+      'subscriptions': subscriptions.map((s) => s.toJson()).toList(),
     };
   }
 }
@@ -828,9 +1053,11 @@ class WalkieSubscriptionBridge {
       subscriptions.individual.currentSubscription;
 
   List<WalkieTeamSubscriptionDetails> get teamPlans =>
-      subscriptions.team.currentSubscription != null
-          ? [subscriptions.team.currentSubscription!]
-          : const [];
+      subscriptions.team.subscriptions.isNotEmpty
+          ? subscriptions.team.subscriptions
+          : (subscriptions.team.currentSubscription != null
+              ? [subscriptions.team.currentSubscription!]
+              : const []);
 
   List<WalkieCurrentSubscription> get activeSubscriptions {
     final list = <WalkieCurrentSubscription>[];
@@ -853,24 +1080,30 @@ class WalkieSubscriptionBridge {
         ),
       );
     }
-    final tm = subscriptions.team.currentSubscription;
-    if (tm != null && tm.isActive) {
-      list.add(
-        WalkieCurrentSubscription(
-          id: tm.subscriptionId,
-          ownerUserId: 0,
-          groupId: null,
-          purchasedSeats: tm.purchasedSeats,
-          status: tm.status,
-          source: tm.isOwner ? 'owner' : 'admin_assigned',
-          startsAt: tm.startsAt ?? tm.purchasedAt,
-          expiresAt: tm.expiresAt,
-          remainingSeconds: tm.expiresAt != null
-              ? tm.expiresAt!.difference(DateTime.now()).inSeconds
-              : 0,
-          plan: tm.plan,
-        ),
-      );
+    final tmList = subscriptions.team.subscriptions.isNotEmpty
+        ? subscriptions.team.subscriptions
+        : (subscriptions.team.currentSubscription != null
+            ? [subscriptions.team.currentSubscription!]
+            : <WalkieTeamSubscriptionDetails>[]);
+    for (final tm in tmList) {
+      if (tm.isActive) {
+        list.add(
+          WalkieCurrentSubscription(
+            id: tm.subscriptionId,
+            ownerUserId: 0,
+            groupId: null,
+            purchasedSeats: tm.purchasedSeats,
+            status: tm.status,
+            source: tm.isOwner ? 'owner' : 'admin_assigned',
+            startsAt: tm.startsAt ?? tm.purchasedAt,
+            expiresAt: tm.expiresAt,
+            remainingSeconds: tm.expiresAt != null
+                ? tm.expiresAt!.difference(DateTime.now()).inSeconds
+                : 0,
+            plan: tm.plan,
+          ),
+        );
+      }
     }
     return list;
   }
