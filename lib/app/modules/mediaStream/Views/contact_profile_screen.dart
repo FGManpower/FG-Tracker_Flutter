@@ -11,7 +11,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 import '../../../routes/app_pages.dart';
-import '../../mediaStream/Controller/call_controller.dart';
+import '../../call/Controller/call_controller.dart';
 
 class ContactProfileScreen extends StatelessWidget {
   final MemberData contactData;

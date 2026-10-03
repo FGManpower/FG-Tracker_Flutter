@@ -3,7 +3,7 @@ import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
 import 'package:fgtracker/app/modules/Track/Views/Tracking_screen.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/WalkieTalkieScreen.dart';
 import 'package:fgtracker/app/modules/home/Controller/home_controller.dart';
-import 'package:fgtracker/app/modules/mediaStream/Views/call_screen.dart';
+import 'package:fgtracker/app/modules/call/Views/call_screen.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';

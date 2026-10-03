@@ -7,6 +7,7 @@ import 'package:get/get.dart';
 import 'package:video_player/video_player.dart';
 import '../controller/status_view_controller.dart';
 
+import 'dart:ui';
 
 class StatusBackground extends StatelessWidget {
   final StatusItemModel status;
@@ -61,15 +62,12 @@ class StatusBackground extends StatelessWidget {
         return Stack(
           fit: StackFit.expand,
           children: [
-            ColoredBox(
-              color: Colors.black,
-              child: Center(
-                child: AspectRatio(
-                  aspectRatio: vc.value.aspectRatio > 0
-                      ? vc.value.aspectRatio
-                      : 9 / 16,
-                  child: VideoPlayer(vc),
-                ),
+            const ColoredBox(color: Colors.black),
+            Center(
+              child: AspectRatio(
+                aspectRatio:
+                    vc.value.aspectRatio > 0 ? vc.value.aspectRatio : 9 / 16,
+                child: VideoPlayer(vc),
               ),
             ),
             if (controller.isVideoBuffering.value)
@@ -85,23 +83,122 @@ class StatusBackground extends StatelessWidget {
 
     final imageUrl = status.mediaUrl;
     if (imageUrl != null && imageUrl.isNotEmpty) {
-      if (imageUrl.startsWith('http')) {
-        return Image.network(
-          imageUrl,
-          fit: BoxFit.cover,
-          width: double.infinity,
-          height: double.infinity,
-          errorBuilder: (_, __, ___) => const PlaceholderBg(),
-        );
-      }
-      return Image.asset(
-        imageUrl,
-        fit: BoxFit.cover,
-        width: double.infinity,
-        height: double.infinity,
-        errorBuilder: (_, __, ___) => const PlaceholderBg(),
+      final bool isNetwork = imageUrl.startsWith('http');
+      final ImageProvider provider = isNetwork
+          ? NetworkImage(imageUrl)
+          : AssetImage(imageUrl) as ImageProvider;
+
+      return Stack(
+        fit: StackFit.expand,
+        children: [
+          const ColoredBox(color: Colors.black),
+          Positioned.fill(
+            child: ImageFiltered(
+              imageFilter: ImageFilter.blur(sigmaX: 28, sigmaY: 28),
+              child: Opacity(
+                opacity: 0.45,
+                child: Image(
+                  image: provider,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                ),
+              ),
+            ),
+          ),
+          Positioned.fill(
+            child: Container(
+              color: Colors.black.withValues(alpha: 0.25),
+            ),
+          ),
+          Center(
+            child: InteractiveViewer(
+              minScale: 1.0,
+              maxScale: 3.0,
+              child: isNetwork
+                  ? Image.network(
+                      imageUrl,
+                      fit: BoxFit.contain,
+                      width: double.infinity,
+                      height: double.infinity,
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return const Center(
+                          child: CircularProgressIndicator(
+                            color: Color(0xFF6B4DFF),
+                          ),
+                        );
+                      },
+                      errorBuilder: (_, __, ___) => const PlaceholderBg(),
+                    )
+                  : Image.asset(
+                      imageUrl,
+                      fit: BoxFit.contain,
+                      width: double.infinity,
+                      height: double.infinity,
+                      errorBuilder: (_, __, ___) => const PlaceholderBg(),
+                    ),
+            ),
+          ),
+        ],
       );
     }
+
+    return const PlaceholderBg();
+  }
+}
+
+class StatusStaticPreviewBackground extends StatelessWidget {
+  final StatusItemModel status;
+
+  const StatusStaticPreviewBackground({
+    super.key,
+    required this.status,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (status.type == 'text') {
+      return Container(
+        color: status.parsedBgColor,
+        padding: EdgeInsets.symmetric(horizontal: 28.w),
+        alignment: Alignment.center,
+        child: Text(
+          status.content,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 28.sp,
+            fontFamily: FontFamily.interBold,
+            height: 1.3,
+          ),
+        ),
+      );
+    }
+
+    final previewUrl = status.type == 'video'
+        ? status.thumbnailUrl
+        : status.mediaUrl;
+
+    if (previewUrl != null &&
+        previewUrl.isNotEmpty &&
+        !previewUrl.toLowerCase().endsWith('.mp4')) {
+      return Stack(
+        fit: StackFit.expand,
+        children: [
+          const ColoredBox(color: Colors.black),
+          Center(
+            child: Image.network(
+              previewUrl,
+              fit: BoxFit.contain,
+              width: double.infinity,
+              height: double.infinity,
+              errorBuilder: (_, __, ___) => const PlaceholderBg(),
+            ),
+          ),
+        ],
+      );
+    }
+
     return const PlaceholderBg();
   }
 }
@@ -204,7 +301,7 @@ class StatusProgressBars extends StatelessWidget {
                         minHeight: 2.5.h,
                         backgroundColor: Colors.white.withValues(alpha: 0.35),
                         valueColor:
-                        const AlwaysStoppedAnimation<Color>(Colors.white),
+                            const AlwaysStoppedAnimation<Color>(Colors.white),
                       ),
                     );
                   },
@@ -241,7 +338,7 @@ class StatusTopBar extends StatelessWidget {
       child: Row(
         children: [
           GestureDetector(
-            onTap: () => Get.back(),
+            onTap: controller.closeViewer,
             child: Icon(
               Icons.arrow_back_rounded,
               color: Colors.white,
@@ -260,13 +357,13 @@ class StatusTopBar extends StatelessWidget {
               child: (userAvatar != null && userAvatar!.isNotEmpty)
                   ? Image.network(userAvatar!, fit: BoxFit.cover)
                   : Container(
-                color: const Color(0xFFE9E7FF),
-                child: Icon(
-                  Icons.person_rounded,
-                  color: const Color(0xFF6B4DFF),
-                  size: 22.sp,
-                ),
-              ),
+                      color: const Color(0xFFE9E7FF),
+                      child: Icon(
+                        Icons.person_rounded,
+                        color: const Color(0xFF6B4DFF),
+                        size: 22.sp,
+                      ),
+                    ),
             ),
           ),
           SizedBox(width: 10.w),
@@ -329,58 +426,46 @@ class StatusCaptionArea extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: Padding(
-        padding: EdgeInsets.fromLTRB(18.w, 0, 18.w, 14.h),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (caption.isNotEmpty)
-              Text(
-                caption,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 26.sp,
-                  fontFamily: FontFamily.interBold,
-                  height: 1.25,
-                  shadows: [
-                    Shadow(
-                      color: Colors.black.withValues(alpha: 0.45),
-                      blurRadius: 8,
-                    ),
-                  ],
-                ),
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
+      margin: EdgeInsets.only(bottom: 8.h),
+      color: Colors.black.withValues(alpha: 0.45),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (caption.isNotEmpty)
+            Text(
+              caption,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 15.sp,
+                fontFamily: FontFamily.interMedium,
+                height: 1.35,
               ),
-            if (location.isNotEmpty) ...[
-              SizedBox(height: 10.h),
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
-                decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.45),
-                  borderRadius: BorderRadius.circular(20.r),
+            ),
+          if (location.isNotEmpty) ...[
+            SizedBox(height: 6.h),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.location_on_rounded,
+                  color: Colors.white70,
+                  size: 13.sp,
                 ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.location_on_rounded,
-                      color: Colors.white,
-                      size: 14.sp,
-                    ),
-                    SizedBox(width: 4.w),
-                    reausabletext(
-                      location,
-                      fontsize: 12.sp,
-                      color: Colors.white,
-                      fontfamily: FontFamily.interMedium,
-                    ),
-                  ],
+                SizedBox(width: 4.w),
+                reausabletext(
+                  location,
+                  fontsize: 11.sp,
+                  color: Colors.white70,
+                  fontfamily: FontFamily.interMedium,
                 ),
-              ),
-            ],
+              ],
+            ),
           ],
-        ),
+        ],
       ),
     );
   }
@@ -555,14 +640,12 @@ class StatusOwnFooter extends StatelessWidget {
         final hasReaction = viewer.reactionEmoji != null &&
             viewer.reactionEmoji!.trim().isNotEmpty;
 
-
         final timeText = '';
 
         return Material(
           color: Colors.transparent,
           child: InkWell(
-            onTap: () {
-            },
+            onTap: () {},
             splashColor: Colors.white.withValues(alpha: 0.05),
             highlightColor: Colors.white.withValues(alpha: 0.03),
             child: Padding(
@@ -573,17 +656,16 @@ class StatusOwnFooter extends StatelessWidget {
                     radius: 22.r,
                     backgroundColor: const Color(0xFF1F2C34),
                     backgroundImage: (viewer.profileImage != null &&
-                        viewer.profileImage!.isNotEmpty)
+                            viewer.profileImage!.isNotEmpty)
                         ? NetworkImage(viewer.profileImage!)
                         : null,
                     child: (viewer.profileImage == null ||
-                        viewer.profileImage!.isEmpty)
+                            viewer.profileImage!.isEmpty)
                         ? Icon(Icons.person_rounded,
-                        color: Colors.white54, size: 22.sp)
+                            color: Colors.white54, size: 22.sp)
                         : null,
                   ),
                   SizedBox(width: 14.w),
-
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -605,7 +687,6 @@ class StatusOwnFooter extends StatelessWidget {
                       ],
                     ),
                   ),
-
                   if (hasReaction)
                     Text(
                       viewer.reactionEmoji!,
@@ -655,6 +736,7 @@ class StatusOwnFooter extends StatelessWidget {
     );
   }
 }
+
 class StatusOtherFooter extends StatelessWidget {
   final StatusViewController controller;
 
@@ -760,15 +842,15 @@ class StatusOtherFooter extends StatelessWidget {
                       border: hasText
                           ? null
                           : Border.all(
-                        color: Colors.white.withValues(alpha: 0.2),
-                      ),
+                              color: Colors.white.withValues(alpha: 0.2),
+                            ),
                     ),
                     child: Icon(
                       hasText
                           ? Icons.send_rounded
                           : (isLiked
-                          ? Icons.favorite_rounded
-                          : Icons.favorite_border_rounded),
+                              ? Icons.favorite_rounded
+                              : Icons.favorite_border_rounded),
                       color: hasText
                           ? Colors.white
                           : (isLiked ? Colors.redAccent : Colors.white),

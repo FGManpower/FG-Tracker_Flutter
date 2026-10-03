@@ -2,7 +2,7 @@ import 'dart:ui';
 
 import 'package:fgtracker/app/Core/values/colors.dart';
 import 'package:fgtracker/app/modules/mediaStream/Views/AudioCall_screen.dart';
-import 'package:fgtracker/app/modules/mediaStream/Widget/call_widget.dart';
+import 'package:fgtracker/app/modules/call/widget/call_widget.dart';
 import 'package:fgtracker/app/modules/mediaStream/Widget/draggableVideoPip.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -166,7 +166,7 @@ class CallingScreen extends StatelessWidget {
     return Column(
       children: [
         Text(
-          isOutgoing ? "Calling" : "Call From",
+          isOutgoing ? "" : "Call From",
           style: TextStyle(
             color: subColor,
             fontSize: 14.sp,
@@ -585,5 +585,3 @@ class CallingScreen extends StatelessWidget {
     );
   }
 }
-
-

@@ -1,3 +1,5 @@
+import 'package:fgtracker/app/modules/status/widget/StatusPreview.dart';
+import 'package:fgtracker/app/modules/status/widget/StatusTopBar.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controller/AddStatusController.dart';
