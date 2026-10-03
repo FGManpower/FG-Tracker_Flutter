@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 import 'package:connectycube_flutter_call_kit/connectycube_flutter_call_kit.dart';
+import 'package:facebook_app_events/facebook_app_events.dart';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Data/Repositories/call_repo.dart';
@@ -228,7 +229,8 @@ Future<void> main() async {
   Get.put<LocationService>(LocationService());
   Get.put<SocketService>(SocketService());
   Get.put<GroupCountService>(GroupCountService(), permanent: true);
-
+  FacebookAppEvents().setAutoLogAppEventsEnabled(true);
+  await FacebookAppEvents().setAdvertiserIdCollectionEnabled(true);
   final shared = await SharedPreferences.getInstance();
 
   var userId = shared.get(PrefConst.userId);
