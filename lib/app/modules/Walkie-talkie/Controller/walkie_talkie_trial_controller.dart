@@ -69,22 +69,45 @@ class WalkieTalkieTrialController extends GetxController
   bool get hasPurchasedTeamBefore =>
       teamState?.hasPurchasedBefore == true;
 
+  List<WalkieTeamSubscriptionDetails> get activeTeamSubscriptions {
+    if (teamState == null) return const [];
+    if (teamState!.subscriptions.isNotEmpty) {
+      return teamState!.subscriptions;
+    }
+    if (teamState!.currentSubscription != null) {
+      return [teamState!.currentSubscription!];
+    }
+    return const [];
+  }
+
   bool get hasActiveIndividualSubscription =>
       individualState?.hasActiveSubscription == true &&
       individualState?.currentSubscription != null;
 
   bool get hasActiveTeamSubscription =>
-      teamState?.hasActiveSubscription == true &&
-      teamState?.currentSubscription != null;
+      (teamState?.hasActiveSubscription == true ||
+          activeTeamSubscriptions.any((s) => s.isActive)) &&
+      activeTeamSubscriptions.isNotEmpty;
 
   WalkieIndividualSubscriptionDetails? get activeIndividualSubscription =>
       individualState?.currentSubscription;
 
   WalkieTeamSubscriptionDetails? get activeTeamSubscription =>
-      teamState?.currentSubscription;
+      activeTeamSubscriptions.isNotEmpty
+          ? activeTeamSubscriptions.first
+          : teamState?.currentSubscription;
+
+  bool get hasAssignedTeamAccess =>
+      access?.hasTeamAccess == true ||
+      access?.accessType == 'team' ||
+      teamState?.currentSubscription?.isAssignedMember == true ||
+      activeTeamSubscriptions.any((s) => s.isAssignedMember);
 
   bool get hasAnyActiveSubscription =>
-      hasActiveIndividualSubscription || hasActiveTeamSubscription;
+      hasActiveIndividualSubscription ||
+      hasActiveTeamSubscription ||
+      hasAssignedTeamAccess ||
+      (access?.canUseWalkie == true && access?.accessType != 'trial');
 
   /// Backward-compatible getter for other screens/controllers
   bool get hasActiveSubscription => hasAnyActiveSubscription;

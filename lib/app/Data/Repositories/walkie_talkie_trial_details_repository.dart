@@ -11,6 +11,9 @@ class WalkieTalkieTrialRepo {
       Urls.walkieOverview,
     );
 
+    // ignore: avoid_print
+    print('📦 [Walkie Overview API Raw Response]: $response');
+
     if (response is! Map) {
       throw const FormatException(
         'Invalid Walkie-Talkie overview response.',

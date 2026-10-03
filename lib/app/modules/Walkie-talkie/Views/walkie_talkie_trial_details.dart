@@ -137,12 +137,25 @@ class _WalkieTalkieTrialDetailsScreenState
                     ),
                     SizedBox(height: 10.h),
 
-                    // Team Plan Card (Active or "No Active Plan")
-                    WalkieTeamPlanCard(
-                      plan: controller.activeTeamSubscription,
-                      hasActiveSubscription:
-                          controller.hasActiveTeamSubscription,
-                    ),
+                    // Team Plan Card(s) (Active or "No Active Plan")
+                    if (controller.hasActiveTeamSubscription &&
+                        controller.activeTeamSubscriptions.isNotEmpty) ...[
+                      for (int i = 0;
+                          i < controller.activeTeamSubscriptions.length;
+                          i++) ...[
+                        WalkieTeamPlanCard(
+                          plan: controller.activeTeamSubscriptions[i],
+                          hasActiveSubscription: true,
+                        ),
+                        if (i < controller.activeTeamSubscriptions.length - 1)
+                          SizedBox(height: 10.h),
+                      ],
+                    ] else ...[
+                      WalkieTeamPlanCard(
+                        plan: null,
+                        hasActiveSubscription: false,
+                      ),
+                    ],
                     SizedBox(height: 12.h),
 
                     // =====================================================

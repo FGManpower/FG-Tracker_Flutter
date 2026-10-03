@@ -32,7 +32,8 @@ class Urls {
   static const String walkieVerifyPayment =
       '${ConstRes.aBaseUrl}walkie/payment/verify';
   static const String callingStatus = '${ConstRes.aBaseUrl}calling-status';
-  static const String walkieUpdateMemberSubscription = '${ConstRes.aBaseUrl}calling-status'; // update endpoint
+  static const String walkieUpdateMemberSubscription =
+      '${ConstRes.aBaseUrl}walkie/update-member-subscription';
 
 
   static const String createStatus = "status/create";
