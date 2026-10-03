@@ -161,21 +161,31 @@ class _WelcomeTitle extends StatelessWidget {
 
   final HomeController controller;
 
+  String _formatName(String raw) {
+    if (raw.trim().isEmpty) return 'User';
+    final words = raw.trim().split(RegExp(r'\s+'));
+    final firstName =
+        words.firstWhere((w) => w.isNotEmpty, orElse: () => 'User');
+    return firstName[0].toUpperCase() +
+        (firstName.length > 1 ? firstName.substring(1) : '');
+  }
+
   @override
   Widget build(BuildContext context) {
     return Obx(() {
       final String rawName = controller.userData.value.name?.trim() ?? '';
-      final String name = rawName.isNotEmpty ? rawName : 'User';
+      final String name = _formatName(rawName);
 
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
               Flexible(
                 child: Text(
-                  'Welcome Back, $name!',
+                  name,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
