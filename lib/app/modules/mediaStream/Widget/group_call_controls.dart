@@ -29,8 +29,37 @@ class GroupCallControls extends StatelessWidget {
         final isVideo = controller.isVideo;
         final isVideoOn = controller.isVideoOn.value;
         final isAudioOn = controller.isAudioOn.value;
-        final isSpeakerOn = controller.isSpeakerOn.value;
-        final isScreenSharing = controller.isScreenSharing.value;
+        final route = controller.audioRoute.value;
+
+        late IconData routeIcon;
+        late String routeLabel;
+        late Color routeBg;
+        late Color routeIconColor;
+        late Color routeBorder;
+
+        switch (route) {
+          case AudioRoute.bluetooth:
+            routeIcon = Icons.bluetooth_connected_rounded;
+            routeLabel = "Bluetooth";
+            routeBg = const Color(0xFFE8F0FF);
+            routeIconColor = const Color(0xFF2F6BFF);
+            routeBorder = const Color(0xFF2F6BFF);
+            break;
+          case AudioRoute.earpiece:
+            routeIcon = Icons.phone_in_talk_rounded;
+            routeLabel = "Earpiece";
+            routeBg = Colors.white;
+            routeIconColor = const Color(0xFF6E5CA4);
+            routeBorder = const Color(0xFFE9E5FE);
+            break;
+          case AudioRoute.speaker:
+            routeIcon = Icons.volume_up_rounded;
+            routeLabel = "Speaker";
+            routeBg = Colors.white;
+            routeIconColor = const Color(0xFF6E5CA4);
+            routeBorder = const Color(0xFFE9E5FE);
+            break;
+        }
 
         return Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -58,7 +87,6 @@ class GroupCallControls extends StatelessWidget {
               ),
               SizedBox(width: 8.w),
             ],
-
             ControlItem(
               icon: Icons.call_end_rounded,
               label: "End call",
@@ -79,13 +107,11 @@ class GroupCallControls extends StatelessWidget {
             ),
             SizedBox(width: 8.w),
             ControlItem(
-              icon: isSpeakerOn
-                  ? Icons.volume_up_rounded
-                  : Icons.volume_off_rounded,
-              label: "Speaker",
-              bgColor: Colors.white,
-              iconColor: const Color(0xFF6E5CA4),
-              borderColor: const Color(0xFFE9E5FE),
+              icon: routeIcon,
+              label: routeLabel,
+              bgColor: routeBg,
+              iconColor: routeIconColor,
+              borderColor: routeBorder,
               onTap: controller.toggleSpeaker,
             ),
             SizedBox(width: 4.w),
@@ -138,19 +164,19 @@ class ControlItem extends StatelessWidget {
                     : null,
                 boxShadow: bgColor == const Color(0xFFFF3B30)
                     ? [
-                        BoxShadow(
-                          color: const Color(0xFFFF3B30).withOpacity(0.35),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
-                      ]
+                  BoxShadow(
+                    color: const Color(0xFFFF3B30).withOpacity(0.35),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ]
                     : [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.04),
-                          blurRadius: 6,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.04),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
               ),
               child: Icon(icon, color: iconColor, size: iconSize.sp),
             ),

@@ -4,27 +4,22 @@ import '../../Model/walkie_talkie_trial_details_model.dart';
 class WalkieTrialException implements Exception {
   final String message;
 
-  const WalkieTrialException(
-      this.message,
-      );
+  const WalkieTrialException(this.message);
 
   @override
   String toString() => message;
 }
 
 class WalkieTalkieTrialService {
-  final WalkieTalkieTrialRepo _repository =
-  const WalkieTalkieTrialRepo();
+  final WalkieTalkieTrialRepo _repository = const WalkieTalkieTrialRepo();
 
   Future<WalkieOverviewData> getOverview() async {
     try {
-      final response =
-      await _repository.getWalkieOverview();
+      final response = await _repository.getWalkieOverview();
 
-      if (response.status != true) {
+      if (!response.isSuccessful) {
         throw WalkieTrialException(
-          response.message ??
-              'Unable to fetch Walkie-Talkie details.',
+          response.message ?? 'Unable to fetch Walkie-Talkie details.',
         );
       }
 

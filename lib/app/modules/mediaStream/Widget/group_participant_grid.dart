@@ -15,6 +15,8 @@ class GroupParticipantGrid extends StatelessWidget {
   final Set<String> screenSharingUserIds;
   final String? pinnedUserId;
   final void Function(String userId)? onTogglePin;
+  final VoidCallback? onSwitchCamera;
+
 
   const GroupParticipantGrid({
     super.key,
@@ -23,6 +25,7 @@ class GroupParticipantGrid extends StatelessWidget {
     this.screenSharingUserIds = const {},
     this.pinnedUserId,
     this.onTogglePin,
+    this.onSwitchCamera,
   });
 
   bool _isSharing(String userId) {
@@ -276,6 +279,31 @@ class GroupParticipantGrid extends StatelessWidget {
                 ),
               ),
 
+            if (participant.isLocal &&
+                isVideoMode &&
+                !isThumbnail &&
+                !isFullScreen &&
+                onSwitchCamera != null)
+              Positioned(
+                left: 10.w,
+                top: 10.h,
+                child: GestureDetector(
+                  onTap: onSwitchCamera,
+                  child: Container(
+                    padding: EdgeInsets.all(6.r),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: const Color(0xFFE9E5FE)),
+                    ),
+                    child: Icon(
+                      Icons.cameraswitch_rounded,
+                      color: const Color(0xFF6E5CA4),
+                      size: 18.sp,
+                    ),
+                  ),
+                ),
+              ),
 
             if (!isFullScreen && !isThumbnail)
               Positioned(

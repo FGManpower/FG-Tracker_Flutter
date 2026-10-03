@@ -51,6 +51,14 @@
 		<key>NSAllowsArbitraryLoads</key>
 		<true/>
 	</dict>
+
+	<key>FacebookAppID</key>
+    <string>2087541501869419</string>
+    <key>FacebookClientToken</key>
+    <string>a2d6fe7b6b7dbb9a1ed1faa6d2218509</string>
+    <key>FacebookDisplayName</key>
+    <string>FG Tracker</string>
+
 	<key>NSCameraUsageDescription</key>
 	<string>Need camera access for video calls and scan QR codes</string>
 	<key>NSContactsUsageDescription</key>

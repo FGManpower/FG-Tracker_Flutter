@@ -44,82 +44,87 @@ class BannerUi extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-
-       if (controller.isLoadingBanners.value) {
+      if (controller.isLoadingBanners.value) {
         return Padding(
-          padding: EdgeInsets.only(bottom: 18.h),
+          padding: EdgeInsets.only(bottom: 8.h),
           child: _buildBannerSkeleton(),
         );
-      }
-      else {
-        return controller.bannerList.isEmpty?SizedBox():Padding(
-          padding: EdgeInsets.only(bottom: 18.h),
-          child: SizedBox(
-            height: 160.h,
-            child: Swiper(
-              itemCount: controller.bannerList.length,
-              autoplay: true,
-              autoplayDelay: 3500,
-              duration: 800,
-              pagination: SwiperPagination(
-                alignment: Alignment.bottomCenter,
-                builder: DotSwiperPaginationBuilder(
-                  activeColor: const Color(0xFF6B4DFF),
-                  color: Colors.white.withValues(alpha: 0.6),
-                  size: 6.0.r,
-                  activeSize: 8.0.r,
-                  space: 4.0.w,
-                ),
-              ),
-              itemBuilder: (BuildContext context, int index) {
-                BannerData banner = controller.bannerList[index];
-
-                return Container(
-                  margin: EdgeInsets.symmetric(horizontal: 4.w),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(16.r),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.06),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(16.r),
-                    child: CachedNetworkImage(
-                      imageUrl: Utility.isNullEmptyOrFalse(banner.imageUrl)
-                          ? MyAppTheme.notFoundImg
-                          : banner.imageUrl.toString(),
-                      fit: BoxFit.cover,
-                      width: double.infinity,
-                      placeholder: (context, url) {
-                        return Container(
-                          color: Colors.grey.shade100,
-                          child: const Center(
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          ),
-                        );
-                      },
-                      errorWidget: (context, url, error) {
-                        return Container(
-                          color: Colors.grey.shade300,
-                          child: const Center(
-                            child: Icon(
-                              Icons.broken_image,
-                              color: Colors.grey,
+      } else {
+        return controller.bannerList.isEmpty
+            ? SizedBox()
+            : Padding(
+                padding: EdgeInsets.only(bottom: 8.h),
+                child: SizedBox(
+                  height: 160.h,
+                  child: Swiper(
+                    itemCount: controller.bannerList.length,
+                    loop: false,
+                    autoplay: controller.bannerList.length > 1,
+                    autoplayDelay: 3500,
+                    duration: 800,
+                    pagination: controller.bannerList.length > 1
+                        ? SwiperPagination(
+                            alignment: Alignment.bottomCenter,
+                            builder: DotSwiperPaginationBuilder(
+                              activeColor: const Color(0xFF6B4DFF),
+                              color: Colors.white.withValues(alpha: 0.6),
+                              size: 6.0.r,
+                              activeSize: 8.0.r,
+                              space: 4.0.w,
                             ),
+                          )
+                        : null,
+                    itemBuilder: (BuildContext context, int index) {
+                      BannerData banner = controller.bannerList[index];
+
+                      return Container(
+                        margin: EdgeInsets.symmetric(horizontal: 4.w),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(16.r),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.06),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(16.r),
+                          child: CachedNetworkImage(
+                            imageUrl:
+                                Utility.isNullEmptyOrFalse(banner.imageUrl)
+                                    ? MyAppTheme.notFoundImg
+                                    : banner.imageUrl.toString(),
+                            fit: BoxFit.cover,
+                            width: double.infinity,
+                            placeholder: (context, url) {
+                              return Container(
+                                color: Colors.grey.shade100,
+                                child: const Center(
+                                  child:
+                                      CircularProgressIndicator(strokeWidth: 2),
+                                ),
+                              );
+                            },
+                            errorWidget: (context, url, error) {
+                              return Container(
+                                color: Colors.grey.shade300,
+                                child: const Center(
+                                  child: Icon(
+                                    Icons.broken_image,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                              );
+                            },
                           ),
-                        );
-                      },
-                    ),
+                        ),
+                      );
+                    },
                   ),
-                );
-              },
-            ),
-          ),
-        );
+                ),
+              );
       }
     });
   }

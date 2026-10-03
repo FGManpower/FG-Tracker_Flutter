@@ -1,12 +1,12 @@
-import 'package:fgtracker/app/modules/mediaStream/Views/call_contacts_tab.dart';
-import 'package:fgtracker/app/modules/mediaStream/Views/call_groups_tab.dart';
-import 'package:fgtracker/app/modules/mediaStream/Controller/call_controller.dart';
+import 'package:fgtracker/app/modules/call/Views/call_contacts_tab.dart';
+import 'package:fgtracker/app/modules/call/Views/call_groups_tab.dart';
+import 'package:fgtracker/app/modules/call/Controller/call_controller.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
-import '../Widget/call_dial_pad.dart';
+import '../widget/call_dial_pad.dart';
 import 'call_recent_calls_tab.dart';
 
 class CallScreen extends StatefulWidget {

@@ -16,6 +16,15 @@ import '../../../routes/app_pages.dart';
 import '../Controller/home_controller.dart';
 
 Widget headerUi(HomeController controller) {
+  String formatName(String? raw) {
+    if (raw == null || raw.trim().isEmpty) return '';
+    final words = raw.trim().split(RegExp(r'\s+'));
+    final firstName = words.firstWhere((w) => w.isNotEmpty, orElse: () => '');
+    if (firstName.isEmpty) return '';
+    return firstName[0].toUpperCase() +
+        (firstName.length > 1 ? firstName.substring(1) : '');
+  }
+
   return Obx(() => Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -24,8 +33,11 @@ Widget headerUi(HomeController controller) {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                reausabletext("Hello ${controller.userData.value.name ?? ""}",
-                    fontfamily: FontFamily.interSemiBold, fontsize: 19),
+                reausabletext(
+                  "Hello ${formatName(controller.userData.value.name)}",
+                  fontfamily: FontFamily.interSemiBold,
+                  fontsize: 19,
+                ),
                 reausabletext("It’s good to see you again 👋",
                     fontfamily: FontFamily.interRegular, fontsize: 12),
               ],

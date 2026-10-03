@@ -3,13 +3,16 @@ import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 import 'package:connectycube_flutter_call_kit/connectycube_flutter_call_kit.dart';
+import 'package:facebook_app_events/facebook_app_events.dart';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
+import 'package:fgtracker/app/Data/Repositories/call_repo.dart';
 import 'package:fgtracker/app/Data/Services/CallStateTracker.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Dashboard_Service.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Group_Calling.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Walkie-Talkie-Service.dart';
 import 'package:fgtracker/app/Data/Services/screen_share_service.dart';
+import 'package:fgtracker/app/modules/status/binding/status_binding.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -44,11 +47,6 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   if (message.data['screen_name'] == "incomingCall") {
     final callData = jsonDecode(message.data['callData']);
     final originalCallId = callData['callId'].toString();
-    socket?.emit("CallingStatus", {
-      "callId": originalCallId,
-      "remoteUserId": int.tryParse(callData['callerId'].toString()) ?? 0,
-      "callingStatus": "Ringing",
-    });
     if (Platform.isIOS) {
       // await RemoteLoggerTest.log("FCM_BG_HANDLER", "iOS detected in FCM background handler: ${message.data}");
       return;
@@ -80,16 +78,19 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     } catch (e) {
       log("showCallNotification error: $e");
     }
+    try {
+      await CallRepo.updateCallingStatus(
+          callId: originalCallId,
+          callingStatus: "Ringing",
+          remoteUserId: int.tryParse(callData['callerId'].toString()) ?? 0);
+    } catch (e) {
+      log(e.toString());
+    }
   }
 
   if (message.data['screen_name'] == "incomingGroupCall") {
     final callData = jsonDecode(message.data['callData']);
     final originalCallId = callData['callId'].toString();
-    socket?.emit("CallingStatus", {
-      "callId": originalCallId,
-      "remoteUserId": int.tryParse(callData['callerId'].toString()) ?? 0,
-      "callingStatus": "Ringing",
-    });
 
     if (Platform.isIOS) {
       // await RemoteLoggerTest.log("FCM_BG_HANDLER", "iOS detected in FCM background handler: ${message.data}");
@@ -111,6 +112,14 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
       );
     } catch (e) {
       log("showCallNotification error: $e");
+    }
+    try {
+      await CallRepo.updateCallingStatus(
+          callId: originalCallId,
+          callingStatus: "Ringing",
+          remoteUserId: int.tryParse(callData['callerId'].toString()) ?? 0);
+    } catch (e) {
+      log(e.toString());
     }
   } else if (message.data['screen_name'] == "missedCall") {
     final callData = jsonDecode(message.data['callData']);
@@ -220,7 +229,8 @@ Future<void> main() async {
   Get.put<LocationService>(LocationService());
   Get.put<SocketService>(SocketService());
   Get.put<GroupCountService>(GroupCountService(), permanent: true);
-
+  FacebookAppEvents().setAutoLogAppEventsEnabled(true);
+  await FacebookAppEvents().setAdvertiserIdCollectionEnabled(true);
   final shared = await SharedPreferences.getInstance();
 
   var userId = shared.get(PrefConst.userId);
@@ -233,6 +243,8 @@ Future<void> main() async {
     groupWalkieInitialize(userId);
     Socket_GroupCallService.instance.init(userId.toString());
     SocketDashboardService().init();
+
+    StatusBinding().dependencies();
   }
   ScreenShareForegroundService.init();
   runApp(const MyApp());

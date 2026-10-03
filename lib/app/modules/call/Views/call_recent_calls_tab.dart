@@ -5,8 +5,8 @@ import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Data/Services/call_service.dart';
 import 'package:fgtracker/app/Data/Services/group_call_service.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
-import 'package:fgtracker/app/modules/mediaStream/Widget/call_widget.dart';
-import 'package:fgtracker/app/modules/mediaStream/Controller/call_controller.dart';
+import 'package:fgtracker/app/modules/call/widget/call_widget.dart';
+import 'package:fgtracker/app/modules/call/Controller/call_controller.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
@@ -15,7 +15,7 @@ import 'package:get/get.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 import '../../../Model/MemberDataRes.dart';
-import 'contact_profile_screen.dart';
+import '../../mediaStream/Views/contact_profile_screen.dart';
 
 class CallRecentCallsTab extends StatefulWidget {
   const CallRecentCallsTab({super.key});

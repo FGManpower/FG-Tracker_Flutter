@@ -9,7 +9,63 @@ import 'package:fgtracker/app/Model/walkie_order_summary_model.dart';
 import 'package:fgtracker/app/Model/walkie_verify_payment_model.dart';
 import 'package:flutter/cupertino.dart';
 
+import 'package:fgtracker/app/Model/CommonRes.dart';
+
 class WalkiePlanRepo {
+  static Future<CommonResponse> updateMemberSubscription({
+    required int subscriptionId,
+    List<int>? targetUserIds,
+    int? targetUserId,
+    List<int>? replaceUserIds,
+    int? replaceUserId,
+    int? removeUserId,
+    int? oldUserId,
+    int? newUserId,
+    String? action,
+  }) async {
+    final Map<String, dynamic> body = {
+      'subscriptionId': subscriptionId,
+    };
+
+    if (action != null && action.isNotEmpty) {
+      body['action'] = action;
+    }
+
+    if (targetUserIds != null && targetUserIds.isNotEmpty) {
+      body['targetUserIds'] = targetUserIds;
+    } else if (targetUserId != null) {
+      body['targetUserId'] = targetUserId;
+    }
+
+    if (replaceUserIds != null && replaceUserIds.isNotEmpty) {
+      body['replaceUserIds'] = replaceUserIds;
+    } else if (replaceUserId != null) {
+      body['replaceUserId'] = replaceUserId;
+    }
+
+    if (removeUserId != null) {
+      body['removeUserId'] = removeUserId;
+    }
+
+    if (oldUserId != null) {
+      body['oldUserId'] = oldUserId;
+    }
+
+    if (newUserId != null) {
+      body['newUserId'] = newUserId;
+    }
+
+    debugPrint(
+        "🚀 [WalkiePlanRepo.updateMemberSubscription] URL: ${Urls.walkieUpdateMemberSubscription} | Body: $body");
+    var response = await HttpUtil().Authpost(
+      Urls.walkieUpdateMemberSubscription,
+      data: body,
+    );
+    debugPrint(
+        "✅ [WalkiePlanRepo.updateMemberSubscription] Raw Response: $response");
+    return CommonResponse.fromJson(response);
+  }
+
   static Future<WalkiePlansResponseModel> getPlans({required String planType}) async {
     var response = await HttpUtil().get(
       Urls.walkiePlans,

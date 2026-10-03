@@ -3,7 +3,7 @@ description: "A new Flutter project."
 
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
-version: 1.8.9
+version: 1.9.5
 
 environment:
   sdk: ^3.6.1
@@ -94,6 +94,8 @@ dependencies:
   flutter_linkify: ^6.0.0
   flutter_foreground_task: ^11.0.3
   razorpay_flutter: ^1.4.7
+  video_compress: ^3.1.4
+  facebook_app_events: ^0.30.3
 
 
 dependency_overrides:
@@ -112,19 +114,10 @@ flutter_launcher_icons:
   android: true
   ios: true
   image_path: "assets/icons/app_icon.png"
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: "assets/icons/app_icon.png"
   min_sdk_android: 21
   remove_alpha_ios: true
-  adaptive_icon_background: "#000000"
-  adaptive_icon_foreground: "assets/icons/app_icon.png"
-
-flutter_icons:
-  android: true
-  ios: true
-  image_path: "assets/icons/app_icon.png"
-  min_sdk_android: 21
-  remove_alpha_ios: true
-  adaptive_icon_background: "#000000"
-  adaptive_icon_foreground: "assets/icons/app_icon.png"
 
 
 flutter:

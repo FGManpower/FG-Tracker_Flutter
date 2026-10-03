@@ -35,6 +35,9 @@ class $AssetsIconsGen {
   /// File path: assets/icons/app_icon.png
   AssetGenImage get appIcon => const AssetGenImage('assets/icons/app_icon.png');
 
+  /// File path: assets/icons/app_icon_old.png
+  AssetGenImage get appIconOld => const AssetGenImage('assets/icons/app_icon_old.png');
+
   /// File path: assets/icons/fg_manpower_logo.png
   AssetGenImage get fgManpowerLogo =>
       const AssetGenImage('assets/icons/fg_manpower_logo.png');
@@ -135,8 +138,8 @@ class $AssetsWalkieTalkieGen {
       const AssetGenImage('assets/walkie_talkie/worker_yellow_helmet.png');
 
   /// File path: assets/walkie_talkie/worker_yellow_helmet_right.png
-  AssetGenImage get workerYellowHelmetRight =>
-      const AssetGenImage('assets/walkie_talkie/worker_yellow_helmet_right.png');
+  AssetGenImage get workerYellowHelmetRight => const AssetGenImage(
+      'assets/walkie_talkie/worker_yellow_helmet_right.png');
 
   /// File path: assets/walkie_talkie/worker_blue_cap.png
   AssetGenImage get workerBlueCap =>
@@ -206,6 +209,10 @@ class $AssetsImagesGen {
   AssetGenImage get appIcon =>
       const AssetGenImage('assets/images/app_icon.png');
 
+  /// File path: assets/images/app_icon_old.png
+  AssetGenImage get appIconOld =>
+      const AssetGenImage('assets/images/app_icon_old.png');
+
   /// File path: assets/images/audio.png
   AssetGenImage get audio => const AssetGenImage('assets/images/audio.png');
 
@@ -236,8 +243,8 @@ class $AssetsImagesGen {
   /// File path: assets/images/image3.png
   AssetGenImage get image3 => const AssetGenImage('assets/images/image3.png');
 
-  /// File path: assets/images/img.png
-  AssetGenImage get img => const AssetGenImage('assets/images/img.png');
+  /// File path: assets/images/app_icon.png
+  AssetGenImage get img => const AssetGenImage('assets/images/app_icon.png');
 
   /// File path: assets/images/introduction1.png
   AssetGenImage get introduction1 =>

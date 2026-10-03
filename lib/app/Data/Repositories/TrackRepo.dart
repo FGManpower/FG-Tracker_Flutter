@@ -186,12 +186,17 @@ class TrackRepo {
     String page = '1',
     String filter = 'all',
     int limit = 20,
+    String? groupId,
   }) async {
     try {
-      final String url = '${Urls.allGroupMembers}'
+      String url = '${Urls.allGroupMembers}'
           '?filter=$filter'
           '&page=$page'
           '&limit=$limit';
+
+      if (groupId != null && groupId.trim().isNotEmpty) {
+        url += '&groupId=${groupId.trim()}';
+      }
 
       final response = await HttpUtil().get(url);
 

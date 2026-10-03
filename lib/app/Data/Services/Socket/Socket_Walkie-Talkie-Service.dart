@@ -14,6 +14,10 @@ import 'package:get/get.dart' hide navigator;
 import 'package:permission_handler/permission_handler.dart';
 import 'package:proximity_screen_lock/proximity_screen_lock.dart';
 import 'package:socket_io_client/socket_io_client.dart';
+import 'package:fgtracker/app/Core/values/global.dart';
+import 'package:fgtracker/app/Core/values/storage_services.dart';
+import 'package:fgtracker/app/Core/constant/pref_res.dart';
+import 'package:fgtracker/app/Core/constant/const_res.dart';
 
 enum WalkieAudioRoute { speaker, earpiece, bluetooth, headset }
 
@@ -347,11 +351,36 @@ class GroupWalkieService {
 
     socket?.on('walkie_existing_peers', (data) async {
       if (_isDisposed || data == null) return;
-      final peers = (data['peers'] as List?) ?? [];
+      _log('👥 walkie_existing_peers received: $data');
+      final peers = (data is Map ? (data['peers'] ?? data['participants']) : null) as List? ??
+          (data is List ? data : []);
 
       for (final p in peers) {
-        final id = p.toString();
+        String id = '';
+        String name = 'User';
+        String image = '';
+        if (p is Map) {
+          id = p['userId']?.toString() ?? p['id']?.toString() ?? '';
+          name = p['name']?.toString() ?? 'User';
+          image = p['image']?.toString() ?? p['profileImage']?.toString() ?? '';
+        } else {
+          id = p.toString();
+        }
+
         if (id.isEmpty || id == _selfUserId) continue;
+
+        if (Get.isRegistered<GroupWalkieController>()) {
+          Get.find<GroupWalkieController>().addOrUpdateParticipant(
+            WalkieParticipant(
+              userId: id,
+              name: name,
+              image: image,
+              isSpeaking: false,
+              isListening: true,
+            ),
+          );
+        }
+
         if (_offeredTo.contains(id)) continue;
 
         _offeredTo.add(id);
@@ -361,12 +390,51 @@ class GroupWalkieService {
       }
     });
 
-    socket?.on('walkie_peer_joined', (data) {});
+    socket?.on('walkie_peer_joined', (data) async {
+      if (_isDisposed || data == null) return;
+      _log('👋 walkie_peer_joined received: $data');
+      String id = '';
+      String name = 'User';
+      String image = '';
+      if (data is Map) {
+        id = data['userId']?.toString() ?? data['id']?.toString() ?? '';
+        name = data['name']?.toString() ?? 'User';
+        image = data['image']?.toString() ?? data['profileImage']?.toString() ?? '';
+      } else {
+        id = data.toString();
+      }
+      if (id.isEmpty || id == _selfUserId) return;
+
+      if (Get.isRegistered<GroupWalkieController>()) {
+        Get.find<GroupWalkieController>().addOrUpdateParticipant(
+          WalkieParticipant(
+            userId: id,
+            name: name,
+            image: image,
+            isSpeaking: false,
+            isListening: true,
+          ),
+        );
+      }
+
+      if (!_offeredTo.contains(id)) {
+        _offeredTo.add(id);
+        await _createPeer(id);
+        await Future.delayed(const Duration(milliseconds: 50));
+        await _createOfferTo(id);
+      }
+    });
 
     socket?.on('walkie_peer_left', (data) async {
       if (_isDisposed || data == null) return;
-      final id = data['userId']?.toString();
-      if (id != null) await _closePeer(id);
+      _log('👋 walkie_peer_left received: $data');
+      final id = data is Map ? (data['userId'] ?? data['id'])?.toString() : data.toString();
+      if (id != null && id.isNotEmpty) {
+        if (Get.isRegistered<GroupWalkieController>()) {
+          Get.find<GroupWalkieController>().removeParticipant(id);
+        }
+        await _closePeer(id);
+      }
     });
 
     socket?.on('walkie_webrtc_offer', (data) async {
@@ -422,17 +490,43 @@ class GroupWalkieService {
       if (Get.isRegistered<GroupWalkieController>()) {
         final c = Get.find<GroupWalkieController>();
         c.forceUnlockAndReset();
-        final reason = data?['reason']?.toString();
+        final reason = (data is Map
+                ? (data['reason'] ?? data['error'] ?? data['message'])
+                : data)
+            ?.toString()
+            .toUpperCase() ??
+            '';
+        _log('⚠️ PTT denied by server: $reason | payload: $data');
+
         if (reason == 'BUSY') {
-          c.showBusyMessage(data['speakerName']?.toString() ?? 'Someone');
+          c.showBusyMessage(data is Map ? data['speakerName']?.toString() ?? 'Someone' : 'Someone');
         } else if (reason == 'LOCKED') {
           c.showLockedMessage();
+        } else if (reason.contains('NO_SEAT') ||
+            reason.contains('NOT_ASSIGNED') ||
+            reason.contains('UNASSIGNED') ||
+            reason.contains('NO_VOICE')) {
+          c.showNoVoiceSeatMessage();
+        } else if (reason.contains('PLAN') ||
+            reason.contains('SUBSCRIB') ||
+            reason.contains('EXPIRED') ||
+            reason.contains('TRIAL') ||
+            reason.contains('UNAUTHORIZED')) {
+          c.showTrialEndedMessage();
+        } else if (reason.isNotEmpty) {
+          c.showGenericErrorMessage(data is Map && data['message'] != null ? data['message'].toString() : "Cannot speak on this channel");
+        } else {
+          c.showGenericErrorMessage("Voice transmission not permitted");
         }
       }
     });
 
     socket?.on('walkie_speaker_active', (data) {
       if (_isDisposed || data == null) return;
+      final gId = data is Map ? data['groupId']?.toString() : null;
+      if (gId != null && _currentGroupId != null && gId != _currentGroupId) {
+        return;
+      }
       if (Get.isRegistered<GroupWalkieController>()) {
         Get.find<GroupWalkieController>().onSpeakerActive(
           speakerId: data['speakerId']?.toString() ?? '',
@@ -442,8 +536,23 @@ class GroupWalkieService {
       }
     });
 
-    socket?.on('walkie_speaker_stopped', (_) {
+    socket?.on('ptt_release', (data) {
       if (_isDisposed) return;
+      final gId = data is Map ? data['groupId']?.toString() : null;
+      if (gId != null && _currentGroupId != null && gId != _currentGroupId) {
+        return;
+      }
+      if (Get.isRegistered<GroupWalkieController>()) {
+        Get.find<GroupWalkieController>().onSpeakerStopped();
+      }
+    });
+
+    socket?.on('walkie_speaker_stopped', (data) {
+      if (_isDisposed) return;
+      final gId = data is Map ? data['groupId']?.toString() : null;
+      if (gId != null && _currentGroupId != null && gId != _currentGroupId) {
+        return;
+      }
       if (Get.isRegistered<GroupWalkieController>()) {
         Get.find<GroupWalkieController>().onSpeakerStopped();
       }
@@ -471,7 +580,16 @@ class GroupWalkieService {
       }
     });
 
-    socket?.on('walkie_error', (data) {});
+    socket?.on('walkie_error', (data) {
+      if (_isDisposed || data == null) return;
+      final msg = data is Map
+          ? (data['message'] ?? data['error'] ?? 'Walkie Talkie Error').toString()
+          : data.toString();
+      _log('❌ walkie_error received: $msg');
+      if (Get.isRegistered<GroupWalkieController>()) {
+        Get.find<GroupWalkieController>().showGenericErrorMessage(msg);
+      }
+    });
   }
 
   // FIXED: Direct fallback to getUserMedia if permission_handler is restricted
@@ -762,13 +880,26 @@ class GroupWalkieService {
   }
 
   Future<bool> joinGroup(String groupId) async {
-    if (_isDisposed) {
-      _log('joinGroup failed: service is disposed');
-      return false;
-    }
+    _isDisposed = false;
     _currentGroupId = groupId;
     _offeredTo.clear();
     _log('Joining walkie group: $groupId');
+
+    final savedUserId = _selfUserId ??
+        Global.storageServices.get(PrefConst.userId)?.toString();
+    if (savedUserId != null && savedUserId.isNotEmpty) {
+      _selfUserId = savedUserId;
+    }
+
+    if (socket == null || socket?.connected != true) {
+      if (savedUserId != null && savedUserId.isNotEmpty) {
+        _log('Re-initializing socket in joinGroup for user: $savedUserId');
+        await init(
+          websocketUrl: ConstRes.socketUrl,
+          selfUserId: savedUserId,
+        );
+      }
+    }
 
     final ok = await _ensureLocalStream();
     if (!ok) {
@@ -818,12 +949,17 @@ class GroupWalkieService {
 
   // FIXED: Explicit debugging guards to catch why PTT returns false
   Future<bool> startTalking() async {
+    if (_isDisposed) {
+      _isDisposed = false;
+    }
+    if (_currentGroupId == null && Get.isRegistered<GroupWalkieController>()) {
+      final cGroupId = Get.find<GroupWalkieController>().currentGroupId;
+      if (cGroupId != null && cGroupId.isNotEmpty) {
+        _currentGroupId = cGroupId;
+      }
+    }
     _log('startTalking() requested. State => disposed: $_isDisposed, groupId: $_currentGroupId, isTalking: $_isTalking, isMuted: $_isMuted');
 
-    if (_isDisposed) {
-      _log('❌ startTalking failed: Service is disposed');
-      return false;
-    }
     if (_currentGroupId == null || _currentGroupId!.isEmpty) {
       _log('❌ startTalking failed: _currentGroupId is null/empty');
       return false;
