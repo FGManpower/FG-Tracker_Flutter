@@ -94,6 +94,7 @@ dependencies:
   flutter_linkify: ^6.0.0
   flutter_foreground_task: ^11.0.3
   razorpay_flutter: ^1.4.7
+  video_compress: ^3.1.4
 
 
 dependency_overrides:
