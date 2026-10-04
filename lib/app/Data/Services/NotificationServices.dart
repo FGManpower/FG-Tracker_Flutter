@@ -73,15 +73,27 @@ class firebaseNotificationServices {
       iOS: darwinNotificationDetails,
     );
 
+    final title = message.notification?.title ?? message.data['title']?.toString();
+    final body = message.notification?.body ?? message.data['body']?.toString();
+
+    if ((title == null || title.trim().isEmpty) && (body == null || body.trim().isEmpty)) {
+      debugPrint("⏭️ Skipping local notification: message has no title/body");
+      return;
+    }
+
     Future.delayed(Duration.zero, () {
-      flutterLocalNotificationsPlugin.show(0, message.notification!.title,
-          message.notification!.body, notificationDetails);
+      flutterLocalNotificationsPlugin.show(
+        0,
+        title,
+        body,
+        notificationDetails,
+      );
     });
   }
 
   Future<String> getDiviceToken() async {
     String? token = await messaging.getToken();
-    return token!;
+    return token ?? '';
   }
 
   Future<void> setupInteractMessage(BuildContext context) async {

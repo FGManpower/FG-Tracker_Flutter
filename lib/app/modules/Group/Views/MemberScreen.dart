@@ -207,10 +207,12 @@ class MemberscreenScreen extends GetView<MemberController> {
                             Get.toNamed(
                               Routes.groupWalkieScreen,
                               arguments: {
-                                "groupId":  int.parse(controller
+                                "groupId": int.parse(controller
                                     .arguments!['groupId']
                                     .toString()),
-                                "groupName": controller.arguments!['groupName'],
+                                "groupName": controller.arguments!['groupName'] ?? '',
+                                "groupDesc": controller.arguments!['groupDesc'] ?? '',
+                                "groupCode": controller.arguments!['groupCode'] ?? '',
                                 "isAdmin": controller.arguments!['isCreator'],
                               },
                             );

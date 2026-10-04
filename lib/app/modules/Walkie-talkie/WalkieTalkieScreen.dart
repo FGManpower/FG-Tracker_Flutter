@@ -115,9 +115,9 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
     );
 
     String groupId = args?['groupId']?.toString() ?? '';
-    if (groupId.isEmpty && Get.isRegistered<GroupController>()) {
+    if (Get.isRegistered<GroupController>()) {
       final gc = Get.find<GroupController>();
-      if (gc.groupData.isNotEmpty) {
+      if (groupId.isEmpty && gc.groupData.isNotEmpty) {
         final g = gc.groupData.first;
         groupId = g.id?.toString() ?? '';
         args = {
@@ -125,7 +125,16 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
           'groupName': g.groupName ?? 'Walkie Group',
           'groupDesc': g.groupDesc ?? '',
           'groupCode': g.groupCode ?? '',
+          'isSubscribed': args?['isSubscribed'] ?? _isSubscribed,
         };
+      } else if (groupId.isNotEmpty && (args?['groupName'] == null || args?['groupName'] == 'Site Operations Team')) {
+        final match = gc.groupData.firstWhereOrNull((g) => g.id?.toString() == groupId);
+        if (match != null) {
+          args ??= {};
+          args!['groupName'] = match.groupName ?? 'Walkie Group';
+          args!['groupDesc'] = match.groupDesc ?? '';
+          args!['groupCode'] = match.groupCode ?? '';
+        }
       }
     }
 
@@ -249,6 +258,13 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
       return;
     }
 
+    if (!controller.isConnected.value) {
+      _log('Block: Socket is not connected / poor internet.');
+      HapticFeedback.heavyImpact();
+      controller.showNoInternetMessage();
+      return;
+    }
+
     if (_isTeamAdminWithoutSeat && !_canSpeak) {
       _log('Block: User is Team Admin without an assigned voice seat.');
       HapticFeedback.heavyImpact();
@@ -309,6 +325,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
       _log('Release skipped: Channel is in locked-on state.');
       return;
     }
+    HapticFeedback.lightImpact();
     await _stopTalking();
   }
 
@@ -368,6 +385,59 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
     _lockHintController.stop();
     _lockHintController.reset();
     await GroupWalkieService.instance.stopTalking();
+  }
+
+  String get _currentGroupName {
+    final nameFromArgs = args?['groupName']?.toString();
+    if (nameFromArgs != null &&
+        nameFromArgs.trim().isNotEmpty &&
+        nameFromArgs != 'Site Operations Team') {
+      return nameFromArgs.trim();
+    }
+    final groupId = args?['groupId']?.toString() ?? '';
+    if (Get.isRegistered<GroupController>()) {
+      final gc = Get.find<GroupController>();
+      final match = gc.groupData.firstWhereOrNull((g) => g.id?.toString() == groupId);
+      if (match != null && (match.groupName?.trim().isNotEmpty ?? false)) {
+        return match.groupName!.trim();
+      }
+      if (gc.groupData.isNotEmpty && (gc.groupData.first.groupName?.trim().isNotEmpty ?? false)) {
+        return gc.groupData.first.groupName!.trim();
+      }
+    }
+    return 'Walkie Group';
+  }
+
+  String get _currentGroupDesc {
+    final descFromArgs = args?['groupDesc']?.toString();
+    if (descFromArgs != null && descFromArgs.trim().isNotEmpty) {
+      return descFromArgs.trim();
+    }
+    final groupId = args?['groupId']?.toString() ?? '';
+    if (Get.isRegistered<GroupController>()) {
+      final gc = Get.find<GroupController>();
+      final match = gc.groupData.firstWhereOrNull((g) => g.id?.toString() == groupId);
+      if (match != null && (match.groupDesc?.trim().isNotEmpty ?? false)) {
+        return match.groupDesc!.trim();
+      }
+    }
+    return '';
+  }
+
+  String get _currentGroupCode {
+    final codeFromArgs = args?['groupCode']?.toString();
+    if (codeFromArgs != null && codeFromArgs.trim().isNotEmpty) {
+      return codeFromArgs.trim();
+    }
+    final groupId = args?['groupId']?.toString() ?? '';
+    if (Get.isRegistered<GroupController>()) {
+      final gc = Get.find<GroupController>();
+      final match = gc.groupData.firstWhereOrNull((g) => g.id?.toString() == groupId);
+      if (match != null && (match.groupCode?.trim().isNotEmpty ?? false)) {
+        return match.groupCode!.trim();
+      }
+    }
+    return '';
   }
 
   String _getInitials(String name) {
@@ -467,9 +537,65 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
     );
   }
 
+  Widget _buildStatusBar() {
+    return Obx(() {
+      final bool showCustomStatus = controller.showStatus.value;
+      final bool isDisconnected = !controller.isConnected.value;
+
+      if (!showCustomStatus && !isDisconnected) {
+        return const SizedBox.shrink();
+      }
+
+      final String message = showCustomStatus
+          ? controller.statusMessage.value
+          : "Poor network connection — Reconnecting...";
+      final Color color = showCustomStatus
+          ? controller.statusColor.value
+          : Colors.orange.shade800;
+
+      return AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        margin: EdgeInsets.only(bottom: 6.h),
+        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 7.h),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.10),
+          borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(color: color.withOpacity(0.35), width: 1),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              isDisconnected && !showCustomStatus
+                  ? Icons.wifi_off_rounded
+                  : Icons.info_outline_rounded,
+              color: color,
+              size: 15.sp,
+            ),
+            SizedBox(width: 8.w),
+            Flexible(
+              child: Text(
+                message,
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: color,
+                  fontSize: 11.5.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    });
+  }
+
   Widget _buildPortraitLayout(BoxConstraints constraints) {
     return Column(
       children: [
+        _buildStatusBar(),
         SizedBox(height: 4.h.clamp(2.0, 6.0)),
         _buildGroupInfoCard(),
         SizedBox(height: 8.h.clamp(4.0, 12.0)),
@@ -493,6 +619,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
           width: 380.w.clamp(320.0, 420.0),
           child: Column(
             children: [
+              _buildStatusBar(),
               Expanded(
                 child: _buildGroupInfoCard(isWide: true),
               ),
@@ -561,7 +688,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                 SizedBox(height: 2.h),
                 Text(
                   isWide
-                      ? (args?['groupName'] ?? "Group Communication")
+                      ? _currentGroupName
                       : "Group Communication",
                   style: TextStyle(
                     color: _textSecondary,
@@ -1579,7 +1706,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      args?['groupName'] ?? 'Site Operations Team',
+                      _currentGroupName,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
@@ -1816,9 +1943,9 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
   }
 
   void _showGroupInfoModal() {
-    final groupName = args?['groupName'] ?? 'Site Operations Team';
-    final groupDesc = args?['groupDesc'] ?? '';
-    final groupCode = args?['groupCode'] ?? '';
+    final groupName = _currentGroupName;
+    final groupDesc = _currentGroupDesc;
+    final groupCode = _currentGroupCode;
 
     _log('Displaying group information modal for: $groupName');
 
@@ -2291,16 +2418,22 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                     ),
                   ),
                 Positioned(
-                  right: 0,
-                  bottom: 0,
+                  right: -1,
+                  bottom: -1,
                   child: Container(
-                    width: 10.r.clamp(8.0, 12.0),
-                    height: 10.r.clamp(8.0, 12.0),
+                    width: isMuted ? 14.r.clamp(12.0, 16.0) : 10.r.clamp(8.0, 12.0),
+                    height: isMuted ? 14.r.clamp(12.0, 16.0) : 10.r.clamp(8.0, 12.0),
                     decoration: BoxDecoration(
                       color: isMuted ? _mutedRed : _activeGreen,
                       shape: BoxShape.circle,
                       border: Border.all(color: Colors.white, width: 1.5),
                     ),
+                    child: isMuted
+                        ? Center(
+                            child: Icon(Icons.mic_off_rounded,
+                                color: Colors.white, size: 8.sp.clamp(7.0, 9.5)),
+                          )
+                        : null,
                   ),
                 ),
               ],
@@ -2329,22 +2462,22 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                 fontWeight: FontWeight.w600,
               ),
             )
-          else if (isAdmin)
-            Text(
-              "Admin",
-              maxLines: 1,
-              style: TextStyle(
-                color: _primaryPurple,
-                fontSize: 9.5.sp.clamp(8.5, 11.0),
-                fontWeight: FontWeight.w600,
-              ),
-            )
           else if (isMuted)
             Text(
               "Muted",
               maxLines: 1,
               style: TextStyle(
                 color: _mutedRed,
+                fontSize: 9.5.sp.clamp(8.5, 11.0),
+                fontWeight: FontWeight.w600,
+              ),
+            )
+          else if (isAdmin)
+            Text(
+              "Admin",
+              maxLines: 1,
+              style: TextStyle(
+                color: _primaryPurple,
                 fontSize: 9.5.sp.clamp(8.5, 11.0),
                 fontWeight: FontWeight.w600,
               ),
@@ -2669,6 +2802,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
               final isSelfLocked = controller.isSelfLocked.value;
               final isMuted = controller.isMuted.value;
               final bool isNoSeat = _isTeamAdminWithoutSeat && !_canSpeak;
+              final bool isPressed = controller.isPressed.value;
 
               return Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -2680,7 +2814,9 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                             ? Icons.headphones_rounded
                             : isSelfLocked
                                 ? Icons.lock_rounded
-                                : Icons.volume_up_rounded,
+                                : isPressed
+                                    ? Icons.volume_up_rounded
+                                    : Icons.touch_app_rounded,
                     color: isMuted
                         ? _mutedRed
                         : isNoSeat
@@ -2696,7 +2832,9 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                             ? "Listen Only — Tap to View Plan"
                             : isSelfLocked
                                 ? "Locked — Tap mic to stop"
-                                : "Release to Stop",
+                                : isPressed
+                                    ? "Release to Stop"
+                                    : "Hold to Talk, Slide Up to Lock",
                     style: TextStyle(
                       color: isMuted
                           ? _mutedRed
@@ -3014,7 +3152,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                   Routes.groupChatScreen,
                   arguments: {
                     "groupId": args?['groupId']?.toString() ?? "",
-                    "groupName": args?['groupName']?.toString() ?? "",
+                    "groupName": _currentGroupName,
                     "groupImage": "",
                   },
                 );

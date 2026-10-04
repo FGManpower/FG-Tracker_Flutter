@@ -15,7 +15,7 @@ class ConstRes {
 
   ///------------------------ Payment Gateway Credentials ------------------------///
   // Environment Switch: true = Production (Live), false = Testing (Sandbox)
-  static const bool isPaymentLive = false;
+  static const bool isPaymentLive = true;
 
   // Razorpay Key IDs (Public Keys for Mobile SDK)
   static const String razorpayTestKey = 'rzp_test_ThoFEwOj0pMgTH';

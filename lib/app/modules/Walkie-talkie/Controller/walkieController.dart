@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:fgtracker/app/Core/constant/pref_res.dart';
+import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Walkie-Talkie-Service.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -150,6 +152,29 @@ class GroupWalkieController extends GetxController {
 
   void setMuteFromService(bool muted) {
     isMuted.value = muted;
+    final selfId = GroupWalkieService.instance.selfUserId ??
+        Global.storageServices.get(PrefConst.userId)?.toString() ??
+        '';
+    if (selfId.isNotEmpty) {
+      setParticipantMuted(selfId, muted);
+    }
+  }
+
+  void setParticipantMuted(String userId, bool muted) {
+    if (userId.isEmpty) return;
+    final index = participants.indexWhere((p) => p.userId == userId);
+    if (index != -1) {
+      final p = participants[index];
+      participants[index] = WalkieParticipant(
+        userId: p.userId,
+        name: p.name,
+        image: p.image,
+        isMuted: muted,
+        isListening: p.isListening,
+        isSpeaking: muted ? false : p.isSpeaking,
+      );
+      participants.refresh();
+    }
   }
 
   IconData get audioRouteIcon {
@@ -388,6 +413,18 @@ class GroupWalkieController extends GetxController {
 
   void showNoVoiceSeatMessage() {
     _displayBanner("No voice seat assigned — You are in Listen-Only mode", Colors.orange.shade800);
+  }
+
+  void showNoInternetMessage() {
+    _displayBanner("No internet connection", Colors.redAccent);
+  }
+
+  void showPoorConnectionMessage() {
+    _displayBanner("Poor network connection — Audio may lag", Colors.orange);
+  }
+
+  void showReconnectingMessage() {
+    _displayBanner("Reconnecting to walkie server...", Colors.orange);
   }
 
   void showGenericErrorMessage(String msg) {
