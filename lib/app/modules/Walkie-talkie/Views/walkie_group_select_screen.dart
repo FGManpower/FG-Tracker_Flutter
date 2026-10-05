@@ -13,7 +13,7 @@ import 'package:fgtracker/app/Model/group_member_model.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Controller/walkie_talkie_trial_controller.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Views/walkie_talkie_plan_details.dart';
-import 'package:fgtracker/app/modules/Walkie-talkie/WalkieTalkieScreen.dart';
+import 'package:fgtracker/app/modules/Walkie-talkie/Views/WalkieTalkieScreen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/gen/assets.gen.dart';
