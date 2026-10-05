@@ -106,6 +106,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
   final RxList<AssignedMemberItem> assignedMembers = <AssignedMemberItem>[].obs;
   final RxList<AssignedMemberItem> availableMembers =
       <AssignedMemberItem>[].obs;
+  final List<int> _initialAssignedMemberIds = <int>[];
 
   String get _currentGroupId {
     if (controller.groupData.isNotEmpty &&
@@ -403,6 +404,12 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
               availableMembers.addAll(loadedExpired);
             }
           } else {
+            _initialAssignedMemberIds.clear();
+            _initialAssignedMemberIds.addAll(
+              loadedSubscribed
+                  .map((m) => int.tryParse(m.id))
+                  .whereType<int>(),
+            );
             assignedMembers.assignAll(loadedSubscribed);
             availableMembers.assignAll(loadedExpired);
           }
@@ -2484,6 +2491,10 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
         .whereType<int>()
         .toList();
 
+    final List<int> replaceUserIds = _initialAssignedMemberIds
+        .where((id) => !targetUserIds.contains(id))
+        .toList();
+
     if (targetUserIds.isEmpty) {
       Utils().fluttertoast("No valid members selected to assign");
       return;
@@ -2494,6 +2505,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
       final res = await WalkiePlanRepo.updateMemberSubscription(
         subscriptionId: subId,
         targetUserIds: targetUserIds,
+        replaceUserIds: replaceUserIds.isNotEmpty ? replaceUserIds : null,
       );
 
       if (res.status == true) {
