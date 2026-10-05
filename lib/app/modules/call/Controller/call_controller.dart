@@ -21,6 +21,7 @@ class CallController extends GetxController {
 
   final ContactService _contactService = ContactService();
   final TextEditingController searchController = TextEditingController();
+  final Map<String, String> phoneContactNameMap = {};
 
   final RxInt selectedTab = 0.obs;
   final RxString searchQuery = ''.obs;
@@ -177,11 +178,22 @@ class CallController extends GetxController {
 
       final startTime = DateTime.now();
 
-      final contactNumbers = await _contactService.getMobileNumbers();
+      final List<Contact> deviceContacts = await _contactService.getContacts();
+      phoneContactNameMap.clear();
+      for (final Contact contact in deviceContacts) {
+        final String displayName = contact.displayName.trim();
+        if (displayName.isEmpty) continue;
+        for (final Phone phone in contact.phones) {
+          final String norm = _normalizePhone(phone.number);
+          if (norm.isNotEmpty) {
+            phoneContactNameMap[norm] = displayName;
+          }
+        }
+      }
 
       debugPrint(
         "⏱️ Device Contacts: "
-        "${DateTime.now().difference(startTime).inMilliseconds} ms",
+        "${DateTime.now().difference(startTime).inMilliseconds} ms (Total ${phoneContactNameMap.length} mapped)",
       );
 
       isContactPermissionGranted.value = true;
@@ -197,14 +209,33 @@ class CallController extends GetxController {
 
       if (result.status == true) {
         final users = result.userData ?? [];
-        final contactNumberSet = contactNumbers.toSet();
 
-        final matchedUsers = users.where((user) {
-          final String mobileNo = _normalizePhone(user.mobileNo ?? '');
-          return contactNumberSet.contains(mobileNo);
+        final List<UserListData> processedUsers = users.map((user) {
+          final String normMobile = _normalizePhone(user.mobileNo ?? '');
+          final String? phoneBookName = phoneContactNameMap[normMobile];
+          final String resolvedName =
+              (phoneBookName != null && phoneBookName.trim().isNotEmpty)
+                  ? phoneBookName.trim()
+                  : ((user.name != null && user.name!.trim().isNotEmpty)
+                      ? user.name!.trim()
+                      : 'Unknown');
+
+          return UserListData(
+            userId: user.userId,
+            profileImage: user.profileImage,
+            name: resolvedName,
+            mobileNo: user.mobileNo,
+            isOnline: user.isOnline,
+          );
         }).toList();
 
-        final finalUsers = matchedUsers.isNotEmpty ? matchedUsers : users;
+        final matchedUsers = processedUsers.where((user) {
+          final String mobileNo = _normalizePhone(user.mobileNo ?? '');
+          return phoneContactNameMap.containsKey(mobileNo);
+        }).toList();
+
+        final finalUsers =
+            matchedUsers.isNotEmpty ? matchedUsers : processedUsers;
 
         allUserProfileData.value = finalUsers;
         filteredUsers.value = finalUsers;
@@ -641,6 +672,12 @@ class CallController extends GetxController {
             }
           }
         }
+      }
+
+      final String normMobile = _normalizePhone(mobileNo);
+      if (phoneContactNameMap.containsKey(normMobile) &&
+          (phoneContactNameMap[normMobile] ?? '').trim().isNotEmpty) {
+        name = phoneContactNameMap[normMobile]!.trim();
       }
     }
 
