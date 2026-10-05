@@ -14,6 +14,7 @@ import 'package:intl/intl.dart';
 class WalkieTalkiePaymentFailedScreen extends StatefulWidget {
   final bool isTeam;
   final String planTitle;
+  final String? durationName;
   final int? memberCount;
   final num? amountPaid;
   final String? transactionTime;
@@ -24,6 +25,7 @@ class WalkieTalkiePaymentFailedScreen extends StatefulWidget {
     super.key,
     this.isTeam = true,
     this.planTitle = "Safe Route Plan",
+    this.durationName,
     this.memberCount = 1,
     this.amountPaid,
     this.transactionTime,
@@ -102,11 +104,60 @@ class _WalkieTalkiePaymentFailedScreenState
   }
 
   String get _displayTitle {
+    if (widget.planTitle.isNotEmpty && widget.planTitle != "Safe Route Plan") {
+      return widget.planTitle;
+    }
     if (controller.planTitle.value.isNotEmpty &&
         controller.planTitle.value != "Team Plan (Monthly)") {
       return controller.planTitle.value;
     }
     return widget.planTitle;
+  }
+
+  String get _displayBadge {
+    if (widget.isTeam && widget.memberCount != null && widget.memberCount! > 1) {
+      return "${widget.memberCount} Members";
+    }
+    if (widget.durationName != null && widget.durationName!.isNotEmpty) {
+      return widget.durationName!;
+    }
+    final title = _displayTitle.toLowerCase();
+    if (title.contains("year") || title.contains("annual")) {
+      return "Annual Plan";
+    }
+    if (title.contains("quarter")) {
+      return "Quarterly Plan";
+    }
+    if (widget.isTeam) {
+      return "Team Plan";
+    }
+    return "Individual Plan";
+  }
+
+  String get _displayInterval {
+    if (widget.durationName != null && widget.durationName!.isNotEmpty) {
+      final d = widget.durationName!.toLowerCase();
+      if (d.contains("month")) return "month";
+      if (d.contains("year") || d.contains("annual")) return "year";
+      if (d.contains("quarter")) return "quarter";
+      return widget.durationName!;
+    }
+    final title = _displayTitle.toLowerCase();
+    if (title.contains("year") || title.contains("annual")) return "year";
+    if (title.contains("quarter")) return "quarter";
+    if (title.contains("month")) return "month";
+    return "plan";
+  }
+
+  String get _displayErrorMessage {
+    final msg = widget.errorMessage;
+    if (msg == null ||
+        msg.trim().isEmpty ||
+        msg.toLowerCase() == 'undefined' ||
+        msg.toLowerCase() == 'null') {
+      return "Your payment was not completed. No amount has been charged to your account.";
+    }
+    return msg;
   }
 
   void _handleRetryPayment() {
@@ -397,20 +448,21 @@ class _WalkieTalkiePaymentFailedScreenState
         final double pulse = _pulseController.value;
 
         return SizedBox(
-          width: 160.w,
-          height: 100.h,
+          width: 140.w,
+          height: 105.h,
           child: Stack(
+            clipBehavior: Clip.none,
             alignment: Alignment.center,
             children: [
               // Soft outer red radial halo
               Container(
-                width: 100.w + (pulse * 20.w),
-                height: 100.w + (pulse * 20.w),
+                width: 95.w + (pulse * 15.w),
+                height: 95.w + (pulse * 15.w),
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   gradient: RadialGradient(
                     colors: [
-                      const Color(0xFFF43F5E).withValues(alpha: 0.20),
+                      const Color(0xFFF43F5E).withValues(alpha: 0.18),
                       const Color(0xFFF43F5E).withValues(alpha: 0.0),
                     ],
                   ),
@@ -419,14 +471,14 @@ class _WalkieTalkiePaymentFailedScreenState
 
               // Radiating impact particle lines (Custom Painted)
               CustomPaint(
-                size: Size(140.w, 95.h),
+                size: Size(130.w, 90.h),
                 painter: _RadiatingParticlesPainter(pulse: pulse),
               ),
 
               // Soft middle red glow circle
               Container(
-                width: 72.w,
-                height: 72.w,
+                width: 70.w,
+                height: 70.w,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: const Color(0xFFFFF1F2),
@@ -439,8 +491,8 @@ class _WalkieTalkiePaymentFailedScreenState
 
               // Center Glowing Red Circle with Cross
               Container(
-                width: 54.w,
-                height: 54.w,
+                width: 52.w,
+                height: 52.w,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   gradient: const LinearGradient(
@@ -451,9 +503,9 @@ class _WalkieTalkiePaymentFailedScreenState
                   boxShadow: [
                     BoxShadow(
                       color: const Color(0xFFE11D48).withValues(alpha: 0.45),
-                      blurRadius: 16,
+                      blurRadius: 14,
                       spreadRadius: 2,
-                      offset: const Offset(0, 4),
+                      offset: const Offset(0, 3),
                     ),
                   ],
                 ),
@@ -461,7 +513,7 @@ class _WalkieTalkiePaymentFailedScreenState
                   child: Icon(
                     Icons.close_rounded,
                     color: Colors.white,
-                    size: 30.sp,
+                    size: 28.sp,
                   ),
                 ),
               ),
@@ -509,16 +561,16 @@ class _WalkieTalkiePaymentFailedScreenState
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Container(
-                width: 36.w,
-                height: 36.w,
+                width: 38.w,
+                height: 38.w,
                 decoration: BoxDecoration(
                   color: const Color(0xFFEEF2FF),
                   borderRadius: BorderRadius.circular(10.r),
                 ),
                 child: Icon(
-                  Icons.near_me_rounded,
+                  widget.isTeam ? Icons.groups_rounded : Icons.near_me_rounded,
                   color: _primaryPurple,
-                  size: 18.sp,
+                  size: 20.sp,
                 ),
               ),
               SizedBox(width: 10.w),
@@ -532,7 +584,7 @@ class _WalkieTalkiePaymentFailedScreenState
                           child: Text(
                             _displayTitle,
                             style: TextStyle(
-                              fontSize: 13.sp,
+                              fontSize: 13.5.sp,
                               fontFamily: FontFamily.interBold,
                               color: _textDark,
                             ),
@@ -543,15 +595,15 @@ class _WalkieTalkiePaymentFailedScreenState
                         SizedBox(width: 6.w),
                         Container(
                           padding: EdgeInsets.symmetric(
-                              horizontal: 6.w, vertical: 2.h),
+                              horizontal: 7.w, vertical: 2.h),
                           decoration: BoxDecoration(
                             color: const Color(0xFFEDE9FE),
-                            borderRadius: BorderRadius.circular(5.r),
+                            borderRadius: BorderRadius.circular(6.r),
                           ),
                           child: Text(
-                            "Monthly Plan",
+                            _displayBadge,
                             style: TextStyle(
-                              fontSize: 9.sp,
+                              fontSize: 9.5.sp,
                               fontFamily: FontFamily.interMedium,
                               color: const Color(0xFF6D28D9),
                             ),
@@ -561,7 +613,9 @@ class _WalkieTalkiePaymentFailedScreenState
                     ),
                     SizedBox(height: 3.h),
                     Text(
-                      "Real-time monitoring • Instant alerts",
+                      widget.isTeam
+                          ? "Multi-member access • Instant alerts"
+                          : "Real-time monitoring • Instant alerts",
                       style: TextStyle(
                         fontSize: 10.5.sp,
                         fontFamily: FontFamily.interRegular,
@@ -577,7 +631,7 @@ class _WalkieTalkiePaymentFailedScreenState
               Text(
                 "₹${controller.formatAmount(_displayAmount)}",
                 style: TextStyle(
-                  fontSize: 13.5.sp,
+                  fontSize: 14.sp,
                   fontFamily: FontFamily.interBold,
                   color: _textDark,
                 ),
@@ -589,7 +643,7 @@ class _WalkieTalkiePaymentFailedScreenState
           const Divider(color: _cardBorder, height: 1),
           SizedBox(height: 12.h),
 
-          // Total Amount Row (Responsive with Expanded)
+          // Total Amount Row (Responsive with flexible wrapping)
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -613,15 +667,16 @@ class _WalkieTalkiePaymentFailedScreenState
                         fontSize: 10.sp,
                         fontFamily: FontFamily.interRegular,
                         color: _textSecondary,
+                        height: 1.25,
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                      maxLines: 2,
                     ),
                   ],
                 ),
               ),
-              SizedBox(width: 8.w),
+              SizedBox(width: 10.w),
               RichText(
+                textAlign: TextAlign.end,
                 text: TextSpan(
                   children: [
                     TextSpan(
@@ -633,7 +688,7 @@ class _WalkieTalkiePaymentFailedScreenState
                       ),
                     ),
                     TextSpan(
-                      text: " / month",
+                      text: " / $_displayInterval",
                       style: TextStyle(
                         fontSize: 10.5.sp,
                         fontFamily: FontFamily.interRegular,
@@ -695,9 +750,7 @@ class _WalkieTalkiePaymentFailedScreenState
                 ),
                 SizedBox(height: 2.h),
                 Text(
-                  widget.errorMessage?.isNotEmpty == true
-                      ? widget.errorMessage!
-                      : "Your payment was not completed. No amount has been charged to your account.",
+                  _displayErrorMessage,
                   style: TextStyle(
                     fontSize: 11.sp,
                     fontFamily: FontFamily.interRegular,

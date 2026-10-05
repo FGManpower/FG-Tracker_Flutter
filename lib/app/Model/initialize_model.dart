@@ -25,6 +25,7 @@ class InitializeModel {
 class InitializeData {
   String? initializedAt;
   String? serverTime;
+  PaymentInitData? payment;
   WalkieInitData? walkie;
   dynamic calling;
   dynamic chat;
@@ -35,6 +36,7 @@ class InitializeData {
   InitializeData({
     this.initializedAt,
     this.serverTime,
+    this.payment,
     this.walkie,
     this.calling,
     this.chat,
@@ -47,6 +49,10 @@ class InitializeData {
     return InitializeData(
       initializedAt: json['initializedAt']?.toString(),
       serverTime: json['serverTime']?.toString(),
+      payment: json['payment'] != null
+          ? PaymentInitData.fromJson(
+              Map<String, dynamic>.from(json['payment']))
+          : null,
       walkie: json['walkie'] != null
           ? WalkieInitData.fromJson(json['walkie'])
           : null,
@@ -62,12 +68,88 @@ class InitializeData {
     return {
       'initializedAt': initializedAt,
       'serverTime': serverTime,
+      'payment': payment?.toJson(),
       'walkie': walkie?.toJson(),
       'calling': calling,
       'chat': chat,
       'tracking': tracking,
       'safeRoute': safeRoute,
       'notifications': notifications,
+    };
+  }
+}
+
+class PaymentInitData {
+  bool? isPaymentEnabled;
+  String? activeGateway;
+  String? environment;
+  bool? isLiveMode;
+  String? currency;
+  RazorpayInitData? razorpay;
+
+  PaymentInitData({
+    this.isPaymentEnabled,
+    this.activeGateway,
+    this.environment,
+    this.isLiveMode,
+    this.currency,
+    this.razorpay,
+  });
+
+  factory PaymentInitData.fromJson(Map<String, dynamic> json) {
+    return PaymentInitData(
+      isPaymentEnabled: json['isPaymentEnabled'] == true,
+      activeGateway: json['activeGateway']?.toString(),
+      environment: json['environment']?.toString(),
+      isLiveMode: json['isLiveMode'] == true,
+      currency: json['currency']?.toString(),
+      razorpay: json['razorpay'] != null
+          ? RazorpayInitData.fromJson(
+              Map<String, dynamic>.from(json['razorpay']))
+          : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'isPaymentEnabled': isPaymentEnabled,
+      'activeGateway': activeGateway,
+      'environment': environment,
+      'isLiveMode': isLiveMode,
+      'currency': currency,
+      'razorpay': razorpay?.toJson(),
+    };
+  }
+}
+
+class RazorpayInitData {
+  String? keyId;
+  String? testKeyId;
+  String? liveKeyId;
+  String? mode;
+
+  RazorpayInitData({
+    this.keyId,
+    this.testKeyId,
+    this.liveKeyId,
+    this.mode,
+  });
+
+  factory RazorpayInitData.fromJson(Map<String, dynamic> json) {
+    return RazorpayInitData(
+      keyId: json['keyId']?.toString(),
+      testKeyId: json['testKeyId']?.toString(),
+      liveKeyId: json['liveKeyId']?.toString(),
+      mode: json['mode']?.toString(),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'keyId': keyId,
+      'testKeyId': testKeyId,
+      'liveKeyId': liveKeyId,
+      'mode': mode,
     };
   }
 }

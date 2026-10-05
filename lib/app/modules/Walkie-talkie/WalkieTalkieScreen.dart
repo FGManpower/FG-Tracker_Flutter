@@ -21,6 +21,7 @@ import 'package:fgtracker/app/Core/values/storage_services.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import '../../Core/constant/pref_res.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 import '../../Core/constant/const_res.dart';
 import '../../Core/constant/notification_holder.dart';
 
@@ -84,6 +85,9 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
     super.initState();
     _log('initState() initiated');
     WalkieLaunchTracker.fromWalkieCall = true;
+    try {
+      WakelockPlus.enable();
+    } catch (_) {}
 
     if (Get.arguments is Map<String, dynamic>) {
       args = Get.arguments as Map<String, dynamic>;
@@ -115,9 +119,9 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
     );
 
     String groupId = args?['groupId']?.toString() ?? '';
-    if (groupId.isEmpty && Get.isRegistered<GroupController>()) {
+    if (Get.isRegistered<GroupController>()) {
       final gc = Get.find<GroupController>();
-      if (gc.groupData.isNotEmpty) {
+      if (groupId.isEmpty && gc.groupData.isNotEmpty) {
         final g = gc.groupData.first;
         groupId = g.id?.toString() ?? '';
         args = {
@@ -125,13 +129,24 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
           'groupName': g.groupName ?? 'Walkie Group',
           'groupDesc': g.groupDesc ?? '',
           'groupCode': g.groupCode ?? '',
+          'isSubscribed': args?['isSubscribed'] ?? _isSubscribed,
         };
+      } else if (groupId.isNotEmpty && (args?['groupName'] == null || args?['groupName'] == 'Site Operations Team')) {
+        final match = gc.groupData.firstWhereOrNull((g) => g.id?.toString() == groupId);
+        if (match != null) {
+          args ??= {};
+          args!['groupName'] = match.groupName ?? 'Walkie Group';
+          args!['groupDesc'] = match.groupDesc ?? '';
+          args!['groupCode'] = match.groupCode ?? '';
+        }
       }
     }
 
     if (groupId.isNotEmpty) {
-      _log('Configuring active session for group ID: $groupId');
+      final groupName = args?['groupName']?.toString() ?? 'Walkie Group';
+      _log('Configuring active session for group ID: $groupId ($groupName)');
       controller.setCurrentGroup(groupId);
+      controller.setConnected(GroupWalkieService.instance.socket?.connected == true);
 
       final myId = Global.storageServices.get(PrefConst.userId)?.toString() ?? '';
       final myName = Global.storageServices.get(PrefConst.userName)?.toString() ?? 'You';
@@ -148,7 +163,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
         );
       }
 
-      GroupWalkieService.instance.joinGroup(groupId);
+      GroupWalkieService.instance.joinGroup(groupId, groupName: groupName);
       _loadGroupMembersFromDb(groupId);
     } else {
       _log('Error: Invalid Group ID. Returning to previous screen.');
@@ -203,6 +218,9 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
     _trialTimer?.cancel();
     _saveTrialRemainingSeconds();
     WalkieLaunchTracker.fromWalkieCall = false;
+    try {
+      WakelockPlus.disable();
+    } catch (_) {}
     _safeLeave();
     _rippleController.dispose();
     _pulseController.dispose();
@@ -246,6 +264,18 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
     }
     if (controller.isChannelLocked.value) {
       _log('Block: Channel is locked by admin.');
+      return;
+    }
+
+    final isSocketLive = GroupWalkieService.instance.socket?.connected == true;
+    if (isSocketLive && !controller.isConnected.value) {
+      controller.setConnected(true);
+    }
+
+    if (!controller.isConnected.value && !isSocketLive) {
+      _log('Block: Socket is not connected / poor internet.');
+      HapticFeedback.heavyImpact();
+      controller.showNoInternetMessage();
       return;
     }
 
@@ -309,6 +339,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
       _log('Release skipped: Channel is in locked-on state.');
       return;
     }
+    HapticFeedback.lightImpact();
     await _stopTalking();
   }
 
@@ -368,6 +399,59 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
     _lockHintController.stop();
     _lockHintController.reset();
     await GroupWalkieService.instance.stopTalking();
+  }
+
+  String get _currentGroupName {
+    final nameFromArgs = args?['groupName']?.toString();
+    if (nameFromArgs != null &&
+        nameFromArgs.trim().isNotEmpty &&
+        nameFromArgs != 'Site Operations Team') {
+      return nameFromArgs.trim();
+    }
+    final groupId = args?['groupId']?.toString() ?? '';
+    if (Get.isRegistered<GroupController>()) {
+      final gc = Get.find<GroupController>();
+      final match = gc.groupData.firstWhereOrNull((g) => g.id?.toString() == groupId);
+      if (match != null && (match.groupName?.trim().isNotEmpty ?? false)) {
+        return match.groupName!.trim();
+      }
+      if (gc.groupData.isNotEmpty && (gc.groupData.first.groupName?.trim().isNotEmpty ?? false)) {
+        return gc.groupData.first.groupName!.trim();
+      }
+    }
+    return 'Walkie Group';
+  }
+
+  String get _currentGroupDesc {
+    final descFromArgs = args?['groupDesc']?.toString();
+    if (descFromArgs != null && descFromArgs.trim().isNotEmpty) {
+      return descFromArgs.trim();
+    }
+    final groupId = args?['groupId']?.toString() ?? '';
+    if (Get.isRegistered<GroupController>()) {
+      final gc = Get.find<GroupController>();
+      final match = gc.groupData.firstWhereOrNull((g) => g.id?.toString() == groupId);
+      if (match != null && (match.groupDesc?.trim().isNotEmpty ?? false)) {
+        return match.groupDesc!.trim();
+      }
+    }
+    return '';
+  }
+
+  String get _currentGroupCode {
+    final codeFromArgs = args?['groupCode']?.toString();
+    if (codeFromArgs != null && codeFromArgs.trim().isNotEmpty) {
+      return codeFromArgs.trim();
+    }
+    final groupId = args?['groupId']?.toString() ?? '';
+    if (Get.isRegistered<GroupController>()) {
+      final gc = Get.find<GroupController>();
+      final match = gc.groupData.firstWhereOrNull((g) => g.id?.toString() == groupId);
+      if (match != null && (match.groupCode?.trim().isNotEmpty ?? false)) {
+        return match.groupCode!.trim();
+      }
+    }
+    return '';
   }
 
   String _getInitials(String name) {
@@ -467,9 +551,65 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
     );
   }
 
+  Widget _buildStatusBar() {
+    return Obx(() {
+      final bool showCustomStatus = controller.showStatus.value;
+      final bool isDisconnected = !controller.isConnected.value;
+
+      if (!showCustomStatus && !isDisconnected) {
+        return const SizedBox.shrink();
+      }
+
+      final String message = showCustomStatus
+          ? controller.statusMessage.value
+          : "Poor network connection — Reconnecting...";
+      final Color color = showCustomStatus
+          ? controller.statusColor.value
+          : Colors.orange.shade800;
+
+      return AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        margin: EdgeInsets.only(bottom: 6.h),
+        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 7.h),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.10),
+          borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(color: color.withOpacity(0.35), width: 1),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              isDisconnected && !showCustomStatus
+                  ? Icons.wifi_off_rounded
+                  : Icons.info_outline_rounded,
+              color: color,
+              size: 15.sp,
+            ),
+            SizedBox(width: 8.w),
+            Flexible(
+              child: Text(
+                message,
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: color,
+                  fontSize: 11.5.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    });
+  }
+
   Widget _buildPortraitLayout(BoxConstraints constraints) {
     return Column(
       children: [
+        _buildStatusBar(),
         SizedBox(height: 4.h.clamp(2.0, 6.0)),
         _buildGroupInfoCard(),
         SizedBox(height: 8.h.clamp(4.0, 12.0)),
@@ -493,6 +633,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
           width: 380.w.clamp(320.0, 420.0),
           child: Column(
             children: [
+              _buildStatusBar(),
               Expanded(
                 child: _buildGroupInfoCard(isWide: true),
               ),
@@ -561,7 +702,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                 SizedBox(height: 2.h),
                 Text(
                   isWide
-                      ? (args?['groupName'] ?? "Group Communication")
+                      ? _currentGroupName
                       : "Group Communication",
                   style: TextStyle(
                     color: _textSecondary,
@@ -1579,7 +1720,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      args?['groupName'] ?? 'Site Operations Team',
+                      _currentGroupName,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
@@ -1733,17 +1874,26 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                         children: [
                           _buildSafeAvatar(p, 16.r.clamp(14.0, 18.0)),
                           Positioned(
-                            right: 0,
-                            bottom: 0,
+                            right: -1,
+                            bottom: -1,
                             child: Container(
-                              width: 8.r,
-                              height: 8.r,
+                              width: isMuted ? 13.r.clamp(12.0, 15.0) : 8.r,
+                              height: isMuted ? 13.r.clamp(12.0, 15.0) : 8.r,
                               decoration: BoxDecoration(
                                 color: isMuted ? _mutedRed : _activeGreen,
                                 shape: BoxShape.circle,
                                 border:
                                     Border.all(color: Colors.white, width: 1.5),
                               ),
+                              child: isMuted
+                                  ? Center(
+                                      child: Icon(
+                                        Icons.mic_off_rounded,
+                                        color: Colors.white,
+                                        size: 7.5.sp,
+                                      ),
+                                    )
+                                  : null,
                             ),
                           ),
                         ],
@@ -1766,9 +1916,9 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                             Text(
                               isSpeaking
                                   ? "Speaking..."
-                                  : (isAdmin
-                                      ? "Admin"
-                                      : (isMuted ? "Muted" : "Online")),
+                                  : (isMuted
+                                      ? (isAdmin ? "Admin • Muted" : "Muted")
+                                      : (isAdmin ? "Admin" : "Online")),
                               style: TextStyle(
                                 color: isSpeaking
                                     ? _primaryPurple
@@ -1816,9 +1966,9 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
   }
 
   void _showGroupInfoModal() {
-    final groupName = args?['groupName'] ?? 'Site Operations Team';
-    final groupDesc = args?['groupDesc'] ?? '';
-    final groupCode = args?['groupCode'] ?? '';
+    final groupName = _currentGroupName;
+    final groupDesc = _currentGroupDesc;
+    final groupCode = _currentGroupCode;
 
     _log('Displaying group information modal for: $groupName');
 
@@ -1950,116 +2100,144 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                   itemBuilder: (context, index) {
                     final member = _allGroupMembers[index];
                     final memberId = member.userId?.toString() ?? '';
-                    final isOnline = controller.participants
-                        .any((p) => p.userId == memberId);
                     final memberName = (member.name != null &&
                             member.name!.trim().isNotEmpty)
                         ? member.name!.trim()
                         : "Member";
                     final isAdmin = args?['adminId'] == memberId || index == 0;
 
-                    return Container(
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 10.w, vertical: 8.h),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF8FAFC),
-                        borderRadius: BorderRadius.circular(12.r),
-                      ),
-                      child: Row(
-                        children: [
-                          Stack(
-                            children: [
-                              CircleAvatar(
-                                radius: 18.r,
-                                backgroundColor: _softPurple,
-                                backgroundImage: (member.profileImage != null &&
-                                        member.profileImage!.isNotEmpty &&
-                                        !_isBadImageUrl(member.profileImage!))
-                                    ? NetworkImage(
-                                        member.profileImage!.startsWith('http')
-                                            ? member.profileImage!
-                                            : ConstRes.aImageBaseUrl +
-                                                member.profileImage!)
-                                    : null,
-                                child: (member.profileImage == null ||
-                                        member.profileImage!.isEmpty ||
-                                        _isBadImageUrl(member.profileImage!))
-                                    ? Text(
-                                        _getInitials(memberName),
-                                        style: TextStyle(
-                                          color: _primaryPurple,
-                                          fontWeight: FontWeight.w700,
-                                          fontSize: 12.sp,
-                                        ),
-                                      )
-                                    : null,
-                              ),
-                              Positioned(
-                                right: 0,
-                                bottom: 0,
-                                child: Container(
-                                  width: 8.r,
-                                  height: 8.r,
-                                  decoration: BoxDecoration(
-                                    color: isOnline
-                                        ? _activeGreen
-                                        : Colors.grey.shade400,
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                        color: Colors.white, width: 1.5),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          SizedBox(width: 10.w),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                    return Obx(() {
+                      final participant = controller.participants
+                          .firstWhereOrNull((p) =>
+                              p.userId.trim() == memberId.trim() ||
+                              (int.tryParse(p.userId) != null &&
+                                  int.tryParse(p.userId) == int.tryParse(memberId)));
+                      final isOnline = participant != null;
+                      final isMuted = participant?.isMuted == true;
+                      final isSpeaking = participant?.isSpeaking == true;
+
+                      return Container(
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 10.w, vertical: 8.h),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF8FAFC),
+                          borderRadius: BorderRadius.circular(12.r),
+                        ),
+                        child: Row(
+                          children: [
+                            Stack(
                               children: [
-                                Text(
-                                  memberName,
-                                  style: TextStyle(
-                                    color: _textDark,
-                                    fontSize: 13.sp,
-                                    fontWeight: FontWeight.w600,
-                                  ),
+                                CircleAvatar(
+                                  radius: 18.r,
+                                  backgroundColor: _softPurple,
+                                  backgroundImage: (member.profileImage != null &&
+                                          member.profileImage!.isNotEmpty &&
+                                          !_isBadImageUrl(member.profileImage!))
+                                      ? NetworkImage(
+                                          member.profileImage!.startsWith('http')
+                                              ? member.profileImage!
+                                              : ConstRes.aImageBaseUrl +
+                                                  member.profileImage!)
+                                      : null,
+                                  child: (member.profileImage == null ||
+                                          member.profileImage!.isEmpty ||
+                                          _isBadImageUrl(member.profileImage!))
+                                      ? Text(
+                                          _getInitials(memberName),
+                                          style: TextStyle(
+                                            color: _primaryPurple,
+                                            fontWeight: FontWeight.w700,
+                                            fontSize: 12.sp,
+                                          ),
+                                        )
+                                      : null,
                                 ),
-                                Text(
-                                  isOnline
-                                      ? "In Walkie Channel"
-                                      : "Offline",
-                                  style: TextStyle(
-                                    color: isOnline
-                                        ? _activeGreen
-                                        : _textSecondary,
-                                    fontSize: 10.5.sp,
-                                    fontWeight: FontWeight.w500,
+                                Positioned(
+                                  right: 0,
+                                  bottom: 0,
+                                  child: Container(
+                                    width: isMuted ? 13.r : 8.r,
+                                    height: isMuted ? 13.r : 8.r,
+                                    decoration: BoxDecoration(
+                                      color: isMuted
+                                          ? _mutedRed
+                                          : (isOnline
+                                              ? _activeGreen
+                                              : Colors.grey.shade400),
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                          color: Colors.white, width: 1.5),
+                                    ),
+                                    child: isMuted
+                                        ? Center(
+                                            child: Icon(
+                                              Icons.mic_off_rounded,
+                                              color: Colors.white,
+                                              size: 7.5.sp,
+                                            ),
+                                          )
+                                        : null,
                                   ),
                                 ),
                               ],
                             ),
-                          ),
-                          if (isAdmin)
-                            Container(
-                              padding: EdgeInsets.symmetric(
-                                  horizontal: 8.w, vertical: 3.h),
-                              decoration: BoxDecoration(
-                                color: _softPurple,
-                                borderRadius: BorderRadius.circular(8.r),
-                              ),
-                              child: Text(
-                                "Admin",
-                                style: TextStyle(
-                                  color: _primaryPurple,
-                                  fontSize: 10.sp,
-                                  fontWeight: FontWeight.w600,
-                                ),
+                            SizedBox(width: 10.w),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    memberName,
+                                    style: TextStyle(
+                                      color: _textDark,
+                                      fontSize: 13.sp,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  Text(
+                                    isSpeaking
+                                        ? "Speaking..."
+                                        : (isMuted
+                                            ? "Muted"
+                                            : (isOnline
+                                                ? "In Walkie Channel"
+                                                : "Offline")),
+                                    style: TextStyle(
+                                      color: isSpeaking
+                                          ? _primaryPurple
+                                          : (isMuted
+                                              ? _mutedRed
+                                              : (isOnline
+                                                  ? _activeGreen
+                                                  : _textSecondary)),
+                                      fontSize: 10.5.sp,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                        ],
-                      ),
-                    );
+                            if (isAdmin)
+                              Container(
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 8.w, vertical: 3.h),
+                                decoration: BoxDecoration(
+                                  color: _softPurple,
+                                  borderRadius: BorderRadius.circular(8.r),
+                                ),
+                                child: Text(
+                                  "Admin",
+                                  style: TextStyle(
+                                    color: _primaryPurple,
+                                    fontSize: 10.sp,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                      );
+                    });
                   },
                 ),
               ],
@@ -2291,16 +2469,22 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                     ),
                   ),
                 Positioned(
-                  right: 0,
-                  bottom: 0,
+                  right: -1,
+                  bottom: -1,
                   child: Container(
-                    width: 10.r.clamp(8.0, 12.0),
-                    height: 10.r.clamp(8.0, 12.0),
+                    width: isMuted ? 14.r.clamp(12.0, 16.0) : 10.r.clamp(8.0, 12.0),
+                    height: isMuted ? 14.r.clamp(12.0, 16.0) : 10.r.clamp(8.0, 12.0),
                     decoration: BoxDecoration(
                       color: isMuted ? _mutedRed : _activeGreen,
                       shape: BoxShape.circle,
                       border: Border.all(color: Colors.white, width: 1.5),
                     ),
+                    child: isMuted
+                        ? Center(
+                            child: Icon(Icons.mic_off_rounded,
+                                color: Colors.white, size: 8.sp.clamp(7.0, 9.5)),
+                          )
+                        : null,
                   ),
                 ),
               ],
@@ -2329,22 +2513,22 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                 fontWeight: FontWeight.w600,
               ),
             )
-          else if (isAdmin)
-            Text(
-              "Admin",
-              maxLines: 1,
-              style: TextStyle(
-                color: _primaryPurple,
-                fontSize: 9.5.sp.clamp(8.5, 11.0),
-                fontWeight: FontWeight.w600,
-              ),
-            )
           else if (isMuted)
             Text(
               "Muted",
               maxLines: 1,
               style: TextStyle(
                 color: _mutedRed,
+                fontSize: 9.5.sp.clamp(8.5, 11.0),
+                fontWeight: FontWeight.w600,
+              ),
+            )
+          else if (isAdmin)
+            Text(
+              "Admin",
+              maxLines: 1,
+              style: TextStyle(
+                color: _primaryPurple,
                 fontSize: 9.5.sp.clamp(8.5, 11.0),
                 fontWeight: FontWeight.w600,
               ),
@@ -2669,6 +2853,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
               final isSelfLocked = controller.isSelfLocked.value;
               final isMuted = controller.isMuted.value;
               final bool isNoSeat = _isTeamAdminWithoutSeat && !_canSpeak;
+              final bool isPressed = controller.isPressed.value;
 
               return Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -2680,7 +2865,9 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                             ? Icons.headphones_rounded
                             : isSelfLocked
                                 ? Icons.lock_rounded
-                                : Icons.volume_up_rounded,
+                                : isPressed
+                                    ? Icons.volume_up_rounded
+                                    : Icons.touch_app_rounded,
                     color: isMuted
                         ? _mutedRed
                         : isNoSeat
@@ -2696,7 +2883,9 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                             ? "Listen Only — Tap to View Plan"
                             : isSelfLocked
                                 ? "Locked — Tap mic to stop"
-                                : "Release to Stop",
+                                : isPressed
+                                    ? "Release to Stop"
+                                    : "Hold to Talk, Slide Up to Lock",
                     style: TextStyle(
                       color: isMuted
                           ? _mutedRed
@@ -3014,7 +3203,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                   Routes.groupChatScreen,
                   arguments: {
                     "groupId": args?['groupId']?.toString() ?? "",
-                    "groupName": args?['groupName']?.toString() ?? "",
+                    "groupName": _currentGroupName,
                     "groupImage": "",
                   },
                 );
