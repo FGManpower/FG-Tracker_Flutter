@@ -71,6 +71,10 @@
 	<string>Your location is used to share your real-time position with group members on the map during active tracking sessions.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Need microphone access for audio calls and stream live voice over the walkie-talkie channel or Screen Sharing</string>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>FG Tracker requires Bluetooth access to connect to wireless earphones and headsets during Walkie-Talkie and voice calls.</string>
+	<key>NSBluetoothPeripheralUsageDescription</key>
+	<string>FG Tracker requires Bluetooth access to route audio to wireless earphones and headsets.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>We need access to save QR codes to your gallery.</string>
 	<key>NSPhotoLibraryUsageDescription</key>

@@ -17,6 +17,7 @@ class WalkieParticipant {
   bool isMuted;
   bool isListening;
   bool isSpeaking;
+  final bool hasExplicitMute;
 
   WalkieParticipant({
     required this.userId,
@@ -25,16 +26,26 @@ class WalkieParticipant {
     this.isMuted = false,
     this.isListening = true,
     this.isSpeaking = false,
+    this.hasExplicitMute = false,
   });
 
-  factory WalkieParticipant.fromMap(Map<String, dynamic> map) {
+  factory WalkieParticipant.fromMap(Map<String, dynamic> map, {bool? defaultMuted}) {
+    final hasMuteField = map.containsKey('isMuted') ||
+        map.containsKey('muted') ||
+        map.containsKey('is_muted') ||
+        map.containsKey('status');
+    final isMutedVal = hasMuteField
+        ? ((map['isMuted'] ?? map['muted'] ?? map['is_muted'] ?? (map['status'] == 'muted')) == true)
+        : (defaultMuted ?? false);
+
     return WalkieParticipant(
-      userId: map['userId']?.toString() ?? "",
-      name: map['name']?.toString() ?? "User",
-      image: map['image']?.toString() ?? "",
-      isMuted: map['isMuted'] == true,
+      userId: (map['userId'] ?? map['user_id'] ?? map['id'])?.toString() ?? "",
+      name: (map['name'] ?? map['userName'])?.toString() ?? "User",
+      image: (map['image'] ?? map['profileImage'] ?? map['userImage'])?.toString() ?? "",
+      isMuted: isMutedVal,
       isListening: map['isListening'] != false,
       isSpeaking: map['isSpeaking'] == true,
+      hasExplicitMute: hasMuteField,
     );
   }
 }
@@ -86,11 +97,17 @@ class GroupWalkieController extends GetxController {
   List<WalkieParticipant> get sortedParticipants {
     if (participants.isEmpty) return const [];
     final list = List<WalkieParticipant>.from(participants);
+    final selfId = GroupWalkieService.instance.selfUserId ??
+        Global.storageServices.get(PrefConst.userId)?.toString() ??
+        '';
+
     list.sort((a, b) {
+      if (selfId.isNotEmpty) {
+        if (a.userId == selfId && b.userId != selfId) return -1;
+        if (b.userId == selfId && a.userId != selfId) return 1;
+      }
       if (a.isSpeaking && !b.isSpeaking) return -1;
       if (!a.isSpeaking && b.isSpeaking) return 1;
-      if (a.isMuted && !b.isMuted) return 1;
-      if (!a.isMuted && b.isMuted) return -1;
       return a.name.toLowerCase().compareTo(b.name.toLowerCase());
     });
     return list;
@@ -161,10 +178,18 @@ class GroupWalkieController extends GetxController {
   }
 
   void setParticipantMuted(String userId, bool muted) {
-    if (userId.isEmpty) return;
-    final index = participants.indexWhere((p) => p.userId == userId);
+    final cleanId = userId.trim();
+    if (cleanId.isEmpty) return;
+    final index = participants.indexWhere((p) =>
+        p.userId.trim() == cleanId ||
+        (int.tryParse(p.userId) != null &&
+            int.tryParse(p.userId) == int.tryParse(cleanId)));
     if (index != -1) {
       final p = participants[index];
+      p.isMuted = muted;
+      if (muted) {
+        p.isSpeaking = false;
+      }
       participants[index] = WalkieParticipant(
         userId: p.userId,
         name: p.name,
@@ -172,9 +197,23 @@ class GroupWalkieController extends GetxController {
         isMuted: muted,
         isListening: p.isListening,
         isSpeaking: muted ? false : p.isSpeaking,
+        hasExplicitMute: true,
       );
-      participants.refresh();
+    } else {
+      participants.add(
+        WalkieParticipant(
+          userId: cleanId,
+          name: 'User',
+          image: '',
+          isMuted: muted,
+          isListening: true,
+          isSpeaking: false,
+          hasExplicitMute: true,
+        ),
+      );
     }
+    totalParticipants.value = participants.length;
+    participants.refresh();
   }
 
   IconData get audioRouteIcon {
@@ -211,16 +250,21 @@ class GroupWalkieController extends GetxController {
 
   void addOrUpdateParticipant(WalkieParticipant p) {
     if (p.userId.isEmpty) return;
-    final index = participants.indexWhere((item) => item.userId == p.userId);
+    final cleanId = p.userId.trim();
+    final index = participants.indexWhere((item) =>
+        item.userId.trim() == cleanId ||
+        (int.tryParse(item.userId) != null &&
+            int.tryParse(item.userId) == int.tryParse(cleanId)));
     if (index != -1) {
       final existing = participants[index];
       participants[index] = WalkieParticipant(
         userId: p.userId,
         name: (p.name.isNotEmpty && p.name != 'User') ? p.name : existing.name,
         image: p.image.isNotEmpty ? p.image : existing.image,
-        isMuted: p.isMuted,
+        isMuted: p.hasExplicitMute ? p.isMuted : existing.isMuted,
         isListening: p.isListening,
         isSpeaking: p.isSpeaking,
+        hasExplicitMute: p.hasExplicitMute || existing.hasExplicitMute,
       );
     } else {
       participants.add(p);
@@ -231,7 +275,11 @@ class GroupWalkieController extends GetxController {
 
   void removeParticipant(String userId) {
     if (userId.isEmpty) return;
-    participants.removeWhere((p) => p.userId == userId);
+    final cleanId = userId.trim();
+    participants.removeWhere((p) =>
+        p.userId.trim() == cleanId ||
+        (int.tryParse(p.userId) != null &&
+            int.tryParse(p.userId) == int.tryParse(cleanId)));
     totalParticipants.value = participants.length;
     participants.refresh();
   }
@@ -240,19 +288,38 @@ class GroupWalkieController extends GetxController {
     List<WalkieParticipant> list, {
     String? activeSpeaker,
   }) {
-    participants.assignAll(list);
-    totalParticipants.value = list.length;
+    final mergedList = list.map((newP) {
+      final cleanId = newP.userId.trim();
+      final existing = participants.firstWhereOrNull((p) =>
+          p.userId.trim() == cleanId ||
+          (int.tryParse(p.userId) != null &&
+              int.tryParse(p.userId) == int.tryParse(cleanId)));
+      if (existing != null) {
+        return WalkieParticipant(
+          userId: newP.userId,
+          name: (newP.name.isNotEmpty && newP.name != 'User') ? newP.name : existing.name,
+          image: newP.image.isNotEmpty ? newP.image : existing.image,
+          isMuted: newP.hasExplicitMute ? newP.isMuted : existing.isMuted,
+          isListening: newP.isListening,
+          isSpeaking: newP.isSpeaking,
+          hasExplicitMute: newP.hasExplicitMute || existing.hasExplicitMute,
+        );
+      }
+      return newP;
+    }).toList();
+
+    participants.assignAll(mergedList);
+    totalParticipants.value = mergedList.length;
 
     if (activeSpeaker != null && activeSpeaker.isNotEmpty) {
       activeSpeakerId.value = activeSpeaker;
-      final speaker = list.firstWhereOrNull((p) => p.userId == activeSpeaker);
+      final speaker = mergedList.firstWhereOrNull((p) => p.userId == activeSpeaker);
       if (speaker != null) {
         activeSpeakerName.value = speaker.name;
         activeSpeakerImage.value = speaker.image;
         for (final p in participants) {
           p.isSpeaking = p.userId == activeSpeaker;
         }
-        participants.refresh();
       }
     } else {
       activeSpeakerId.value = "";
@@ -261,8 +328,8 @@ class GroupWalkieController extends GetxController {
       for (final p in participants) {
         p.isSpeaking = false;
       }
-      participants.refresh();
     }
+    participants.refresh();
   }
 
   void onSpeakerActive({

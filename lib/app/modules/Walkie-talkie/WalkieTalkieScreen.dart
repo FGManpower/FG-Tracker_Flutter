@@ -21,6 +21,7 @@ import 'package:fgtracker/app/Core/values/storage_services.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import '../../Core/constant/pref_res.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 import '../../Core/constant/const_res.dart';
 import '../../Core/constant/notification_holder.dart';
 
@@ -84,6 +85,9 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
     super.initState();
     _log('initState() initiated');
     WalkieLaunchTracker.fromWalkieCall = true;
+    try {
+      WakelockPlus.enable();
+    } catch (_) {}
 
     if (Get.arguments is Map<String, dynamic>) {
       args = Get.arguments as Map<String, dynamic>;
@@ -139,8 +143,10 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
     }
 
     if (groupId.isNotEmpty) {
-      _log('Configuring active session for group ID: $groupId');
+      final groupName = args?['groupName']?.toString() ?? 'Walkie Group';
+      _log('Configuring active session for group ID: $groupId ($groupName)');
       controller.setCurrentGroup(groupId);
+      controller.setConnected(GroupWalkieService.instance.socket?.connected == true);
 
       final myId = Global.storageServices.get(PrefConst.userId)?.toString() ?? '';
       final myName = Global.storageServices.get(PrefConst.userName)?.toString() ?? 'You';
@@ -157,7 +163,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
         );
       }
 
-      GroupWalkieService.instance.joinGroup(groupId);
+      GroupWalkieService.instance.joinGroup(groupId, groupName: groupName);
       _loadGroupMembersFromDb(groupId);
     } else {
       _log('Error: Invalid Group ID. Returning to previous screen.');
@@ -212,6 +218,9 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
     _trialTimer?.cancel();
     _saveTrialRemainingSeconds();
     WalkieLaunchTracker.fromWalkieCall = false;
+    try {
+      WakelockPlus.disable();
+    } catch (_) {}
     _safeLeave();
     _rippleController.dispose();
     _pulseController.dispose();
@@ -258,7 +267,12 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
       return;
     }
 
-    if (!controller.isConnected.value) {
+    final isSocketLive = GroupWalkieService.instance.socket?.connected == true;
+    if (isSocketLive && !controller.isConnected.value) {
+      controller.setConnected(true);
+    }
+
+    if (!controller.isConnected.value && !isSocketLive) {
       _log('Block: Socket is not connected / poor internet.');
       HapticFeedback.heavyImpact();
       controller.showNoInternetMessage();
@@ -1860,17 +1874,26 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                         children: [
                           _buildSafeAvatar(p, 16.r.clamp(14.0, 18.0)),
                           Positioned(
-                            right: 0,
-                            bottom: 0,
+                            right: -1,
+                            bottom: -1,
                             child: Container(
-                              width: 8.r,
-                              height: 8.r,
+                              width: isMuted ? 13.r.clamp(12.0, 15.0) : 8.r,
+                              height: isMuted ? 13.r.clamp(12.0, 15.0) : 8.r,
                               decoration: BoxDecoration(
                                 color: isMuted ? _mutedRed : _activeGreen,
                                 shape: BoxShape.circle,
                                 border:
                                     Border.all(color: Colors.white, width: 1.5),
                               ),
+                              child: isMuted
+                                  ? Center(
+                                      child: Icon(
+                                        Icons.mic_off_rounded,
+                                        color: Colors.white,
+                                        size: 7.5.sp,
+                                      ),
+                                    )
+                                  : null,
                             ),
                           ),
                         ],
@@ -1893,9 +1916,9 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                             Text(
                               isSpeaking
                                   ? "Speaking..."
-                                  : (isAdmin
-                                      ? "Admin"
-                                      : (isMuted ? "Muted" : "Online")),
+                                  : (isMuted
+                                      ? (isAdmin ? "Admin • Muted" : "Muted")
+                                      : (isAdmin ? "Admin" : "Online")),
                               style: TextStyle(
                                 color: isSpeaking
                                     ? _primaryPurple
@@ -2077,116 +2100,144 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                   itemBuilder: (context, index) {
                     final member = _allGroupMembers[index];
                     final memberId = member.userId?.toString() ?? '';
-                    final isOnline = controller.participants
-                        .any((p) => p.userId == memberId);
                     final memberName = (member.name != null &&
                             member.name!.trim().isNotEmpty)
                         ? member.name!.trim()
                         : "Member";
                     final isAdmin = args?['adminId'] == memberId || index == 0;
 
-                    return Container(
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 10.w, vertical: 8.h),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF8FAFC),
-                        borderRadius: BorderRadius.circular(12.r),
-                      ),
-                      child: Row(
-                        children: [
-                          Stack(
-                            children: [
-                              CircleAvatar(
-                                radius: 18.r,
-                                backgroundColor: _softPurple,
-                                backgroundImage: (member.profileImage != null &&
-                                        member.profileImage!.isNotEmpty &&
-                                        !_isBadImageUrl(member.profileImage!))
-                                    ? NetworkImage(
-                                        member.profileImage!.startsWith('http')
-                                            ? member.profileImage!
-                                            : ConstRes.aImageBaseUrl +
-                                                member.profileImage!)
-                                    : null,
-                                child: (member.profileImage == null ||
-                                        member.profileImage!.isEmpty ||
-                                        _isBadImageUrl(member.profileImage!))
-                                    ? Text(
-                                        _getInitials(memberName),
-                                        style: TextStyle(
-                                          color: _primaryPurple,
-                                          fontWeight: FontWeight.w700,
-                                          fontSize: 12.sp,
-                                        ),
-                                      )
-                                    : null,
-                              ),
-                              Positioned(
-                                right: 0,
-                                bottom: 0,
-                                child: Container(
-                                  width: 8.r,
-                                  height: 8.r,
-                                  decoration: BoxDecoration(
-                                    color: isOnline
-                                        ? _activeGreen
-                                        : Colors.grey.shade400,
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                        color: Colors.white, width: 1.5),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          SizedBox(width: 10.w),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                    return Obx(() {
+                      final participant = controller.participants
+                          .firstWhereOrNull((p) =>
+                              p.userId.trim() == memberId.trim() ||
+                              (int.tryParse(p.userId) != null &&
+                                  int.tryParse(p.userId) == int.tryParse(memberId)));
+                      final isOnline = participant != null;
+                      final isMuted = participant?.isMuted == true;
+                      final isSpeaking = participant?.isSpeaking == true;
+
+                      return Container(
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 10.w, vertical: 8.h),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF8FAFC),
+                          borderRadius: BorderRadius.circular(12.r),
+                        ),
+                        child: Row(
+                          children: [
+                            Stack(
                               children: [
-                                Text(
-                                  memberName,
-                                  style: TextStyle(
-                                    color: _textDark,
-                                    fontSize: 13.sp,
-                                    fontWeight: FontWeight.w600,
-                                  ),
+                                CircleAvatar(
+                                  radius: 18.r,
+                                  backgroundColor: _softPurple,
+                                  backgroundImage: (member.profileImage != null &&
+                                          member.profileImage!.isNotEmpty &&
+                                          !_isBadImageUrl(member.profileImage!))
+                                      ? NetworkImage(
+                                          member.profileImage!.startsWith('http')
+                                              ? member.profileImage!
+                                              : ConstRes.aImageBaseUrl +
+                                                  member.profileImage!)
+                                      : null,
+                                  child: (member.profileImage == null ||
+                                          member.profileImage!.isEmpty ||
+                                          _isBadImageUrl(member.profileImage!))
+                                      ? Text(
+                                          _getInitials(memberName),
+                                          style: TextStyle(
+                                            color: _primaryPurple,
+                                            fontWeight: FontWeight.w700,
+                                            fontSize: 12.sp,
+                                          ),
+                                        )
+                                      : null,
                                 ),
-                                Text(
-                                  isOnline
-                                      ? "In Walkie Channel"
-                                      : "Offline",
-                                  style: TextStyle(
-                                    color: isOnline
-                                        ? _activeGreen
-                                        : _textSecondary,
-                                    fontSize: 10.5.sp,
-                                    fontWeight: FontWeight.w500,
+                                Positioned(
+                                  right: 0,
+                                  bottom: 0,
+                                  child: Container(
+                                    width: isMuted ? 13.r : 8.r,
+                                    height: isMuted ? 13.r : 8.r,
+                                    decoration: BoxDecoration(
+                                      color: isMuted
+                                          ? _mutedRed
+                                          : (isOnline
+                                              ? _activeGreen
+                                              : Colors.grey.shade400),
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                          color: Colors.white, width: 1.5),
+                                    ),
+                                    child: isMuted
+                                        ? Center(
+                                            child: Icon(
+                                              Icons.mic_off_rounded,
+                                              color: Colors.white,
+                                              size: 7.5.sp,
+                                            ),
+                                          )
+                                        : null,
                                   ),
                                 ),
                               ],
                             ),
-                          ),
-                          if (isAdmin)
-                            Container(
-                              padding: EdgeInsets.symmetric(
-                                  horizontal: 8.w, vertical: 3.h),
-                              decoration: BoxDecoration(
-                                color: _softPurple,
-                                borderRadius: BorderRadius.circular(8.r),
-                              ),
-                              child: Text(
-                                "Admin",
-                                style: TextStyle(
-                                  color: _primaryPurple,
-                                  fontSize: 10.sp,
-                                  fontWeight: FontWeight.w600,
-                                ),
+                            SizedBox(width: 10.w),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    memberName,
+                                    style: TextStyle(
+                                      color: _textDark,
+                                      fontSize: 13.sp,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  Text(
+                                    isSpeaking
+                                        ? "Speaking..."
+                                        : (isMuted
+                                            ? "Muted"
+                                            : (isOnline
+                                                ? "In Walkie Channel"
+                                                : "Offline")),
+                                    style: TextStyle(
+                                      color: isSpeaking
+                                          ? _primaryPurple
+                                          : (isMuted
+                                              ? _mutedRed
+                                              : (isOnline
+                                                  ? _activeGreen
+                                                  : _textSecondary)),
+                                      fontSize: 10.5.sp,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                        ],
-                      ),
-                    );
+                            if (isAdmin)
+                              Container(
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 8.w, vertical: 3.h),
+                                decoration: BoxDecoration(
+                                  color: _softPurple,
+                                  borderRadius: BorderRadius.circular(8.r),
+                                ),
+                                child: Text(
+                                  "Admin",
+                                  style: TextStyle(
+                                    color: _primaryPurple,
+                                    fontSize: 10.sp,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                      );
+                    });
                   },
                 ),
               ],

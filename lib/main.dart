@@ -130,6 +130,59 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     CallStateTracker.isIncomingCallScreenOpen = false;
     callEnded(sessionId);
     flutterLocalNotificationsPlugin.cancelAll();
+  } else if (message.data['screen_name'] == "group_walkie" ||
+      message.data['screenName'] == "group_walkie" ||
+      message.data['screen_name'] == "groupWalkie" ||
+      message.data['screen'] == "group_walkie") {
+    if (message.notification != null) return;
+    final groupName = (message.data['groupName'] ??
+            message.data['group_name'] ??
+            message.data['title'])
+        ?.toString();
+    final speakerName = (message.data['speakerName'] ??
+            message.data['speaker_name'] ??
+            message.data['callerName'])
+        ?.toString();
+
+    final title = (groupName != null && groupName.trim().isNotEmpty)
+        ? "Walkie-Talkie: $groupName"
+        : "Walkie-Talkie Active";
+    final body = (speakerName != null && speakerName.trim().isNotEmpty)
+        ? "$speakerName is speaking in Walkie-Talkie. Tap to join."
+        : "Active walkie-talkie channel. Tap to join.";
+
+    const AndroidNotificationDetails androidNotificationDetails =
+        AndroidNotificationDetails(
+      'walkie_fcm_channel',
+      'Walkie-Talkie Notifications',
+      channelDescription: 'Notifications for active Walkie-Talkie channels',
+      importance: Importance.high,
+      priority: Priority.high,
+      ticker: 'ticker',
+      sound: RawResourceAndroidNotificationSound('recieve_notification'),
+      enableVibration: true,
+    );
+
+    const DarwinNotificationDetails darwinNotificationDetails =
+        DarwinNotificationDetails(
+      presentAlert: true,
+      presentBadge: true,
+      presentSound: true,
+      sound: 'recieve_notification.mp3',
+    );
+
+    const NotificationDetails notificationDetails = NotificationDetails(
+      android: androidNotificationDetails,
+      iOS: darwinNotificationDetails,
+    );
+
+    await flutterLocalNotificationsPlugin.show(
+      502,
+      title,
+      body,
+      notificationDetails,
+      payload: jsonEncode(message.data),
+    );
   }
   // else if (message.data['screen_name'] == 'groupCallNotify') {
   //   FlutterRingtonePlayer().play(
