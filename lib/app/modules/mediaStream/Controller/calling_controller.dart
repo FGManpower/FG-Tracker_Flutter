@@ -88,6 +88,14 @@ class CallingController extends GetxController {
     update();
   }
 
+  void toggleControls() {
+    areControlsVisible.value = !areControlsVisible.value;
+
+    _controlsTimer?.cancel();
+
+    update();
+  }
+
   @override
   void onInit() {
     callerId = args["callerId"]?.toString() ?? "";
@@ -713,18 +721,23 @@ class CallingController extends GetxController {
   }
 
 
-  Future<void> setDefaultAudioRouteForCallType({required bool isVideo}) async {
+  Future<void> setDefaultAudioRouteForCallType({
+    required bool isVideo,
+  }) async {
     await checkAudioDevices();
 
     if (isBluetoothConnected.value) {
-      await disableSpeaker();
+      await Helper.setSpeakerphoneOnButPreferBluetooth();
+      isSpeakerOn = false;
+      currentAudioRoute.value = "bluetooth";
+      await ProximityScreenLock.setActive(false);
+    } else if (isVideo) {
+      await enableSpeaker();
     } else {
-      if (isVideo) {
-        await enableSpeaker();
-      } else {
-        await disableSpeaker();
-      }
+      await disableSpeaker();
     }
+
+    update();
   }
   Future<void> endAudioCall() async {
     await WakelockPlus.disable();
@@ -769,7 +782,6 @@ class CallingController extends GetxController {
 
       isBluetoothConnected.value = isBtFound;
 
-      // Active channel determination
       if (isSpeakerOn) {
         currentAudioRoute.value = "speaker";
       } else if (isBtFound) {

@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:fgtracker/app/Core/constant/notification_holder.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Walkie-Talkie-Service.dart';
-import 'package:fgtracker/app/modules/Walkie-talkie/WalkieTalkieScreen.dart';
+import 'package:fgtracker/app/modules/Walkie-talkie/Views/WalkieTalkieScreen.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';

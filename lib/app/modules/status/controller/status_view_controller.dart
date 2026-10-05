@@ -166,9 +166,8 @@ class StatusViewController extends GetxController
     progressController.stop();
     videoController?.removeListener(_onVideoListener);
     videoController?.pause();
-    if (Get.isOverlaysOpen) {
-      Get.back();
-    }
+
+    Get.closeAllSnackbars();
     Get.back();
   }
 
@@ -235,6 +234,8 @@ class StatusViewController extends GetxController
 
     if (!isOwnStatus && item.id > 0) {
       _recordView(statusId: item.id);
+    } else if (isOwnStatus) {
+      fetchCurrentStatusViewers();
     }
 
     if (isVideoStatus(item) &&
@@ -280,6 +281,25 @@ class StatusViewController extends GetxController
       _isTransitioning = false;
       progressController.forward();
     }
+  }
+
+  Future<void> fetchCurrentStatusViewers() async {
+    if (!isOwnStatus) return;
+    try {
+      final res = await StatusRepo.getMyStatus();
+      if (res.status && res.data.isNotEmpty) {
+        final activeId = currentStatus?.id;
+        if (activeId != null) {
+          final updated = res.data.firstWhereOrNull((s) => s.id == activeId);
+          if (updated != null) {
+            final idx = currentIndex.value;
+            if (idx >= 0 && idx < statuses.length) {
+              statuses[idx] = updated;
+            }
+          }
+        }
+      }
+    } catch (_) {}
   }
 
   void pause() {
@@ -496,26 +516,48 @@ class StatusViewController extends GetxController
     }
   }
 
-  void reactWithEmoji(String emoji) {
+  Future<void> reactWithEmoji(String emoji) async {
     final item = currentStatus;
-    if (item == null) return;
+    if (item == null || item.id <= 0 || isSendingReply.value) return;
+
+    isSendingReply.value = true;
+    pause();
+
     selectedReaction.value = emoji;
     isLiked.value = emoji == '❤️';
     statuses[currentIndex.value] = item.copyWith(
       isViewed: true,
       myReaction: emoji,
     );
+
     _recordView(statusId: item.id, reactionEmoji: emoji);
+
+    try {
+      final res = await StatusRepo.replyStatus(
+        item.id,
+        comment: emoji,
+        reactionEmoji: emoji,
+      );
+
+      if (res.status == true) {
+        closeViewer();
+      } else {
+        resume();
+      }
+    } catch (_) {
+      resume();
+    } finally {
+      isSendingReply.value = false;
+    }
   }
 
   void toggleLike() {
-    final nextReaction = isLiked.value ? '' : '❤️';
-    if (nextReaction.isEmpty) {
+    if (isLiked.value) {
       selectedReaction.value = '';
       isLiked.value = false;
       return;
     }
-    reactWithEmoji(nextReaction);
+    reactWithEmoji('❤️');
   }
 
   Future<void> sendReply() async {
@@ -533,20 +575,19 @@ class StatusViewController extends GetxController
             ? selectedReaction.value
             : null,
       );
+
       if (res.status == true) {
         replyController.clear();
+        selectedReaction.value = '';
         FocusManager.instance.primaryFocus?.unfocus();
-        Get.snackbar(
-          'Sent',
-          res.message ?? "Status reply sent directly to creator's chat",
-          snackPosition: SnackPosition.TOP,
-          backgroundColor: Colors.black87,
-          colorText: Colors.white,
-        );
+        closeViewer();
+      } else {
+        resume();
       }
+    } catch (_) {
+      resume();
     } finally {
       isSendingReply.value = false;
-      resume();
     }
   }
 

@@ -155,6 +155,8 @@ class _StatusViewScreenState extends State<StatusViewScreen> {
                 if (widget.isOwnStatus)
                   StatusOwnFooter(
                     status: current,
+                    controller: controller,
+
                     onOpenViewers: controller.pause,
                     onCloseViewers: controller.resume,
                   )

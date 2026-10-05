@@ -84,6 +84,12 @@ class Socket_GroupCallService {
       existing['isMuted'] = isMuted;
     }
     participantMeta[userId] = existing;
+
+    _log(
+      "PARTICIPANT META SAVED => "
+          "userId=$userId | "
+          "meta=${participantMeta[userId]}",
+    );
   }
 
   String getParticipantName(String userId) {
@@ -220,7 +226,12 @@ class Socket_GroupCallService {
       final name = (data['name'] ?? data['userName'] ?? '').toString();
       final profileImage =
       (data['profileImage'] ?? data['userProfileImage'] ?? '').toString();
-
+      _log(
+        "JOIN PARTICIPANT PARSED => "
+            "userId=$joinedUserId | "
+            "name=$name | "
+            "profileImage=$profileImage",
+      );
       _saveParticipantMeta(
         joinedUserId,
         name: name.isEmpty ? null : name,

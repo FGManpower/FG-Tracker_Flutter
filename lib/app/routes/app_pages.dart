@@ -36,7 +36,7 @@ import '../modules/Walkie-talkie/Views/walkie_order_summary_screen.dart';
 import '../modules/Walkie-talkie/Binding/walkie_order_summary_binding.dart';
 import '../modules/Track/Views/Search_Members.dart';
 import '../modules/Track/Views/GroupTrackLocationScreen.dart';
-import '../modules/Walkie-talkie/WalkieTalkieScreen.dart';
+import '../modules/Walkie-talkie/Views/WalkieTalkieScreen.dart';
 
 import '../modules/home/Views/LiveStatus/components/total_groups.dart';
 import '../modules/mediaStream/Bindings/group_call_binding.dart';

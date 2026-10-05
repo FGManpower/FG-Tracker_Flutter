@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:fgtracker/app/Model/status_model.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
@@ -5,9 +6,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:video_player/video_player.dart';
+import '../../../Core/constant/pref_res.dart';
+import '../../../Core/values/global.dart';
+import '../../../Model/MemberDataRes.dart';
+import '../../../routes/app_pages.dart';
 import '../controller/status_view_controller.dart';
-
-import 'dart:ui';
 
 class StatusBackground extends StatelessWidget {
   final StatusItemModel status;
@@ -66,7 +69,7 @@ class StatusBackground extends StatelessWidget {
             Center(
               child: AspectRatio(
                 aspectRatio:
-                    vc.value.aspectRatio > 0 ? vc.value.aspectRatio : 9 / 16,
+                vc.value.aspectRatio > 0 ? vc.value.aspectRatio : 9 / 16,
                 child: VideoPlayer(vc),
               ),
             ),
@@ -116,27 +119,27 @@ class StatusBackground extends StatelessWidget {
               maxScale: 3.0,
               child: isNetwork
                   ? Image.network(
-                      imageUrl,
-                      fit: BoxFit.contain,
-                      width: double.infinity,
-                      height: double.infinity,
-                      loadingBuilder: (context, child, loadingProgress) {
-                        if (loadingProgress == null) return child;
-                        return const Center(
-                          child: CircularProgressIndicator(
-                            color: Color(0xFF6B4DFF),
-                          ),
-                        );
-                      },
-                      errorBuilder: (_, __, ___) => const PlaceholderBg(),
-                    )
-                  : Image.asset(
-                      imageUrl,
-                      fit: BoxFit.contain,
-                      width: double.infinity,
-                      height: double.infinity,
-                      errorBuilder: (_, __, ___) => const PlaceholderBg(),
+                imageUrl,
+                fit: BoxFit.contain,
+                width: double.infinity,
+                height: double.infinity,
+                loadingBuilder: (context, child, loadingProgress) {
+                  if (loadingProgress == null) return child;
+                  return const Center(
+                    child: CircularProgressIndicator(
+                      color: Color(0xFF6B4DFF),
                     ),
+                  );
+                },
+                errorBuilder: (_, __, ___) => const PlaceholderBg(),
+              )
+                  : Image.asset(
+                imageUrl,
+                fit: BoxFit.contain,
+                width: double.infinity,
+                height: double.infinity,
+                errorBuilder: (_, __, ___) => const PlaceholderBg(),
+              ),
             ),
           ),
         ],
@@ -301,7 +304,7 @@ class StatusProgressBars extends StatelessWidget {
                         minHeight: 2.5.h,
                         backgroundColor: Colors.white.withValues(alpha: 0.35),
                         valueColor:
-                            const AlwaysStoppedAnimation<Color>(Colors.white),
+                        const AlwaysStoppedAnimation<Color>(Colors.white),
                       ),
                     );
                   },
@@ -357,13 +360,13 @@ class StatusTopBar extends StatelessWidget {
               child: (userAvatar != null && userAvatar!.isNotEmpty)
                   ? Image.network(userAvatar!, fit: BoxFit.cover)
                   : Container(
-                      color: const Color(0xFFE9E7FF),
-                      child: Icon(
-                        Icons.person_rounded,
-                        color: const Color(0xFF6B4DFF),
-                        size: 22.sp,
-                      ),
-                    ),
+                color: const Color(0xFFE9E7FF),
+                child: Icon(
+                  Icons.person_rounded,
+                  color: const Color(0xFF6B4DFF),
+                  size: 22.sp,
+                ),
+              ),
             ),
           ),
           SizedBox(width: 10.w),
@@ -473,19 +476,21 @@ class StatusCaptionArea extends StatelessWidget {
 
 class StatusOwnFooter extends StatelessWidget {
   final StatusItemModel status;
+  final StatusViewController controller;
   final VoidCallback onOpenViewers;
   final VoidCallback onCloseViewers;
 
   const StatusOwnFooter({
     super.key,
     required this.status,
+    required this.controller,
     required this.onOpenViewers,
     required this.onCloseViewers,
   });
 
-  Map<String, int> _reactionSummary() {
+  Map<String, int> _reactionSummary(List<StatusViewerModel> viewers) {
     final map = <String, int>{};
-    for (final v in status.viewers) {
+    for (final v in viewers) {
       final emoji = v.reactionEmoji;
       if (emoji != null && emoji.trim().isNotEmpty) {
         map[emoji] = (map[emoji] ?? 0) + 1;
@@ -494,113 +499,151 @@ class StatusOwnFooter extends StatelessWidget {
     return map;
   }
 
+  String? _memberProfilePath(String? url) {
+    if (url == null || url.trim().isEmpty) return null;
+    if (!url.startsWith('http')) return url;
+    final marker = '/uploads/';
+    final i = url.indexOf(marker);
+    if (i != -1) return url.substring(i + 1);
+    return url;
+  }
+
+  void _openChatWithViewer(StatusViewerModel viewer) {
+    if (viewer.viewerId <= 0) return;
+
+    final myId =
+        Global.storageServices.get(PrefConst.userId)?.toString() ?? '';
+    if (myId.isNotEmpty && myId == viewer.viewerId.toString()) return;
+
+    final member = MemberData(
+      id: viewer.viewerId,
+      userId: viewer.viewerId,
+      name: viewer.name,
+      profileImage: _memberProfilePath(viewer.profileImage),
+    );
+
+    if (Get.isBottomSheetOpen == true) {
+      Get.back();
+    }
+
+    controller.closeViewer();
+
+    Future.delayed(const Duration(milliseconds: 280), () {
+      Get.toNamed(
+        Routes.chatScreen,
+        arguments: {
+          "userData": member,
+          "type": "",
+        },
+      );
+    });
+  }
+
   void _showViewersBottomSheet() {
     onOpenViewers();
-
-    final reactions = _reactionSummary();
+    controller.fetchCurrentStatusViewers();
 
     Get.bottomSheet(
-      Container(
-        constraints: BoxConstraints(
-          maxHeight: Get.height * 0.78,
-          minHeight: Get.height * 0.32,
-        ),
-        decoration: BoxDecoration(
-          color: const Color(0xFF0B141A), // WhatsApp dark
-          borderRadius: BorderRadius.vertical(top: Radius.circular(16.r)),
-        ),
-        child: SafeArea(
-          top: false,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              SizedBox(height: 10.h),
+      Obx(() {
+        final current = controller.currentStatus ?? status;
+        final reactions = _reactionSummary(current.viewers);
 
-              Container(
-                width: 40.w,
-                height: 4.h,
-                decoration: BoxDecoration(
-                  color: Colors.white24,
-                  borderRadius: BorderRadius.circular(10.r),
-                ),
-              ),
-              SizedBox(height: 14.h),
-
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16.w),
-                child: Row(
-                  children: [
-                    Icon(Icons.visibility_rounded,
-                        color: Colors.white70, size: 20.sp),
-                    SizedBox(width: 8.w),
-                    reausabletext(
-                      'Viewed by ${status.viewsCount}',
-                      fontsize: 15.sp,
-                      fontfamily: FontFamily.interBold,
-                      color: Colors.white,
-                    ),
-                  ],
-                ),
-              ),
-
-              if (reactions.isNotEmpty) ...[
-                SizedBox(height: 14.h),
-                SizedBox(
-                  height: 38.h,
-                  child: ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    padding: EdgeInsets.symmetric(horizontal: 16.w),
-                    itemCount: reactions.length,
-                    separatorBuilder: (_, __) => SizedBox(width: 8.w),
-                    itemBuilder: (_, i) {
-                      final emoji = reactions.keys.elementAt(i);
-                      final count = reactions[emoji]!;
-                      return Container(
-                        padding: EdgeInsets.symmetric(
-                            horizontal: 12.w, vertical: 6.h),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF1F2C34),
-                          borderRadius: BorderRadius.circular(20.r),
-                          border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.06),
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(emoji, style: TextStyle(fontSize: 16.sp)),
-                            SizedBox(width: 6.w),
-                            reausabletext(
-                              '$count',
-                              fontsize: 13.sp,
-                              fontfamily: FontFamily.interMedium,
-                              color: Colors.white70,
-                            ),
-                          ],
-                        ),
-                      );
-                    },
+        return Container(
+          constraints: BoxConstraints(
+            maxHeight: Get.height * 0.78,
+            minHeight: Get.height * 0.32,
+          ),
+          decoration: BoxDecoration(
+            color: const Color(0xFF0B141A),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(16.r)),
+          ),
+          child: SafeArea(
+            top: false,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SizedBox(height: 10.h),
+                Container(
+                  width: 40.w,
+                  height: 4.h,
+                  decoration: BoxDecoration(
+                    color: Colors.white24,
+                    borderRadius: BorderRadius.circular(10.r),
                   ),
                 ),
+                SizedBox(height: 14.h),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16.w),
+                  child: Row(
+                    children: [
+                      Icon(Icons.visibility_rounded,
+                          color: Colors.white70, size: 20.sp),
+                      SizedBox(width: 8.w),
+                      reausabletext(
+                        'Viewed by ${current.viewsCount}',
+                        fontsize: 15.sp,
+                        fontfamily: FontFamily.interBold,
+                        color: Colors.white,
+                      ),
+                    ],
+                  ),
+                ),
+                if (reactions.isNotEmpty) ...[
+                  SizedBox(height: 14.h),
+                  SizedBox(
+                    height: 38.h,
+                    child: ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      padding: EdgeInsets.symmetric(horizontal: 16.w),
+                      itemCount: reactions.length,
+                      separatorBuilder: (_, __) => SizedBox(width: 8.w),
+                      itemBuilder: (_, i) {
+                        final emoji = reactions.keys.elementAt(i);
+                        final count = reactions[emoji]!;
+                        return Container(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 12.w, vertical: 6.h),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF1F2C34),
+                            borderRadius: BorderRadius.circular(20.r),
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.06),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(emoji, style: TextStyle(fontSize: 16.sp)),
+                              SizedBox(width: 6.w),
+                              reausabletext(
+                                '$count',
+                                fontsize: 13.sp,
+                                fontfamily: FontFamily.interMedium,
+                                color: Colors.white70,
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+                SizedBox(height: 12.h),
+                Divider(
+                  height: 1,
+                  thickness: 0.5,
+                  color: Colors.white.withValues(alpha: 0.08),
+                ),
+                Flexible(
+                  child: current.viewers.isEmpty
+                      ? _buildEmptyState()
+                      : _buildViewersList(current.viewers),
+                ),
               ],
-
-              SizedBox(height: 12.h),
-              Divider(
-                height: 1,
-                thickness: 0.5,
-                color: Colors.white.withValues(alpha: 0.08),
-              ),
-
-              // List
-              Flexible(
-                child: status.viewers.isEmpty
-                    ? _buildEmptyState()
-                    : _buildViewersList(),
-              ),
-            ],
+            ),
           ),
-        ),
-      ),
+        );
+      }),
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       barrierColor: Colors.black.withValues(alpha: 0.6),
@@ -629,23 +672,44 @@ class StatusOwnFooter extends StatelessWidget {
     );
   }
 
-  Widget _buildViewersList() {
+  Widget _buildViewersList(List<StatusViewerModel> viewers) {
+    final myId =
+        Global.storageServices.get(PrefConst.userId)?.toString() ?? '';
+
     return ListView.builder(
       physics: const BouncingScrollPhysics(),
       shrinkWrap: true,
       padding: EdgeInsets.only(top: 6.h, bottom: 16.h),
-      itemCount: status.viewers.length,
+      itemCount: viewers.length,
       itemBuilder: (_, index) {
-        final viewer = status.viewers[index];
+        final viewer = viewers[index];
         final hasReaction = viewer.reactionEmoji != null &&
             viewer.reactionEmoji!.trim().isNotEmpty;
+        final isMe = myId.isNotEmpty &&
+            myId == viewer.viewerId.toString();
 
-        final timeText = '';
+        String timeText = '';
+        if (viewer.viewedAt != null) {
+          final now = DateTime.now();
+          final diff = now.difference(viewer.viewedAt!.toLocal());
+          if (diff.inMinutes < 1) {
+            timeText = 'Just now';
+          } else if (diff.inMinutes < 60) {
+            timeText = '${diff.inMinutes}m ago';
+          } else {
+            final dt = viewer.viewedAt!.toLocal();
+            final hour =
+            dt.hour > 12 ? dt.hour - 12 : (dt.hour == 0 ? 12 : dt.hour);
+            final minute = dt.minute.toString().padLeft(2, '0');
+            final period = dt.hour >= 12 ? 'PM' : 'AM';
+            timeText = '$hour:$minute $period';
+          }
+        }
 
         return Material(
           color: Colors.transparent,
           child: InkWell(
-            onTap: () {},
+            onTap: isMe ? null : () => _openChatWithViewer(viewer),
             splashColor: Colors.white.withValues(alpha: 0.05),
             highlightColor: Colors.white.withValues(alpha: 0.03),
             child: Padding(
@@ -656,13 +720,13 @@ class StatusOwnFooter extends StatelessWidget {
                     radius: 22.r,
                     backgroundColor: const Color(0xFF1F2C34),
                     backgroundImage: (viewer.profileImage != null &&
-                            viewer.profileImage!.isNotEmpty)
+                        viewer.profileImage!.isNotEmpty)
                         ? NetworkImage(viewer.profileImage!)
                         : null,
                     child: (viewer.profileImage == null ||
-                            viewer.profileImage!.isEmpty)
+                        viewer.profileImage!.isEmpty)
                         ? Icon(Icons.person_rounded,
-                            color: Colors.white54, size: 22.sp)
+                        color: Colors.white54, size: 22.sp)
                         : null,
                   ),
                   SizedBox(width: 14.w),
@@ -687,10 +751,32 @@ class StatusOwnFooter extends StatelessWidget {
                       ],
                     ),
                   ),
-                  if (hasReaction)
+                  if (hasReaction) ...[
                     Text(
                       viewer.reactionEmoji!,
                       style: TextStyle(fontSize: 22.sp),
+                    ),
+                    SizedBox(width: 10.w),
+                  ],
+                  if (!isMe)
+                    GestureDetector(
+                      onTap: () => _openChatWithViewer(viewer),
+                      behavior: HitTestBehavior.opaque,
+                      child: Container(
+                        padding: EdgeInsets.all(8.r),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1F2C34),
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.08),
+                          ),
+                        ),
+                        child: Icon(
+                          Icons.chat_bubble_outline_rounded,
+                          color: Colors.white70,
+                          size: 18.sp,
+                        ),
+                      ),
                     ),
                 ],
               ),
@@ -721,12 +807,15 @@ class StatusOwnFooter extends StatelessWidget {
                   Icon(Icons.visibility_rounded,
                       color: Colors.white, size: 16.sp),
                   SizedBox(width: 6.w),
-                  reausabletext(
-                    '${status.viewsCount} Views',
-                    fontsize: 12.sp,
-                    color: Colors.white,
-                    fontfamily: FontFamily.interMedium,
-                  ),
+                  Obx(() {
+                    final current = controller.currentStatus ?? status;
+                    return reausabletext(
+                      '${current.viewsCount} Views',
+                      fontsize: 12.sp,
+                      color: Colors.white,
+                      fontfamily: FontFamily.interMedium,
+                    );
+                  }),
                 ],
               ),
             ),
@@ -736,7 +825,6 @@ class StatusOwnFooter extends StatelessWidget {
     );
   }
 }
-
 class StatusOtherFooter extends StatelessWidget {
   final StatusViewController controller;
 
@@ -842,15 +930,15 @@ class StatusOtherFooter extends StatelessWidget {
                       border: hasText
                           ? null
                           : Border.all(
-                              color: Colors.white.withValues(alpha: 0.2),
-                            ),
+                        color: Colors.white.withValues(alpha: 0.2),
+                      ),
                     ),
                     child: Icon(
                       hasText
                           ? Icons.send_rounded
                           : (isLiked
-                              ? Icons.favorite_rounded
-                              : Icons.favorite_border_rounded),
+                          ? Icons.favorite_rounded
+                          : Icons.favorite_border_rounded),
                       color: hasText
                           ? Colors.white
                           : (isLiked ? Colors.redAccent : Colors.white),

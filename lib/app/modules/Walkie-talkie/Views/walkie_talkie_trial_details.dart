@@ -2,12 +2,13 @@ import 'package:fgtracker/app/Core/values/colors.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Controller/walkie_talkie_trial_controller.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Views/walkie_group_select_screen.dart';
-import 'package:fgtracker/app/modules/Walkie-talkie/Views/widgets/walkie_features_card.dart';
-import 'package:fgtracker/app/modules/Walkie-talkie/Views/widgets/walkie_hero_section.dart';
-import 'package:fgtracker/app/modules/Walkie-talkie/Views/widgets/walkie_individual_plan_card.dart';
-import 'package:fgtracker/app/modules/Walkie-talkie/Views/widgets/walkie_purchase_bottom_bar.dart';
-import 'package:fgtracker/app/modules/Walkie-talkie/Views/widgets/walkie_team_plan_card.dart';
-import 'package:fgtracker/app/modules/Walkie-talkie/Views/widgets/walkie_trial_card.dart';
+import 'package:fgtracker/app/modules/Walkie-talkie/widgets/walkie_features_card.dart';
+import 'package:fgtracker/app/modules/Walkie-talkie/widgets/walkie_hero_section.dart';
+import 'package:fgtracker/app/modules/Walkie-talkie/widgets/walkie_individual_plan_card.dart';
+import 'package:fgtracker/app/modules/Walkie-talkie/widgets/walkie_purchase_bottom_bar.dart';
+import 'package:fgtracker/app/modules/Walkie-talkie/widgets/walkie_team_plan_card.dart';
+import 'package:fgtracker/app/modules/Walkie-talkie/widgets/walkie_trial_card.dart';
+
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/cupertino.dart' show CupertinoIcons;
 import 'package:flutter/material.dart';
@@ -92,7 +93,7 @@ class _WalkieTalkieTrialDetailsScreenState
                         minHeight: 2,
                       ),
                     _buildTopErrorBanner(),
-                    const WalkieHeroSection(),
+                     WalkieHeroSection(),
                     SizedBox(height: 8.h),
 
                     // =====================================================

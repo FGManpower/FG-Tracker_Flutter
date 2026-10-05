@@ -34,7 +34,7 @@ class CallingScreen extends StatelessWidget {
                   Positioned.fill(
                     child: GestureDetector(
                       behavior: HitTestBehavior.opaque,
-                      onTap: c.showControlsTemporarily,
+                      onTap: c.toggleControls,
                       child: RTCVideoView(
                         c.isLocalVideoMain ? c.localRenderer : c.remoteRenderer,
                         mirror: c.isLocalVideoMain && c.isFrontCamera,
