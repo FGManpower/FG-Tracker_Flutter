@@ -7,6 +7,7 @@ import 'package:fgtracker/app/Data/Services/Socket/Socket_Walkie-Talkie-Service.
 import 'package:fgtracker/app/config/themes_data.dart';
 import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Controller/walkieController.dart';
+import 'package:fgtracker/app/modules/Walkie-talkie/Services/walkie_notification_manager.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/widgets/NoVoiceSeatDialog.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/widgets/WalkieBottomActions.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/widgets/Walkie_Talkie.dart';
@@ -72,6 +73,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
     super.initState();
     log('initState() initiated');
     WalkieLaunchTracker.fromWalkieCall = true;
+    WalkieNotificationManager.instance.setWalkieScreenActive(true);
     try {
       WakelockPlus.enable();
     } catch (_) {}

@@ -12,6 +12,7 @@ import 'package:fgtracker/app/Data/Services/Socket/Socket_Dashboard_Service.dart
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Group_Calling.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Walkie-Talkie-Service.dart';
 import 'package:fgtracker/app/Data/Services/screen_share_service.dart';
+import 'package:fgtracker/app/modules/Walkie-talkie/Services/walkie_notification_manager.dart';
 import 'package:fgtracker/app/modules/status/binding/status_binding.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -300,6 +301,19 @@ Future<void> main() async {
     StatusBinding().dependencies();
   }
   ScreenShareForegroundService.init();
+  await WalkieNotificationManager.instance.init();
+  final launch =
+      await FlutterLocalNotificationsPlugin().getNotificationAppLaunchDetails();
+  if (launch?.didNotificationLaunchApp == true) {
+    // payload handled after GetMaterialApp is ready
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final resp = launch!.notificationResponse;
+      if (resp != null) {
+        WalkieNotificationManager.instance.onNotificationTap(resp);
+      }
+    });
+  }
+
   runApp(const MyApp());
 }
 
