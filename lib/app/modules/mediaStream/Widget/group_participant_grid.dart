@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
@@ -417,7 +419,13 @@ class GroupParticipantGrid extends StatelessWidget {
     final imageUrl = Utility.isNullEmptyOrFalse(participant.profileImage)
         ? MyAppTheme.ProfilenotFoundImg
         : ConstRes.aImageBaseUrl + (participant.profileImage ?? '');
-
+    log(
+      "GROUP CALL DP => "
+          "userId=${participant.userId} | "
+          "profileImage=${participant.profileImage} | "
+          "baseUrl=${ConstRes.aImageBaseUrl} | "
+          "finalUrl=$imageUrl",
+    );
     return Stack(
       fit: StackFit.expand,
       children: [

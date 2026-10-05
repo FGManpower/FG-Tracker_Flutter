@@ -68,12 +68,36 @@ class ChatListController extends GetxController {
       final chats = response.data ?? [];
 
       final activeChats = chats
-          .where(
-            (chat) => chat.isArchived != true,
-          )
+          .where((chat) => chat.isArchived != true)
           .toList();
 
-      privateChats.value = _sortPinnedChats(activeChats);
+      final existingChats = List<PrivateChatModel>.from(privateChats);
+
+      final orderedChats = <PrivateChatModel>[];
+
+      for (final oldChat in existingChats) {
+        final updatedChat = activeChats.firstWhereOrNull(
+              (chat) => chat.id == oldChat.id || chat.userId == oldChat.userId,
+        );
+
+        if (updatedChat != null) {
+          orderedChats.add(updatedChat);
+        }
+      }
+
+      for (final newChat in activeChats) {
+        final alreadyExists = orderedChats.any(
+              (chat) =>
+          chat.id == newChat.id ||
+              chat.userId == newChat.userId,
+        );
+
+        if (!alreadyExists) {
+          orderedChats.add(newChat);
+        }
+      }
+
+      privateChats.value = _sortPinnedChats(orderedChats);
 
       if (response.pagination != null) {
         currentPage.value =
@@ -349,12 +373,38 @@ class ChatListController extends GetxController {
         return;
       }
 
-      if (index != -1) {
-        privateChats.removeAt(index);
+      if (index == -1) {
+        privateChats.insert(0, updatedChat);
+        privateChats.refresh();
+
+        log(
+          "PRIVATE CHAT NEW: "
+              "${updatedChat.name} | "
+              "chatId=${updatedChat.id} | "
+              "movedToTop=true",
+        );
+
+        return;
       }
 
-      privateChats.insert(0, updatedChat);
+      final currentChat = privateChats[index];
 
+      if (updatedChat.unreadCount == 0) {
+        privateChats[index] = updatedChat;
+        privateChats.refresh();
+
+        log(
+          "PRIVATE CHAT UPDATED WITHOUT REORDER: "
+              "${updatedChat.name} | "
+              "chatId=${updatedChat.id} | "
+              "unreadCount=0",
+        );
+
+        return;
+      }
+
+      privateChats.removeAt(index);
+      privateChats.insert(0, updatedChat);
       privateChats.refresh();
 
       log(
@@ -362,6 +412,7 @@ class ChatListController extends GetxController {
             "${updatedChat.name} | "
             "chatId=${updatedChat.id} | "
             "isPinned=${updatedChat.isPinned} | "
+            "unreadCount=${updatedChat.unreadCount} | "
             "movedToTop=true",
       );
     } catch (e) {
@@ -370,6 +421,7 @@ class ChatListController extends GetxController {
       );
     }
   }
+
   void muteChat(
     PrivateChatModel chat, {
     String? mutedUntil,

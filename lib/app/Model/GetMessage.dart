@@ -1,3 +1,5 @@
+import 'package:fgtracker/app/Model/status_model.dart';
+
 class GetMessage {
   bool? status;
   String? message;
@@ -45,14 +47,10 @@ class GetMessage {
 
       for (final item in messages) {
         if (item is Map<String, dynamic>) {
-          messageData!.add(
-            MessageData.fromJson(item),
-          );
+          messageData!.add(MessageData.fromJson(item));
         } else if (item is Map) {
           messageData!.add(
-            MessageData.fromJson(
-              Map<String, dynamic>.from(item),
-            ),
+            MessageData.fromJson(Map<String, dynamic>.from(item)),
           );
         }
       }
@@ -76,8 +74,7 @@ class GetMessage {
     }
 
     if (messageData != null) {
-      data['MessageData'] =
-          messageData!.map((v) => v.toJson()).toList();
+      data['MessageData'] = messageData!.map((v) => v.toJson()).toList();
     }
 
     return data;
@@ -172,6 +169,12 @@ class MessageData {
   dynamic isForwarded;
   dynamic forwardedFromMessageId;
 
+  dynamic replyStatusId;
+  dynamic statusType;
+  dynamic replyMessageContent;
+  StatusMetaModel? statusMeta;
+  StatusItemModel? replyStatus;
+
   MessageData({
     this.id,
     this.senderId,
@@ -195,7 +198,29 @@ class MessageData {
     this.locationSharing,
     this.isForwarded,
     this.forwardedFromMessageId,
+    this.replyStatusId,
+    this.statusType,
+    this.replyMessageContent,
+    this.statusMeta,
+    this.replyStatus,
   });
+
+  bool get isStatusReply {
+    final mType = messageType?.toString().toLowerCase();
+    final rType = replyType?.toString().toLowerCase();
+    return mType == 'status_reply' || rType == 'status';
+  }
+
+  int? get resolvedStatusId {
+    if (replyStatus != null && replyStatus!.id > 0) {
+      return replyStatus!.id;
+    }
+    if (statusMeta?.statusId != null && statusMeta!.statusId! > 0) {
+      return statusMeta!.statusId;
+    }
+    final rawId = replyStatusId ?? replyId;
+    return int.tryParse(rawId?.toString() ?? '');
+  }
 
   MessageData.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -215,18 +240,38 @@ class MessageData {
     caption = json['caption'];
 
     replyId = json['replyId'] ?? json['reply_id'];
-
     replyMessage = json['replyMessage'] ?? json['reply_message'];
-
     replyType = json['replyType'] ?? json['reply_type'];
-
     replySenderName = json['replySender'] ??
         json['replySenderName'] ??
         json['reply_sender_name'];
 
-    locationSharing =
-        json['locationSharing'] ?? json['location_sharing'];
+    replyStatusId = json['replyStatusId'] ?? json['reply_status_id'];
+    statusType = json['statusType'] ?? json['status_type'];
+    replyMessageContent =
+        json['replyMessageContent'] ?? json['reply_message_content'];
 
+    if (json['statusMeta'] is Map) {
+      statusMeta = StatusMetaModel.fromJson(
+        Map<String, dynamic>.from(json['statusMeta']),
+      );
+    }
+
+    if (json['replyStatus'] is Map) {
+      final replyMap = Map<String, dynamic>.from(json['replyStatus']);
+      replyStatus = StatusItemModel.fromReplyStatus(
+        replyMap,
+        meta: statusMeta,
+      );
+    } else if (statusMeta != null) {
+      replyStatus = StatusItemModel.fromStatusMeta(
+        statusMeta!,
+        content:
+        replyMessageContent?.toString() ?? replyMessage?.toString() ?? '',
+      );
+    }
+
+    locationSharing = json['locationSharing'] ?? json['location_sharing'];
     isForwarded = json['isForwarded'];
     forwardedFromMessageId = json['forwardedFromMessageId'];
   }
@@ -253,6 +298,20 @@ class MessageData {
     data['reply_message'] = replyMessage;
     data['reply_type'] = replyType;
     data['reply_sender_name'] = replySenderName;
+    data['replyStatusId'] = replyStatusId;
+    data['statusType'] = statusType;
+    data['replyMessageContent'] = replyMessageContent;
+
+    if (statusMeta != null) {
+      data['statusMeta'] = {
+        'statusId': statusMeta!.statusId,
+        'type': statusMeta!.type,
+        'mediaUrl': statusMeta!.mediaUrl,
+        'thumbnail': statusMeta!.thumbnail,
+        'ownerName': statusMeta!.ownerName,
+      };
+    }
+
     data['locationSharing'] = locationSharing;
     data['isForwarded'] = isForwarded;
     data['forwardedFromMessageId'] = forwardedFromMessageId;

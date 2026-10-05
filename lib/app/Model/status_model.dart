@@ -5,8 +5,18 @@ String? _resolveFullUrl(String? path) {
   if (path == null || path.trim().isEmpty) return null;
   if (path.startsWith('http://') || path.startsWith('https://')) return path;
   final base = ConstRes.socketUrl.replaceAll(RegExp(r'/$'), '');
-  final normalizedPath = path.startsWith('/') ? path : '/$path';
-  return '$base$normalizedPath';
+  final cleanPath = path.trim().replaceFirst(RegExp(r'^/+'), '');
+  return '$base/$cleanPath';
+}
+
+String? _resolveProfileUrl(String? path) {
+  if (path == null || path.trim().isEmpty) return null;
+  if (path.startsWith('http://') || path.startsWith('https://')) return path;
+  final cleanPath = path.trim().replaceFirst(RegExp(r'^/+'), '');
+  if (cleanPath.startsWith('uploads/')) {
+    return _resolveFullUrl(cleanPath);
+  }
+  return _resolveFullUrl('uploads/Auth/$cleanPath');
 }
 
 class StatusCreateRes {
@@ -101,14 +111,79 @@ class StatusViewerModel {
   });
 
   factory StatusViewerModel.fromJson(Map<String, dynamic> json) {
+    final userObj = json['user'] is Map<String, dynamic>
+        ? json['user'] as Map<String, dynamic>
+        : null;
+
+    final viewerId = int.tryParse(
+      (json['viewerId'] ?? json['userId'] ?? json['id'] ?? userObj?['id'])
+          ?.toString() ??
+          '',
+    ) ??
+        0;
+
+    final name = (json['name'] ??
+        json['userName'] ??
+        json['Name'] ??
+        userObj?['name'] ??
+        userObj?['Name'])
+        ?.toString() ??
+        'User';
+
+    final rawPic = (json['profileImage'] ??
+        json['profilePic'] ??
+        json['avatar'] ??
+        userObj?['profilePic'] ??
+        userObj?['profileImage'])
+        ?.toString();
+
+    final reaction = (json['reactionEmoji'] ??
+        json['myReaction'] ??
+        json['emoji'])
+        ?.toString();
+
+    final timeStr = (json['viewedAt'] ??
+        json['createdAt'] ??
+        json['updatedAt'])
+        ?.toString();
+
     return StatusViewerModel(
-      viewerId: int.tryParse(json['viewerId']?.toString() ?? '') ?? 0,
-      name: json['name']?.toString() ?? 'User',
-      profileImage: _resolveFullUrl(json['profileImage']?.toString()),
-      reactionEmoji: json['reactionEmoji']?.toString(),
-      viewedAt: json['viewedAt'] != null
-          ? DateTime.tryParse(json['viewedAt'].toString())
-          : null,
+      viewerId: viewerId,
+      name: name,
+      profileImage: _resolveProfileUrl(rawPic),
+      reactionEmoji: reaction,
+      viewedAt: timeStr != null ? DateTime.tryParse(timeStr) : null,
+    );
+  }
+}
+
+class StatusMetaModel {
+  final int? statusId;
+  final String type;
+  final String? mediaUrl;
+  final String? thumbnail;
+  final String? ownerName;
+
+  StatusMetaModel({
+    this.statusId,
+    this.type = 'text',
+    this.mediaUrl,
+    this.thumbnail,
+    this.ownerName,
+  });
+
+  factory StatusMetaModel.fromJson(Map<String, dynamic>? json) {
+    if (json == null) {
+      return StatusMetaModel();
+    }
+    return StatusMetaModel(
+      statusId: int.tryParse(json['statusId']?.toString() ?? ''),
+      type: (json['type'] ?? 'text').toString().toLowerCase(),
+      mediaUrl: _resolveFullUrl(json['mediaUrl']?.toString()),
+      thumbnail: _resolveFullUrl(
+        (json['thumbnail'] ?? json['thumbnailUrl'])?.toString(),
+      ),
+      ownerName: json['ownerName']?.toString(),
     );
   }
 }
@@ -129,7 +204,9 @@ class StatusItemModel {
   final String? myReaction;
   final DateTime? expiresAt;
   final DateTime createdAt;
+  final bool isDeleted;
   final List<StatusViewerModel> viewers;
+  final StatusCreatorUser? creator;
 
   StatusItemModel({
     required this.id,
@@ -147,18 +224,56 @@ class StatusItemModel {
     this.myReaction,
     this.expiresAt,
     required this.createdAt,
+    this.isDeleted = false,
     required this.viewers,
+    this.creator,
   });
+
+  bool get isExpired {
+    if (isDeleted) return true;
+    if (expiresAt == null) return false;
+    return DateTime.now().toUtc().isAfter(expiresAt!.toUtc());
+  }
+
+  bool get isVideo {
+    final lowerType = type.toLowerCase();
+    final lowerUrl = (mediaUrl ?? '').toLowerCase();
+    return lowerType == 'video' ||
+        lowerUrl.endsWith('.mp4') ||
+        lowerUrl.endsWith('.mov') ||
+        lowerUrl.endsWith('.mkv') ||
+        lowerUrl.endsWith('.webm');
+  }
+
+  bool get isImage {
+    final lowerType = type.toLowerCase();
+    return lowerType == 'image' || lowerType == 'photo';
+  }
+
+  bool get isText => type.toLowerCase() == 'text';
 
   factory StatusItemModel.fromJson(Map<String, dynamic> json) {
     final rawViewers = json['viewers'] as List<dynamic>? ?? [];
+
+    StatusCreatorUser? creator;
+    if (json['creator'] is Map<String, dynamic>) {
+      creator = StatusCreatorUser.fromJson(json['creator']);
+    } else if (json['user'] is Map<String, dynamic>) {
+      creator = StatusCreatorUser.fromJson(json['user']);
+    }
+
+    final resolvedUserId = int.tryParse(json['userId']?.toString() ?? '') ??
+        creator?.id;
+
     return StatusItemModel(
       id: int.tryParse(json['id']?.toString() ?? '') ?? 0,
-      userId: int.tryParse(json['userId']?.toString() ?? ''),
+      userId: resolvedUserId,
       type: (json['type'] ?? 'image').toString().toLowerCase(),
       content: json['content']?.toString() ?? '',
       mediaUrl: _resolveFullUrl(json['mediaUrl']?.toString()),
-      thumbnailUrl: _resolveFullUrl(json['thumbnailUrl']?.toString()),
+      thumbnailUrl: _resolveFullUrl(
+        (json['thumbnailUrl'] ?? json['thumbnail'])?.toString(),
+      ),
       backgroundColor: json['backgroundColor']?.toString() ?? '#6B4DFF',
       fontStyle: json['fontStyle']?.toString() ?? 'default',
       durationSeconds:
@@ -167,7 +282,7 @@ class StatusItemModel {
       isViewed: json['isViewed'] == true,
       viewsCount: int.tryParse(json['viewsCount']?.toString() ?? '') ??
           rawViewers.length,
-      myReaction: json['reactionEmoji']?.toString(),
+      myReaction: (json['reactionEmoji'] ?? json['myReaction'])?.toString(),
       expiresAt: json['expiresAt'] != null
           ? DateTime.tryParse(json['expiresAt'].toString())
           : null,
@@ -175,10 +290,72 @@ class StatusItemModel {
           ? DateTime.tryParse(json['createdAt'].toString())?.toLocal() ??
           DateTime.now()
           : DateTime.now(),
+      isDeleted: json['isDeleted'] == true,
       viewers: rawViewers
           .whereType<Map<String, dynamic>>()
           .map(StatusViewerModel.fromJson)
           .toList(),
+      creator: creator,
+    );
+  }
+
+  factory StatusItemModel.fromReplyStatus(
+      Map<String, dynamic> json, {
+        StatusMetaModel? meta,
+      }) {
+    final item = StatusItemModel.fromJson(json);
+    if (item.creator != null || meta?.ownerName == null) return item;
+
+    return StatusItemModel(
+      id: item.id,
+      userId: item.userId,
+      type: item.type,
+      content: item.content,
+      mediaUrl: item.mediaUrl ?? meta?.mediaUrl,
+      thumbnailUrl: item.thumbnailUrl ?? meta?.thumbnail,
+      backgroundColor: item.backgroundColor,
+      fontStyle: item.fontStyle,
+      durationSeconds: item.durationSeconds,
+      privacyType: item.privacyType,
+      isViewed: item.isViewed,
+      viewsCount: item.viewsCount,
+      myReaction: item.myReaction,
+      expiresAt: item.expiresAt,
+      createdAt: item.createdAt,
+      isDeleted: item.isDeleted,
+      viewers: item.viewers,
+      creator: StatusCreatorUser(
+        id: item.userId ?? meta?.statusId ?? 0,
+        name: meta?.ownerName ?? 'User',
+        profilePic: null,
+      ),
+    );
+  }
+
+  factory StatusItemModel.fromStatusMeta(
+      StatusMetaModel meta, {
+        String? content,
+        String? backgroundColor,
+      }) {
+    return StatusItemModel(
+      id: meta.statusId ?? 0,
+      userId: null,
+      type: meta.type,
+      content: content ?? '',
+      mediaUrl: meta.mediaUrl,
+      thumbnailUrl: meta.thumbnail,
+      backgroundColor: backgroundColor ?? '#6B4DFF',
+      fontStyle: 'default',
+      durationSeconds: 5,
+      privacyType: 'ALL_CONTACTS',
+      isViewed: true,
+      viewsCount: 0,
+      createdAt: DateTime.now(),
+      isDeleted: false,
+      viewers: const [],
+      creator: meta.ownerName != null
+          ? StatusCreatorUser(id: 0, name: meta.ownerName!)
+          : null,
     );
   }
 
@@ -187,6 +364,8 @@ class StatusItemModel {
     int? viewsCount,
     String? myReaction,
     List<StatusViewerModel>? viewers,
+    bool? isDeleted,
+    StatusCreatorUser? creator,
   }) {
     return StatusItemModel(
       id: id,
@@ -204,7 +383,9 @@ class StatusItemModel {
       myReaction: myReaction ?? this.myReaction,
       expiresAt: expiresAt,
       createdAt: createdAt,
+      isDeleted: isDeleted ?? this.isDeleted,
       viewers: viewers ?? this.viewers,
+      creator: creator ?? this.creator,
     );
   }
 
@@ -232,6 +413,13 @@ class StatusItemModel {
         : 'Yesterday';
     return '$dayPrefix, $hour:$minute $period';
   }
+
+  String get previewLabel {
+    if (isVideo) return 'Video';
+    if (isImage) return 'Photo';
+    if (content.trim().isNotEmpty) return content.trim();
+    return 'Status';
+  }
 }
 
 class StatusCreatorUser {
@@ -246,10 +434,22 @@ class StatusCreatorUser {
   });
 
   factory StatusCreatorUser.fromJson(Map<String, dynamic> json) {
+    final id = int.tryParse(
+      (json['id'] ?? json['UserId'] ?? json['userId'])?.toString() ?? '',
+    ) ??
+        0;
+    final name =
+        (json['name'] ?? json['Name'] ?? json['userName'])?.toString() ?? 'User';
+    final rawPic = (json['profilePic'] ??
+        json['ProfileImage'] ??
+        json['profileImage'] ??
+        json['avatar'])
+        ?.toString();
+
     return StatusCreatorUser(
-      id: int.tryParse(json['id']?.toString() ?? '') ?? 0,
-      name: json['name']?.toString() ?? 'User',
-      profilePic: _resolveFullUrl(json['profilePic']?.toString()),
+      id: id,
+      name: name,
+      profilePic: _resolveProfileUrl(rawPic),
     );
   }
 }
