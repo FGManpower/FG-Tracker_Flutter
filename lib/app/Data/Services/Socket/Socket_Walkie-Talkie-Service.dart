@@ -6,6 +6,7 @@ import 'dart:io';
 import 'package:audio_session/audio_session.dart';
 import 'package:fgtracker/app/Core/constant/urls.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Controller/walkieController.dart';
+import 'package:fgtracker/app/modules/Walkie-talkie/Services/walkie_notification_manager.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Views/walkie_invite_dialog.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:get/get.dart' hide navigator;
@@ -375,16 +376,16 @@ class GroupWalkieService {
       socket?.off(e);
     }
 
-    socket?.on('walkie_invite', (data) {
-      if (data == null) return;
-
-      WalkieInviteDialog.show(
-        groupId: data['groupId']?.toString() ?? '',
-        groupName: data['groupName']?.toString() ?? 'Group',
-        speakerName: data['speakerName']?.toString() ?? 'Someone',
-        speakerImage: data['speakerImage']?.toString() ?? '',
-      );
-    });
+    // socket?.on('walkie_invite', (data) {
+    //   if (data == null) return;
+    //
+    //   WalkieInviteDialog.show(
+    //     groupId: data['groupId']?.toString() ?? '',
+    //     groupName: data['groupName']?.toString() ?? 'Group',
+    //     speakerName: data['speakerName']?.toString() ?? 'Someone',
+    //     speakerImage: data['speakerImage']?.toString() ?? '',
+    //   );
+    // });
 
     /*
     socket?.on('walkie_invite', (data) async {
@@ -595,20 +596,46 @@ class GroupWalkieService {
       }
     });
 
-    socket?.on('walkie_speaker_active', (data) {
+    // socket?.on('walkie_speaker_active', (data) {
+    //   if (_isDisposed || data == null) return;
+    //   final gId = data is Map ? data['groupId']?.toString() : null;
+    //   if (gId != null && _currentGroupId != null && gId != _currentGroupId) {
+    //     return;
+    //   }
+    //   final speakerId = data['speakerId']?.toString() ?? '';
+    //   if (Get.isRegistered<GroupWalkieController>()) {
+    //     Get.find<GroupWalkieController>().onSpeakerActive(
+    //       speakerId: speakerId,
+    //       speakerName: data['speakerName']?.toString() ?? 'User',
+    //       speakerImage: data['speakerImage']?.toString() ?? '',
+    //     );
+    //   }
+    // });
+
+
+    socket?.on('walkie_speaker_active', (data) async {
       if (_isDisposed || data == null) return;
-      final gId = data is Map ? data['groupId']?.toString() : null;
-      if (gId != null && _currentGroupId != null && gId != _currentGroupId) {
-        return;
-      }
+
       final speakerId = data['speakerId']?.toString() ?? '';
+      final speakerName = data['speakerName']?.toString() ?? 'User';
+      final speakerImage = data['speakerImage']?.toString() ?? '';
+      final groupId = data['groupId']?.toString() ?? _currentGroupId ?? '';
+      final groupName = data['groupName']?.toString() ?? '';
+
       if (Get.isRegistered<GroupWalkieController>()) {
         Get.find<GroupWalkieController>().onSpeakerActive(
           speakerId: speakerId,
-          speakerName: data['speakerName']?.toString() ?? 'User',
-          speakerImage: data['speakerImage']?.toString() ?? '',
+          speakerName: speakerName,
+          speakerImage: speakerImage,
         );
       }
+
+      await WalkieNotificationManager.instance.onSomeoneStartedTalking(
+        speakerId: speakerId,
+        speakerName: speakerName,
+        groupId: groupId,
+        groupName: groupName,
+      );
     });
 
     socket?.on('ptt_release', (data) {
@@ -622,15 +649,28 @@ class GroupWalkieService {
       }
     });
 
-    socket?.on('walkie_speaker_stopped', (data) {
+    // socket?.on('walkie_speaker_stopped', (data) {
+    //   if (_isDisposed) return;
+    //   final gId = data is Map ? data['groupId']?.toString() : null;
+    //   if (gId != null && _currentGroupId != null && gId != _currentGroupId) {
+    //     return;
+    //   }
+    //   if (Get.isRegistered<GroupWalkieController>()) {
+    //     Get.find<GroupWalkieController>().onSpeakerStopped();
+    //   }
+    // });
+
+    socket?.on('walkie_speaker_stopped', (data) async {
       if (_isDisposed) return;
-      final gId = data is Map ? data['groupId']?.toString() : null;
-      if (gId != null && _currentGroupId != null && gId != _currentGroupId) {
-        return;
-      }
+
       if (Get.isRegistered<GroupWalkieController>()) {
         Get.find<GroupWalkieController>().onSpeakerStopped();
       }
+
+      await WalkieNotificationManager.instance.onSomeoneStoppedTalking(
+        speakerId: data is Map ? data['speakerId']?.toString() : null,
+        speakerName: data is Map ? data['speakerName']?.toString() : null,
+      );
     });
 
     socket?.on('walkie_participants_update', (data) {
@@ -1198,6 +1238,11 @@ class GroupWalkieService {
     socket?.emit('join_walkie_session', joinPayload);
     _log('✅ Emitted join_walkie_session: $joinPayload (socket connected: ${socket?.connected})');
 
+    WalkieNotificationManager.instance.setWalkieJoined(
+      true,
+      groupId: groupId,
+      groupName: groupName,
+    );
     return true;
   }
 
@@ -1250,6 +1295,8 @@ class GroupWalkieService {
       'userId': parsedUserId,
       'fromUserId': _selfUserId,
     });
+    WalkieNotificationManager.instance.setWalkieJoined(false);
+    await WalkieNotificationManager.instance.hideNotification();
   }
 
   // FIXED: Explicit debugging guards to catch why PTT returns false

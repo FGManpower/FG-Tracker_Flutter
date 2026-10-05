@@ -21,59 +21,10 @@ class ToggleThemeData {
   static Color grey = Colors.grey;
   static Color chatBackground = Color(0xFFF2F0FF);
 
-  // static ThemeData lightTheme = ThemeData(
-  //     useMaterial3: true,
-  //     brightness: Brightness.light,
-  //     colorScheme: ColorScheme.fromSeed(seedColor: ToggleThemeData.white),
-  //     primaryColor: ToggleThemeData.white,
-  //     scaffoldBackgroundColor: Colors.white,
-  //     appBarTheme: AppBarTheme(
-  //       backgroundColor: ToggleThemeData.white,
-  //       systemOverlayStyle: SystemUiOverlayStyle(
-  //         statusBarColor: Appcolor,
-  //         statusBarIconBrightness: Brightness.light,
-  //         statusBarBrightness: Brightness.light,
-  //       ),
-  //     ),
-  //     bottomNavigationBarTheme:
-  //     BottomNavigationBarThemeData(backgroundColor: ToggleThemeData.white),
-  //     canvasColor: ToggleThemeData.white,
-  //     primaryColorLight: ToggleThemeData.white,
-  //     cardColor: ToggleThemeData.white,
-  //     cardTheme: CardTheme(color: Colors.white),
-  //     iconTheme: IconThemeData(color: ToggleThemeData.black),
-  //     textTheme: TextTheme(
-  //       headlineLarge: TextStyle(color: ToggleThemeData.black, fontSize: 16),
-  //       titleLarge: TextStyle(
-  //         color: ToggleThemeData.black,
-  //       ),
-  //       labelLarge: TextStyle(color: ToggleThemeData.black, fontSize: 12),
-  //     ));
-  //
-  // static ThemeData darkTheme = ThemeData(
-  //     useMaterial3: false,
-  //     brightness: Brightness.dark,
-  //     appBarTheme: AppBarTheme(
-  //       backgroundColor: darkThemeBackground,
-  //       systemOverlayStyle: SystemUiOverlayStyle(
-  //         statusBarColor: darkThemeBackground,
-  //         statusBarIconBrightness: Brightness.light,
-  //         statusBarBrightness: Brightness.light,
-  //       ),
-  //     ),
-  //     primaryColor: ToggleThemeData.backgroundBlack,
-  //     canvasColor: ToggleThemeData.backgroundBlack,
-  //     scaffoldBackgroundColor: backgroundBlack,
-  //     bottomNavigationBarTheme: BottomNavigationBarThemeData(
-  //         backgroundColor: ToggleThemeData.darkThemeBackground),
-  //     cardColor: ToggleThemeData.darkThemeBackground,
-  //     iconTheme: IconThemeData(color: ToggleThemeData.white),
-  //     primaryColorLight: ToggleThemeData.backgroundBlack,
-  //     textTheme: TextTheme(
-  //       labelLarge: TextStyle(
-  //         color: ToggleThemeData.WhiteMatte,
-  //       ),
-  //     ));
+
+
+
+
 
   static ThemeData lightTheme = ThemeData(
     useMaterial3: true,
@@ -200,3 +151,15 @@ class ToggleThemeData {
     hoverColor: Colors.transparent,
   );
 }
+
+//================ Walkie-Talkie ======================= //
+final Color bgLight = const Color(0xFFF6F8FD);
+final Color cardWhite = Colors.white;
+final Color primaryPurple = const Color(0xFF5A35FF);
+final Color lightPurple = const Color(0xFF8B6CFF);
+final Color softPurple = const Color(0xFFEDE9FE);
+final Color activeGreen = const Color(0xFF22C55E);
+final Color mutedRed = const Color(0xFFEF4444);
+final Color textDark = const Color(0xFF1E1B2E);
+final Color textSecondary = const Color(0xFF8E8EA8);
+final Color slateGray = const Color(0xFF94A3B8);

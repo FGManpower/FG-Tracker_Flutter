@@ -1,6 +1,5 @@
 import 'dart:io';
 
-
 import 'package:fgtracker/app/Core/theme/AppText.dart';
 import 'package:fgtracker/app/Core/values/Context_Utility.dart';
 import 'package:fgtracker/app/Core/values/colors.dart';
@@ -15,7 +14,8 @@ import 'package:get/get.dart';
 
 class CommonDialog {
   static errorMessage(
-    String? title, {   String successBtnName="DISMISS",
+    String? title, {
+    String successBtnName = "DISMISS",
     bool status = false,
     void Function()? onDismiss,
   }) {
@@ -73,7 +73,8 @@ class CommonDialog {
                       ),
                     ),
                     SizedBox(height: 10.h),
-                    reausabletext(status == true ? AppText.success.tr : AppText.error.tr,
+                    reausabletext(
+                        status == true ? AppText.success.tr : AppText.error.tr,
                         fontsize: 24,
                         fontfamily: FontFamily.interMedium,
                         align: TextAlign.center),
@@ -107,7 +108,10 @@ class CommonDialog {
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(25.r),
                           ),
-                          child: reausabletext( status == true ?successBtnName.tr: AppText.dismiss.tr,
+                          child: reausabletext(
+                              status == true
+                                  ? successBtnName.tr
+                                  : AppText.dismiss.tr,
                               color: status == true
                                   ? Colors.blue
                                   : Colors.red.shade900,
@@ -288,10 +292,10 @@ class CommonDialog {
   }
 
   Future<void> PermissionDeny_dialog(
-      BuildContext context, {
-        void Function()? acceptontap,
-        void Function()? CancelOnTap,
-      }) async {
+    BuildContext context, {
+    void Function()? acceptontap,
+    void Function()? CancelOnTap,
+  }) async {
     return await showCupertinoDialog(
       context: context,
       barrierDismissible: false,
@@ -312,7 +316,8 @@ class CommonDialog {
                 height: 250.h,
                 width: 300.w,
                 decoration: BoxDecoration(
-                  color: context.isDarkMode ? ToggleThemeData.black : Colors.white,
+                  color:
+                      context.isDarkMode ? ToggleThemeData.black : Colors.white,
                   borderRadius: BorderRadius.circular(15.0),
                 ),
                 child: Column(
@@ -410,12 +415,11 @@ class CommonDialog {
     );
   }
 
-
   //********** Location Permission ****************//
   LocationPermission_dialog(
-      BuildContext context, {
-        void Function()? acceptontap,
-      }) async {
+    BuildContext context, {
+    void Function()? acceptontap,
+  }) async {
     return await showDialog(
         barrierDismissible: false,
         context: context,
@@ -432,7 +436,7 @@ class CommonDialog {
                 contentPadding: EdgeInsets.zero,
                 content: Container(
                     padding:
-                    EdgeInsets.only(left: 10.w, right: 10.w, top: 12.h),
+                        EdgeInsets.only(left: 10.w, right: 10.w, top: 12.h),
                     width: MediaQuery.sizeOf(context).width,
                     child: SingleChildScrollView(
                       physics: const ClampingScrollPhysics(),
@@ -458,8 +462,7 @@ class CommonDialog {
                           SizedBox(
                             height: 25.h,
                           ),
-                          reausabletext(
-                              AppText.inTheNextPopup.tr,
+                          reausabletext(AppText.inTheNextPopup.tr,
                               fontsize: 15,
                               fontfamily: FontFamily.interSemiBold,
                               height: 1.5,
@@ -478,15 +481,16 @@ class CommonDialog {
                                   onPressed: () {
                                     // dashcontroller.isLoading.value = false;
                                     Navigator.pop(context);
-                                  },style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.grey[200],
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8.0),
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.grey[200],
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8.0),
+                                    ),
                                   ),
-                                ),
                                   child: reausabletext(AppText.no.tr,
-                                      fontsize: 15,backcolor: Colors.grey.shade200,
-
+                                      fontsize: 15,
+                                      backcolor: Colors.grey.shade200,
                                       fontfamily: FontFamily.interRegular,
                                       color: context.isDarkMode
                                           ? ToggleThemeData.white
@@ -498,16 +502,21 @@ class CommonDialog {
                                 //   width: 1.w,
                                 //   color: const Color(0xff828282),
                                 // ),
-                                ElevatedButton(onPressed: acceptontap, style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.blue,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8.0),
+                                ElevatedButton(
+                                  onPressed: acceptontap,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.blue,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8.0),
+                                    ),
                                   ),
-                                ),child: reausabletext(AppText.yes.tr,
-                                    fontsize: 15,color: Colors.white, backcolor: Colors.blue,
-                                    fontfamily: FontFamily.interRegular,
-                                    align: TextAlign.center),)
-
+                                  child: reausabletext(AppText.yes.tr,
+                                      fontsize: 15,
+                                      color: Colors.white,
+                                      backcolor: Colors.blue,
+                                      fontfamily: FontFamily.interRegular,
+                                      align: TextAlign.center),
+                                )
                               ],
                             ),
                           )
@@ -517,7 +526,4 @@ class CommonDialog {
           });
         });
   }
-
-
-
 }

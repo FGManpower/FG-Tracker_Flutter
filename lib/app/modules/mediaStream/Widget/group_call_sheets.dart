@@ -255,7 +255,6 @@ class GroupCallMoreSheet {
               child: Column(
                 children: [
                   Obx(() => ListTile(
-                        // Wrap in Obx to dynamically update text
                         leading: Icon(
                           isScreenSharing.value
                               ? Icons.stop_screen_share_outlined
