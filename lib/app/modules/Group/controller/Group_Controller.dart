@@ -139,22 +139,26 @@ class GroupController extends GetxController {
   }) async {
     try {
       Loading().showloading();
-      dynamic param = {
+
+      final dynamic param = {
         "groupId": groupId,
         "groupMemberId": groupMemberId,
       };
-      var result = await GroupRepo.deleteGroupsMember(param);
+
+      final result = await GroupRepo.deleteGroupsMember(param);
+
+      Loading().dismissloading();
+
       if (result.status == true) {
-        Loading().dismissloading();
-        MemberController()
-            .leaveGroup(context, groupId: groupId, onSuccess: onSuccess);
+        onSuccess(true);
       } else {
-        Loading().dismissloading();
         CommonDialog.errorMessage(result.message);
+        onSuccess(false);
       }
     } catch (e) {
       Loading().dismissloading();
       CommonDialog.errorMessage(e.toString());
+      onSuccess(false);
     }
   }
 

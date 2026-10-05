@@ -75,13 +75,13 @@ class SocketService extends GetxService {
         (city != null && city.trim().isNotEmpty) ? city.trim() : null;
     final int sendBattery = battery ?? 85;
 
-    if (connectedGroupIds.isEmpty) {
+    // if (connectedGroupIds.isEmpty) {
       final payload = <String, dynamic>{
         "userId": userId,
         "lat": lat,
         "lng": lng,
-        "latitude": lat,
-        "longitude": lng,
+        // "latitude": lat,
+        // "longitude": lng,
         "battery": sendBattery,
         if (cleanAddress != null) "address": cleanAddress,
         if (cleanAddress != null) "location": cleanAddress,
@@ -89,26 +89,26 @@ class SocketService extends GetxService {
         if (cleanCity != null) "city": cleanCity,
       };
       _socket?.emit("send-location", payload);
-      log("📡 [SocketService] Emitted send-location (broadcast): $payload");
-    } else {
-      for (String groupId in connectedGroupIds) {
-        final payload = <String, dynamic>{
-          "userId": userId,
-          "groupId": groupId,
-          "lat": lat,
-          "lng": lng,
-          "latitude": lat,
-          "longitude": lng,
-          "battery": sendBattery,
-          if (cleanAddress != null) "address": cleanAddress,
-          if (cleanAddress != null) "location": cleanAddress,
-          if (cleanArea != null) "area": cleanArea,
-          if (cleanCity != null) "city": cleanCity,
-        };
-        _socket?.emit("send-location", payload);
-        log("[SocketService] Emitted send-location to group $groupId: $payload");
-      }
-    }
+      log("[SocketService] Emitted send-location (broadcast): $payload");
+    // } else {
+    //   for (String groupId in connectedGroupIds) {
+    //     final payload = <String, dynamic>{
+    //       "userId": userId,
+    //       "groupId": groupId,
+    //       "lat": lat,
+    //       "lng": lng,
+    //       "latitude": lat,
+    //       "longitude": lng,
+    //       "battery": sendBattery,
+    //       if (cleanAddress != null) "address": cleanAddress,
+    //       if (cleanAddress != null) "location": cleanAddress,
+    //       if (cleanArea != null) "area": cleanArea,
+    //       if (cleanCity != null) "city": cleanCity,
+    //     };
+    //     _socket?.emit("send-location", payload);
+    //     log("[SocketService] Emitted send-location to group $groupId: $payload");
+    //   }
+    // }
   }
 
   void onGroupLocationUpdate(Function(dynamic) callback) {

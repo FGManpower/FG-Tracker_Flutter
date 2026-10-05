@@ -29,7 +29,8 @@ class _GroupScreenShareFullScreenState
   static const double _minZoom = 1.0;
   static const double _maxZoom = 4.0;
 
-  double _currentZoom = 1.0;
+
+  final RxDouble _currentZoom = 1.0.obs;
   Size _viewportSize = Size.zero;
 
   @override
@@ -39,39 +40,25 @@ class _GroupScreenShareFullScreenState
   }
 
   void _onTransformationChanged() {
-    final scale =
-    _transformationController.value.getMaxScaleOnAxis();
+    final scale = _transformationController.value.getMaxScaleOnAxis();
+    final zoom = scale.clamp(_minZoom, _maxZoom).toDouble();
 
-    final zoom = scale
-        .clamp(_minZoom, _maxZoom)
-        .toDouble();
-
-    if (!mounted || (_currentZoom - zoom).abs() < 0.01) {
-      return;
+    if ((_currentZoom.value - zoom).abs() >= 0.01) {
+      _currentZoom.value = zoom;
     }
-
-    setState(() {
-      _currentZoom = zoom;
-    });
   }
 
   void _setZoom(double requestedZoom) {
-    final targetZoom = requestedZoom
-        .clamp(_minZoom, _maxZoom)
-        .toDouble();
-
-    final currentScale =
-    _transformationController.value.getMaxScaleOnAxis();
+    final targetZoom = requestedZoom.clamp(_minZoom, _maxZoom).toDouble();
+    final currentScale = _transformationController.value.getMaxScaleOnAxis();
 
     if (currentScale <= 0) return;
 
     if (_viewportSize == Size.zero) {
-      _transformationController.value = Matrix4.identity()
-        ..scale(targetZoom);
+      _transformationController.value = Matrix4.identity()..scale(targetZoom);
       return;
     }
 
-    // Zoom around the center of the screen instead of the top-left corner.
     final center = Offset(
       _viewportSize.width / 2,
       _viewportSize.height / 2,
@@ -88,17 +75,9 @@ class _GroupScreenShareFullScreenState
     _transformationController.value = matrix;
   }
 
-  void _zoomIn() {
-    _setZoom(_currentZoom * 1.25);
-  }
-
-  void _zoomOut() {
-    _setZoom(_currentZoom / 1.25);
-  }
-
-  void _resetZoom() {
-    _transformationController.value = Matrix4.identity();
-  }
+  void _zoomIn() => _setZoom(_currentZoom.value * 1.25);
+  void _zoomOut() => _setZoom(_currentZoom.value / 1.25);
+  void _resetZoom() => _transformationController.value = Matrix4.identity();
 
   Widget _buildScreenShareView() {
     return Obx(() {
@@ -113,7 +92,7 @@ class _GroupScreenShareFullScreenState
           color: Colors.black,
           alignment: Alignment.center,
           child: Text(
-            'Waiting for screen share...',
+            'Waiting for media stream...',
             style: TextStyle(
               color: Colors.white70,
               fontSize: 14.sp,
@@ -125,64 +104,66 @@ class _GroupScreenShareFullScreenState
       return rtc.RTCVideoView(
         renderer,
         mirror: false,
-        objectFit:
-        rtc.RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
+        objectFit: rtc.RTCVideoViewObjectFit.RTCVideoViewObjectFitContain,
       );
     });
   }
 
   Widget _buildZoomControls() {
-    final canZoomIn = _currentZoom < _maxZoom;
-    final canZoomOut = _currentZoom > _minZoom;
+    return Obx(() {
+      final zoomVal = _currentZoom.value;
+      final canZoomIn = zoomVal < _maxZoom;
+      final canZoomOut = zoomVal > _minZoom;
 
-    return SafeArea(
-      child: Align(
-        alignment: Alignment.centerRight,
-        child: Padding(
-          padding: EdgeInsets.only(right: 12.w),
-          child: Container(
-            padding: EdgeInsets.symmetric(vertical: 5.h),
-            decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.65),
-              borderRadius: BorderRadius.circular(18.r),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                IconButton(
-                  tooltip: 'Zoom in',
-                  onPressed: canZoomIn ? _zoomIn : null,
-                  icon: const Icon(Icons.add),
-                  color: Colors.white,
-                  disabledColor: Colors.white38,
-                ),
-                Text(
-                  '${(_currentZoom * 100).round()}%',
-                  style: TextStyle(
+      return SafeArea(
+        child: Align(
+          alignment: Alignment.centerRight,
+          child: Padding(
+            padding: EdgeInsets.only(right: 12.w),
+            child: Container(
+              padding: EdgeInsets.symmetric(vertical: 5.h),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.65),
+                borderRadius: BorderRadius.circular(18.r),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    tooltip: 'Zoom in',
+                    onPressed: canZoomIn ? _zoomIn : null,
+                    icon: const Icon(Icons.add),
                     color: Colors.white,
-                    fontSize: 11.sp,
-                    fontWeight: FontWeight.w600,
+                    disabledColor: Colors.white38,
                   ),
-                ),
-                IconButton(
-                  tooltip: 'Zoom out',
-                  onPressed: canZoomOut ? _zoomOut : null,
-                  icon: const Icon(Icons.remove),
-                  color: Colors.white,
-                  disabledColor: Colors.white38,
-                ),
-                IconButton(
-                  tooltip: 'Reset zoom',
-                  onPressed: _resetZoom,
-                  icon: const Icon(Icons.refresh),
-                  color: Colors.white,
-                ),
-              ],
+                  Text(
+                    '${(zoomVal * 100).round()}%',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 11.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  IconButton(
+                    tooltip: 'Zoom out',
+                    onPressed: canZoomOut ? _zoomOut : null,
+                    icon: const Icon(Icons.remove),
+                    color: Colors.white,
+                    disabledColor: Colors.white38,
+                  ),
+                  IconButton(
+                    tooltip: 'Reset zoom',
+                    onPressed: _resetZoom,
+                    icon: const Icon(Icons.refresh),
+                    color: Colors.white,
+                  ),
+                ],
+              ),
             ),
           ),
         ),
-      ),
-    );
+      );
+    });
   }
 
   Widget _buildCloseButton() {
@@ -229,7 +210,6 @@ class _GroupScreenShareFullScreenState
                 panEnabled: true,
                 scaleEnabled: true,
                 clipBehavior: Clip.hardEdge,
-                boundaryMargin: const EdgeInsets.all(80),
                 child: SizedBox(
                   width: constraints.maxWidth,
                   height: constraints.maxHeight,
@@ -238,7 +218,6 @@ class _GroupScreenShareFullScreenState
               );
             },
           ),
-
           _buildCloseButton(),
           _buildZoomControls(),
         ],
@@ -248,8 +227,7 @@ class _GroupScreenShareFullScreenState
 
   @override
   void dispose() {
-    _transformationController
-        .removeListener(_onTransformationChanged);
+    _transformationController.removeListener(_onTransformationChanged);
     _transformationController.dispose();
     super.dispose();
   }

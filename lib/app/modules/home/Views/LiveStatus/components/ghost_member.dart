@@ -206,70 +206,99 @@ class _GhostMemberState extends State<GhostMember> {
   }
 
   Widget _buildInvisibleTopCard() {
-    return Container(
-      padding: EdgeInsets.all(16.r),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF4F1FF),
-        borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(
-          color: const Color(0xFF6B4DFF).withValues(alpha: 0.12),
+    return Obx(() {
+      final bool isPrivate = controller.isMyPrivateModeOn.value;
+
+      return AnimatedContainer(
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeInOut,
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(18.r),
+          border: Border.all(
+            color: isPrivate
+                ? const Color(0xFFE2DCFE)
+                : const Color(0xFFEAECF0),
+            width: 1.2,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: isPrivate
+                  ? const Color(0xFF5A3EFE).withValues(alpha: 0.06)
+                  : Colors.black.withValues(alpha: 0.03),
+              blurRadius: 12,
+              offset: const Offset(0, 3),
+            ),
+          ],
         ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 48.r,
-            height: 48.r,
-            decoration: const BoxDecoration(
-              color: Color(0xFF9D86FF),
-              shape: BoxShape.circle,
+        child: Row(
+          children: [
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 250),
+              curve: Curves.easeInOut,
+              width: 50.r,
+              height: 50.r,
+              decoration: BoxDecoration(
+                color: isPrivate ? null : const Color(0xFFCAD0DC),
+                gradient: isPrivate
+                    ? const LinearGradient(
+                        colors: [Color(0xFF8B6BFE), Color(0xFF5A3EFE)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      )
+                    : null,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                isPrivate ? Icons.lock_rounded : Icons.visibility_rounded,
+                color: Colors.white,
+                size: 24.sp,
+              ),
             ),
-            child: Icon(
-              Icons.lock_rounded,
-              color: Colors.white,
-              size: 24.sp,
-            ),
-          ),
-          SizedBox(width: 14.w),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "You're Invisible",
-                  style: TextStyle(
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.w700,
-                    fontFamily: FontFamily.interBold,
-                    color: const Color(0xFF1E1B4B),
+            SizedBox(width: 14.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    isPrivate ? "You're Invisible" : "You're Visible",
+                    style: TextStyle(
+                      fontSize: 15.5.sp,
+                      fontWeight: FontWeight.w700,
+                      fontFamily: FontFamily.interBold,
+                      color: const Color(0xFF101828),
+                    ),
                   ),
-                ),
-                SizedBox(height: 3.h),
-                Text(
-                  "When Private Mode is ON, others can't see your online status or last seen.",
-                  style: TextStyle(
-                    fontSize: 11.sp,
-                    fontFamily: FontFamily.interRegular,
-                    color: Colors.grey.shade700,
-                    height: 1.3,
+                  SizedBox(height: 3.h),
+                  Text(
+                    isPrivate
+                        ? "When Private Mode is ON, others can't see your online status or last seen."
+                        : "When Private Mode is OFF, others can see your online status and last seen.",
+                    style: TextStyle(
+                      fontSize: 11.5.sp,
+                      fontFamily: FontFamily.interRegular,
+                      color: const Color(0xFF667085),
+                      height: 1.35,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          SizedBox(width: 10.w),
-          Obx(() {
-            return CupertinoSwitch(
-              value: controller.isMyPrivateModeOn.value,
-              activeColor: const Color(0xFF6B4DFF),
+            SizedBox(width: 10.w),
+            CupertinoSwitch(
+              value: isPrivate,
+              activeColor: const Color(0xFF5A3EFE),
+              trackColor: const Color(0xFFD2D6DE),
+              thumbColor: Colors.white,
               onChanged: (val) {
                 controller.togglePrivateMode(val);
               },
-            );
-          }),
-        ],
-      ),
-    );
+            ),
+          ],
+        ),
+      );
+    });
   }
 
   Widget _buildSectionHeader() {

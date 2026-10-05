@@ -9,6 +9,7 @@ import 'package:fgtracker/app/Model/MemberDataRes.dart';
 import 'package:fgtracker/app/Model/call_model.dart';
 import 'package:fgtracker/app/modules/Notification/Controller/Notification_Controller.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
+import 'package:fgtracker/main.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
@@ -16,6 +17,8 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
 import 'dart:io';
 import 'CallStateTracker.dart';
+import 'package:fgtracker/app/Data/Services/Socket/Socket_Walkie-Talkie-Service.dart';
+import 'package:fgtracker/app/modules/Walkie-talkie/Views/walkie_invite_dialog.dart';
 
 class firebaseNotificationServices {
   FirebaseMessaging messaging = FirebaseMessaging.instance;
@@ -24,18 +27,30 @@ class firebaseNotificationServices {
       FlutterLocalNotificationsPlugin();
 
   static String fcmToken = "";
+  static RemoteMessage? pendingInitialMessage;
 
   void inItLocalNotification(
       BuildContext context, RemoteMessage message) async {
     var androidinitializeSetting =
         const AndroidInitializationSettings("@mipmap/ic_launcher");
-    var iosinitializeSetting = DarwinInitializationSettings();
+    var iosinitializeSetting = const DarwinInitializationSettings();
     var initializationSetting = InitializationSettings(
       android: androidinitializeSetting,
       iOS: iosinitializeSetting,
     );
     await flutterLocalNotificationsPlugin.initialize(initializationSetting,
         onDidReceiveNotificationResponse: (payload) {
+      if (payload.payload != null && payload.payload!.isNotEmpty) {
+        try {
+          final data = jsonDecode(payload.payload!);
+          handleMessage(
+            context,
+            RemoteMessage(data: Map<String, dynamic>.from(data)),
+            type: "recienvedmessage",
+          );
+          return;
+        } catch (_) {}
+      }
       handleMessage(context, message, type: "recienvedmessage");
     });
   }
@@ -72,23 +87,47 @@ class firebaseNotificationServices {
       iOS: darwinNotificationDetails,
     );
 
+    final screenName = (message.data['screen_name'] ??
+            message.data['screenName'] ??
+            message.data['screen'])
+        ?.toString();
+    if (screenName == "group_walkie" ||
+        screenName == "groupWalkie" ||
+        screenName == "walkie") {
+      // Top banner dialog (WalkieInviteDialog) is already shown in-app; skip duplicate status bar notification
+      return;
+    }
+
+    var title = message.notification?.title ?? message.data['title']?.toString();
+    var body = message.notification?.body ?? message.data['body']?.toString();
+
+    if ((title == null || title.trim().isEmpty) && (body == null || body.trim().isEmpty)) {
+      debugPrint("⏭️ Skipping local notification: message has no title/body");
+      return;
+    }
+
     Future.delayed(Duration.zero, () {
-      flutterLocalNotificationsPlugin.show(0, message.notification!.title,
-          message.notification!.body, notificationDetails);
+      flutterLocalNotificationsPlugin.show(
+        0,
+        title,
+        body,
+        notificationDetails,
+        payload: jsonEncode(message.data),
+      );
     });
   }
 
   Future<String> getDiviceToken() async {
     String? token = await messaging.getToken();
-    return token!;
+    return token ?? '';
   }
 
   Future<void> setupInteractMessage(BuildContext context) async {
-    RemoteMessage? initialMessage =
+    RemoteMessage? initialMessage = pendingInitialMessage ??
         await FirebaseMessaging.instance.getInitialMessage();
+    pendingInitialMessage = null;
 
     if (initialMessage != null) {
-      // handleMessage(context, initialMessage);
       handleMessage(context, initialMessage, type: "recienvedmessage");
     }
 
@@ -131,7 +170,54 @@ class firebaseNotificationServices {
   Future<void> initialized() async {
     getDeviceTokenToSendNotification();
 
-    FirebaseMessaging.instance.getInitialMessage().then((message) {});
+    const androidinitializeSetting =
+        AndroidInitializationSettings("@mipmap/ic_launcher");
+    const iosinitializeSetting = DarwinInitializationSettings();
+    const initializationSetting = InitializationSettings(
+      android: androidinitializeSetting,
+      iOS: iosinitializeSetting,
+    );
+
+    await flutterLocalNotificationsPlugin.initialize(
+      initializationSetting,
+      onDidReceiveNotificationResponse: (payload) {
+        if (payload.payload != null && payload.payload!.isNotEmpty) {
+          try {
+            final data = jsonDecode(payload.payload!);
+            final ctx = ContextUtility.navigatorkey.currentState?.context ??
+                Get.context;
+            if (ctx != null) {
+              handleMessage(
+                ctx,
+                RemoteMessage(data: Map<String, dynamic>.from(data)),
+                type: "recienvedmessage",
+              );
+            }
+            return;
+          } catch (e) {
+            debugPrint("Notification payload parse error: $e");
+          }
+        }
+      },
+    );
+
+    final launchDetails =
+        await flutterLocalNotificationsPlugin.getNotificationAppLaunchDetails();
+    if (launchDetails?.didNotificationLaunchApp ?? false) {
+      final payload = launchDetails?.notificationResponse?.payload;
+      if (payload != null && payload.isNotEmpty) {
+        try {
+          final data = jsonDecode(payload);
+          pendingInitialMessage =
+              RemoteMessage(data: Map<String, dynamic>.from(data));
+        } catch (_) {}
+      }
+    }
+
+    final initMsg = await FirebaseMessaging.instance.getInitialMessage();
+    if (initMsg != null) {
+      pendingInitialMessage = initMsg;
+    }
 
     FirebaseMessaging.onMessage.listen((message) async {
       final context =
@@ -150,8 +236,17 @@ class firebaseNotificationServices {
     });
 
     FirebaseMessaging.onMessageOpenedApp.listen((event) async {
-      handleMessage(ContextUtility.navigatorkey.currentState!.context, event,
-          type: "recienvedmessage");
+      final ctx = ContextUtility.navigatorkey.currentState?.context ?? Get.context;
+      if (ctx != null) {
+        handleMessage(ctx, event, type: "recienvedmessage");
+      } else {
+        Future.delayed(const Duration(milliseconds: 300), () {
+          final retryCtx = ContextUtility.navigatorkey.currentState?.context ?? Get.context;
+          if (retryCtx != null) {
+            handleMessage(retryCtx, event, type: "recienvedmessage");
+          }
+        });
+      }
     });
 
     FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
@@ -166,15 +261,20 @@ class firebaseNotificationServices {
   Future<void> handleMessage(BuildContext context, RemoteMessage message,
       {String? type}) async {
     print("Notification-MessageData:${message.data}");
+    final screenName = (message.data['screen_name'] ??
+            message.data['screenName'] ??
+            message.data['screen'])
+        ?.toString();
+
     if (type == "recienvedmessage") {
-      if (message.data['screen_name'] == "MemberPage") {
+      if (screenName == "MemberPage") {
         Get.toNamed(Routes.Memberscreen, arguments: {
           "groupId": message.data['groupId'],
           "groupName": message.data['groupName'],
           "isCreator": message.data['isCreator'],
           "isActive": message.data['isActive'],
         });
-      } else if (message.data["screen_name"] == "chatScreen") {
+      } else if (screenName == "chatScreen") {
         MemberData? memberData;
         try {
           memberData =
@@ -198,7 +298,7 @@ class firebaseNotificationServices {
             int.parse(message.data["notificationId"].toString()),
           );
         }
-      } else if (message.data["screen_name"] == "groupChatScreen") {
+      } else if (screenName == "groupChatScreen") {
         Get.toNamed(
           Routes.groupChatScreen,
           arguments: {
@@ -210,7 +310,7 @@ class firebaseNotificationServices {
         await notificationCtr.markAsRead(
           int.parse(message.data["notificationId"].toString()),
         );
-      } else if (message.data['screen_name'] == 'incomingCall') {
+      } else if (screenName == 'incomingCall') {
         if (CallStateTracker.isIncomingCallScreenOpen) return;
 
         final callMap = jsonDecode(message.data['callData']);
@@ -222,94 +322,145 @@ class firebaseNotificationServices {
           Routes.IncomingCallScreen,
           arguments: {"callDetail": call},
         );
-      }
-      // else if (message.data['screen_name'] == 'groupCallNotify') {
-        // FlutterRingtonePlayer().stop();
-        // if (CallStateTracker.isIncomingCallScreenOpen) return;
-        //
-        // final data = jsonDecode(message.data['callData']);
-        //
-        // print("=========againCalledgroupIncommingScreen");
-        // CallStateTracker.isIncomingCallScreenOpen = true;
-        // Get.toNamed(
-        //   Routes.groupIncomingCallScreen,
-        //   arguments: {
-        //     "callId": data['callId']?.toString(),
-        //     "groupId": data['groupId']?.toString() ?? "",
-        //     "groupName": (data['groupName'] ?? "Group Call").toString(),
-        //     "callerName": data['callerName'],
-        //     "groupProfile": data['callerProfileImage'],
-        //     "callerProfileImage": data['callerProfileImage'],
-        //     "activeMemberCount": 1,
-        //     "totalMemberCount": data['totalGroupMember'] ?? 0,
-        //     "isVideo": data['isVideo'] == true,
-        //     "callType": "incoming",
-        //   },
-        // );
-        // flutterLocalNotificationsPlugin.cancelAll();
-      // }
-
-
-
-
-      else if (message.data['screen_name'] == "missedCall") {
+      } else if (screenName == "missedCall") {
         Get.toNamed(Routes.notificationScreen);
-        // final callData = jsonDecode(message.data['callData']);
-        // final bool isVideo = callData["isVideo"] == true;
-        //
-        // Get.toNamed(
-        //   Routes.callScreen,
-        //   arguments: {
-        //     "callerId": Global.storageServices.get(PrefConst.userId).toString(),
-        //     "remoteUserId": callData["callerId"].toString(),
-        //     "callerName": callData["callerName"] ?? "",
-        //     "offer": null,
-        //     "is_video": isVideo,
-        //     "callType": "outGoing",
-        //   },
-        // );
+      } else if (screenName == "group_walkie" ||
+          screenName == "groupWalkie" ||
+          screenName == "walkie") {
+        final groupId = (message.data['groupId'] ??
+                message.data['group_id'] ??
+                message.data['id'])
+            ?.toString() ??
+            '';
+        final groupName = (message.data['groupName'] ??
+                message.data['group_name'] ??
+                message.data['title'])
+            ?.toString() ??
+            'Walkie-Talkie';
+        final speakerName = (message.data['speakerName'] ??
+                message.data['speaker_name'] ??
+                message.data['callerName'] ??
+                message.data['name'])
+            ?.toString() ??
+            'Someone';
+        final speakerImage = (message.data['speakerImage'] ??
+                message.data['speaker_image'] ??
+                message.data['speakerProfile'] ??
+                message.data['callerProfileImage'])
+            ?.toString() ??
+            '';
+
+        if (groupId.isNotEmpty) {
+          if (GroupWalkieService.instance.currentGroupId != null &&
+              GroupWalkieService.instance.currentGroupId != groupId) {
+            await GroupWalkieService.instance.leaveGroup();
+          }
+
+          Future.delayed(const Duration(milliseconds: 300), () {
+            Get.toNamed(
+              Routes.groupWalkieScreen,
+              arguments: {
+                "groupId": groupId,
+                "groupName": groupName,
+                "speakerName": speakerName,
+                "speakerImage": speakerImage,
+                "autoOpened": true,
+              },
+            );
+          });
+        }
       }
     } else {
-      if (Platform.isAndroid) {
-        if (message.data['screen_name'] == "incomingCall" &&
-            Platform.isAndroid) {
-          final callData = jsonDecode(message.data['callData']);
+      if (screenName == "group_walkie" ||
+          screenName == "groupWalkie" ||
+          screenName == "walkie") {
+        final groupId = (message.data['groupId'] ??
+                message.data['group_id'] ??
+                message.data['id'])
+            ?.toString() ??
+            '';
+        final groupName = (message.data['groupName'] ??
+                message.data['group_name'] ??
+                message.data['title'])
+            ?.toString() ??
+            'Walkie-Talkie';
+        final speakerName = (message.data['speakerName'] ??
+                message.data['speaker_name'] ??
+                message.data['callerName'] ??
+                message.data['name'])
+            ?.toString() ??
+            'Someone';
+        final speakerImage = (message.data['speakerImage'] ??
+                message.data['speaker_image'] ??
+                message.data['speakerProfile'] ??
+                message.data['callerProfileImage'])
+            ?.toString() ??
+            '';
 
-          final Map<String, String> userInfo = callData.map<String, String>(
-              (key, value) => MapEntry(key.toString(), value.toString()));
-          await ConnectycubeFlutterCallKit.showCallNotification(
-            CallEvent(
-              sessionId: callIdToUuid(callData['callId'].toString()),
-              callerName: callData['callerName'],
-              callType: callData['isVideo'] == true ? 1 : 0,
-              opponentsIds: {int.parse(callData['callerId'])},
-              callerId: int.parse(callData['callerId']),
-              userInfo: userInfo,
-            ),
+        if (groupId.isNotEmpty &&
+            GroupWalkieService.instance.currentGroupId != groupId &&
+            Get.currentRoute != Routes.groupWalkieScreen) {
+          WalkieInviteDialog.show(
+            groupId: groupId,
+            groupName: groupName,
+            speakerName: speakerName,
+            speakerImage: speakerImage,
           );
-          CallSessionState.sessionId = callData['callId'].toString();
         }
       }
-      if (Platform.isAndroid) {
-        if (message.data['screen_name'] == "incomingGroupCall" &&
-            Platform.isAndroid) {
+
+        if (message.data['screen_name'] == "incomingCall") {
           final callData = jsonDecode(message.data['callData']);
 
-          final Map<String, String> userInfo = callData.map<String, String>(
-              (key, value) => MapEntry(key.toString(), value.toString()));
-          await ConnectycubeFlutterCallKit.showCallNotification(
-            CallEvent(
-              sessionId: callIdToUuid(callData['callId'].toString()),
-              callerName: callData['groupName'],
-              callType: callData['isVideo'] == true ? 1 : 0,
-              opponentsIds: {int.parse(callData['callerId'])},
-              callerId: int.parse(callData['callerId']),
-              userInfo: userInfo,
-            ),
-          );
-          CallSessionState.sessionId = callData['callId'].toString();
+          final originalCallId = callData['callId'].toString();
+          socket?.emit("CallingStatus", {
+            "callId": originalCallId,
+            "remoteUserId": int.tryParse(callData['callerId'].toString()) ?? 0,
+            "callingStatus": "Ringing",
+          });
+          if (Platform.isAndroid) {
+            final Map<String, String> userInfo = callData.map<String, String>(
+                (key, value) => MapEntry(key.toString(), value.toString()));
+            await ConnectycubeFlutterCallKit.showCallNotification(
+              CallEvent(
+                sessionId: callIdToUuid(callData['callId'].toString()),
+                callerName: callData['callerName'],
+                callType: callData['isVideo'] == true ? 1 : 0,
+                opponentsIds: {int.parse(callData['callerId'])},
+                callerId: int.parse(callData['callerId']),
+                userInfo: userInfo,
+              ),
+            );
+            CallSessionState.sessionId = callData['callId'].toString();
+          }
         }
-      }
+
+
+        if (message.data['screen_name'] == "incomingGroupCall") {
+          final callData = jsonDecode(message.data['callData']);
+          final originalCallId = callData['callId'].toString();
+          socket?.emit("CallingStatus", {
+            "callId": originalCallId,
+            "remoteUserId": int.tryParse(callData['callerId'].toString()) ?? 0,
+            "callingStatus": "Ringing",
+          });
+          if (Platform.isAndroid) {
+            final Map<String, String> userInfo = callData.map<String, String>(
+                (key, value) => MapEntry(key.toString(), value.toString()));
+            await ConnectycubeFlutterCallKit.showCallNotification(
+              CallEvent(
+                sessionId: callIdToUuid(callData['callId'].toString()),
+                callerName: callData['groupName'],
+                callType: callData['isVideo'] == true ? 1 : 0,
+                opponentsIds: {int.parse(callData['callerId'])},
+                callerId: int.parse(callData['callerId']),
+                userInfo: userInfo,
+              ),
+            );
+            CallSessionState.sessionId = callData['callId'].toString();
+          }
+        }
+
 
       if (message.data['screen_name'] == "missedCall") {
         final callData = jsonDecode(message.data['callData']);
@@ -321,15 +472,7 @@ class firebaseNotificationServices {
         CallStateTracker.isIncomingCallScreenOpen = false;
         flutterLocalNotificationsPlugin.cancelAll();
       }
-      // else if (message.data['screen_name'] == 'groupCallNotify') {
-      //   FlutterRingtonePlayer().play(
-      //     asAlarm: false,
-      //     fromAsset: Assets.music.incomingCall,
-      //   );
-      //   Future.delayed(const Duration(seconds: 10), () {
-      //     FlutterRingtonePlayer().stop();
-      //   });
-      // }
+
     }
   }
 }

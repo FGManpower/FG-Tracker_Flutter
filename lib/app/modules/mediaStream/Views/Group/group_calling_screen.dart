@@ -12,101 +12,114 @@ class GroupCallingScreen extends GetView<GroupCallingController> {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async {
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
         if (controller.fullScreenShareUserId.value != null) {
           controller.closeFullScreenShare();
-          return false;
         }
-        return false;
       },
       child: Scaffold(
         backgroundColor: const Color(0xFF0F0B29),
-        body: Stack(
-          children: [
-            Positioned.fill(
-              child: Obx(() {
-                final fullUserId = controller.fullScreenShareUserId.value;
+        body: GestureDetector(
+          onTap: controller.toggleControls,
+          behavior: HitTestBehavior.opaque,
+          child: Stack(
+            children: [
+              Positioned.fill(
+                child: Obx(() {
+                  final fullUserId = controller.fullScreenShareUserId.value;
 
-                if (fullUserId != null && fullUserId.isNotEmpty) {
-                  final participant = controller.activeParticipants.firstWhereOrNull(
-                        (p) => p.userId.toString().trim() == fullUserId.trim(),
-                  );
-
-                  if (participant != null) {
-                    return GroupScreenShareFullScreen(
-                      controller: controller,
-                      participant: participant,
+                  if (fullUserId != null && fullUserId.isNotEmpty) {
+                    final participant =
+                    controller.activeParticipants.firstWhereOrNull(
+                          (p) => p.userId.toString().trim() == fullUserId.trim(),
                     );
+                    if (participant != null) {
+                      return GroupScreenShareFullScreen(
+                        controller: controller,
+                        participant: participant,
+                      );
+                    }
                   }
+
+                  return GroupParticipantGrid(
+                    pinnedUserId: controller.pinnedUserId.value,
+                    onTogglePin: controller.togglePinUser,
+                    participants: controller.activeParticipants.toList(),
+                    isVideoMode: controller.isVideo,
+                    screenSharingUserIds: controller.screenSharingUsers
+                        .map((e) => e.toString().trim())
+                        .toSet(),
+                    onSwitchCamera: controller.switchCamera,
+                  );
+                }),
+              ),
+              Obx(() {
+                if (controller.fullScreenShareUserId.value != null) {
+                  return const SizedBox.shrink();
                 }
 
-                return GroupParticipantGrid(
-                  participants: controller.activeParticipants.toList(),
-                  isVideoMode: controller.isVideo,
-                  isScreenShareExpanded:
-                  controller.isScreenShareExpanded.value,
-                  screenSharingUserIds: controller.screenSharingUsers
-                      .map((e) => e.toString().trim())
-                      .toSet(),
-                  onParticipantTap: (p) {
-                    if (controller.isUserScreenSharing(p.userId)) {
-                      controller.openFullScreenShare(p.userId);
-                    }
-                  },
-                  onViewScreenShare: (userId) {
-                    controller.openFullScreenShare(userId);
-                  },
-                  onZoomOut: () {
+                final show = controller.showControls.value;
 
-                    if( controller.isScreenShareExpanded.value){
-                      controller.isScreenShareExpanded.value = false;
-                    }else{
-                      controller.isScreenShareExpanded.value = true;
-                    }
-                  },
-                );
-              }),
-            ),
-
-            Obx(() {
-              if (controller.fullScreenShareUserId.value != null) {
-                return const SizedBox.shrink();
-              }
-              return Positioned(
-                top: 0,
-                left: 0,
-                right: 0,
-                child: Container(
-                  padding: EdgeInsets.only(
-                    top: MediaQuery.of(context).padding.top,
-                  ),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.black.withOpacity(0.7),
-                        Colors.transparent,
-                      ],
+                return AnimatedPositioned(
+                  duration: const Duration(milliseconds: 300),
+                  top: show ? 0 : -150.h,
+                  left: 0,
+                  right: 0,
+                  child: AnimatedOpacity(
+                    duration: const Duration(milliseconds: 300),
+                    opacity: show ? 1.0 : 0.0,
+                    child: Listener(
+                      onPointerDown: (_) => controller.resetControlsTimer(),
+                      child: Container(
+                        padding: EdgeInsets.only(
+                          top: MediaQuery.of(context).padding.top,
+                        ),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.black.withOpacity(0.7),
+                              Colors.transparent,
+                            ],
+                          ),
+                        ),
+                        child: _buildHeader(),
+                      ),
                     ),
                   ),
-                  child: _buildHeader(),
-                ),
-              );
-            }),
+                );
+              }),
+              Obx(() {
+                if (controller.fullScreenShareUserId.value != null) {
+                  return const SizedBox.shrink();
+                }
 
+                final show = controller.showControls.value;
 
-            Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
-              child: SafeArea(
-                top: false,
-                child: GroupCallControls(controller: controller),
-              ),
-            ),
-          ],
+                return AnimatedPositioned(
+                  duration: const Duration(milliseconds: 300),
+                  bottom: show ? 0 : -200.h,
+                  left: 0,
+                  right: 0,
+                  child: AnimatedOpacity(
+                    duration: const Duration(milliseconds: 300),
+                    opacity: show ? 1.0 : 0.0,
+                    child: Listener(
+                      onPointerDown: (_) => controller.resetControlsTimer(),
+                      child: SafeArea(
+                        top: false,
+                        child: GroupCallControls(controller: controller),
+                      ),
+                    ),
+                  ),
+                );
+              }),
+            ],
+          ),
         ),
       ),
     );
@@ -116,50 +129,55 @@ class GroupCallingScreen extends GetView<GroupCallingController> {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 5.h),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Expanded(
-            child: Transform.translate(
-              offset: Offset(0, 18.h),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    controller.groupName,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 18.sp,
-                      fontFamily: FontFamily.interSemiBold,
-                      color: Colors.white,
-                    ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  controller.groupName,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 18.sp,
+                    fontFamily: FontFamily.interSemiBold,
+                    color: Colors.white,
                   ),
-                  SizedBox(height: 2.h),
-                  Obx(() => Text(
+                ),
+                SizedBox(height: 2.h),
+                Obx(
+                      () => Text(
                     "${controller.activeParticipants.length} in call · ${controller.totalMemberCount} members",
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 13.sp,
                       fontFamily: FontFamily.interRegular,
                       color: Colors.white70,
                     ),
-                  )),
-                  SizedBox(height: 6.h),
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        width: 8.r,
-                        height: 8.r,
-                        decoration: const BoxDecoration(
-                          color: Colors.greenAccent,
-                          shape: BoxShape.circle,
-                        ),
+                  ),
+                ),
+                SizedBox(height: 6.h),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      width: 8.r,
+                      height: 8.r,
+                      decoration: const BoxDecoration(
+                        color: Colors.greenAccent,
+                        shape: BoxShape.circle,
                       ),
-                      SizedBox(width: 6.w),
-                      Obx(() => Text(
+                    ),
+                    SizedBox(width: 6.w),
+                    Obx(
+                          () => Text(
                         controller.callStatus.value == "Connected"
                             ? controller.formattedDuration
                             : "${controller.callStatus.value}...",
@@ -168,21 +186,33 @@ class GroupCallingScreen extends GetView<GroupCallingController> {
                           fontFamily: FontFamily.interMedium,
                           color: Colors.greenAccent,
                         ),
-                      )),
-                    ],
-                  ),
-                ],
-              ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
-          SizedBox(
-            width: 44.w,
-            child: IconButton(
-              padding: EdgeInsets.zero,
-              icon: const Icon(Icons.people_outline,
-                  color: Colors.white, size: 28),
-              onPressed: controller.openParticipantsSheet,
-            ),
+          SizedBox(width: 8.w),
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              SizedBox(
+                width: 44.w,
+                height: 44.w,
+                child: IconButton(
+                  padding: EdgeInsets.zero,
+                  icon: const Icon(
+                    Icons.people_outline,
+                    color: Colors.white,
+                    size: 28,
+                  ),
+                  onPressed: controller.openParticipantsSheet,
+                ),
+              ),
+            ],
           ),
         ],
       ),

@@ -1,3 +1,4 @@
+import 'package:fgtracker/app/Model/MemberDataRes.dart';
 import 'package:fgtracker/app/modules/mediaStream/Controller/group_calling_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -33,14 +34,12 @@ class GroupParticipantsSheet {
               ),
             ),
             SizedBox(height: 16.h),
-
             Obx(() => reausabletext(
-              "In this call (${controller.activeParticipants.length})",
-              fontsize: 16,
-              fontfamily: FontFamily.interSemiBold,
-              color: const Color(0xFF1E1147),
-            )),
-
+                  "In this call (${controller.activeParticipants.length})",
+                  fontsize: 16,
+                  fontfamily: FontFamily.interSemiBold,
+                  color: const Color(0xFF1E1147),
+                )),
             SizedBox(height: 10.h),
             Obx(() {
               final inCall = controller.activeParticipants.toList();
@@ -61,26 +60,17 @@ class GroupParticipantsSheet {
                 ),
               );
             }),
-
             SizedBox(height: 18.h),
-
             Obx(() => reausabletext(
-              "Not in this call (${controller.memberData.length})",
-              fontsize: 16,
-              fontfamily: FontFamily.interSemiBold,
-              color: const Color(0xFF1E1147),
-            )),
+                  "Not in this call (${controller.notInCallParticipants.length})",
+                  fontsize: 16,
+                  fontfamily: FontFamily.interSemiBold,
+                  color: const Color(0xFF1E1147),
+                )),
             SizedBox(height: 10.h),
-
             Expanded(
               child: Obx(() {
-                final activeUserIds = controller.activeParticipants
-                    .map((e) => e.name)
-                    .toSet();
-
-                final list = controller.memberData
-                    .where((participant) => !activeUserIds.contains(participant.name))
-                    .toList();
+                final list = controller.notInCallParticipants.toList();
 
                 if (list.isEmpty) {
                   return Center(
@@ -99,10 +89,10 @@ class GroupParticipantsSheet {
                     final participant = list[index];
 
                     final imageUrl =
-                    Utility.isNullEmptyOrFalse(participant.profileImage)
-                        ? MyAppTheme.ProfilenotFoundImg
-                        : ConstRes.aImageBaseUrl +
-                        (participant.profileImage ?? '');
+                        Utility.isNullEmptyOrFalse(participant.profileImage)
+                            ? MyAppTheme.ProfilenotFoundImg
+                            : ConstRes.aImageBaseUrl +
+                                (participant.profileImage ?? '');
 
                     return Row(
                       children: [
@@ -112,9 +102,7 @@ class GroupParticipantsSheet {
                           backgroundImage: NetworkImage(imageUrl),
                           onBackgroundImageError: (_, __) {},
                         ),
-
                         SizedBox(width: 14.w),
-
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -134,9 +122,9 @@ class GroupParticipantsSheet {
                             ],
                           ),
                         ),
-
                         InkWell(
-                          onTap: () => controller.notifyParticipant(participant),
+                          onTap: () =>
+                              controller.notifyParticipant(participant),
                           borderRadius: BorderRadius.circular(30.r),
                           child: Container(
                             padding: EdgeInsets.symmetric(
@@ -218,12 +206,12 @@ class _InCallChip extends StatelessWidget {
                   maxline: 1,
                 ),
                 Obx(() => reausabletext(
-                  participant.isMuted.value ? "Muted" : "In call",
-                  fontsize: 11,
-                  color: participant.isMuted.value
-                      ? Colors.redAccent
-                      : Colors.green,
-                )),
+                      participant.isMuted.value ? "Muted" : "In call",
+                      fontsize: 11,
+                      color: participant.isMuted.value
+                          ? Colors.redAccent
+                          : Colors.green,
+                    )),
               ],
             ),
           ),
@@ -266,24 +254,31 @@ class GroupCallMoreSheet {
               ),
               child: Column(
                 children: [
-                  Obx(() => ListTile( // Wrap in Obx to dynamically update text
-                    leading: Icon(
-                      isScreenSharing.value
-                          ? Icons.stop_screen_share_outlined
-                          : Icons.screen_share_outlined,
-                      color: isScreenSharing.value ? Colors.red : const Color(0xFF6E5CA4),
-                    ),
-                    title: Text(
-                      isScreenSharing.value ? "Stop sharing" : "Share screen",
-                      style: TextStyle(
-                        fontSize: 14.sp,
-                        fontFamily: FontFamily.interMedium,
-                        color: isScreenSharing.value ? Colors.red : Colors.black,
-                      ),
-                    ),
-                    trailing: const Icon(Icons.chevron_right, color: Colors.grey),
-                    onTap: onShareScreen,
-                  )),
+                  Obx(() => ListTile(
+                        leading: Icon(
+                          isScreenSharing.value
+                              ? Icons.stop_screen_share_outlined
+                              : Icons.screen_share_outlined,
+                          color: isScreenSharing.value
+                              ? Colors.red
+                              : const Color(0xFF6E5CA4),
+                        ),
+                        title: Text(
+                          isScreenSharing.value
+                              ? "Stop sharing"
+                              : "Share screen",
+                          style: TextStyle(
+                            fontSize: 14.sp,
+                            fontFamily: FontFamily.interMedium,
+                            color: isScreenSharing.value
+                                ? Colors.red
+                                : Colors.black,
+                          ),
+                        ),
+                        trailing:
+                            const Icon(Icons.chevron_right, color: Colors.grey),
+                        onTap: onShareScreen,
+                      )),
                   const Divider(height: 1, indent: 50),
                   ListTile(
                     leading: const Icon(Icons.chat_bubble_outline,
@@ -296,7 +291,7 @@ class GroupCallMoreSheet {
                       ),
                     ),
                     trailing:
-                    const Icon(Icons.chevron_right, color: Colors.grey),
+                        const Icon(Icons.chevron_right, color: Colors.grey),
                     onTap: onSendMessage,
                   ),
                 ],

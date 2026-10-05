@@ -516,12 +516,12 @@ class SocketMessageService extends GetxService {
       },
     );
   }
-
   void initPrivateChatListSocket(
-    String socketUrl, {
-    required String userId,
-  }) {
-    if (_privateChatListSocket != null && _privateChatListSocket!.connected) {
+      String socketUrl, {
+        required String userId,
+      }) {
+    if (_privateChatListSocket != null &&
+        _privateChatListSocket!.connected) {
       log("PRIVATE CHAT LIST SOCKET ALREADY CONNECTED");
       return;
     }
@@ -540,6 +540,18 @@ class SocketMessageService extends GetxService {
       },
     );
 
+    _privateChatListSocket?.on(
+      "archived_private_chats",
+          (data) {
+        log("========================================");
+        log("ARCHIVED PRIVATE CHATS RECEIVED");
+        log("DATA => $data");
+        log("========================================");
+
+        _archivedPrivateChatsCallback?.call(data);
+      },
+    );
+
     _privateChatListSocket?.onConnect((_) {
       log("=================================");
       log("PRIVATE CHAT LIST SOCKET CONNECTED");
@@ -551,7 +563,7 @@ class SocketMessageService extends GetxService {
       if (_privateChatListUpdatedCallback != null) {
         _privateChatListSocket?.on(
           "private_chat_updated",
-          (data) {
+              (data) {
             log("=================================");
             log("PRIVATE CHAT LIST UPDATED");
             log("DATA => $data");
@@ -561,6 +573,43 @@ class SocketMessageService extends GetxService {
           },
         );
       }
+
+      _privateChatListSocket?.off("private_chat_removed");
+
+      if (_privateChatRemovedCallback != null) {
+        _privateChatListSocket?.on(
+          "private_chat_removed",
+              (data) {
+            log("========================================");
+            log("🗑️ PRIVATE CHAT REMOVED RECEIVED");
+            log("📦 DATA => $data");
+            log("========================================");
+
+            _privateChatRemovedCallback?.call(data);
+          },
+        );
+      }
+
+      _privateChatListSocket?.off("private_chat_action_error");
+
+      if (_privateChatActionErrorCallback != null) {
+        _privateChatListSocket?.on(
+          "private_chat_action_error",
+              (data) {
+            log("========================================");
+            log("❌ PRIVATE CHAT ACTION ERROR RECEIVED");
+            log("📦 DATA => $data");
+            log("========================================");
+
+            _privateChatActionErrorCallback?.call(data);
+          },
+        );
+      }
+
+      getArchivedPrivateChats(
+        page: 1,
+        limit: 20,
+      );
     });
 
     _privateChatListSocket?.onDisconnect((reason) {
@@ -572,7 +621,6 @@ class SocketMessageService extends GetxService {
       log("PRIVATE CHAT LIST SOCKET ERROR =====> $error");
     });
   }
-
   Function(dynamic)? _privateChatListUpdatedCallback;
 
   void listenPrivateChatListUpdated({
@@ -644,6 +692,7 @@ class SocketMessageService extends GetxService {
     _privateChatSocket?.off("messages_delivered");
     _privateChatSocket?.off("messages_seen_update");
     _privateChatSocket?.off("private_chat_updated");
+    _privateChatSocket?.off("private_chat_cleared");
 
     _privateChatSocket?.disconnect();
     _privateChatSocket?.dispose();
@@ -656,12 +705,17 @@ class SocketMessageService extends GetxService {
     log("DISCONNECTING PRIVATE CHAT LIST SOCKET");
 
     _privateChatListSocket?.off("private_chat_updated");
+    _privateChatListSocket?.off("private_chat_removed");
+    _privateChatListSocket?.off("private_chat_action_error");
 
     _privateChatListSocket?.disconnect();
     _privateChatListSocket?.dispose();
 
     _privateChatListSocket = null;
+
     _privateChatListUpdatedCallback = null;
+    _privateChatRemovedCallback = null;
+    _privateChatActionErrorCallback = null;
   }
 
   void editMessage({
@@ -962,6 +1016,351 @@ class SocketMessageService extends GetxService {
       log("GROUP FORWARD EMITTED => $payload");
     }
   }
+
+  void pinPrivateChat({
+    required String userId,
+    required String chatId,
+  }) {
+    if (!isPrivateChatListSocketConnected) {
+      log("PIN PRIVATE CHAT => SOCKET NOT CONNECTED");
+      return;
+    }
+
+    final payload = {
+      "userId": userId,
+      "chatId": chatId,
+    };
+
+    log("📌 PIN PRIVATE CHAT => $payload");
+
+    _privateChatListSocket!.emit(
+      "pin_private_chat",
+      payload,
+    );
+  }
+
+  void unpinPrivateChat({
+    required String userId,
+    required String chatId,
+  }) {
+    if (!isPrivateChatListSocketConnected) {
+      log("UNPIN PRIVATE CHAT => SOCKET NOT CONNECTED");
+      return;
+    }
+
+    final payload = {
+      "userId": userId,
+      "chatId": chatId,
+    };
+
+    log("📌 UNPIN PRIVATE CHAT => $payload");
+
+    _privateChatListSocket!.emit(
+      "unpin_private_chat",
+      payload,
+    );
+  }
+
+  void mutePrivateChat({
+    required String userId,
+    required String chatId,
+    String? mutedUntil,
+  }) {
+    if (!isPrivateChatListSocketConnected) {
+      log("MUTE PRIVATE CHAT => SOCKET NOT CONNECTED");
+      return;
+    }
+
+    final payload = {
+      "userId": userId,
+      "chatId": chatId,
+      "mutedUntil": mutedUntil,
+    };
+
+    log("🔇 MUTE PRIVATE CHAT => $payload");
+
+    _privateChatListSocket!.emit(
+      "mute_private_chat",
+      payload,
+    );
+  }
+
+  void unmutePrivateChat({
+    required String userId,
+    required String chatId,
+  }) {
+    if (!isPrivateChatListSocketConnected) {
+      log("UNMUTE PRIVATE CHAT => SOCKET NOT CONNECTED");
+      return;
+    }
+
+    final payload = {
+      "userId": userId,
+      "chatId": chatId,
+    };
+
+    log("🔔 UNMUTE PRIVATE CHAT => $payload");
+
+    _privateChatListSocket!.emit(
+      "unmute_private_chat",
+      payload,
+    );
+  }
+
+  void archivePrivateChat({
+    required String userId,
+    required String chatId,
+  }) {
+    if (!isPrivateChatListSocketConnected) {
+      log("ARCHIVE PRIVATE CHAT => SOCKET NOT CONNECTED");
+      return;
+    }
+
+    final payload = {
+      "chatId": chatId,
+      "userId": userId,
+    };
+
+    log("📦 ARCHIVE PRIVATE CHAT => $payload");
+
+    _privateChatListSocket!.emit(
+      "archive_private_chat",
+      payload,
+    );
+  }
+
+  void unarchivePrivateChat({
+    required String userId,
+    required String chatId,
+  }) {
+    if (!isPrivateChatListSocketConnected) {
+      log("UNARCHIVE PRIVATE CHAT => SOCKET NOT CONNECTED");
+      return;
+    }
+
+    final payload = {
+      "chatId": chatId,
+      "userId": userId,
+    };
+
+    log("📦 UNARCHIVE PRIVATE CHAT => $payload");
+
+    _privateChatListSocket!.emit(
+      "unarchive_private_chat",
+      payload,
+    );
+  }
+
+  void markPrivateChatRead({
+    required String userId,
+    required String chatId,
+  }) {
+    if (!isPrivateChatListSocketConnected) {
+      log("MARK PRIVATE CHAT READ => SOCKET NOT CONNECTED");
+      return;
+    }
+
+    final payload = {
+      "chatId": int.tryParse(chatId) ?? chatId,
+      "userId": int.tryParse(userId) ?? userId,
+    };
+
+    log("📖 MARK PRIVATE CHAT READ => $payload");
+
+    _privateChatListSocket!.emit(
+      "mark_private_chat_read",
+      payload,
+    );
+  }
+
+  void deletePrivateChat({
+    required String userId,
+    required String chatId,
+  }) {
+    log("========================================");
+    log("🗑️ DELETE PRIVATE CHAT START");
+    log("🗑️ Socket Connected => $isPrivateChatListSocketConnected");
+    log("🗑️ User ID => $userId");
+    log("🗑️ Chat ID => $chatId");
+
+    if (!isPrivateChatListSocketConnected) {
+      log("❌ DELETE PRIVATE CHAT => SOCKET NOT CONNECTED");
+      log("========================================");
+      return;
+    }
+
+    final payload = {
+      "chatId": int.tryParse(chatId) ?? chatId,
+      "userId": int.tryParse(userId) ?? userId,
+    };
+
+    log("📤 DELETE PRIVATE CHAT EVENT => delete_private_chat");
+    log("📦 DELETE PRIVATE CHAT PAYLOAD => $payload");
+
+    _privateChatListSocket!.emit(
+      "delete_private_chat",
+      payload,
+    );
+
+    log("✅ DELETE PRIVATE CHAT EMITTED");
+    log("========================================");
+  }
+
+
+  Function(dynamic)? _privateChatRemovedCallback;
+
+  void listenPrivateChatRemoved({
+    required Function(dynamic) callback,
+  }) {
+    _privateChatRemovedCallback = callback;
+
+    if (_privateChatListSocket == null) {
+      log("❌ PRIVATE CHAT REMOVED => SOCKET NOT INITIALIZED");
+      return;
+    }
+
+    log("👂 LISTENING => private_chat_removed");
+
+    _privateChatListSocket!.off("private_chat_removed");
+
+    _privateChatListSocket!.on(
+      "private_chat_removed",
+          (data) {
+        log("========================================");
+        log("🗑️ PRIVATE CHAT REMOVED RECEIVED");
+        log("📦 DATA => $data");
+        log("========================================");
+
+        _privateChatRemovedCallback?.call(data);
+      },
+    );
+  }
+
+  Function(dynamic)? _privateChatActionErrorCallback;
+
+
+  void listenPrivateChatActionError({
+    required Function(dynamic) callback,
+  }) {
+    _privateChatActionErrorCallback = callback;
+
+    if (_privateChatListSocket == null) {
+      log("❌ PRIVATE CHAT ACTION ERROR => SOCKET NOT INITIALIZED");
+      return;
+    }
+
+    log("👂 LISTENING => private_chat_action_error");
+
+    _privateChatListSocket?.off("private_chat_action_error");
+
+    _privateChatListSocket?.on(
+      "private_chat_action_error",
+          (data) {
+        log("========================================");
+        log("❌ PRIVATE CHAT ACTION ERROR RECEIVED");
+        log("📦 DATA => $data");
+        log("========================================");
+
+        _privateChatActionErrorCallback?.call(data);
+      },
+    );
+  }
+
+
+  Function(dynamic)? _archivedPrivateChatsCallback;
+
+  void listenArchivedPrivateChats({
+    required Function(dynamic) callback,
+  }) {
+    _archivedPrivateChatsCallback = callback;
+
+    if (_privateChatListSocket == null) {
+      log("ARCHIVED PRIVATE CHATS => SOCKET NOT INITIALIZED");
+      return;
+    }
+
+    log("LISTENING => archived_private_chats");
+
+    _privateChatListSocket!.off("archived_private_chats");
+
+    _privateChatListSocket!.on(
+      "archived_private_chats",
+          (data) {
+        log("========================================");
+        log("ARCHIVED PRIVATE CHATS RECEIVED");
+        log("DATA => $data");
+        log("========================================");
+
+        _archivedPrivateChatsCallback?.call(data);
+      },
+    );
+  }
+
+  void getArchivedPrivateChats({
+    required int page,
+    required int limit,
+  }) {
+    if (!isPrivateChatListSocketConnected) {
+      log("GET ARCHIVED PRIVATE CHATS => SOCKET NOT CONNECTED");
+      return;
+    }
+
+    final payload = {
+      "page": page,
+      "limit": limit,
+    };
+
+    log("GET ARCHIVED PRIVATE CHATS => $payload");
+
+    _privateChatListSocket!.emit(
+      "get_archived_private_chats",
+      payload,
+    );
+  }
+
+  void clearPrivateChat({
+    required String chatId,
+  }) {
+    if (!isPrivateChatSocketConnected) {
+      log("CLEAR PRIVATE CHAT => SOCKET NOT CONNECTED");
+      return;
+    }
+
+    final payload = {
+      "chatId": int.tryParse(chatId) ?? chatId,
+    };
+
+    log("📦 CLEAR PRIVATE CHAT => $payload");
+
+    _privateChatSocket!.emit(
+      "clear_private_chat",
+      payload,
+    );
+  }
+
+
+  void listenPrivateChatCleared(
+      Function(Map<String, dynamic>) callback,
+      ) {
+    if (_privateChatSocket == null) {
+      log("CLEAR PRIVATE CHAT LISTENER => SOCKET NOT INITIALIZED");
+      return;
+    }
+
+    _privateChatSocket!.off("private_chat_cleared");
+
+    _privateChatSocket!.on(
+      "private_chat_cleared",
+          (data) {
+        log("📩 PRIVATE CHAT CLEARED => $data");
+
+        if (data is Map) {
+          callback(Map<String, dynamic>.from(data));
+        }
+      },
+    );
+  }
+
 
   void disconnectSocket() {
     _socket?.disconnect();

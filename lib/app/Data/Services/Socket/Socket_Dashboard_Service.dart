@@ -8,6 +8,8 @@ import 'package:fgtracker/app/Model/live_location_model.dart';
 import 'package:get/get.dart';
 import 'package:socket_io_client/socket_io_client.dart';
 
+import '../GroupCountService.dart';
+
 class SocketDashboardService extends GetxService {
   static SocketDashboardService get instance =>
       Get.put(SocketDashboardService());
@@ -18,9 +20,8 @@ class SocketDashboardService extends GetxService {
   final StreamController<dynamic> _groupCountController =
       StreamController<dynamic>.broadcast();
 
-  final StreamController<List<LiveLocationModel>>
-  _liveLocationController =
-  StreamController<List<LiveLocationModel>>.broadcast();
+  final StreamController<List<LiveLocationModel>> _liveLocationController =
+      StreamController<List<LiveLocationModel>>.broadcast();
 
   Stream<List<LiveLocationModel>> get liveLocationStream =>
       _liveLocationController.stream;
@@ -50,7 +51,7 @@ class SocketDashboardService extends GetxService {
       log('Dashboard socket connected');
       requestGroupCount();
       if (_lastLiveLocationParams != null) {
-        log('📡 [DashboardSocket] Re-emitting get-user-live-location on connect: $_lastLiveLocationParams');
+        log('[DashboardSocket] Re-emitting get-user-live-location on connect: $_lastLiveLocationParams');
         _socket?.emit('get-user-live-location', _lastLiveLocationParams);
       }
     });
@@ -60,19 +61,22 @@ class SocketDashboardService extends GetxService {
     });
 
     _socket!.on('group_dashboard_counts', (data) {
-      log('📡 [DashboardSocket] group_dashboard_counts received: $data');
-      if (!_groupCountController.isClosed) {
-        dynamic payload = data;
-        if (data is Map && data.containsKey('data') && data['data'] != null) {
-          payload = data['data'];
-        }
-        _groupCountController.add(payload);
+      log('[DashboardSocket] group_dashboard_counts received: $data');
+      dynamic payload = data;
+      if (data is Map && data.containsKey('data') && data['data'] != null) {
+        payload = data['data'];
+      }
+
+      if (Get.isRegistered<GroupCountService>()) {
+        GroupCountService.instance.updateFromSocket(payload);
       }
     });
-
+    _socket?.onAny((event, dynamic data) {
+      log('DashboardSocketAllEvent: $event | Data: $data');
+    });
     _socket!.on('user-live-location', (response) {
       try {
-        log('📡 [DashboardSocket] user-live-location received: $response');
+        log('[DashboardSocket] user-live-location received: $response');
         List<dynamic> data = [];
 
         if (response is Map) {
@@ -102,14 +106,14 @@ class SocketDashboardService extends GetxService {
             .whereType<Map>()
             .map(
               (item) => LiveLocationModel.fromJson(
-            Map<String, dynamic>.from(item),
-          ),
-        )
+                Map<String, dynamic>.from(item),
+              ),
+            )
             .where(
               (item) =>
-          (item.latitude != 0 && item.longitude != 0) ||
-          (item.address != null && item.address!.trim().isNotEmpty),
-        )
+                  (item.latitude != 0 && item.longitude != 0) ||
+                  (item.address != null && item.address!.trim().isNotEmpty),
+            )
             .toList();
 
         log('📡 [DashboardSocket] Successfully parsed ${locations.length} live members');
@@ -123,8 +127,6 @@ class SocketDashboardService extends GetxService {
     });
   }
 
-
-
   void requestGroupCount() {
     _socket?.emit(
       'get_group_dashboard_counts',
@@ -132,8 +134,6 @@ class SocketDashboardService extends GetxService {
         'userId': Global.storageServices.get(PrefConst.userId),
       },
     );
-
-
   }
 
   void requestLiveLocation({

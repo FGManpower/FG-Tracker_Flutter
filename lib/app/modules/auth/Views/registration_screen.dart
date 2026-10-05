@@ -22,7 +22,6 @@ class RegistrationScreen extends GetView<RegistrationController> {
     bool isUpdate = controller.arguments?['type'] == "Update" ||
         (Get.arguments is Map && (Get.arguments as Map)['type'] == "Update");
 
-    // Ensure pre-filled email, phone and name are populated when opening Edit Profile
     if (isUpdate) {
       if (Get.arguments is Map &&
           (Get.arguments as Map)['userData'] is UserData) {
@@ -83,7 +82,6 @@ class RegistrationScreen extends GetView<RegistrationController> {
       }
     }
 
-    // Set default gender to "male" for new registrations to match UI mockup
     if (!isUpdate && controller.gender.value.isEmpty) {
       controller.gender.value = "male";
     }
@@ -101,9 +99,6 @@ class RegistrationScreen extends GetView<RegistrationController> {
     );
   }
 
-  // ──────────────────────────────────────────────────────────────────────────
-  // Registration UI (Matches mockup exactly)
-  // ──────────────────────────────────────────────────────────────────────────
   Widget _buildRegistrationUI(BuildContext context) {
     return Container(
       width: double.infinity,
@@ -123,7 +118,6 @@ class RegistrationScreen extends GetView<RegistrationController> {
       ),
       child: Stack(
         children: [
-          // Top watermark background (shifted right to align arcs behind hexagon badge)
           Positioned(
             top: 0,
             left: -20.w,
@@ -143,7 +137,6 @@ class RegistrationScreen extends GetView<RegistrationController> {
                     clipBehavior: Clip.none,
                     alignment: Alignment.topCenter,
                     children: [
-                      // White Card Container
                       Container(
                         margin: EdgeInsets.only(top: 48.h),
                         padding: EdgeInsets.fromLTRB(20.w, 62.h, 20.w, 26.h),
@@ -163,7 +156,6 @@ class RegistrationScreen extends GetView<RegistrationController> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // 1. User Name
                             _buildRegLabel("User Name"),
                             SizedBox(height: 8.h),
                             _buildRegTextField(
@@ -175,7 +167,6 @@ class RegistrationScreen extends GetView<RegistrationController> {
                             ),
                             SizedBox(height: 18.h),
 
-                            // 2. Contact Number
                             _buildRegLabel("Contact Number"),
                             SizedBox(height: 8.h),
                             _buildRegTextField(
@@ -184,37 +175,35 @@ class RegistrationScreen extends GetView<RegistrationController> {
                               hint: "Enter Contact Number",
                               enabled: false,
                             ),
-                            SizedBox(height: 18.h),
+                            SizedBox(height: 28.h),
 
-                            // 3. Email (Optional)
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.baseline,
-                              textBaseline: TextBaseline.alphabetic,
-                              children: [
-                                _buildRegLabel("Email"),
-                                SizedBox(width: 4.w),
-                                Text(
-                                  "(Optional)",
-                                  style: TextStyle(
-                                    color: const Color(0xFF8E8EA0),
-                                    fontSize: 13.sp,
-                                    fontFamily: FontFamily.interRegular,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            SizedBox(height: 8.h),
-                            _buildRegTextField(
-                              controller: controller.emailController,
-                              icon: Icons.mail,
-                              hint: "Enter your email (optional)",
-                              keyboardType: TextInputType.emailAddress,
-                              validator: (value) =>
-                                  Validator.validateOptionalEmail(value),
-                            ),
-                            SizedBox(height: 18.h),
+                            // Row(
+                            //   crossAxisAlignment: CrossAxisAlignment.baseline,
+                            //   textBaseline: TextBaseline.alphabetic,
+                            //   children: [
+                            //     _buildRegLabel("Email"),
+                            //     SizedBox(width: 4.w),
+                            //     Text(
+                            //       "(Optional)",
+                            //       style: TextStyle(
+                            //         color: const Color(0xFF8E8EA0),
+                            //         fontSize: 13.sp,
+                            //         fontFamily: FontFamily.interRegular,
+                            //       ),
+                            //     ),
+                            //   ],
+                            // ),
+                            // SizedBox(height: 8.h),
+                            // _buildRegTextField(
+                            //   controller: controller.emailController,
+                            //   icon: Icons.mail,
+                            //   hint: "Enter your email (optional)",
+                            //   keyboardType: TextInputType.emailAddress,
+                            //   validator: (value) =>
+                            //       Validator.validateOptionalEmail(value),
+                            // ),
+                            // SizedBox(height: 18.h),
 
-                            // 4. Select Gender
                             _buildRegLabel("Select Gender"),
                             SizedBox(height: 8.h),
                             Container(
@@ -259,7 +248,6 @@ class RegistrationScreen extends GetView<RegistrationController> {
                             ),
                             SizedBox(height: 26.h),
 
-                            // 5. Done Button
                             GestureDetector(
                               onTap: () => controller.register(controller),
                               child: Container(
@@ -291,7 +279,7 @@ class RegistrationScreen extends GetView<RegistrationController> {
                                       "Done",
                                       style: TextStyle(
                                         color: Colors.white,
-                                        fontSize: 16.sp,
+                                        fontSize: 14.sp,
                                         fontWeight: FontWeight.w600,
                                         fontFamily: FontFamily.interBold,
                                       ),
@@ -312,7 +300,6 @@ class RegistrationScreen extends GetView<RegistrationController> {
                         ),
                       ),
 
-                      // Overlapping Hexagon Badge (Pencil Edit / User Avatar)
                       Positioned(
                         top: 0,
                         child: _RegistrationHexagonBadge(
@@ -321,7 +308,6 @@ class RegistrationScreen extends GetView<RegistrationController> {
                         ),
                       ),
 
-                      // Floating Back button
                       Positioned(
                         top: 4.h,
                         left: 0,
@@ -352,18 +338,14 @@ class RegistrationScreen extends GetView<RegistrationController> {
     );
   }
 
-  // ──────────────────────────────────────────────────────────────────────────
-  // Registration Helpers
-  // ──────────────────────────────────────────────────────────────────────────
-
   Widget _buildAvatarContent() {
     return Obx(() {
       if (controller.selectedImage.value.isNotEmpty) {
         return ClipOval(
           child: Image.file(
             File(controller.selectedImage.value),
-            width: 52.w,
-            height: 52.w,
+            width: 48.w,
+            height: 48.w,
             fit: BoxFit.cover,
           ),
         );
@@ -372,21 +354,21 @@ class RegistrationScreen extends GetView<RegistrationController> {
         return ClipOval(
           child: Image.network(
             "${ConstRes.aImageBaseUrl}${controller.userData.profileImage}",
-            width: 52.w,
-            height: 52.w,
+            width: 48.w,
+            height: 48.w,
             fit: BoxFit.cover,
           ),
         );
       } else {
         return Container(
-          width: 52.w,
-          height: 52.w,
+          width: 48.w,
+          height: 48.w,
           decoration: const BoxDecoration(
             color: Color(0xFF5D47F1),
             shape: BoxShape.circle,
           ),
           child: Icon(
-            Icons.edit,
+            Icons.person_rounded,
             color: Colors.white,
             size: 26.sp,
           ),
@@ -394,13 +376,12 @@ class RegistrationScreen extends GetView<RegistrationController> {
       }
     });
   }
-
   Widget _buildRegLabel(String text) {
     return Text(
       text,
       style: TextStyle(
         color: const Color(0xFF1F1F39),
-        fontSize: 15.sp,
+        fontSize: 13.sp,
         fontFamily: FontFamily.interBold,
         fontWeight: FontWeight.bold,
       ),
@@ -423,7 +404,7 @@ class RegistrationScreen extends GetView<RegistrationController> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
-              height: 52.h,
+              height: 50.h,
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(30.r),
@@ -447,7 +428,7 @@ class RegistrationScreen extends GetView<RegistrationController> {
                     child: Icon(
                       icon,
                       color: const Color(0xFF5D47F1),
-                      size: 19.sp,
+                      size: 18.sp,
                     ),
                   ),
                   SizedBox(width: 12.w),
@@ -461,7 +442,7 @@ class RegistrationScreen extends GetView<RegistrationController> {
                       },
                       style: TextStyle(
                         color: const Color(0xFF5D47F1),
-                        fontSize: 15.sp,
+                        fontSize: 12.sp,
                         fontWeight: FontWeight.w600,
                         fontFamily: FontFamily.interBold,
                       ),
@@ -469,7 +450,7 @@ class RegistrationScreen extends GetView<RegistrationController> {
                         hintText: hint,
                         hintStyle: TextStyle(
                           color: const Color(0xFFB0A8DE),
-                          fontSize: 14.sp,
+                          fontSize: 12.sp,
                           fontFamily: FontFamily.interRegular,
                         ),
                         border: InputBorder.none,
@@ -517,7 +498,6 @@ class RegistrationScreen extends GetView<RegistrationController> {
           padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 13.h),
           child: Row(
             children: [
-              // Custom Concentric Radio Button
               Container(
                 width: 20.w,
                 height: 20.w,
@@ -547,14 +527,14 @@ class RegistrationScreen extends GetView<RegistrationController> {
               Icon(
                 icon,
                 color: const Color(0xFF5D47F1),
-                size: 22.sp,
+                size: 20.sp,
               ),
               SizedBox(width: 16.w),
               Text(
                 title,
                 style: TextStyle(
                   color: const Color(0xFF1F1F39),
-                  fontSize: 15.sp,
+                  fontSize: 12.sp,
                   fontWeight: FontWeight.w600,
                   fontFamily: FontFamily.interBold,
                 ),
@@ -574,10 +554,7 @@ class RegistrationScreen extends GetView<RegistrationController> {
     );
   }
 
-  // ──────────────────────────────────────────────────────────────────────────
-  // ──────────────────────────────────────────────────────────────────────────
-  // Edit Profile UI (Matches PDF Mockup)
-  // ──────────────────────────────────────────────────────────────────────────
+
   Widget _buildEditProfileUI(BuildContext context) {
     final topPadding = MediaQuery.of(context).padding.top;
 
@@ -587,7 +564,6 @@ class RegistrationScreen extends GetView<RegistrationController> {
       color: const Color(0xFFF7F6FD),
       child: Stack(
         children: [
-          // Purple Gradient Header Background
           Positioned(
             top: 0,
             left: 0,
@@ -607,12 +583,10 @@ class RegistrationScreen extends GetView<RegistrationController> {
             ),
           ),
 
-          // Foreground: App Bar + Overlapping Floating White Card
           SafeArea(
             bottom: true,
             child: Column(
               children: [
-                // Header Row (Back Button + Centered Title)
                 Padding(
                   padding:
                       EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
@@ -647,12 +621,11 @@ class RegistrationScreen extends GetView<RegistrationController> {
                           ),
                         ),
                       ),
-                      SizedBox(width: 42.w), // Balance back button
+                      SizedBox(width: 42.w),
                     ],
                   ),
                 ),
 
-                // Overlapping White Card
                 Expanded(
                   child: Container(
                     width: double.infinity,
@@ -678,7 +651,6 @@ class RegistrationScreen extends GetView<RegistrationController> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            // Avatar with Camera Badge
                             GestureDetector(
                               onTap: () => controller.pickImage(context),
                               child: Stack(
@@ -730,7 +702,6 @@ class RegistrationScreen extends GetView<RegistrationController> {
                             ),
                             SizedBox(height: 26.h),
 
-                            // Personal Information Section
                             Align(
                               alignment: Alignment.centerLeft,
                               child: Text(
@@ -745,7 +716,6 @@ class RegistrationScreen extends GetView<RegistrationController> {
                             ),
                             SizedBox(height: 16.h),
 
-                            // 1. Full Name
                             _buildEditProfileField(
                               label: "Full Name",
                               controller: controller.nameController,
@@ -755,7 +725,7 @@ class RegistrationScreen extends GetView<RegistrationController> {
                                   value: value, title: "Full Name"),
                             ),
 
-                            // 2. Phone Number
+
                             _buildEditProfileField(
                               label: "Phone Number",
                               controller: controller.phoneController,
@@ -764,7 +734,6 @@ class RegistrationScreen extends GetView<RegistrationController> {
                               keyboardType: TextInputType.phone,
                             ),
 
-                            // 3. Email Address
                             Obx(() {
                               if (!controller.hasExistingEmail.value) {
                                 return const SizedBox.shrink();
@@ -781,7 +750,6 @@ class RegistrationScreen extends GetView<RegistrationController> {
 
                             SizedBox(height: 26.h),
 
-                            // Save Changes Button
                             GestureDetector(
                               onTap: () => controller.updateProfile(controller),
                               child: Container(
@@ -966,9 +934,6 @@ class RegistrationScreen extends GetView<RegistrationController> {
   }
 }
 
-// ────────────────────────────────────────────────────────────────────────────
-// Hexagon Badge Component (Halo + White Rounded Hexagon)
-// ────────────────────────────────────────────────────────────────────────────
 
 class _RegistrationHexagonBadge extends StatelessWidget {
   final VoidCallback onTap;
@@ -981,36 +946,66 @@ class _RegistrationHexagonBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: SizedBox(
-        width: 88.w,
-        height: 98.h,
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            // Outer translucent white halo (crisp, subtle, no over-spread)
-            CustomPaint(
-              size: Size(88.w, 98.h),
-              painter: _RegHexHaloPainter(),
+    return SizedBox(
+      width: 80.w,
+      height: 90.h,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          CustomPaint(
+            size: Size(80.w, 90.h),
+            painter: _RegHexHaloPainter(),
+          ),
+          CustomPaint(
+            size: Size(68.w, 78.h),
+            painter: _RegHexCardPainter(),
+            child: SizedBox(
+              width: 68.w,
+              height: 78.h,
+              child: Center(child: child),
             ),
-            // Inner crisp white rounded hexagon card
-            CustomPaint(
-              size: Size(74.w, 84.h),
-              painter: _RegHexCardPainter(),
-              child: SizedBox(
-                width: 74.w,
-                height: 84.h,
-                child: Center(child: child),
+          ),
+
+          Positioned(
+            bottom: 2.h,
+            right: 2.w,
+            child: GestureDetector(
+              onTap: onTap,
+              behavior: HitTestBehavior.opaque,
+              child: Container(
+                padding: EdgeInsets.all(5.w),
+                color: Colors.transparent,
+                child: Container(
+                  padding: EdgeInsets.all(2.w),
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black12,
+                        blurRadius: 4,
+                        offset: Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: CircleAvatar(
+                    radius: 11.r,
+                    backgroundColor: const Color(0xFF5D47F1),
+                    child: Icon(
+                      Icons.add_a_photo_rounded,
+                      color: Colors.white,
+                      size: 11.sp,
+                    ),
+                  ),
+                ),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 }
-
 Path _buildRoundedHexagon(Size size, double cornerRadius) {
   final double w = size.width;
   final double h = size.height;
@@ -1060,13 +1055,11 @@ class _RegHexHaloPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final path = _buildRoundedHexagon(size, 16);
 
-    // Subtle, tight drop shadow (compact blur to prevent over-spreading)
     final shadowPaint = Paint()
       ..color = const Color(0xFF5D47F1).withValues(alpha: 0.12)
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 7);
     canvas.drawPath(path.shift(const Offset(0, 3)), shadowPaint);
 
-    // Clean frosted white halo fill
     final auraPaint = Paint()
       ..color = Colors.white.withValues(alpha: 0.55)
       ..style = PaintingStyle.fill;

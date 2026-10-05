@@ -8,6 +8,7 @@ import 'package:fgtracker/app/config/themes_data.dart';
 import 'package:fgtracker/app/global_widget/input_widget.dart';
 import 'package:fgtracker/app/modules/Group/controller/JoinGroup_Controller.dart';
 import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
+import 'package:fgtracker/app/modules/Track/Controller/TrackingController.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -19,7 +20,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fgtracker/app/modules/Messages/Controller/MessageController.dart';
 import 'package:fgtracker/app/modules/Messages/Controller/GroupChatController.dart';
 import 'package:fgtracker/app/modules/mediaStream/Controller/calling_controller.dart';
-import 'package:fgtracker/app/modules/Track/Controller/TrackController.dart';
+import 'package:fgtracker/app/modules/Track/Controller/GroupTrackController.dart';
 import 'package:fgtracker/app/Data/Services/Tracking.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:fgtracker/app/modules/home/Controller/home_controller.dart';
@@ -491,6 +492,7 @@ class DialogBox {
     String? location,
     String? team,
     int? battery,
+    String? rawDistance,
   }) {
     final currentUserId =
         Global.storageServices.get(PrefConst.userId)?.toString() ?? '';
@@ -655,11 +657,11 @@ class DialogBox {
           }
         }
 
-        // Check TrackingController groupWiseUserData
+        // Check GroupTrackingController groupWiseUserData
         if (resolvedName == null || resolvedImg == null) {
-          final trackingUserData = Get.isRegistered<TrackingController>()
-              ? Get.find<TrackingController>().groupWiseUserData
-              : TrackingController.instance.groupWiseUserData;
+          final trackingUserData = Get.isRegistered<GroupTrackingController>()
+              ? Get.find<GroupTrackingController>().groupWiseUserData
+              : GroupTrackingController.instance.groupWiseUserData;
           for (final list in trackingUserData.values) {
             final match = list.firstWhereOrNull(
               (l) => l.userId?.toString() == uidStr,
@@ -1027,42 +1029,62 @@ class DialogBox {
                       ),
                       Divider(height: 16.h, color: Colors.grey.shade200),
                     ],
-                    Row(
-                      children: [
-                        Icon(Icons.near_me_outlined,
-                            color: ToggleThemeData.darkPurple, size: 18.sp),
-                        SizedBox(width: 10.w),
-                        Expanded(
-                          child: Text(
-                            "${AppText.distance}${effectiveDistance.toStringAsFixed(2)} Km",
-                            style: TextStyle(
-                              fontSize: 13.sp,
-                              fontFamily: FontFamily.interSemiBold,
-                              color: Colors.black87,
+                    Builder(
+                      builder: (context) {
+                        final String raw = (rawDistance ?? '').trim();
+                        final bool isNearby = effectiveDistance <= 0.05 ||
+                            raw == "0.0 m away" ||
+                            raw == "0.0m away" ||
+                            raw == "0 m away" ||
+                            raw == "0.0 km away" ||
+                            raw == "0.00 km away" ||
+                            raw == "0.0 m" ||
+                            raw == "0 m" ||
+                            raw.startsWith("0.0") ||
+                            raw.toLowerCase() == "nearby" ||
+                            raw.toLowerCase() == "nearby you";
+                        final String displayDistance = isNearby
+                            ? "Nearby you"
+                            : "${AppText.distance}${effectiveDistance.toStringAsFixed(2)} Km";
+
+                        return Row(
+                          children: [
+                            Icon(Icons.near_me_outlined,
+                                color: ToggleThemeData.darkPurple, size: 18.sp),
+                            SizedBox(width: 10.w),
+                            Expanded(
+                              child: Text(
+                                displayDistance,
+                                style: TextStyle(
+                                  fontSize: 13.sp,
+                                  fontFamily: FontFamily.interSemiBold,
+                                  color: Colors.black87,
+                                ),
+                              ),
                             ),
-                          ),
-                        ),
-                        if (resolvedBattery != null && resolvedBattery > 0) ...[
-                          Icon(
-                            resolvedBattery > 20
-                                ? Icons.battery_5_bar_rounded
-                                : Icons.battery_alert_rounded,
-                            size: 16.sp,
-                            color: resolvedBattery > 20
-                                ? const Color(0xFF10B981)
-                                : Colors.orange,
-                          ),
-                          SizedBox(width: 4.w),
-                          Text(
-                            "$resolvedBattery%",
-                            style: TextStyle(
-                              fontSize: 12.sp,
-                              color: Colors.grey.shade700,
-                              fontFamily: FontFamily.interMedium,
-                            ),
-                          ),
-                        ],
-                      ],
+                            // if (resolvedBattery != null && resolvedBattery > 0) ...[
+                            //   Icon(
+                            //     resolvedBattery > 20
+                            //         ? Icons.battery_5_bar_rounded
+                            //         : Icons.battery_alert_rounded,
+                            //     size: 16.sp,
+                            //     color: resolvedBattery > 20
+                            //         ? const Color(0xFF10B981)
+                            //         : Colors.orange,
+                            //   ),
+                            //   SizedBox(width: 4.w),
+                            //   Text(
+                            //     "$resolvedBattery%",
+                            //     style: TextStyle(
+                            //       fontSize: 12.sp,
+                            //       color: Colors.grey.shade700,
+                            //       fontFamily: FontFamily.interMedium,
+                            //     ),
+                            //   ),
+                            // ],
+                          ],
+                        );
+                      },
                     ),
                   ],
                 ),
@@ -1350,7 +1372,7 @@ class DialogBox {
                             mode: LaunchMode.externalApplication,
                           );
                         } else if (Get.currentRoute == Routes.LocationTracking) {
-                          TrackingController.instance.searchUserAndZoom(
+                          GroupTrackingController.instance.searchUserAndZoom(
                             (groupId ?? 0).toString(),
                             (userId ?? '').toString(),
                           );

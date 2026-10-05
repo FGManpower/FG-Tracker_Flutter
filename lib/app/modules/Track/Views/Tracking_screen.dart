@@ -1,10 +1,10 @@
+import 'package:fgtracker/app/modules/Track/Controller/TrackingController.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import '../Controller/TrackController.dart';
 import 'package:fgtracker/app/Core/values/colors.dart';
 import 'package:fgtracker/app/Model/MemberModel.dart';
 import 'package:fgtracker/app/Model/GroupRes.dart';
@@ -23,36 +23,73 @@ import 'package:fgtracker/app/modules/mediaStream/Controller/calling_controller.
 class TrackingScreen extends StatelessWidget {
   TrackingScreen({super.key});
 
-
   final TrackController controller = Get.put(TrackController());
   final Rx<MapType> _mapType = MapType.normal.obs;
   final DraggableScrollableController _sheetController =
       DraggableScrollableController();
-  final RxDouble _sheetExtent = 0.42.obs;
+  final RxDouble _sheetExtent = 0.38.obs;
   static bool _isHelpDialogOpen = false;
   static DateTime? _lastHelpTapTime;
 
+  void _animateSheetTo(double extent, {int millis = 300}) {
+    if (_sheetController.isAttached) {
+      _sheetController.animateTo(
+        extent,
+        duration: Duration(milliseconds: millis),
+        curve: Curves.easeOutCubic,
+      );
+    }
+  }
+
   void _toggleSheet() {
     if (_sheetController.isAttached) {
-      if (_sheetExtent.value < 0.30) {
-        _sheetController.animateTo(
-          0.42,
-          duration: const Duration(milliseconds: 280),
-          curve: Curves.easeOutCubic,
-        );
-      } else if (_sheetExtent.value < 0.65) {
-        _sheetController.animateTo(
-          0.90,
-          duration: const Duration(milliseconds: 280),
-          curve: Curves.easeOutCubic,
-        );
+      if (_sheetExtent.value < 0.25) {
+        _animateSheetTo(0.38);
+      } else if (_sheetExtent.value < 0.70) {
+        _animateSheetTo(0.95);
       } else {
-        _sheetController.animateTo(
-          0.42,
-          duration: const Duration(milliseconds: 280),
-          curve: Curves.easeOutCubic,
-        );
+        _animateSheetTo(0.38);
       }
+    }
+  }
+
+  void _onHeaderDragUpdate(DragUpdateDetails details, double screenHeight) {
+    if (!_sheetController.isAttached || screenHeight <= 0) return;
+    final double deltaFraction = (details.primaryDelta ?? 0) / screenHeight;
+    final double currentSize = _sheetController.size;
+    final double newSize = (currentSize - deltaFraction).clamp(0.12, 0.95);
+    _sheetController.jumpTo(newSize);
+  }
+
+  void _onHeaderDragEnd(DragEndDetails details) {
+    if (!_sheetController.isAttached) return;
+    final double velocity = details.primaryVelocity ?? 0;
+    final double currentSize = _sheetController.size;
+
+    if (velocity < -250) {
+      if (currentSize < 0.35) {
+        _animateSheetTo(0.38);
+      } else {
+        _animateSheetTo(0.95);
+      }
+    } else if (velocity > 250) {
+      if (currentSize > 0.65) {
+        _animateSheetTo(0.38);
+      } else {
+        _animateSheetTo(0.12);
+      }
+    } else {
+      const snapSizes = [0.12, 0.38, 0.95];
+      double closest = snapSizes.first;
+      double minDiff = (currentSize - closest).abs();
+      for (final s in snapSizes) {
+        final diff = (currentSize - s).abs();
+        if (diff < minDiff) {
+          minDiff = diff;
+          closest = s;
+        }
+      }
+      _animateSheetTo(closest);
     }
   }
 
@@ -63,11 +100,7 @@ class TrackingScreen extends StatelessWidget {
       onPopInvokedWithResult: (didPop, result) {
         if (didPop) return;
         if (_sheetController.isAttached && _sheetExtent.value > 0.45) {
-          _sheetController.animateTo(
-            0.42,
-            duration: const Duration(milliseconds: 280),
-            curve: Curves.easeOutCubic,
-          );
+          _animateSheetTo(0.38);
         } else {
           Get.back();
         }
@@ -78,6 +111,20 @@ class TrackingScreen extends StatelessWidget {
         children: [
           Positioned.fill(
             child: Obx(() {
+              final respErr = controller.responseError.value.toLowerCase();
+              final grpErr = controller.groupError.value.toLowerCase();
+              final bool isOffline = controller.isOffline.value ||
+                  respErr.contains('internet') ||
+                  respErr.contains('network') ||
+                  respErr.contains('connection') ||
+                  grpErr.contains('internet') ||
+                  grpErr.contains('network') ||
+                  grpErr.contains('connection');
+
+              if (isOffline) {
+                return _buildOfflineMapPlaceholder(context);
+              }
+
               final lat = controller.currentLat.value != 0.0
                   ? controller.currentLat.value
                   : 19.0760;
@@ -119,13 +166,12 @@ class TrackingScreen extends StatelessWidget {
                       controller.isSearchDropdownOpen.value = false;
                       FocusScope.of(context).unfocus();
                     }
-                    if (_sheetController.isAttached &&
-                        _sheetExtent.value > 0.45) {
-                      _sheetController.animateTo(
-                        0.42,
-                        duration: const Duration(milliseconds: 250),
-                        curve: Curves.easeOutCubic,
-                      );
+                    if (_sheetController.isAttached) {
+                      if (_sheetExtent.value > 0.45) {
+                        _animateSheetTo(0.38);
+                      } else if (_sheetExtent.value > 0.20) {
+                        _animateSheetTo(0.12);
+                      }
                     }
                   },
                 ),
@@ -134,6 +180,18 @@ class TrackingScreen extends StatelessWidget {
           ),
 
           Obx(() {
+            final respErr = controller.responseError.value.toLowerCase();
+            final grpErr = controller.groupError.value.toLowerCase();
+            final bool isOffline = controller.isOffline.value ||
+                respErr.contains('internet') ||
+                respErr.contains('network') ||
+                respErr.contains('connection') ||
+                grpErr.contains('internet') ||
+                grpErr.contains('network') ||
+                grpErr.contains('connection');
+
+            if (isOffline) return const SizedBox.shrink();
+
             final double extent = _sheetExtent.value;
             final double fade =
                 (1.0 - ((extent - 0.55) / 0.12)).clamp(0.0, 1.0);
@@ -169,6 +227,18 @@ class TrackingScreen extends StatelessWidget {
           }),
 
           Obx(() {
+            final respErr = controller.responseError.value.toLowerCase();
+            final grpErr = controller.groupError.value.toLowerCase();
+            final bool isOffline = controller.isOffline.value ||
+                respErr.contains('internet') ||
+                respErr.contains('network') ||
+                respErr.contains('connection') ||
+                grpErr.contains('internet') ||
+                grpErr.contains('network') ||
+                grpErr.contains('connection');
+
+            if (isOffline) return const SizedBox.shrink();
+
             final double extent = _sheetExtent.value;
             final double fade =
                 (1.0 - ((extent - 0.52) / 0.10)).clamp(0.0, 1.0);
@@ -306,12 +376,12 @@ class TrackingScreen extends StatelessWidget {
             },
             child: DraggableScrollableSheet(
               controller: _sheetController,
-              initialChildSize: 0.42,
+              initialChildSize: 0.38,
               minChildSize: 0.12,
-              maxChildSize: 0.90,
+              maxChildSize: 0.95,
               snap: true,
-              snapSizes: const [0.12, 0.42, 0.90],
-              snapAnimationDuration: const Duration(milliseconds: 280),
+              snapSizes: const [0.12, 0.38, 0.95],
+              snapAnimationDuration: const Duration(milliseconds: 300),
               builder: (context, scrollController) {
                 return Container(
                   clipBehavior: Clip.antiAlias,
@@ -327,47 +397,58 @@ class TrackingScreen extends StatelessWidget {
                       ),
                     ],
                   ),
-                  child: Obx(() {
-                    final isGroupTab = controller.selectedTabIndex.value == 1;
-                    return RefreshIndicator(
-                      onRefresh: () async {
-                        if (isGroupTab) {
-                          await controller.fetchGroupData();
-                        } else {
-                          await controller.getUsersWithinRadius();
-                        }
-                      },
-                      color: const Color(0xFF4338CA),
-                      backgroundColor: Colors.white,
-                      displacement: 20.h,
-                      child: CustomScrollView(
-                        controller: scrollController,
-                        physics: const ClampingScrollPhysics(
-                          parent: AlwaysScrollableScrollPhysics(),
+                  child: Column(
+                    children: [
+                      // ── FIXED TOP SECTION OF SHEET: Drag handle + Tabs stay fixed ──
+                      GestureDetector(
+                        onTap: _toggleSheet,
+                        onVerticalDragUpdate: (details) =>
+                            _onHeaderDragUpdate(details, MediaQuery.of(context).size.height),
+                        onVerticalDragEnd: _onHeaderDragEnd,
+                        behavior: HitTestBehavior.opaque,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            _buildDragHandle(),
+                            Obx(() => _buildCustomTabs()),
+                            SizedBox(height: 8.h),
+                          ],
                         ),
-                        slivers: [
-                          SliverToBoxAdapter(
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                GestureDetector(
-                                  onTap: _toggleSheet,
-                                  behavior: HitTestBehavior.opaque,
-                                  child: _buildDragHandle(),
-                                ),
-                                _buildCustomTabs(),
-                                SizedBox(height: 10.h),
+                      ),
+
+                      // ── SCROLLABLE BODY CONTENT (Scrolls underneath fixed tabs) ──
+                      Expanded(
+                        child: Obx(() {
+                          final isGroupTab =
+                              controller.selectedTabIndex.value == 1;
+                          return RefreshIndicator(
+                            onRefresh: () async {
+                              if (isGroupTab) {
+                                await controller.fetchGroupData();
+                              } else {
+                                await controller.getUsersWithinRadius();
+                              }
+                            },
+                            color: const Color(0xFF4338CA),
+                            backgroundColor: Colors.white,
+                            displacement: 20.h,
+                            child: CustomScrollView(
+                              controller: scrollController,
+                              physics: const ClampingScrollPhysics(
+                                parent: AlwaysScrollableScrollPhysics(),
+                              ),
+                              slivers: [
+                                if (isGroupTab)
+                                  _buildGroupSliverContent()
+                                else
+                                  _buildLiveTrackingSliverContent(),
                               ],
                             ),
-                          ),
-                          if (isGroupTab)
-                            _buildGroupSliverContent()
-                          else
-                            _buildLiveTrackingSliverContent(),
-                        ],
+                          );
+                        }),
                       ),
-                    );
-                  }),
+                    ],
+                  ),
                 );
               },
             ),
@@ -397,6 +478,76 @@ class TrackingScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           _buildTopAppBar(context),
+          Obx(() {
+            final respErr = controller.responseError.value.toLowerCase();
+            final grpErr = controller.groupError.value.toLowerCase();
+            final bool isOffline = controller.isOffline.value ||
+                respErr.contains('internet') ||
+                respErr.contains('network') ||
+                respErr.contains('connection') ||
+                grpErr.contains('internet') ||
+                grpErr.contains('network') ||
+                grpErr.contains('connection');
+
+            if (!isOffline) return const SizedBox.shrink();
+
+            return Container(
+              margin: EdgeInsets.only(top: 8.h),
+              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFEF2F2),
+                borderRadius: BorderRadius.circular(10.r),
+                border: Border.all(color: const Color(0xFFFECACA)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.04),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.wifi_off_rounded,
+                    size: 16.sp,
+                    color: const Color(0xFFDC2626),
+                  ),
+                  SizedBox(width: 8.w),
+                  Expanded(
+                    child: Text(
+                      "No internet connection. Map & tracking are offline.",
+                      style: TextStyle(
+                        fontSize: 11.5.sp,
+                        color: const Color(0xFF991B1B),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 6.w),
+                  GestureDetector(
+                    onTap: () => controller.retryAll(),
+                    child: Container(
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFEE2E2),
+                        borderRadius: BorderRadius.circular(6.r),
+                      ),
+                      child: Text(
+                        "Retry",
+                        style: TextStyle(
+                          fontSize: 11.sp,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFFDC2626),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
           Obx(() {
             final double extent = _sheetExtent.value;
             // Smoothly fade out search bar as sheet expands above mid (0.52 to 0.65)
@@ -433,11 +584,7 @@ class TrackingScreen extends StatelessWidget {
           icon: Icons.arrow_back_rounded,
           onTap: () {
             if (_sheetController.isAttached && _sheetExtent.value > 0.45) {
-              _sheetController.animateTo(
-                0.42,
-                duration: const Duration(milliseconds: 280),
-                curve: Curves.easeOutCubic,
-              );
+              _animateSheetTo(0.38);
             } else {
               Get.back();
             }
@@ -655,13 +802,7 @@ class TrackingScreen extends StatelessWidget {
         controller.searchQuery.value = m.name;
         controller.isSearchDropdownOpen.value = false;
         FocusScope.of(context).unfocus();
-        if (_sheetController.isAttached) {
-          _sheetController.animateTo(
-            0.12,
-            duration: const Duration(milliseconds: 250),
-            curve: Curves.easeOutCubic,
-          );
-        }
+        _animateSheetTo(0.38);
         controller.zoomToMember(m);
       },
       child: Padding(
@@ -749,13 +890,8 @@ class TrackingScreen extends StatelessWidget {
         controller.expandedGroupId.value = gIdStr;
         controller.selectGroup(g);
         controller.fetchGroupLocationData(gIdStr);
-        if (_sheetController.isAttached) {
-          _sheetController.animateTo(
-            0.52,
-            duration: const Duration(milliseconds: 280),
-            curve: Curves.easeOutCubic,
-          );
-        }
+        _animateSheetTo(0.38);
+        controller.fitAllMembers();
       },
       child: Padding(
         padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
@@ -808,6 +944,115 @@ class TrackingScreen extends StatelessWidget {
               color: const Color(0xFF94A3B8),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildOfflineMapPlaceholder(BuildContext context) {
+    final double screenH = MediaQuery.of(context).size.height;
+    final double extent = _sheetExtent.value;
+    final double progress = ((extent - 0.12) / (0.52 - 0.12)).clamp(0.0, 1.0);
+    final double mapOffsetY = -progress * (screenH * 0.18);
+
+    return Container(
+      color: const Color(0xFFF8FAFC),
+      child: Transform.translate(
+        offset: Offset(0, mapOffsetY),
+        child: Center(
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 28.w),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SizedBox(height: 70.h),
+                Container(
+                  width: 76.w,
+                  height: 76.w,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEEF2FF),
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF4338CA).withValues(alpha: 0.12),
+                        blurRadius: 18,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: const Center(
+                    child: Icon(
+                      Icons.wifi_off_rounded,
+                      size: 36,
+                      color: Color(0xFF4338CA),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 18.h),
+                Text(
+                  "Map Unavailable Offline",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 17.5.sp,
+                    fontFamily: 'Inter',
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF0F172A),
+                  ),
+                ),
+                SizedBox(height: 8.h),
+                Text(
+                  "Internet connection is required to load live map data and real-time member locations.",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 12.5.sp,
+                    fontFamily: 'Inter',
+                    fontWeight: FontWeight.w400,
+                    color: const Color(0xFF64748B),
+                    height: 1.4,
+                  ),
+                ),
+                SizedBox(height: 20.h),
+                GestureDetector(
+                  onTap: () => controller.retryAll(),
+                  child: Container(
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 22.w, vertical: 10.h),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF4338CA),
+                      borderRadius: BorderRadius.circular(12.r),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF4338CA).withValues(alpha: 0.25),
+                          blurRadius: 10,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.refresh_rounded,
+                          size: 17,
+                          color: Colors.white,
+                        ),
+                        SizedBox(width: 8.w),
+                        Text(
+                          "Retry Connection",
+                          style: TextStyle(
+                            fontSize: 13.sp,
+                            fontFamily: 'Inter',
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -1535,13 +1780,13 @@ class TrackingScreen extends StatelessWidget {
     return Container(
       width: double.infinity,
       color: Colors.transparent,
-      padding: EdgeInsets.symmetric(vertical: 8.h),
+      padding: EdgeInsets.symmetric(vertical: 10.h),
       alignment: Alignment.center,
       child: Container(
-        width: 44.w,
-        height: 4.5.h,
+        width: 48.w,
+        height: 5.h,
         decoration: BoxDecoration(
-          color: const Color(0xFF94A3B8).withValues(alpha: 0.4),
+          color: const Color(0xFF94A3B8).withValues(alpha: 0.5),
           borderRadius: BorderRadius.circular(3.r),
         ),
       ),
@@ -1565,12 +1810,8 @@ class TrackingScreen extends StatelessWidget {
             child: GestureDetector(
               onTap: () {
                 controller.selectTab(0);
-                if (_sheetController.isAttached && _sheetExtent.value < 0.30) {
-                  _sheetController.animateTo(
-                    0.52,
-                    duration: const Duration(milliseconds: 280),
-                    curve: Curves.easeOutCubic,
-                  );
+                if (_sheetController.isAttached && _sheetExtent.value < 0.25) {
+                  _animateSheetTo(0.38);
                 }
               },
               child: AnimatedContainer(
@@ -1606,12 +1847,8 @@ class TrackingScreen extends StatelessWidget {
             child: GestureDetector(
               onTap: () {
                 controller.selectTab(1);
-                if (_sheetController.isAttached && _sheetExtent.value < 0.30) {
-                  _sheetController.animateTo(
-                    0.52,
-                    duration: const Duration(milliseconds: 280),
-                    curve: Curves.easeOutCubic,
-                  );
+                if (_sheetController.isAttached && _sheetExtent.value < 0.25) {
+                  _animateSheetTo(0.38);
                 }
               },
               child: AnimatedContainer(
@@ -1777,50 +2014,82 @@ class TrackingScreen extends StatelessWidget {
                 ),
               );
             } else if (membersToDisplay.isEmpty) {
+              final bool hasSearch = controller.searchQuery.value.trim().isNotEmpty;
+              final String err = controller.responseError.value;
+              final bool isOffline = err.toLowerCase().contains("internet") ||
+                  err.toLowerCase().contains("network") ||
+                  err.toLowerCase().contains("connection");
+              final bool hasError = err.isNotEmpty;
+
+              final IconData icon = isOffline
+                  ? Icons.wifi_off_rounded
+                  : (hasSearch
+                      ? Icons.person_search_rounded
+                      : (hasError
+                          ? Icons.error_outline_rounded
+                          : Icons.sensors_off_rounded));
+
+              final Color iconColor = const Color(0xFF4338CA);
+              final Color iconBg = const Color(0xFFEEF2FF);
+
+              final String title = isOffline
+                  ? "No Internet Connection"
+                  : (hasSearch
+                      ? "No Members Found"
+                      : (hasError
+                          ? "Unable to Load Members"
+                          : "No Active Members"));
+
+              final String subtitle = isOffline
+                  ? "Please check your network and try again to view nearby members."
+                  : (hasSearch
+                      ? "No members match '${controller.searchQuery.value}'"
+                      : (hasError
+                          ? err
+                          : "No active members found within ${controller.currentFormattedRadius}"));
+
               return Padding(
-                padding: EdgeInsets.symmetric(vertical: 24.h),
+                padding: EdgeInsets.symmetric(vertical: 24.h, horizontal: 16.w),
                 child: Center(
                   child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Container(
                         padding: EdgeInsets.all(14.r),
-                        decoration: const BoxDecoration(
-                          color: Color(0xFFF1F5F9),
+                        decoration: BoxDecoration(
+                          color: iconBg,
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
-                          Icons.sensors_off_rounded,
-                          color: const Color(0xFF94A3B8),
-                          size: 32.sp,
+                          icon,
+                          color: iconColor,
+                          size: 30.sp,
                         ),
                       ),
                       SizedBox(height: 10.h),
                       Text(
-                        controller.searchQuery.value.trim().isNotEmpty
-                            ? "No members match '${controller.searchQuery.value}'"
-                            : "No active members found within ${controller.currentFormattedRadius}",
+                        title,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: const Color(0xFF1E1B4B),
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      SizedBox(height: 4.h),
+                      Text(
+                        subtitle,
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           color: const Color(0xFF64748B),
-                          fontSize: 13.sp,
-                          fontWeight: FontWeight.w500,
+                          fontSize: 12.sp,
+                          fontWeight: FontWeight.w400,
                         ),
                       ),
-                      if (controller.responseError.isNotEmpty)
-                        Padding(
-                          padding: EdgeInsets.only(top: 6.h),
-                          child: Text(
-                            controller.responseError.value,
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: const Color(0xFFEF4444),
-                              fontSize: 11.sp,
-                            ),
-                          ),
-                        ),
                       SizedBox(height: 14.h),
                       GestureDetector(
-                        onTap: () => controller.getUsersWithinRadius(),
+                        onTap: () => controller.retryAll(),
                         child: Container(
                           padding: EdgeInsets.symmetric(
                               horizontal: 16.w, vertical: 8.h),
@@ -1843,11 +2112,11 @@ class TrackingScreen extends StatelessWidget {
                                   color: Colors.white, size: 16.sp),
                               SizedBox(width: 6.w),
                               Text(
-                                "Refresh Live Data",
+                                "Retry",
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 12.sp,
-                                  fontWeight: FontWeight.w700,
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
                             ],
@@ -1925,19 +2194,115 @@ class TrackingScreen extends StatelessWidget {
                 ),
               );
             } else if (controller.filteredGroups.isEmpty) {
+              final bool hasSearch = controller.searchQuery.value.trim().isNotEmpty;
+              final String err = controller.groupError.value;
+              final bool isOffline = err.toLowerCase().contains("internet") ||
+                  err.toLowerCase().contains("network") ||
+                  err.toLowerCase().contains("connection");
+              final bool hasError = err.isNotEmpty;
+
+              final IconData icon = isOffline
+                  ? Icons.wifi_off_rounded
+                  : (hasSearch
+                      ? Icons.search_off_rounded
+                      : (hasError ? Icons.error_outline_rounded : Icons.groups_outlined));
+
+              final Color iconColor = const Color(0xFF4338CA);
+              final Color iconBg = const Color(0xFFEEF2FF);
+
+              final String title = isOffline
+                  ? "No Internet Connection"
+                  : (hasSearch
+                      ? "No Groups Match"
+                      : (hasError ? "Unable to Load Groups" : "No Groups Found"));
+
+              final String subtitle = isOffline
+                  ? "Please check your network connection and try again."
+                  : (hasSearch
+                      ? "No groups match '${controller.searchQuery.value}'"
+                      : (hasError
+                          ? err
+                          : "You haven't joined or created any groups yet."));
+
               return Padding(
-                padding: EdgeInsets.symmetric(vertical: 30.h),
+                padding: EdgeInsets.symmetric(vertical: 24.h, horizontal: 16.w),
                 child: Center(
-                  child: Text(
-                    controller.searchQuery.value.trim().isNotEmpty
-                        ? "No groups match '${controller.searchQuery.value}'"
-                        : (controller.groupError.isNotEmpty
-                            ? controller.groupError.value
-                            : "No groups found"),
-                    style: TextStyle(
-                      color: AppColors.primaryThreeElementText,
-                      fontSize: 13.sp,
-                    ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Container(
+                        padding: EdgeInsets.all(14.r),
+                        decoration: BoxDecoration(
+                          color: iconBg,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          icon,
+                          color: iconColor,
+                          size: 28.sp,
+                        ),
+                      ),
+                      SizedBox(height: 10.h),
+                      Text(
+                        title,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: const Color(0xFF1E1B4B),
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      SizedBox(height: 4.h),
+                      Text(
+                        subtitle,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: const Color(0xFF64748B),
+                          fontSize: 12.sp,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                      if (hasError || isOffline) ...[
+                        SizedBox(height: 12.h),
+                        GestureDetector(
+                          onTap: () => controller.retryAll(),
+                          child: Container(
+                            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 7.h),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF4338CA),
+                              borderRadius: BorderRadius.circular(10.r),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFF4338CA).withValues(alpha: 0.2),
+                                  blurRadius: 6.r,
+                                  offset: Offset(0, 2.h),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.refresh_rounded,
+                                  color: Colors.white,
+                                  size: 14.sp,
+                                ),
+                                SizedBox(width: 6.w),
+                                Text(
+                                  "Retry",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 12.sp,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                 ),
               );
@@ -2028,13 +2393,7 @@ class TrackingScreen extends StatelessWidget {
   // }
 
   void _zoomToMemberFromList(MemberModel member) {
-    if (_sheetController.isAttached) {
-      _sheetController.animateTo(
-        0.11,
-        duration: const Duration(milliseconds: 250),
-        curve: Curves.easeOutCubic,
-      );
-    }
+    _animateSheetTo(0.38);
     controller.zoomToMember(member);
   }
 
@@ -2173,55 +2532,49 @@ class TrackingScreen extends StatelessWidget {
               ),
             ),
             SizedBox(width: 8.w),
-            Builder(
-              builder: (context) {
-                final int? batteryVal = member.battery;
-                Color batteryColor;
-                if (batteryVal == null) {
-                  batteryColor = const Color(0xFF94A3B8);
-                } else if (batteryVal > 50) {
-                  batteryColor = const Color(0xFF10B981);
-                } else if (batteryVal >= 20) {
-                  batteryColor = const Color(0xFFF59E0B);
-                } else {
-                  batteryColor = const Color(0xFFEF4444);
-                }
-
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      _formatDistance(member.distance),
-                      style: TextStyle(
-                        color: const Color(0xFF4338CA),
-                        fontSize: 11.sp,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    SizedBox(height: 4.h),
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          _getBatteryIcon(batteryVal ?? 100),
-                          color: batteryColor,
-                          size: 14.sp,
-                        ),
-                        SizedBox(width: 3.w),
-                        Text(
-                          batteryVal != null ? "$batteryVal%" : "--%",
-                          style: TextStyle(
-                            color: batteryColor,
-                            fontSize: 11.sp,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                );
-              },
+            Text(
+              _formatDistance(member.distance),
+              style: TextStyle(
+                color: const Color(0xFF4338CA),
+                fontSize: 11.sp,
+                fontWeight: FontWeight.w700,
+              ),
             ),
+            // Battery indicator commented out
+            // Builder(
+            //   builder: (context) {
+            //     final int? batteryVal = member.battery;
+            //     Color batteryColor;
+            //     if (batteryVal == null) {
+            //       batteryColor = const Color(0xFF94A3B8);
+            //     } else if (batteryVal > 50) {
+            //       batteryColor = const Color(0xFF10B981);
+            //     } else if (batteryVal >= 20) {
+            //       batteryColor = const Color(0xFFF59E0B);
+            //     } else {
+            //       batteryColor = const Color(0xFFEF4444);
+            //     }
+            //     return Row(
+            //       mainAxisSize: MainAxisSize.min,
+            //       children: [
+            //         Icon(
+            //           _getBatteryIcon(batteryVal ?? 100),
+            //           color: batteryColor,
+            //           size: 14.sp,
+            //         ),
+            //         SizedBox(width: 3.w),
+            //         Text(
+            //           batteryVal != null ? "$batteryVal%" : "--%",
+            //           style: TextStyle(
+            //             color: batteryColor,
+            //             fontSize: 11.sp,
+            //             fontWeight: FontWeight.w700,
+            //           ),
+            //         ),
+            //       ],
+            //     );
+            //   },
+            // ),
             SizedBox(width: 10.w),
             GestureDetector(
               onTap: () => _zoomToMemberFromList(member),
@@ -2388,12 +2741,8 @@ class TrackingScreen extends StatelessWidget {
 
                   // Keep sheet expanded so the dropdown members list is visible!
                   if (_sheetController.isAttached &&
-                      _sheetExtent.value < 0.52) {
-                    _sheetController.animateTo(
-                      0.52,
-                      duration: const Duration(milliseconds: 280),
-                      curve: Curves.easeOutCubic,
-                    );
+                      _sheetExtent.value < 0.50) {
+                    _animateSheetTo(0.60);
                   }
                 }
               },
@@ -2581,6 +2930,45 @@ class TrackingScreen extends StatelessWidget {
     List<LocationData> members,
     bool isLoading,
   ) {
+    final currentUserId =
+        Global.storageServices.get(PrefConst.userId)?.toString() ?? '';
+
+    // Sort: 1st: You, 2nd: Ghost Mode enabled, 3rd: All other members
+    final List<LocationData> sortedMembers = List<LocationData>.from(members);
+    sortedMembers.sort((a, b) {
+      final aId = (a.userId ?? a.id ?? '').toString();
+      final bId = (b.userId ?? b.id ?? '').toString();
+
+      final bool aIsMe = aId.isNotEmpty && aId == currentUserId;
+      final bool bIsMe = bId.isNotEmpty && bId == currentUserId;
+
+      // 1st: "You" (logged-in user)
+      if (aIsMe && !bIsMe) return -1;
+      if (!aIsMe && bIsMe) return 1;
+      if (aIsMe && bIsMe) return 0;
+
+      // 2nd: Ghost mode members
+      final bool aGhost = a.locationSharing == false ||
+          a.locationSharing == 0 ||
+          a.locationSharing == '0';
+      final bool bGhost = b.locationSharing == false ||
+          b.locationSharing == 0 ||
+          b.locationSharing == '0';
+
+      if (aGhost && !bGhost) return -1;
+      if (!aGhost && bGhost) return 1;
+
+      // 3rd: All other members (Online first, then alphabetical by name)
+      final bool aOnline = a.isOnline == true;
+      final bool bOnline = b.isOnline == true;
+      if (aOnline && !bOnline) return -1;
+      if (!aOnline && bOnline) return 1;
+
+      final aName = (a.name ?? '').toString().toLowerCase();
+      final bName = (b.name ?? '').toString().toLowerCase();
+      return aName.compareTo(bName);
+    });
+
     return Container(
       decoration: BoxDecoration(
         color: const Color(0xFFF8FAFC),
@@ -2659,7 +3047,7 @@ class TrackingScreen extends StatelessWidget {
             )
           else
             Column(
-              children: members
+              children: sortedMembers
                   .map((m) => _buildGroupDropdownMemberItem(m, group))
                   .toList(),
             ),
@@ -2710,7 +3098,7 @@ class TrackingScreen extends StatelessWidget {
         : null;
 
     String getLastSeenText() {
-      if (isGhostMode) return "Ghost Mode Enabled";
+      if (isGhostMode) return "Location Hidden";
       if (isOnline) return "Online";
       if (member.lastSeen == null ||
           member.lastSeen.toString().trim().isEmpty ||
@@ -2734,6 +3122,99 @@ class TrackingScreen extends StatelessWidget {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: () {
+        if (isGhostMode) {
+          Get.snackbar(
+            "",
+            "",
+            titleText: Row(
+              children: [
+                Container(
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 7.w, vertical: 2.5.h),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF3E8FF),
+                    borderRadius: BorderRadius.circular(6.r),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.lock_outline_rounded,
+                        size: 11.sp,
+                        color: const Color(0xFF7E57C2),
+                      ),
+                      SizedBox(width: 4.w),
+                      Text(
+                        "Private",
+                        style: TextStyle(
+                          fontSize: 11.sp,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF7E57C2),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(width: 8.w),
+                Text(
+                  "Location Hidden",
+                  style: TextStyle(
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF1E1B4B),
+                  ),
+                ),
+              ],
+            ),
+            messageText: Padding(
+              padding: EdgeInsets.only(top: 2.h),
+              child: Text(
+                isMe
+                    ? "Your live location sharing is paused and private."
+                    : "$name has paused location sharing. Live location is not available.",
+                style: TextStyle(
+                  fontSize: 12.sp,
+                  fontWeight: FontWeight.w500,
+                  color: const Color(0xFF64748B),
+                ),
+              ),
+            ),
+            icon: Container(
+              margin: EdgeInsets.only(left: 10.w),
+              padding: EdgeInsets.all(8.r),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF3E8FF),
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: const Color(0xFF7E57C2).withValues(alpha: 0.25),
+                  width: 1,
+                ),
+              ),
+              child: Icon(
+                Icons.location_off_rounded,
+                color: const Color(0xFF7E57C2),
+                size: 20.sp,
+              ),
+            ),
+            snackPosition: SnackPosition.TOP,
+            backgroundColor: Colors.white,
+            borderColor: const Color(0xFFE2E8F0),
+            borderWidth: 1.2,
+            boxShadows: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.08),
+                blurRadius: 18.r,
+                offset: const Offset(0, 6),
+              ),
+            ],
+            margin: EdgeInsets.fromLTRB(14.w, 14.h, 14.w, 0),
+            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+            borderRadius: 16.r,
+            duration: const Duration(seconds: 3),
+          );
+          return;
+        }
+        _animateSheetTo(0.38);
         controller.zoomToMember(member);
       },
       child: Container(
@@ -2823,6 +3304,14 @@ class TrackingScreen extends StatelessWidget {
                           "You",
                           const Color(0xFFEEF2FF),
                           const Color(0xFF4338CA),
+                        ),
+                      ],
+                      if (isGhostMode) ...[
+                        SizedBox(width: 5.w),
+                        _memberBadge(
+                          "Private",
+                          const Color(0xFFF3E8FF),
+                          const Color(0xFF7E57C2),
                         ),
                       ],
                       if (isAdmin) ...[
@@ -3177,30 +3666,49 @@ class TrackingScreen extends StatelessWidget {
   }
 
   String _formatDistance(String distance) {
-    if (distance.isEmpty ||
-        distance.toLowerCase().contains("nan") ||
-        distance.trim() == "Nearby") {
-      return "Nearby";
+    final trimmed = distance.trim();
+    if (trimmed.isEmpty ||
+        trimmed.toLowerCase().contains("nan") ||
+        trimmed == "Nearby" ||
+        trimmed == "Nearby you" ||
+        trimmed == "0.0 m away" ||
+        trimmed == "0.0m away" ||
+        trimmed == "0 m away" ||
+        trimmed == "0.0 km away" ||
+        trimmed == "0.00 km away" ||
+        trimmed == "0.0 m" ||
+        trimmed == "0 m" ||
+        trimmed == "0.0 km" ||
+        trimmed == "0.00 km") {
+      return "Nearby you";
     }
-    if (distance.contains("away")) return distance;
-    if (distance.contains("km") || distance.contains(" m")) {
-      return "$distance away";
-    }
-    final cleaned = distance.replaceAll(RegExp(r'[^\d.]'), '');
+    final cleaned = trimmed.replaceAll(RegExp(r'[^\d.]'), '');
     final numVal = double.tryParse(cleaned);
+    if (numVal != null && numVal <= 0.05) {
+      return "Nearby you";
+    }
+    if (trimmed.startsWith("0.0") ||
+        trimmed.startsWith("0 m") ||
+        trimmed.startsWith("0 km")) {
+      return "Nearby you";
+    }
+    if (trimmed.contains("away")) return trimmed;
+    if (trimmed.contains("km") || trimmed.contains(" m")) {
+      return "$trimmed away";
+    }
     if (numVal != null) {
       return "${numVal.toStringAsFixed(1)} km away";
     }
-    return distance;
+    return trimmed;
   }
 
-  IconData _getBatteryIcon(int level) {
-    if (level >= 90) return Icons.battery_full_rounded;
-    if (level >= 75) return Icons.battery_6_bar_rounded;
-    if (level >= 50) return Icons.battery_4_bar_rounded;
-    if (level >= 20) return Icons.battery_2_bar_rounded;
-    return Icons.battery_alert_rounded;
-  }
+  // IconData _getBatteryIcon(int level) {
+  //   if (level >= 90) return Icons.battery_full_rounded;
+  //   if (level >= 75) return Icons.battery_6_bar_rounded;
+  //   if (level >= 50) return Icons.battery_4_bar_rounded;
+  //   if (level >= 20) return Icons.battery_2_bar_rounded;
+  //   return Icons.battery_alert_rounded;
+  // }
 
   Widget _placeholderAvatar([String? name]) {
     final String initial = (name != null && name.trim().isNotEmpty)

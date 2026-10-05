@@ -51,6 +51,23 @@
 		<key>NSAllowsArbitraryLoads</key>
 		<true/>
 	</dict>
+
+	<key>CFBundleURLTypes</key>
+    <array>
+        <dict>
+            <key>CFBundleURLSchemes</key>
+            <array>
+                <string>fb2087541501869419</string>
+            </array>
+        </dict>
+    </array>
+    <key>FacebookAppID</key>
+    <string>2087541501869419</string>
+    <key>FacebookClientToken</key>
+    <string>a2d6fe7b6b7dbb9a1ed1faa6d2218509</string>
+    <key>FacebookDisplayName</key>
+    <string>FG Tracker</string>
+
 	<key>NSCameraUsageDescription</key>
 	<string>Need camera access for video calls and scan QR codes</string>
 	<key>NSContactsUsageDescription</key>
@@ -62,11 +79,19 @@
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Your location is used to share your real-time position with group members on the map during active tracking sessions.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>Need microphone access for audio calls and stream live voice over the walkie-talkie channel</string>
+	<string>Need microphone access for audio calls and stream live voice over the walkie-talkie channel or Screen Sharing</string>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>FG Tracker requires Bluetooth access to connect to wireless earphones and headsets during Walkie-Talkie and voice calls.</string>
+	<key>NSBluetoothPeripheralUsageDescription</key>
+	<string>FG Tracker requires Bluetooth access to route audio to wireless earphones and headsets.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>We need access to save QR codes to your gallery.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>We need access to your photo library to allow you to set a profile image and upload photos and get QR code from photo library of your site location.</string>
+	<key>RTCAppGroupIdentifier</key>
+	<string>group.com.fg.fgtracker</string>
+	<key>RTCScreenSharingExtension</key>
+	<string>com.fg.fgtracker.broadcast</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UIBackgroundModes</key>
@@ -76,7 +101,6 @@
 		<string>voip</string>
 		<string>processing</string>
 		<string>fetch</string>
-		<string>push-to-talk</string>
 		<string>location</string>
 	</array>
 	<key>UILaunchStoryboardName</key>

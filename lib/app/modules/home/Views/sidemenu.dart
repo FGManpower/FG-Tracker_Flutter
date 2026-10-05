@@ -61,12 +61,7 @@ class Sidemenu extends StatelessWidget {
           Expanded(
             child: SingleChildScrollView(
               physics: const BouncingScrollPhysics(),
-              child: Column(
-                children: [
-                  _buildMenuItems(context),
-                  _buildBottomAppCard(),
-                ],
-              ),
+              child: _buildMenuItems(context),
             ),
           ),
           _buildFooterSection(),
@@ -436,42 +431,42 @@ class Sidemenu extends StatelessWidget {
           ),
           _buildDivider(),
           _buildDrawerItem(
-            icon: Icons.info_rounded,
-            title: AppText.aboutUs.tr,
+            icon: Icons.support_agent_rounded,
+            title: "Contact Us",
             subtitle: "Know more about us",
             onTap: () {
               Navigator.pop(context);
               Get.toNamed(Routes.AboutUs);
             },
           ),
-          _buildDivider(),
-          _buildDrawerItem(
-            icon: Icons.verified_user_rounded,
-            title: "Privacy Policy",
-            subtitle: "View our privacy policy",
-            onTap: () async {
-              Navigator.pop(context);
-              try {
-                final Uri url =
-                    Uri.parse('https://www.fgmanpower.co.in/privacy-policy/');
-                if (!await launchUrl(url,
-                    mode: LaunchMode.externalApplication)) {
-                  debugPrint('Could not launch $url');
-                }
-              } catch (e) {
-                log(e.toString());
-              }
-            },
-          ),
-          _buildDivider(),
-          _buildDrawerItem(
-            icon: Icons.headset_mic_rounded,
-            title: "Help & Support",
-            subtitle: "Get help and support",
-            onTap: () {
-              Navigator.pop(context);
-            },
-          ),
+          // _buildDivider(),
+          // _buildDrawerItem(
+          //   icon: Icons.verified_user_rounded,
+          //   title: "Privacy Policy",
+          //   subtitle: "View our privacy policy",
+          //   onTap: () async {
+          //     Navigator.pop(context);
+          //     try {
+          //       final Uri url =
+          //           Uri.parse('https://www.fgmanpower.co.in/privacy-policy/');
+          //       if (!await launchUrl(url,
+          //           mode: LaunchMode.externalApplication)) {
+          //         debugPrint('Could not launch $url');
+          //       }
+          //     } catch (e) {
+          //       log(e.toString());
+          //     }
+          //   },
+          // ),
+          // _buildDivider(),
+          // _buildDrawerItem(
+          //   icon: Icons.headset_mic_rounded,
+          //   title: "Help & Support",
+          //   subtitle: "Get help and support",
+          //   onTap: () {
+          //     Navigator.pop(context);
+          //   },
+          // ),
           _buildDivider(),
           _buildDrawerItem(
             icon: Icons.logout_rounded,
@@ -513,11 +508,11 @@ class Sidemenu extends StatelessWidget {
 
   Widget _buildBottomAppCard() {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
-      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 14.h),
+      margin: EdgeInsets.symmetric(horizontal: 14.w, vertical: 6.h),
+      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
       decoration: BoxDecoration(
         color: const Color(0xFFF6F4FE),
-        borderRadius: BorderRadius.circular(22.r),
+        borderRadius: BorderRadius.circular(18.r),
       ),
       child: Row(
         children: [
@@ -535,37 +530,21 @@ class Sidemenu extends StatelessWidget {
               ],
             ),
             child: CircleAvatar(
-              radius: 28.r,
-              backgroundColor: const Color(0xFF5D47F1),
-              backgroundImage: AssetImage(Assets.icons.appIcon.path),
+              radius: 22.r,
+              backgroundColor: Colors.transparent,
+              backgroundImage: AssetImage(Assets.icons.fgManpowerLogo.path),
             ),
           ),
-          SizedBox(width: 14.w),
+          SizedBox(width: 12.w),
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "FG Tracker",
-                  style: TextStyle(
-                    fontSize: 16.sp,
-                    fontFamily: FontFamily.interBold,
-                    fontWeight: FontWeight.bold,
-                    color: const Color(0xFF1E202B),
-                  ),
-                ),
-                SizedBox(height: 3.h),
-                Text(
-                  "Stay connected,\nStay together.",
-                  style: TextStyle(
-                    fontSize: 12.sp,
-                    fontFamily: FontFamily.interRegular,
-                    color: const Color(0xFF7A7F93),
-                    height: 1.35,
-                  ),
-                  maxLines: 2,
-                ),
-              ],
+            child: Text(
+              "FG Manpower LLP",
+              style: TextStyle(
+                fontSize: 15.sp,
+                fontFamily: FontFamily.interBold,
+                fontWeight: FontWeight.bold,
+                color: const Color(0xFF1E202B),
+              ),
             ),
           ),
         ],
@@ -575,10 +554,12 @@ class Sidemenu extends StatelessWidget {
 
   Widget _buildFooterSection() {
     return Padding(
-      padding: EdgeInsets.only(bottom: 16.h, top: 4.h),
+      padding: EdgeInsets.only(bottom: 14.h, top: 2.h),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
+          _buildBottomAppCard(),
+          SizedBox(height: 8.h),
           Text(
             "Follow us on",
             style: TextStyle(

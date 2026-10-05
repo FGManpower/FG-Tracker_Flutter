@@ -6,7 +6,7 @@ import 'package:fgtracker/app/Model/group_member_model.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../../Track/Controller/TrackController.dart';
+import '../../Track/Controller/GroupTrackController.dart';
 
 class LivesStatusController extends GetxController {
   static LivesStatusController get instance =>
@@ -78,7 +78,7 @@ class LivesStatusController extends GetxController {
 
   void _loadMyPrivateStatus() {
     final bool? syncVal =
-        Global.storageServices.getBoolSync(PrefConst.locationSharing);
+    Global.storageServices.getBoolSync(PrefConst.locationSharing);
     if (syncVal != null) {
       isMyPrivateModeOn.value = !syncVal;
       return;
@@ -87,6 +87,9 @@ class LivesStatusController extends GetxController {
     if (rawSharing != null) {
       final s = rawSharing.trim().toLowerCase();
       isMyPrivateModeOn.value = (s == 'false' || s == '0');
+    } else {
+      isMyPrivateModeOn.value = false;
+      Global.storageServices.setBool(PrefConst.locationSharing, true);
     }
   }
 
@@ -491,8 +494,8 @@ class LivesStatusController extends GetxController {
           newLocationSharing,
         );
 
-        if (Get.isRegistered<TrackingController>()) {
-          final trackingController = Get.find<TrackingController>();
+        if (Get.isRegistered<GroupTrackingController>()) {
+          final trackingController = Get.find<GroupTrackingController>();
 
           trackingController.isLocationSharing.value = newLocationSharing;
         }

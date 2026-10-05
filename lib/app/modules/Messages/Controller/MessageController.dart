@@ -14,7 +14,7 @@ import 'package:fgtracker/app/Model/GetMessage.dart';
 import 'package:fgtracker/app/Model/LocationMessage.dart';
 import 'package:fgtracker/app/Model/MemberDataRes.dart';
 import 'package:fgtracker/app/modules/Messages/widgets/videoThumbnailWidget.dart';
-import 'package:fgtracker/app/modules/Track/Controller/TrackController.dart';
+import 'package:fgtracker/app/modules/Track/Controller/GroupTrackController.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
@@ -73,12 +73,17 @@ class MessageController extends GetxController with WidgetsBindingObserver {
   final RxString floatingDate = "".obs;
   final RxBool showFloatingDate = false.obs;
   final Rxn<MessageData> editingMessage = Rxn<MessageData>();
+  final RxBool isBlocking = false.obs;
+  final RxBool isUnblocking = false.obs;
+  final RxBool isBlocked = false.obs;
+  final RxBool blockedByMe = false.obs;
 
   RxString privateChatId = "".obs;
 
   RxInt privateCurrentPage = 1.obs;
   RxBool isLoadingOlderMessages = false.obs;
   RxBool hasMoreOlderMessages = true.obs;
+  RxBool isLoadingInitialMessages = false.obs;
 
   Timer? _floatingDateTimer;
 
@@ -219,7 +224,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     log("=================================");
 
     try {
-      TrackingController.instance.initializeLocation();
+      GroupTrackingController.instance.initializeLocation();
     } catch (e) {
       log("==============MessageException======${e.toString()}");
     }
@@ -227,6 +232,8 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     ChatStateTracker.isChatCallScreenOpen = true;
 
     if (isPrivateChat) {
+      isLoadingInitialMessages.value = true;
+
       socketService.initPrivateChat(
         ConstRes.socketUrl,
         userId: currentUserId,
@@ -298,6 +305,9 @@ class MessageController extends GetxController with WidgetsBindingObserver {
             log("PRIVATE MESSAGE PARSE ERROR => $e");
           }
         },
+      );
+      socketService.listenPrivateChatCleared(
+        handlePrivateChatCleared,
       );
 
       socketService.listenPrivateMessagesDelivered(
@@ -836,7 +846,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
       privateCurrentPage.value = 1;
       hasMoreOlderMessages.value = true;
 
-      var result = await MessageRepo.privateChatHistory(
+      final result = await MessageRepo.privateChatHistory(
         chatId: chatId,
         page: 1,
         limit: 50,
@@ -844,6 +854,16 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
       if (result.status == true) {
         final messages = result.messageData ?? [];
+
+        final blockStatus = result.blockStatus;
+
+        if (blockStatus != null) {
+          isBlocked.value = blockStatus.isBlocked == true;
+          blockedByMe.value = blockStatus.blockedByMe == true;
+        } else {
+          isBlocked.value = false;
+          blockedByMe.value = false;
+        }
 
         _messages
           ..clear()
@@ -853,7 +873,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
         if (pinnedId != null) {
           final pinned = _messages.firstWhereOrNull(
-            (message) => message.id == pinnedId,
+                (message) => message.id == pinnedId,
           );
 
           if (pinned != null) {
@@ -869,21 +889,28 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         }
 
         updateMessageStream();
+
         isCreator.value = result.isCreator ?? false;
 
         if (result.pagination != null) {
-          hasMoreOlderMessages.value = result.pagination!.hasNextPage == true;
+          hasMoreOlderMessages.value =
+              result.pagination!.hasNextPage == true;
+        } else {
+          hasMoreOlderMessages.value = false;
         }
 
-        scrollToBottom();
+        if (_messages.isNotEmpty) {
+          scrollToBottom();
+        }
       } else {
         CommonDialog.errorMessage(result.message);
       }
     } catch (e) {
       log("Private History Error: $e");
+    } finally {
+      isLoadingInitialMessages.value = false;
     }
   }
-
   void setReply(MessageData message) {
     replyMessage.value = message;
   }
@@ -1197,6 +1224,93 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     }
   }
 
+  void handlePrivateChatCleared(Map<String, dynamic> data) {
+    final conversationId =
+        int.tryParse(data['conversationId']?.toString() ?? '');
+
+    if (conversationId == null) return;
+
+    log(
+      "PRIVATE CHAT CLEARED => conversationId=$conversationId",
+    );
+
+    messageData.clear();
+    updateMessageStream();
+
+    log("CHAT MESSAGES CLEARED FROM UI");
+  }
+
+  void clearPrivateChat() {
+    if (privateChatId.value.isEmpty) {
+      log("CLEAR PRIVATE CHAT => CHAT ID NOT FOUND");
+      return;
+    }
+
+    log(
+      "CLEAR PRIVATE CHAT => chatId=${privateChatId.value}",
+    );
+
+    socketService.clearPrivateChat(
+      chatId: privateChatId.value,
+    );
+  }
+
+  Future<String?> blockUser(int blockedUserId) async {
+    if (isBlocking.value) return null;
+
+    isBlocking.value = true;
+
+    try {
+      final response = await MessageRepo.blockUser(
+        blockedUserId: blockedUserId,
+      );
+
+      if (response is Map && response["status"] == true) {
+        isBlocked.value = true;
+        blockedByMe.value = true;
+
+        return response["message"]?.toString() ?? "User blocked successfully";
+      }
+
+      return response is Map
+          ? response["message"]?.toString()
+          : "Unable to block user";
+    } catch (e) {
+      log("Block user error: $e");
+      return null;
+    } finally {
+      isBlocking.value = false;
+    }
+  }
+
+  Future<String?> unblockUser(int blockedUserId) async {
+    if (isUnblocking.value) return null;
+
+    isUnblocking.value = true;
+
+    try {
+      final response = await MessageRepo.unblockUser(
+        blockedUserId: blockedUserId,
+      );
+
+      if (response is Map && response["status"] == true) {
+        isBlocked.value = false;
+        blockedByMe.value = false;
+
+        return response["message"]?.toString() ?? "User unblocked successfully";
+      }
+
+      return response is Map
+          ? response["message"]?.toString()
+          : "Unable to unblock user";
+    } catch (e) {
+      log("Unblock user error: $e");
+      return null;
+    } finally {
+      isUnblocking.value = false;
+    }
+  }
+
   Future<void> loadOlderPrivateMessages() async {
     if (isLoadingOlderMessages.value) return;
     if (!hasMoreOlderMessages.value) return;
@@ -1228,7 +1342,6 @@ class MessageController extends GetxController with WidgetsBindingObserver {
       );
 
       if (result.status == true) {
-
         final olderMessages = result.messageData ?? [];
 
         if (olderMessages.isNotEmpty) {

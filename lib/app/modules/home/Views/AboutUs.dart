@@ -31,37 +31,52 @@ class AboutUs extends StatelessWidget {
 
 
           RowWidget(
-              title: "Privacy Policy",
+            title: "Contact Us",
             ontap: () async {
               try {
-                final Uri url = Uri.parse(
-                    'https://www.fgmanpower.co.in/privacy-policy/');
-                if (!await launchUrl(
-                    url)) {
-                  debugPrint(
-                      'Could not launch $url');
+                final Uri url =
+                    Uri.parse('https://www.fgmanpower.co.in/contact/');
+                if (!await launchUrl(url,
+                    mode: LaunchMode.externalApplication)) {
+                  debugPrint('Could not launch $url');
                 }
               } catch (e) {
                 log(e.toString());
               }
-            },),
+            },
+          ),
 
           RowWidget(
-              title: "Terms & Conditions",
-              ontap: () async {
-                try {
-                  final Uri url = Uri.parse(
-                      'https://www.fgmanpower.co.in/terms-conditions/');
-                  if (!await launchUrl(
-                      url)) {
-                    debugPrint(
-                        'Could not launch $url');
-                  }
-                } catch (e) {
-                  log(e.toString());
+            title: "Privacy Policy",
+            ontap: () async {
+              try {
+                final Uri url = Uri.parse(
+                    'https://www.fgmanpower.co.in/privacy-policy/');
+                if (!await launchUrl(url,
+                    mode: LaunchMode.externalApplication)) {
+                  debugPrint('Could not launch $url');
                 }
-              },
-              ),
+              } catch (e) {
+                log(e.toString());
+              }
+            },
+          ),
+
+          RowWidget(
+            title: "Terms & Conditions",
+            ontap: () async {
+              try {
+                final Uri url = Uri.parse(
+                    'https://www.fgmanpower.co.in/terms-conditions/');
+                if (!await launchUrl(url,
+                    mode: LaunchMode.externalApplication)) {
+                  debugPrint('Could not launch $url');
+                }
+              } catch (e) {
+                log(e.toString());
+              }
+            },
+          ),
 
         ],
       ),

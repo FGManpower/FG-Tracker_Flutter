@@ -3,18 +3,21 @@ import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 import 'package:connectycube_flutter_call_kit/connectycube_flutter_call_kit.dart';
+import 'package:facebook_app_events/facebook_app_events.dart';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
+import 'package:fgtracker/app/Data/Repositories/call_repo.dart';
 import 'package:fgtracker/app/Data/Services/CallStateTracker.dart';
+import 'package:fgtracker/app/Data/Services/Socket/Socket_Dashboard_Service.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Group_Calling.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Walkie-Talkie-Service.dart';
 import 'package:fgtracker/app/Data/Services/screen_share_service.dart';
-import 'package:fgtracker/gen/assets.gen.dart';
+import 'package:fgtracker/app/modules/Walkie-talkie/Services/walkie_notification_manager.dart';
+import 'package:fgtracker/app/modules/status/binding/status_binding.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -24,12 +27,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'app/Core/util/CallKit/callkit_service.dart';
 import 'app/Core/values/Context_Utility.dart';
 import 'app/Core/values/global.dart';
+import 'app/Data/Services/GroupCountService.dart';
 import 'app/Data/Services/NotificationServices.dart';
 import 'app/Data/Services/Socket/Socket_SignallingService.dart';
 import 'app/modules/Notification/Controller/cubit/notification_count_cubit.dart';
 import 'app/routes/app_pages.dart';
 import 'app/modules/Track/Controller/SocketServices.dart';
-import 'app/modules/Track/Controller/TrackController.dart';
+import 'app/modules/Track/Controller/GroupTrackController.dart';
 import 'app/modules/Track/Controller/LocationService.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
@@ -41,14 +45,13 @@ final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
   log("====Background-Bg===${message.data}");
-
   if (message.data['screen_name'] == "incomingCall") {
+    final callData = jsonDecode(message.data['callData']);
+    final originalCallId = callData['callId'].toString();
     if (Platform.isIOS) {
       // await RemoteLoggerTest.log("FCM_BG_HANDLER", "iOS detected in FCM background handler: ${message.data}");
       return;
     }
-    final callData = jsonDecode(message.data['callData']);
-    final originalCallId = callData['callId'].toString();
 
     final Map<String, String> userInfo = {
       "callId": originalCallId,
@@ -76,15 +79,24 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     } catch (e) {
       log("showCallNotification error: $e");
     }
+    try {
+      await CallRepo.updateCallingStatus(
+          callId: originalCallId,
+          callingStatus: "Ringing",
+          remoteUserId: int.tryParse(callData['callerId'].toString()) ?? 0);
+    } catch (e) {
+      log(e.toString());
+    }
   }
 
   if (message.data['screen_name'] == "incomingGroupCall") {
+    final callData = jsonDecode(message.data['callData']);
+    final originalCallId = callData['callId'].toString();
+
     if (Platform.isIOS) {
       // await RemoteLoggerTest.log("FCM_BG_HANDLER", "iOS detected in FCM background handler: ${message.data}");
       return;
     }
-    final callData = jsonDecode(message.data['callData']);
-    final originalCallId = callData['callId'].toString();
 
     final Map<String, String> userInfo = callData.map<String, String>(
         (key, value) => MapEntry(key.toString(), value.toString()));
@@ -102,6 +114,14 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     } catch (e) {
       log("showCallNotification error: $e");
     }
+    try {
+      await CallRepo.updateCallingStatus(
+          callId: originalCallId,
+          callingStatus: "Ringing",
+          remoteUserId: int.tryParse(callData['callerId'].toString()) ?? 0);
+    } catch (e) {
+      log(e.toString());
+    }
   } else if (message.data['screen_name'] == "missedCall") {
     final callData = jsonDecode(message.data['callData']);
     final sessionId = callData['session_id'].toString();
@@ -111,6 +131,59 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     CallStateTracker.isIncomingCallScreenOpen = false;
     callEnded(sessionId);
     flutterLocalNotificationsPlugin.cancelAll();
+  } else if (message.data['screen_name'] == "group_walkie" ||
+      message.data['screenName'] == "group_walkie" ||
+      message.data['screen_name'] == "groupWalkie" ||
+      message.data['screen'] == "group_walkie") {
+    if (message.notification != null) return;
+    final groupName = (message.data['groupName'] ??
+            message.data['group_name'] ??
+            message.data['title'])
+        ?.toString();
+    final speakerName = (message.data['speakerName'] ??
+            message.data['speaker_name'] ??
+            message.data['callerName'])
+        ?.toString();
+
+    final title = (groupName != null && groupName.trim().isNotEmpty)
+        ? "Walkie-Talkie: $groupName"
+        : "Walkie-Talkie Active";
+    final body = (speakerName != null && speakerName.trim().isNotEmpty)
+        ? "$speakerName is speaking in Walkie-Talkie. Tap to join."
+        : "Active walkie-talkie channel. Tap to join.";
+
+    const AndroidNotificationDetails androidNotificationDetails =
+        AndroidNotificationDetails(
+      'walkie_fcm_channel',
+      'Walkie-Talkie Notifications',
+      channelDescription: 'Notifications for active Walkie-Talkie channels',
+      importance: Importance.high,
+      priority: Priority.high,
+      ticker: 'ticker',
+      sound: RawResourceAndroidNotificationSound('recieve_notification'),
+      enableVibration: true,
+    );
+
+    const DarwinNotificationDetails darwinNotificationDetails =
+        DarwinNotificationDetails(
+      presentAlert: true,
+      presentBadge: true,
+      presentSound: true,
+      sound: 'recieve_notification.mp3',
+    );
+
+    const NotificationDetails notificationDetails = NotificationDetails(
+      android: androidNotificationDetails,
+      iOS: darwinNotificationDetails,
+    );
+
+    await flutterLocalNotificationsPlugin.show(
+      502,
+      title,
+      body,
+      notificationDetails,
+      payload: jsonEncode(message.data),
+    );
   }
   // else if (message.data['screen_name'] == 'groupCallNotify') {
   //   FlutterRingtonePlayer().play(
@@ -205,11 +278,13 @@ Future<void> main() async {
     const SystemUiOverlayStyle(statusBarColor: Colors.transparent),
   );
 
-  Get.put<TrackingController>(TrackingController());
+  Get.put<GroupTrackingController>(GroupTrackingController());
 
   Get.put<LocationService>(LocationService());
   Get.put<SocketService>(SocketService());
-
+  Get.put<GroupCountService>(GroupCountService(), permanent: true);
+  FacebookAppEvents().setAutoLogAppEventsEnabled(true);
+  await FacebookAppEvents().setAdvertiserIdCollectionEnabled(true);
   final shared = await SharedPreferences.getInstance();
 
   var userId = shared.get(PrefConst.userId);
@@ -221,8 +296,24 @@ Future<void> main() async {
     );
     groupWalkieInitialize(userId);
     Socket_GroupCallService.instance.init(userId.toString());
+    SocketDashboardService().init();
+
+    StatusBinding().dependencies();
   }
   ScreenShareForegroundService.init();
+  await WalkieNotificationManager.instance.init();
+  final launch =
+      await FlutterLocalNotificationsPlugin().getNotificationAppLaunchDetails();
+  if (launch?.didNotificationLaunchApp == true) {
+    // payload handled after GetMaterialApp is ready
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final resp = launch!.notificationResponse;
+      if (resp != null) {
+        WalkieNotificationManager.instance.onNotificationTap(resp);
+      }
+    });
+  }
+
   runApp(const MyApp());
 }
 

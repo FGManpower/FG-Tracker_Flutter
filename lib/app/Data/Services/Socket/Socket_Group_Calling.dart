@@ -24,7 +24,7 @@ class Socket_GroupCallService {
 
   MediaStream? localStream;
 
-  /// Current outgoing video track (camera OR screen)
+
   MediaStreamTrack? activeVideoTrack;
 
   final Map<String, RTCPeerConnection> _peers = {};
@@ -38,11 +38,11 @@ class Socket_GroupCallService {
   Function()? onCallEnded;
   Function(String userId)? onParticipantJoined;
   Function(String userId)? onParticipantLeft;
-  Function(String userId)? onParticipantRejected;
-  Function(String userId, bool isMuted)? onParticipantMuteChanged;
+  Function(String userId, String? userName, String? userProfile)?
+  onParticipantRejected;  Function(String userId, bool isMuted)? onParticipantMuteChanged;
   Function(Map<String, dynamic> data)? onIncomingCallReceived;
 
-  // Screen share callbacks
+
   Function(String userId)? onScreenShareStarted;
   Function(String userId)? onScreenShareStopped;
 
@@ -84,6 +84,12 @@ class Socket_GroupCallService {
       existing['isMuted'] = isMuted;
     }
     participantMeta[userId] = existing;
+
+    _log(
+      "PARTICIPANT META SAVED => "
+          "userId=$userId | "
+          "meta=${participantMeta[userId]}",
+    );
   }
 
   String getParticipantName(String userId) {
@@ -132,7 +138,7 @@ class Socket_GroupCallService {
     );
 
     socket?.onConnect((_) {
-      _log('🟢 Connected to /groupCall Namespace');
+      _log('Connected to /groupCall Namespace');
       _listenersBound = false;
       _bindSocketListeners();
     });
@@ -147,7 +153,7 @@ class Socket_GroupCallService {
     });
   }
 
-  /// Waits for socket connection dynamically if launched from Terminated state
+
   Future<bool> _ensureConnected({int timeoutSeconds = 10}) async {
     if (socket != null && socket!.connected) return true;
 
@@ -220,7 +226,12 @@ class Socket_GroupCallService {
       final name = (data['name'] ?? data['userName'] ?? '').toString();
       final profileImage =
       (data['profileImage'] ?? data['userProfileImage'] ?? '').toString();
-
+      _log(
+        "JOIN PARTICIPANT PARSED => "
+            "userId=$joinedUserId | "
+            "name=$name | "
+            "profileImage=$profileImage",
+      );
       _saveParticipantMeta(
         joinedUserId,
         name: name.isEmpty ? null : name,
@@ -233,9 +244,32 @@ class Socket_GroupCallService {
     });
 
     socket?.on("group_call_participant_rejected", (raw) {
-      _log(" group_call_participant_rejected: $raw");
-      final userId = raw is Map ? raw['userId']?.toString() : null;
-      if (userId != null) onParticipantRejected?.call(userId);
+      _log("group_call_participant_rejected: $raw");
+
+      if (raw == null) return;
+
+      final data = Map<String, dynamic>.from(raw);
+
+      final userId = data['userId']?.toString();
+      if (userId == null || userId.isEmpty) return;
+
+      final userName =
+      (data['userName'] ?? data['name'])?.toString();
+
+      final userProfile =
+      (data['userProfile'] ?? data['profileImage'])?.toString();
+
+      _saveParticipantMeta(
+        userId,
+        name: userName,
+        profileImage: userProfile,
+      );
+
+      onParticipantRejected?.call(
+        userId,
+        userName,
+        userProfile,
+      );
     });
 
     socket?.on("group_call_participant_mute", (raw) {

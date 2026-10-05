@@ -410,14 +410,24 @@ class UsersWithinRadiusData {
     double? currentUserLong,
     String? fallbackTeam,
   }) {
-    String formattedDistance = "Nearby";
+    String formattedDistance = "Nearby you";
 
     // Strictly use backend calculated distance without local calculation
     if (distance != null &&
         distance.toString().trim().isNotEmpty &&
         !distance.toString().toLowerCase().contains("nan")) {
       final str = distance.toString().trim();
-      if (str.contains("away")) {
+      final cleaned = str.replaceAll(RegExp(r'[^\d.]'), '');
+      final numVal = double.tryParse(cleaned);
+      if (numVal != null && numVal <= 0.05) {
+        formattedDistance = "Nearby you";
+      } else if (str.startsWith("0.0") ||
+          str == "0 m" ||
+          str == "0 m away" ||
+          str.toLowerCase() == "nearby" ||
+          str.toLowerCase() == "nearby you") {
+        formattedDistance = "Nearby you";
+      } else if (str.contains("away")) {
         formattedDistance = str;
       } else if (str.contains("km") || str.contains("m")) {
         formattedDistance = "$str away";
@@ -425,7 +435,7 @@ class UsersWithinRadiusData {
         formattedDistance = "$str km away";
       }
     } else {
-      formattedDistance = "Nearby";
+      formattedDistance = "Nearby you";
     }
 
     int? finalBattery;

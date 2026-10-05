@@ -1,6 +1,9 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:fgtracker/app/Core/constant/pref_res.dart';
+import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Walkie-Talkie-Service.dart';
+import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -15,6 +18,7 @@ class WalkieParticipant {
   bool isMuted;
   bool isListening;
   bool isSpeaking;
+  final bool hasExplicitMute;
 
   WalkieParticipant({
     required this.userId,
@@ -23,16 +27,33 @@ class WalkieParticipant {
     this.isMuted = false,
     this.isListening = true,
     this.isSpeaking = false,
+    this.hasExplicitMute = false,
   });
 
-  factory WalkieParticipant.fromMap(Map<String, dynamic> map) {
+  factory WalkieParticipant.fromMap(Map<String, dynamic> map,
+      {bool? defaultMuted}) {
+    final hasMuteField = map.containsKey('isMuted') ||
+        map.containsKey('muted') ||
+        map.containsKey('is_muted') ||
+        map.containsKey('status');
+    final isMutedVal = hasMuteField
+        ? ((map['isMuted'] ??
+                map['muted'] ??
+                map['is_muted'] ??
+                (map['status'] == 'muted')) ==
+            true)
+        : (defaultMuted ?? false);
+
     return WalkieParticipant(
-      userId: map['userId']?.toString() ?? "",
-      name: map['name']?.toString() ?? "User",
-      image: map['image']?.toString() ?? "",
-      isMuted: map['isMuted'] == true,
+      userId: (map['userId'] ?? map['user_id'] ?? map['id'])?.toString() ?? "",
+      name: (map['name'] ?? map['userName'])?.toString() ?? "User",
+      image: (map['image'] ?? map['profileImage'] ?? map['userImage'])
+              ?.toString() ??
+          "",
+      isMuted: isMutedVal,
       isListening: map['isListening'] != false,
       isSpeaking: map['isSpeaking'] == true,
+      hasExplicitMute: hasMuteField,
     );
   }
 }
@@ -79,15 +100,24 @@ class GroupWalkieController extends GetxController {
   bool get isTalking => audioState.value == WalkieAudioState.talking;
   bool get isListening => audioState.value == WalkieAudioState.listening;
   bool get hasActiveSpeaker => activeSpeakerId.value.isNotEmpty;
+  bool get isVoiceActive => isTalking || hasActiveSpeaker;
+
+  Map<String, dynamic>? args = Get.arguments;
 
   List<WalkieParticipant> get sortedParticipants {
     if (participants.isEmpty) return const [];
     final list = List<WalkieParticipant>.from(participants);
+    final selfId = GroupWalkieService.instance.selfUserId ??
+        Global.storageServices.get(PrefConst.userId)?.toString() ??
+        '';
+
     list.sort((a, b) {
+      if (selfId.isNotEmpty) {
+        if (a.userId == selfId && b.userId != selfId) return -1;
+        if (b.userId == selfId && a.userId != selfId) return 1;
+      }
       if (a.isSpeaking && !b.isSpeaking) return -1;
       if (!a.isSpeaking && b.isSpeaking) return 1;
-      if (a.isMuted && !b.isMuted) return 1;
-      if (!a.isMuted && b.isMuted) return -1;
       return a.name.toLowerCase().compareTo(b.name.toLowerCase());
     });
     return list;
@@ -104,6 +134,7 @@ class GroupWalkieController extends GetxController {
     headsetName.value = GroupWalkieService.instance.headsetDeviceName.value;
     isMuted.value = GroupWalkieService.instance.isMuted;
     isConnected.value = GroupWalkieService.instance.socket?.connected ?? false;
+    args = Get.arguments;
   }
 
   @override
@@ -149,6 +180,51 @@ class GroupWalkieController extends GetxController {
 
   void setMuteFromService(bool muted) {
     isMuted.value = muted;
+    final selfId = GroupWalkieService.instance.selfUserId ??
+        Global.storageServices.get(PrefConst.userId)?.toString() ??
+        '';
+    if (selfId.isNotEmpty) {
+      setParticipantMuted(selfId, muted);
+    }
+  }
+
+  void setParticipantMuted(String userId, bool muted) {
+    final cleanId = userId.trim();
+    if (cleanId.isEmpty) return;
+    final index = participants.indexWhere((p) =>
+        p.userId.trim() == cleanId ||
+        (int.tryParse(p.userId) != null &&
+            int.tryParse(p.userId) == int.tryParse(cleanId)));
+    if (index != -1) {
+      final p = participants[index];
+      p.isMuted = muted;
+      if (muted) {
+        p.isSpeaking = false;
+      }
+      participants[index] = WalkieParticipant(
+        userId: p.userId,
+        name: p.name,
+        image: p.image,
+        isMuted: muted,
+        isListening: p.isListening,
+        isSpeaking: muted ? false : p.isSpeaking,
+        hasExplicitMute: true,
+      );
+    } else {
+      participants.add(
+        WalkieParticipant(
+          userId: cleanId,
+          name: 'User',
+          image: '',
+          isMuted: muted,
+          isListening: true,
+          isSpeaking: false,
+          hasExplicitMute: true,
+        ),
+      );
+    }
+    totalParticipants.value = participants.length;
+    participants.refresh();
   }
 
   IconData get audioRouteIcon {
@@ -183,23 +259,81 @@ class GroupWalkieController extends GetxController {
     }
   }
 
+  void addOrUpdateParticipant(WalkieParticipant p) {
+    if (p.userId.isEmpty) return;
+    final cleanId = p.userId.trim();
+    final index = participants.indexWhere((item) =>
+        item.userId.trim() == cleanId ||
+        (int.tryParse(item.userId) != null &&
+            int.tryParse(item.userId) == int.tryParse(cleanId)));
+    if (index != -1) {
+      final existing = participants[index];
+      participants[index] = WalkieParticipant(
+        userId: p.userId,
+        name: (p.name.isNotEmpty && p.name != 'User') ? p.name : existing.name,
+        image: p.image.isNotEmpty ? p.image : existing.image,
+        isMuted: p.hasExplicitMute ? p.isMuted : existing.isMuted,
+        isListening: p.isListening,
+        isSpeaking: p.isSpeaking,
+        hasExplicitMute: p.hasExplicitMute || existing.hasExplicitMute,
+      );
+    } else {
+      participants.add(p);
+    }
+    totalParticipants.value = participants.length;
+    participants.refresh();
+  }
+
+  void removeParticipant(String userId) {
+    if (userId.isEmpty) return;
+    final cleanId = userId.trim();
+    participants.removeWhere((p) =>
+        p.userId.trim() == cleanId ||
+        (int.tryParse(p.userId) != null &&
+            int.tryParse(p.userId) == int.tryParse(cleanId)));
+    totalParticipants.value = participants.length;
+    participants.refresh();
+  }
+
   void updateParticipants(
     List<WalkieParticipant> list, {
     String? activeSpeaker,
   }) {
-    participants.assignAll(list);
-    totalParticipants.value = list.length;
+    final mergedList = list.map((newP) {
+      final cleanId = newP.userId.trim();
+      final existing = participants.firstWhereOrNull((p) =>
+          p.userId.trim() == cleanId ||
+          (int.tryParse(p.userId) != null &&
+              int.tryParse(p.userId) == int.tryParse(cleanId)));
+      if (existing != null) {
+        return WalkieParticipant(
+          userId: newP.userId,
+          name: (newP.name.isNotEmpty && newP.name != 'User')
+              ? newP.name
+              : existing.name,
+          image: newP.image.isNotEmpty ? newP.image : existing.image,
+          isMuted: newP.hasExplicitMute ? newP.isMuted : existing.isMuted,
+          isListening: newP.isListening,
+          isSpeaking: newP.isSpeaking,
+          hasExplicitMute: newP.hasExplicitMute || existing.hasExplicitMute,
+        );
+      }
+      return newP;
+    }).toList();
+
+    participants.assignAll(mergedList);
+    totalParticipants.value = mergedList.length;
 
     if (activeSpeaker != null && activeSpeaker.isNotEmpty) {
       activeSpeakerId.value = activeSpeaker;
-      final speaker = list.firstWhereOrNull((p) => p.userId == activeSpeaker);
+      final speaker =
+          mergedList.firstWhereOrNull((p) => p.userId == activeSpeaker);
       if (speaker != null) {
         activeSpeakerName.value = speaker.name;
         activeSpeakerImage.value = speaker.image;
         for (final p in participants) {
           p.isSpeaking = p.userId == activeSpeaker;
         }
-        participants.refresh();
       }
     } else {
       activeSpeakerId.value = "";
@@ -208,8 +342,8 @@ class GroupWalkieController extends GetxController {
       for (final p in participants) {
         p.isSpeaking = false;
       }
-      participants.refresh();
     }
+    participants.refresh();
   }
 
   void onSpeakerActive({
@@ -225,9 +359,38 @@ class GroupWalkieController extends GetxController {
       audioState.value = WalkieAudioState.listening;
     }
 
-    for (final p in participants) {
-      p.isSpeaking = p.userId == speakerId;
+    if (speakerId.isNotEmpty) {
+      final index = participants.indexWhere((p) => p.userId == speakerId);
+      if (index != -1) {
+        participants[index].isSpeaking = true;
+        if (speakerName.isNotEmpty && speakerName != 'User') {
+          final existing = participants[index];
+          participants[index] = WalkieParticipant(
+            userId: speakerId,
+            name: speakerName,
+            image: speakerImage.isNotEmpty ? speakerImage : existing.image,
+            isMuted: existing.isMuted,
+            isListening: existing.isListening,
+            isSpeaking: true,
+          );
+        }
+      } else {
+        participants.add(WalkieParticipant(
+          userId: speakerId,
+          name: speakerName.isNotEmpty ? speakerName : "User",
+          image: speakerImage,
+          isSpeaking: true,
+          isListening: true,
+        ));
+      }
     }
+
+    for (final p in participants) {
+      if (p.userId != speakerId) {
+        p.isSpeaking = false;
+      }
+    }
+    totalParticipants.value = participants.length;
     participants.refresh();
   }
 
@@ -325,6 +488,32 @@ class GroupWalkieController extends GetxController {
     _displayBanner("Lock timeout — Mic released", Colors.orange);
   }
 
+  void showTrialEndedMessage() {
+    _displayBanner(
+        "Free trial ended — Please subscribe to continue", Colors.redAccent);
+  }
+
+  void showNoVoiceSeatMessage() {
+    _displayBanner("No voice seat assigned — You are in Listen-Only mode",
+        Colors.orange.shade800);
+  }
+
+  void showNoInternetMessage() {
+    _displayBanner("No internet connection", Colors.redAccent);
+  }
+
+  void showPoorConnectionMessage() {
+    _displayBanner("Poor network connection — Audio may lag", Colors.orange);
+  }
+
+  void showReconnectingMessage() {
+    _displayBanner("Reconnecting to walkie server...", Colors.orange);
+  }
+
+  void showGenericErrorMessage(String msg) {
+    _displayBanner(msg, Colors.redAccent);
+  }
+
   void onChannelLocked({required bool isLocked}) {
     isChannelLocked.value = isLocked;
     _displayBanner(
@@ -341,6 +530,63 @@ class GroupWalkieController extends GetxController {
     _bannerTimer = Timer(const Duration(seconds: 2), () {
       showStatus.value = false;
     });
+  }
+
+  String get currentGroupName {
+    final nameFromArgs = args?['groupName']?.toString();
+    if (nameFromArgs != null &&
+        nameFromArgs.trim().isNotEmpty &&
+        nameFromArgs != 'Site Operations Team') {
+      return nameFromArgs.trim();
+    }
+    final groupId = args?['groupId']?.toString() ?? '';
+    if (Get.isRegistered<GroupController>()) {
+      final gc = Get.find<GroupController>();
+      final match =
+          gc.groupData.firstWhereOrNull((g) => g.id?.toString() == groupId);
+      if (match != null && (match.groupName?.trim().isNotEmpty ?? false)) {
+        return match.groupName!.trim();
+      }
+      if (gc.groupData.isNotEmpty &&
+          (gc.groupData.first.groupName?.trim().isNotEmpty ?? false)) {
+        return gc.groupData.first.groupName!.trim();
+      }
+    }
+    return 'Walkie Group';
+  }
+
+  String get currentGroupDesc {
+    final descFromArgs = args?['groupDesc']?.toString();
+    if (descFromArgs != null && descFromArgs.trim().isNotEmpty) {
+      return descFromArgs.trim();
+    }
+    final groupId = args?['groupId']?.toString() ?? '';
+    if (Get.isRegistered<GroupController>()) {
+      final gc = Get.find<GroupController>();
+      final match =
+          gc.groupData.firstWhereOrNull((g) => g.id?.toString() == groupId);
+      if (match != null && (match.groupDesc?.trim().isNotEmpty ?? false)) {
+        return match.groupDesc!.trim();
+      }
+    }
+    return '';
+  }
+
+  String get currentGroupCode {
+    final codeFromArgs = args?['groupCode']?.toString();
+    if (codeFromArgs != null && codeFromArgs.trim().isNotEmpty) {
+      return codeFromArgs.trim();
+    }
+    final groupId = args?['groupId']?.toString() ?? '';
+    if (Get.isRegistered<GroupController>()) {
+      final gc = Get.find<GroupController>();
+      final match =
+          gc.groupData.firstWhereOrNull((g) => g.id?.toString() == groupId);
+      if (match != null && (match.groupCode?.trim().isNotEmpty ?? false)) {
+        return match.groupCode!.trim();
+      }
+    }
+    return '';
   }
 
   void reset() {

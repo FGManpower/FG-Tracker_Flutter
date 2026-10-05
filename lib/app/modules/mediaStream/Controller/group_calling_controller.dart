@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:developer';
+import 'dart:io';
 import 'package:fgtracker/app/Core/global/launchedFromCall.dart';
 import 'package:fgtracker/app/Core/util/CallKit/callkit_service.dart';
 import 'package:fgtracker/app/Core/values/Utils.dart';
@@ -8,18 +9,17 @@ import 'package:fgtracker/app/Data/Services/Socket/Socket_SignallingService.dart
 import 'package:fgtracker/app/Data/Services/screen_share_service.dart';
 import 'package:fgtracker/app/Model/MemberDataRes.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart' as webrtc;
-import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:get/get.dart' hide navigator;
 import 'package:wakelock_plus/wakelock_plus.dart';
 import 'package:proximity_screen_lock/proximity_screen_lock.dart';
-
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
-
 import 'package:fgtracker/app/Model/group_call_participant.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Group_Calling.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import '../Widget/group_call_sheets.dart';
+
+enum AudioRoute { speaker, earpiece, bluetooth }
 
 class GroupCallingController extends GetxController {
   final args = Get.arguments;
@@ -41,6 +41,9 @@ class GroupCallingController extends GetxController {
   RxBool isSpeakerOn = false.obs;
   RxBool isFrontCamera = true.obs;
 
+  final Rx<AudioRoute> audioRoute = AudioRoute.speaker.obs;
+  final RxBool isBluetoothConnected = false.obs;
+
   RxBool isScreenSharing = false.obs;
   webrtc.MediaStream? screenStream;
   final RxSet<String> screenSharingUsers = <String>{}.obs;
@@ -57,15 +60,20 @@ class GroupCallingController extends GetxController {
       <GroupCallParticipant>[].obs;
 
   webrtc.RTCVideoRenderer localRenderer = webrtc.RTCVideoRenderer();
-  final RxBool isScreenShareExpanded = true.obs;
 
-  void _log(String message) => log('[GroupCallingController] $message');
+  final RxnString pinnedUserId = RxnString();
+  final RxnString fullScreenShareUserId = RxnString();
+
+  final RxBool showControls = true.obs;
+  Timer? _controlsTimer;
 
   @override
   void onInit() {
     super.onInit();
     _initData();
     WakelockPlus.enable();
+
+    resetControlsTimer();
 
     final svc = Socket_GroupCallService.instance;
     svc.onParticipantsUpdated = _syncParticipants;
@@ -77,11 +85,18 @@ class GroupCallingController extends GetxController {
 
     svc.onScreenShareStarted = (userId) {
       screenSharingUsers.add(userId);
+      pinnedUserId.value = userId;
       Utils()
           .fluttertoast("${svc.getParticipantName(userId)} is sharing screen");
     };
     svc.onScreenShareStopped = (userId) {
       screenSharingUsers.remove(userId);
+      if (pinnedUserId.value == userId) {
+        pinnedUserId.value = null;
+      }
+      if (fullScreenShareUserId.value == userId) {
+        closeFullScreenShare();
+      }
     };
 
     _setupLocalMedia().then((_) {
@@ -100,7 +115,6 @@ class GroupCallingController extends GetxController {
           onResponse: (success, generatedCallId, errorMessage) {
             if (success) {
               callId = generatedCallId;
-              _log('Call started. callId=$callId');
             } else {
               _stopSound();
               Utils().fluttertoast(
@@ -124,12 +138,25 @@ class GroupCallingController extends GetxController {
         }
       }
     }).catchError((e) {
-      _log('Local media error: $e');
       Utils().fluttertoast("Camera or Mic permissions are required");
       Get.back();
     });
 
     getGroupMembersData(args["groupId"].toString());
+  }
+
+  void resetControlsTimer() {
+    _controlsTimer?.cancel();
+    if (showControls.value) {
+      _controlsTimer = Timer(const Duration(seconds: 5), () {
+        showControls.value = false;
+      });
+    }
+  }
+
+  void toggleControls() {
+    showControls.value = !showControls.value;
+    resetControlsTimer();
   }
 
   void _initData() {
@@ -208,6 +235,82 @@ class GroupCallingController extends GetxController {
     _refreshNotInCallList();
   }
 
+  Future<void> initAudioRouting() async {
+    await _refreshBluetoothState();
+
+    if (isBluetoothConnected.value) {
+      await _applyAudioRoute(AudioRoute.bluetooth);
+    } else if (isVideo) {
+      await _applyAudioRoute(AudioRoute.speaker);
+    } else {
+      await _applyAudioRoute(AudioRoute.earpiece);
+    }
+  }
+
+  Future<void> _refreshBluetoothState() async {
+    try {
+      final devices = await webrtc.navigator.mediaDevices.enumerateDevices();
+      final hasBt = devices.any((d) {
+        final label = (d.label).toLowerCase();
+        final kind = (d.kind)?.toLowerCase();
+        return kind!.contains('audiooutput') &&
+            (label.contains('bluetooth') ||
+                label.contains('headset') ||
+                label.contains('airpods') ||
+                label.contains('buds'));
+      });
+      isBluetoothConnected.value = hasBt;
+    } catch (_) {}
+  }
+
+  Future<void> _applyAudioRoute(AudioRoute route) async {
+    audioRoute.value = route;
+    switch (route) {
+      case AudioRoute.speaker:
+        await webrtc.Helper.setSpeakerphoneOn(true);
+        isSpeakerOn.value = true;
+        await ProximityScreenLock.setActive(false);
+        break;
+      case AudioRoute.earpiece:
+        await webrtc.Helper.setSpeakerphoneOn(false);
+        isSpeakerOn.value = false;
+        await ProximityScreenLock.setActive(true);
+        break;
+      case AudioRoute.bluetooth:
+        await webrtc.Helper.setSpeakerphoneOn(false);
+        isSpeakerOn.value = false;
+        await ProximityScreenLock.setActive(false);
+        break;
+    }
+  }
+
+  Future<void> toggleSpeaker() async {
+    await _refreshBluetoothState();
+    final hasBt = isBluetoothConnected.value;
+    final current = audioRoute.value;
+    late AudioRoute next;
+
+    if (hasBt) {
+      switch (current) {
+        case AudioRoute.bluetooth:
+          next = AudioRoute.earpiece;
+          break;
+        case AudioRoute.earpiece:
+          next = AudioRoute.speaker;
+          break;
+        case AudioRoute.speaker:
+          next = AudioRoute.bluetooth;
+          break;
+      }
+    } else {
+      next = current == AudioRoute.speaker
+          ? AudioRoute.earpiece
+          : AudioRoute.speaker;
+    }
+
+    await _applyAudioRoute(next);
+  }
+
   Future<void> _setupLocalMedia() async {
     await localRenderer.initialize();
     final mediaConstraints = {
@@ -255,6 +358,37 @@ class GroupCallingController extends GetxController {
       ));
     }
     _refreshNotInCallList();
+    await initAudioRouting();
+  }
+
+  void togglePinUser(String userId) {
+    if (pinnedUserId.value == userId) {
+      pinnedUserId.value = null;
+    } else {
+      pinnedUserId.value = userId;
+    }
+  }
+
+  bool isUserScreenSharing(dynamic userId) {
+    if (userId == null) return false;
+    final targetId = userId.toString().trim();
+    if (screenSharingUsers.map((e) => e.toString().trim()).contains(targetId))
+      return true;
+    final myUserId =
+        Global.storageServices.get(PrefConst.userId)?.toString().trim();
+    if (targetId == myUserId && isScreenSharing.value) return true;
+    return false;
+  }
+
+  void openFullScreenShare(dynamic userId) {
+    if (userId == null) return;
+    final idStr = userId.toString().trim();
+    if (idStr.isEmpty) return;
+    fullScreenShareUserId.value = idStr;
+  }
+
+  void closeFullScreenShare() {
+    fullScreenShareUserId.value = null;
   }
 
   Future<void> toggleScreenShare() async {
@@ -262,10 +396,8 @@ class GroupCallingController extends GetxController {
 
     if (isScreenSharing.value) {
       isScreenSharing.value = false;
-      isScreenShareExpanded.value = true;
       screenSharingUsers.remove(myUserId);
       Socket_GroupCallService.instance.emitStopScreenShare();
-
       await ScreenShareForegroundService.stop();
 
       screenStream?.getTracks().forEach((t) => t.stop());
@@ -278,73 +410,79 @@ class GroupCallingController extends GetxController {
       if (cameraTrack != null) {
         await Socket_GroupCallService.instance.replaceVideoTrack(cameraTrack);
         localRenderer.srcObject = Socket_GroupCallService.instance.localStream;
-        if (!isVideoOn.value) {
-          cameraTrack.enabled = false;
-        }
+        if (!isVideoOn.value) cameraTrack.enabled = false;
       }
 
-      if (fullScreenShareUserId.value == myUserId) {
-        closeFullScreenShare();
-      }
+      if (pinnedUserId.value == myUserId) pinnedUserId.value = null;
+      if (fullScreenShareUserId.value == myUserId) closeFullScreenShare();
     } else {
       try {
-        await ScreenShareForegroundService.start(groupName: groupName);
+        if (Platform.isAndroid) {
+          final bool granted = await webrtc.Helper.requestCapturePermission();
+
+          if (!granted) {
+            Utils().fluttertoast(
+              "Screen sharing permission was denied",
+            );
+            return;
+          }
+        }
+
+        await ScreenShareForegroundService.start(
+          groupName: groupName,
+        );
+
+        await Future.delayed(
+          const Duration(milliseconds: 300),
+        );
+
+        final constraints = webrtc.WebRTC.platformIsIOS
+            ? {
+                'video': {
+                  'deviceId': 'broadcast',
+                },
+              }
+            : {
+                'video': true,
+                'audio': false,
+              };
+
         screenStream =
-            await navigator.mediaDevices.getDisplayMedia({'video': true});
+            await webrtc.navigator.mediaDevices.getDisplayMedia(constraints);
+
+        final screenTrack = screenStream!.getVideoTracks().first;
 
         isScreenSharing.value = true;
-        isScreenShareExpanded.value = true;
         screenSharingUsers.add(myUserId);
+        pinnedUserId.value = myUserId;
 
         Socket_GroupCallService.instance.emitStartScreenShare();
 
-        final screenTrack = screenStream!.getVideoTracks().first;
-        screenTrack.onEnded = () {
-          if (isScreenSharing.value) toggleScreenShare();
-        };
-        final audioTrack = Socket_GroupCallService.instance.localStream
-            ?.getAudioTracks()
-            .firstOrNull;
-        if (audioTrack != null && isAudioOn.value) {
-          audioTrack.enabled = true;
-        }
-
-        WakelockPlus.enable();
-
         await Socket_GroupCallService.instance.replaceVideoTrack(screenTrack);
+
         localRenderer.srcObject = screenStream;
-      } catch (e) {
-        _log("Screen Share Error: $e");
+      } catch (e, stackTrace) {
+        log(
+          '[ScreenShare] Error: $e',
+          stackTrace: stackTrace,
+        );
 
         await ScreenShareForegroundService.stop();
 
+        screenStream?.getTracks().forEach((track) {
+          track.stop();
+        });
+
+        await screenStream?.dispose();
+        screenStream = null;
+
         isScreenSharing.value = false;
         screenSharingUsers.remove(myUserId);
-        Utils().fluttertoast("Screen share canceled or failed");
-      }
-    }
-  }
+        pinnedUserId.value = null;
 
-  Future<void> startWebRTCForegroundService() async {
-    if (WebRTC.platformIsAndroid) {
-      try {
-        await WebRTC.invokeMethod('startForegroundService', <String, dynamic>{
-          'notificationTitle': 'Screen Sharing',
-          'notificationText': 'Sharing your screen in group call',
-        });
-        await Future.delayed(const Duration(milliseconds: 300));
-      } catch (e) {
-        log('[ScreenShare] Foreground service start error: $e');
-      }
-    }
-  }
-
-  Future<void> stopWebRTCForegroundService() async {
-    if (WebRTC.platformIsAndroid) {
-      try {
-        await WebRTC.invokeMethod('stopForegroundService');
-      } catch (e) {
-        log('[ScreenShare] Foreground service stop error: $e');
+        Utils().fluttertoast(
+          "Screen share canceled or failed",
+        );
       }
     }
   }
@@ -370,41 +508,40 @@ class GroupCallingController extends GetxController {
 
   void _openGroupChat() {
     try {
-      Get.toNamed(
-        Routes.groupChatScreen,
-        arguments: {
-          "groupId": groupId,
-          "groupName": groupName,
-          "groupProfile": groupProfile,
-          "fromCall": true,
-        },
-      );
+      Get.toNamed(Routes.groupChatScreen, arguments: {
+        "groupId": groupId,
+        "groupName": groupName,
+        "groupProfile": groupProfile,
+        "fromCall": true,
+      });
     } catch (e) {
-      _log("Chat route failed: $e");
       Utils().fluttertoast("Unable to open group chat");
     }
   }
 
-  void notifyParticipant(MemberData participant) {
+  void notifyParticipant(GroupCallParticipant participant) {
     final svc = Socket_GroupCallService.instance;
     if (callId == null || callId!.isEmpty) {
       Utils().fluttertoast("Call not ready yet");
       return;
     }
     try {
-      svc.socket?.emitWithAck("group_call_notify", {
-        "callId": int.tryParse(callId!) ?? callId,
-        "groupId": int.tryParse(groupId) ?? groupId,
-        "userId": participant.userId,
-      }, ack: (res) {
-        if (res is Map && res["success"] == false) {
-          Utils().fluttertoast(res["message"]?.toString() ?? "Notify failed");
-        } else {
-          Utils().fluttertoast("Notified ${participant.name}");
-        }
-      });
+      svc.socket?.emitWithAck(
+        "group_call_notify",
+        {
+          "callId": int.tryParse(callId!) ?? callId,
+          "groupId": int.tryParse(groupId) ?? groupId,
+          "userId": participant.userId,
+        },
+        ack: (res) {
+          if (res is Map && res["success"] == false) {
+            Utils().fluttertoast(res["message"]?.toString() ?? "Notify failed");
+          } else {
+            Utils().fluttertoast("Notified ${participant.name}");
+          }
+        },
+      );
     } catch (e) {
-      _log("notify emit error: $e");
       Utils().fluttertoast("Notified ${participant.name}");
     }
   }
@@ -439,7 +576,6 @@ class GroupCallingController extends GetxController {
   }
 
   void _onParticipantJoined(String userId) {
-    _log('joined: $userId');
     final svc = Socket_GroupCallService.instance;
     if (!allGroupMembers.any((e) => e.userId == userId)) {
       allGroupMembers.add(GroupCallParticipant(
@@ -451,7 +587,6 @@ class GroupCallingController extends GetxController {
         connected: true,
       ));
     }
-
     if (callStatus.value != "Connected") {
       _stopSound();
       callStatus.value = "Connected";
@@ -461,20 +596,24 @@ class GroupCallingController extends GetxController {
   }
 
   void _onParticipantLeft(String userId) {
-    _log('left: $userId');
     activeParticipants.removeWhere((p) => p.userId == userId);
     activeParticipants.refresh();
+    if (pinnedUserId.value == userId) pinnedUserId.value = null;
+    if (fullScreenShareUserId.value == userId) closeFullScreenShare();
     _refreshNotInCallList();
   }
 
-  void _onParticipantRejected(String userId) {
-    final name = Socket_GroupCallService.instance.getParticipantName(userId);
+  void _onParticipantRejected(
+      String userId, String? userName, String? userProfile) {
+    final svc = Socket_GroupCallService.instance;
+    final name = (userName != null && userName.trim().isNotEmpty)
+        ? userName.trim()
+        : svc.getParticipantName(userId);
     Utils().fluttertoast("$name rejected the call");
     _refreshNotInCallList();
   }
 
   void _onParticipantMuteChanged(String userId, bool isMuted) {
-    _log('mute changed user=$userId muted=$isMuted');
     final p = activeParticipants.firstWhereOrNull((e) => e.userId == userId);
     if (p != null) {
       p.isMuted.value = isMuted;
@@ -487,9 +626,8 @@ class GroupCallingController extends GetxController {
   void _onRemoteCallEnded() {
     _clearTimers();
     _stopSound();
-    if (Get.currentRoute == Routes.groupCallingScreen) {
+    if (Get.currentRoute == Routes.groupCallingScreen)
       Get.offAllNamed(Routes.Home_Screen);
-    }
   }
 
   void _syncParticipants() {
@@ -532,7 +670,6 @@ class GroupCallingController extends GetxController {
       ..clear()
       ..addAll([if (local != null) local, ...remoteList])
       ..refresh();
-
     _refreshNotInCallList();
 
     if (remoteList.isNotEmpty && callStatus.value != "Connected") {
@@ -565,41 +702,27 @@ class GroupCallingController extends GetxController {
 
   Future<void> switchCamera() async {
     if (!isVideo || !isVideoOn.value || isScreenSharing.value) return;
-
     try {
       final videoTrack = Socket_GroupCallService.instance.localStream
           ?.getVideoTracks()
           .firstOrNull;
-
       if (videoTrack != null) {
         await webrtc.Helper.switchCamera(videoTrack);
         isFrontCamera.value = !isFrontCamera.value;
-        _log("Switched camera. Front camera: ${isFrontCamera.value}");
-      } else {
-        _log("No active video track found to switch");
       }
     } catch (e) {
-      _log("Error switching camera: $e");
       Utils().fluttertoast("Unable to switch camera");
     }
-  }
-
-  Future<void> toggleSpeaker() async {
-    isSpeakerOn.value = !isSpeakerOn.value;
-    await Helper.setSpeakerphoneOn(isSpeakerOn.value);
-    await ProximityScreenLock.setActive(!isSpeakerOn.value);
   }
 
   Future<void> endCall() async {
     _clearTimers();
     _stopSound();
-
     if (callType == "outgoing") {
       Socket_GroupCallService.instance.endGroupCall();
     } else {
       Socket_GroupCallService.instance.leaveGroupCall();
     }
-
     if (callId != null) {
       callEnded(callIdToUuid(callId.toString()), type: "GroupCallEnded-Type");
     }
@@ -618,6 +741,7 @@ class GroupCallingController extends GetxController {
     callTimer?.cancel();
     callTimer = null;
     callDurationSeconds.value = 0;
+    _controlsTimer?.cancel();
   }
 
   String get formattedDuration {
@@ -646,48 +770,14 @@ class GroupCallingController extends GetxController {
     }
   }
 
-
-  final RxnString fullScreenShareUserId = RxnString();
-
-  bool isUserScreenSharing(dynamic userId) {
-    if (userId == null) return false;
-    final targetId = userId.toString().trim();
-
-    if (screenSharingUsers.map((e) => e.toString().trim()).contains(targetId)) {
-      return true;
-    }
-
-    final myUserId = Global.storageServices.get(PrefConst.userId)?.toString().trim();
-    if (targetId == myUserId && isScreenSharing.value) {
-      return true;
-    }
-    return false;
-  }
-
-  void openFullScreenShare(dynamic userId) {
-    if (userId == null) return;
-    final idStr = userId.toString().trim();
-    if (idStr.isEmpty) return;
-    _log("Opening full screen share for userId: $idStr");
-    fullScreenShareUserId.value = idStr;
-  }
-
-  void closeFullScreenShare() {
-    _log("Closing full screen share");
-    fullScreenShareUserId.value = null;
-  }
-
-
   @override
   void onClose() {
     _clearTimers();
     _stopSound();
-
     if (isScreenSharing.value) {
       screenStream?.getTracks().forEach((t) => t.stop());
       screenStream?.dispose();
     }
-
     final svc = Socket_GroupCallService.instance;
     svc.onParticipantsUpdated = null;
     svc.onParticipantJoined = null;
@@ -697,7 +787,6 @@ class GroupCallingController extends GetxController {
     svc.onParticipantMuteChanged = null;
     svc.onScreenShareStarted = null;
     svc.onScreenShareStopped = null;
-
     try {
       localRenderer.srcObject = null;
       localRenderer.dispose();

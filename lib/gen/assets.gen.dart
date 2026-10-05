@@ -35,6 +35,13 @@ class $AssetsIconsGen {
   /// File path: assets/icons/app_icon.png
   AssetGenImage get appIcon => const AssetGenImage('assets/icons/app_icon.png');
 
+  /// File path: assets/icons/app_icon_old.png
+  AssetGenImage get appIconOld => const AssetGenImage('assets/icons/app_icon_old.png');
+
+  /// File path: assets/icons/fg_manpower_logo.png
+  AssetGenImage get fgManpowerLogo =>
+      const AssetGenImage('assets/icons/fg_manpower_logo.png');
+
   /// File path: assets/icons/flag.png
   AssetGenImage get flag => const AssetGenImage('assets/icons/flag.png');
 
@@ -71,6 +78,7 @@ class $AssetsIconsGen {
         singleSafeRoute,
         alart,
         appIcon,
+        fgManpowerLogo,
         flag,
         safeRoute,
         safeZoneAlart,
@@ -79,6 +87,94 @@ class $AssetsIconsGen {
         singleSafeZone,
         walkieTalkie,
         yourSafetyOurPrioty
+      ];
+}
+
+class $AssetsWalkieTalkieGen {
+  const $AssetsWalkieTalkieGen();
+
+  /// File path: assets/walkie_talkie/walkie_device.png
+  AssetGenImage get walkieDevice =>
+      const AssetGenImage('assets/walkie_talkie/walkie_device.png');
+
+  /// File path: assets/walkie_talkie/walkie_device_glow.png
+  AssetGenImage get walkieDeviceGlow =>
+      const AssetGenImage('assets/walkie_talkie/walkie_device_glow.png');
+
+  /// File path: assets/walkie_talkie/walkie_trial_hero.png
+  AssetGenImage get walkieTrialHero =>
+      const AssetGenImage('assets/walkie_talkie/walkie_trial_hero.png');
+
+  /// File path: assets/walkie_talkie/walkie_team_header.png
+  AssetGenImage get walkieTeamHeader =>
+      const AssetGenImage('assets/walkie_talkie/walkie_team_header.png');
+
+  /// File path: assets/walkie_talkie/walkie_individual_header.png
+  AssetGenImage get walkieIndividualHeader =>
+      const AssetGenImage('assets/walkie_talkie/walkie_individual_header.png');
+
+  /// File path: assets/walkie_talkie/walkie_waves_badge.png
+  AssetGenImage get walkieWavesBadge =>
+      const AssetGenImage('assets/walkie_talkie/walkie_waves_badge.png');
+
+  /// File path: assets/walkie_talkie/walkie_trial_gift.png
+  AssetGenImage get walkieTrialGift =>
+      const AssetGenImage('assets/walkie_talkie/walkie_trial_gift.png');
+
+  /// File path: assets/walkie_talkie/walkie_trial_crown.png
+  AssetGenImage get walkieTrialCrown =>
+      const AssetGenImage('assets/walkie_talkie/walkie_trial_crown.png');
+
+  /// File path: assets/walkie_talkie/purchase_success_hero.png
+  AssetGenImage get purchaseSuccessHero =>
+      const AssetGenImage('assets/walkie_talkie/purchase_success_hero.png');
+
+  /// File path: assets/walkie_talkie/worker_white_helmet.png
+  AssetGenImage get workerWhiteHelmet =>
+      const AssetGenImage('assets/walkie_talkie/worker_white_helmet.png');
+
+  /// File path: assets/walkie_talkie/worker_yellow_helmet.png
+  AssetGenImage get workerYellowHelmet =>
+      const AssetGenImage('assets/walkie_talkie/worker_yellow_helmet.png');
+
+  /// File path: assets/walkie_talkie/worker_yellow_helmet_right.png
+  AssetGenImage get workerYellowHelmetRight => const AssetGenImage(
+      'assets/walkie_talkie/worker_yellow_helmet_right.png');
+
+  /// File path: assets/walkie_talkie/worker_blue_cap.png
+  AssetGenImage get workerBlueCap =>
+      const AssetGenImage('assets/walkie_talkie/worker_blue_cap.png');
+
+  /// File path: assets/walkie_talkie/city_skyline.png
+  AssetGenImage get citySkyline =>
+      const AssetGenImage('assets/walkie_talkie/city_skyline.png');
+
+  /// File path: assets/walkie_talkie/connector_line_up.png
+  AssetGenImage get connectorLineUp =>
+      const AssetGenImage('assets/walkie_talkie/connector_line_up.png');
+
+  /// File path: assets/walkie_talkie/connector_line_down.png
+  AssetGenImage get connectorLineDown =>
+      const AssetGenImage('assets/walkie_talkie/connector_line_down.png');
+
+  /// List of all assets
+  List<AssetGenImage> get values => [
+        walkieDevice,
+        walkieDeviceGlow,
+        walkieTrialHero,
+        walkieTeamHeader,
+        walkieIndividualHeader,
+        walkieWavesBadge,
+        walkieTrialGift,
+        walkieTrialCrown,
+        purchaseSuccessHero,
+        workerWhiteHelmet,
+        workerYellowHelmet,
+        workerYellowHelmetRight,
+        workerBlueCap,
+        citySkyline,
+        connectorLineUp,
+        connectorLineDown
       ];
 }
 
@@ -113,6 +209,10 @@ class $AssetsImagesGen {
   AssetGenImage get appIcon =>
       const AssetGenImage('assets/images/app_icon.png');
 
+  /// File path: assets/images/app_icon_old.png
+  AssetGenImage get appIconOld =>
+      const AssetGenImage('assets/images/app_icon_old.png');
+
   /// File path: assets/images/audio.png
   AssetGenImage get audio => const AssetGenImage('assets/images/audio.png');
 
@@ -143,8 +243,8 @@ class $AssetsImagesGen {
   /// File path: assets/images/image3.png
   AssetGenImage get image3 => const AssetGenImage('assets/images/image3.png');
 
-  /// File path: assets/images/img.png
-  AssetGenImage get img => const AssetGenImage('assets/images/img.png');
+  /// File path: assets/images/app_icon.png
+  AssetGenImage get img => const AssetGenImage('assets/images/app_icon.png');
 
   /// File path: assets/images/introduction1.png
   AssetGenImage get introduction1 =>
@@ -530,6 +630,7 @@ abstract final class Assets {
   static const $AssetsMapThemeGen mapTheme = $AssetsMapThemeGen();
   static const $AssetsMusicGen music = $AssetsMusicGen();
   static const $AssetsSvgGen svg = $AssetsSvgGen();
+  static const $AssetsWalkieTalkieGen walkieTalkie = $AssetsWalkieTalkieGen();
   static const $LibGen lib = $LibGen();
   static const String shorebird = 'shorebird.yaml';
 

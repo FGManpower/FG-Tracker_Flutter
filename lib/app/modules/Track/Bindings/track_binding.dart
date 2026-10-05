@@ -1,6 +1,7 @@
 import 'package:fgtracker/app/modules/Track/Controller/SearchController.dart';
-import 'package:fgtracker/app/modules/Track/Controller/TrackController.dart';
+import 'package:fgtracker/app/modules/Track/Controller/GroupTrackController.dart';
 import 'package:fgtracker/app/modules/Track/Controller/TrackLiveLocationSocketService.dart';
+import 'package:fgtracker/app/modules/Track/Controller/TrackingController.dart';
 import 'package:get/get.dart';
 
 class SearchMember_Binding extends Bindings {
@@ -15,8 +16,8 @@ class SearchMember_Binding extends Bindings {
 class LocationTracking_Binding extends Bindings {
   @override
   void dependencies() {
-    Get.lazyPut<TrackingController>(
-      () => TrackingController(),
+    Get.lazyPut<GroupTrackingController>(
+      () => GroupTrackingController(),
     );
   }
 }

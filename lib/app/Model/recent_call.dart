@@ -417,6 +417,7 @@ class RecentContact {
   String? firstName;
   String? lastName;
   String? avatar;
+  String? phoneNumber; // ADD
   String? groupId;
   String? groupName;
   bool? isGroup;
@@ -426,6 +427,7 @@ class RecentContact {
     this.firstName,
     this.lastName,
     this.avatar,
+    this.phoneNumber, // ADD
     this.groupId,
     this.groupName,
     this.isGroup,
@@ -434,6 +436,7 @@ class RecentContact {
   RecentContact.fromJson(Map<String, dynamic> json) {
     groupId = json['group_id']?.toString() ?? json['groupId']?.toString();
     groupName = json['group_name']?.toString() ?? json['groupName']?.toString();
+
     isGroup = json['is_group'] == true ||
         json['isGroup'] == true ||
         json['is_group'] == 1 ||
@@ -448,6 +451,7 @@ class RecentContact {
         json['receiver_id']?.toString() ??
         json['receiverId']?.toString() ??
         groupId;
+
     firstName = json['first_name'] ??
         json['firstName'] ??
         groupName ??
@@ -459,7 +463,16 @@ class RecentContact {
         json['receiverName'] ??
         json['name'] ??
         json['title'];
+
     lastName = json['last_name'] ?? json['lastName'] ?? '';
+
+    // ADD
+    phoneNumber = json['phoneNumber']?.toString() ??
+        json['phone_number']?.toString() ??
+        json['phone']?.toString() ??
+        json['mobileNo']?.toString() ??
+        json['mobile_no']?.toString();
+
     avatar = json['avatar'] ??
         json['profile_image'] ??
         json['profileImage'] ??
@@ -476,13 +489,16 @@ class RecentContact {
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
+
     data['id'] = id;
     data['first_name'] = firstName;
     data['last_name'] = lastName;
     data['avatar'] = avatar;
+    data['phoneNumber'] = phoneNumber; // ADD
     data['groupId'] = groupId;
     data['groupName'] = groupName;
     data['isGroup'] = isGroup;
+
     return data;
   }
 }

@@ -17,6 +17,30 @@ class Urls {
       '${ConstRes.aBaseUrl}users-within-radius';
   static const String userWithinRadiusFallback =
       '${ConstRes.aBaseUrl}user-within-radius';
+  static const String initialize = '${ConstRes.aBaseUrl}initialize';
+  static const String walkiePlans = '${ConstRes.aBaseUrl}walkie/plans';
+  static const String walkieEligibleCoupons =
+      '${ConstRes.aBaseUrl}walkie/coupons/eligible';
+  static const String walkieApplyCoupon =
+      '${ConstRes.aBaseUrl}walkie/coupons/apply';
+
+  static const String walkieOverview = '${ConstRes.aBaseUrl}walkie/overview';
+  static const String walkieOrderSummary =
+      '${ConstRes.aBaseUrl}walkie/orders/summary';
+  static const String walkieCreateOrder =
+      '${ConstRes.aBaseUrl}walkie/payment/create-order';
+  static const String walkieVerifyPayment =
+      '${ConstRes.aBaseUrl}walkie/payment/verify';
+  static const String callingStatus = '${ConstRes.aBaseUrl}calling-status';
+  static const String walkieUpdateMemberSubscription =
+      '${ConstRes.aBaseUrl}walkie/update-member-subscription';
+
+  static const String createStatus = "status/create";
+  static const String statusFeed = "status/feed";
+  static const String myStatus = "status/my-status";
+  static String viewStatus(int id) => "status/$id/view";
+  static String replyStatus(int id) => "status/$id/reply";
+  static String deleteStatus(int id) => "status/$id";
 
   ///------------------------ Params ------------------------///
   static const String rtcUserName = 'fgtracker';

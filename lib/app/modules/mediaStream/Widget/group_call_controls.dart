@@ -29,88 +29,100 @@ class GroupCallControls extends StatelessWidget {
         final isVideo = controller.isVideo;
         final isVideoOn = controller.isVideoOn.value;
         final isAudioOn = controller.isAudioOn.value;
-        final isSpeakerOn = controller.isSpeakerOn.value;
-        final isScreenSharing = controller.isScreenSharing.value;
+        final route = controller.audioRoute.value;
 
-        return SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          physics: const BouncingScrollPhysics(),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              SizedBox(width: 4.w),
-              _ControlItem(
-                icon: Icons.more_horiz_rounded,
-                label: "More",
+        late IconData routeIcon;
+        late String routeLabel;
+        late Color routeBg;
+        late Color routeIconColor;
+        late Color routeBorder;
+
+        switch (route) {
+          case AudioRoute.bluetooth:
+            routeIcon = Icons.bluetooth_connected_rounded;
+            routeLabel = "Bluetooth";
+            routeBg = const Color(0xFFE8F0FF);
+            routeIconColor = const Color(0xFF2F6BFF);
+            routeBorder = const Color(0xFF2F6BFF);
+            break;
+          case AudioRoute.earpiece:
+            routeIcon = Icons.phone_in_talk_rounded;
+            routeLabel = "Earpiece";
+            routeBg = Colors.white;
+            routeIconColor = const Color(0xFF6E5CA4);
+            routeBorder = const Color(0xFFE9E5FE);
+            break;
+          case AudioRoute.speaker:
+            routeIcon = Icons.volume_up_rounded;
+            routeLabel = "Speaker";
+            routeBg = Colors.white;
+            routeIconColor = const Color(0xFF6E5CA4);
+            routeBorder = const Color(0xFFE9E5FE);
+            break;
+        }
+
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            SizedBox(width: 4.w),
+            ControlItem(
+              icon: Icons.more_horiz_rounded,
+              label: "More",
+              bgColor: Colors.white,
+              iconColor: const Color(0xFF6E5CA4),
+              borderColor: const Color(0xFFE9E5FE),
+              onTap: controller.openMoreSheet,
+            ),
+            SizedBox(width: 8.w),
+            if (isVideo) ...[
+              ControlItem(
+                icon: isVideoOn
+                    ? Icons.videocam_rounded
+                    : Icons.videocam_off_rounded,
+                label: isVideoOn ? "Camera on" : "Camera off",
                 bgColor: Colors.white,
                 iconColor: const Color(0xFF6E5CA4),
                 borderColor: const Color(0xFFE9E5FE),
-                onTap: controller.openMoreSheet,
+                onTap: controller.toggleCamera,
               ),
               SizedBox(width: 8.w),
-              if (isVideo) ...[
-                _ControlItem(
-                  icon: isVideoOn
-                      ? Icons.videocam_rounded
-                      : Icons.videocam_off_rounded,
-                  label: isVideoOn ? "Camera on" : "Camera off",
-                  bgColor: Colors.white,
-                  iconColor: const Color(0xFF6E5CA4),
-                  borderColor: const Color(0xFFE9E5FE),
-                  onTap: controller.toggleCamera,
-                ),
-                SizedBox(width: 8.w),
-              ],
-              if (isVideo && isVideoOn && !isScreenSharing) ...[
-                _ControlItem(
-                  icon: Icons.cameraswitch_rounded,
-                  label: "Flip",
-                  bgColor: Colors.white,
-                  iconColor: const Color(0xFF6E5CA4),
-                  borderColor: const Color(0xFFE9E5FE),
-                  onTap: controller.switchCamera,
-                ),
-                SizedBox(width: 8.w),
-              ],
-              _ControlItem(
-                icon: Icons.call_end_rounded,
-                label: "End call",
-                bgColor: const Color(0xFFFF3B30),
-                iconColor: Colors.white,
-                size: 54,
-                iconSize: 26,
-                onTap: controller.endCall,
-              ),
-              SizedBox(width: 8.w),
-              _ControlItem(
-                icon: isAudioOn ? Icons.mic_rounded : Icons.mic_off_rounded,
-                label: isAudioOn ? "Mute" : "Unmute",
-                bgColor: Colors.white,
-                iconColor: const Color(0xFF6E5CA4),
-                borderColor: const Color(0xFFE9E5FE),
-                onTap: controller.toggleMic,
-              ),
-              SizedBox(width: 8.w),
-              _ControlItem(
-                icon: isSpeakerOn
-                    ? Icons.volume_up_rounded
-                    : Icons.volume_off_rounded,
-                label: "Speaker",
-                bgColor: Colors.white,
-                iconColor: const Color(0xFF6E5CA4),
-                borderColor: const Color(0xFFE9E5FE),
-                onTap: controller.toggleSpeaker,
-              ),
-              SizedBox(width: 4.w),
             ],
-          ),
+            ControlItem(
+              icon: Icons.call_end_rounded,
+              label: "End call",
+              bgColor: const Color(0xFFFF3B30),
+              iconColor: Colors.white,
+              size: 54,
+              iconSize: 26,
+              onTap: controller.endCall,
+            ),
+            SizedBox(width: 8.w),
+            ControlItem(
+              icon: isAudioOn ? Icons.mic_rounded : Icons.mic_off_rounded,
+              label: isAudioOn ? "Mute" : "Unmute",
+              bgColor: Colors.white,
+              iconColor: const Color(0xFF6E5CA4),
+              borderColor: const Color(0xFFE9E5FE),
+              onTap: controller.toggleMic,
+            ),
+            SizedBox(width: 8.w),
+            ControlItem(
+              icon: routeIcon,
+              label: routeLabel,
+              bgColor: routeBg,
+              iconColor: routeIconColor,
+              borderColor: routeBorder,
+              onTap: controller.toggleSpeaker,
+            ),
+            SizedBox(width: 4.w),
+          ],
         );
       }),
     );
   }
 }
 
-class _ControlItem extends StatelessWidget {
+class ControlItem extends StatelessWidget {
   final IconData icon;
   final String label;
   final Color bgColor;
@@ -120,7 +132,7 @@ class _ControlItem extends StatelessWidget {
   final double iconSize;
   final VoidCallback onTap;
 
-  const _ControlItem({
+  const ControlItem({
     required this.icon,
     required this.label,
     required this.bgColor,
@@ -152,19 +164,19 @@ class _ControlItem extends StatelessWidget {
                     : null,
                 boxShadow: bgColor == const Color(0xFFFF3B30)
                     ? [
-                        BoxShadow(
-                          color: const Color(0xFFFF3B30).withOpacity(0.35),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
-                      ]
+                  BoxShadow(
+                    color: const Color(0xFFFF3B30).withOpacity(0.35),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ]
                     : [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.04),
-                          blurRadius: 6,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.04),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
               ),
               child: Icon(icon, color: iconColor, size: iconSize.sp),
             ),

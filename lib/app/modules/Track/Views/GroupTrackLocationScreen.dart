@@ -1,0 +1,140 @@
+import 'package:fgtracker/app/Core/values/BottomSheets/BottomSheetUi.dart';
+import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:fgtracker/app/modules/Track/Controller/GroupTrackController.dart';
+
+import '../../../routes/app_pages.dart';
+import '../Widget/TrackLAppBar.dart';
+
+class GroupLocationTrackingPage extends StatefulWidget {
+  const GroupLocationTrackingPage({super.key});
+
+  @override
+  State<GroupLocationTrackingPage> createState() => _LocationTrackingPageState();
+}
+
+class _LocationTrackingPageState extends State<GroupLocationTrackingPage> {
+  final controller = GroupTrackingController.instance;
+  final groupController = Get.put(GroupController());
+
+  late int groupId;
+  late String groupName;
+
+  late final Set<ClusterManager> _clusterManagers;
+
+  @override
+  void initState() {
+    super.initState();
+
+    final args = Get.arguments ?? {};
+    groupId = args['groupId'] is int
+        ? (args['groupId'] as int)
+        : (int.tryParse(args['groupId']?.toString() ?? '0') ?? 0);
+    groupName = args['groupName']?.toString() ?? "Group";
+    final String? targetUserId = args['targetUserId']?.toString();
+
+    _clusterManagers = {
+      ClusterManager(
+        clusterManagerId: const ClusterManagerId('users_cluster'),
+        onClusterTap: controller.onClusterTap,
+      ),
+    };
+
+    controller.clearMapMarkers();
+    controller.loadMapStyle();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      controller.initGroupTracking(groupId.toString());
+
+      await controller.getGroupLocationData(context, groupId);
+
+      if (targetUserId != null && targetUserId.isNotEmpty) {
+        int retries = 0;
+
+        while (retries < 50) {
+          await Future.delayed(const Duration(milliseconds: 100));
+
+          final hasMarker = controller.markers.toList().any(
+                (m) => m.markerId.value == targetUserId,
+              );
+
+          if (hasMarker && controller.mapController != null) break;
+
+          retries++;
+        }
+
+        controller.searchUserAndZoom(groupId.toString(), targetUserId);
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      extendBodyBehindAppBar: true,
+      appBar: buildTrackAppBar(
+        context,
+        groupName: groupName,
+        onPressMembers: () {
+          final members =
+              controller.groupWiseUserData[groupId.toString()] ?? [];
+
+          BottomSheetUi().showMemberBottomSheet(
+            context,
+            members,
+            groupId: groupId,
+            groupName: groupName,
+          );
+        },
+        onPressRefresh: () {
+          controller.initGroupTracking(groupId.toString());
+          controller.getGroupLocationData(context, groupId);
+        },
+        onPressTheme: () {
+          controller.showMapThemeBottomSheet(context);
+        },
+        onSearch: () {
+          Get.toNamed(
+            Routes.SearchMembers,
+            arguments: {
+              "GroupMembers": controller.groupWiseUserData[groupId.toString()],
+            },
+          )?.then((value) {
+            if (value != null && value.toString().isNotEmpty) {
+              controller.searchUserAndZoom(groupId.toString(), value);
+            }
+          });
+        },
+      ),
+      body: SafeArea(
+        child: Obx(
+          () => GoogleMap(
+            initialCameraPosition: CameraPosition(
+              target: controller.locationService.currentPosition != null
+                  ? LatLng(
+                      controller.locationService.currentPosition!.latitude!,
+                      controller.locationService.currentPosition!.longitude!,
+                    )
+                  : const LatLng(19.093394, 72.9137016),
+              zoom: 15,
+            ),
+            mapType: controller.currentMapType.value,
+            myLocationEnabled: true,
+            zoomControlsEnabled: true,
+            clusterManagers: _clusterManagers,
+            onMapCreated: (mapController) async {
+              controller.mapController = mapController;
+
+              if (controller.isDarkMode) {
+                await mapController.setMapStyle(controller.darkMapStyle);
+              }
+            },
+            markers: controller.markers.toSet(),
+          ),
+        ),
+      ),
+    );
+  }
+}

@@ -2,15 +2,19 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart';
 import '../models/attendance_poll_model.dart';
 import '../views/view_attendance_sheet.dart';
+import '../views/attendance_camera_screen.dart';
 
 class AttendanceChatCard extends StatefulWidget {
   final AttendancePollData pollData;
   final bool isAdmin;
   final String currentUserId;
   final String currentUserName;
+  final String groupName;
   final Function(AttendanceMemberResponse response)? onAttendanceSubmitted;
 
   const AttendanceChatCard({
@@ -19,6 +23,7 @@ class AttendanceChatCard extends StatefulWidget {
     this.isAdmin = false,
     this.currentUserId = "user_1",
     this.currentUserName = "You",
+    this.groupName = "Site Team",
     this.onAttendanceSubmitted,
   });
 
@@ -27,37 +32,45 @@ class AttendanceChatCard extends StatefulWidget {
 }
 
 class _AttendanceChatCardState extends State<AttendanceChatCard> {
-  late bool _isAdminView;
   String? _selectedStatus; // "Present" or "Absent"
   File? _attendancePhoto;
   bool _isSubmitting = false;
 
-  // Validation feedback
   String? _statusError;
   String? _photoError;
 
-  @override
-  void initState() {
-    super.initState();
-    _isAdminView = widget.isAdmin;
+  bool? _previewAsAdmin;
+
+  bool get _hasUserResponded {
+    return widget.pollData.responses
+        .any((r) => r.userId == widget.currentUserId);
   }
 
-  Future<void> _pickPhoto() async {
-    final picker = ImagePicker();
-    final picked = await picker.pickImage(
-      source: ImageSource.camera,
-      imageQuality: 80,
+  bool get _effectiveIsAdmin {
+    if (_previewAsAdmin != null) return _previewAsAdmin!;
+    return widget.isAdmin || _hasUserResponded;
+  }
+
+  Future<void> _openCamera() async {
+    final result = await Navigator.push<String?>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => AttendanceCameraScreen(
+          groupName: widget.groupName,
+          memberCount: widget.pollData.totalMembers,
+        ),
+      ),
     );
 
-    if (picked != null) {
+    if (result != null && result.isNotEmpty) {
       setState(() {
-        _attendancePhoto = File(picked.path);
+        _attendancePhoto = File(result);
         _photoError = null;
       });
     }
   }
 
-  void _submitAttendance() {
+  Future<void> _submitAttendance() async {
     setState(() {
       _statusError = null;
       _photoError = null;
@@ -72,9 +85,9 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
       hasError = true;
     }
 
-    if (_attendancePhoto == null) {
+    if (_selectedStatus == "Present" && _attendancePhoto == null) {
       setState(() {
-        _photoError = "Attendance photo is required. Please take a photo.";
+        _photoError = "Photo required for Present. Please take a photo.";
       });
       hasError = true;
     }
@@ -82,7 +95,7 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
     if (hasError) {
       Get.snackbar(
         "Validation Error",
-        _statusError ?? _photoError ?? "Please fill all required fields",
+        _photoError ?? _statusError ?? "Please fill all required fields",
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: const Color(0xFFEF4444),
         colorText: Colors.white,
@@ -97,8 +110,33 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
     });
 
     final now = DateTime.now();
-    final timeStr =
-        "${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')} ${now.hour >= 12 ? 'PM' : 'AM'}";
+    final timeStr = DateFormat("hh:mm a").format(now);
+
+    String locationName = _selectedStatus == "Present"
+        ? "Ghatkopar, Mumbai"
+        : "- \nNo location available";
+    String distanceStr = "Just now • Within 50 m";
+
+    try {
+      final pos = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.low,
+      ).timeout(const Duration(seconds: 2));
+
+      final placemarks = await placemarkFromCoordinates(
+        pos.latitude,
+        pos.longitude,
+      ).timeout(const Duration(seconds: 2));
+
+      if (placemarks.isNotEmpty) {
+        final p = placemarks.first;
+        final loc =
+            "${p.locality ?? p.subLocality ?? ''}, ${p.administrativeArea ?? ''}"
+                .trim();
+        if (loc.isNotEmpty) {
+          locationName = loc.startsWith(",") ? loc.substring(1).trim() : loc;
+        }
+      }
+    } catch (_) {}
 
     final response = AttendanceMemberResponse(
       userId: widget.currentUserId,
@@ -106,95 +144,123 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
       status: _selectedStatus!,
       photoUrl: _attendancePhoto?.path,
       time: timeStr,
+      location: locationName,
+      locationDistance: distanceStr,
     );
 
-    Future.delayed(const Duration(milliseconds: 300), () {
-      if (!mounted) return;
-
-      setState(() {
-        _isSubmitting = false;
-        if (_selectedStatus == "Present") {
-          widget.pollData.presentCount++;
-        } else {
-          widget.pollData.absentCount++;
-        }
-        widget.pollData.respondedCount++;
-        widget.pollData.responses.add(response);
-        _isAdminView = true; // Switch to results view after submission
-      });
-
-      widget.onAttendanceSubmitted?.call(response);
-
-      Get.snackbar(
-        "Attendance Submitted",
-        "Marked as $_selectedStatus successfully!",
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: const Color(0xFF5A3EFE),
-        colorText: Colors.white,
-        margin: EdgeInsets.all(16.w),
-        borderRadius: 12.r,
-      );
+    setState(() {
+      _isSubmitting = false;
+      if (_selectedStatus == "Present") {
+        widget.pollData.presentCount++;
+      } else {
+        widget.pollData.absentCount++;
+      }
+      widget.pollData.respondedCount++;
+      widget.pollData.responses
+          .removeWhere((r) => r.userId == widget.currentUserId);
+      widget.pollData.responses.add(response);
     });
+
+    widget.onAttendanceSubmitted?.call(response);
+
+    Get.snackbar(
+      "Attendance Submitted",
+      "Marked as $_selectedStatus successfully!",
+      snackPosition: SnackPosition.BOTTOM,
+      backgroundColor: const Color(0xFF5A3EFE),
+      colorText: Colors.white,
+      margin: EdgeInsets.all(16.w),
+      borderRadius: 12.r,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.symmetric(vertical: 8.h),
+      margin: EdgeInsets.symmetric(vertical: 6.h),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── Sender Info & Admin Badge (as in screenshot) ──
+          // Header info with Admin badge
           Padding(
             padding: EdgeInsets.only(left: 4.w, bottom: 6.h),
             child: Row(
               children: [
+                CircleAvatar(
+                  radius: 12.r,
+                  backgroundColor: const Color(0xFFEEF2FF),
+                  child: Text(
+                    widget.pollData.creatorName.isNotEmpty
+                        ? widget.pollData.creatorName[0].toUpperCase()
+                        : "A",
+                    style: TextStyle(
+                      fontSize: 10.sp,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF5A3EFE),
+                    ),
+                  ),
+                ),
+                SizedBox(width: 6.w),
                 Text(
                   widget.pollData.creatorName,
                   style: TextStyle(
-                    fontSize: 13.5.sp,
+                    fontSize: 13.sp,
                     fontWeight: FontWeight.w700,
                     color: const Color(0xFF5A3EFE),
                   ),
                 ),
-                SizedBox(width: 8.w),
+                SizedBox(width: 6.w),
                 Container(
-                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 7.w, vertical: 2.h),
                   decoration: BoxDecoration(
                     color: const Color(0xFFEDE9FE),
-                    borderRadius: BorderRadius.circular(10.r),
+                    borderRadius: BorderRadius.circular(8.r),
                   ),
                   child: Text(
                     "Admin",
                     style: TextStyle(
-                      fontSize: 10.5.sp,
+                      fontSize: 10.sp,
                       fontWeight: FontWeight.w700,
                       color: const Color(0xFF6D28D9),
                     ),
                   ),
                 ),
                 const Spacer(),
-                // Toggle view button (Allows testing both Admin and Member views)
                 GestureDetector(
                   onTap: () {
                     setState(() {
-                      _isAdminView = !_isAdminView;
+                      _previewAsAdmin = !_effectiveIsAdmin;
                     });
                   },
                   child: Container(
                     padding:
-                    EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                        EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
                     decoration: BoxDecoration(
                       color: const Color(0xFFF1F5F9),
-                      borderRadius: BorderRadius.circular(6.r),
+                      borderRadius: BorderRadius.circular(8.r),
+                      border: Border.all(color: const Color(0xFFCBD5E1)),
                     ),
-                    child: Text(
-                      _isAdminView ? "View as Member" : "View as Admin",
-                      style: TextStyle(
-                        fontSize: 9.5.sp,
-                        color: const Color(0xFF64748B),
-                        fontWeight: FontWeight.w600,
-                      ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          _effectiveIsAdmin
+                              ? Icons.visibility_outlined
+                              : Icons.admin_panel_settings_outlined,
+                          size: 13.sp,
+                          color: const Color(0xFF5A3EFE),
+                        ),
+                        SizedBox(width: 4.w),
+                        Text(
+                          _effectiveIsAdmin ? "Test as Member" : "Test as Admin",
+                          style: TextStyle(
+                            fontSize: 10.sp,
+                            fontWeight: FontWeight.w700,
+                            color: const Color(0xFF5A3EFE),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -202,15 +268,15 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
             ),
           ),
 
-          // ── Attendance Card (Admin View OR Member View) ──
-          _isAdminView ? _buildAdminCard() : _buildMemberCard(),
+          // Show Admin summary card OR Member submission card
+          _effectiveIsAdmin ? _buildAdminCard() : _buildMemberCard(),
         ],
       ),
     );
   }
 
   // ════════════════════════════════════════════════════════
-  // ── IMAGE 1: ADMIN POLL RESULT CARD ──
+  // ── IMAGE 5: ADMIN / SUMMARY CARD ──
   // ════════════════════════════════════════════════════════
   Widget _buildAdminCard() {
     final total = widget.pollData.presentCount + widget.pollData.absentCount;
@@ -221,8 +287,8 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
       width: double.infinity,
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: const Color(0xFFF6F8FE),
-        borderRadius: BorderRadius.circular(20.r),
+        color: const Color(0xFFF7F8FE),
+        borderRadius: BorderRadius.circular(22.r),
         border: Border.all(color: const Color(0xFFE2E8F0)),
         boxShadow: [
           BoxShadow(
@@ -235,29 +301,31 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header: Calendar Icon + Title
+          // Header Row
           Row(
             children: [
               Container(
-                width: 44.w,
-                height: 44.w,
+                width: 42.w,
+                height: 42.w,
                 decoration: BoxDecoration(
                   color: const Color(0xFFEEF2FF),
                   borderRadius: BorderRadius.circular(12.r),
                 ),
                 child: Icon(
-                  Icons.event_available_rounded,
+                  Icons.calendar_month_rounded,
                   color: const Color(0xFF5A3EFE),
-                  size: 24.sp,
+                  size: 22.sp,
                 ),
               ),
               SizedBox(width: 12.w),
-              Text(
-                "Attendance • ${widget.pollData.date}",
-                style: TextStyle(
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.w800,
-                  color: const Color(0xFF0F172A),
+              Expanded(
+                child: Text(
+                  "Attendance • ${widget.pollData.date}",
+                  style: TextStyle(
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w800,
+                    color: const Color(0xFF0F172A),
+                  ),
                 ),
               ),
             ],
@@ -265,12 +333,12 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
 
           SizedBox(height: 16.h),
 
-          // ── Present Bar ──
+          // Present progress row
           Row(
             children: [
               Container(
-                width: 26.w,
-                height: 26.w,
+                width: 24.w,
+                height: 24.w,
                 decoration: const BoxDecoration(
                   color: Color(0xFF22C55E),
                   shape: BoxShape.circle,
@@ -278,7 +346,7 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
                 child: Icon(
                   Icons.check_rounded,
                   color: Colors.white,
-                  size: 16.sp,
+                  size: 15.sp,
                 ),
               ),
               SizedBox(width: 10.w),
@@ -290,7 +358,21 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
                   color: const Color(0xFF0F172A),
                 ),
               ),
-              const Spacer(),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8.r),
+                  child: LinearProgressIndicator(
+                    value: presentRatio,
+                    minHeight: 8.h,
+                    backgroundColor: const Color(0xFFE2E8F0),
+                    valueColor: const AlwaysStoppedAnimation<Color>(
+                      Color(0xFF22C55E),
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(width: 12.w),
               Text(
                 "${widget.pollData.presentCount}",
                 style: TextStyle(
@@ -301,26 +383,15 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
               ),
             ],
           ),
-          SizedBox(height: 6.h),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(8.r),
-            child: LinearProgressIndicator(
-              value: presentRatio,
-              minHeight: 6.h,
-              backgroundColor: const Color(0xFFE2E8F0),
-              valueColor:
-              const AlwaysStoppedAnimation<Color>(Color(0xFF22C55E)),
-            ),
-          ),
 
-          SizedBox(height: 14.h),
+          SizedBox(height: 12.h),
 
-          // ── Absent Bar ──
+          // Absent progress row
           Row(
             children: [
               Container(
-                width: 26.w,
-                height: 26.w,
+                width: 24.w,
+                height: 24.w,
                 decoration: const BoxDecoration(
                   color: Color(0xFFEF4444),
                   shape: BoxShape.circle,
@@ -328,7 +399,7 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
                 child: Icon(
                   Icons.close_rounded,
                   color: Colors.white,
-                  size: 16.sp,
+                  size: 15.sp,
                 ),
               ),
               SizedBox(width: 10.w),
@@ -340,7 +411,21 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
                   color: const Color(0xFF0F172A),
                 ),
               ),
-              const Spacer(),
+              SizedBox(width: 15.w),
+              Expanded(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8.r),
+                  child: LinearProgressIndicator(
+                    value: absentRatio,
+                    minHeight: 8.h,
+                    backgroundColor: const Color(0xFFE2E8F0),
+                    valueColor: const AlwaysStoppedAnimation<Color>(
+                      Color(0xFFEF4444),
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(width: 12.w),
               Text(
                 "${widget.pollData.absentCount}",
                 style: TextStyle(
@@ -351,21 +436,10 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
               ),
             ],
           ),
-          SizedBox(height: 6.h),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(8.r),
-            child: LinearProgressIndicator(
-              value: absentRatio,
-              minHeight: 6.h,
-              backgroundColor: const Color(0xFFE2E8F0),
-              valueColor:
-              const AlwaysStoppedAnimation<Color>(Color(0xFFEF4444)),
-            ),
-          ),
 
           SizedBox(height: 14.h),
 
-          // ── Responded Info ──
+          // Responded Members info
           Row(
             children: [
               Icon(
@@ -387,25 +461,29 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
 
           SizedBox(height: 14.h),
 
-          // ── View Attendance Button ──
+          // View Attendance Button
           SizedBox(
             width: double.infinity,
-            height: 42.h,
+            height: 44.h,
             child: OutlinedButton(
               onPressed: () {
-                ViewAttendanceSheet.show(context, widget.pollData);
+                ViewAttendanceSheet.show(
+                  context,
+                  widget.pollData,
+                  groupName: widget.groupName,
+                );
               },
               style: OutlinedButton.styleFrom(
                 backgroundColor: Colors.white,
-                side: const BorderSide(color: Color(0xFF6366F1), width: 1.4),
+                side: const BorderSide(color: Color(0xFF5A3EFE), width: 1.4),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12.r),
+                  borderRadius: BorderRadius.circular(14.r),
                 ),
               ),
               child: Text(
                 "View Attendance",
                 style: TextStyle(
-                  fontSize: 13.5.sp,
+                  fontSize: 14.sp,
                   fontWeight: FontWeight.w700,
                   color: const Color(0xFF5A3EFE),
                 ),
@@ -418,7 +496,7 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
   }
 
   // ════════════════════════════════════════════════════════
-  // ── IMAGE 2: MEMBER / EMPLOYEE ATTENDANCE CARD ──
+  // ── IMAGE 2: MEMBER MARK ATTENDANCE CARD ──
   // ════════════════════════════════════════════════════════
   Widget _buildMemberCard() {
     final isPresentSelected = _selectedStatus == "Present";
@@ -430,7 +508,7 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(22.r),
-        border: Border.all(color: const Color(0xFFF1F5F9)),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.04),
@@ -442,7 +520,7 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header Row
+          // Top Header Row
           Row(
             children: [
               Container(
@@ -453,7 +531,7 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
                   borderRadius: BorderRadius.circular(12.r),
                 ),
                 child: Icon(
-                  Icons.event_available_rounded,
+                  Icons.calendar_month_rounded,
                   color: const Color(0xFF5A3EFE),
                   size: 24.sp,
                 ),
@@ -502,7 +580,7 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
               color: const Color(0xFF0F172A),
             ),
           ),
-          SizedBox(height: 3.h),
+          SizedBox(height: 2.h),
           Text(
             "Please select your status for today",
             style: TextStyle(
@@ -525,7 +603,7 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
 
           SizedBox(height: 12.h),
 
-          // ── Option 1: Present ──
+          // Option 1: Present
           GestureDetector(
             onTap: () {
               setState(() {
@@ -534,7 +612,7 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
               });
             },
             child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
+              padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 11.h),
               decoration: BoxDecoration(
                 color: isPresentSelected
                     ? const Color(0xFFF6F8FE)
@@ -555,7 +633,7 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
                     decoration: BoxDecoration(
                       color: isPresentSelected
                           ? const Color(0xFF5A3EFE)
-                          : const Color(0xFF94A3B8),
+                          : const Color(0xFF818CF8),
                       shape: BoxShape.circle,
                     ),
                     alignment: Alignment.center,
@@ -592,15 +670,15 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
                     ),
                     child: isPresentSelected
                         ? Center(
-                      child: Container(
-                        width: 10.w,
-                        height: 10.w,
-                        decoration: const BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Color(0xFF5A3EFE),
-                        ),
-                      ),
-                    )
+                            child: Container(
+                              width: 10.w,
+                              height: 10.w,
+                              decoration: const BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Color(0xFF5A3EFE),
+                              ),
+                            ),
+                          )
                         : null,
                   ),
                 ],
@@ -610,7 +688,7 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
 
           SizedBox(height: 10.h),
 
-          // ── Option 2: Absent ──
+          // Option 2: Absent
           GestureDetector(
             onTap: () {
               setState(() {
@@ -619,7 +697,7 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
               });
             },
             child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
+              padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 11.h),
               decoration: BoxDecoration(
                 color: isAbsentSelected
                     ? const Color(0xFFF6F8FE)
@@ -640,7 +718,7 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
                     decoration: BoxDecoration(
                       color: isAbsentSelected
                           ? const Color(0xFF5A3EFE)
-                          : const Color(0xFF94A3B8),
+                          : const Color(0xFF818CF8),
                       shape: BoxShape.circle,
                     ),
                     alignment: Alignment.center,
@@ -677,15 +755,15 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
                     ),
                     child: isAbsentSelected
                         ? Center(
-                      child: Container(
-                        width: 10.w,
-                        height: 10.w,
-                        decoration: const BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Color(0xFF5A3EFE),
-                        ),
-                      ),
-                    )
+                            child: Container(
+                              width: 10.w,
+                              height: 10.w,
+                              decoration: const BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Color(0xFF5A3EFE),
+                              ),
+                            ),
+                          )
                         : null,
                   ),
                 ],
@@ -695,9 +773,9 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
 
           SizedBox(height: 12.h),
 
-          // ── Attendance Photo Tile ──
+          // Attendance Photo Tile (opens dedicated camera screen)
           GestureDetector(
-            onTap: _pickPhoto,
+            onTap: _openCamera,
             child: Container(
               padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
               decoration: BoxDecoration(
@@ -706,7 +784,7 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
                 border: Border.all(
                   color: _photoError != null
                       ? const Color(0xFFEF4444)
-                      : const Color(0xFFF1F5F9),
+                      : const Color(0xFFE2E8F0),
                   width: _photoError != null ? 1.4 : 1.0,
                 ),
               ),
@@ -792,7 +870,7 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
 
           SizedBox(height: 14.h),
 
-          // ── Submit Attendance Button ──
+          // Submit Attendance Button
           SizedBox(
             width: double.infinity,
             height: 46.h,
@@ -807,27 +885,27 @@ class _AttendanceChatCardState extends State<AttendanceChatCard> {
               ),
               child: _isSubmitting
                   ? SizedBox(
-                width: 20.w,
-                height: 20.w,
-                child: const CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: Colors.white,
-                ),
-              )
+                      width: 20.w,
+                      height: 20.w,
+                      child: const CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
                   : Text(
-                "Submit Attendance",
-                style: TextStyle(
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
-                ),
-              ),
+                      "Submit Attendance",
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                      ),
+                    ),
             ),
           ),
 
           SizedBox(height: 10.h),
 
-          // Footer
+          // Footer info
           Row(
             children: [
               Icon(
