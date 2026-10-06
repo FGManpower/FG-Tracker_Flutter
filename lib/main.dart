@@ -302,10 +302,8 @@ Future<void> main() async {
   }
   ScreenShareForegroundService.init();
   await WalkieNotificationManager.instance.init();
-  final launch =
-      await FlutterLocalNotificationsPlugin().getNotificationAppLaunchDetails();
+  final launch = await FlutterLocalNotificationsPlugin().getNotificationAppLaunchDetails();
   if (launch?.didNotificationLaunchApp == true) {
-    // payload handled after GetMaterialApp is ready
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final resp = launch!.notificationResponse;
       if (resp != null) {
