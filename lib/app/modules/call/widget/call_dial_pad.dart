@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:fgtracker/app/modules/call/Controller/call_controller.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
@@ -127,21 +129,9 @@ class CallDialPad extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
+        _DialPadBackspaceButton(controller: controller),
         GestureDetector(
-          onTap: controller.removeLastDigit,
-          onLongPress: controller.clearDialNumber,
-          child: Container(
-            width: 52.w,
-            height: 52.w,
-            alignment: Alignment.center,
-            child: Icon(
-              Icons.backspace_outlined,
-              size: 21.sp,
-              color: const Color(0xFF6B4DFF),
-            ),
-          ),
-        ),
-        GestureDetector(
+          behavior: HitTestBehavior.opaque,
           onTap: controller.makeCall,
           child: Container(
             width: 56.w,
@@ -165,10 +155,12 @@ class CallDialPad extends StatelessWidget {
           ),
         ),
         GestureDetector(
+          behavior: HitTestBehavior.opaque,
           onTap: controller.toggleDialPad,
           child: Container(
             width: 52.w,
             height: 52.w,
+            color: Colors.transparent,
             alignment: Alignment.center,
             child: Icon(
               Icons.keyboard_arrow_down_rounded,
@@ -178,6 +170,68 @@ class CallDialPad extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _DialPadBackspaceButton extends StatefulWidget {
+  const _DialPadBackspaceButton({required this.controller});
+
+  final CallController controller;
+
+  @override
+  State<_DialPadBackspaceButton> createState() =>
+      _DialPadBackspaceButtonState();
+}
+
+class _DialPadBackspaceButtonState extends State<_DialPadBackspaceButton> {
+  Timer? _timer;
+
+  void _startContinuousDelete() {
+    _timer?.cancel();
+    _timer = Timer(const Duration(milliseconds: 300), () {
+      _timer = Timer.periodic(const Duration(milliseconds: 60), (t) {
+        if (widget.controller.dialNumber.value.isEmpty) {
+          _stopContinuousDelete();
+        } else {
+          widget.controller.removeLastDigit();
+        }
+      });
+    });
+  }
+
+  void _stopContinuousDelete() {
+    _timer?.cancel();
+    _timer = null;
+  }
+
+  @override
+  void dispose() {
+    _stopContinuousDelete();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTapDown: (_) {
+        widget.controller.removeLastDigit();
+        _startContinuousDelete();
+      },
+      onTapUp: (_) => _stopContinuousDelete(),
+      onTapCancel: () => _stopContinuousDelete(),
+      child: Container(
+        width: 52.w,
+        height: 52.w,
+        color: Colors.transparent,
+        alignment: Alignment.center,
+        child: Icon(
+          Icons.backspace_outlined,
+          size: 21.sp,
+          color: const Color(0xFF6B4DFF),
+        ),
+      ),
     );
   }
 }

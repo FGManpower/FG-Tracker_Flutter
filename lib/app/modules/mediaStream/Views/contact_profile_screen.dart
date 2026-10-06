@@ -552,22 +552,21 @@ class ContactProfileScreen extends StatelessWidget {
       }
 
       final CallController controller = Get.find<CallController>();
-
       final List<Map<String, String>> result = [];
+      final userId = user.userId?.toString();
+      final userMobile = (user.mobileNo ?? '').replaceAll(RegExp(r'[^0-9]'), '');
+      final userNorm = userMobile.length > 10 ? userMobile.substring(userMobile.length - 10) : userMobile;
 
       for (final group in controller.groupedRecentCalls.values) {
         for (final call in group) {
           final callerId = call['callerId']?.trim();
-          final userId = user.userId?.toString();
+          final callPhone = (call['mobileNo'] ?? call['phone'] ?? '').replaceAll(RegExp(r'[^0-9]'), '');
+          final callNorm = callPhone.length > 10 ? callPhone.substring(callPhone.length - 10) : callPhone;
 
-          if (callerId == null ||
-              callerId.isEmpty ||
-              userId == null ||
-              userId.isEmpty) {
-            continue;
-          }
+          final bool idMatch = userId != null && userId.isNotEmpty && callerId == userId;
+          final bool phoneMatch = userNorm.isNotEmpty && callNorm.isNotEmpty && userNorm == callNorm;
 
-          if (callerId == userId) {
+          if (idMatch || phoneMatch) {
             result.add(
               Map<String, String>.from(call),
             );

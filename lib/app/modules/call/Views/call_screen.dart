@@ -28,10 +28,6 @@ class _CallScreenState extends State<CallScreen>
     _tabController.addListener(() {
       if (!_tabController.indexIsChanging) {
         controller.switchTab(_tabController.index);
-        if (_tabController.index != 1 &&
-            controller.isDialPadOpen.value) {
-          controller.isDialPadOpen.value = false;
-        }
       }
     });
     controller.loadGroups();
@@ -43,56 +39,75 @@ class _CallScreenState extends State<CallScreen>
     super.dispose();
   }
 
+  void _handleBack() {
+    if (controller.isDialPadOpen.value) {
+      controller.isDialPadOpen.value = false;
+      controller.clearDialNumber();
+    } else if (controller.searchQuery.value.isNotEmpty) {
+      controller.clearSearch();
+      FocusScope.of(context).unfocus();
+    } else {
+      Get.back();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF6F7FB),
-      body: SafeArea(
-        child: Stack(
-          children: [
-            Column(
+    return Obx(() {
+      final bool isDialOpen = controller.isDialPadOpen.value;
+      final bool hasSearch = controller.searchQuery.value.isNotEmpty;
+
+      return PopScope(
+        canPop: !isDialOpen && !hasSearch,
+        onPopInvokedWithResult: (didPop, result) {
+          if (didPop) return;
+          _handleBack();
+        },
+        child: Scaffold(
+          backgroundColor: const Color(0xFFF6F7FB),
+          body: SafeArea(
+            child: Stack(
               children: [
-                _buildAppBar(),
-                SizedBox(height: 8.h),
-                _buildSearchBar(),
-                SizedBox(height: 12.h),
-                _buildTabBar(),
-                SizedBox(height: 8.h),
-                Expanded(
-                  child: TabBarView(
-                    controller: _tabController,
-                    children: [
-                      const CallRecentCallsTab(),
-                      const CallContactsTab(),
-                      CallGroupsTab(),
-                    ],
-                  ),
+                Column(
+                  children: [
+                    _buildAppBar(),
+                    SizedBox(height: 8.h),
+                    _buildSearchBar(),
+                    SizedBox(height: 12.h),
+                    _buildTabBar(),
+                    SizedBox(height: 8.h),
+                    Expanded(
+                      child: TabBarView(
+                        controller: _tabController,
+                        children: [
+                          const CallRecentCallsTab(),
+                          const CallContactsTab(),
+                          CallGroupsTab(),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  child: isDialOpen ? const CallDialPad() : const SizedBox.shrink(),
                 ),
               ],
             ),
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: Obx(() {
-                if (controller.selectedTab.value != 1) {
-                  return const SizedBox.shrink();
-                }
-                return const CallDialPad();
-              }),
-            ),
-          ],
+          ),
+          floatingActionButton: (isDialOpen || controller.selectedTab.value != 0)
+              ? const SizedBox.shrink()
+              : _QuickCallActionButton(
+                  onTap: () {
+                    controller.toggleDialPad();
+                  },
+                ),
+          floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
         ),
-      ),
-      floatingActionButton: Obx(() {
-        if (controller.selectedTab.value != 1 ||
-            controller.isDialPadOpen.value) {
-          return const SizedBox.shrink();
-        }
-        return const _QuickCallActionButton();
-      }),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-    );
+      );
+    });
   }
 
   Widget _buildAppBar() {
@@ -101,7 +116,7 @@ class _CallScreenState extends State<CallScreen>
       child: Row(
         children: [
           GestureDetector(
-            onTap: () => Get.back(),
+            onTap: _handleBack,
             child: Container(
               width: 40.w,
               height: 40.w,
@@ -242,9 +257,6 @@ class _CallScreenState extends State<CallScreen>
           controller: _tabController,
           onTap: (index) {
             controller.switchTab(index);
-            if (index != 1 && controller.isDialPadOpen.value) {
-              controller.isDialPadOpen.value = false;
-            }
           },
           indicator: BoxDecoration(
             color: const Color(0xFF4818F0),
@@ -296,13 +308,15 @@ class _CallScreenState extends State<CallScreen>
 }
 
 class _QuickCallActionButton extends StatelessWidget {
-  const _QuickCallActionButton();
+  const _QuickCallActionButton({this.onTap});
+
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     final callController = CallController.instance;
     return GestureDetector(
-      onTap: callController.toggleDialPad,
+      onTap: onTap ?? callController.toggleDialPad,
       child: Container(
         width: 56.w,
         height: 56.w,
