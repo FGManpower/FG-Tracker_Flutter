@@ -109,11 +109,6 @@ class CallController extends GetxController {
     final String numberToSet = digits.isNotEmpty ? digits : raw;
 
     dialNumber.value = numberToSet;
-    searchController.value = TextEditingValue(
-      text: numberToSet,
-      selection: TextSelection.collapsed(offset: numberToSet.length),
-    );
-    searchQuery.value = numberToSet;
     isDialPadOpen.value = true;
   }
 
@@ -122,15 +117,7 @@ class CallController extends GetxController {
     if (dialNumber.value.length >= 15) return;
 
     dialNumber.value += digit;
-
-    searchController.value = TextEditingValue(
-      text: dialNumber.value,
-      selection: TextSelection.collapsed(
-        offset: dialNumber.value.length,
-      ),
-    );
-
-    onSearchChanged(dialNumber.value);
+    filterUsers(dialNumber.value);
   }
 
   void removeLastDigit() {
@@ -139,23 +126,13 @@ class CallController extends GetxController {
 
     dialNumber.value =
         dialNumber.value.substring(0, dialNumber.value.length - 1);
-
-    searchController.value = TextEditingValue(
-      text: dialNumber.value,
-      selection: TextSelection.collapsed(
-        offset: dialNumber.value.length,
-      ),
-    );
-
-    onSearchChanged(dialNumber.value);
+    filterUsers(dialNumber.value);
   }
 
   void clearDialNumber() {
     selectedDialUser = null;
     dialNumber.value = '';
-    searchController.clear();
-    searchQuery.value = '';
-    filteredUsers.value = allUserProfileData;
+    filterUsers(searchQuery.value);
   }
 
   void makeCall({bool isVideo = false}) {
@@ -227,10 +204,11 @@ class CallController extends GetxController {
 
       if (granted) {
         hasAllowedContacts.value = true;
-        await getRegisteredContacts();
       }
+      await getRegisteredContacts();
     } catch (e) {
       debugPrint("Error checking contact permission: $e");
+      await getRegisteredContacts();
     }
   }
 
@@ -245,6 +223,7 @@ class CallController extends GetxController {
         openAppSettings();
       } else {
         isContactPermissionGranted.value = false;
+        await getRegisteredContacts();
       }
     } catch (e) {
       debugPrint("Error requesting contact permission: $e");
@@ -258,28 +237,32 @@ class CallController extends GetxController {
 
       final startTime = DateTime.now();
 
-      final List<Contact> deviceContacts = await _contactService.getContacts();
-      phoneContactNameMap.clear();
-      for (final Contact contact in deviceContacts) {
-        final String displayName = contact.displayName.trim();
-        if (displayName.isEmpty) continue;
-        for (final Phone phone in contact.phones) {
-          final String norm = _normalizePhone(phone.number);
-          if (norm.isNotEmpty) {
-            phoneContactNameMap[norm] = displayName;
+      if (isContactPermissionGranted.value) {
+        try {
+          final List<Contact> deviceContacts =
+              await _contactService.getContacts();
+          phoneContactNameMap.clear();
+          for (final Contact contact in deviceContacts) {
+            final String displayName = contact.displayName.trim();
+            if (displayName.isEmpty) continue;
+            for (final Phone phone in contact.phones) {
+              final String norm = _normalizePhone(phone.number);
+              if (norm.isNotEmpty) {
+                phoneContactNameMap[norm] = displayName;
+              }
+            }
           }
+
+          debugPrint(
+            "⏱️ Device Contacts: "
+            "${DateTime.now().difference(startTime).inMilliseconds} ms (Total ${phoneContactNameMap.length} mapped)",
+          );
+        } catch (e) {
+          debugPrint("Error fetching device contacts: $e");
         }
       }
 
-      debugPrint(
-        "⏱️ Device Contacts: "
-        "${DateTime.now().difference(startTime).inMilliseconds} ms (Total ${phoneContactNameMap.length} mapped)",
-      );
-
-      isContactPermissionGranted.value = true;
-
       final apiStartTime = DateTime.now();
-
       final result = await GroupRepo.getAllUserData();
 
       debugPrint(
@@ -309,16 +292,45 @@ class CallController extends GetxController {
           );
         }).toList();
 
-        final matchedUsers = processedUsers.where((user) {
-          final String mobileNo = _normalizePhone(user.mobileNo ?? '');
-          return phoneContactNameMap.containsKey(mobileNo);
-        }).toList();
+        // Also merge any users from recent calls if not already in processedUsers
+        for (final entry in _recentRaw) {
+          final call = entry.call;
+          final contact = call.contact;
+          final int? rUserId = int.tryParse(contact?.id ?? call.callerId ?? '');
+          final String rMobile = (contact?.phoneNumber ?? '').trim();
+          final String normRMobile = _normalizePhone(rMobile);
 
-        final finalUsers =
-            matchedUsers.isNotEmpty ? matchedUsers : processedUsers;
+          if (rUserId != null && !processedUsers.any((u) => u.userId == rUserId)) {
+            final String? pName = phoneContactNameMap[normRMobile];
+            final String rName = (pName != null && pName.trim().isNotEmpty)
+                ? pName.trim()
+                : ([contact?.firstName, contact?.lastName].whereType<String>().join(' ').trim());
 
-        allUserProfileData.value = finalUsers;
-        filteredUsers.value = finalUsers;
+            processedUsers.add(UserListData(
+              userId: rUserId,
+              name: rName.isNotEmpty ? rName : (rMobile.isNotEmpty ? rMobile : 'Unknown'),
+              mobileNo: rMobile,
+              profileImage: contact?.avatar,
+              isOnline: false,
+            ));
+          }
+        }
+
+        // Sort: Phonebook contacts first, then alphabetically by name
+        processedUsers.sort((a, b) {
+          final String normA = _normalizePhone(a.mobileNo ?? '');
+          final String normB = _normalizePhone(b.mobileNo ?? '');
+          final bool inPhoneA = phoneContactNameMap.containsKey(normA);
+          final bool inPhoneB = phoneContactNameMap.containsKey(normB);
+
+          if (inPhoneA && !inPhoneB) return -1;
+          if (!inPhoneA && inPhoneB) return 1;
+
+          return (a.name ?? '').toLowerCase().compareTo((b.name ?? '').toLowerCase());
+        });
+
+        allUserProfileData.value = processedUsers;
+        filterUsers();
       } else {
         responseError.value = result.message ?? "Something went wrong";
       }
@@ -329,21 +341,21 @@ class CallController extends GetxController {
     }
   }
 
-  void filterUsers(String value) {
-    value = value.trim().toLowerCase();
+  void filterUsers([String? queryParam]) {
+    final String query = (queryParam ?? (searchQuery.value.isNotEmpty ? searchQuery.value : dialNumber.value)).trim().toLowerCase();
 
-    if (value.isEmpty) {
+    if (query.isEmpty) {
       filteredUsers.value = allUserProfileData;
       return;
     }
 
-    final String queryDigits = _normalizePhone(value);
+    final String queryDigits = _normalizePhone(query);
 
     filteredUsers.value = allUserProfileData.where((user) {
       final String name = (user.name ?? '').toLowerCase();
       final bool mobileMatch = queryDigits.isNotEmpty &&
           _normalizePhone(user.mobileNo ?? '').contains(queryDigits);
-      return name.contains(value) || mobileMatch;
+      return name.contains(query) || mobileMatch;
     }).toList();
   }
 
@@ -361,8 +373,7 @@ class CallController extends GetxController {
   void clearSearch() {
     searchController.clear();
     searchQuery.value = '';
-    dialNumber.value = '';
-    filteredUsers.value = allUserProfileData;
+    filterUsers(dialNumber.value);
   }
 
   Future<void> refreshContacts() async {
@@ -1070,7 +1081,6 @@ class CallController extends GetxController {
 
   void onSearchChanged(String value) {
     searchQuery.value = value;
-    dialNumber.value = value;
     filterUsers(value);
   }
 
