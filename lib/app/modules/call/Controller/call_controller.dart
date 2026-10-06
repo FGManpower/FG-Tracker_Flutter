@@ -1,5 +1,9 @@
+import 'package:fgtracker/app/Core/constant/pref_res.dart';
+import 'package:fgtracker/app/Core/values/Utils.dart';
+import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Data/Repositories/GroupRepo.dart';
 import 'package:fgtracker/app/Data/Repositories/call_repo.dart';
+import 'package:fgtracker/app/Data/Services/call_service.dart';
 import 'package:fgtracker/app/Data/Services/contact_services.dart';
 import 'package:fgtracker/app/Model/GroupRes.dart';
 import 'package:fgtracker/app/Model/recent_call.dart';
@@ -87,6 +91,8 @@ class CallController extends GetxController {
     super.onClose();
   }
 
+  UserListData? selectedDialUser;
+
   void toggleDialPad() {
     isDialPadOpen.value = !isDialPadOpen.value;
     if (isDialPadOpen.value) {
@@ -96,7 +102,23 @@ class CallController extends GetxController {
     }
   }
 
+  void selectUserToDial(UserListData user) {
+    selectedDialUser = user;
+    final String raw = (user.mobileNo ?? '').trim();
+    final String digits = _normalizePhone(raw);
+    final String numberToSet = digits.isNotEmpty ? digits : raw;
+
+    dialNumber.value = numberToSet;
+    searchController.value = TextEditingValue(
+      text: numberToSet,
+      selection: TextSelection.collapsed(offset: numberToSet.length),
+    );
+    searchQuery.value = numberToSet;
+    isDialPadOpen.value = true;
+  }
+
   void addDigit(String digit) {
+    selectedDialUser = null;
     if (dialNumber.value.length >= 15) return;
 
     dialNumber.value += digit;
@@ -112,6 +134,7 @@ class CallController extends GetxController {
   }
 
   void removeLastDigit() {
+    selectedDialUser = null;
     if (dialNumber.value.isEmpty) return;
 
     dialNumber.value =
@@ -128,15 +151,72 @@ class CallController extends GetxController {
   }
 
   void clearDialNumber() {
+    selectedDialUser = null;
     dialNumber.value = '';
     searchController.clear();
     searchQuery.value = '';
     filteredUsers.value = allUserProfileData;
   }
 
-  void makeCall() {
-    if (dialNumber.value.isEmpty) return;
-    debugPrint("Calling Number: ${dialNumber.value}");
+  void makeCall({bool isVideo = false}) {
+    final String input = dialNumber.value.trim();
+    if (input.isEmpty) {
+      Utils().fluttertoast("Please enter a phone number");
+      return;
+    }
+
+    final String inputDigits = _normalizePhone(input);
+
+    // 1. Try selectedDialUser if available
+    UserListData? targetUser = selectedDialUser;
+
+    // 2. Try finding exact mobile number match in allUserProfileData
+    if (targetUser == null && inputDigits.isNotEmpty) {
+      targetUser = allUserProfileData.firstWhereOrNull(
+        (u) => _normalizePhone(u.mobileNo ?? '') == inputDigits,
+      );
+    }
+
+    // 3. If not found, try matching by userId
+    if (targetUser == null) {
+      targetUser = allUserProfileData.firstWhereOrNull(
+        (u) => u.userId?.toString() == input,
+      );
+    }
+
+    // 4. If still not found and filteredUsers is not empty, use the first filtered user
+    if (targetUser == null && filteredUsers.isNotEmpty) {
+      targetUser = filteredUsers.first;
+    }
+
+    if (targetUser != null && targetUser.userId != null) {
+      final currentUserId =
+          Global.storageServices.get(PrefConst.userId)?.toString();
+      if (currentUserId == null || currentUserId.isEmpty) {
+        Utils().fluttertoast("Please login to make a call");
+        return;
+      }
+
+      if (currentUserId == targetUser.userId.toString()) {
+        Utils().fluttertoast("Cannot call yourself");
+        return;
+      }
+
+      isDialPadOpen.value = false;
+
+      final ctx = Get.context;
+      if (ctx != null) {
+        CallService().startCall(
+          ctx,
+          callerId: currentUserId,
+          remoteUserId: targetUser.userId.toString(),
+          is_video: isVideo,
+          callerName: targetUser.name ?? "User",
+        );
+      }
+    } else {
+      Utils().fluttertoast("No registered user found for this number");
+    }
   }
 
   Future<void> checkContactPermission() async {

@@ -275,6 +275,9 @@ class _CallContactsTabState extends State<CallContactsTab> {
                   ? const _SkeletonContactCard()
                   : _ContactCard(
                       user: contactData[index],
+                      onTapCard: () {
+                        controller.selectUserToDial(contactData[index]);
+                      },
                       onTapAudio: () {
                         CallService().startCall(
                           context,
@@ -312,11 +315,13 @@ class _CallContactsTabState extends State<CallContactsTab> {
 /// Standalone Contact Card (Matching Screenshot 1)
 class _ContactCard extends StatelessWidget {
   final UserListData user;
+  final VoidCallback onTapCard;
   final VoidCallback onTapAudio;
   final VoidCallback onTapVideo;
 
   const _ContactCard({
     required this.user,
+    required this.onTapCard,
     required this.onTapAudio,
     required this.onTapVideo,
   });
@@ -418,72 +423,76 @@ class _ContactCard extends StatelessWidget {
     final String name = user.name ?? 'Unknown';
     final bool isOnline = user.isOnline ?? false;
 
-    return Container(
-      margin: EdgeInsets.only(bottom: 10.h),
-      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18.r),
-        border: Border.all(
-          color: const Color(0xFFF1F3F9),
-          width: 1.0,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF1E1B4B).withOpacity(0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
+    return GestureDetector(
+      onTap: onTapCard,
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        margin: EdgeInsets.only(bottom: 10.h),
+        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(18.r),
+          border: Border.all(
+            color: const Color(0xFFF1F3F9),
+            width: 1.0,
           ),
-        ],
-      ),
-      child: Row(
-        children: [
-          _buildAvatar(name, user.profileImage, isOnline),
-          SizedBox(width: 14.w),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  name,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 14.5.sp,
-                    fontFamily: FontFamily.interSemiBold,
-                    color: const Color(0xFF1E1B4B),
-                  ),
-                ),
-                SizedBox(height: 3.h),
-                Text(
-                  _formatPhoneNumber(user.mobileNo),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 12.sp,
-                    fontFamily: FontFamily.interMedium,
-                    color: const Color(0xFF4818F0),
-                  ),
-                ),
-              ],
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF1E1B4B).withOpacity(0.03),
+              blurRadius: 10,
+              offset: const Offset(0, 2),
             ),
-          ),
-          SizedBox(width: 8.w),
-          CallActionChip(
-            icon: Icons.call_rounded,
-            size: 38.w,
-            iconSize: 18.sp,
-            onTap: onTapAudio,
-          ),
-          SizedBox(width: 8.w),
-          CallActionChip(
-            icon: Icons.videocam_rounded,
-            size: 38.w,
-            iconSize: 20.sp,
-            onTap: onTapVideo,
-          ),
-        ],
+          ],
+        ),
+        child: Row(
+          children: [
+            _buildAvatar(name, user.profileImage, isOnline),
+            SizedBox(width: 14.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 14.5.sp,
+                      fontFamily: FontFamily.interSemiBold,
+                      color: const Color(0xFF1E1B4B),
+                    ),
+                  ),
+                  SizedBox(height: 3.h),
+                  Text(
+                    _formatPhoneNumber(user.mobileNo),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      fontFamily: FontFamily.interMedium,
+                      color: const Color(0xFF4818F0),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(width: 8.w),
+            CallActionChip(
+              icon: Icons.call_rounded,
+              size: 38.w,
+              iconSize: 18.sp,
+              onTap: onTapAudio,
+            ),
+            SizedBox(width: 8.w),
+            CallActionChip(
+              icon: Icons.videocam_rounded,
+              size: 38.w,
+              iconSize: 20.sp,
+              onTap: onTapVideo,
+            ),
+          ],
+        ),
       ),
     );
   }
