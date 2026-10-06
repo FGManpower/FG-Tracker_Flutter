@@ -546,7 +546,26 @@ class StatusOwnFooter extends StatelessWidget {
     Get.bottomSheet(
       Obx(() {
         final current = controller.currentStatus ?? status;
-        final reactions = _reactionSummary(current.viewers);
+        final myId =
+            Global.storageServices.get(PrefConst.userId)?.toString() ?? '';
+
+        final visibleViewers = current.viewers
+            .where((v) =>
+        myId.isEmpty || v.viewerId.toString() != myId)
+            .toList();
+
+        final selfIncluded = myId.isNotEmpty &&
+            current.viewers.any((v) => v.viewerId.toString() == myId);
+
+        final displayCount = selfIncluded
+            ? (current.viewsCount > 0
+            ? current.viewsCount - 1
+            : visibleViewers.length)
+            : (current.viewsCount > 0
+            ? current.viewsCount
+            : visibleViewers.length);
+
+        final reactions = _reactionSummary(visibleViewers);
 
         return Container(
           constraints: BoxConstraints(
@@ -580,7 +599,7 @@ class StatusOwnFooter extends StatelessWidget {
                           color: Colors.white70, size: 20.sp),
                       SizedBox(width: 8.w),
                       reausabletext(
-                        'Viewed by ${current.viewsCount}',
+                        'Viewed by $displayCount',
                         fontsize: 15.sp,
                         fontfamily: FontFamily.interBold,
                         color: Colors.white,
@@ -635,9 +654,9 @@ class StatusOwnFooter extends StatelessWidget {
                   color: Colors.white.withValues(alpha: 0.08),
                 ),
                 Flexible(
-                  child: current.viewers.isEmpty
+                  child: visibleViewers.isEmpty
                       ? _buildEmptyState()
-                      : _buildViewersList(current.viewers),
+                      : _buildViewersList(visibleViewers),
                 ),
               ],
             ),
@@ -809,8 +828,27 @@ class StatusOwnFooter extends StatelessWidget {
                   SizedBox(width: 6.w),
                   Obx(() {
                     final current = controller.currentStatus ?? status;
+                    final myId = Global.storageServices
+                        .get(PrefConst.userId)
+                        ?.toString() ??
+                        '';
+                    final selfIncluded = myId.isNotEmpty &&
+                        current.viewers
+                            .any((v) => v.viewerId.toString() == myId);
+                    final visibleLen = current.viewers
+                        .where((v) =>
+                    myId.isEmpty ||
+                        v.viewerId.toString() != myId)
+                        .length;
+                    final count = selfIncluded
+                        ? (current.viewsCount > 0
+                        ? current.viewsCount - 1
+                        : visibleLen)
+                        : (current.viewsCount > 0
+                        ? current.viewsCount
+                        : visibleLen);
                     return reausabletext(
-                      '${current.viewsCount} Views',
+                      '$count Views',
                       fontsize: 12.sp,
                       color: Colors.white,
                       fontfamily: FontFamily.interMedium,

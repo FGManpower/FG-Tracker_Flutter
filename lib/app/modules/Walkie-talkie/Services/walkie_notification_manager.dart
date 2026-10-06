@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:fgtracker/app/Core/constant/notification_holder.dart';
@@ -7,13 +8,10 @@ import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Walkie-Talkie-Service.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Controller/walkieController.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
+import 'package:permission_handler/permission_handler.dart';
 
-/// Global call-style walkie notification manager.
-/// One fixed notification ID, live timer, no spam.
 class WalkieNotificationManager {
   WalkieNotificationManager._();
   static final WalkieNotificationManager instance =
@@ -21,14 +19,13 @@ class WalkieNotificationManager {
 
   static const int notificationId = 5001;
   static const String channelId = 'walkie_talkie_channel';
-  static const String channelName = 'Walkie-Talkie';
+  static const String channelName = 'Walkie-Talkie Voice Activity';
   static const String channelDesc =
-      'Live walkie-talkie voice activity notifications';
+      'Live voice activity notifications for Walkie-Talkie';
 
   final FlutterLocalNotificationsPlugin _plugin =
   FlutterLocalNotificationsPlugin();
 
-  // ── Frontend state flags (from your screenshot) ──────────────────────────
   final RxBool isWalkieJoined = false.obs;
   final RxBool isWalkieScreenActive = false.obs;
   final RxBool isSomeoneTalking = false.obs;
@@ -43,10 +40,18 @@ class WalkieNotificationManager {
   int _talkSeconds = 0;
   bool _initialized = false;
 
-  // ── Init ─────────────────────────────────────────────────────────────────
+  void _log(String msg) {
+    log('🔔 [WALKIE_NOTIF] $msg');
+  }
+
   Future<void> init() async {
     if (_initialized) return;
     _initialized = true;
+
+    _log('Initializing WalkieNotificationManager...');
+
+    // Request Android 13+ & iOS Notification Permissions
+    await _requestPermissions();
 
     const androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
     const iosInit = DarwinInitializationSettings(
@@ -62,10 +67,10 @@ class WalkieNotificationManager {
     );
 
     if (Platform.isAndroid) {
-      await _plugin
+      final androidPlugin = _plugin
           .resolvePlatformSpecificImplementation<
-          AndroidFlutterLocalNotificationsPlugin>()
-          ?.createNotificationChannel(
+          AndroidFlutterLocalNotificationsPlugin>();
+      await androidPlugin?.createNotificationChannel(
         const AndroidNotificationChannel(
           channelId,
           channelName,
@@ -77,15 +82,36 @@ class WalkieNotificationManager {
         ),
       );
     }
+
+    _log('WalkieNotificationManager initialization complete.');
   }
 
-
-  void handleLaunchPayload(NotificationResponse? response) {
-    if (response != null) onNotificationTap(response);
+  Future<void> _requestPermissions() async {
+    try {
+      if (Platform.isAndroid) {
+        final status = await Permission.notification.status;
+        _log('Android Notification status: $status');
+        if (!status.isGranted) {
+          final result = await Permission.notification.request();
+          _log('Requested Android Notification permission: $result');
+        }
+      } else if (Platform.isIOS) {
+        final iosPlugin = _plugin.resolvePlatformSpecificImplementation<
+            IOSFlutterLocalNotificationsPlugin>();
+        final granted = await iosPlugin?.requestPermissions(
+          alert: true,
+          badge: true,
+          sound: true,
+        );
+        _log('iOS Notification permission granted: $granted');
+      }
+    } catch (e) {
+      _log('Error requesting notification permission: $e');
+    }
   }
 
-  // ── Public state setters (call from screen / service) ────────────────────
   void setWalkieJoined(bool value, {String? groupId, String? groupName}) {
+    _log('setWalkieJoined: $value | groupId: $groupId | groupName: $groupName');
     isWalkieJoined.value = value;
     if (value) {
       _activeGroupId = groupId ?? _activeGroupId;
@@ -99,14 +125,13 @@ class WalkieNotificationManager {
   }
 
   void setWalkieScreenActive(bool value) {
+    _log('setWalkieScreenActive: $value');
     isWalkieScreenActive.value = value;
-    // Rule 1 & 4: on walkie screen → never show notification
     if (value) {
       hideNotification();
     }
   }
 
-  // ── Core: someone started talking ────────────────────────────────────────
   Future<void> onSomeoneStartedTalking({
     required String speakerId,
     required String speakerName,
@@ -116,32 +141,38 @@ class WalkieNotificationManager {
     final selfId =
         Global.storageServices.get(PrefConst.userId)?.toString() ?? '';
 
-    // Sender side: never notify yourself
-    if (speakerId.isNotEmpty && speakerId == selfId) return;
+    _log('onSomeoneStartedTalking => speakerId: "$speakerId", selfId: "$selfId", speakerName: "$speakerName", group: "$groupName"');
+
+    // Rule: Don't show notification for yourself
+    if (speakerId.isNotEmpty && (speakerId == selfId || speakerId == GroupWalkieService.instance.selfUserId)) {
+      _log('Skipped notification: Speaker is self.');
+      return;
+    }
 
     _activeSpeakerId = speakerId;
     _activeSpeakerName = speakerName.isEmpty ? 'Someone' : speakerName;
-    _activeGroupId = groupId;
-    _activeGroupName = groupName.isEmpty ? 'Walkie Group' : groupName;
+    _activeGroupId = groupId.isEmpty ? _activeGroupId : groupId;
+    _activeGroupName = groupName.isEmpty ? _activeGroupName : groupName;
     isSomeoneTalking.value = true;
     _talkSeconds = 0;
 
-    // State 1: Foreground + Walkie Screen → audio only, NO notification
+    // Rule: Foreground + Walkie Screen -> Audio only, NO notification
     if (isWalkieScreenActive.value) {
+      _log('Skipped notification: User is currently on Walkie Screen.');
       hideNotification();
       return;
     }
 
-    // States 2, 3, 4: show / update ONE notification with live timer
+    _log('Displaying live talking notification for $_activeSpeakerName in $_activeGroupName...');
     await _showOrUpdateTalkingNotification();
     _startDurationTimer();
   }
 
-  // ── Core: talking stopped ────────────────────────────────────────────────
   Future<void> onSomeoneStoppedTalking({
     String? speakerId,
     String? speakerName,
   }) async {
+    _log('onSomeoneStoppedTalking => speakerId: $speakerId');
     isSomeoneTalking.value = false;
     _stopDurationTimer();
 
@@ -150,7 +181,6 @@ class WalkieNotificationManager {
       return;
     }
 
-    // Brief "stopped talking" state, then clear
     if (isNotificationVisible.value) {
       final name = speakerName ?? _activeSpeakerName ?? 'Someone';
       await _showStoppedNotification(name);
@@ -173,10 +203,11 @@ class WalkieNotificationManager {
     _activeSpeakerName = null;
   }
 
-  // ── Notification builders ────────────────────────────────────────────────
   Future<void> _showOrUpdateTalkingNotification() async {
     final title = '$_activeSpeakerName is talking';
-    final body = _activeGroupName ?? 'Walkie Group';
+    final body = (_activeGroupName != null && _activeGroupName!.isNotEmpty)
+        ? _activeGroupName!
+        : 'Walkie-Talkie';
     final timerText = _formatDuration(_talkSeconds);
 
     const androidDetails = AndroidNotificationDetails(
@@ -187,7 +218,7 @@ class WalkieNotificationManager {
       priority: Priority.high,
       ongoing: true,
       autoCancel: false,
-      onlyAlertOnce: true, // critical: no sound/vibrate on every update
+      onlyAlertOnce: true,
       showWhen: false,
       category: AndroidNotificationCategory.call,
       visibility: NotificationVisibility.public,
@@ -213,15 +244,19 @@ class WalkieNotificationManager {
       interruptionLevel: InterruptionLevel.timeSensitive,
     );
 
-    await _plugin.show(
-      notificationId,
-      title,
-      '$body  •  $timerText',
-      const NotificationDetails(android: androidDetails, iOS: iosDetails),
-      payload: _buildPayload(action: 'open'),
-    );
-
-    isNotificationVisible.value = true;
+    try {
+      await _plugin.show(
+        notificationId,
+        title,
+        '$body  •  $timerText',
+        const NotificationDetails(android: androidDetails, iOS: iosDetails),
+        payload: _buildPayload(action: 'open'),
+      );
+      isNotificationVisible.value = true;
+      _log('Notification posted successfully.');
+    } catch (e) {
+      _log('Error posting notification: $e');
+    }
   }
 
   Future<void> _showStoppedNotification(String speakerName) async {
@@ -237,13 +272,15 @@ class WalkieNotificationManager {
       showWhen: false,
     );
 
-    await _plugin.show(
-      notificationId,
-      '$speakerName stopped talking',
-      _activeGroupName ?? 'Walkie Group',
-      const NotificationDetails(android: androidDetails),
-      payload: _buildPayload(action: 'open'),
-    );
+    try {
+      await _plugin.show(
+        notificationId,
+        '$speakerName stopped talking',
+        _activeGroupName ?? 'Walkie Group',
+        const NotificationDetails(android: androidDetails),
+        payload: _buildPayload(action: 'open'),
+      );
+    } catch (_) {}
   }
 
   Future<void> hideNotification() async {
@@ -254,7 +291,6 @@ class WalkieNotificationManager {
     _stopDurationTimer();
   }
 
-  // ── Live duration timer (updates SAME notification ID) ───────────────────
   void _startDurationTimer() {
     _stopDurationTimer();
     _durationTimer = Timer.periodic(const Duration(seconds: 1), (_) async {
@@ -262,7 +298,6 @@ class WalkieNotificationManager {
         _stopDurationTimer();
         return;
       }
-      // Never update notification while user is on walkie screen
       if (isWalkieScreenActive.value) {
         hideNotification();
         return;
@@ -292,8 +327,8 @@ class WalkieNotificationManager {
     ].join('|');
   }
 
-  // ── Tap / action handlers ────────────────────────────────────────────────
   void onNotificationTap(NotificationResponse response) {
+    _log('Notification tapped! Action: ${response.actionId} | Payload: ${response.payload}');
     final actionId = response.actionId;
     final payload = response.payload ?? '';
     final parts = payload.split('|');
@@ -306,7 +341,6 @@ class WalkieNotificationManager {
       return;
     }
 
-    // Default / open_walkie
     _handleOpenWalkie(groupId: groupId, groupName: groupName);
   }
 
@@ -316,14 +350,12 @@ class WalkieNotificationManager {
   }) async {
     await hideNotification();
 
-    // Already on walkie screen for same group
     if (isWalkieScreenActive.value &&
         WalkieLaunchTracker.fromWalkieCall &&
         GroupWalkieService.instance.currentGroupId == groupId) {
       return;
     }
 
-    // Navigate to walkie screen
     if (groupId.isEmpty) return;
 
     final args = <String, dynamic>{
@@ -332,7 +364,6 @@ class WalkieNotificationManager {
       'fromNotification': true,
     };
 
-    // If walkie screen already in stack, just bring it / replace
     if (Get.currentRoute == Routes.groupWalkieScreen ||
         WalkieLaunchTracker.fromWalkieCall) {
       Get.offNamed(Routes.groupWalkieScreen, arguments: args);
@@ -357,7 +388,6 @@ class WalkieNotificationManager {
       } catch (_) {}
     }
 
-    // If user is currently on walkie screen, pop it
     if (isWalkieScreenActive.value) {
       isWalkieScreenActive.value = false;
       if (Get.currentRoute == Routes.groupWalkieScreen) {
@@ -365,27 +395,9 @@ class WalkieNotificationManager {
       }
     }
   }
-
-  // ── App lifecycle helpers ────────────────────────────────────────────────
-  /// Call from WidgetsBindingObserver when app resumes / pauses
-  void onAppLifecycle(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
-      // If user opened app from killed/background and walkie screen not open,
-      // keep notification if someone still talking
-      if (isWalkieScreenActive.value) {
-        hideNotification();
-      }
-    }
-  }
-
-  void disposeManager() {
-    _stopDurationTimer();
-    hideNotification();
-  }
 }
 
-/// Top-level background tap callback (required by plugin)
 @pragma('vm:entry-point')
 void walkieNotificationTapBackground(NotificationResponse response) {
-  // Plugin will re-deliver via onDidReceiveNotificationResponse when app opens
+  // Required background entry point
 }

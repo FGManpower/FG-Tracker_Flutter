@@ -8,6 +8,8 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 
+import '../../../Core/constant/pref_res.dart';
+
 class StatusFeedController extends GetxController {
   late final StatusSocketService _socket;
 
@@ -77,10 +79,14 @@ class StatusFeedController extends GetxController {
     try {
       final res = await StatusRepo.getStatusFeed();
       if (res.status) {
-        final myIds = myStatuses.map((e) => e.id).toSet();
+        final myUserId = int.tryParse(
+          Global.storageServices.get(PrefConst.userId)?.toString() ?? '',
+        );
         final filtered = res.data.where((group) {
-          if (myIds.isEmpty) return true;
-          return !group.statuses.every((s) => myIds.contains(s.id));
+          if (myUserId != null && group.user.id == myUserId) {
+            return false;
+          }
+          return true;
         }).toList();
         contactGroups.assignAll(filtered);
       }
