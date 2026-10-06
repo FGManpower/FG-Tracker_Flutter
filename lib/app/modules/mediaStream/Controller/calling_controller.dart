@@ -7,7 +7,8 @@ import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Core/values/utility.dart';
 import 'package:fgtracker/app/modules/Track/Controller/GroupTrackController.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
-import 'package:flutter/animation.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'package:get/get.dart' hide navigator;
 import 'package:flutter_webrtc/flutter_webrtc.dart';
@@ -622,15 +623,145 @@ class CallingController extends GetxController {
     update();
   }
 
-
-
-
-  Future<void> toggleSpeaker() async {
-    if (isSpeakerOn) {
-      await disableSpeaker();
-    } else {
-      await enableSpeaker();
+  Future<void> selectEarpiece() async {
+    await Helper.setSpeakerphoneOn(false);
+    isSpeakerOn = false;
+    currentAudioRoute.value = "earpiece";
+    if (!isVideoCall.value) {
+      await ProximityScreenLock.setActive(true);
     }
+    update();
+  }
+
+  Future<void> selectBluetooth() async {
+    await Helper.setSpeakerphoneOnButPreferBluetooth();
+    isSpeakerOn = false;
+    currentAudioRoute.value = "bluetooth";
+    await ProximityScreenLock.setActive(false);
+    update();
+  }
+
+  Future<void> toggleSpeaker(BuildContext context) async {
+    showAudioRoutePicker(context);
+  }
+
+  void showAudioRoutePicker(BuildContext context) async {
+    final RenderBox renderBox = context.findRenderObject() as RenderBox;
+    final Offset offset = renderBox.localToGlobal(Offset.zero);
+
+    // Precise calculations to position popup exact upper side of the button
+    final RelativeRect position = RelativeRect.fromRect(
+      Rect.fromLTWH(
+        offset.dx,
+        offset.dy - (isBluetoothConnected.value ? 140.h : 95.h), // Optimized compact height displacement
+        renderBox.size.width,
+        renderBox.size.height,
+      ),
+      Offset.zero & MediaQuery.of(context).size,
+    );
+
+    const Color primaryPurple = Color(0xFF7B58FF);
+
+    final String? selectedRoute = await showMenu<String>(
+      context: context,
+      position: position,
+      color: Colors.white,
+      elevation: 6,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10.r),
+        side: BorderSide(
+          color: primaryPurple.withOpacity(0.12),
+          width: 0.8,
+        ),
+      ),
+      // Super compact size constraints (exactly "half" width)
+      constraints: BoxConstraints(
+        minWidth: 105.w,
+        maxWidth: 125.w,
+      ),
+      items: [
+        PopupMenuItem<String>(
+          value: "earpiece",
+          height: 35.h, // Compact item height
+          padding: EdgeInsets.symmetric(horizontal: 8.w),
+          child: _buildRouteRow(
+            icon: Icons.phone_in_talk_rounded,
+            label: "Earpiece",
+            routeKey: "earpiece",
+          ),
+        ),
+        PopupMenuItem<String>(
+          value: "speaker",
+          height: 35.h,
+          padding: EdgeInsets.symmetric(horizontal: 8.w),
+          child: _buildRouteRow(
+            icon: Icons.volume_up_rounded,
+            label: "Speaker",
+            routeKey: "speaker",
+          ),
+        ),
+        if (isBluetoothConnected.value)
+          PopupMenuItem<String>(
+            value: "bluetooth",
+            height: 35.h,
+            padding: EdgeInsets.symmetric(horizontal: 8.w),
+            child: _buildRouteRow(
+              icon: Icons.bluetooth_audio_rounded,
+              label: "Bluetooth",
+              routeKey: "bluetooth",
+            ),
+          ),
+      ],
+    );
+
+    if (selectedRoute != null) {
+      if (selectedRoute == "earpiece") {
+        await selectEarpiece();
+      } else if (selectedRoute == "speaker") {
+        await enableSpeaker();
+      } else if (selectedRoute == "bluetooth") {
+        await selectBluetooth();
+      }
+    }
+  }
+
+  Widget _buildRouteRow({
+    required IconData icon,
+    required String label,
+    required String routeKey,
+  }) {
+    final bool isSelected = currentAudioRoute.value == routeKey;
+    const Color primaryPurple = Color(0xFF7B58FF);
+    const Color darkText = Color(0xFF0F0B4C);
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(
+          icon,
+          color: isSelected ? primaryPurple : darkText.withOpacity(0.6),
+          size: 15.sp, // Compact icon size
+        ),
+        SizedBox(width: 6.w), // Compact spacing
+        Expanded(
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 12.sp, // Compact text size
+              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+              color: isSelected ? primaryPurple : darkText,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+        Icon(
+          isSelected ? Icons.radio_button_checked_rounded : Icons.radio_button_off_rounded,
+          color: isSelected ? primaryPurple : darkText.withOpacity(0.2),
+          size: 13.sp, // Compact check size
+        ),
+      ],
+    );
   }
 
   String get formattedDuration {
@@ -734,7 +865,7 @@ class CallingController extends GetxController {
     } else if (isVideo) {
       await enableSpeaker();
     } else {
-      await disableSpeaker();
+      await selectEarpiece();
     }
 
     update();
@@ -780,21 +911,35 @@ class CallingController extends GetxController {
         }
       }
 
+      final bool wasBtConnected = isBluetoothConnected.value;
       isBluetoothConnected.value = isBtFound;
 
-      if (isSpeakerOn) {
-        currentAudioRoute.value = "speaker";
-      } else if (isBtFound) {
+      if (!wasBtConnected && isBtFound) {
+        await Helper.setSpeakerphoneOnButPreferBluetooth();
+        isSpeakerOn = false;
         currentAudioRoute.value = "bluetooth";
+        await ProximityScreenLock.setActive(false);
+      } else if (wasBtConnected && !isBtFound) {
+        if (isVideoCall.value) {
+          await enableSpeaker();
+        } else {
+          await selectEarpiece();
+        }
       } else {
-        currentAudioRoute.value = "earpiece";
+        if (isSpeakerOn) {
+          currentAudioRoute.value = "speaker";
+        } else if (isBtFound) {
+          currentAudioRoute.value = "bluetooth";
+        } else {
+          currentAudioRoute.value = "earpiece";
+        }
       }
+
       update();
     } catch (e) {
       log("checkAudioDevices error: $e");
     }
   }
-
   void updatePipPosition({
     required Offset delta,
     required double pipWidth,
@@ -829,6 +974,7 @@ class CallingController extends GetxController {
 
     update();
   }
+
   @override
   void onClose() {
     _controlsTimer?.cancel();
