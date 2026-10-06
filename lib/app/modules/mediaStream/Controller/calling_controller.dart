@@ -10,6 +10,7 @@ import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
+import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:get/get.dart' hide navigator;
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:proximity_screen_lock/proximity_screen_lock.dart';
@@ -21,7 +22,7 @@ import 'package:intl/intl.dart';
 import '../../../Core/global/launchedFromCall.dart';
 import '../../../Data/Services/Socket/Socket_SignallingService.dart';
 
-class CallingController extends GetxController {
+class CallingController extends GetxController with WidgetsBindingObserver {
   final socket = SignallingService.instance.socket;
 
   final localRenderer = RTCVideoRenderer();
@@ -79,7 +80,7 @@ class CallingController extends GetxController {
 
     _controlsTimer = Timer(
       const Duration(seconds: 5),
-          () {
+      () {
         if (!isClosed) {
           areControlsVisible.value = false;
         }
@@ -99,6 +100,9 @@ class CallingController extends GetxController {
 
   @override
   void onInit() {
+    WidgetsBinding.instance.addObserver(this);
+    _initForegroundTask();
+
     callerId = args["callerId"]?.toString() ?? "";
     remoteUserId = args["remoteUserId"]?.toString() ?? "";
     offer = args["offer"];
@@ -124,6 +128,7 @@ class CallingController extends GetxController {
     }
 
     WakelockPlus.enable();
+    _startForegroundCallService();
 
     try {
       GroupTrackingController.instance.initializeLocation();
@@ -138,6 +143,105 @@ class CallingController extends GetxController {
     super.onInit();
   }
 
+  void _initForegroundTask() {
+    FlutterForegroundTask.init(
+      androidNotificationOptions: AndroidNotificationOptions(
+        channelId: 'fgtracker_call_channel',
+        channelName: 'FG Tracker Ongoing Call',
+        channelDescription:
+            'Maintains active microphone and audio in background',
+        channelImportance: NotificationChannelImportance.HIGH,
+        priority: NotificationPriority.HIGH,
+      ),
+      iosNotificationOptions: const IOSNotificationOptions(
+        showNotification: true,
+        playSound: false,
+      ),
+      foregroundTaskOptions: ForegroundTaskOptions(
+        eventAction: ForegroundTaskEventAction.repeat(5000),
+        autoRunOnBoot: false,
+        allowWakeLock: true,
+        allowWifiLock: true,
+      ),
+    );
+  }
+
+  Future<void> _startForegroundCallService() async {
+    try {
+      if (await FlutterForegroundTask.isRunningService) {
+        await FlutterForegroundTask.restartService();
+      } else {
+        await FlutterForegroundTask.startService(
+          notificationTitle: args["callerName"] != null
+              ? "Call with ${args["callerName"]}"
+              : "Active Call",
+          notificationText: "Microphone active in background",
+        );
+      }
+      log("🎙️ Foreground Service successfully started to keep Background Mic active.");
+    } catch (e) {
+      log("Error starting call foreground task: $e");
+    }
+  }
+
+  Future<void> _stopForegroundCallService() async {
+    try {
+      if (await FlutterForegroundTask.isRunningService) {
+        await FlutterForegroundTask.stopService();
+      }
+    } catch (e) {
+      log("Error stopping call foreground task: $e");
+    }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    log("📱 CallingController: AppLifecycleState changed to: $state");
+    if (state == AppLifecycleState.resumed) {
+      log("🔄 App Foregrounded: Forcefully restoring audio routes and reactivating WebRTC tracks...");
+      _ensureAudioTracksActive();
+    } else if (state == AppLifecycleState.paused) {
+      log("⏸️ App Backgrounded: Keeping WebRTC mic tracks alive...");
+      _keepTracksAliveInBackground();
+    }
+  }
+
+  void _ensureAudioTracksActive() {
+    try {
+      if (localStream != null) {
+        for (var track in localStream!.getAudioTracks()) {
+          track.enabled = isAudioOn;
+        }
+      }
+      if (remoteRenderer.srcObject != null) {
+        for (var track in remoteRenderer.srcObject!.getAudioTracks()) {
+          track.enabled = true;
+        }
+      }
+      if (currentAudioRoute.value == "speaker") {
+        enableSpeaker();
+      } else if (currentAudioRoute.value == "bluetooth" &&
+          isBluetoothConnected.value) {
+        selectBluetooth();
+      } else {
+        selectEarpiece();
+      }
+    } catch (e) {
+      log("Error restoring active WebRTC audio states: $e");
+    }
+  }
+
+  void _keepTracksAliveInBackground() {
+    try {
+      if (localStream != null) {
+        for (var track in localStream!.getAudioTracks()) {
+          track.enabled = isAudioOn;
+        }
+      }
+    } catch (e) {
+      log("Error keeping background WebRTC audio alive: $e");
+    }
+  }
 
   Future<void> upgradeToVideoCall() async {
     isVideoOn = true;
@@ -156,7 +260,6 @@ class CallingController extends GetxController {
 
       final vids = localStream!.getVideoTracks();
       if (vids.isEmpty) {
-
         final videoStream = await navigator.mediaDevices.getUserMedia({
           'audio': false,
           'video': {
@@ -173,15 +276,15 @@ class CallingController extends GetxController {
         await localStream!.addTrack(videoTrack);
         await peer!.addTrack(videoTrack, localStream!);
       } else {
-
-        for (var t in vids) { t.enabled = true; }
+        for (var t in vids) {
+          t.enabled = true;
+        }
       }
 
       localRenderer.srcObject = localStream;
       isVideoOn = true;
       is_video = true;
       isVideoCall.value = true;
-
 
       final offer = await peer!.createOffer({
         'offerToReceiveAudio': true,
@@ -191,8 +294,8 @@ class CallingController extends GetxController {
       await setDefaultAudioRouteForCallType(isVideo: true);
 
       final myUserId = Global.storageServices.get(PrefConst.userId).toString();
-      final targetUserId = (myUserId == callerId.toString()) ? remoteUserId : callerId;
-
+      final targetUserId =
+          (myUserId == callerId.toString()) ? remoteUserId : callerId;
 
       socket?.emit("upgradeToVideo", {
         "callId": callId,
@@ -210,7 +313,6 @@ class CallingController extends GetxController {
     }
   }
 
-
   void _listenVideoUpgradeEvents() {
     socket?.off("upgradeToVideo");
     socket?.off("upgradeToVideoAnswer");
@@ -226,7 +328,6 @@ class CallingController extends GetxController {
           RTCSessionDescription(sdp["sdp"], sdp["type"]),
         );
 
-
         final answer = await peer!.createAnswer({
           'offerToReceiveAudio': true,
           'offerToReceiveVideo': true,
@@ -241,7 +342,6 @@ class CallingController extends GetxController {
 
         is_video = true;
         isVideoCall.value = true;
-
 
         callStatus.value = "Connected";
         await setDefaultAudioRouteForCallType(isVideo: true);
@@ -293,7 +393,8 @@ class CallingController extends GetxController {
       if (Get.isOverlaysOpen) {
         Get.back();
       }
-      Get.snackbar("Call Failed", data?['message']?.toString() ?? "Unable to make call");
+      Get.snackbar(
+          "Call Failed", data?['message']?.toString() ?? "Unable to make call");
     });
 
     socket?.on("callBlocked", (data) {
@@ -304,7 +405,10 @@ class CallingController extends GetxController {
       if (Get.isOverlaysOpen) {
         Get.back();
       }
-      Get.snackbar("Call unavailable", data?['message']?.toString() ?? "Communication is not available with this user");
+      Get.snackbar(
+          "Call unavailable",
+          data?['message']?.toString() ??
+              "Communication is not available with this user");
     });
 
     socket?.on("sdpOfferFromCaller", (data) async {
@@ -318,7 +422,8 @@ class CallingController extends GetxController {
         offer = sdp;
         callId = data["callId"] ?? callId;
 
-        await peer!.setRemoteDescription(RTCSessionDescription(sdp["sdp"], sdp["type"]));
+        await peer!.setRemoteDescription(
+            RTCSessionDescription(sdp["sdp"], sdp["type"]));
         final answer = await peer!.createAnswer();
         await peer!.setLocalDescription(answer);
 
@@ -326,7 +431,11 @@ class CallingController extends GetxController {
           if (c.candidate == null) return;
           socket!.emit("IceCandidate", {
             "remoteUserId": callerId,
-            "iceCandidate": {"id": c.sdpMid, "label": c.sdpMLineIndex, "candidate": c.candidate},
+            "iceCandidate": {
+              "id": c.sdpMid,
+              "label": c.sdpMLineIndex,
+              "candidate": c.candidate
+            },
           });
         };
 
@@ -352,7 +461,8 @@ class CallingController extends GetxController {
     socket!.on("callRejected", (data) async {
       _clearTimers();
       if (CallSessionState.sessionId != null) {
-        callEnded(CallSessionState.sessionId.toString(), type: "CallRejectedFromController");
+        callEnded(CallSessionState.sessionId.toString(),
+            type: "CallRejectedFromController");
       }
       resetPeer();
       Get.back();
@@ -362,7 +472,8 @@ class CallingController extends GetxController {
       _clearTimers();
       resetPeer();
       if (CallSessionState.sessionId != null) {
-        callEnded(data['sessionId'].toString(), type: "callEndedFromController");
+        callEnded(data['sessionId'].toString(),
+            type: "callEndedFromController");
       }
       if (args["callType"] == "outGoing") {
         stopSound();
@@ -376,7 +487,8 @@ class CallingController extends GetxController {
       log("==========MissedCallCalled=======$data");
       _clearTimers();
       if (CallSessionState.sessionId != null) {
-        callEnded(CallSessionState.sessionId.toString(), type: "missedCallFromController");
+        callEnded(CallSessionState.sessionId.toString(),
+            type: "missedCallFromController");
       }
       resetPeer();
       Get.back();
@@ -425,8 +537,14 @@ class CallingController extends GetxController {
 
     peer = await createPeerConnection({
       'iceServers': [
-        {'urls': ['stun:stun.l.google.com:19302']},
-        {'urls': Urls.rtcUrl, 'username': Urls.rtcUserName, 'credential': Urls.rtcCredential}
+        {
+          'urls': ['stun:stun.l.google.com:19302']
+        },
+        {
+          'urls': Urls.rtcUrl,
+          'username': Urls.rtcUserName,
+          'credential': Urls.rtcCredential
+        }
       ],
       'iceTransportPolicy': 'all',
     });
@@ -444,8 +562,18 @@ class CallingController extends GetxController {
     };
 
     localStream = await navigator.mediaDevices.getUserMedia({
-      'audio': true,
-      'video': is_video == true ? {'facingMode': isFrontCamera ? 'user' : 'environment'} : false,
+      'audio': {
+        'echoCancellation': true,
+        'noiseSuppression': true,
+        'autoGainControl': true,
+        'googEchoCancellation': true,
+        'googAutoGainControl': true,
+        'googNoiseSuppression': true,
+        'googHighpassFilter': true,
+      },
+      'video': is_video == true
+          ? {'facingMode': isFrontCamera ? 'user' : 'environment'}
+          : false,
     });
 
     _startDeviceMonitoring();
@@ -469,9 +597,9 @@ class CallingController extends GetxController {
       safeAddCandidate(data);
     });
 
-
     if (offer != null) {
-      await peer!.setRemoteDescription(RTCSessionDescription(offer["sdp"], offer["type"]));
+      await peer!.setRemoteDescription(
+          RTCSessionDescription(offer["sdp"], offer["type"]));
       final answer = await peer!.createAnswer();
       await peer!.setLocalDescription(answer);
 
@@ -479,7 +607,11 @@ class CallingController extends GetxController {
         if (c.candidate == null) return;
         socket!.emit("IceCandidate", {
           "remoteUserId": callerId,
-          "iceCandidate": {"id": c.sdpMid, "label": c.sdpMLineIndex, "candidate": c.candidate},
+          "iceCandidate": {
+            "id": c.sdpMid,
+            "label": c.sdpMLineIndex,
+            "candidate": c.candidate
+          },
         });
       };
 
@@ -488,7 +620,8 @@ class CallingController extends GetxController {
         "callerId": callerId,
         "sdpAnswer": answer.toMap(),
       });
-    } else if (fromCallKit || (args["callType"] == "Incoming" && offer == null)) {
+    } else if (fromCallKit ||
+        (args["callType"] == "Incoming" && offer == null)) {
       callStatus.value = "Connecting...";
       socket!.emit("acceptCallFromCallKit", {
         "callerId": callerId,
@@ -501,14 +634,19 @@ class CallingController extends GetxController {
 
       socket!.on("callAnswered", (data) async {
         await peer!.setRemoteDescription(
-          RTCSessionDescription(data["sdpAnswer"]["sdp"], data["sdpAnswer"]["type"]),
+          RTCSessionDescription(
+              data["sdpAnswer"]["sdp"], data["sdpAnswer"]["type"]),
         );
 
         for (var c in iceCandidates) {
           if (c.candidate == null) continue;
           socket!.emit("IceCandidate", {
             "remoteUserId": remoteUserId,
-            "iceCandidate": {"id": c.sdpMid, "label": c.sdpMLineIndex, "candidate": c.candidate},
+            "iceCandidate": {
+              "id": c.sdpMid,
+              "label": c.sdpMLineIndex,
+              "candidate": c.candidate
+            },
           });
         }
         iceCandidates.clear();
@@ -517,7 +655,11 @@ class CallingController extends GetxController {
           if (c.candidate == null) return;
           socket!.emit("IceCandidate", {
             "remoteUserId": remoteUserId,
-            "iceCandidate": {"id": c.sdpMid, "label": c.sdpMLineIndex, "candidate": c.candidate},
+            "iceCandidate": {
+              "id": c.sdpMid,
+              "label": c.sdpMLineIndex,
+              "candidate": c.candidate
+            },
           });
         };
       });
@@ -536,10 +678,11 @@ class CallingController extends GetxController {
 
   Future<void> endCall({String? type}) async {
     _clearTimers();
+    await _stopForegroundCallService();
 
     final myUserId = Global.storageServices.get(PrefConst.userId).toString();
     final targetUser =
-    (myUserId == callerId.toString()) ? remoteUserId : callerId;
+        (myUserId == callerId.toString()) ? remoteUserId : callerId;
 
     var param = {
       "callId": callId,
@@ -575,13 +718,11 @@ class CallingController extends GetxController {
     update();
   }
 
-
   void toggleCamera() {
     if (!isVideoCall.value) return;
 
     final vids = localStream?.getVideoTracks() ?? [];
     if (vids.isEmpty) {
-
       upgradeToVideoCall();
     } else {
       isVideoOn = !isVideoOn;
@@ -613,7 +754,7 @@ class CallingController extends GetxController {
     await Helper.setSpeakerphoneOn(false);
     isSpeakerOn = false;
     currentAudioRoute.value =
-    isBluetoothConnected.value ? "bluetooth" : "earpiece";
+        isBluetoothConnected.value ? "bluetooth" : "earpiece";
 
     if (!isVideoCall.value && !isBluetoothConnected.value) {
       await ProximityScreenLock.setActive(true);
@@ -649,11 +790,10 @@ class CallingController extends GetxController {
     final RenderBox renderBox = context.findRenderObject() as RenderBox;
     final Offset offset = renderBox.localToGlobal(Offset.zero);
 
-    // Precise calculations to position popup exact upper side of the button
     final RelativeRect position = RelativeRect.fromRect(
       Rect.fromLTWH(
         offset.dx,
-        offset.dy - (isBluetoothConnected.value ? 140.h : 95.h), // Optimized compact height displacement
+        offset.dy - (isBluetoothConnected.value ? 140.h : 95.h),
         renderBox.size.width,
         renderBox.size.height,
       ),
@@ -674,7 +814,6 @@ class CallingController extends GetxController {
           width: 0.8,
         ),
       ),
-      // Super compact size constraints (exactly "half" width)
       constraints: BoxConstraints(
         minWidth: 105.w,
         maxWidth: 125.w,
@@ -682,7 +821,7 @@ class CallingController extends GetxController {
       items: [
         PopupMenuItem<String>(
           value: "earpiece",
-          height: 35.h, // Compact item height
+          height: 35.h,
           padding: EdgeInsets.symmetric(horizontal: 8.w),
           child: _buildRouteRow(
             icon: Icons.phone_in_talk_rounded,
@@ -740,14 +879,14 @@ class CallingController extends GetxController {
         Icon(
           icon,
           color: isSelected ? primaryPurple : darkText.withOpacity(0.6),
-          size: 15.sp, // Compact icon size
+          size: 15.sp,
         ),
-        SizedBox(width: 6.w), // Compact spacing
+        SizedBox(width: 6.w),
         Expanded(
           child: Text(
             label,
             style: TextStyle(
-              fontSize: 12.sp, // Compact text size
+              fontSize: 12.sp,
               fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
               color: isSelected ? primaryPurple : darkText,
             ),
@@ -756,9 +895,11 @@ class CallingController extends GetxController {
           ),
         ),
         Icon(
-          isSelected ? Icons.radio_button_checked_rounded : Icons.radio_button_off_rounded,
+          isSelected
+              ? Icons.radio_button_checked_rounded
+              : Icons.radio_button_off_rounded,
           color: isSelected ? primaryPurple : darkText.withOpacity(0.2),
-          size: 13.sp, // Compact check size
+          size: 13.sp,
         ),
       ],
     );
@@ -781,16 +922,11 @@ class CallingController extends GetxController {
       final res = await CallRepo.callDetailData(callId.toString());
       if (res.status == true && res.callDetail != null) {
         apiCallDetail.value = res.callDetail;
-        final rawTime = res.callDetail?.startTime;
-
       }
     } catch (e) {
       log("Error fetching call detail: $e");
     }
-
   }
-
-
 
   void startCallTimer() {
     if (callTimer != null) return;
@@ -844,13 +980,13 @@ class CallingController extends GetxController {
   void stopSound() {
     FlutterRingtonePlayer().stop();
   }
+
   Future<void> startAudioCall() async {
     await WakelockPlus.enable();
     if (!isBluetoothConnected.value) {
       await ProximityScreenLock.setActive(true);
     }
   }
-
 
   Future<void> setDefaultAudioRouteForCallType({
     required bool isVideo,
@@ -870,10 +1006,12 @@ class CallingController extends GetxController {
 
     update();
   }
+
   Future<void> endAudioCall() async {
     await WakelockPlus.disable();
     await ProximityScreenLock.setActive(false);
   }
+
   void _startDeviceMonitoring() {
     checkAudioDevices();
 
@@ -887,10 +1025,11 @@ class CallingController extends GetxController {
       checkAudioDevices();
     });
   }
+
   Future<void> checkAudioDevices() async {
     try {
       final List<MediaDeviceInfo> devices =
-      await navigator.mediaDevices.enumerateDevices();
+          await navigator.mediaDevices.enumerateDevices();
       bool isBtFound = false;
 
       for (var device in devices) {
@@ -940,6 +1079,7 @@ class CallingController extends GetxController {
       log("checkAudioDevices error: $e");
     }
   }
+
   void updatePipPosition({
     required Offset delta,
     required double pipWidth,
@@ -955,11 +1095,9 @@ class CallingController extends GetxController {
           maxTop,
         );
 
-    final double boundedMaxLeft =
-    maxLeft < minLeft ? minLeft : maxLeft;
+    final double boundedMaxLeft = maxLeft < minLeft ? minLeft : maxLeft;
 
-    final double boundedMaxTop =
-    maxTop < minTop ? minTop : maxTop;
+    final double boundedMaxTop = maxTop < minTop ? minTop : maxTop;
 
     pipPosition = Offset(
       (currentPosition.dx + delta.dx).clamp(
@@ -977,8 +1115,10 @@ class CallingController extends GetxController {
 
   @override
   void onClose() {
-    _controlsTimer?.cancel();
+    WidgetsBinding.instance.removeObserver(this);
+    _stopForegroundCallService();
 
+    _controlsTimer?.cancel();
     _clearTimers();
     resetPeer();
     localRenderer.dispose();
