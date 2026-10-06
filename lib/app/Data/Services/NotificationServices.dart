@@ -763,11 +763,13 @@ import 'package:fgtracker/app/Data/Services/Socket/Socket_SignallingService.dart
 import 'package:fgtracker/app/Model/MemberDataRes.dart';
 import 'package:fgtracker/app/Model/call_model.dart';
 import 'package:fgtracker/app/modules/Notification/Controller/Notification_Controller.dart';
+import 'package:fgtracker/app/modules/mediaStream/Controller/group_calling_controller.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:fgtracker/main.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_in_app_pip/flutter_in_app_pip.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
 import 'dart:io';
@@ -1226,6 +1228,14 @@ class firebaseNotificationServices {
         callEnded(sessionId, type: "Notification-services");
         CallStateTracker.isIncomingCallScreenOpen = false;
         flutterLocalNotificationsPlugin.cancelAll();
+      }else if (message.data['screen_name'] == "groupCallEnded") {
+        final c = Get.find<GroupCallingController>();
+        try {
+          if (PictureInPicture.isActive) {
+            PictureInPicture.stopPiP();
+          }
+        } catch (_) {}
+        await c.endCall();
       }
 
     }
