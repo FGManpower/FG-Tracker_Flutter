@@ -356,8 +356,9 @@ class _MyAppState extends State<MyApp> {
               .copyWith(textScaler: const TextScaler.linear(1.0)),
           child: PiPMaterialApp(
             debugShowCheckedModeBanner: false,
+            navigatorKey: ContextUtility.navigatorkey,
             home: GetMaterialApp(
-              navigatorKey: ContextUtility.navigatorkey,
+              // navigatorKey: ContextUtility.navigatorkey,
               debugShowCheckedModeBanner: false,
               title: "FG Tracker",
               initialRoute: Routes.Splash,
