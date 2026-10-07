@@ -354,36 +354,38 @@ class _MyAppState extends State<MyApp> {
         builder: (context, child) => MediaQuery(
           data: MediaQuery.of(context)
               .copyWith(textScaler: const TextScaler.linear(1.0)),
-          child: PiPMaterialApp(
-            debugShowCheckedModeBanner: false,
+          child: GetMaterialApp(
             navigatorKey: ContextUtility.navigatorkey,
-            home: GetMaterialApp(
-              // navigatorKey: ContextUtility.navigatorkey,
-              debugShowCheckedModeBanner: false,
-              title: "FG Tracker",
-              initialRoute: Routes.Splash,
-              getPages: AppPages.routes,
-              theme: ThemeData(
-                appBarTheme: const AppBarTheme(
-                  centerTitle: true,
-                  backgroundColor: Colors.white,
-                  iconTheme: IconThemeData(color: Colors.black),
-                  actionsIconTheme: IconThemeData(color: Colors.black),
-                  elevation: 0,
-                ),
+            debugShowCheckedModeBanner: false,
+            title: "FG Tracker",
+            initialRoute: Routes.Splash,
+            getPages: AppPages.routes,
+            theme: ThemeData(
+              appBarTheme: const AppBarTheme(
+                centerTitle: true,
+                backgroundColor: Colors.white,
+                iconTheme: IconThemeData(color: Colors.black),
+                actionsIconTheme: IconThemeData(color: Colors.black),
+                elevation: 0,
               ),
-              localizationsDelegates: const [
-                GlobalMaterialLocalizations.delegate,
-                GlobalWidgetsLocalizations.delegate,
-                GlobalCupertinoLocalizations.delegate,
-              ],
-              supportedLocales: const [
-                Locale('en', 'US'),
-                Locale('hi', 'IN'),
-                Locale('ur', 'PK'),
-              ],
+            ),
+            localizationsDelegates: const [
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            supportedLocales: const [
+              Locale('en', 'US'),
+              Locale('hi', 'IN'),
+              Locale('ur', 'PK'),
+            ],
+            home:   PiPMaterialApp(
+              debugShowCheckedModeBanner: false,
             ),
           ),
+
+
+
         ),
       ),
     );
