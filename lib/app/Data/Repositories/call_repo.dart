@@ -21,7 +21,7 @@ class CallRepo {
   static Future<recent_Call_Res> getRecentCall(
       {String page = "0", String type = "all"}) async {
     var response =
-        await HttpUtil().get("${Urls.recentCallHistory}?page=$page&type=$type");
+        await HttpUtil().getRecentCall("${Urls.recentCallHistory}?page=$page&type=$type");
     log("[CallRepo] Recent Calls Response: $response");
     return recent_Call_Res.fromJson(response);
   }
