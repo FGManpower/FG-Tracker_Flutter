@@ -98,6 +98,7 @@ class GroupCallingController extends GetxController {
     svc.onCallEnded = _onRemoteCallEnded;
     svc.onParticipantRejected = _onParticipantRejected;
     svc.onParticipantMuteChanged = _onParticipantMuteChanged;
+    svc.onParticipantCameraChanged = _onParticipantCameraChanged;
 
     svc.onScreenShareStarted = (userId) {
       screenSharingUsers.add(userId);
@@ -629,6 +630,18 @@ class GroupCallingController extends GetxController {
     }
   }
 
+  void _onParticipantCameraChanged(String userId, bool isVideoOn) {
+    final participant =
+    activeParticipants.firstWhereOrNull((p) => p.userId == userId);
+
+    if (participant != null) {
+      participant.isVideoOn.value = isVideoOn;
+      activeParticipants.refresh();
+    }
+  }
+
+
+
   void _onRemoteCallEnded() {
     _clearTimers();
     _stopSound();
@@ -655,20 +668,22 @@ class GroupCallingController extends GetxController {
         existing.stream = renderer.srcObject;
         existing.isMuted.value = muted;
         existing.isVideoOn.value =
-            renderer.srcObject?.getVideoTracks().any((t) => t.enabled) ?? false;
+            svc.remoteCameraStates[userId] ?? existing.isVideoOn.value;
         existing.isConnected.value = true;
         remoteList.add(existing);
       } else {
-        remoteList.add(GroupCallParticipant(
-          userId: userId,
-          name: name,
-          profileImage: image,
-          isLocal: false,
-          videoOn: renderer.srcObject?.getVideoTracks().isNotEmpty ?? false,
-          connected: true,
-          renderer: renderer,
-          stream: renderer.srcObject,
-        )..isMuted.value = muted);
+        remoteList.add(
+          GroupCallParticipant(
+            userId: userId,
+            name: name,
+            profileImage: image,
+            isLocal: false,
+            videoOn: svc.remoteCameraStates[userId] ?? true,
+            connected: true,
+            renderer: renderer,
+            stream: renderer.srcObject,
+          )..isMuted.value = muted,
+        );
       }
     });
 
@@ -676,6 +691,7 @@ class GroupCallingController extends GetxController {
       ..clear()
       ..addAll([if (local != null) local, ...remoteList])
       ..refresh();
+
     _refreshNotInCallList();
 
     if (remoteList.isNotEmpty && callStatus.value != "Connected") {
@@ -684,7 +700,6 @@ class GroupCallingController extends GetxController {
       startCallTimer();
     }
   }
-
   void toggleMic() {
     isAudioOn.value = !isAudioOn.value;
     final muted = !isAudioOn.value;
@@ -698,12 +713,19 @@ class GroupCallingController extends GetxController {
 
   void toggleCamera() {
     if (!isVideo || isScreenSharing.value) return;
+
     isVideoOn.value = !isVideoOn.value;
+
     Socket_GroupCallService.instance.localStream
         ?.getVideoTracks()
         .forEach((t) => t.enabled = isVideoOn.value);
+
     activeParticipants.firstWhereOrNull((p) => p.isLocal)?.isVideoOn.value =
         isVideoOn.value;
+
+    Socket_GroupCallService.instance.emitCameraChange(
+      isVideoOn: isVideoOn.value,
+    );
   }
 
   Future<void> switchCamera() async {
@@ -821,6 +843,7 @@ class GroupCallingController extends GetxController {
     svc.onParticipantMuteChanged = null;
     svc.onScreenShareStarted = null;
     svc.onScreenShareStopped = null;
+    svc.onParticipantCameraChanged = null;
     try {
       localRenderer.srcObject = null;
       localRenderer.dispose();

@@ -187,7 +187,7 @@ class GroupParticipantGrid extends StatelessWidget {
               final rendererReady = participant.renderer != null &&
                   participant.renderer!.textureId != null;
 
-              if ((isVideoMode || sharing) && isVideoOn && rendererReady) {
+              if ((isVideoOn || sharing) && rendererReady) {
                 return RTCVideoView(
                   participant.renderer!,
                   mirror: participant.isLocal && !sharing,
@@ -199,7 +199,7 @@ class GroupParticipantGrid extends StatelessWidget {
 
               return _buildFallback(
                 participant,
-                cameraOff: isVideoMode && !isVideoOn && !sharing,
+                cameraOff: !isVideoOn && !sharing,
                 isFullScreen: isFullScreen,
                 isThumbnail: isThumbnail,
               );

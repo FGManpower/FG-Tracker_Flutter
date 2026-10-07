@@ -10,6 +10,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
   file_selector_windows
   firebase_core
   flutter_sound
+  flutter_timezone
   flutter_webrtc
   gal
   geolocator_windows

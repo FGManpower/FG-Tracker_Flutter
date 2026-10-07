@@ -159,7 +159,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
         );
       }
 
-      GroupWalkieService.instance.joinGroup(groupId, groupName: groupName);
+      GroupWalkieService.instance.joinGroup(groupId, );
       _loadGroupMembersFromDb(groupId);
     } else {
       log('Error: Invalid Group ID. Returning to previous screen.');

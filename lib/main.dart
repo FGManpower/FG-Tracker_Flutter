@@ -302,17 +302,17 @@ Future<void> main() async {
     StatusBinding().dependencies();
   }
   ScreenShareForegroundService.init();
-  await WalkieNotificationManager.instance.init();
-  final launch =
-      await FlutterLocalNotificationsPlugin().getNotificationAppLaunchDetails();
-  if (launch?.didNotificationLaunchApp == true) {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final resp = launch!.notificationResponse;
-      if (resp != null) {
-        WalkieNotificationManager.instance.onNotificationTap(resp);
-      }
-    });
-  }
+  // await WalkieNotificationManager.instance.init();
+  // final launch =
+  //     await FlutterLocalNotificationsPlugin().getNotificationAppLaunchDetails();
+  // if (launch?.didNotificationLaunchApp == true) {
+  //   WidgetsBinding.instance.addPostFrameCallback((_) {
+  //     final resp = launch!.notificationResponse;
+  //     if (resp != null) {
+  //       WalkieNotificationManager.instance.onNotificationTap(resp);
+  //     }
+  //   });
+  // }
 
   runApp(const MyApp());
 }
@@ -354,35 +354,38 @@ class _MyAppState extends State<MyApp> {
         builder: (context, child) => MediaQuery(
           data: MediaQuery.of(context)
               .copyWith(textScaler: const TextScaler.linear(1.0)),
-          child: PiPMaterialApp(
+          child: GetMaterialApp(
+            navigatorKey: ContextUtility.navigatorkey,
             debugShowCheckedModeBanner: false,
-            home: GetMaterialApp(
-              navigatorKey: ContextUtility.navigatorkey,
-              debugShowCheckedModeBanner: false,
-              title: "FG Tracker",
-              initialRoute: Routes.Splash,
-              getPages: AppPages.routes,
-              theme: ThemeData(
-                appBarTheme: const AppBarTheme(
-                  centerTitle: true,
-                  backgroundColor: Colors.white,
-                  iconTheme: IconThemeData(color: Colors.black),
-                  actionsIconTheme: IconThemeData(color: Colors.black),
-                  elevation: 0,
-                ),
+            title: "FG Tracker",
+            initialRoute: Routes.Splash,
+            getPages: AppPages.routes,
+            theme: ThemeData(
+              appBarTheme: const AppBarTheme(
+                centerTitle: true,
+                backgroundColor: Colors.white,
+                iconTheme: IconThemeData(color: Colors.black),
+                actionsIconTheme: IconThemeData(color: Colors.black),
+                elevation: 0,
               ),
-              localizationsDelegates: const [
-                GlobalMaterialLocalizations.delegate,
-                GlobalWidgetsLocalizations.delegate,
-                GlobalCupertinoLocalizations.delegate,
-              ],
-              supportedLocales: const [
-                Locale('en', 'US'),
-                Locale('hi', 'IN'),
-                Locale('ur', 'PK'),
-              ],
+            ),
+            localizationsDelegates: const [
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            supportedLocales: const [
+              Locale('en', 'US'),
+              Locale('hi', 'IN'),
+              Locale('ur', 'PK'),
+            ],
+            home:   PiPMaterialApp(
+              debugShowCheckedModeBanner: false,
             ),
           ),
+
+
+
         ),
       ),
     );
