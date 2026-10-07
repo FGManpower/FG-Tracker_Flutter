@@ -28,6 +28,8 @@ import 'ContactBubbleWidget.dart';
 import 'LocationBubbleWidget.dart';
 import '../../Attendance/models/attendance_poll_model.dart';
 import '../../Attendance/widgets/attendance_chat_card.dart';
+import '../../../Data/Services/chat_translation_service.dart';
+import 'chat_translation_widgets.dart';
 import 'message_Widgets.dart';
 
 class ChatBubble extends StatelessWidget {
@@ -77,105 +79,187 @@ class ChatBubble extends StatelessWidget {
         mainAxisAlignment:
         isSentByMe ? MainAxisAlignment.end : MainAxisAlignment.start,
         children: [
+          if (!isSentByMe)
+            Padding(
+              padding: EdgeInsets.only(right: 8.w, top: 4.h),
+              child: Builder(builder: (context) {
+                String? avatarUrl;
+                try {
+                  avatarUrl = controller.memberData.profileImage;
+                } catch (_) {}
+                return CircleAvatar(
+                  radius: 16.r,
+                  backgroundColor: const Color(0xFFECEAFD),
+                  backgroundImage: (avatarUrl != null && avatarUrl.isNotEmpty)
+                      ? NetworkImage(
+                          avatarUrl.startsWith('http')
+                              ? avatarUrl
+                              : "${ConstRes.aImageBaseUrl}$avatarUrl",
+                        )
+                      : null,
+                  child: (avatarUrl == null || avatarUrl.isEmpty)
+                      ? Icon(
+                          Icons.person_rounded,
+                          size: 16.sp,
+                          color: const Color(0xFF4818F0),
+                        )
+                      : null,
+                );
+              }),
+            ),
           Flexible(
             child: Builder(
               builder: (bubbleContext) {
                 return Obx(() {
                   final isAttendance = message.messageType == "attendance";
 
-                  return GestureDetector(
-                    onLongPress: () =>
-                        _showMessageMenu(bubbleContext, isSentByMe),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 300),
-                      constraints: BoxConstraints(
-                        maxWidth: isAttendance
-                            ? MediaQuery.of(context).size.width * 0.88
-                            : MediaQuery.of(context).size.width * 0.75,
-                      ),
-                      padding: isAttendance
-                          ? EdgeInsets.zero
-                          : EdgeInsets.symmetric(
-                        horizontal: 12.w,
-                        vertical: 8.h,
-                      ),
-                      decoration: BoxDecoration(
-                        color: isAttendance
-                            ? Colors.transparent
-                            : (controller.highlightedMessageId.value ==
-                            message.id
-                            ? Colors.yellow.withValues(alpha: .35)
-                            : bgColor),
-                        borderRadius: isAttendance
-                            ? BorderRadius.circular(20.r)
-                            : borderRadius,
-                        boxShadow: isAttendance
-                            ? []
-                            : [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.04),
-                            blurRadius: 4,
-                            offset: const Offset(0, 2),
+                  return Column(
+                    crossAxisAlignment: isSentByMe
+                        ? CrossAxisAlignment.end
+                        : CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      GestureDetector(
+                        onLongPress: () =>
+                            _showMessageMenu(bubbleContext, isSentByMe),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 300),
+                          constraints: BoxConstraints(
+                            maxWidth: isAttendance
+                                ? MediaQuery.of(context).size.width * 0.88
+                                : MediaQuery.of(context).size.width * 0.75,
                           ),
-                        ],
-                      ),
-                      child: IntrinsicWidth(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            _buildReplyPreview(
-                              message,
-                              isSentByMe,
-                            ),
-                            if (message.isForwarded == true)
-                              Padding(
-                                padding: EdgeInsets.only(bottom: 5.h),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(
-                                      Icons.forward_rounded,
-                                      size: 14.sp,
-                                      color: Colors.grey.shade600,
-                                    ),
-                                    SizedBox(width: 4.w),
-                                    Text(
-                                      "Forwarded",
-                                      style: TextStyle(
-                                        fontSize: 10.sp,
-                                        fontStyle: FontStyle.italic,
-                                        color: Colors.grey.shade600,
-                                        fontFamily: FontFamily.interMedium,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            if (_isPlainTextMessage(message))
-                              _buildTextWithTime(
-                                message: message,
-                                textColor: textColor,
-                                isSentByMe: isSentByMe,
-                              )
-                            else ...[
-                              _buildMessageContent(
-                                message,
-                                textColor,
-                                isSentByMe,
-                              ),
-                              SizedBox(height: 4.h),
-                              Align(
-                                alignment: Alignment.centerRight,
-                                child: _buildTimeRow(
-                                  isSentByMe,
-                                ),
+                          padding: isAttendance
+                              ? EdgeInsets.zero
+                              : EdgeInsets.symmetric(
+                            horizontal: 12.w,
+                            vertical: 8.h,
+                          ),
+                          decoration: BoxDecoration(
+                            color: isAttendance
+                                ? Colors.transparent
+                                : (controller.highlightedMessageId.value ==
+                                message.id
+                                ? Colors.yellow.withValues(alpha: .35)
+                                : bgColor),
+                            borderRadius: isAttendance
+                                ? BorderRadius.circular(20.r)
+                                : borderRadius,
+                            boxShadow: isAttendance
+                                ? []
+                                : [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.04),
+                                blurRadius: 4,
+                                offset: const Offset(0, 2),
                               ),
                             ],
-                          ],
+                          ),
+                          child: IntrinsicWidth(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                _buildReplyPreview(
+                                  message,
+                                  isSentByMe,
+                                ),
+                                if (message.isForwarded == true)
+                                  Padding(
+                                    padding: EdgeInsets.only(bottom: 5.h),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          Icons.forward_rounded,
+                                          size: 14.sp,
+                                          color: Colors.grey.shade600,
+                                        ),
+                                        SizedBox(width: 4.w),
+                                        Text(
+                                          "Forwarded",
+                                          style: TextStyle(
+                                            fontSize: 10.sp,
+                                            fontStyle: FontStyle.italic,
+                                            color: Colors.grey.shade600,
+                                            fontFamily: FontFamily.interMedium,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                if (_isPlainTextMessage(message)) ...[
+                                  _buildTextWithTime(
+                                    message: message,
+                                    textColor: textColor,
+                                    isSentByMe: isSentByMe,
+                                  ),
+                                  if (!isSentByMe)
+                                    Obx(() {
+                                      final mId = (message.id != null && message.id.toString().isNotEmpty && message.id.toString() != "0")
+                                          ? message.id.toString()
+                                          : "msg_${message.content.hashCode}";
+                                      final originalText = message.content?.toString() ?? '';
+                                      final isHindi = RegExp(r'[\u0900-\u097F]').hasMatch(originalText);
+                                      final targetLang = isHindi ? 'en' : 'hi';
+                                      final cacheKey = '${mId}_$targetLang';
+                                      final translationService =
+                                          ChatTranslationService.instance;
+                                      final translated =
+                                          translationService.translations[cacheKey];
+                                      final isShown = translationService
+                                              .showTranslated[cacheKey] ==
+                                          true;
+
+                                      if (translated != null &&
+                                          translated.isNotEmpty &&
+                                          isShown) {
+                                        return ChatTranslatedCard(
+                                          messageId: mId,
+                                          translatedText: translated,
+                                          targetLang: targetLang,
+                                          onToggleOriginal: () {
+                                            translationService
+                                                .toggleTranslationVisibility(
+                                              mId,
+                                              targetLang: targetLang,
+                                            );
+                                          },
+                                        );
+                                      }
+                                      return const SizedBox.shrink();
+                                    }),
+                                ] else ...[
+                                  _buildMessageContent(
+                                    message,
+                                    textColor,
+                                    isSentByMe,
+                                  ),
+                                  SizedBox(height: 4.h),
+                                  Align(
+                                    alignment: Alignment.centerRight,
+                                    child: _buildTimeRow(
+                                      isSentByMe,
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
                         ),
                       ),
-                    ),
+                      if (!isSentByMe &&
+                          _isPlainTextMessage(message) &&
+                          (message.content?.toString().trim().isNotEmpty ??
+                              false))
+                        ChatMessageActionRow(
+                          messageId: (message.id != null && message.id.toString().isNotEmpty && message.id.toString() != "0")
+                              ? message.id.toString()
+                              : "msg_${message.content.hashCode}",
+                          originalText: message.content?.toString() ?? '',
+                          isSentByMe: isSentByMe,
+                        ),
+                    ],
                   );
                 });
               },
@@ -1292,88 +1376,96 @@ class GroupChatBubble extends StatelessWidget {
           Flexible(
             child: Builder(
               builder: (bubbleContext) {
-                return Obx(
-                      () => GestureDetector(
-                    onLongPress: () => _showMessageMenu(
-                      bubbleContext,
-                      isSentByMe,
-                    ),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 300),
-                      constraints: BoxConstraints(
-                        maxWidth: MediaQuery.of(context).size.width * 0.75,
-                      ),
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 12.w,
-                        vertical: 8.h,
-                      ),
-                      decoration: BoxDecoration(
-                        color:
-                        controller.highlightedMessageId.value == message.id
-                            ? Colors.yellow.withValues(
-                          alpha: .35,
-                        )
-                            : bgColor,
-                        borderRadius: borderRadius,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(
-                              alpha: 0.04,
-                            ),
-                            blurRadius: 4,
-                            offset: const Offset(0, 2),
+                return Obx(() {
+                  return Column(
+                    crossAxisAlignment: isSentByMe
+                        ? CrossAxisAlignment.end
+                        : CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      GestureDetector(
+                        onLongPress: () => _showMessageMenu(
+                          bubbleContext,
+                          isSentByMe,
+                        ),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 300),
+                          constraints: BoxConstraints(
+                            maxWidth: MediaQuery.of(context).size.width * 0.75,
                           ),
-                        ],
-                      ),
-                      child: IntrinsicWidth(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            if (isGroup && !isSentByMe)
-                              Padding(
-                                padding: EdgeInsets.only(
-                                  bottom: 4.h,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 12.w,
+                            vertical: 8.h,
+                          ),
+                          decoration: BoxDecoration(
+                            color: controller.highlightedMessageId.value ==
+                                    message.id
+                                ? Colors.yellow.withValues(
+                                    alpha: .35,
+                                  )
+                                : bgColor,
+                            borderRadius: borderRadius,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(
+                                  alpha: 0.04,
                                 ),
-                                child: Text(
-                                  message.senderName?.toString() ?? "",
-                                  style: TextStyle(
-                                    fontSize: 12.sp,
-                                    fontWeight: FontWeight.w700,
-                                    color: _purple,
-                                  ),
-                                ),
-                              ),
-                            _buildReplyPreview(
-                              message,
-                              isSentByMe,
-                            ),
-                            if (_isPlainTextMessage(message))
-                              _buildTextWithTime(
-                                message: message,
-                                textColor: textColor,
-                                isSentByMe: isSentByMe,
-                              )
-                            else ...[
-                              _buildMessageContent(
-                                message,
-                                textColor,
-                                isSentByMe,
-                              ),
-                              SizedBox(height: 4.h),
-                              Align(
-                                alignment: Alignment.centerRight,
-                                child: _buildTimeRow(
-                                  isSentByMe,
-                                ),
+                                blurRadius: 4,
+                                offset: const Offset(0, 2),
                               ),
                             ],
-                          ],
+                          ),
+                          child: IntrinsicWidth(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                if (isGroup && !isSentByMe)
+                                  Padding(
+                                    padding: EdgeInsets.only(
+                                      bottom: 4.h,
+                                    ),
+                                    child: Text(
+                                      message.senderName?.toString() ?? "",
+                                      style: TextStyle(
+                                        fontSize: 12.sp,
+                                        fontWeight: FontWeight.w700,
+                                        color: _purple,
+                                      ),
+                                    ),
+                                  ),
+                                _buildReplyPreview(
+                                  message,
+                                  isSentByMe,
+                                ),
+                                if (_isPlainTextMessage(message))
+                                  _buildTextWithTime(
+                                    message: message,
+                                    textColor: textColor,
+                                    isSentByMe: isSentByMe,
+                                  )
+                                else ...[
+                                  _buildMessageContent(
+                                    message,
+                                    textColor,
+                                    isSentByMe,
+                                  ),
+                                  SizedBox(height: 4.h),
+                                  Align(
+                                    alignment: Alignment.centerRight,
+                                    child: _buildTimeRow(
+                                      isSentByMe,
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                  ),
-                );
+                    ],
+                  );
+                });
               },
             ),
           ),

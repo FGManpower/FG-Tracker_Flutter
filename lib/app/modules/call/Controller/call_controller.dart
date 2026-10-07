@@ -344,7 +344,7 @@ class CallController extends GetxController {
         final GroupMemberModel groupMemberRes = await TrackRepo.getGroupMember(
           page: '1',
           filter: 'all',
-          limit: 100,
+          limit: 10,
         );
 
         final List<GroupMemberData> members =

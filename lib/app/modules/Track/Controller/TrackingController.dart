@@ -265,7 +265,13 @@ class TrackController extends GetxController {
       if (memberRes.status == true &&
           memberRes.memberData != null &&
           memberRes.memberData!.isNotEmpty) {
-        totalMembersCount.value = memberRes.memberData!.length;
+        final String myUserIdStr =
+            Global.storageServices.get(PrefConst.userId)?.toString() ?? '';
+        final otherMembers = memberRes.memberData!
+            .where((m) =>
+                myUserIdStr.isEmpty || m.userId?.toString() != myUserIdStr)
+            .toList();
+        totalMembersCount.value = otherMembers.length;
       }
     } catch (_) {}
   }
@@ -999,8 +1005,12 @@ class TrackController extends GetxController {
         }
       }
 
-      // Update the real member count for this group in groupList & filteredGroups
-      final int realMemberCount = allMemberUserIds.length;
+      // Update the real member count for this group in groupList & filteredGroups (excluding "You")
+      final String currentUserId =
+          Global.storageServices.get(PrefConst.userId)?.toString() ?? '';
+      final int realMemberCount = allMemberUserIds
+          .where((uId) => currentUserId.isEmpty || uId != currentUserId)
+          .length;
       if (realMemberCount > 0) {
         for (final g in groupList) {
           if (g.id?.toString() == groupId) {
@@ -1055,8 +1065,6 @@ class TrackController extends GetxController {
       }
 
       // Sort: 1st: You, 2nd: Ghost Mode, 3rd: All other members
-      final String currentUserId =
-          Global.storageServices.get(PrefConst.userId)?.toString() ?? '';
       detailedMembers.sort((a, b) {
         final aId = (a.userId ?? a.id ?? '').toString();
         final bId = (b.userId ?? b.id ?? '').toString();
@@ -2012,23 +2020,32 @@ class TrackController extends GetxController {
           final dStr = u.distance!.trim();
           final cleaned = dStr.replaceAll(RegExp(r'[^\d.]'), '');
           final numVal = double.tryParse(cleaned);
-          if (numVal != null && numVal <= 0.05) {
-            distanceText = "Nearby you";
-          } else if (dStr.startsWith("0.0") ||
-              dStr == "0 m" ||
-              dStr == "0 m away" ||
-              dStr.toLowerCase() == "nearby" ||
-              dStr.toLowerCase() == "nearby you") {
-            distanceText = "Nearby you";
-          } else if (dStr.contains("away")) {
+          if (dStr.contains("away")) {
             distanceText = dStr;
           } else if (dStr.contains("km") || dStr.contains("m")) {
             distanceText = "$dStr away";
+          } else if (numVal != null) {
+            distanceText = "${numVal.toStringAsFixed(2)} km away";
           } else {
-            distanceText = "$dStr km away";
+            distanceText = dStr;
+          }
+        } else if (currentLat.value != 0.0 &&
+            currentLong.value != 0.0 &&
+            markerLat != 0.0 &&
+            markerLng != 0.0) {
+          final meters = Geolocator.distanceBetween(
+            currentLat.value,
+            currentLong.value,
+            markerLat,
+            markerLng,
+          );
+          if (meters < 1000) {
+            distanceText = "${meters.round()} m away";
+          } else {
+            distanceText = "${(meters / 1000.0).toStringAsFixed(2)} km away";
           }
         } else {
-          distanceText = "Nearby you";
+          distanceText = "Location unavailable";
         }
 
         newMarkers.add(
