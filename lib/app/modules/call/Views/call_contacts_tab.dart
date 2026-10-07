@@ -256,7 +256,8 @@ class _CallContactsTabState extends State<CallContactsTab> {
               SizedBox(height: 12.h),
               Center(
                 child: Text(
-                  controller.searchQuery.value.isNotEmpty
+                  (controller.searchQuery.value.isNotEmpty ||
+                          controller.dialNumber.value.isNotEmpty)
                       ? "No contacts match your search"
                       : "No registered contacts found",
                   style: TextStyle(

@@ -17,6 +17,7 @@ import 'package:fgtracker/app/modules/status/binding/status_binding.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_in_app_pip/flutter_in_app_pip.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -305,7 +306,6 @@ Future<void> main() async {
   final launch =
       await FlutterLocalNotificationsPlugin().getNotificationAppLaunchDetails();
   if (launch?.didNotificationLaunchApp == true) {
-    // payload handled after GetMaterialApp is ready
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final resp = launch!.notificationResponse;
       if (resp != null) {
@@ -354,31 +354,34 @@ class _MyAppState extends State<MyApp> {
         builder: (context, child) => MediaQuery(
           data: MediaQuery.of(context)
               .copyWith(textScaler: const TextScaler.linear(1.0)),
-          child: GetMaterialApp(
-            navigatorKey: ContextUtility.navigatorkey,
+          child: PiPMaterialApp(
             debugShowCheckedModeBanner: false,
-            title: "FG Tracker",
-            initialRoute: Routes.Splash,
-            getPages: AppPages.routes,
-            theme: ThemeData(
-              appBarTheme: const AppBarTheme(
-                centerTitle: true,
-                backgroundColor: Colors.white,
-                iconTheme: IconThemeData(color: Colors.black),
-                actionsIconTheme: IconThemeData(color: Colors.black),
-                elevation: 0,
+            home: GetMaterialApp(
+              navigatorKey: ContextUtility.navigatorkey,
+              debugShowCheckedModeBanner: false,
+              title: "FG Tracker",
+              initialRoute: Routes.Splash,
+              getPages: AppPages.routes,
+              theme: ThemeData(
+                appBarTheme: const AppBarTheme(
+                  centerTitle: true,
+                  backgroundColor: Colors.white,
+                  iconTheme: IconThemeData(color: Colors.black),
+                  actionsIconTheme: IconThemeData(color: Colors.black),
+                  elevation: 0,
+                ),
               ),
+              localizationsDelegates: const [
+                GlobalMaterialLocalizations.delegate,
+                GlobalWidgetsLocalizations.delegate,
+                GlobalCupertinoLocalizations.delegate,
+              ],
+              supportedLocales: const [
+                Locale('en', 'US'),
+                Locale('hi', 'IN'),
+                Locale('ur', 'PK'),
+              ],
             ),
-            localizationsDelegates: const [
-              GlobalMaterialLocalizations.delegate,
-              GlobalWidgetsLocalizations.delegate,
-              GlobalCupertinoLocalizations.delegate,
-            ],
-            supportedLocales: const [
-              Locale('en', 'US'),
-              Locale('hi', 'IN'),
-              Locale('ur', 'PK'),
-            ],
           ),
         ),
       ),

@@ -19,6 +19,7 @@ import 'package:fgtracker/app/modules/auth/Views/registration_screen.dart';
 import 'package:fgtracker/app/modules/home/Views/AboutUs.dart';
 import 'package:fgtracker/app/modules/home/Views/home_screen.dart';
 import 'package:fgtracker/app/modules/mediaStream/Bindings/call_binding.dart';
+import 'package:fgtracker/app/modules/mediaStream/Controller/group_calling_controller.dart';
 import 'package:fgtracker/app/modules/mediaStream/Views/calling_screen.dart';
 import 'package:get/get.dart';
 import '../modules/Group/Views/QRScanScreen.dart';
@@ -261,12 +262,22 @@ class AppPages {
     ),
 
 
+    // GetPage(
+    //   name: Routes.groupCallingScreen,
+    //   page: () => const GroupCallingScreen(),
+    //   binding: GroupCallBinding(),
+    //   transition: Transition.rightToLeft,
+    //   transitionDuration: const Duration(milliseconds: 500),
+    // ),
+
     GetPage(
       name: Routes.groupCallingScreen,
       page: () => const GroupCallingScreen(),
-      binding: GroupCallBinding(),
-      transition: Transition.rightToLeft,
-      transitionDuration: const Duration(milliseconds: 500),
+      binding: BindingsBuilder(() {
+        if (!Get.isRegistered<GroupCallingController>()) {
+          Get.put(GroupCallingController(), permanent: true);
+        }
+      }),
     ),
     GetPage(
       name: Routes.groupIncomingCallScreen,
