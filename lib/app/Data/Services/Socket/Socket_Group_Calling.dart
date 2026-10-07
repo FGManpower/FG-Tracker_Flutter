@@ -31,7 +31,7 @@ class Socket_GroupCallService {
   final Map<String, RTCVideoRenderer> remoteRenderers = {};
   final Map<String, List<RTCIceCandidate>> _pendingIce = {};
   final Set<String> remoteUsers = {};
-
+  final Map<String, bool> remoteCameraStates = {};
   final Map<String, Map<String, dynamic>> participantMeta = {};
 
   Function()? onParticipantsUpdated;
@@ -39,7 +39,9 @@ class Socket_GroupCallService {
   Function(String userId)? onParticipantJoined;
   Function(String userId)? onParticipantLeft;
   Function(String userId, String? userName, String? userProfile)?
-  onParticipantRejected;  Function(String userId, bool isMuted)? onParticipantMuteChanged;
+  onParticipantRejected;
+  Function(String userId, bool isMuted)? onParticipantMuteChanged;
+  Function(String userId, bool isVideoOn)? onParticipantCameraChanged;
   Function(Map<String, dynamic> data)? onIncomingCallReceived;
 
 
@@ -200,6 +202,7 @@ class Socket_GroupCallService {
       "group_call_participant_left",
       "group_call_participant_rejected",
       "group_call_participant_mute",
+      "group_call_camera_changed",
       "group_call_offer",
       "group_call_answer",
       "group_call_ice",
@@ -288,6 +291,31 @@ class Socket_GroupCallService {
       onParticipantMuteChanged?.call(userId, isMuted);
       onParticipantsUpdated?.call();
     });
+
+    socket?.on("group_call_camera_changed", (raw) {
+      _log("📹 group_call_camera_changed: $raw");
+
+      if (raw is! Map) return;
+
+      final data = Map<String, dynamic>.from(raw);
+      final userId = data['userId']?.toString();
+
+      if (userId == null || userId.isEmpty || userId == _selfUserId) {
+        return;
+      }
+
+      final isVideoOn = data['isVideoOn'] == true;
+
+      remoteCameraStates[userId] = isVideoOn;
+
+      _log("📹 Remote Camera Updated: $userId => $isVideoOn");
+
+      onParticipantCameraChanged?.call(userId, isVideoOn);
+    });
+
+
+
+
 
     socket?.on("group_call_participant_left", (raw) async {
       _log(" group_call_participant_left: $raw");
@@ -512,9 +540,24 @@ class Socket_GroupCallService {
     );
   }
 
-  // ============================================================
-  // SCREEN SHARE EMIT
-  // ============================================================
+  void emitCameraChange({required bool isVideoOn}) {
+    if (currentCallId == null || currentGroupId == null) {
+      _log('emitCameraChange skipped: no active call');
+      return;
+    }
+
+    _log('📹 emit group_call_camera_change isVideoOn=$isVideoOn');
+
+    socket?.emitWithAck(
+      "group_call_camera_change",
+      {
+        "callId": int.tryParse(currentCallId!) ?? currentCallId,
+        "groupId": int.tryParse(currentGroupId!) ?? currentGroupId,
+        "isVideoOn": isVideoOn,
+      },
+      ack: (r) => _log('group_call_camera_change ACK: $r'),
+    );
+  }
 
   /// Emit: start_group_screen_share
   /// Params: callId, groupId
@@ -778,7 +821,7 @@ class Socket_GroupCallService {
     if (pc != null) await pc.close();
 
     _pendingIce.remove(remoteId);
-
+    remoteCameraStates.remove(remoteId);
     final renderer = remoteRenderers.remove(remoteId);
     if (renderer != null) {
       renderer.srcObject = null;
@@ -805,6 +848,7 @@ class Socket_GroupCallService {
     remoteRenderers.clear();
     remoteUsers.clear();
     participantMeta.clear();
+    remoteCameraStates.clear();
 
     try {
       localStream?.getTracks().forEach((t) => t.stop());
