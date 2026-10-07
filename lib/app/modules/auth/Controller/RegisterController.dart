@@ -3,8 +3,8 @@ import 'package:fgtracker/app/Core/values/Dialog/Common_dialog.dart';
 import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Core/values/loading.dart';
-import 'package:fgtracker/app/Core/values/bottomSheet.dart'; // ✅ ADD THIS
-import 'package:fgtracker/app/Core/values/utility.dart'; // ✅ ADD THIS
+import 'package:fgtracker/app/Core/values/bottomSheet.dart';
+import 'package:fgtracker/app/Core/values/utility.dart';
 import 'package:fgtracker/app/Data/Repositories/Auth_repo.dart';
 import 'package:fgtracker/app/Model/ProfileRes.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
@@ -70,8 +70,8 @@ class RegistrationController extends GetxController {
       final phone = (userData.mobileNo != null && userData.mobileNo!.isNotEmpty)
           ? userData.mobileNo!
           : (Global.storageServices.get(PrefConst.userPhone)?.toString() ??
-              args?['mobNo']?.toString() ??
-              "");
+          args?['mobNo']?.toString() ??
+          "");
       if (phone.isNotEmpty) phoneController.text = phone;
 
       // 3. Email Address (Pre-filled directly from backend UserData, storage, or args)
@@ -176,7 +176,6 @@ class RegistrationController extends GetxController {
     super.dispose();
   }
 
-  // ✅ FIXED: ModalImage is used as a class, not a parameter type
   void pickImage(BuildContext context) {
     ModalImage bottomNavbar = ModalImage(
       isImageCroppable: true,
@@ -193,10 +192,6 @@ class RegistrationController extends GetxController {
   Future<void> register(RegistrationController controller) async {
     if (registerKey.currentState!.validate()) {
       try {
-        if (controller.selectedImage.value == '') {
-          CommonDialog.errorMessage("Profile image can't be empty");
-          return;
-        }
         if (controller.gender.value == "") {
           CommonDialog.errorMessage("Please select your gender");
           return;

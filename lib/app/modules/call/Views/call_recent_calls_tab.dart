@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
+import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Data/Services/call_service.dart';
 import 'package:fgtracker/app/Data/Services/group_call_service.dart';
@@ -8,6 +9,7 @@ import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/modules/call/widget/call_widget.dart';
 import 'package:fgtracker/app/modules/call/Controller/call_controller.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
+import 'package:fgtracker/gen/assets.gen.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -72,27 +74,22 @@ class _CallRecentCallsTabState extends State<CallRecentCallsTab> {
       final Map<String, List<Map<String, String>>> groupedCalls =
           controller.groupedRecentCalls;
 
-      if (controller.recentCallList.isEmpty) {
-        return RefreshIndicator(
-          color: const Color(0xFF4818F0),
-          onRefresh: controller.refreshRecentCalls,
-          child: ListView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            children: const [
-              _EmptyState(message: "No recent calls yet"),
-            ],
-          ),
-        );
-      }
+      final bool isDialOpen = controller.isDialPadOpen.value;
 
-      if (groupedCalls.isEmpty) {
+      if (controller.recentCallList.isEmpty || groupedCalls.isEmpty) {
         return RefreshIndicator(
           color: const Color(0xFF4818F0),
           onRefresh: controller.refreshRecentCalls,
           child: ListView(
             physics: const AlwaysScrollableScrollPhysics(),
-            children: const [
-              _EmptyState(message: "No recent calls found"),
+            padding: EdgeInsets.only(bottom: isDialOpen ? 390.h : 90.h),
+            children: [
+              _EmptyState(
+                isDialOpen: isDialOpen,
+                message: controller.searchQuery.value.isNotEmpty
+                    ? "No recent calls match your search"
+                    : "No recent calls yet",
+              ),
             ],
           ),
         );
@@ -104,7 +101,7 @@ class _CallRecentCallsTabState extends State<CallRecentCallsTab> {
         child: ListView(
           controller: _scrollController,
           physics: const AlwaysScrollableScrollPhysics(),
-          padding: EdgeInsets.fromLTRB(16.w, 4.h, 16.w, 90.h),
+          padding: EdgeInsets.fromLTRB(16.w, 4.h, 16.w, isDialOpen ? 390.h : 90.h),
           children: [
             for (final entry in groupedCalls.entries) ...[
               Padding(
@@ -161,13 +158,16 @@ class _CallRecentCallsTabState extends State<CallRecentCallsTab> {
                             }
                           } else {
                             final call = entry.value[i];
+                            final String phone = (call['mobileNo']?.isNotEmpty == true)
+                                ? call['mobileNo']!
+                                : (call['phone'] ?? '');
 
                             Get.to(
-                                  () => ContactProfileScreen(
+                              () => ContactProfileScreen(
                                 contactData: MemberData(
                                   userId: int.tryParse(call['callerId'] ?? ''),
                                   name: call['name'],
-                                  mobileNo: call['mobileNo'],
+                                  mobileNo: phone,
                                   profileImage: call['avatar'],
                                   isOnline: call['isOnline'] == 'true',
                                 ),
@@ -201,39 +201,45 @@ class _CallRecentCallsTabState extends State<CallRecentCallsTab> {
                                   context,
                                   groupId: gId,
                                   groupName:
-                                  entry.value[i]['name'] ?? "Group Call",
+                                      entry.value[i]['name'] ?? "Group Call",
                                   groupProfile: entry.value[i]['avatar'],
                                   isVideo: isVideo,
                                   memberCount: int.tryParse(entry.value[i]
-                                  ['memberCount'] ??
-                                      '0') ??
+                                              ['memberCount'] ??
+                                          '0') ??
                                       0,
                                 );
                               } else {
-                                if (isVideo) {
+                                final remoteId =
+                                    entry.value[i]['callerId']?.toString() ?? '';
+                                final callerName =
+                                    entry.value[i]['name']?.toString() ?? 'User';
+
+                                if (remoteId.isNotEmpty &&
+                                    remoteId !=
+                                        Global.storageServices
+                                            .get(PrefConst.userId)
+                                            ?.toString()) {
                                   CallService().startCall(
                                     context,
                                     callerId: Global.storageServices
                                         .get(PrefConst.userId)
                                         .toString(),
-                                    remoteUserId:
-                                    entry.value[i]['callerId'].toString(),
-                                    is_video: true,
-                                    callerName:
-                                    entry.value[i]['name'].toString(),
+                                    remoteUserId: remoteId,
+                                    is_video: isVideo,
+                                    callerName: callerName,
                                   );
                                 } else {
-                                  CallService().startCall(
-                                    context,
-                                    callerId: Global.storageServices
-                                        .get(PrefConst.userId)
-                                        .toString(),
-                                    remoteUserId:
-                                    entry.value[i]['callerId'].toString(),
-                                    is_video: false,
-                                    callerName:
-                                    entry.value[i]['name'].toString(),
-                                  );
+                                  // If remoteId couldn't be resolved, fallback to dialing by controller
+                                  final String phone = entry.value[i]['mobileNo'] ??
+                                      entry.value[i]['phone'] ??
+                                      '';
+                                  if (phone.isNotEmpty) {
+                                    controller.dialNumber.value = phone;
+                                    controller.makeCall(isVideo: isVideo);
+                                  } else {
+                                    Utils().fluttertoast("Unable to call this contact");
+                                  }
                                 }
                               }
                             },
@@ -590,24 +596,37 @@ class _RecentSkeletonTile extends StatelessWidget {
 }
 
 class _EmptyState extends StatelessWidget {
-  const _EmptyState({required this.message});
+  const _EmptyState({required this.message, this.isDialOpen = false});
 
   final String message;
+  final bool isDialOpen;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: 40.h),
-      child: Center(
-        child: Text(
-          message,
-          style: TextStyle(
-            fontSize: 14.sp,
-            color: Colors.grey,
-            fontFamily: FontFamily.interRegular,
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        SizedBox(height: isDialOpen ? 15.h : 60.h),
+        Center(
+          child: Image.asset(
+            Assets.images.notFount.path,
+            width: isDialOpen ? 140.w : 240.w,
+            height: isDialOpen ? 140.w : 240.w,
+            fit: BoxFit.contain,
           ),
         ),
-      ),
+        SizedBox(height: 12.h),
+        Center(
+          child: Text(
+            message,
+            style: TextStyle(
+              fontSize: 14.sp,
+              fontFamily: FontFamily.interMedium,
+              color: const Color(0xFF64748B),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
