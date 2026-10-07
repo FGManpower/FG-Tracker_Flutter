@@ -780,36 +780,61 @@ class DialogBox {
       }
     }
 
-    // Recalculate distance if 0
-    double effectiveDistance = distance;
-    if (effectiveDistance <= 0.0 &&
-        destination.latitude != 0.0 &&
-        destination.longitude != 0.0) {
+    // Resolve destination coordinates fallback if 0
+    LatLng finalDestination = destination;
+    if (finalDestination.latitude == 0.0 &&
+        finalDestination.longitude == 0.0 &&
+        userId != null) {
       if (Get.isRegistered<TrackController>()) {
         final tc = Get.find<TrackController>();
-        if (tc.currentLat.value != 0.0 && tc.currentLong.value != 0.0) {
-          final meters = Geolocator.distanceBetween(
-            tc.currentLat.value,
-            tc.currentLong.value,
-            destination.latitude,
-            destination.longitude,
-          );
-          effectiveDistance = meters / 1000.0;
-        }
-      } else if (Get.isRegistered<HomeController>()) {
-        final hc = Get.find<HomeController>();
-        if (hc.currentLocation.value != null &&
-            hc.currentLocation.value!.latitude != 0.0 &&
-            hc.currentLocation.value!.longitude != 0.0) {
-          final meters = Geolocator.distanceBetween(
-            hc.currentLocation.value!.latitude,
-            hc.currentLocation.value!.longitude,
-            destination.latitude,
-            destination.longitude,
-          );
-          effectiveDistance = meters / 1000.0;
+        final uidStr = userId.toString();
+        final found = tc.radiusUsers
+            .firstWhereOrNull((u) => u.userId.toString() == uidStr);
+        if (found != null &&
+            found.latitude != null &&
+            found.latitude != 0.0) {
+          finalDestination = LatLng(found.latitude!, found.longitude!);
         }
       }
+    }
+
+    // Resolve current user coordinates
+    double myLat = 0.0;
+    double myLng = 0.0;
+    if (Get.isRegistered<TrackController>()) {
+      final tc = Get.find<TrackController>();
+      if (tc.currentLat.value != 0.0 && tc.currentLong.value != 0.0) {
+        myLat = tc.currentLat.value;
+        myLng = tc.currentLong.value;
+      }
+    }
+    if (myLat == 0.0 && Get.isRegistered<HomeController>()) {
+      final hc = Get.find<HomeController>();
+      if (hc.currentLocation.value != null &&
+          hc.currentLocation.value!.latitude != 0.0 &&
+          hc.currentLocation.value!.longitude != 0.0) {
+        myLat = hc.currentLocation.value!.latitude;
+        myLng = hc.currentLocation.value!.longitude;
+      }
+    }
+    if (myLat == 0.0) {
+      myLat = Global.storageServices.getDouble('user_last_lat') ?? 0.0;
+      myLng = Global.storageServices.getDouble('user_last_lng') ?? 0.0;
+    }
+
+    final bool hasValidDestination =
+        finalDestination.latitude != 0.0 && finalDestination.longitude != 0.0;
+
+    // Recalculate distance properly
+    double effectiveDistance = distance;
+    if (hasValidDestination && myLat != 0.0 && myLng != 0.0) {
+      final meters = Geolocator.distanceBetween(
+        myLat,
+        myLng,
+        finalDestination.latitude,
+        finalDestination.longitude,
+      );
+      effectiveDistance = meters / 1000.0;
     }
 
     final bool isOnline = resolvedIsOnline ||
@@ -1032,20 +1057,34 @@ class DialogBox {
                     Builder(
                       builder: (context) {
                         final String raw = (rawDistance ?? '').trim();
-                        final bool isNearby = effectiveDistance <= 0.05 ||
-                            raw == "0.0 m away" ||
-                            raw == "0.0m away" ||
-                            raw == "0 m away" ||
-                            raw == "0.0 km away" ||
-                            raw == "0.00 km away" ||
-                            raw == "0.0 m" ||
-                            raw == "0 m" ||
-                            raw.startsWith("0.0") ||
-                            raw.toLowerCase() == "nearby" ||
-                            raw.toLowerCase() == "nearby you";
-                        final String displayDistance = isNearby
-                            ? "Nearby you"
-                            : "${AppText.distance}${effectiveDistance.toStringAsFixed(2)} Km";
+                        String displayDistance;
+
+                        if (isMe) {
+                          displayDistance = "Your current location";
+                        } else if (!hasValidDestination) {
+                          displayDistance = "Location unavailable";
+                        } else if (raw.isNotEmpty &&
+                            !raw.toLowerCase().contains("nearby") &&
+                            !raw.startsWith("0.0")) {
+                          displayDistance = "${AppText.distance}$raw";
+                        } else if (hasValidDestination && myLat != 0.0 && myLng != 0.0) {
+                          final double meters = effectiveDistance * 1000.0;
+                          if (effectiveDistance >= 1.0) {
+                            displayDistance =
+                                "${AppText.distance}${effectiveDistance.toStringAsFixed(2)} Km";
+                          } else if (meters >= 1.0) {
+                            displayDistance =
+                                "${AppText.distance}${meters.round()} m";
+                          } else {
+                            displayDistance = "${AppText.distance}0 m";
+                          }
+                        } else if (effectiveDistance > 0.0) {
+                          displayDistance = effectiveDistance >= 1.0
+                              ? "${AppText.distance}${effectiveDistance.toStringAsFixed(2)} Km"
+                              : "${AppText.distance}${(effectiveDistance * 1000.0).round()} m";
+                        } else {
+                          displayDistance = "Location unavailable";
+                        }
 
                         return Row(
                           children: [

@@ -22,6 +22,7 @@ import 'package:video_player/video_player.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
 import '../../../routes/app_pages.dart';
 import '../../../Data/Services/Socket/Socket_Message_Services.dart';
+import '../../../Data/Services/chat_translation_service.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 class MessageController extends GetxController with WidgetsBindingObserver {
@@ -90,6 +91,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
   @override
   void onInit() {
     super.onInit();
+    ChatTranslationService.instance.resetVisibility();
     WidgetsBinding.instance.addObserver(this);
     memberData = arguments?['userData'];
 
@@ -100,6 +102,8 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
   @override
   void onClose() {
+    ChatTranslationService.instance.resetVisibility();
+    ChatTranslationService.instance.stopAudio();
     WidgetsBinding.instance.removeObserver(this);
     _messageStreamController.close();
     _floatingDateTimer?.cancel();

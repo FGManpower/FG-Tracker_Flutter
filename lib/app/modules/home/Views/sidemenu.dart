@@ -370,14 +370,16 @@ class Sidemenu extends StatelessWidget {
   }
 
   Widget _defaultAvatar(double radius) {
-    return Assets.images.userAvatar.image(
+    return Container(
       width: radius * 2,
       height: radius * 2,
-      fit: BoxFit.cover,
-      errorBuilder: (_, __, ___) => Icon(
-        Icons.person,
-        size: radius * 1.1,
-        color: const Color(0xFF5D47F1),
+      color: const Color(0xFFEDE9FE),
+      child: Center(
+        child: Icon(
+          Icons.person_rounded,
+          size: radius * 1.1,
+          color: const Color(0xFF5D47F1),
+        ),
       ),
     );
   }

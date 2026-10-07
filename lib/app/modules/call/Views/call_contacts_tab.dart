@@ -41,7 +41,8 @@ class _CallContactsTabState extends State<CallContactsTab> {
   Widget build(BuildContext context) {
     return Obx(() {
       // 1. Internet / Server error state
-      if (controller.responseError.value.isNotEmpty && controller.allUserProfileData.isEmpty) {
+      if (controller.responseError.value.isNotEmpty &&
+          controller.allUserProfileData.isEmpty) {
         return LostinternetConnection(
           retry: () {
             controller.getRegisteredContacts();
@@ -51,17 +52,20 @@ class _CallContactsTabState extends State<CallContactsTab> {
       }
 
       // 2. Loading state
-      if (controller.contactLoading.value && controller.allUserProfileData.isEmpty) {
+      if (controller.contactLoading.value &&
+          controller.allUserProfileData.isEmpty) {
         return _buildContactsListUi(isLoading: true);
       }
 
       // 3. No contacts found (Empty state)
-      if (controller.allUserProfileData.isEmpty || controller.filteredUsers.isEmpty) {
+      if (controller.allUserProfileData.isEmpty ||
+          controller.filteredUsers.isEmpty) {
         final bool isDialOpen = controller.isDialPadOpen.value;
         final matchedRecent = controller.filteredRecentCalls;
 
         // If there are matching recent calls when contact is not in contacts list
-        if (matchedRecent.isNotEmpty && controller.searchQuery.value.isNotEmpty) {
+        if (matchedRecent.isNotEmpty &&
+            controller.searchQuery.value.isNotEmpty) {
           return RefreshIndicator(
             color: const Color(0xFF4818F0),
             onRefresh: controller.refreshContacts,
@@ -88,7 +92,8 @@ class _CallContactsTabState extends State<CallContactsTab> {
                         ),
                       ),
                       Container(
-                        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 8.w, vertical: 3.h),
                         decoration: BoxDecoration(
                           color: const Color(0xFFECEAFD),
                           borderRadius: BorderRadius.circular(8.r),
@@ -148,14 +153,15 @@ class _CallContactsTabState extends State<CallContactsTab> {
                                       "groupId": gId,
                                       "groupName":
                                           matchedRecent[i]['name'] ?? "Group",
-                                      "groupProfile":
-                                          matchedRecent[i]['avatar'],
+                                      "groupProfile": matchedRecent[i]
+                                          ['avatar'],
                                     },
                                   );
                                 }
                               } else {
                                 final String phone =
-                                    (matchedRecent[i]['mobileNo']?.isNotEmpty == true)
+                                    (matchedRecent[i]['mobileNo']?.isNotEmpty ==
+                                            true)
                                         ? matchedRecent[i]['mobileNo']!
                                         : (matchedRecent[i]['phone'] ?? '');
 
@@ -167,8 +173,8 @@ class _CallContactsTabState extends State<CallContactsTab> {
                                       name: matchedRecent[i]['name'],
                                       mobileNo: phone,
                                       profileImage: matchedRecent[i]['avatar'],
-                                      isOnline:
-                                          matchedRecent[i]['isOnline'] == 'true',
+                                      isOnline: matchedRecent[i]['isOnline'] ==
+                                          'true',
                                     ),
                                   ),
                                 );
@@ -186,8 +192,8 @@ class _CallContactsTabState extends State<CallContactsTab> {
                                 GroupCallService.instance.startGroupCall(
                                   context,
                                   groupId: gId,
-                                  groupName: matchedRecent[i]['name'] ??
-                                      "Group Call",
+                                  groupName:
+                                      matchedRecent[i]['name'] ?? "Group Call",
                                   groupProfile: matchedRecent[i]['avatar'],
                                   isVideo: isVideo,
                                   memberCount: int.tryParse(matchedRecent[i]
@@ -213,15 +219,16 @@ class _CallContactsTabState extends State<CallContactsTab> {
                                         matchedRecent[i]['name'] ?? "User",
                                   );
                                 } else {
-                                  final String phone =
-                                      matchedRecent[i]['mobileNo'] ??
-                                          matchedRecent[i]['phone'] ??
-                                          '';
+                                  final String phone = matchedRecent[i]
+                                          ['mobileNo'] ??
+                                      matchedRecent[i]['phone'] ??
+                                      '';
                                   if (phone.isNotEmpty) {
                                     controller.dialNumber.value = phone;
                                     controller.makeCall(isVideo: isVideo);
                                   } else {
-                                    Utils().fluttertoast("Unable to call this contact");
+                                    Utils().fluttertoast(
+                                        "Unable to call this contact");
                                   }
                                 }
                               }
@@ -494,11 +501,9 @@ class _CallContactsTabState extends State<CallContactsTab> {
                           callerId: Global.storageServices
                               .get(PrefConst.userId)
                               .toString(),
-                          remoteUserId:
-                              contactData[index].userId.toString(),
+                          remoteUserId: contactData[index].userId.toString(),
                           is_video: false,
-                          callerName:
-                              contactData[index].name.toString(),
+                          callerName: contactData[index].name.toString(),
                         );
                       },
                       onTapVideo: () {
@@ -507,11 +512,9 @@ class _CallContactsTabState extends State<CallContactsTab> {
                           callerId: Global.storageServices
                               .get(PrefConst.userId)
                               .toString(),
-                          remoteUserId:
-                              contactData[index].userId.toString(),
+                          remoteUserId: contactData[index].userId.toString(),
                           is_video: true,
-                          callerName:
-                              contactData[index].name.toString(),
+                          callerName: contactData[index].name.toString(),
                         );
                       },
                     ),
@@ -572,14 +575,14 @@ class _CallContactsTabState extends State<CallContactsTab> {
                                     "groupId": gId,
                                     "groupName":
                                         matchedRecent[i]['name'] ?? "Group",
-                                    "groupProfile":
-                                        matchedRecent[i]['avatar'],
+                                    "groupProfile": matchedRecent[i]['avatar'],
                                   },
                                 );
                               }
                             } else {
                               final String phone =
-                                  (matchedRecent[i]['mobileNo']?.isNotEmpty == true)
+                                  (matchedRecent[i]['mobileNo']?.isNotEmpty ==
+                                          true)
                                       ? matchedRecent[i]['mobileNo']!
                                       : (matchedRecent[i]['phone'] ?? '');
 
@@ -610,8 +613,8 @@ class _CallContactsTabState extends State<CallContactsTab> {
                               GroupCallService.instance.startGroupCall(
                                 context,
                                 groupId: gId,
-                                groupName: matchedRecent[i]['name'] ??
-                                    "Group Call",
+                                groupName:
+                                    matchedRecent[i]['name'] ?? "Group Call",
                                 groupProfile: matchedRecent[i]['avatar'],
                                 isVideo: isVideo,
                                 memberCount: int.tryParse(matchedRecent[i]
@@ -637,15 +640,16 @@ class _CallContactsTabState extends State<CallContactsTab> {
                                       matchedRecent[i]['name'] ?? "User",
                                 );
                               } else {
-                                final String phone =
-                                    matchedRecent[i]['mobileNo'] ??
-                                        matchedRecent[i]['phone'] ??
-                                        '';
+                                final String phone = matchedRecent[i]
+                                        ['mobileNo'] ??
+                                    matchedRecent[i]['phone'] ??
+                                    '';
                                 if (phone.isNotEmpty) {
                                   controller.dialNumber.value = phone;
                                   controller.makeCall(isVideo: isVideo);
                                 } else {
-                                  Utils().fluttertoast("Unable to call this contact");
+                                  Utils().fluttertoast(
+                                      "Unable to call this contact");
                                 }
                               }
                             }
@@ -758,9 +762,8 @@ class _ContactCard extends StatelessWidget {
             width: 11.w,
             height: 11.w,
             decoration: BoxDecoration(
-              color: isOnline
-                  ? const Color(0xFF10B981)
-                  : const Color(0xFF94A3B8),
+              color:
+                  isOnline ? const Color(0xFF10B981) : const Color(0xFF94A3B8),
               shape: BoxShape.circle,
               border: Border.all(color: Colors.white, width: 2.w),
             ),

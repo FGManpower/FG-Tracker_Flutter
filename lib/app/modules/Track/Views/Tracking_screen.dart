@@ -2694,9 +2694,14 @@ class TrackingScreen extends StatelessWidget {
             : null;
 
     return Obx(() {
+      final String myId =
+          Global.storageServices.get(PrefConst.userId)?.toString() ?? '';
       final bool isExpanded = controller.expandedGroupId.value == gIdStr;
       final List<LocationData> members =
           controller.groupMembersMap[gIdStr] ?? [];
+      final int otherMembersCount = members
+          .where((m) => myId.isEmpty || (m.userId ?? m.id)?.toString() != myId)
+          .length;
       final bool isMembersLoading = controller.isGroupMembersLoading.value &&
           controller.expandedGroupId.value == gIdStr;
 
@@ -2846,7 +2851,7 @@ class TrackingScreen extends StatelessWidget {
                                   color: AppColors.primaryElement),
                               SizedBox(width: 3.w),
                               Text(
-                                "${group.memberCount ?? members.length}",
+                                "${group.memberCount ?? (otherMembersCount > 0 ? otherMembersCount : members.length)}",
                                 style: TextStyle(
                                   fontSize: 10.sp,
                                   fontWeight: FontWeight.w700,
@@ -2856,46 +2861,6 @@ class TrackingScreen extends StatelessWidget {
                             ],
                           ),
                         ),
-                        // ── Commented out Memberscreen navigation & forward arrow as requested ──
-                        // GestureDetector(
-                        //   onTap: () {
-                        //     Get.toNamed(
-                        //       Routes.Memberscreen,
-                        //       arguments: {
-                        //         "groupId": group.id?.toString() ?? "",
-                        //         "groupName": group.groupName ?? "",
-                        //         "groupCode": group.groupCode ?? "",
-                        //         "isCreator": group.isCreator?.toString() ?? "false",
-                        //         "isActive": group.isActive?.toString() ?? "false",
-                        //       },
-                        //     )?.then((value) {
-                        //       if (value == true) {
-                        //         controller.fetchGroupData();
-                        //       }
-                        //     });
-                        //   },
-                        //   child: Container(
-                        //     padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
-                        //     decoration: BoxDecoration(
-                        //       color: AppColors.primaryElementLight,
-                        //       borderRadius: BorderRadius.circular(10.r),
-                        //     ),
-                        //     child: Row(
-                        //       mainAxisSize: MainAxisSize.min,
-                        //       children: [
-                        //         Icon(Icons.people, size: 11.sp, color: AppColors.primaryElement),
-                        //         SizedBox(width: 3.w),
-                        //         Text("${group.memberCount ?? 0}"),
-                        //       ],
-                        //     ),
-                        //   ),
-                        // ),
-                        // SizedBox(height: 4.h),
-                        // Icon(
-                        //   Icons.arrow_forward_ios_rounded,
-                        //   size: 13.sp,
-                        //   color: AppColors.primaryThreeElementText,
-                        // ),
                         SizedBox(height: 4.h),
                         AnimatedRotation(
                           turns: isExpanded ? 0.5 : 0.0,
@@ -2930,8 +2895,14 @@ class TrackingScreen extends StatelessWidget {
     List<LocationData> members,
     bool isLoading,
   ) {
-    final currentUserId =
+    final String currentUserId =
         Global.storageServices.get(PrefConst.userId)?.toString() ?? '';
+    final int otherCount = members
+        .where((m) =>
+            currentUserId.isEmpty ||
+            (m.userId ?? m.id)?.toString() != currentUserId)
+        .length;
+    final int displayCount = otherCount > 0 ? otherCount : members.length;
 
     // Sort: 1st: You, 2nd: Ghost Mode enabled, 3rd: All other members
     final List<LocationData> sortedMembers = List<LocationData>.from(members);
@@ -3007,7 +2978,7 @@ class TrackingScreen extends StatelessWidget {
               ),
               if (members.isNotEmpty)
                 Text(
-                  "${members.length} member${members.length == 1 ? '' : 's'}",
+                  "$displayCount member${displayCount == 1 ? '' : 's'}",
                   style: TextStyle(
                     fontSize: 11.sp,
                     fontWeight: FontWeight.w600,
@@ -3669,33 +3640,15 @@ class TrackingScreen extends StatelessWidget {
     final trimmed = distance.trim();
     if (trimmed.isEmpty ||
         trimmed.toLowerCase().contains("nan") ||
-        trimmed == "Nearby" ||
-        trimmed == "Nearby you" ||
-        trimmed == "0.0 m away" ||
-        trimmed == "0.0m away" ||
-        trimmed == "0 m away" ||
-        trimmed == "0.0 km away" ||
-        trimmed == "0.00 km away" ||
-        trimmed == "0.0 m" ||
-        trimmed == "0 m" ||
-        trimmed == "0.0 km" ||
-        trimmed == "0.00 km") {
-      return "Nearby you";
+        trimmed == "Location unavailable") {
+      return "Location unavailable";
+    }
+    if (trimmed.contains("away")) return trimmed;
+    if (trimmed.contains("km") || trimmed.contains("m")) {
+      return "$trimmed away";
     }
     final cleaned = trimmed.replaceAll(RegExp(r'[^\d.]'), '');
     final numVal = double.tryParse(cleaned);
-    if (numVal != null && numVal <= 0.05) {
-      return "Nearby you";
-    }
-    if (trimmed.startsWith("0.0") ||
-        trimmed.startsWith("0 m") ||
-        trimmed.startsWith("0 km")) {
-      return "Nearby you";
-    }
-    if (trimmed.contains("away")) return trimmed;
-    if (trimmed.contains("km") || trimmed.contains(" m")) {
-      return "$trimmed away";
-    }
     if (numVal != null) {
       return "${numVal.toStringAsFixed(1)} km away";
     }
