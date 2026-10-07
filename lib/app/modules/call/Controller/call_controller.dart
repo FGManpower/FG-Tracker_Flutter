@@ -1000,7 +1000,8 @@ class CallController extends GetxController {
     if (status.contains('cancel') ||
         status.contains('reject') ||
         status.contains('declin')) {
-      return 'Cancelled $groupTag$kind Call';
+      return 'Rejected $kind Call';
+
     }
     if (direction.contains('in')) return 'Incoming $groupTag$kind Call';
     if (direction.contains('out')) return 'Outgoing $groupTag$kind Call';

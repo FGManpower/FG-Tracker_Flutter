@@ -38,10 +38,10 @@ class GroupCallingScreen extends GetView<GroupCallingController> {
   Widget build(BuildContext context) {
     return PopScope(
       canPop: false,
-      onPopInvokedWithResult: (didPop, result) async {
-        if (didPop) return;
-        await _minimizeToPip(); // system back → PiP, not end call
-      },
+      // onPopInvokedWithResult: (didPop, result) async { //uncomment this code
+      //   if (didPop) return;
+      //   await _minimizeToPip(); // system back → PiP, not end call
+      // },
       child: PiPCapableWidget(
         whileNotInPip: Expanded(
           child: _buildCallScaffold(context),
@@ -129,7 +129,9 @@ class GroupCallingScreen extends GetView<GroupCallingController> {
           children: [
             IconButton(
               icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white),
-              onPressed: _minimizeToPip, // chevron = same as back
+              onPressed: () {
+                // _minimizeToPip();
+              }, // chevron = same as back
             ),
             Expanded(
               child: Column(

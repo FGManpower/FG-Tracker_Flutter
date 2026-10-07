@@ -97,6 +97,7 @@ dependencies:
   video_compress: ^3.1.4
   facebook_app_events: ^0.30.5
   flutter_in_app_pip: ^1.7.5
+  flutter_timezone: ^5.1.1
 
 
 dependency_overrides:
