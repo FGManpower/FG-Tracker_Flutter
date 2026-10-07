@@ -1,11 +1,16 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
+import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Data/Services/call_service.dart';
+import 'package:fgtracker/app/Data/Services/group_call_service.dart';
+import 'package:fgtracker/app/Model/MemberDataRes.dart';
 import 'package:fgtracker/app/Model/user_profileList_res.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/modules/call/widget/call_widget.dart';
 import 'package:fgtracker/app/modules/call/Controller/call_controller.dart';
+import 'package:fgtracker/app/modules/mediaStream/Views/contact_profile_screen.dart';
+import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:fgtracker/gen/assets.gen.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
@@ -28,19 +33,15 @@ class _CallContactsTabState extends State<CallContactsTab> {
   @override
   void initState() {
     super.initState();
+    controller.getRegisteredContacts();
     controller.checkContactPermission();
   }
 
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      // 1. If contacts permission is NOT granted, show the "Allow Access" Banner + illustration (Exact Screenshot 2)
-      if (!controller.isContactPermissionGranted.value) {
-        return _buildPermissionRequiredUi();
-      }
-
-      // 2. Internet / Server error state
-      if (controller.responseError.value.isNotEmpty) {
+      // 1. Internet / Server error state
+      if (controller.responseError.value.isNotEmpty && controller.allUserProfileData.isEmpty) {
         return LostinternetConnection(
           retry: () {
             controller.getRegisteredContacts();
@@ -49,32 +50,214 @@ class _CallContactsTabState extends State<CallContactsTab> {
         );
       }
 
-      // 3. Loading state
-      if (controller.contactLoading.value) {
+      // 2. Loading state
+      if (controller.contactLoading.value && controller.allUserProfileData.isEmpty) {
         return _buildContactsListUi(isLoading: true);
       }
 
-      // 4. Permission is granted, but no matched registered contacts found
+      // 3. No contacts found (Empty state)
       if (controller.allUserProfileData.isEmpty || controller.filteredUsers.isEmpty) {
+        final bool isDialOpen = controller.isDialPadOpen.value;
+        final matchedRecent = controller.filteredRecentCalls;
+
+        // If there are matching recent calls when contact is not in contacts list
+        if (matchedRecent.isNotEmpty && controller.searchQuery.value.isNotEmpty) {
+          return RefreshIndicator(
+            color: const Color(0xFF4818F0),
+            onRefresh: controller.refreshContacts,
+            child: ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: EdgeInsets.fromLTRB(
+                16.w,
+                8.h,
+                16.w,
+                isDialOpen ? 390.h : 90.h,
+              ),
+              children: [
+                Padding(
+                  padding: EdgeInsets.only(left: 4.w, bottom: 12.h, top: 4.h),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        "Recent Calls",
+                        style: TextStyle(
+                          fontSize: 16.sp,
+                          fontFamily: FontFamily.interBold,
+                          color: const Color(0xFF1E1B4B),
+                        ),
+                      ),
+                      Container(
+                        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFECEAFD),
+                          borderRadius: BorderRadius.circular(8.r),
+                        ),
+                        child: Text(
+                          "From Recent",
+                          style: TextStyle(
+                            fontSize: 11.sp,
+                            fontFamily: FontFamily.interSemiBold,
+                            color: const Color(0xFF4818F0),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20.r),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.02),
+                        blurRadius: 10,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      for (int i = 0; i < matchedRecent.length; i++) ...[
+                        if (i > 0)
+                          Divider(
+                            height: 1,
+                            thickness: 0.8,
+                            color: const Color(0xFFF1F3F9),
+                            indent: 62.w,
+                            endIndent: 14.w,
+                          ),
+                        Padding(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 14.w,
+                            vertical: 10.h,
+                          ),
+                          child: _RecentContactTile(
+                            call: matchedRecent[i],
+                            onTap: () {
+                              final isGroup =
+                                  matchedRecent[i]['isGroup'] == 'true';
+                              if (isGroup) {
+                                final gId = matchedRecent[i]['groupId'] ??
+                                    matchedRecent[i]['callerId'];
+                                if (gId != null && gId.isNotEmpty) {
+                                  Get.toNamed(
+                                    Routes.groupChatScreen,
+                                    arguments: {
+                                      "groupId": gId,
+                                      "groupName":
+                                          matchedRecent[i]['name'] ?? "Group",
+                                      "groupProfile":
+                                          matchedRecent[i]['avatar'],
+                                    },
+                                  );
+                                }
+                              } else {
+                                final String phone =
+                                    (matchedRecent[i]['mobileNo']?.isNotEmpty == true)
+                                        ? matchedRecent[i]['mobileNo']!
+                                        : (matchedRecent[i]['phone'] ?? '');
+
+                                Get.to(
+                                  () => ContactProfileScreen(
+                                    contactData: MemberData(
+                                      userId: int.tryParse(
+                                          matchedRecent[i]['callerId'] ?? ''),
+                                      name: matchedRecent[i]['name'],
+                                      mobileNo: phone,
+                                      profileImage: matchedRecent[i]['avatar'],
+                                      isOnline:
+                                          matchedRecent[i]['isOnline'] == 'true',
+                                    ),
+                                  ),
+                                );
+                              }
+                            },
+                            onCallTap: (type) {
+                              final isGroup =
+                                  matchedRecent[i]['isGroup'] == 'true';
+                              final bool isVideo = type == "video";
+
+                              if (isGroup) {
+                                final gId = matchedRecent[i]['groupId'] ??
+                                    matchedRecent[i]['callerId'] ??
+                                    '';
+                                GroupCallService.instance.startGroupCall(
+                                  context,
+                                  groupId: gId,
+                                  groupName: matchedRecent[i]['name'] ??
+                                      "Group Call",
+                                  groupProfile: matchedRecent[i]['avatar'],
+                                  isVideo: isVideo,
+                                  memberCount: int.tryParse(matchedRecent[i]
+                                              ['memberCount'] ??
+                                          '0') ??
+                                      0,
+                                );
+                              } else {
+                                final callerId =
+                                    matchedRecent[i]['callerId'] ?? '';
+                                final currentUserId = Global.storageServices
+                                    .get(PrefConst.userId)
+                                    ?.toString();
+                                if (currentUserId != null &&
+                                    callerId.isNotEmpty &&
+                                    callerId != currentUserId) {
+                                  CallService().startCall(
+                                    context,
+                                    callerId: currentUserId,
+                                    remoteUserId: callerId,
+                                    is_video: isVideo,
+                                    callerName:
+                                        matchedRecent[i]['name'] ?? "User",
+                                  );
+                                } else {
+                                  final String phone =
+                                      matchedRecent[i]['mobileNo'] ??
+                                          matchedRecent[i]['phone'] ??
+                                          '';
+                                  if (phone.isNotEmpty) {
+                                    controller.dialNumber.value = phone;
+                                    controller.makeCall(isVideo: isVideo);
+                                  } else {
+                                    Utils().fluttertoast("Unable to call this contact");
+                                  }
+                                }
+                              }
+                            },
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+
         return RefreshIndicator(
           color: const Color(0xFF4818F0),
           onRefresh: controller.refreshContacts,
           child: ListView(
             physics: const AlwaysScrollableScrollPhysics(),
+            padding: EdgeInsets.only(bottom: isDialOpen ? 390.h : 90.h),
             children: [
-              SizedBox(height: 60.h),
+              SizedBox(height: isDialOpen ? 15.h : 60.h),
               Center(
                 child: Image.asset(
                   Assets.images.notFount.path,
-                  width: 240.w,
-                  height: 240.w,
+                  width: isDialOpen ? 140.w : 240.w,
+                  height: isDialOpen ? 140.w : 240.w,
                   fit: BoxFit.contain,
                 ),
               ),
-              SizedBox(height: 16.h),
+              SizedBox(height: 12.h),
               Center(
                 child: Text(
-                  controller.searchQuery.value.isNotEmpty
+                  (controller.searchQuery.value.isNotEmpty ||
+                          controller.dialNumber.value.isNotEmpty)
                       ? "No contacts match your search"
                       : "No registered contacts found",
                   style: TextStyle(
@@ -92,6 +275,7 @@ class _CallContactsTabState extends State<CallContactsTab> {
       // 5. Contacts successfully loaded
       return _buildContactsListUi(
         contactData: controller.filteredUsers,
+        matchedRecent: controller.filteredRecentCalls,
         isLoading: false,
       );
     });
@@ -243,9 +427,17 @@ class _CallContactsTabState extends State<CallContactsTab> {
   }
 
   /// List of Contact Cards (Exact Screenshot 1)
-  Widget _buildContactsListUi({List<UserListData>? contactData, bool isLoading = false}) {
+  Widget _buildContactsListUi({
+    List<UserListData>? contactData,
+    List<Map<String, String>>? matchedRecent,
+    bool isLoading = false,
+  }) {
     final bool loading = isLoading || contactData == null;
     final int count = loading ? 8 : contactData.length;
+    final bool isDialOpen = controller.isDialPadOpen.value;
+    final bool hasRecent = matchedRecent != null &&
+        matchedRecent.isNotEmpty &&
+        controller.searchQuery.value.isNotEmpty;
 
     return RefreshIndicator(
       color: const Color(0xFF4818F0),
@@ -254,8 +446,16 @@ class _CallContactsTabState extends State<CallContactsTab> {
         enabled: loading,
         child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),
-          padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 90.h),
+          padding: EdgeInsets.fromLTRB(
+            16.w,
+            8.h,
+            16.w,
+            isDialOpen ? 390.h : 90.h,
+          ),
           children: [
+            if (!controller.isContactPermissionGranted.value && !loading)
+              _buildPermissionBanner(),
+
             // "All Contacts" Section Header
             Padding(
               padding: EdgeInsets.only(left: 4.w, bottom: 12.h, top: 4.h),
@@ -275,6 +475,19 @@ class _CallContactsTabState extends State<CallContactsTab> {
                   ? const _SkeletonContactCard()
                   : _ContactCard(
                       user: contactData[index],
+                      onTapCard: () {
+                        Get.to(
+                          () => ContactProfileScreen(
+                            contactData: MemberData(
+                              userId: contactData[index].userId,
+                              name: contactData[index].name,
+                              mobileNo: contactData[index].mobileNo,
+                              profileImage: contactData[index].profileImage,
+                              isOnline: contactData[index].isOnline ?? false,
+                            ),
+                          ),
+                        );
+                      },
                       onTapAudio: () {
                         CallService().startCall(
                           context,
@@ -302,6 +515,148 @@ class _CallContactsTabState extends State<CallContactsTab> {
                         );
                       },
                     ),
+
+            // Additional Recent Calls section if search query matches recent items
+            if (hasRecent) ...[
+              Padding(
+                padding: EdgeInsets.only(left: 4.w, bottom: 12.h, top: 16.h),
+                child: Text(
+                  "Recent Calls",
+                  style: TextStyle(
+                    fontSize: 16.sp,
+                    fontFamily: FontFamily.interBold,
+                    color: const Color(0xFF1E1B4B),
+                  ),
+                ),
+              ),
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20.r),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.02),
+                      blurRadius: 10,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    for (int i = 0; i < matchedRecent.length; i++) ...[
+                      if (i > 0)
+                        Divider(
+                          height: 1,
+                          thickness: 0.8,
+                          color: const Color(0xFFF1F3F9),
+                          indent: 62.w,
+                          endIndent: 14.w,
+                        ),
+                      Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 14.w,
+                          vertical: 10.h,
+                        ),
+                        child: _RecentContactTile(
+                          call: matchedRecent[i],
+                          onTap: () {
+                            final isGroup =
+                                matchedRecent[i]['isGroup'] == 'true';
+                            if (isGroup) {
+                              final gId = matchedRecent[i]['groupId'] ??
+                                  matchedRecent[i]['callerId'];
+                              if (gId != null && gId.isNotEmpty) {
+                                Get.toNamed(
+                                  Routes.groupChatScreen,
+                                  arguments: {
+                                    "groupId": gId,
+                                    "groupName":
+                                        matchedRecent[i]['name'] ?? "Group",
+                                    "groupProfile":
+                                        matchedRecent[i]['avatar'],
+                                  },
+                                );
+                              }
+                            } else {
+                              final String phone =
+                                  (matchedRecent[i]['mobileNo']?.isNotEmpty == true)
+                                      ? matchedRecent[i]['mobileNo']!
+                                      : (matchedRecent[i]['phone'] ?? '');
+
+                              Get.to(
+                                () => ContactProfileScreen(
+                                  contactData: MemberData(
+                                    userId: int.tryParse(
+                                        matchedRecent[i]['callerId'] ?? ''),
+                                    name: matchedRecent[i]['name'],
+                                    mobileNo: phone,
+                                    profileImage: matchedRecent[i]['avatar'],
+                                    isOnline:
+                                        matchedRecent[i]['isOnline'] == 'true',
+                                  ),
+                                ),
+                              );
+                            }
+                          },
+                          onCallTap: (type) {
+                            final isGroup =
+                                matchedRecent[i]['isGroup'] == 'true';
+                            final bool isVideo = type == "video";
+
+                            if (isGroup) {
+                              final gId = matchedRecent[i]['groupId'] ??
+                                  matchedRecent[i]['callerId'] ??
+                                  '';
+                              GroupCallService.instance.startGroupCall(
+                                context,
+                                groupId: gId,
+                                groupName: matchedRecent[i]['name'] ??
+                                    "Group Call",
+                                groupProfile: matchedRecent[i]['avatar'],
+                                isVideo: isVideo,
+                                memberCount: int.tryParse(matchedRecent[i]
+                                            ['memberCount'] ??
+                                        '0') ??
+                                    0,
+                              );
+                            } else {
+                              final callerId =
+                                  matchedRecent[i]['callerId'] ?? '';
+                              final currentUserId = Global.storageServices
+                                  .get(PrefConst.userId)
+                                  ?.toString();
+                              if (currentUserId != null &&
+                                  callerId.isNotEmpty &&
+                                  callerId != currentUserId) {
+                                CallService().startCall(
+                                  context,
+                                  callerId: currentUserId,
+                                  remoteUserId: callerId,
+                                  is_video: isVideo,
+                                  callerName:
+                                      matchedRecent[i]['name'] ?? "User",
+                                );
+                              } else {
+                                final String phone =
+                                    matchedRecent[i]['mobileNo'] ??
+                                        matchedRecent[i]['phone'] ??
+                                        '';
+                                if (phone.isNotEmpty) {
+                                  controller.dialNumber.value = phone;
+                                  controller.makeCall(isVideo: isVideo);
+                                } else {
+                                  Utils().fluttertoast("Unable to call this contact");
+                                }
+                              }
+                            }
+                          },
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
           ],
         ),
       ),
@@ -312,11 +667,13 @@ class _CallContactsTabState extends State<CallContactsTab> {
 /// Standalone Contact Card (Matching Screenshot 1)
 class _ContactCard extends StatelessWidget {
   final UserListData user;
+  final VoidCallback onTapCard;
   final VoidCallback onTapAudio;
   final VoidCallback onTapVideo;
 
   const _ContactCard({
     required this.user,
+    required this.onTapCard,
     required this.onTapAudio,
     required this.onTapVideo,
   });
@@ -418,72 +775,76 @@ class _ContactCard extends StatelessWidget {
     final String name = user.name ?? 'Unknown';
     final bool isOnline = user.isOnline ?? false;
 
-    return Container(
-      margin: EdgeInsets.only(bottom: 10.h),
-      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18.r),
-        border: Border.all(
-          color: const Color(0xFFF1F3F9),
-          width: 1.0,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF1E1B4B).withOpacity(0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
+    return GestureDetector(
+      onTap: onTapCard,
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        margin: EdgeInsets.only(bottom: 10.h),
+        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(18.r),
+          border: Border.all(
+            color: const Color(0xFFF1F3F9),
+            width: 1.0,
           ),
-        ],
-      ),
-      child: Row(
-        children: [
-          _buildAvatar(name, user.profileImage, isOnline),
-          SizedBox(width: 14.w),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  name,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 14.5.sp,
-                    fontFamily: FontFamily.interSemiBold,
-                    color: const Color(0xFF1E1B4B),
-                  ),
-                ),
-                SizedBox(height: 3.h),
-                Text(
-                  _formatPhoneNumber(user.mobileNo),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 12.sp,
-                    fontFamily: FontFamily.interMedium,
-                    color: const Color(0xFF4818F0),
-                  ),
-                ),
-              ],
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF1E1B4B).withOpacity(0.03),
+              blurRadius: 10,
+              offset: const Offset(0, 2),
             ),
-          ),
-          SizedBox(width: 8.w),
-          CallActionChip(
-            icon: Icons.call_rounded,
-            size: 38.w,
-            iconSize: 18.sp,
-            onTap: onTapAudio,
-          ),
-          SizedBox(width: 8.w),
-          CallActionChip(
-            icon: Icons.videocam_rounded,
-            size: 38.w,
-            iconSize: 20.sp,
-            onTap: onTapVideo,
-          ),
-        ],
+          ],
+        ),
+        child: Row(
+          children: [
+            _buildAvatar(name, user.profileImage, isOnline),
+            SizedBox(width: 14.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 14.5.sp,
+                      fontFamily: FontFamily.interSemiBold,
+                      color: const Color(0xFF1E1B4B),
+                    ),
+                  ),
+                  SizedBox(height: 3.h),
+                  Text(
+                    _formatPhoneNumber(user.mobileNo),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      fontFamily: FontFamily.interMedium,
+                      color: const Color(0xFF4818F0),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(width: 8.w),
+            CallActionChip(
+              icon: Icons.call_rounded,
+              size: 38.w,
+              iconSize: 18.sp,
+              onTap: onTapAudio,
+            ),
+            SizedBox(width: 8.w),
+            CallActionChip(
+              icon: Icons.videocam_rounded,
+              size: 38.w,
+              iconSize: 20.sp,
+              onTap: onTapVideo,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -545,6 +906,232 @@ class _SkeletonContactCard extends StatelessWidget {
           const CallActionChip(
             icon: Icons.videocam_rounded,
             size: 38,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Standalone Recent Contact Tile for Contacts tab
+class _RecentContactTile extends StatelessWidget {
+  const _RecentContactTile({
+    required this.call,
+    required this.onTap,
+    required this.onCallTap,
+  });
+
+  final Map<String, String> call;
+  final VoidCallback onTap;
+  final void Function(String type) onCallTap;
+
+  String _formatDisplayTime(String raw) {
+    final String trimmed = raw.trim();
+    final String cleaned = trimmed
+        .replaceAll(
+            RegExp(r'^(today|yesterday),?\s*', caseSensitive: false), '')
+        .trim();
+    return cleaned.isNotEmpty ? cleaned : trimmed;
+  }
+
+  String _buildAvatarUrl(String? raw) {
+    if (raw == null || raw.trim().isEmpty) return '';
+    raw = raw.trim();
+    if (raw.startsWith('http://') || raw.startsWith('https://')) return raw;
+    if (raw.startsWith('/')) raw = raw.substring(1);
+    return '${ConstRes.aImageBaseUrl}$raw';
+  }
+
+  Widget _buildAvatar(
+    String name,
+    String? avatar,
+    bool isOnline, {
+    bool isGroup = false,
+  }) {
+    final String avatarUrl = _buildAvatarUrl(avatar);
+    final String initial = (name.isNotEmpty ? name[0] : '?').toUpperCase();
+
+    Widget placeholderOrFallback() {
+      if (isGroup) {
+        return Center(
+          child: Icon(
+            Icons.groups_rounded,
+            size: 20.sp,
+            color: const Color(0xFF4818F0),
+          ),
+        );
+      }
+      return Center(
+        child: Text(
+          initial,
+          style: TextStyle(
+            fontSize: 14.sp,
+            fontFamily: FontFamily.interBold,
+            color: const Color(0xFF4818F0),
+          ),
+        ),
+      );
+    }
+
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        ClipOval(
+          child: Container(
+            width: 42.w,
+            height: 42.w,
+            color: const Color(0xFFECEAFD),
+            child: avatarUrl.isNotEmpty
+                ? CachedNetworkImage(
+                    imageUrl: avatarUrl,
+                    fit: BoxFit.cover,
+                    placeholder: (context, url) => placeholderOrFallback(),
+                    errorWidget: (context, url, error) =>
+                        placeholderOrFallback(),
+                  )
+                : placeholderOrFallback(),
+          ),
+        ),
+        if (!isGroup)
+          Positioned(
+            right: 0,
+            bottom: 0,
+            child: Container(
+              width: 10.w,
+              height: 10.w,
+              decoration: BoxDecoration(
+                color: isOnline
+                    ? const Color(0xFF10B981)
+                    : const Color(0xFF94A3B8),
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white, width: 1.5.w),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final String type = call['type'] ?? '';
+    final String callType = call['callType'] ?? '';
+    final bool missed = type.toLowerCase().contains('missed');
+    final bool incoming = type.toLowerCase().contains('incoming');
+    final bool cancelled = type.toLowerCase().contains('cancelled') ||
+        type.toLowerCase().contains('reject');
+
+    final Color statusColor = missed
+        ? const Color(0xFFEF4444)
+        : incoming
+            ? const Color(0xFF3B82F6)
+            : cancelled
+                ? const Color(0xFF9CA3AF)
+                : const Color(0xFF10B981);
+
+    final IconData statusIcon = missed
+        ? Icons.south_west_rounded
+        : cancelled
+            ? Icons.call_end_rounded
+            : incoming
+                ? Icons.south_west_rounded
+                : Icons.arrow_outward_rounded;
+
+    final String name = call['name'] ?? '';
+    final String? avatar = call['avatar'];
+    final bool isOnline = (call['isOnline'] ?? '').toLowerCase() == 'true';
+    final bool isGroup = (call['isGroup'] ?? '').toLowerCase() == 'true';
+
+    return InkWell(
+      onTap: onTap,
+      child: Row(
+        children: [
+          _buildAvatar(name, avatar, isOnline, isGroup: isGroup),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Flexible(
+                      child: Text(
+                        name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 14.sp,
+                          fontFamily: FontFamily.interSemiBold,
+                          color: const Color(0xFF1E1B4B),
+                        ),
+                      ),
+                    ),
+                    if (isGroup) ...[
+                      SizedBox(width: 6.w),
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 5.w,
+                          vertical: 1.5.h,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFECEAFD),
+                          borderRadius: BorderRadius.circular(6.r),
+                        ),
+                        child: Text(
+                          "Group",
+                          style: TextStyle(
+                            fontSize: 9.sp,
+                            fontFamily: FontFamily.interSemiBold,
+                            color: const Color(0xFF4818F0),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+                SizedBox(height: 3.h),
+                Row(
+                  children: [
+                    Icon(
+                      statusIcon,
+                      size: 13.sp,
+                      color: statusColor,
+                    ),
+                    SizedBox(width: 4.w),
+                    Expanded(
+                      child: Text(
+                        type,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 11.sp,
+                          color: const Color(0xFF6B7280),
+                          fontFamily: FontFamily.interMedium,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          SizedBox(width: 8.w),
+          Text(
+            _formatDisplayTime(call['time'] ?? ''),
+            style: TextStyle(
+              fontSize: 10.5.sp,
+              color: const Color(0xFF6B4DFF),
+              fontFamily: FontFamily.interMedium,
+            ),
+          ),
+          SizedBox(width: 10.w),
+          CallActionChip(
+            icon: callType == "video"
+                ? Icons.videocam_rounded
+                : Icons.call_rounded,
+            onTap: () {
+              onCallTap(callType);
+            },
           ),
         ],
       ),

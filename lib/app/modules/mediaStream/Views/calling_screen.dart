@@ -39,7 +39,7 @@ class CallingScreen extends StatelessWidget {
                         c.isLocalVideoMain ? c.localRenderer : c.remoteRenderer,
                         mirror: c.isLocalVideoMain && c.isFrontCamera,
                         objectFit:
-                            RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
+                        RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
                       ),
                     ),
                   )
@@ -153,13 +153,13 @@ class CallingScreen extends StatelessWidget {
   }
 
   Widget _buildTopInfo(
-    CallingController c, {
-    required bool isVideo,
-  }) {
+      CallingController c, {
+        required bool isVideo,
+      }) {
     final Color textColor = isVideo ? Colors.white : AppColors.darkText;
 
     final Color subColor =
-        isVideo ? Colors.white70 : AppColors.primaryPurple.withOpacity(0.9);
+    isVideo ? Colors.white70 : AppColors.primaryPurple.withOpacity(0.9);
 
     final bool isOutgoing = c.args["callType"] == "outGoing";
 
@@ -230,24 +230,24 @@ class CallingScreen extends StatelessWidget {
             clipBehavior: Clip.antiAlias,
             child: showingRemote
                 ? RTCVideoView(
-                    c.remoteRenderer,
-                    objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
-                  )
+              c.remoteRenderer,
+              objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
+            )
                 : c.isVideoOn
-                    ? RTCVideoView(
-                        c.localRenderer,
-                        mirror: c.isFrontCamera,
-                        objectFit:
-                            RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
-                      )
-                    : Container(
-                        color: const Color(0xFF1A1A2E),
-                        child: Icon(
-                          Icons.videocam_off,
-                          color: Colors.white54,
-                          size: 32.sp,
-                        ),
-                      ),
+                ? RTCVideoView(
+              c.localRenderer,
+              mirror: c.isFrontCamera,
+              objectFit:
+              RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
+            )
+                : Container(
+              color: const Color(0xFF1A1A2E),
+              child: Icon(
+                Icons.videocam_off,
+                color: Colors.white54,
+                size: 32.sp,
+              ),
+            ),
           ),
           Positioned(
             top: 6.h,
@@ -256,9 +256,9 @@ class CallingScreen extends StatelessWidget {
               onTap: showingRemote
                   ? null
                   : () {
-                      c.switchCamera();
-                      c.showControlsTemporarily();
-                    },
+                c.switchCamera();
+                c.showControlsTemporarily();
+              },
               child: Container(
                 padding: EdgeInsets.all(6.r),
                 decoration: BoxDecoration(
@@ -281,9 +281,9 @@ class CallingScreen extends StatelessWidget {
   }
 
   void _openMoreSheet(
-    BuildContext context,
-    CallingController c,
-  ) {
+      BuildContext context,
+      CallingController c,
+      ) {
     final bool isVideo = c.is_video || c.isVideoCall.value;
 
     showModalBottomSheet(
@@ -415,10 +415,10 @@ class CallingScreen extends StatelessWidget {
   }
 
   Widget _bottomControls(
-    BuildContext context,
-    CallingController c, {
-    required bool isVideo,
-  }) {
+      BuildContext context,
+      CallingController c, {
+        required bool isVideo,
+      }) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(28.r),
       child: BackdropFilter(
@@ -478,7 +478,7 @@ class CallingScreen extends StatelessWidget {
                   speakerIcon = Icons.volume_up_rounded;
                   speakerLabel = "Speaker";
                   activeIconColor =
-                      isVideo ? Colors.white : AppColors.primaryPurple;
+                  isVideo ? Colors.white : AppColors.primaryPurple;
                   isButtonActive = true;
                 } else {
                   speakerIcon = Icons.volume_down_rounded;
@@ -489,16 +489,22 @@ class CallingScreen extends StatelessWidget {
                   isButtonActive = false;
                 }
 
-                return ctrl(
-                  icon: speakerIcon,
-                  label: speakerLabel,
-                  active: isButtonActive,
-                  isVideo: isVideo,
-                  onTap: () {
-                    c.toggleSpeaker();
-                    c.showControlsTemporarily();
+                // Builder widget added here to locate exact button's coordinates
+                return Builder(
+                  builder: (buttonContext) {
+                    return ctrl(
+                      icon: speakerIcon,
+                      label: speakerLabel,
+                      active: isButtonActive,
+                      isVideo: isVideo,
+                      onTap: () {
+                        // Pass local buttonContext to showMenu exact above the button
+                        c.toggleSpeaker(buttonContext);
+                        c.showControlsTemporarily();
+                      },
+                      iconColor: activeIconColor,
+                    );
                   },
-                  iconColor: activeIconColor,
                 );
               }),
               Column(

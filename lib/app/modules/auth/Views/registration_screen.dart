@@ -1,10 +1,7 @@
 import 'dart:io';
 import 'package:fgtracker/app/Core/constant/const_res.dart';
-import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/theme/AppText.dart';
-import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Core/values/utility.dart';
-import 'package:fgtracker/app/Model/ProfileRes.dart';
 import 'package:fgtracker/gen/assets.gen.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
@@ -22,74 +19,10 @@ class RegistrationScreen extends GetView<RegistrationController> {
     bool isUpdate = controller.arguments?['type'] == "Update" ||
         (Get.arguments is Map && (Get.arguments as Map)['type'] == "Update");
 
-    if (isUpdate) {
-      if (Get.arguments is Map &&
-          (Get.arguments as Map)['userData'] is UserData) {
-        final u = (Get.arguments as Map)['userData'] as UserData;
-        controller.userData = u;
-        if (u.name != null &&
-            u.name!.isNotEmpty &&
-            controller.nameController.text.isEmpty) {
-          controller.nameController.text = u.name!;
-        }
-        if (u.mobileNo != null &&
-            u.mobileNo!.isNotEmpty &&
-            controller.phoneController.text.isEmpty) {
-          controller.phoneController.text = u.mobileNo!;
-        }
-      }
-
-      final existingEmail = (controller.userData.email != null &&
-              controller.userData.email!.trim().isNotEmpty &&
-              controller.userData.email!.trim().toLowerCase() != "null")
-          ? controller.userData.email!.trim()
-          : ((Global.storageServices.get(PrefConst.userEmail)?.toString() ??
-                  (Get.arguments is Map
-                      ? (Get.arguments as Map)['email']?.toString()
-                      : null) ??
-                  "")
-              .trim());
-
-      if (existingEmail.isNotEmpty && existingEmail.toLowerCase() != "null") {
-        controller.emailController.text = existingEmail;
-        controller.hasExistingEmail.value = true;
-      } else {
-        controller.emailController.clear();
-        controller.hasExistingEmail.value = false;
-      }
-      if (controller.phoneController.text.isEmpty) {
-        final savedPhone = (controller.userData.mobileNo != null &&
-                controller.userData.mobileNo!.isNotEmpty)
-            ? controller.userData.mobileNo!
-            : (Global.storageServices.get(PrefConst.userPhone)?.toString() ??
-                (Get.arguments is Map
-                    ? (Get.arguments as Map)['mobNo']?.toString()
-                    : null) ??
-                "");
-        if (savedPhone.isNotEmpty) {
-          controller.phoneController.text = savedPhone;
-        }
-      }
-      if (controller.nameController.text.isEmpty) {
-        final savedName = (controller.userData.name != null &&
-                controller.userData.name!.isNotEmpty)
-            ? controller.userData.name!
-            : (Global.storageServices.get(PrefConst.userName)?.toString() ??
-                "");
-        if (savedName.isNotEmpty) {
-          controller.nameController.text = savedName;
-        }
-      }
-    }
-
-    if (!isUpdate && controller.gender.value.isEmpty) {
-      controller.gender.value = "male";
-    }
-
     return Scaffold(
       resizeToAvoidBottomInset: true,
       backgroundColor:
-          isUpdate ? const Color(0xFFF7F6FD) : const Color(0xFFBBAEF9),
+      isUpdate ? const Color(0xFFF7F6FD) : const Color(0xFFBBAEF9),
       body: Form(
         key: controller.registerKey,
         child: isUpdate
@@ -125,7 +58,6 @@ class RegistrationScreen extends GetView<RegistrationController> {
             height: 370.h,
             child: _buildAuthWatermarkImage(),
           ),
-
           SafeArea(
             child: SingleChildScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
@@ -177,33 +109,6 @@ class RegistrationScreen extends GetView<RegistrationController> {
                             ),
                             SizedBox(height: 28.h),
 
-                            // Row(
-                            //   crossAxisAlignment: CrossAxisAlignment.baseline,
-                            //   textBaseline: TextBaseline.alphabetic,
-                            //   children: [
-                            //     _buildRegLabel("Email"),
-                            //     SizedBox(width: 4.w),
-                            //     Text(
-                            //       "(Optional)",
-                            //       style: TextStyle(
-                            //         color: const Color(0xFF8E8EA0),
-                            //         fontSize: 13.sp,
-                            //         fontFamily: FontFamily.interRegular,
-                            //       ),
-                            //     ),
-                            //   ],
-                            // ),
-                            // SizedBox(height: 8.h),
-                            // _buildRegTextField(
-                            //   controller: controller.emailController,
-                            //   icon: Icons.mail,
-                            //   hint: "Enter your email (optional)",
-                            //   keyboardType: TextInputType.emailAddress,
-                            //   validator: (value) =>
-                            //       Validator.validateOptionalEmail(value),
-                            // ),
-                            // SizedBox(height: 18.h),
-
                             _buildRegLabel("Select Gender"),
                             SizedBox(height: 8.h),
                             Container(
@@ -248,54 +153,73 @@ class RegistrationScreen extends GetView<RegistrationController> {
                             ),
                             SizedBox(height: 26.h),
 
-                            GestureDetector(
-                              onTap: () => controller.register(controller),
-                              child: Container(
-                                width: double.infinity,
-                                height: 54.h,
-                                decoration: BoxDecoration(
-                                  gradient: const LinearGradient(
-                                    colors: [
-                                      Color(0xFF5E44F8),
-                                      Color(0xFF674BFF),
+                            // Submit Button with Loading State
+                            Obx(() {
+                              final isLoading = controller.isLoading.value;
+                              return GestureDetector(
+                                onTap: isLoading
+                                    ? null
+                                    : () => controller.register(controller),
+                                child: Container(
+                                  width: double.infinity,
+                                  height: 54.h,
+                                  decoration: BoxDecoration(
+                                    gradient: const LinearGradient(
+                                      colors: [
+                                        Color(0xFF5E44F8),
+                                        Color(0xFF674BFF),
+                                      ],
+                                      begin: Alignment.centerLeft,
+                                      end: Alignment.centerRight,
+                                    ),
+                                    borderRadius: BorderRadius.circular(30.r),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: const Color(0xFF5D47F1)
+                                            .withValues(alpha: 0.35),
+                                        blurRadius: 18,
+                                        offset: const Offset(0, 8),
+                                      ),
                                     ],
-                                    begin: Alignment.centerLeft,
-                                    end: Alignment.centerRight,
                                   ),
-                                  borderRadius: BorderRadius.circular(30.r),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: const Color(0xFF5D47F1)
-                                          .withValues(alpha: 0.35),
-                                      blurRadius: 18,
-                                      offset: const Offset(0, 8),
-                                    ),
-                                  ],
-                                ),
-                                child: Stack(
-                                  alignment: Alignment.center,
-                                  children: [
-                                    Text(
-                                      "Done",
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 14.sp,
-                                        fontWeight: FontWeight.w600,
-                                        fontFamily: FontFamily.interBold,
+                                  child: isLoading
+                                      ? const Center(
+                                    child: SizedBox(
+                                      width: 24,
+                                      height: 24,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2.5,
+                                        valueColor:
+                                        AlwaysStoppedAnimation<Color>(
+                                            Colors.white),
                                       ),
                                     ),
-                                    Positioned(
-                                      right: 22.w,
-                                      child: Icon(
-                                        Icons.arrow_forward_rounded,
-                                        color: Colors.white,
-                                        size: 22.sp,
+                                  )
+                                      : Stack(
+                                    alignment: Alignment.center,
+                                    children: [
+                                      Text(
+                                        "Done",
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 14.sp,
+                                          fontWeight: FontWeight.w600,
+                                          fontFamily: FontFamily.interBold,
+                                        ),
                                       ),
-                                    ),
-                                  ],
+                                      Positioned(
+                                        right: 22.w,
+                                        child: Icon(
+                                          Icons.arrow_forward_rounded,
+                                          color: Colors.white,
+                                          size: 22.sp,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            ),
+                              );
+                            }),
                           ],
                         ),
                       ),
@@ -376,6 +300,7 @@ class RegistrationScreen extends GetView<RegistrationController> {
       }
     });
   }
+
   Widget _buildRegLabel(String text) {
     return Text(
       text,
@@ -512,15 +437,15 @@ class RegistrationScreen extends GetView<RegistrationController> {
                 ),
                 child: isSelected
                     ? Center(
-                        child: Container(
-                          width: 10.w,
-                          height: 10.w,
-                          decoration: const BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Color(0xFF5D47F1),
-                          ),
-                        ),
-                      )
+                  child: Container(
+                    width: 10.w,
+                    height: 10.w,
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Color(0xFF5D47F1),
+                    ),
+                  ),
+                )
                     : null,
               ),
               SizedBox(width: 16.w),
@@ -554,7 +479,6 @@ class RegistrationScreen extends GetView<RegistrationController> {
     );
   }
 
-
   Widget _buildEditProfileUI(BuildContext context) {
     final topPadding = MediaQuery.of(context).padding.top;
 
@@ -582,14 +506,13 @@ class RegistrationScreen extends GetView<RegistrationController> {
               ),
             ),
           ),
-
           SafeArea(
             bottom: true,
             child: Column(
               children: [
                 Padding(
                   padding:
-                      EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                  EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
                   child: Row(
                     children: [
                       GestureDetector(
@@ -625,7 +548,6 @@ class RegistrationScreen extends GetView<RegistrationController> {
                     ],
                   ),
                 ),
-
                 Expanded(
                   child: Container(
                     width: double.infinity,
@@ -636,7 +558,7 @@ class RegistrationScreen extends GetView<RegistrationController> {
                       boxShadow: [
                         BoxShadow(
                           color:
-                              const Color(0xFF5D47F1).withValues(alpha: 0.10),
+                          const Color(0xFF5D47F1).withValues(alpha: 0.10),
                           blurRadius: 22,
                           offset: const Offset(0, 8),
                         ),
@@ -660,7 +582,7 @@ class RegistrationScreen extends GetView<RegistrationController> {
                                     radius: 65.r,
                                     backgroundColor: const Color(0xFFEDE9FE),
                                     child: Obx(
-                                      () => _getAvatarImage(
+                                          () => _getAvatarImage(
                                         65.r,
                                         const Color(0xFFEDE9FE),
                                       ),
@@ -678,7 +600,7 @@ class RegistrationScreen extends GetView<RegistrationController> {
                                       child: CircleAvatar(
                                         radius: 17.r,
                                         backgroundColor:
-                                            const Color(0xFF5D47F1),
+                                        const Color(0xFF5D47F1),
                                         child: Icon(
                                           Icons.camera_alt_rounded,
                                           color: Colors.white,
@@ -701,7 +623,6 @@ class RegistrationScreen extends GetView<RegistrationController> {
                               ),
                             ),
                             SizedBox(height: 26.h),
-
                             Align(
                               alignment: Alignment.centerLeft,
                               child: Text(
@@ -715,7 +636,6 @@ class RegistrationScreen extends GetView<RegistrationController> {
                               ),
                             ),
                             SizedBox(height: 16.h),
-
                             _buildEditProfileField(
                               label: "Full Name",
                               controller: controller.nameController,
@@ -724,8 +644,6 @@ class RegistrationScreen extends GetView<RegistrationController> {
                               validator: (value) => Validator.validate(
                                   value: value, title: "Full Name"),
                             ),
-
-
                             _buildEditProfileField(
                               label: "Phone Number",
                               controller: controller.phoneController,
@@ -733,7 +651,6 @@ class RegistrationScreen extends GetView<RegistrationController> {
                               enabled: false,
                               keyboardType: TextInputType.phone,
                             ),
-
                             Obx(() {
                               if (!controller.hasExistingEmail.value) {
                                 return const SizedBox.shrink();
@@ -747,46 +664,62 @@ class RegistrationScreen extends GetView<RegistrationController> {
                                     Validator.validateEmail(value),
                               );
                             }),
-
                             SizedBox(height: 26.h),
 
-                            GestureDetector(
-                              onTap: () => controller.updateProfile(controller),
-                              child: Container(
-                                width: double.infinity,
-                                height: 54.h,
-                                decoration: BoxDecoration(
-                                  gradient: const LinearGradient(
-                                    colors: [
-                                      Color(0xFF5E44F8),
-                                      Color(0xFF674BFF),
+                            // Save Changes with Loading State
+                            Obx(() {
+                              final isLoading = controller.isLoading.value;
+                              return GestureDetector(
+                                onTap: isLoading
+                                    ? null
+                                    : () => controller.updateProfile(controller),
+                                child: Container(
+                                  width: double.infinity,
+                                  height: 54.h,
+                                  decoration: BoxDecoration(
+                                    gradient: const LinearGradient(
+                                      colors: [
+                                        Color(0xFF5E44F8),
+                                        Color(0xFF674BFF),
+                                      ],
+                                      begin: Alignment.centerLeft,
+                                      end: Alignment.centerRight,
+                                    ),
+                                    borderRadius: BorderRadius.circular(30.r),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: const Color(0xFF5D47F1)
+                                            .withValues(alpha: 0.35),
+                                        blurRadius: 18,
+                                        offset: const Offset(0, 8),
+                                      ),
                                     ],
-                                    begin: Alignment.centerLeft,
-                                    end: Alignment.centerRight,
                                   ),
-                                  borderRadius: BorderRadius.circular(30.r),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: const Color(0xFF5D47F1)
-                                          .withValues(alpha: 0.35),
-                                      blurRadius: 18,
-                                      offset: const Offset(0, 8),
-                                    ),
-                                  ],
-                                ),
-                                child: Center(
-                                  child: Text(
-                                    "Save Changes",
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 16.sp,
-                                      fontWeight: FontWeight.w600,
-                                      fontFamily: FontFamily.interBold,
+                                  child: Center(
+                                    child: isLoading
+                                        ? const SizedBox(
+                                      width: 24,
+                                      height: 24,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2.5,
+                                        valueColor:
+                                        AlwaysStoppedAnimation<Color>(
+                                            Colors.white),
+                                      ),
+                                    )
+                                        : Text(
+                                      "Save Changes",
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 16.sp,
+                                        fontWeight: FontWeight.w600,
+                                        fontFamily: FontFamily.interBold,
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
-                            ),
+                              );
+                            }),
                             SizedBox(height: 8.h),
                           ],
                         ),
@@ -934,7 +867,6 @@ class RegistrationScreen extends GetView<RegistrationController> {
   }
 }
 
-
 class _RegistrationHexagonBadge extends StatelessWidget {
   final VoidCallback onTap;
   final Widget child;
@@ -965,7 +897,6 @@ class _RegistrationHexagonBadge extends StatelessWidget {
               child: Center(child: child),
             ),
           ),
-
           Positioned(
             bottom: 2.h,
             right: 2.w,
@@ -1006,6 +937,7 @@ class _RegistrationHexagonBadge extends StatelessWidget {
     );
   }
 }
+
 Path _buildRoundedHexagon(Size size, double cornerRadius) {
   final double w = size.width;
   final double h = size.height;
