@@ -744,11 +744,7 @@ class GroupCallingController extends GetxController {
   }
 
   Future<void> endCall() async {
-    try {
-      if (PictureInPicture.isActive) {
-        PictureInPicture.stopPiP();
-      }
-    } catch (_) {}
+
 
     _clearTimers();
     _stopSound();
@@ -764,13 +760,13 @@ class GroupCallingController extends GetxController {
     } else {
       Socket_GroupCallService.instance.leaveGroupCall();
     }
-    // ... CallKit uuid etc.
+      if (callId != null) {
+      callEnded(callIdToUuid(callId.toString()), type: "GroupCallEnded-Type");
+    }
 
     CallSessionState.reset();
 
-    if (Get.isRegistered<GroupCallingController>()) {
-      Get.delete<GroupCallingController>(force: true);
-    }
+
 
     Get.offAllNamed(Routes.Home_Screen);
   }
@@ -817,10 +813,7 @@ class GroupCallingController extends GetxController {
 
   @override
   void onClose() {
-    if (PictureInPicture.isActive) {
-      super.onClose();
-      return;
-    }
+
     _clearTimers();
     _stopSound();
 
@@ -848,10 +841,7 @@ class GroupCallingController extends GetxController {
       localRenderer.srcObject = null;
       localRenderer.dispose();
     } catch (_) {}
-    // inside endCall(), after cleanup:
-    if (Get.isRegistered<GroupCallingController>()) {
-      Get.delete<GroupCallingController>(force: true);
-    }
+
     WakelockPlus.disable();
     ProximityScreenLock.setActive(false);
     CallSessionState.reset();
