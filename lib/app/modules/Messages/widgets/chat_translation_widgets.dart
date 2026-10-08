@@ -24,7 +24,8 @@ class ChatTranslatedCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final translationService = ChatTranslationService.instance;
     final isTargetEnglish = targetLang == 'en';
-    final headerTitle = isTargetEnglish ? "Translated to English" : "Translated to Hindi";
+    final headerTitle =
+        isTargetEnglish ? "Translated to English" : "Translated to Hindi";
     final listenTitle = isTargetEnglish ? "Listen (English)" : "Listen (Hindi)";
     final stopTitle = isTargetEnglish ? "Stop (English)" : "Stop (Hindi)";
 
@@ -101,7 +102,8 @@ class ChatTranslatedCard extends StatelessWidget {
           SizedBox(height: 6.h),
           Obx(() {
             final audioId = '${messageId}_$targetLang';
-            final isPlaying = translationService.currentlyPlayingId.value == audioId;
+            final isPlaying =
+                translationService.currentlyPlayingId.value == audioId;
             final isLoading = translationService.isAudioLoading.value &&
                 translationService.currentlyPlayingId.value == audioId;
 
@@ -128,7 +130,9 @@ class ChatTranslatedCard extends StatelessWidget {
                     )
                   else
                     Icon(
-                      isPlaying ? Icons.stop_circle_rounded : Icons.volume_up_outlined,
+                      isPlaying
+                          ? Icons.stop_circle_rounded
+                          : Icons.volume_up_outlined,
                       size: 14.sp,
                       color: const Color(0xFF4818F0),
                     ),
@@ -172,36 +176,44 @@ class ChatMessageActionRow extends StatelessWidget {
     final translationService = ChatTranslationService.instance;
     final isHindiMessage = RegExp(r'[\u0900-\u097F]').hasMatch(originalText);
     final targetLang = isHindiMessage ? 'en' : 'hi';
-    final actionTitle = isHindiMessage ? 'Translate to English' : 'Translate to Hindi';
+    final actionTitle =
+        isHindiMessage ? 'Translate to English' : 'Translate to Hindi';
     final cacheKey = '${messageId}_$targetLang';
 
     return Padding(
       padding: EdgeInsets.only(top: 4.h, bottom: 2.h),
       child: Obx(() {
-        final isTranslating = translationService.isTranslating[messageId] == true;
-        final isTranslatedShowing = translationService.showTranslated[cacheKey] == true;
-        final hasTranslation = translationService.translations.containsKey(cacheKey);
+        final isTranslating =
+            translationService.isTranslating[messageId] == true;
+        final isTranslatedShowing =
+            translationService.showTranslated[cacheKey] == true;
+        final hasTranslation =
+            translationService.translations.containsKey(cacheKey);
 
         if (isTranslatedShowing && hasTranslation) {
           return const SizedBox.shrink();
         }
 
         final audioId = '${messageId}_orig';
-        final isPlaying = translationService.currentlyPlayingId.value == audioId;
+        final isPlaying =
+            translationService.currentlyPlayingId.value == audioId;
         final isAudioLoading = translationService.isAudioLoading.value &&
             translationService.currentlyPlayingId.value == audioId;
 
         return Row(
           mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: isSentByMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+          mainAxisAlignment:
+              isSentByMe ? MainAxisAlignment.end : MainAxisAlignment.start,
           children: [
             GestureDetector(
               behavior: HitTestBehavior.opaque,
               onTap: () {
                 if (hasTranslation) {
-                  translationService.toggleTranslationVisibility(messageId, targetLang: targetLang);
+                  translationService.toggleTranslationVisibility(messageId,
+                      targetLang: targetLang);
                 } else {
-                  translationService.translateText(messageId, originalText, targetLang: targetLang);
+                  translationService.translateText(messageId, originalText,
+                      targetLang: targetLang);
                 }
               },
               child: Row(
@@ -260,7 +272,9 @@ class ChatMessageActionRow extends StatelessWidget {
                     )
                   else
                     Icon(
-                      isPlaying ? Icons.stop_circle_rounded : Icons.volume_up_outlined,
+                      isPlaying
+                          ? Icons.stop_circle_rounded
+                          : Icons.volume_up_outlined,
                       size: 15.sp,
                       color: const Color(0xFF4818F0),
                     ),
