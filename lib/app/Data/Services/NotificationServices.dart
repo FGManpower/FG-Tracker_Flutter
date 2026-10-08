@@ -1228,15 +1228,16 @@ class firebaseNotificationServices {
         callEnded(sessionId, type: "Notification-services");
         CallStateTracker.isIncomingCallScreenOpen = false;
         flutterLocalNotificationsPlugin.cancelAll();
-      }else if (message.data['screen_name'] == "groupCallEnded") {
-        final c = Get.find<GroupCallingController>();
-        try {
-          if (PictureInPicture.isActive) {
-            PictureInPicture.stopPiP();
-          }
-        } catch (_) {}
-        await c.endCall();
       }
+      // else if (message.data['screen_name'] == "groupCallEnded") {
+      //   final c = Get.find<GroupCallingController>();
+      //   try {
+      //     if (PictureInPicture.isActive) {
+      //       PictureInPicture.stopPiP();
+      //     }
+      //   } catch (_) {}
+      //   await c.endCall();
+      // }
 
     }
   }

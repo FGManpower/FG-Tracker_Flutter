@@ -477,11 +477,15 @@ class CallingScreen extends StatelessWidget {
                 } else if (activeRoute == "speaker") {
                   speakerIcon = Icons.volume_up_rounded;
                   speakerLabel = "Speaker";
-                  activeIconColor =
-                  isVideo ? Colors.white : AppColors.primaryPurple;
+                  activeIconColor = isVideo ? Colors.white : AppColors.primaryPurple;
+                  isButtonActive = true;
+                } else if (activeRoute == "wired") {
+                  speakerIcon = Icons.headset_rounded;
+                  speakerLabel = "Headphones";
+                  activeIconColor = AppColors.primaryPurple;
                   isButtonActive = true;
                 } else {
-                  speakerIcon = Icons.volume_down_rounded;
+                  speakerIcon = Icons.phone_in_talk_rounded;
                   speakerLabel = "Earpiece";
                   activeIconColor = isVideo
                       ? Colors.white60
@@ -489,7 +493,6 @@ class CallingScreen extends StatelessWidget {
                   isButtonActive = false;
                 }
 
-                // Builder widget added here to locate exact button's coordinates
                 return Builder(
                   builder: (buttonContext) {
                     return ctrl(
@@ -498,7 +501,6 @@ class CallingScreen extends StatelessWidget {
                       active: isButtonActive,
                       isVideo: isVideo,
                       onTap: () {
-                        // Pass local buttonContext to showMenu exact above the button
                         c.toggleSpeaker(buttonContext);
                         c.showControlsTemporarily();
                       },
@@ -506,8 +508,7 @@ class CallingScreen extends StatelessWidget {
                     );
                   },
                 );
-              }),
-              Column(
+              }),              Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   GestureDetector(

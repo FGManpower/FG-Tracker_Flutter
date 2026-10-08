@@ -826,7 +826,6 @@ class CallController extends GetxController {
     final currentUserId =
         Global.storageServices.get(PrefConst.userId)?.toString() ?? '';
 
-    // Determine the remote user ID (ensure we don't pick current user's ID)
     String callerId = (contact?.id ?? '').trim();
     if (callerId.isEmpty || callerId == currentUserId) {
       if ((call.callerId ?? '').isNotEmpty && call.callerId != currentUserId) {
@@ -896,7 +895,6 @@ class CallController extends GetxController {
           call.memberCount?.toString() ??
           '0';
     } else {
-      // Direct 1-on-1 contact matching
       UserListData? matchedUser;
       if (callerId.isNotEmpty) {
         final int? contactUserId = int.tryParse(callerId);
@@ -937,14 +935,12 @@ class CallController extends GetxController {
         name = phoneContactNameMap[normMobile]!.trim();
       }
 
-      // Check caller name from API
       if ((name.isEmpty || name.toLowerCase() == 'unknown') &&
           (call.callerName ?? '').trim().isNotEmpty &&
           call.callerId != currentUserId) {
         name = call.callerName!.trim();
       }
 
-      // If still empty or Unknown, format phone number or User ID for display
       if (name.isEmpty || name.toLowerCase() == 'unknown') {
         if (mobileNo.isNotEmpty) {
           name = _formatPhoneForDisplay(mobileNo);
@@ -996,22 +992,24 @@ class CallController extends GetxController {
     final bool showGroupTag = isGroup && !kind.toLowerCase().contains('group');
     final String groupTag = showGroupTag ? 'Group ' : '';
 
+    final bool isOutgoing =
+        direction == 'outgoing' || direction == 'out' || direction == 'outbound';
+    final bool isIncoming =
+        direction == 'incoming' || direction == 'in' || direction == 'inbound';
+
     if (status.contains('missed')) return 'Missed $groupTag$kind Call';
     if (status.contains('cancel') ||
         status.contains('reject') ||
         status.contains('declin')) {
       return 'Rejected $kind Call';
-
     }
-    if (direction.contains('in')) return 'Incoming $groupTag$kind Call';
-    if (direction.contains('out')) return 'Outgoing $groupTag$kind Call';
+    if (isOutgoing) return 'Outgoing $groupTag$kind Call';
+    if (isIncoming) return 'Incoming $groupTag$kind Call';
     return '$groupTag$kind Call';
   }
-
   String _composeTimeLabel(_RecentEntry entry) {
     final CallingDetail call = entry.call;
 
-    // 1. If API provides display_time directly, use it
     if ((call.displayTime ?? '').trim().isNotEmpty) {
       String dt = call.displayTime!.trim();
       final bool isToday = entry.section.toLowerCase() == 'today' ||
@@ -1033,20 +1031,17 @@ class CallController extends GetxController {
       return dt;
     }
 
-    // 2. Direct values from API
     final String apiTime = (call.time ?? '').trim();
     final String apiDate = (call.date ?? '').trim();
     final String apiDay = (call.day ?? '').trim();
     final String apiWeek = (call.week ?? '').trim();
     final String sec = (call.section ?? entry.section).trim().toLowerCase();
 
-    // Clean any leading "Today, " or "Yesterday, " prefix from time
     String cleanTime = apiTime
         .replaceAll(
             RegExp(r'^(today|yesterday),?\s*', caseSensitive: false), '')
         .trim();
 
-    // Fallback if time is completely empty in API
     if (cleanTime.isEmpty && (call.calledAt ?? '').isNotEmpty) {
       final DateTime? dt = DateTime.tryParse(call.calledAt!);
       if (dt != null) {
@@ -1061,7 +1056,6 @@ class CallController extends GetxController {
         apiDate.toLowerCase().contains('today') ||
         apiDay.toLowerCase().contains('today');
 
-    // For Today: Only show API time (e.g. "5:05 AM")
     if (isToday) {
       return cleanTime.isNotEmpty ? cleanTime : apiTime;
     }
@@ -1070,7 +1064,6 @@ class CallController extends GetxController {
         apiDate.toLowerCase().contains('yesterday') ||
         apiDay.toLowerCase().contains('yesterday');
 
-    // For Yesterday: Only show API time (e.g. "3:34 PM")
     if (isYesterday) {
       cleanTime = cleanTime
           .replaceAll(RegExp(r'^yesterday,?\s*', caseSensitive: false), '')
@@ -1086,7 +1079,6 @@ class CallController extends GetxController {
           : 'Yesterday';
     }
 
-    // Weekday name from API (e.g. "Monday, 5:05 AM")
     if (apiDay.isNotEmpty &&
         apiDay.toLowerCase() != 'today' &&
         apiDay.toLowerCase() != 'yesterday') {
@@ -1094,7 +1086,6 @@ class CallController extends GetxController {
       return cleanTime.isNotEmpty ? '$dayTitle, $cleanTime' : dayTitle;
     }
 
-    // Date from API (e.g. "15 Sep, 5:19 PM")
     if (apiDate.isNotEmpty) {
       final String formattedDate = _formatDate(apiDate);
       return cleanTime.isNotEmpty
@@ -1102,7 +1093,6 @@ class CallController extends GetxController {
           : formattedDate;
     }
 
-    // Week from API (e.g. "This Week")
     if (apiWeek.isNotEmpty) {
       return cleanTime.isNotEmpty ? '$apiWeek, $cleanTime' : apiWeek;
     }
