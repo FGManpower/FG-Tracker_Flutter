@@ -1469,13 +1469,14 @@ class GroupChatBubble extends StatelessWidget {
                                   message,
                                   isSentByMe,
                                 ),
-                                if (_isPlainTextMessage(message))
+                                if (_isPlainTextMessage(message)) ...[
                                   _buildTextWithTime(
                                     message: message,
                                     textColor: textColor,
                                     isSentByMe: isSentByMe,
-                                  )
-                                else ...[
+                                  ),
+                                  if (!isSentByMe) _buildTranslatedCard(message),
+                                ] else ...[
                                   _buildMessageContent(
                                     message,
                                     textColor,
@@ -1488,12 +1489,20 @@ class GroupChatBubble extends StatelessWidget {
                                       isSentByMe,
                                     ),
                                   ),
+                                  if (!isSentByMe) _buildTranslatedCard(message),
                                 ],
                               ],
                             ),
                           ),
                         ),
                       ),
+                      if (!isSentByMe &&
+                          _getTranslatableText(message).isNotEmpty)
+                        ChatMessageActionRow(
+                          messageId: _getMessageTranslationId(message),
+                          originalText: _getTranslatableText(message),
+                          isSentByMe: isSentByMe,
+                        ),
                     ],
                   );
                 });
@@ -1503,6 +1512,74 @@ class GroupChatBubble extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  String _getTranslatableText(MessageData message) {
+    if (_isPlainTextMessage(message)) {
+      return (message.content?.toString() ?? '').trim();
+    }
+
+    final caption = (message.caption?.toString() ?? '').trim();
+    if (caption.isNotEmpty) {
+      return caption;
+    }
+
+    if (message.messageType == "document") {
+      final parts = message.content?.split("||") ?? [];
+      final documentUrl = parts.isNotEmpty ? parts[0] : "";
+      String documentName =
+          parts.length > 1 ? parts[1] : documentUrl.split('/').last;
+      documentName = removeDuplicateExtension(documentName).trim();
+      return documentName;
+    }
+
+    if (message.messageType == "contact") {
+      final content = (message.content?.toString() ?? '').trim();
+      if (content.isNotEmpty && !content.startsWith('{')) return content;
+    }
+
+    return '';
+  }
+
+  String _getMessageTranslationId(MessageData message) {
+    if (message.id != null &&
+        message.id.toString().isNotEmpty &&
+        message.id.toString() != "0") {
+      return message.id.toString();
+    }
+    final text = _getTranslatableText(message);
+    final raw = text.isNotEmpty ? text : (message.content?.toString() ?? '');
+    return "msg_${raw.hashCode}";
+  }
+
+  Widget _buildTranslatedCard(MessageData message) {
+    final translatableText = _getTranslatableText(message);
+    if (translatableText.isEmpty) return const SizedBox.shrink();
+
+    return Obx(() {
+      final mId = _getMessageTranslationId(message);
+      final isHindi = RegExp(r'[\u0900-\u097F]').hasMatch(translatableText);
+      final targetLang = isHindi ? 'en' : 'hi';
+      final cacheKey = '${mId}_$targetLang';
+      final translationService = ChatTranslationService.instance;
+      final translated = translationService.translations[cacheKey];
+      final isShown = translationService.showTranslated[cacheKey] == true;
+
+      if (translated != null && translated.isNotEmpty && isShown) {
+        return ChatTranslatedCard(
+          messageId: mId,
+          translatedText: translated,
+          targetLang: targetLang,
+          onToggleOriginal: () {
+            translationService.toggleTranslationVisibility(
+              mId,
+              targetLang: targetLang,
+            );
+          },
+        );
+      }
+      return const SizedBox.shrink();
+    });
   }
 
   bool _isPlainTextMessage(MessageData message) {

@@ -56,7 +56,7 @@ class ChatTranslationService extends GetxService {
 
       String? translatedResult;
 
-      // 1. Primary: Google Input Tools Transliteration (Hindi Script Phonetic Typing)
+      // 1. Primary: Transliteration API
       if (targetLang == 'hi') {
         try {
           final translitUrl = Uri.parse(

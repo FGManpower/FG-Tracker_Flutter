@@ -26,6 +26,7 @@ import '../../../Data/Repositories/GetMessageRepo.dart';
 import '../../../Model/GetMessage.dart';
 
 import '../../../Data/Services/Socket/Socket_Message_Services.dart';
+import '../../../Data/Services/chat_translation_service.dart';
 import '../../Attendance/models/attendance_poll_model.dart';
 
 class GroupMessageController extends GetxController {
@@ -127,6 +128,7 @@ class GroupMessageController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    ChatTranslationService.instance.resetVisibility();
 
     groupId = arguments?["groupId"] is int
         ? (arguments!["groupId"] as int)
@@ -1153,6 +1155,8 @@ class GroupMessageController extends GetxController {
 
   @override
   void onClose() {
+    ChatTranslationService.instance.resetVisibility();
+    ChatTranslationService.instance.stopAudio();
     focusNode.dispose();
     _messageStreamController.close();
     _floatingDateTimer?.cancel();
