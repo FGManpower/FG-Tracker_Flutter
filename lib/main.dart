@@ -379,9 +379,7 @@ class _MyAppState extends State<MyApp> {
               Locale('hi', 'IN'),
               Locale('ur', 'PK'),
             ],
-            home:   PiPMaterialApp(
-              debugShowCheckedModeBanner: false,
-            ),
+
           ),
 
 

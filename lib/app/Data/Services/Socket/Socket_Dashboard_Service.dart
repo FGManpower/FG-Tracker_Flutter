@@ -158,7 +158,7 @@ class SocketDashboardService extends GetxService {
 
     _lastLiveLocationParams = param;
 
-    log('📡 [DashboardSocket] Emitting get-user-live-location: $param');
+    log('[DashboardSocket] Emitting get-user-live-location: $param');
     _socket?.emit(
       'get-user-live-location',
       param,

@@ -68,19 +68,13 @@ class GroupCallingController extends GetxController {
   final RxBool showControls = true.obs;
   Timer? _controlsTimer;
 
-
-
-
-
-
-
-
   @override
   void onInit() {
     super.onInit();
 
-    // Already running (user returned from PiP) → just refresh UI bindings
-    if (callId != null && activeParticipants.isNotEmpty && callType == 'ongoing') {
+    if (callId != null &&
+        activeParticipants.isNotEmpty &&
+        callType == 'ongoing') {
       WakelockPlus.enable();
       resetControlsTimer();
       return;
@@ -99,6 +93,49 @@ class GroupCallingController extends GetxController {
     svc.onParticipantRejected = _onParticipantRejected;
     svc.onParticipantMuteChanged = _onParticipantMuteChanged;
     svc.onParticipantCameraChanged = _onParticipantCameraChanged;
+
+    svc.onParticipantsRosterUpdated = (participants, total) {
+      totalMemberCount = total;
+
+      for (final p in participants) {
+        final uid = p['userId']?.toString();
+        if (uid == null || uid.isEmpty) continue;
+
+        final name = (p['name'] ?? 'User $uid').toString();
+        final image = p['profileImage']?.toString();
+        final status = (p['status'] ?? '').toString().toLowerCase();
+
+        final idx = allGroupMembers.indexWhere((e) => e.userId == uid);
+        if (idx >= 0) {
+          allGroupMembers[idx].name = name;
+          if (image != null && image.isNotEmpty) {
+            allGroupMembers[idx].profileImage = image;
+          }
+
+          allGroupMembers[idx].isConnected.value = (status == 'accepted' ||
+              status == 'joined' ||
+              status == 'connected' ||
+              status == 'in_call');
+        } else {
+          allGroupMembers.add(GroupCallParticipant(
+            userId: uid,
+            name: name,
+            profileImage: (image != null && image.isEmpty) ? null : image,
+            isLocal:
+                uid == Global.storageServices.get(PrefConst.userId)?.toString(),
+            videoOn: false,
+            connected: (status == 'accepted' ||
+                status == 'joined' ||
+                status == 'connected' ||
+                status == 'in_call'),
+          ));
+        }
+      }
+
+      allGroupMembers.refresh();
+      _syncParticipants();
+      _refreshNotInCallList();
+    };
 
     svc.onScreenShareStarted = (userId) {
       screenSharingUsers.add(userId);
@@ -189,7 +226,8 @@ class GroupCallingController extends GetxController {
     final callerId = args["callerId"]?.toString();
     final callerName = args["callerName"]?.toString();
     final callerImage =
-    (args["callerProfileImage"] ?? args["groupProfile"])?.toString();
+        (args["callerProfileImage"] ?? args["groupProfile"])?.toString();
+
     if (callerId != null && callerId.isNotEmpty) {
       Socket_GroupCallService.instance.participantMeta[callerId] = {
         "name": callerName ?? "Someone",
@@ -208,12 +246,12 @@ class GroupCallingController extends GetxController {
         final uid = (m["userId"] ?? m["UserId"] ?? m["id"])?.toString();
         if (uid == null || uid.isEmpty) continue;
         final uName =
-        (m["name"] ?? m["Name"] ?? m["userName"] ?? "User $uid").toString();
+            (m["name"] ?? m["Name"] ?? m["userName"] ?? "User $uid").toString();
         final uImg = (m["profileImage"] ??
-            m["ProfileImage"] ??
-            m["userProfileImage"] ??
-            m["image"] ??
-            "")
+                m["ProfileImage"] ??
+                m["userProfileImage"] ??
+                m["image"] ??
+                "")
             .toString();
 
         Socket_GroupCallService.instance.participantMeta[uid] = {
@@ -334,21 +372,20 @@ class GroupCallingController extends GetxController {
       'audio': true,
       'video': isVideo
           ? {
-        'facingMode': isFrontCamera.value ? 'user' : 'environment',
-        'width': {'ideal': 640},
-        'height': {'ideal': 480},
-      }
+              'facingMode': isFrontCamera.value ? 'user' : 'environment',
+              'width': {'ideal': 640},
+              'height': {'ideal': 480},
+            }
           : false,
     };
 
     final stream =
-    await webrtc.navigator.mediaDevices.getUserMedia(mediaConstraints);
+        await webrtc.navigator.mediaDevices.getUserMedia(mediaConstraints);
     localRenderer.srcObject = stream;
     Socket_GroupCallService.instance.localStream = stream;
     Socket_GroupCallService.instance.activeVideoTrack =
         stream.getVideoTracks().firstOrNull;
 
-    // --- START BACKGROUND FOREGROUND SERVICE FOR ACTIVE CALL ---
     if (Platform.isAndroid) {
       try {
         await ScreenShareForegroundService.start(groupName: groupName);
@@ -360,7 +397,7 @@ class GroupCallingController extends GetxController {
     final myUserId = Global.storageServices.get(PrefConst.userId).toString();
     final myName = Global.storageServices.get(PrefConst.userName) ?? "You";
     final myImage =
-    Global.storageServices.get(PrefConst.profileImage)?.toString();
+        Global.storageServices.get(PrefConst.profileImage)?.toString();
 
     activeParticipants.add(GroupCallParticipant(
       userId: myUserId,
@@ -401,7 +438,7 @@ class GroupCallingController extends GetxController {
     if (screenSharingUsers.map((e) => e.toString().trim()).contains(targetId))
       return true;
     final myUserId =
-    Global.storageServices.get(PrefConst.userId)?.toString().trim();
+        Global.storageServices.get(PrefConst.userId)?.toString().trim();
     if (targetId == myUserId && isScreenSharing.value) return true;
     return false;
   }
@@ -444,17 +481,17 @@ class GroupCallingController extends GetxController {
       try {
         final constraints = webrtc.WebRTC.platformIsIOS
             ? {
-          'video': {
-            'deviceId': 'broadcast',
-          },
-        }
+                'video': {
+                  'deviceId': 'broadcast',
+                },
+              }
             : {
-          'video': true,
-          'audio': false,
-        };
+                'video': true,
+                'audio': false,
+              };
 
         screenStream =
-        await webrtc.navigator.mediaDevices.getDisplayMedia(constraints);
+            await webrtc.navigator.mediaDevices.getDisplayMedia(constraints);
 
         if (screenStream == null || screenStream!.getVideoTracks().isEmpty) {
           throw Exception("No screen stream captured");
@@ -487,7 +524,8 @@ class GroupCallingController extends GetxController {
         screenSharingUsers.remove(myUserId);
         pinnedUserId.value = null;
 
-        if (!e.toString().contains("Canceled") && !e.toString().contains("cancel")) {
+        if (!e.toString().contains("Canceled") &&
+            !e.toString().contains("cancel")) {
           Utils().fluttertoast("Screen share canceled or failed");
         }
       }
@@ -561,7 +599,9 @@ class GroupCallingController extends GetxController {
       final image = meta["profileImage"]?.toString();
       if (idx >= 0) {
         allGroupMembers[idx].name = name;
-        allGroupMembers[idx].profileImage = image;
+        if (image != null && image.isNotEmpty) {
+          allGroupMembers[idx].profileImage = image;
+        }
       } else {
         allGroupMembers.add(GroupCallParticipant(
           userId: uid,
@@ -632,7 +672,7 @@ class GroupCallingController extends GetxController {
 
   void _onParticipantCameraChanged(String userId, bool isVideoOn) {
     final participant =
-    activeParticipants.firstWhereOrNull((p) => p.userId == userId);
+        activeParticipants.firstWhereOrNull((p) => p.userId == userId);
 
     if (participant != null) {
       participant.isVideoOn.value = isVideoOn;
@@ -640,13 +680,12 @@ class GroupCallingController extends GetxController {
     }
   }
 
-
-
   void _onRemoteCallEnded() {
     _clearTimers();
     _stopSound();
-    if (Get.currentRoute == Routes.groupCallingScreen)
+    if (Get.currentRoute == Routes.groupCallingScreen) {
       Get.offAllNamed(Routes.Home_Screen);
+    }
   }
 
   void _syncParticipants() {
@@ -656,7 +695,7 @@ class GroupCallingController extends GetxController {
 
     svc.remoteRenderers.forEach((userId, renderer) {
       final existing =
-      activeParticipants.firstWhereOrNull((p) => p.userId == userId);
+          activeParticipants.firstWhereOrNull((p) => p.userId == userId);
       final name = svc.getParticipantName(userId);
       final image = svc.getParticipantProfileImage(userId);
       final muted = svc.getParticipantMuted(userId);
@@ -700,6 +739,7 @@ class GroupCallingController extends GetxController {
       startCallTimer();
     }
   }
+
   void toggleMic() {
     isAudioOn.value = !isAudioOn.value;
     final muted = !isAudioOn.value;
@@ -764,7 +804,10 @@ class GroupCallingController extends GetxController {
     } else {
       Socket_GroupCallService.instance.leaveGroupCall();
     }
-    // ... CallKit uuid etc.
+
+    if (callId != null) {
+      callEnded(callIdToUuid(callId.toString()), type: "GroupCallEnded-Type");
+    }
 
     CallSessionState.reset();
 
@@ -821,6 +864,7 @@ class GroupCallingController extends GetxController {
       super.onClose();
       return;
     }
+
     _clearTimers();
     _stopSound();
 
@@ -834,6 +878,7 @@ class GroupCallingController extends GetxController {
       screenStream?.getTracks().forEach((t) => t.stop());
       screenStream?.dispose();
     }
+
     final svc = Socket_GroupCallService.instance;
     svc.onParticipantsUpdated = null;
     svc.onParticipantJoined = null;
@@ -844,14 +889,13 @@ class GroupCallingController extends GetxController {
     svc.onScreenShareStarted = null;
     svc.onScreenShareStopped = null;
     svc.onParticipantCameraChanged = null;
+    svc.onParticipantsRosterUpdated = null;
+
     try {
       localRenderer.srcObject = null;
       localRenderer.dispose();
     } catch (_) {}
-    // inside endCall(), after cleanup:
-    if (Get.isRegistered<GroupCallingController>()) {
-      Get.delete<GroupCallingController>(force: true);
-    }
+
     WakelockPlus.disable();
     ProximityScreenLock.setActive(false);
     CallSessionState.reset();
