@@ -1,3 +1,4 @@
+
 import 'package:fgtracker/app/Model/status_model.dart';
 
 class GetMessage {
@@ -8,6 +9,9 @@ class GetMessage {
   int? pinnedMessageId;
   MessagePagination? pagination;
   BlockStatus? blockStatus;
+  bool? isOnline;
+  String? lastSeen;
+  Map<String, dynamic>? otherUser;
 
   GetMessage({
     this.status,
@@ -17,6 +21,9 @@ class GetMessage {
     this.pinnedMessageId,
     this.pagination,
     this.blockStatus,
+    this.isOnline,
+    this.lastSeen,
+    this.otherUser,
   });
 
   GetMessage.fromJson(Map<String, dynamic> json) {
@@ -24,6 +31,16 @@ class GetMessage {
     message = json['message'];
     isCreator = json['isCreator'];
     pinnedMessageId = json['pinnedMessageId'];
+
+    final user = json['otherUser'] is Map
+        ? Map<String, dynamic>.from(json['otherUser'])
+        : null;
+
+    otherUser = user;
+
+    isOnline = _parseBool(json['isOnline'] ?? user?['isOnline']);
+
+    lastSeen = (json['lastSeen'] ?? user?['lastSeen'])?.toString();
 
     if (json['blockStatus'] is Map) {
       blockStatus = BlockStatus.fromJson(
@@ -57,6 +74,25 @@ class GetMessage {
     }
   }
 
+  static bool? _parseBool(dynamic value) {
+    if (value is bool) return value;
+    if (value is num) return value != 0;
+
+    if (value is String) {
+      final normalized = value.trim().toLowerCase();
+
+      if (normalized == 'true' || normalized == '1') {
+        return true;
+      }
+
+      if (normalized == 'false' || normalized == '0') {
+        return false;
+      }
+    }
+
+    return null;
+  }
+
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
 
@@ -64,6 +100,9 @@ class GetMessage {
     data['message'] = message;
     data['isCreator'] = isCreator;
     data['pinnedMessageId'] = pinnedMessageId;
+    data['isOnline'] = isOnline;
+    data['lastSeen'] = lastSeen;
+    data['otherUser'] = otherUser;
 
     if (blockStatus != null) {
       data['blockStatus'] = blockStatus!.toJson();
@@ -215,9 +254,11 @@ class MessageData {
     if (replyStatus != null && replyStatus!.id > 0) {
       return replyStatus!.id;
     }
+
     if (statusMeta?.statusId != null && statusMeta!.statusId! > 0) {
       return statusMeta!.statusId;
     }
+
     final rawId = replyStatusId ?? replyId;
     return int.tryParse(rawId?.toString() ?? '');
   }

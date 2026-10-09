@@ -193,19 +193,41 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     );
   }
 
+
   Widget _buildProfileHeader() {
-    final isOnline = _isOnline();
+    final controller = _chatController;
+
+    if (controller == null) {
+      return _buildProfileHeaderContent(
+        _isOnline(),
+        _statusText(),
+      );
+    }
+
+    return Obx(() {
+      return _buildProfileHeaderContent(
+        controller.isPeerOnline.value,
+        controller.peerLastSeen.value,
+      );
+    });
+  }
+
+  Widget _buildProfileHeaderContent(
+      bool isOnline,
+      String statusText,
+      ) {
     final img = _member.profileImage?.toString() ?? "";
     final name = _member.name?.toString() ?? "Member";
 
     final String teamName = (_member.team != null &&
-            _member.team!.trim().isNotEmpty)
+        _member.team!.trim().isNotEmpty)
         ? _member.team!.trim()
-        : ((_member.department != null && _member.department!.trim().isNotEmpty)
-            ? _member.department!.trim()
-            : (_member.groupId != null && _member.groupId != 0
-                ? "Group #${_member.groupId}"
-                : "FG Tracker Member"));
+        : ((_member.department != null &&
+        _member.department!.trim().isNotEmpty)
+        ? _member.department!.trim()
+        : (_member.groupId != null && _member.groupId != 0
+        ? "Group #${_member.groupId}"
+        : "FG Tracker Member"));
 
     return Column(
       children: [
@@ -231,24 +253,24 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               ),
               child: (img.isNotEmpty && img.toLowerCase() != 'null')
                   ? ClipOval(
-                      child: Image.network(
-                        (img.startsWith('http://') ||
-                                img.startsWith('https://'))
-                            ? img
-                            : "${ConstRes.aImageBaseUrl}$img",
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => Icon(
-                          Icons.person,
-                          color: Colors.white,
-                          size: 45.sp,
-                        ),
-                      ),
-                    )
+                child: Image.network(
+                  (img.startsWith('http://') ||
+                      img.startsWith('https://'))
+                      ? img
+                      : "${ConstRes.aImageBaseUrl}$img",
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => Icon(
+                    Icons.person,
+                    color: Colors.white,
+                    size: 45.sp,
+                  ),
+                ),
+              )
                   : Icon(
-                      Icons.person,
-                      color: Colors.white,
-                      size: 45.sp,
-                    ),
+                Icons.person,
+                color: Colors.white,
+                size: 45.sp,
+              ),
             ),
             if (isOnline)
               Positioned(
@@ -295,7 +317,9 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             vertical: 4.h,
           ),
           decoration: BoxDecoration(
-            color: isOnline ? const Color(0xFFE8F6ED) : Colors.grey.shade200,
+            color: isOnline
+                ? const Color(0xFFE8F6ED)
+                : Colors.grey.shade200,
             borderRadius: BorderRadius.circular(20.r),
           ),
           child: Row(
@@ -305,14 +329,15 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                 height: 8.w,
                 width: 8.w,
                 decoration: BoxDecoration(
-                  color:
-                      isOnline ? const Color(0xFF2BB673) : Colors.grey.shade500,
+                  color: isOnline
+                      ? const Color(0xFF2BB673)
+                      : Colors.grey.shade500,
                   shape: BoxShape.circle,
                 ),
               ),
               SizedBox(width: 6.w),
               Text(
-                isOnline ? "Online" : _statusText(),
+                statusText,
                 style: TextStyle(
                   fontSize: 12.sp,
                   color: isOnline ? _lightPurple : Colors.grey.shade600,

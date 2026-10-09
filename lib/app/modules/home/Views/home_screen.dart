@@ -60,6 +60,7 @@ class _HomeScreenState extends State<HomeScreen> {
       Permission.camera,
       Permission.audio,
       Permission.notification,
+      Permission.contacts,
     ].request();
   }
 

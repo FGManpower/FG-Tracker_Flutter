@@ -29,6 +29,7 @@ import '../../../Data/Services/Socket/Socket_Message_Services.dart';
 import '../../../Data/Services/chat_translation_service.dart';
 import '../../Attendance/models/attendance_poll_model.dart';
 
+
 class GroupMessageController extends GetxController {
   final socketService = SocketMessageService.instance;
 
@@ -510,7 +511,7 @@ class GroupMessageController extends GetxController {
       );
 
       final existingIndex =
-          pollData.responses.indexWhere((r) => r.userId == response.userId);
+      pollData.responses.indexWhere((r) => r.userId == response.userId);
       if (existingIndex != -1) {
         final oldStatus = pollData.responses[existingIndex].status;
         if (oldStatus == "Present" && response.status == "Absent") {
@@ -765,7 +766,7 @@ class GroupMessageController extends GetxController {
 
         updateMessageStream();
 
-        scrollToBottom();
+        scrollToBottom(instant: true); // Instantly jumps to the latest message
       } else {
         CommonDialog.errorMessage(result.message);
 
@@ -832,18 +833,37 @@ class GroupMessageController extends GetxController {
     }
   }
 
-  void scrollToBottom() {
-    Future.delayed(const Duration(milliseconds: 100), () {
-      if (_messages.isEmpty) return;
-
-      if (itemScrollController.isAttached) {
-        itemScrollController.scrollTo(
-          index: _messages.length - 1,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOut,
-        );
-      }
+  void scrollToBottom({bool instant = false}) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollToBottomExecution(instant: instant);
     });
+  }
+
+  void _scrollToBottomExecution({bool instant = false, int retryCount = 0}) {
+    if (_messages.isEmpty) return;
+
+    if (itemScrollController.isAttached) {
+      try {
+        if (instant) {
+          itemScrollController.jumpTo(
+            index: _messages.length - 1,
+          );
+        } else {
+          itemScrollController.scrollTo(
+            index: _messages.length - 1,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeOut,
+          );
+        }
+      } catch (e) {
+        log("Scroll execution error: $e");
+      }
+    } else if (retryCount < 10) {
+      // Retry a few times if the list layout hasn't fully computed yet
+      Future.delayed(const Duration(milliseconds: 50), () {
+        _scrollToBottomExecution(instant: instant, retryCount: retryCount + 1);
+      });
+    }
   }
 
   bool isUserAtBottom() {
@@ -917,7 +937,6 @@ class GroupMessageController extends GetxController {
     mentionStartIndex!.value = lastAtIndex;
     final query = wordAfterAt.substring(1).toLowerCase().trim();
 
-    // Filter members
     filteredMembers.value = groupMembers
         .where((member) =>
     (member.name?.toLowerCase().contains(query) ?? false) ||

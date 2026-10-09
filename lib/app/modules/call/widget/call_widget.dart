@@ -148,3 +148,50 @@ Widget sheetTile({
     ),
   );
 }
+
+
+String formatSectionTitle(String raw) {
+  if (raw.isEmpty) return 'Recent';
+  final lower = raw.toLowerCase().replaceAll(RegExp(r'[_-]'), ' ').trim();
+  if (lower == 'today') return 'Today';
+  if (lower == 'yesterday') return 'Yesterday';
+  if (lower == 'this week' || lower == 'thisweek' || lower == 'week') {
+    return 'This Week';
+  }
+  if (lower == 'last week' || lower == 'lastweek') return 'Last Week';
+  if (lower == 'older') return 'Older';
+
+  return lower.split(' ').map((word) {
+    if (word.isEmpty) return '';
+    return word[0].toUpperCase() + word.substring(1);
+  }).join(' ');
+}
+
+
+String formatPhoneForDisplay(String raw) {
+  if (raw.trim().isEmpty) return 'Unknown';
+  final clean = raw.trim();
+  final digits = clean.replaceAll(RegExp(r'[^0-9]'), '');
+  if (digits.length == 10) {
+    return "+91 ${digits.substring(0, 5)} ${digits.substring(5)}";
+  } else if (digits.length == 12 && digits.startsWith('91')) {
+    final sub = digits.substring(2);
+    return "+91 ${sub.substring(0, 5)} ${sub.substring(5)}";
+  }
+  if (!clean.startsWith('+') && digits.length >= 10) {
+    return "+$clean";
+  }
+  return clean;
+}
+
+String normalizePhone(String phone) {
+  String digits = phone.replaceAll(RegExp(r'[^0-9]'), '');
+  if (digits.startsWith('91') && digits.length > 10) {
+    digits = digits.substring(2);
+  }
+  if (digits.length > 10) {
+    digits = digits.substring(digits.length - 10);
+  }
+  return digits;
+}
+

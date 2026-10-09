@@ -302,17 +302,7 @@ Future<void> main() async {
     StatusBinding().dependencies();
   }
   ScreenShareForegroundService.init();
-  // await WalkieNotificationManager.instance.init();
-  // final launch =
-  //     await FlutterLocalNotificationsPlugin().getNotificationAppLaunchDetails();
-  // if (launch?.didNotificationLaunchApp == true) {
-  //   WidgetsBinding.instance.addPostFrameCallback((_) {
-  //     final resp = launch!.notificationResponse;
-  //     if (resp != null) {
-  //       WalkieNotificationManager.instance.onNotificationTap(resp);
-  //     }
-  //   });
-  // }
+
 
   runApp(const MyApp());
 }
