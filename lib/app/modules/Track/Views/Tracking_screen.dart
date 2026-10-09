@@ -2694,16 +2694,15 @@ class TrackingScreen extends StatelessWidget {
             : null;
 
     return Obx(() {
-      final String myId =
-          Global.storageServices.get(PrefConst.userId)?.toString() ?? '';
       final bool isExpanded = controller.expandedGroupId.value == gIdStr;
       final List<LocationData> members =
           controller.groupMembersMap[gIdStr] ?? [];
-      final int otherMembersCount = members
-          .where((m) => myId.isEmpty || (m.userId ?? m.id)?.toString() != myId)
-          .length;
       final bool isMembersLoading = controller.isGroupMembersLoading.value &&
           controller.expandedGroupId.value == gIdStr;
+      final int groupMemberCount =
+          (group.memberCount != null && group.memberCount! > 0)
+              ? group.memberCount!
+              : members.length;
 
       return Container(
         margin: EdgeInsets.only(bottom: 10.h),
@@ -2851,7 +2850,7 @@ class TrackingScreen extends StatelessWidget {
                                   color: AppColors.primaryElement),
                               SizedBox(width: 3.w),
                               Text(
-                                "${group.memberCount ?? (otherMembersCount > 0 ? otherMembersCount : members.length)}",
+                                "$groupMemberCount",
                                 style: TextStyle(
                                   fontSize: 10.sp,
                                   fontWeight: FontWeight.w700,
@@ -2897,12 +2896,9 @@ class TrackingScreen extends StatelessWidget {
   ) {
     final String currentUserId =
         Global.storageServices.get(PrefConst.userId)?.toString() ?? '';
-    final int otherCount = members
-        .where((m) =>
-            currentUserId.isEmpty ||
-            (m.userId ?? m.id)?.toString() != currentUserId)
-        .length;
-    final int displayCount = otherCount > 0 ? otherCount : members.length;
+    final int displayCount = (group.memberCount != null && group.memberCount! > 0)
+        ? group.memberCount!
+        : members.length;
 
     // Sort: 1st: You, 2nd: Ghost Mode enabled, 3rd: All other members
     final List<LocationData> sortedMembers = List<LocationData>.from(members);
@@ -2976,7 +2972,7 @@ class TrackingScreen extends StatelessWidget {
                   ),
                 ],
               ),
-              if (members.isNotEmpty)
+              if (members.isNotEmpty || (group.memberCount != null && group.memberCount! > 0))
                 Text(
                   "$displayCount member${displayCount == 1 ? '' : 's'}",
                   style: TextStyle(
@@ -3094,79 +3090,7 @@ class TrackingScreen extends StatelessWidget {
       behavior: HitTestBehavior.opaque,
       onTap: () {
         if (isGhostMode) {
-          Get.snackbar(
-            "",
-            "",
-            titleText: Row(
-              children: [
-                Container(
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 7.w, vertical: 2.5.h),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF3E8FF),
-                    borderRadius: BorderRadius.circular(6.r),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.lock_outline_rounded,
-                        size: 11.sp,
-                        color: const Color(0xFF7E57C2),
-                      ),
-                      SizedBox(width: 4.w),
-                      Text(
-                        "Private",
-                        style: TextStyle(
-                          fontSize: 11.sp,
-                          fontWeight: FontWeight.w700,
-                          color: const Color(0xFF7E57C2),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                SizedBox(width: 8.w),
-                Text(
-                  "Location Hidden",
-                  style: TextStyle(
-                    fontSize: 13.sp,
-                    fontWeight: FontWeight.w700,
-                    color: const Color(0xFF1E1B4B),
-                  ),
-                ),
-              ],
-            ),
-            messageText: Padding(
-              padding: EdgeInsets.only(top: 2.h),
-              child: Text(
-                isMe
-                    ? "Your live location sharing is paused and private."
-                    : "$name has paused location sharing. Live location is not available.",
-                style: TextStyle(
-                  fontSize: 12.sp,
-                  fontWeight: FontWeight.w500,
-                  color: const Color(0xFF64748B),
-                ),
-              ),
-            ),
-            icon: Container(
-              margin: EdgeInsets.only(left: 10.w),
-              padding: EdgeInsets.all(8.r),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF3E8FF),
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: const Color(0xFF7E57C2).withValues(alpha: 0.25),
-                  width: 1,
-                ),
-              ),
-              child: Icon(
-                Icons.location_off_rounded,
-                color: const Color(0xFF7E57C2),
-                size: 20.sp,
-              ),
-            ),
+          Get.rawSnackbar(
             snackPosition: SnackPosition.TOP,
             backgroundColor: Colors.white,
             borderColor: const Color(0xFFE2E8F0),
@@ -3182,6 +3106,91 @@ class TrackingScreen extends StatelessWidget {
             padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
             borderRadius: 16.r,
             duration: const Duration(seconds: 3),
+            messageText: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Container(
+                  width: 38.w,
+                  height: 38.w,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF3E8FF),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: const Color(0xFF7E57C2).withValues(alpha: 0.25),
+                      width: 1,
+                    ),
+                  ),
+                  child: Center(
+                    child: Icon(
+                      Icons.location_off_rounded,
+                      color: const Color(0xFF7E57C2),
+                      size: 20.sp,
+                    ),
+                  ),
+                ),
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 7.w, vertical: 2.5.h),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF3E8FF),
+                              borderRadius: BorderRadius.circular(6.r),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.lock_outline_rounded,
+                                  size: 11.sp,
+                                  color: const Color(0xFF7E57C2),
+                                ),
+                                SizedBox(width: 4.w),
+                                Text(
+                                  "Private",
+                                  style: TextStyle(
+                                    fontSize: 11.sp,
+                                    fontWeight: FontWeight.w700,
+                                    color: const Color(0xFF7E57C2),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          SizedBox(width: 8.w),
+                          Text(
+                            "Location Hidden",
+                            style: TextStyle(
+                              fontSize: 13.sp,
+                              fontWeight: FontWeight.w700,
+                              color: const Color(0xFF1E1B4B),
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 3.h),
+                      Text(
+                        isMe
+                            ? "Your live location sharing is paused and private."
+                            : "$name has paused location sharing. Live location is not available.",
+                        style: TextStyle(
+                          fontSize: 12.sp,
+                          fontWeight: FontWeight.w500,
+                          color: const Color(0xFF64748B),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           );
           return;
         }

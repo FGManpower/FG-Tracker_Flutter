@@ -18,8 +18,7 @@ class GlobalAudioController extends GetxController {
   }
 
   Future<void> _init() async {
-    final session = await AudioSession.instance;
-    await session.configure(const AudioSessionConfiguration.speech());
+    await _configureSpeakerSession();
 
     await player.setLoopMode(LoopMode.off);
 
@@ -38,6 +37,24 @@ class GlobalAudioController extends GetxController {
     });
   }
 
+  Future<void> _configureSpeakerSession() async {
+    try {
+      final session = await AudioSession.instance;
+      await session.configure(const AudioSessionConfiguration(
+        avAudioSessionCategory: AVAudioSessionCategory.playback,
+        avAudioSessionCategoryOptions:
+            AVAudioSessionCategoryOptions.defaultToSpeaker,
+        avAudioSessionMode: AVAudioSessionMode.defaultMode,
+        androidAudioAttributes: AndroidAudioAttributes(
+          contentType: AndroidAudioContentType.music,
+          usage: AndroidAudioUsage.media,
+        ),
+        androidAudioFocusGainType: AndroidAudioFocusGainType.gain,
+        androidWillPauseWhenDucked: true,
+      ));
+    } catch (_) {}
+  }
+
   Future<void> loadDuration(String url) async {
     if (durationCache.containsKey(url)) return;
 
@@ -50,6 +67,7 @@ class GlobalAudioController extends GetxController {
   }
 
   Future<void> play(String url) async {
+    await _configureSpeakerSession();
     if (currentUrl.value != url) {
       await player.stop();
       await player.setUrl(url);
