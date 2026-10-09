@@ -1,6 +1,7 @@
 import 'dart:developer';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
+import 'package:fgtracker/app/Data/Services/GroupCountService.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:get/get.dart';
 
@@ -33,10 +34,38 @@ class SocketService extends GetxService {
       for (String groupId in connectedGroupIds) {
         _rejoinGroup(groupId);
       }
+
+
+
+      socket.on("location-update-success", (res) {
+
+      dynamic payload = res['data']['dashboardCounts'];
+      if (payload.toString().isEmpty) {
+        return;
+      }
+
+      if (Get.isRegistered<GroupCountService>()) {
+        GroupCountService.instance.updateFromSocket(payload);
+      }
+
+
+      });
+
+      socket.on("group_dashboard_counts", (res)  {
+      log("Real-time Dashboard Counts:${res}");
+
+      });
+
+      socket.on("location-update-error", (err)  {
+      log("Error Response:${err}", );
+      });
     });
 
     _socket?.onDisconnect((_) => log(" Socket disconnected"));
     _socket?.onError((err) => log("Socket error: $err"));
+    _socket?.onAny((event, data) {
+      print("===========LocationEvent:${event},Data:${data}");
+    },);
   }
 
   void joinGroup({required String groupId, required String userId}) {
