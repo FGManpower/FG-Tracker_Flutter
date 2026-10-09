@@ -516,6 +516,7 @@ class SocketMessageService extends GetxService {
       },
     );
   }
+
   void initPrivateChatListSocket(
       String socketUrl, {
         required String userId,
@@ -539,6 +540,13 @@ class SocketMessageService extends GetxService {
         },
       },
     );
+
+    _privateChatListSocket?.onAny((event, data) {
+      log("========================================");
+      log("PRIVATE CHAT LIST SOCKET EVENT => $event");
+      log("PRIVATE CHAT LIST SOCKET DATA => $data");
+      log("========================================");
+    });
 
     _privateChatListSocket?.on(
       "archived_private_chats",
@@ -581,8 +589,8 @@ class SocketMessageService extends GetxService {
           "private_chat_removed",
               (data) {
             log("========================================");
-            log("🗑️ PRIVATE CHAT REMOVED RECEIVED");
-            log("📦 DATA => $data");
+            log("PRIVATE CHAT REMOVED RECEIVED");
+            log("DATA => $data");
             log("========================================");
 
             _privateChatRemovedCallback?.call(data);
@@ -597,8 +605,8 @@ class SocketMessageService extends GetxService {
           "private_chat_action_error",
               (data) {
             log("========================================");
-            log("❌ PRIVATE CHAT ACTION ERROR RECEIVED");
-            log("📦 DATA => $data");
+            log("PRIVATE CHAT ACTION ERROR RECEIVED");
+            log("DATA => $data");
             log("========================================");
 
             _privateChatActionErrorCallback?.call(data);
@@ -618,9 +626,10 @@ class SocketMessageService extends GetxService {
     });
 
     _privateChatListSocket?.onError((error) {
-      log("PRIVATE CHAT LIST SOCKET ERROR =====> $error");
+      log("PRIVATE CHAT LIST SOCKET ERROR => $error");
     });
   }
+
   Function(dynamic)? _privateChatListUpdatedCallback;
 
   void listenPrivateChatListUpdated({
