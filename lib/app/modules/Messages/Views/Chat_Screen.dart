@@ -54,18 +54,7 @@ class ChatScreen extends GetView<MessageController> {
 
     debugPrint("====================================================");
     debugPrint("");
-    String lastSeenText = "Offline";
-    bool isOnline = false;
 
-    if (userData.lastSeen != null && userData.lastSeen!.trim().isNotEmpty) {
-      final rawLastSeen = userData.lastSeen!.trim();
-      try {
-        lastSeenText = Tracking().getTimeAgo(DateTime.parse(rawLastSeen));
-      } catch (_) {
-        lastSeenText = rawLastSeen;
-      }
-      isOnline = lastSeenText.toLowerCase() == "just now";
-    }
 
     return WillPopScope(
       onWillPop: () async {
@@ -79,13 +68,24 @@ class ChatScreen extends GetView<MessageController> {
         backgroundColor: _scaffoldBg,
         resizeToAvoidBottomInset: true,
         appBar: PreferredSize(
-          preferredSize: Size.fromHeight(64.h),
-          child: Obx(() {
-            if (controller.isSearching.value) return _buildSearchAppBar();
-            return _buildNormalAppBar(
-                context, userData, isOnline, lastSeenText);
-          }),
-        ),
+        preferredSize: Size.fromHeight(64.h),
+        child: Obx(() {
+          if (controller.isSearching.value) {
+            return _buildSearchAppBar();
+          }
+
+          final isOnline = controller.isPeerOnline.value;
+          final lastSeenText = controller.peerLastSeen.value;
+
+          return _buildNormalAppBar(
+            context,
+            userData,
+            isOnline,
+            lastSeenText,
+          );
+        }),
+      ),
+
         body: SafeArea(
           child: Column(
             children: [

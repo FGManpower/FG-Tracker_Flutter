@@ -370,7 +370,9 @@ class _AllChatsBody extends StatelessWidget {
                               chat.time ?? "",
                             ),
                             unreadCount: chat.unreadCount ?? 0,
-                            statusColor: _statusColor(chat.status),
+                            statusColor: chat.isOnline == true
+                                ? const Color(0xFF16A765)
+                                : Colors.grey,
                             isGroup: chat.isGroup ?? false,
                             image: chat.image,
                           );

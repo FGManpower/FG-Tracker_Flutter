@@ -3,7 +3,7 @@ import 'package:fgtracker/app/modules/Messages/Controller/GroupChatController.da
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:get/get_state_manager/src/rx_flutter/rx_obx_widget.dart';
+import 'package:get/get.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 import '../Controller/MessageController.dart';
@@ -28,26 +28,20 @@ class ChatList extends StatelessWidget {
         builder: (context, snapshot) {
           final messages = snapshot.data ?? [];
 
-          // -----------------------------------------
-          // 1. API LOADING
-          // -----------------------------------------
           if (isLoading && messages.isEmpty) {
             return const ChatMessageSkeleton();
           }
 
-          // -----------------------------------------
-          // 2. API LOADED + NO MESSAGES
-          // -----------------------------------------
           if (!isLoading && messages.isEmpty) {
             return _buildEmptyState();
           }
 
-          // -----------------------------------------
-          // 3. ACTUAL MESSAGES
-          // -----------------------------------------
           return ScrollablePositionedList.builder(
+            key: ValueKey("chat_list_${controller.privateChatId.value}"),
             itemScrollController: controller.itemScrollController,
             itemPositionsListener: controller.itemPositionsListener,
+            initialScrollIndex: messages.isNotEmpty ? messages.length - 1 : 0,
+            initialAlignment: 0.0,
             padding: EdgeInsets.symmetric(
               horizontal: 12.w,
               vertical: 8.h,
@@ -57,7 +51,7 @@ class ChatList extends StatelessWidget {
               final msg = messages[index];
 
               return Dismissible(
-                key: ValueKey(msg.id),
+                key: ValueKey(msg.id ?? index),
                 direction: DismissDirection.startToEnd,
                 dismissThresholds: const {
                   DismissDirection.startToEnd: 0.25,
@@ -155,8 +149,6 @@ class _ChatMessageSkeletonState extends State<ChatMessageSkeleton>
       builder: (context, child) {
         final value = _controller.value;
 
-        // Subtle brightness change.
-        // Not too shiny, but clearly visible.
         final shimmerColor = Color.lerp(
           const Color(0xFFD8D5E0),
           const Color(0xFFE8E5ED),
@@ -283,84 +275,95 @@ class GroupChatList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<List<MessageData>>(
-      stream: controller.messageStream,
-      initialData: controller.messageData,
-      builder: (context, snapshot) {
-        final messages = snapshot.data ?? [];
+    return Obx(() {
+      final isLoading = controller.isLoading.value;
 
-        if (messages.isEmpty) {
-          return Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  "💬",
-                  style: TextStyle(fontSize: 48.sp),
-                ),
-                SizedBox(height: 12.h),
-                Text(
-                  "No messages here yet",
-                  style: TextStyle(
-                    fontSize: 15.sp,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.grey.shade600,
+      return StreamBuilder<List<MessageData>>(
+        stream: controller.messageStream,
+        initialData: controller.messageData,
+        builder: (context, snapshot) {
+          final messages = snapshot.data ?? [];
+
+          if (isLoading && messages.isEmpty) {
+            return const ChatMessageSkeleton();
+          }
+
+          if (!isLoading && messages.isEmpty) {
+            return Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    "💬",
+                    style: TextStyle(fontSize: 48.sp),
                   ),
-                ),
-                SizedBox(height: 4.h),
-                Text(
-                  "Say hi 👋 to start the conversation",
-                  style: TextStyle(
-                    fontSize: 13.sp,
-                    color: Colors.grey.shade400,
+                  SizedBox(height: 12.h),
+                  Text(
+                    "No messages here yet",
+                    style: TextStyle(
+                      fontSize: 15.sp,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.grey.shade600,
+                    ),
                   ),
-                ),
-              ],
-            ),
-          );
-        }
-
-        return ScrollablePositionedList.builder(
-          itemScrollController: controller.itemScrollController,
-          itemPositionsListener: controller.itemPositionsListener,
-          padding: EdgeInsets.symmetric(
-            horizontal: 12.w,
-            vertical: 8.h,
-          ),
-          itemCount: messages.length,
-          itemBuilder: (context, index) {
-            final msg = messages[index];
-
-            return Dismissible(
-              key: ValueKey(msg.id),
-              direction: DismissDirection.startToEnd,
-              confirmDismiss: (_) async {
-                HapticFeedback.lightImpact();
-                controller.setReply(msg);
-                return false;
-              },
-              background: Container(
-                alignment: Alignment.centerLeft,
-                padding: EdgeInsets.only(left: 20.w),
-                color: Colors.transparent,
-                child: Icon(
-                  Icons.reply,
-                  color: Colors.deepPurple,
-                  size: 24.sp,
-                ),
-              ),
-              child: GroupChatBubble(
-                controller: controller,
-                message: msg,
-                context: context,
-                isGroup: true,
-                groupId: controller.groupId,
-                groupName: controller.groupName,
+                  SizedBox(height: 4.h),
+                  Text(
+                    "Say hi 👋 to start the conversation",
+                    style: TextStyle(
+                      fontSize: 13.sp,
+                      color: Colors.grey.shade400,
+                    ),
+                  ),
+                ],
               ),
             );
-          },
-        );
-      },
-    );
+          }
+
+          return ScrollablePositionedList.builder(
+            key: ValueKey("group_chat_list_${controller.groupId}"),
+            itemScrollController: controller.itemScrollController,
+            itemPositionsListener: controller.itemPositionsListener,
+            initialScrollIndex: messages.isNotEmpty ? messages.length - 1 : 0,
+            initialAlignment: 0.0,
+            padding: EdgeInsets.symmetric(
+              horizontal: 12.w,
+              vertical: 8.h,
+            ),
+            itemCount: messages.length,
+            itemBuilder: (context, index) {
+              final msg = messages[index];
+
+              return Dismissible(
+                key: ValueKey(msg.id ?? index),
+                direction: DismissDirection.startToEnd,
+                confirmDismiss: (_) async {
+                  HapticFeedback.lightImpact();
+                  controller.setReply(msg);
+                  return false;
+                },
+                background: Container(
+                  alignment: Alignment.centerLeft,
+                  padding: EdgeInsets.only(left: 20.w),
+                  color: Colors.transparent,
+                  child: Icon(
+                    Icons.reply,
+                    color: Colors.deepPurple,
+                    size: 24.sp,
+                  ),
+                ),
+                child: GroupChatBubble(
+                  controller: controller,
+                  message: msg,
+                  context: context,
+                  isGroup: true,
+                  groupId: controller.groupId,
+                  groupName: controller.groupName,
+                ),
+              );
+            },
+          );
+        },
+      );
+    });
   }
 }
