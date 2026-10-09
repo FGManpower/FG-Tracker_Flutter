@@ -88,27 +88,12 @@ class SocketService extends GetxService {
         if (cleanArea != null) "area": cleanArea,
         if (cleanCity != null) "city": cleanCity,
       };
-      _socket?.emit("send-location", payload);
-      log("[SocketService] Emitted send-location (broadcast): $payload");
-    // } else {
-    //   for (String groupId in connectedGroupIds) {
-    //     final payload = <String, dynamic>{
-    //       "userId": userId,
-    //       "groupId": groupId,
-    //       "lat": lat,
-    //       "lng": lng,
-    //       "latitude": lat,
-    //       "longitude": lng,
-    //       "battery": sendBattery,
-    //       if (cleanAddress != null) "address": cleanAddress,
-    //       if (cleanAddress != null) "location": cleanAddress,
-    //       if (cleanArea != null) "area": cleanArea,
-    //       if (cleanCity != null) "city": cleanCity,
-    //     };
-    //     _socket?.emit("send-location", payload);
-    //     log("[SocketService] Emitted send-location to group $groupId: $payload");
-    //   }
-    // }
+      _socket?.emitWithAck("send-location", payload,ack: (response) {
+        print("======SenlocationResponse:${response}");
+      },);
+
+
+
   }
 
   void onGroupLocationUpdate(Function(dynamic) callback) {

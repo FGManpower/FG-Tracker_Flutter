@@ -60,17 +60,17 @@ class SocketDashboardService extends GetxService {
       log('Dashboard socket error: $error');
     });
 
-    _socket!.on('group_dashboard_counts', (data) {
-      log('[DashboardSocket] group_dashboard_counts received: $data');
-      dynamic payload = data;
-      if (data is Map && data.containsKey('data') && data['data'] != null) {
-        payload = data['data'];
-      }
-
-      if (Get.isRegistered<GroupCountService>()) {
-        GroupCountService.instance.updateFromSocket(payload);
-      }
-    });
+    // _socket!.on('group_dashboard_counts', (data) {
+    //   log('[DashboardSocket] group_dashboard_counts received: $data');
+    //   dynamic payload = data;
+    //   if (data is Map && data.containsKey('data') && data['data'] != null) {
+    //     payload = data['data'];
+    //   }
+    //
+    //   if (Get.isRegistered<GroupCountService>()) {
+    //     GroupCountService.instance.updateFromSocket(payload);
+    //   }
+    // });
     _socket?.onAny((event, dynamic data) {
       log('DashboardSocketAllEvent: $event | Data: $data');
     });
