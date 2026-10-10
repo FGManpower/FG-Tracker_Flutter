@@ -18,7 +18,6 @@ import 'package:wakelock_plus/wakelock_plus.dart';
 import '../../../../gen/assets.gen.dart';
 import 'package:fgtracker/app/Data/Repositories/call_repo.dart';
 import 'package:fgtracker/app/Model/callDetailRes.dart';
-import 'package:intl/intl.dart';
 import '../../../Core/global/launchedFromCall.dart';
 import '../../../Data/Services/Socket/Socket_SignallingService.dart';
 
@@ -145,7 +144,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     }
 
     WakelockPlus.enable();
-    _startForegroundCallService();
+
 
     try {
       GroupTrackingController.instance.initializeLocation();
@@ -183,23 +182,6 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     );
   }
 
-  Future<void> _startForegroundCallService() async {
-    try {
-      if (await FlutterForegroundTask.isRunningService) {
-        await FlutterForegroundTask.restartService();
-      } else {
-        await FlutterForegroundTask.startService(
-          notificationTitle: args["callerName"] != null
-              ? "Call with ${args["callerName"]}"
-              : "Active Call",
-          notificationText: "Microphone active in background",
-        );
-      }
-      log("🎙️ Foreground Service successfully started to keep Background Mic active.");
-    } catch (e) {
-      log("Error starting call foreground task: $e");
-    }
-  }
 
   Future<void> _stopForegroundCallService() async {
     try {
