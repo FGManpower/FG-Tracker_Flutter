@@ -95,7 +95,8 @@ class GroupCallingController extends GetxController {
     svc.onParticipantCameraChanged = _onParticipantCameraChanged;
 
     svc.onParticipantsRosterUpdated = (participants, total) {
-      totalMemberCount = total;
+      totalMemberCount = total > 0 ? total : totalMemberCount;
+      final myUserId = Global.storageServices.get(PrefConst.userId)?.toString();
 
       for (final p in participants) {
         final uid = p['userId']?.toString();
@@ -105,29 +106,28 @@ class GroupCallingController extends GetxController {
         final image = p['profileImage']?.toString();
         final status = (p['status'] ?? '').toString().toLowerCase();
 
+        final inCall = status == 'accepted' ||
+            status == 'joined' ||
+            status == 'connected' ||
+            status == 'in_call' ||
+            status == 'active';
+
+
         final idx = allGroupMembers.indexWhere((e) => e.userId == uid);
         if (idx >= 0) {
           allGroupMembers[idx].name = name;
           if (image != null && image.isNotEmpty) {
             allGroupMembers[idx].profileImage = image;
           }
-
-          allGroupMembers[idx].isConnected.value = (status == 'accepted' ||
-              status == 'joined' ||
-              status == 'connected' ||
-              status == 'in_call');
+          allGroupMembers[idx].isConnected.value = inCall;
         } else {
           allGroupMembers.add(GroupCallParticipant(
             userId: uid,
             name: name,
-            profileImage: (image != null && image.isEmpty) ? null : image,
-            isLocal:
-            uid == Global.storageServices.get(PrefConst.userId)?.toString(),
+            profileImage: (image == null || image.isEmpty) ? null : image,
+            isLocal: uid == myUserId,
             videoOn: false,
-            connected: (status == 'accepted' ||
-                status == 'joined' ||
-                status == 'connected' ||
-                status == 'in_call'),
+            connected: inCall,
           ));
         }
       }
@@ -153,44 +153,46 @@ class GroupCallingController extends GetxController {
       }
     };
 
-    _setupLocalMedia().then((_) {
-      if (callType == "outgoing") {
-        _playSound();
-        final myName = Global.storageServices.get(PrefConst.userName) ?? "User";
-        final myImage =
-            Global.storageServices.get(PrefConst.profileImage)?.toString() ??
-                "";
 
-        svc.startGroupCall(
-          groupId: groupId,
-          isVideo: isVideo,
-          callerName: myName.toString(),
-          callerProfileImage: myImage,
-          onResponse: (success, generatedCallId, errorMessage) {
-            if (success) {
-              callId = generatedCallId;
-            } else {
-              _stopSound();
-              Utils().fluttertoast(
-                  errorMessage ?? "Unable to initialize group call");
-              Get.back();
-            }
-          },
-        );
-      } else {
-        callStatus.value = "Connecting...";
-        if (callId != null) {
-          svc.joinGroupCall(callId!, groupId, (success) {
-            if (!success) {
-              _stopSound();
-              Utils().fluttertoast("Failed to connect to the call session");
-              Get.back();
-            } else {
-              _syncParticipants();
-            }
-          });
-        }
+    if (callType == "outgoing") {
+      _playSound();
+      final myName = Global.storageServices.get(PrefConst.userName) ?? "User";
+      final myImage = Global.storageServices.get(PrefConst.profileImage)?.toString() ?? "";
+
+      svc.startGroupCall(
+        groupId: groupId,
+        isVideo: isVideo,
+        callerName: myName.toString(),
+        callerProfileImage: myImage,
+        onResponse: (success, generatedCallId, errorMessage) {
+          if (success) {
+            callId = generatedCallId;
+          } else {
+            _stopSound();
+            Utils().fluttertoast(errorMessage ?? "Unable to initialize group call");
+            Get.back();
+          }
+        },
+      );
+    } else {
+      callStatus.value = "Connecting...";
+      if (callId != null) {
+        svc.joinGroupCall(callId!, groupId, (success) {
+          if (!success) {
+            _stopSound();
+            Utils().fluttertoast("Failed to connect to the call session");
+            Get.back();
+          } else {
+            _syncParticipants();
+          }
+        });
       }
+    }
+
+
+    _setupLocalMedia().then((_) async {
+
+      await Socket_GroupCallService.instance.onLocalStreamReady();
     }).catchError((e) {
       Utils().fluttertoast("Camera or Mic permissions are required");
       Get.back();
@@ -379,25 +381,20 @@ class GroupCallingController extends GetxController {
           : false,
     };
 
-    final stream =
-    await webrtc.navigator.mediaDevices.getUserMedia(mediaConstraints);
+    final stream = await webrtc.navigator.mediaDevices.getUserMedia(mediaConstraints);
     localRenderer.srcObject = stream;
     Socket_GroupCallService.instance.localStream = stream;
-    Socket_GroupCallService.instance.activeVideoTrack =
-        stream.getVideoTracks().firstOrNull;
+    Socket_GroupCallService.instance.activeVideoTrack = stream.getVideoTracks().firstOrNull;
 
     if (Platform.isAndroid) {
-      try {
-        await ScreenShareForegroundService.start(groupName: groupName);
-      } catch (e) {
+      ScreenShareForegroundService.start(groupName: groupName).catchError((e) {
         log("Foreground service error: $e");
-      }
+      });
     }
 
     final myUserId = Global.storageServices.get(PrefConst.userId).toString();
     final myName = Global.storageServices.get(PrefConst.userName) ?? "You";
-    final myImage =
-    Global.storageServices.get(PrefConst.profileImage)?.toString();
+    final myImage = Global.storageServices.get(PrefConst.profileImage)?.toString();
 
     activeParticipants.add(GroupCallParticipant(
       userId: myUserId,
@@ -615,11 +612,23 @@ class GroupCallingController extends GetxController {
     });
 
     final myUserId = Global.storageServices.get(PrefConst.userId)?.toString();
+
+
+    _mergeMemberDataIntoGroupMembers();
+
     final notIn = allGroupMembers.where((m) {
       if (m.userId == myUserId) return false;
       return !activeIds.contains(m.userId);
     }).toList();
-    notInCallParticipants.assignAll(notIn);
+
+
+    final seen = <String>{};
+    final unique = <GroupCallParticipant>[];
+    for(final p in notIn) {
+      if(seen.add(p.userId)) unique.add(p);
+    }
+
+    notInCallParticipants.assignAll(unique);
   }
 
   void _onParticipantJoined(String userId) {
@@ -810,11 +819,6 @@ class GroupCallingController extends GetxController {
     }
 
     CallSessionState.reset();
-
-    if (Get.isRegistered<GroupCallingController>()) {
-      Get.delete<GroupCallingController>(force: true);
-    }
-
     Get.offAllNamed(Routes.Home_Screen);
   }
 
@@ -846,8 +850,10 @@ class GroupCallingController extends GetxController {
       memberDataLoading.value = true;
       var result = await GroupRepo.getMemberData(groupId);
       if (result.status == true) {
-        memberData.value = result.memberData!;
+        memberData.value = result.memberData ?? [];
         responseError.value = "";
+        _mergeMemberDataIntoGroupMembers();
+        _refreshNotInCallList();
       } else {
         responseError.value = result.message.toString();
       }
@@ -855,6 +861,52 @@ class GroupCallingController extends GetxController {
       responseError.value = e.toString();
     } finally {
       memberDataLoading.value = false;
+    }
+  }
+
+  void _mergeMemberDataIntoGroupMembers() {
+    final myUserId = Global.storageServices.get(PrefConst.userId)?.toString();
+
+    for (final m in memberData) {
+      final uid = (m.userId ?? m.id)?.toString();
+      if (uid == null || uid.isEmpty) continue;
+
+      final name = (m.name ?? m.name ?? 'User $uid').toString();
+      final image = (m.profileImage ?? m.profileImage)?.toString();
+
+      final meta = Socket_GroupCallService.instance.participantMeta[uid] ?? {};
+      meta['name'] = meta['name'] ?? name;
+      if (image != null && image.isNotEmpty) {
+        meta['profileImage'] = meta['profileImage'] ?? image;
+      }
+      Socket_GroupCallService.instance.participantMeta[uid] = meta;
+
+      final idx = allGroupMembers.indexWhere((e) => e.userId == uid);
+      if (idx >= 0) {
+        if (allGroupMembers[idx].name!.isEmpty ||
+            allGroupMembers[idx].name!.startsWith('User ')) {
+          allGroupMembers[idx].name = name;
+        }
+        if ((allGroupMembers[idx].profileImage == null ||
+            allGroupMembers[idx].profileImage!.isEmpty) &&
+            image != null &&
+            image.isNotEmpty) {
+          allGroupMembers[idx].profileImage = image;
+        }
+      } else {
+        allGroupMembers.add(GroupCallParticipant(
+          userId: uid,
+          name: name,
+          profileImage: (image == null || image.isEmpty) ? null : image,
+          isLocal: uid == myUserId,
+          videoOn: false,
+          connected: false,
+        ));
+      }
+    }
+    allGroupMembers.refresh();
+    if (totalMemberCount < allGroupMembers.length) {
+      totalMemberCount = allGroupMembers.length;
     }
   }
 

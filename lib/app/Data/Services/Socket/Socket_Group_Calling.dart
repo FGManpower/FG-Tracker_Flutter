@@ -23,7 +23,6 @@ class Socket_GroupCallService {
   String? currentGroupId;
 
   MediaStream? localStream;
-
   MediaStreamTrack? activeVideoTrack;
 
   final Map<String, RTCPeerConnection> _peers = {};
@@ -33,9 +32,9 @@ class Socket_GroupCallService {
   final Map<String, bool> remoteCameraStates = {};
   final Map<String, Map<String, dynamic>> participantMeta = {};
 
+  final Set<String> _pendingOfferUserIds = <String>{};
   final Map<String, String> participantStatus = {};
   int totalParticipants = 0;
-
 
   Function()? onParticipantsUpdated;
   Function()? onCallEnded;
@@ -74,7 +73,6 @@ class Socket_GroupCallService {
 
   void _log(String message) => log('[GroupCallService] $message');
 
-
   void _saveParticipantMeta(
       String userId, {
         String? name,
@@ -93,11 +91,7 @@ class Socket_GroupCallService {
     }
     participantMeta[userId] = existing;
 
-    _log(
-      "PARTICIPANT META SAVED => "
-          "userId=$userId | "
-          "meta=${participantMeta[userId]}",
-    );
+
   }
 
   String getParticipantName(String userId) {
@@ -118,10 +112,8 @@ class Socket_GroupCallService {
     return participantStatus[userId] ?? '';
   }
 
-
   void init(String userId) {
     if (socket != null && socket!.connected && _selfUserId == userId) {
-      _log('Already initialized and connected for $userId');
       return;
     }
 
@@ -202,7 +194,6 @@ class Socket_GroupCallService {
     return socket != null && socket!.connected;
   }
 
-
   void _bindSocketListeners() {
     if (_listenersBound) return;
     _listenersBound = true;
@@ -220,16 +211,13 @@ class Socket_GroupCallService {
       "group_call_ended",
       "group_call_screen_share_started",
       "group_call_screen_share_stopped",
-
       "group_call_participants_update",
     ];
     for (final e in events) {
       socket?.off(e);
     }
 
-    socket?.on("group_call_started", (raw) {
-
-    });
+    socket?.on("group_call_started", (raw) {});
 
     socket?.on("group_call_participant_joined", (raw) {
       _log("group_call_participant_joined: $raw");
@@ -320,6 +308,7 @@ class Socket_GroupCallService {
       _log(" group_call_participant_left: $raw");
       final leftUserId = raw is Map ? raw['userId']?.toString() : null;
       if (leftUserId != null) {
+        _pendingOfferUserIds.remove(leftUserId);
         await _removeRemotePeer(leftUserId);
       }
     });
@@ -334,7 +323,6 @@ class Socket_GroupCallService {
       await endCallLocalCleanup(navigate: true);
       CallSessionState.reset();
     });
-
 
     socket?.on("group_call_screen_share_started", (raw) {
       _log("🖥️ group_call_screen_share_started: $raw");
@@ -355,7 +343,6 @@ class Socket_GroupCallService {
       onScreenShareStopped?.call(userId);
       onParticipantsUpdated?.call();
     });
-
 
     socket?.on("group_call_offer", (data) async {
       _log(" group_call_offer");
@@ -384,12 +371,10 @@ class Socket_GroupCallService {
       }
     });
 
-
     socket?.on("group_call_participants_update", (raw) async {
       await _handleParticipantsUpdate(raw);
     });
   }
-
 
   Future<void> _handleParticipantsUpdate(dynamic raw) async {
     if (raw == null) return;
@@ -458,7 +443,6 @@ class Socket_GroupCallService {
           'isMuted': isMuted,
         });
 
-
         if (status == 'accepted' ||
             status == 'joined' ||
             status == 'connected' ||
@@ -469,13 +453,11 @@ class Socket_GroupCallService {
         }
       }
 
-
       final staleStatus =
       participantStatus.keys.where((id) => !allIds.contains(id)).toList();
       for (final id in staleStatus) {
         participantStatus.remove(id);
       }
-
 
       final toRemove = remoteUsers
           .where((id) => !acceptedIds.contains(id))
@@ -483,9 +465,9 @@ class Socket_GroupCallService {
 
       for (final id in toRemove) {
         _log("Roster: removing peer $id (left or not accepted)");
+        _pendingOfferUserIds.remove(id);
         await _removeRemotePeer(id);
       }
-
 
       for (final id in acceptedIds) {
         final isNew = !remoteUsers.contains(id) && !_peers.containsKey(id);
@@ -500,6 +482,9 @@ class Socket_GroupCallService {
             } catch (e) {
               _log("Roster offer error to $id: $e");
             }
+          } else if (localStream == null) {
+            _pendingOfferUserIds.add(id);
+            _log("Queued offer for $id (waiting localStream)");
           }
         }
       }
@@ -511,7 +496,6 @@ class Socket_GroupCallService {
     }
   }
 
-
   bool _shouldCreateOfferTo(String remoteUserId) {
     final me = _selfUserId ?? '';
     if (me.isEmpty) return true;
@@ -521,6 +505,27 @@ class Socket_GroupCallService {
     return me.compareTo(remoteUserId) < 0;
   }
 
+  /// Flushes queued offers when local media is initialized
+  Future<void> onLocalStreamReady() async {
+    _log("🎥 onLocalStreamReady called! localStream exists: ${localStream != null}");
+    if (localStream == null) return;
+
+    final pending = _pendingOfferUserIds.toList();
+    _pendingOfferUserIds.clear();
+    _log("⏳ Flushing ${pending.length} pending offers...");
+
+    for (final id in pending) {
+      if (id == _selfUserId || _peers.containsKey(id)) continue;
+      if (_shouldCreateOfferTo(id)) {
+        _log("📤 Sending queued offer to $id");
+        try {
+          await _createOfferTo(id);
+        } catch (e) {
+          _log("❌ Error flushing offer to $id: $e");
+        }
+      }
+    }
+  }
 
   Future<void> startGroupCall({
     required String groupId,
@@ -784,7 +789,6 @@ class Socket_GroupCallService {
     endCallLocalCleanup(navigate: false);
   }
 
-
   Future<RTCPeerConnection> _createPeerConnection(String remoteUserId) async {
     final remoteId = remoteUserId.toString();
     if (_peers.containsKey(remoteId)) return _peers[remoteId]!;
@@ -969,6 +973,7 @@ class Socket_GroupCallService {
     }
     _peers.clear();
     _pendingIce.clear();
+    _pendingOfferUserIds.clear();
 
     for (final renderer in remoteRenderers.values) {
       renderer.srcObject = null;
