@@ -213,31 +213,40 @@ class SocketMessageService extends GetxService {
     );
   }
 
+
   void sendGroupMessage({
     required int groupId,
     required String content,
     required String messageType,
+    List<String>? images,
     String? caption,
     dynamic replyId,
     String? replyMessage,
     String? replyType,
     String? replySender,
   }) {
-    socket.emit(
-      "send_group_message",
-      {
-        "senderId": Global.storageServices.get(PrefConst.userId).toString(),
-        "groupId": groupId,
-        "content": content,
-        "messageType": messageType,
-        "caption": caption,
-        "replyId": replyId,
-        "replyMessage": replyMessage,
-        "replyType": replyType,
-        "replySender": replySender,
-      },
-    );
+    final payload = <String, dynamic>{
+      "senderId": Global.storageServices.get(PrefConst.userId).toString(),
+      "groupId": groupId,
+      "messageType": messageType,
+      "caption": caption,
+      "replyId": replyId,
+      "replyMessage": replyMessage,
+      "replyType": replyType,
+      "replySender": replySender,
+    };
+
+    if (messageType == "image" && images != null && images.isNotEmpty) {
+      payload["images"] = images;
+    } else {
+      payload["content"] = content;
+    }
+
+    log("SEND GROUP MESSAGE => $payload");
+
+    socket.emit("send_group_message", payload);
   }
+
 
   void receiveGroupMessage({
     required Function(dynamic) callback,
@@ -374,10 +383,12 @@ class SocketMessageService extends GetxService {
     );
   }
 
+
   void sendPrivateMessage({
     required String receiverId,
     required String content,
     String messageType = "text",
+    List<String>? images,
     String? caption,
     dynamic replyId,
     String? replyMessage,
@@ -389,13 +400,19 @@ class SocketMessageService extends GetxService {
       return;
     }
 
-    final senderId = Global.storageServices.get(PrefConst.userId).toString();
+    final senderId =
+    Global.storageServices.get(PrefConst.userId).toString();
 
-    final payload = {
+    final payload = <String, dynamic>{
       "senderId": senderId,
       "receiverId": receiverId,
       "messageType": messageType,
-      "content": content,
+      if (messageType == "image" &&
+          images != null &&
+          images.isNotEmpty)
+        "images": images
+      else
+        "content": content,
       if (caption != null) "caption": caption,
       if (replyId != null) "replyId": replyId,
       if (replyMessage != null) "replyMessage": replyMessage,
@@ -410,6 +427,7 @@ class SocketMessageService extends GetxService {
       payload,
     );
   }
+
 
   void receivePrivateMessage({
     required String senderId,

@@ -1,4 +1,3 @@
-
 import 'package:fgtracker/app/Model/status_model.dart';
 
 class GetMessage {
@@ -12,6 +11,7 @@ class GetMessage {
   bool? isOnline;
   String? lastSeen;
   Map<String, dynamic>? otherUser;
+  List<String>? images;
 
   GetMessage({
     this.status,
@@ -24,6 +24,7 @@ class GetMessage {
     this.isOnline,
     this.lastSeen,
     this.otherUser,
+    this.images,
   });
 
   GetMessage.fromJson(Map<String, dynamic> json) {
@@ -39,8 +40,11 @@ class GetMessage {
     otherUser = user;
 
     isOnline = _parseBool(json['isOnline'] ?? user?['isOnline']);
-
     lastSeen = (json['lastSeen'] ?? user?['lastSeen'])?.toString();
+
+    if (json['images'] is List) {
+      images = (json['images'] as List).map((e) => e.toString()).toList();
+    }
 
     if (json['blockStatus'] is Map) {
       blockStatus = BlockStatus.fromJson(
@@ -103,6 +107,7 @@ class GetMessage {
     data['isOnline'] = isOnline;
     data['lastSeen'] = lastSeen;
     data['otherUser'] = otherUser;
+    data['images'] = images;
 
     if (blockStatus != null) {
       data['blockStatus'] = blockStatus!.toJson();
@@ -200,6 +205,7 @@ class MessageData {
   dynamic senderImage;
   dynamic thumbnail;
   dynamic caption;
+  List<String>? images;
   dynamic replyId;
   dynamic replyMessage;
   dynamic replyType;
@@ -229,6 +235,7 @@ class MessageData {
     this.editedAt,
     this.senderName,
     this.caption,
+    this.images,
     this.replyId,
     this.replyMessage,
     this.replyType,
@@ -280,6 +287,12 @@ class MessageData {
     thumbnail = json['thumbnail'];
     caption = json['caption'];
 
+    if (json['images'] is List) {
+      images = (json['images'] as List).map((e) => e.toString()).toList();
+    } else {
+      images = null;
+    }
+
     replyId = json['replyId'] ?? json['reply_id'];
     replyMessage = json['replyMessage'] ?? json['reply_message'];
     replyType = json['replyType'] ?? json['reply_type'];
@@ -308,7 +321,7 @@ class MessageData {
       replyStatus = StatusItemModel.fromStatusMeta(
         statusMeta!,
         content:
-        replyMessageContent?.toString() ?? replyMessage?.toString() ?? '',
+            replyMessageContent?.toString() ?? replyMessage?.toString() ?? '',
       );
     }
 
@@ -333,6 +346,7 @@ class MessageData {
     data['senderImage'] = senderImage;
     data['thumbnail'] = thumbnail;
     data['caption'] = caption;
+    data['images'] = images;
     data['reply_id'] = replyId;
     data['isEdited'] = isEdited;
     data['editedAt'] = editedAt;

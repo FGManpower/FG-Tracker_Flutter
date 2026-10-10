@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:developer';
+import 'dart:io' show Platform;
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/constant/urls.dart';
 import 'package:fgtracker/app/Core/values/Utils.dart';
@@ -53,13 +54,14 @@ class CallingController extends GetxController with WidgetsBindingObserver {
   final RxBool isWiredHeadsetConnected = false.obs;
   final RxString currentAudioRoute = "earpiece".obs;
 
-  bool _userLockedAudioRoute = false;
   Timer? _deviceCheckTimer;
-  Timer? _earpieceForceTimer;
   String? _earpieceDeviceId;
   String? _speakerDeviceId;
   String? _bluetoothDeviceId;
   String? _wiredDeviceId;
+
+  Future<void> _routeQueue = Future.value();
+  Future<void>? _deviceCheck;
 
   Timer? missedCallTimer;
   var missCallDurationSeconds = 40.obs;
@@ -99,7 +101,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     _controlsTimer?.cancel();
     _controlsTimer = Timer(
       const Duration(seconds: 5),
-      () {
+          () {
         if (!isClosed) {
           areControlsVisible.value = false;
         }
@@ -145,7 +147,6 @@ class CallingController extends GetxController with WidgetsBindingObserver {
 
     WakelockPlus.enable();
 
-
     try {
       GroupTrackingController.instance.initializeLocation();
     } catch (e) {
@@ -165,7 +166,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
         channelId: 'fgtracker_call_channel',
         channelName: 'FG Tracker Ongoing Call',
         channelDescription:
-            'Maintains active microphone and audio in background',
+        'Maintains active microphone and audio in background',
         channelImportance: NotificationChannelImportance.HIGH,
         priority: NotificationPriority.HIGH,
       ),
@@ -181,7 +182,6 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       ),
     );
   }
-
 
   Future<void> _stopForegroundCallService() async {
     try {
@@ -228,7 +228,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
         }
       }
 
-      _applyAudioRouting(currentAudioRoute.value);
+      _setRoute(currentAudioRoute.value);
     } catch (e) {
       log("Error restoring active WebRTC audio states: $e");
     }
@@ -299,12 +299,11 @@ class CallingController extends GetxController with WidgetsBindingObserver {
         'offerToReceiveVideo': true,
       });
       await peer!.setLocalDescription(offer);
-      _userLockedAudioRoute = false;
       await setDefaultAudioRouteForCallType(isVideo: true);
 
       final myUserId = Global.storageServices.get(PrefConst.userId).toString();
       final targetUserId =
-          (myUserId == callerId.toString()) ? remoteUserId : callerId;
+      (myUserId == callerId.toString()) ? remoteUserId : callerId;
 
       socket?.emit("upgradeToVideo", {
         "callId": callId,
@@ -353,7 +352,6 @@ class CallingController extends GetxController with WidgetsBindingObserver {
         isVideoCall.value = true;
 
         callStatus.value = "Connected";
-        _userLockedAudioRoute = false;
         await setDefaultAudioRouteForCallType(isVideo: true);
         update();
       } catch (e) {
@@ -375,7 +373,6 @@ class CallingController extends GetxController with WidgetsBindingObserver {
         isVideoOn = true;
         isVideoCall.value = true;
         callStatus.value = "Connected";
-        _userLockedAudioRoute = false;
         await setDefaultAudioRouteForCallType(isVideo: true);
 
         update();
@@ -689,12 +686,11 @@ class CallingController extends GetxController with WidgetsBindingObserver {
 
   Future<void> endCall({String? type}) async {
     _clearTimers();
-    _earpieceForceTimer?.cancel();
     await _stopForegroundCallService();
 
     final myUserId = Global.storageServices.get(PrefConst.userId).toString();
     final targetUser =
-        (myUserId == callerId.toString()) ? remoteUserId : callerId;
+    (myUserId == callerId.toString()) ? remoteUserId : callerId;
 
     var param = {
       "callId": callId,
@@ -754,180 +750,97 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     update();
   }
 
-  Future<void> _forceSelectByDeviceId(String? deviceId, String fallback) async {
-    try {
-      if (deviceId != null && deviceId.isNotEmpty) {
-        await Helper.selectAudioOutput(deviceId);
-        log("Audio force by deviceId => $deviceId");
-      } else {
-        await Helper.selectAudioOutput(fallback);
-        log("Audio force by fallback => $fallback");
-      }
-    } catch (e) {
-      log("selectAudioOutput failed ($fallback): $e");
-      try {
-        await Helper.selectAudioOutput(fallback);
-      } catch (_) {}
-    }
-  }
 
-  Future<void> _killScoAndRouteEarpiece() async {
-    try {
-      await Helper.setSpeakerphoneOn(true);
-      await Future.delayed(const Duration(milliseconds: 120));
-      await _forceSelectByDeviceId(_speakerDeviceId, 'speaker');
-      await Future.delayed(const Duration(milliseconds: 150));
-
-      await Helper.setSpeakerphoneOn(false);
-      await Future.delayed(const Duration(milliseconds: 80));
-      await _forceSelectByDeviceId(_earpieceDeviceId, 'earpiece');
-      await Helper.setSpeakerphoneOn(false);
-      await Future.delayed(const Duration(milliseconds: 120));
-      await _forceSelectByDeviceId(_earpieceDeviceId, 'earpiece');
-      await Helper.setSpeakerphoneOn(false);
-    } catch (e) {
-      log("_killScoAndRouteEarpiece error: $e");
-    }
-  }
-
-  void _startEarpieceReinforce() {
-    _earpieceForceTimer?.cancel();
-    var ticks = 0;
-    _earpieceForceTimer =
-        Timer.periodic(const Duration(milliseconds: 400), (t) async {
-      ticks++;
-      if (isClosed || currentAudioRoute.value != "earpiece" || ticks > 8) {
-        t.cancel();
-        return;
-      }
-      try {
-        await _forceSelectByDeviceId(_earpieceDeviceId, 'earpiece');
-        await Helper.setSpeakerphoneOn(false);
-      } catch (_) {}
+  Future<void> _setRoute(String route) {
+    _routeQueue = _routeQueue.then((_) => _applyRoute(route)).catchError((e) {
+      log("Audio route '$route' failed: $e");
     });
+    return _routeQueue;
   }
 
-  Future<void> selectEarpiece() async {
-    _userLockedAudioRoute = true;
-    _earpieceForceTimer?.cancel();
-    log("📞 Forcing Audio Output to MOBILE BUILT-IN EARPIECE...");
+  Future<void> _applyRoute(String route) async {
+    log("🔈 Applying audio route => $route");
 
-    try {
-      if (isBluetoothConnected.value || isWiredHeadsetConnected.value) {
-        await _killScoAndRouteEarpiece();
-      } else {
-        await _forceSelectByDeviceId(_earpieceDeviceId, 'earpiece');
-        await Helper.setSpeakerphoneOn(false);
-      }
-    } catch (e) {
-      log("Error setting earpiece target: $e");
+
+    if (route == "earpiece" && isWiredHeadsetConnected.value) {
+      route = "wired";
     }
 
-    await Helper.setSpeakerphoneOn(false);
-    isSpeakerOn = false;
-    currentAudioRoute.value = "earpiece";
-
-    if (!isVideoCall.value) {
-      await ProximityScreenLock.setActive(true);
-    } else {
-      await ProximityScreenLock.setActive(false);
-    }
-
-    _startEarpieceReinforce();
-    update();
-  }
-
-  Future<void> enableSpeaker() async {
-    _userLockedAudioRoute = true;
-    _earpieceForceTimer?.cancel();
-    try {
-      log("🔊 Forcing Audio Output to PHONE SPEAKER...");
-      await _forceSelectByDeviceId(_speakerDeviceId, 'speaker');
-    } catch (e) {
-      log("Error setting speaker target: $e");
-    }
-
-    await Helper.setSpeakerphoneOn(true);
-    isSpeakerOn = true;
-    currentAudioRoute.value = "speaker";
-    await ProximityScreenLock.setActive(false);
-    update();
-  }
-
-  Future<void> selectBluetooth() async {
-    _userLockedAudioRoute = true;
-    _earpieceForceTimer?.cancel();
-    try {
-      log("🎧 Forcing Audio Output to BLUETOOTH HEADSET...");
-      await _forceSelectByDeviceId(_bluetoothDeviceId, 'bluetooth');
-    } catch (e) {
-      log("Error setting bluetooth target: $e");
-      try {
-        await Helper.setSpeakerphoneOnButPreferBluetooth();
-      } catch (_) {}
-    }
-
-    await Helper.setSpeakerphoneOn(false);
-    isSpeakerOn = false;
-    currentAudioRoute.value = "bluetooth";
-    await ProximityScreenLock.setActive(false);
-    update();
-  }
-
-  Future<void> selectWired() async {
-    _userLockedAudioRoute = true;
-    _earpieceForceTimer?.cancel();
-    try {
-      log("🎧 Forcing Audio Output to WIRED HEADSET...");
-      await _forceSelectByDeviceId(_wiredDeviceId, 'headset');
-    } catch (e) {
-      log("Error setting wired target: $e");
-    }
-
-    await Helper.setSpeakerphoneOn(false);
-    isSpeakerOn = false;
-    currentAudioRoute.value = "wired";
-    await ProximityScreenLock.setActive(false);
-    update();
-  }
-
-  void _applyAudioRouting(String route) {
     switch (route) {
       case "speaker":
-        enableSpeaker();
+        await _selectOutput("speaker", _speakerDeviceId);
         break;
       case "bluetooth":
-        if (isBluetoothConnected.value) {
-          selectBluetooth();
-        } else {
-          selectEarpiece();
-        }
+        await _selectOutput("bluetooth", _bluetoothDeviceId);
         break;
       case "wired":
-        if (isWiredHeadsetConnected.value) {
-          selectWired();
-        } else {
-          selectEarpiece();
-        }
+        await _selectOutput("wired", _wiredDeviceId);
         break;
       case "earpiece":
       default:
-        selectEarpiece();
+        route = "earpiece";
+        await _selectOutput("earpiece", _earpieceDeviceId);
         break;
     }
+
+    isSpeakerOn = route == "speaker";
+    currentAudioRoute.value = route;
+
+    await ProximityScreenLock.setActive(
+      route == "earpiece" && !isVideoCall.value,
+    );
+
+    update();
   }
+
+  Future<void> _selectOutput(String route, String? deviceId) async {
+    if (Platform.isIOS) {
+      if (route == "speaker") {
+        await Helper.setSpeakerphoneOn(true);
+      } else if (route == "bluetooth") {
+        await Helper.setSpeakerphoneOnButPreferBluetooth();
+      } else {
+        await Helper.setSpeakerphoneOn(false);
+      }
+      return;
+    }
+
+    const fallbackIds = {
+      "speaker": "speaker",
+      "bluetooth": "bluetooth",
+      "wired": "wired-headset",
+      "earpiece": "earpiece",
+    };
+
+    await Helper.selectAudioOutput(deviceId ?? fallbackIds[route]!);
+
+
+    if (route == "speaker") {
+      await Helper.setSpeakerphoneOn(true);
+    }
+  }
+
+  Future<void> selectEarpiece() => _setRoute("earpiece");
+
+  Future<void> enableSpeaker() => _setRoute("speaker");
+
+  Future<void> selectBluetooth() => _setRoute("bluetooth");
+
+  Future<void> selectWired() => _setRoute("wired");
 
   Future<void> toggleSpeaker(BuildContext context) async {
     showAudioRoutePicker(context);
   }
 
   void showAudioRoutePicker(BuildContext context) async {
+    await checkAudioDevices();
+    if (!context.mounted) return;
+
     final RenderBox renderBox = context.findRenderObject() as RenderBox;
     final Offset offset = renderBox.localToGlobal(Offset.zero);
 
     double calculatedOffsetHeight = 95.h;
     if (isBluetoothConnected.value) calculatedOffsetHeight += 35.h;
-    if (isWiredHeadsetConnected.value) calculatedOffsetHeight += 35.h;
 
     final RelativeRect position = RelativeRect.fromRect(
       Rect.fromLTWH(
@@ -958,16 +871,17 @@ class CallingController extends GetxController with WidgetsBindingObserver {
         maxWidth: 135.w,
       ),
       items: [
-        PopupMenuItem<String>(
-          value: "earpiece",
-          height: 35.h,
-          padding: EdgeInsets.symmetric(horizontal: 8.w),
-          child: _buildRouteRow(
-            icon: Icons.phone_in_talk_rounded,
-            label: "Earpiece",
-            routeKey: "earpiece",
+        if (!isWiredHeadsetConnected.value)
+          PopupMenuItem<String>(
+            value: "earpiece",
+            height: 35.h,
+            padding: EdgeInsets.symmetric(horizontal: 8.w),
+            child: _buildRouteRow(
+              icon: Icons.phone_in_talk_rounded,
+              label: "Earpiece",
+              routeKey: "earpiece",
+            ),
           ),
-        ),
         if (isWiredHeadsetConnected.value)
           PopupMenuItem<String>(
             value: "wired",
@@ -1004,15 +918,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     );
 
     if (selectedRoute != null) {
-      if (selectedRoute == "earpiece") {
-        await selectEarpiece();
-      } else if (selectedRoute == "speaker") {
-        await enableSpeaker();
-      } else if (selectedRoute == "bluetooth") {
-        await selectBluetooth();
-      } else if (selectedRoute == "wired") {
-        await selectWired();
-      }
+      await _setRoute(selectedRoute);
     }
   }
 
@@ -1177,51 +1083,56 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     });
   }
 
+  bool _isBluetoothLabel(String label) {
+    return label.contains('bluetooth') ||
+        label.contains('blue') ||
+        label.contains('buds') ||
+        label.contains('airpods') ||
+        label.contains('hands-free') ||
+        label.contains('handsfree') ||
+        label.contains('hearing aid') ||
+        label.contains('a2dp');
+  }
+
   bool _isWiredLabel(String label) {
     return label.contains('wired') ||
         label.contains('headphone') ||
         label.contains('jack') ||
         label.contains('aux') ||
         label.contains('usb') ||
-        (label.contains('headset') &&
-            !label.contains('bluetooth') &&
-            !label.contains('wireless') &&
-            !label.contains('blue'));
+        label.contains('headset');
   }
 
-  bool _isBluetoothLabel(String label) {
-    return label.contains('bluetooth') ||
-        label.contains('blue') ||
-        label.contains('buds') ||
-        label.contains('freebuds') ||
-        label.contains('airpods') ||
-        label.contains('hands-free') ||
-        label.contains('handsfree') ||
-        label.contains('wireless') ||
-        label.contains('hearing aid') ||
-        label.contains('a2dp') ||
-        label.contains('sco');
+  String? _classifyOutput(String id, String label) {
+    final String i = id.toLowerCase();
+    final String l = label.toLowerCase();
+
+    if (i == 'bluetooth') return 'bluetooth';
+    if (i == 'wired-headset' || i == 'wired_headset') return 'wired';
+    if (i == 'speaker' || i == 'speakerphone') return 'speaker';
+    if (i == 'earpiece') return 'earpiece';
+
+    if (_isBluetoothLabel(l)) return 'bluetooth';
+    if (_isWiredLabel(l)) return 'wired';
+    if (l.contains('speaker') || l == 'default') return 'speaker';
+    if (l.contains('earpiece') ||
+        l.contains('receiver') ||
+        l.contains('handset') ||
+        l.contains('telephony')) {
+      return 'earpiece';
+    }
+    return null;
   }
 
-  bool _isSpeakerLabel(String label) {
-    return label.contains('speaker') ||
-        label.contains('loudspeaker') ||
-        label == 'default';
+  Future<void> checkAudioDevices() {
+    return _deviceCheck ??=
+        _checkAudioDevices().whenComplete(() => _deviceCheck = null);
   }
 
-  bool _isEarpieceLabel(String label) {
-    return label.contains('earpiece') ||
-        label.contains('receiver') ||
-        label.contains('handset') ||
-        label.contains('phone') ||
-        label.contains('built-in ear') ||
-        label.contains('telephony');
-  }
-
-  Future<void> checkAudioDevices() async {
+  Future<void> _checkAudioDevices() async {
     try {
       final List<MediaDeviceInfo> devices =
-          await navigator.mediaDevices.enumerateDevices();
+      await navigator.mediaDevices.enumerateDevices();
       bool isBtFound = false;
       bool isWiredFound = false;
 
@@ -1233,27 +1144,26 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       for (var device in devices) {
         if (device.kind != 'audiooutput') continue;
 
-        final String label = device.label.toLowerCase();
         final String id = device.deviceId;
         log("Audio Peripheral Checked - Label: ${device.label} | id: $id");
 
-        if (_isWiredLabel(label)) {
-          isWiredFound = true;
-          wiredId ??= id;
-        } else if (_isBluetoothLabel(label)) {
-          isBtFound = true;
-          btId ??= id;
-        } else if (_isEarpieceLabel(label)) {
-          earId ??= id;
-        } else if (_isSpeakerLabel(label)) {
-          spkId ??= id;
-        } else {
-          if (earId == null &&
-              !label.contains('speaker') &&
-              !label.contains('bluetooth') &&
-              !label.contains('wired')) {
-            earId = id;
-          }
+        switch (_classifyOutput(id, device.label)) {
+          case 'bluetooth':
+            isBtFound = true;
+            btId ??= id;
+            break;
+          case 'wired':
+            isWiredFound = true;
+            wiredId ??= id;
+            break;
+          case 'speaker':
+            spkId ??= id;
+            break;
+          case 'earpiece':
+            earId ??= id;
+            break;
+          default:
+            break;
         }
       }
 
@@ -1273,35 +1183,26 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       final bool btUnplugged = !isBtFound && wasBtConnected;
       final bool wiredUnplugged = !isWiredFound && wasWiredConnected;
 
-      if (btPlugged || wiredPlugged || btUnplugged || wiredUnplugged) {
-        _userLockedAudioRoute = false;
-
-        if (btPlugged) {
-          await selectBluetooth();
-        } else if (wiredPlugged) {
+      if (btPlugged) {
+        await selectBluetooth();
+      } else if (wiredPlugged) {
+        await selectWired();
+      } else if (btUnplugged && currentAudioRoute.value == "bluetooth") {
+        if (isWiredFound) {
           await selectWired();
-        } else if (btUnplugged) {
-          if (isWiredFound) {
-            await selectWired();
-          } else if (isVideoCall.value) {
-            await enableSpeaker();
-          } else {
-            await selectEarpiece();
-          }
-        } else if (wiredUnplugged) {
-          if (isBtFound) {
-            await selectBluetooth();
-          } else if (isVideoCall.value) {
-            await enableSpeaker();
-          } else {
-            await selectEarpiece();
-          }
+        } else if (isVideoCall.value) {
+          await enableSpeaker();
+        } else {
+          await selectEarpiece();
         }
-      } else if (_userLockedAudioRoute &&
-          currentAudioRoute.value == "earpiece" &&
-          (isBtFound || isWiredFound)) {
-        await _forceSelectByDeviceId(_earpieceDeviceId, 'earpiece');
-        await Helper.setSpeakerphoneOn(false);
+      } else if (wiredUnplugged && currentAudioRoute.value == "wired") {
+        if (isBtFound) {
+          await selectBluetooth();
+        } else if (isVideoCall.value) {
+          await enableSpeaker();
+        } else {
+          await selectEarpiece();
+        }
       }
 
       update();
@@ -1349,7 +1250,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
 
     _controlsTimer?.cancel();
     _deviceCheckTimer?.cancel();
-    _earpieceForceTimer?.cancel();
+    navigator.mediaDevices.ondevicechange = null;
     _clearTimers();
     resetPeer();
     localRenderer.dispose();

@@ -51,7 +51,7 @@ class ChatBubble extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final currentUserId =
-    Global.storageServices.get(PrefConst.userId).toString();
+        Global.storageServices.get(PrefConst.userId).toString();
 
     final isSentByMe = message.senderId.toString() == currentUserId;
 
@@ -60,24 +60,24 @@ class ChatBubble extends StatelessWidget {
 
     final borderRadius = isSentByMe
         ? BorderRadius.only(
-      topLeft: Radius.circular(16.r),
-      topRight: Radius.circular(16.r),
-      bottomLeft: Radius.circular(16.r),
-      bottomRight: Radius.circular(4.r),
-    )
+            topLeft: Radius.circular(16.r),
+            topRight: Radius.circular(16.r),
+            bottomLeft: Radius.circular(16.r),
+            bottomRight: Radius.circular(4.r),
+          )
         : BorderRadius.only(
-      topLeft: Radius.circular(4.r),
-      topRight: Radius.circular(16.r),
-      bottomLeft: Radius.circular(16.r),
-      bottomRight: Radius.circular(16.r),
-    );
+            topLeft: Radius.circular(4.r),
+            topRight: Radius.circular(16.r),
+            bottomLeft: Radius.circular(16.r),
+            bottomRight: Radius.circular(16.r),
+          );
 
     return Container(
       margin: EdgeInsets.symmetric(vertical: 6.h),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment:
-        isSentByMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+            isSentByMe ? MainAxisAlignment.end : MainAxisAlignment.start,
         children: [
           if (!isSentByMe)
             Padding(
@@ -132,28 +132,29 @@ class ChatBubble extends StatelessWidget {
                           padding: isAttendance
                               ? EdgeInsets.zero
                               : EdgeInsets.symmetric(
-                            horizontal: 12.w,
-                            vertical: 8.h,
-                          ),
+                                  horizontal: 12.w,
+                                  vertical: 8.h,
+                                ),
                           decoration: BoxDecoration(
                             color: isAttendance
                                 ? Colors.transparent
                                 : (controller.highlightedMessageId.value ==
-                                message.id
-                                ? Colors.yellow.withValues(alpha: .35)
-                                : bgColor),
+                                        message.id
+                                    ? Colors.yellow.withValues(alpha: .35)
+                                    : bgColor),
                             borderRadius: isAttendance
                                 ? BorderRadius.circular(20.r)
                                 : borderRadius,
                             boxShadow: isAttendance
                                 ? []
                                 : [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.04),
-                                blurRadius: 4,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
+                                    BoxShadow(
+                                      color:
+                                          Colors.black.withValues(alpha: 0.04),
+                                      blurRadius: 4,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
                           ),
                           child: IntrinsicWidth(
                             child: Column(
@@ -194,7 +195,8 @@ class ChatBubble extends StatelessWidget {
                                     textColor: textColor,
                                     isSentByMe: isSentByMe,
                                   ),
-                                  if (!isSentByMe) _buildTranslatedCard(message),
+                                  if (!isSentByMe)
+                                    _buildTranslatedCard(message),
                                 ] else ...[
                                   _buildMessageContent(
                                     message,
@@ -208,7 +210,8 @@ class ChatBubble extends StatelessWidget {
                                       isSentByMe,
                                     ),
                                   ),
-                                  if (!isSentByMe) _buildTranslatedCard(message),
+                                  if (!isSentByMe)
+                                    _buildTranslatedCard(message),
                                 ],
                               ],
                             ),
@@ -335,7 +338,7 @@ class ChatBubble extends StatelessWidget {
             (message.seenCount ?? 0) > 0 ? Icons.done_all : Icons.done,
             size: 14.sp,
             color:
-            (message.seenCount ?? 0) > 0 ? _purple : Colors.grey.shade500,
+                (message.seenCount ?? 0) > 0 ? _purple : Colors.grey.shade500,
           ),
         ],
       ],
@@ -364,10 +367,10 @@ class ChatBubble extends StatelessWidget {
   }
 
   Widget _buildTextContent(
-      MessageData message,
-      Color textColor,
-      bool isSentByMe,
-      ) {
+    MessageData message,
+    Color textColor,
+    bool isSentByMe,
+  ) {
     final query = controller.searchQuery.value;
     final content = message.content?.toString() ?? "";
 
@@ -422,10 +425,10 @@ class ChatBubble extends StatelessWidget {
   }
 
   Widget _buildMessageContent(
-      MessageData message,
-      Color textColor,
-      bool isSentByMe,
-      ) {
+    MessageData message,
+    Color textColor,
+    bool isSentByMe,
+  ) {
     if (message.messageType == "image" || message.messageType == "image_text") {
       final imagePart = message.content ?? "";
       final caption = message.caption ?? "";
@@ -506,7 +509,7 @@ class ChatBubble extends StatelessWidget {
       final documentUrl = parts.isNotEmpty ? parts[0] : "";
 
       String documentName =
-      parts.length > 1 ? parts[1] : documentUrl.split('/').last;
+          parts.length > 1 ? parts[1] : documentUrl.split('/').last;
 
       documentName = removeDuplicateExtension(documentName);
 
@@ -606,7 +609,7 @@ class ChatBubble extends StatelessWidget {
                   ),
                   SizedBox(width: 6.w),
                   Obx(
-                        () {
+                    () {
                       final url = "${ConstRes.aImageBaseUrl}$documentUrl";
 
                       return Icon(
@@ -702,9 +705,9 @@ class ChatBubble extends StatelessWidget {
   }
 
   Widget _buildReplyPreview(
-      MessageData message,
-      bool isSentByMe,
-      ) {
+    MessageData message,
+    bool isSentByMe,
+  ) {
     if (message.isStatusReply) {
       return _buildStatusReplyPreview(message, isSentByMe);
     }
@@ -796,9 +799,9 @@ class ChatBubble extends StatelessWidget {
         "Status";
 
     final statusType =
-    (status?.type ?? meta?.type ?? message.statusType?.toString() ?? 'text')
-        .toString()
-        .toLowerCase();
+        (status?.type ?? meta?.type ?? message.statusType?.toString() ?? 'text')
+            .toString()
+            .toLowerCase();
 
     final isVideo = statusType == 'video' || (status?.isVideo ?? false);
     final isImage = statusType == 'image' ||
@@ -866,8 +869,8 @@ class ChatBubble extends StatelessWidget {
                           isVideo
                               ? Icons.videocam_rounded
                               : isImage
-                              ? Icons.photo_rounded
-                              : Icons.text_fields_rounded,
+                                  ? Icons.photo_rounded
+                                  : Icons.text_fields_rounded,
                           size: 13.sp,
                           color: Colors.grey.shade700,
                         ),
@@ -974,20 +977,20 @@ class ChatBubble extends StatelessWidget {
     }
 
     Get.to(() => StatusViewScreen(
-      isOwnStatus: false,
-      userName: status.creator?.name ??
-          message.replySenderName?.toString() ??
-          'Status',
-      userAvatar: status.creator?.profilePic,
-      statuses: [status],
-      currentIndex: 0,
-    ));
+          isOwnStatus: false,
+          userName: status.creator?.name ??
+              message.replySenderName?.toString() ??
+              'Status',
+          userAvatar: status.creator?.profilePic,
+          statuses: [status],
+          currentIndex: 0,
+        ));
   }
 
   void _showMessageMenu(
-      BuildContext bubbleContext,
-      bool isSentByMe,
-      ) {
+    BuildContext bubbleContext,
+    bool isSentByMe,
+  ) {
     final isPinned = controller.pinnedMessage.value?.id == message.id;
 
     final isText = message.messageType == "text" ||
@@ -1154,7 +1157,7 @@ class ChatBubble extends StatelessWidget {
                               CommonDialog.ConfirmationDialog(
                                 title: "Delete for Everyone",
                                 content:
-                                "Are you sure you want to delete this message for everyone?",
+                                    "Are you sure you want to delete this message for everyone?",
                                 cancel: "No",
                                 confirm: "Yes",
                                 icon: Icons.delete_outline_rounded,
@@ -1180,7 +1183,7 @@ class ChatBubble extends StatelessWidget {
                             CommonDialog.ConfirmationDialog(
                               title: "Delete for Me",
                               content:
-                              "Are you sure you want to delete this message for you?",
+                                  "Are you sure you want to delete this message for you?",
                               cancel: "No",
                               confirm: "Yes",
                               icon: Icons.delete_rounded,
@@ -1248,11 +1251,11 @@ class ChatBubble extends StatelessWidget {
   }
 
   Widget _buildHighlightedText(
-      String text,
-      String query, {
-        required TextStyle normalStyle,
-        required TextStyle highlightStyle,
-      }) {
+    String text,
+    String query, {
+    required TextStyle normalStyle,
+    required TextStyle highlightStyle,
+  }) {
     final lowerText = text.toLowerCase();
     final lowerQuery = query.toLowerCase();
 
@@ -1330,7 +1333,7 @@ class GroupChatBubble extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final currentUserId =
-    Global.storageServices.get(PrefConst.userId).toString();
+        Global.storageServices.get(PrefConst.userId).toString();
 
     final isSentByMe = message.senderId.toString() == currentUserId;
 
@@ -1340,24 +1343,24 @@ class GroupChatBubble extends StatelessWidget {
 
     final borderRadius = isSentByMe
         ? BorderRadius.only(
-      topLeft: Radius.circular(16.r),
-      topRight: Radius.circular(16.r),
-      bottomLeft: Radius.circular(16.r),
-      bottomRight: Radius.circular(4.r),
-    )
+            topLeft: Radius.circular(16.r),
+            topRight: Radius.circular(16.r),
+            bottomLeft: Radius.circular(16.r),
+            bottomRight: Radius.circular(4.r),
+          )
         : BorderRadius.only(
-      topLeft: Radius.circular(4.r),
-      topRight: Radius.circular(16.r),
-      bottomLeft: Radius.circular(16.r),
-      bottomRight: Radius.circular(16.r),
-    );
+            topLeft: Radius.circular(4.r),
+            topRight: Radius.circular(16.r),
+            bottomLeft: Radius.circular(16.r),
+            bottomRight: Radius.circular(16.r),
+          );
 
     return Container(
       margin: EdgeInsets.symmetric(vertical: 6.h),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment:
-        isSentByMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+            isSentByMe ? MainAxisAlignment.end : MainAxisAlignment.start,
         children: [
           if (isGroup && !isSentByMe)
             Padding(
@@ -1371,8 +1374,8 @@ class GroupChatBubble extends StatelessWidget {
                     destination: const LatLng(0, 0),
                     distance: 0,
                     userId: int.tryParse(
-                      message.senderId.toString(),
-                    ) ??
+                          message.senderId.toString(),
+                        ) ??
                         0,
                     groupId: groupId,
                     groupName: groupName,
@@ -1388,18 +1391,18 @@ class GroupChatBubble extends StatelessWidget {
                   radius: 18.r,
                   backgroundColor: Colors.grey.shade200,
                   backgroundImage: message.senderImage != null &&
-                      message.senderImage!.isNotEmpty
+                          message.senderImage!.isNotEmpty
                       ? NetworkImage(
-                    "${ConstRes.aImageBaseUrl}${message.senderImage}",
-                  )
+                          "${ConstRes.aImageBaseUrl}${message.senderImage}",
+                        )
                       : null,
                   child: (message.senderImage == null ||
-                      message.senderImage!.isEmpty)
+                          message.senderImage!.isEmpty)
                       ? Icon(
-                    Icons.person,
-                    size: 18.sp,
-                    color: Colors.grey.shade500,
-                  )
+                          Icons.person,
+                          size: 18.sp,
+                          color: Colors.grey.shade500,
+                        )
                       : null,
                 ),
               ),
@@ -1475,7 +1478,8 @@ class GroupChatBubble extends StatelessWidget {
                                     textColor: textColor,
                                     isSentByMe: isSentByMe,
                                   ),
-                                  if (!isSentByMe) _buildTranslatedCard(message),
+                                  if (!isSentByMe)
+                                    _buildTranslatedCard(message),
                                 ] else ...[
                                   _buildMessageContent(
                                     message,
@@ -1489,7 +1493,8 @@ class GroupChatBubble extends StatelessWidget {
                                       isSentByMe,
                                     ),
                                   ),
-                                  if (!isSentByMe) _buildTranslatedCard(message),
+                                  if (!isSentByMe)
+                                    _buildTranslatedCard(message),
                                 ],
                               ],
                             ),
@@ -1615,8 +1620,7 @@ class GroupChatBubble extends StatelessWidget {
           Icon(
             (message.seenCount ?? 0) > 0 ? Icons.done_all : Icons.done,
             size: 14.sp,
-            color:
-            _areAllMembersSeen(message) ? _purple : Colors.grey.shade500,
+            color: _areAllMembersSeen(message) ? _purple : Colors.grey.shade500,
           ),
         ],
       ],
@@ -1641,10 +1645,10 @@ class GroupChatBubble extends StatelessWidget {
   }
 
   Widget _buildTextContent(
-      MessageData message,
-      Color textColor,
-      bool isSentByMe,
-      ) {
+    MessageData message,
+    Color textColor,
+    bool isSentByMe,
+  ) {
     final query = controller.searchQuery.value;
     final content = message.content?.toString() ?? "";
 
@@ -1695,11 +1699,11 @@ class GroupChatBubble extends StatelessWidget {
   }
 
   Widget _buildHighlightedText(
-      String text,
-      String query, {
-        required TextStyle normalStyle,
-        required TextStyle highlightStyle,
-      }) {
+    String text,
+    String query, {
+    required TextStyle normalStyle,
+    required TextStyle highlightStyle,
+  }) {
     final lowerText = text.toLowerCase();
     final lowerQuery = query.toLowerCase();
     final List<InlineSpan> spans = [];
@@ -1812,9 +1816,9 @@ class GroupChatBubble extends StatelessWidget {
         "Status";
 
     final statusType =
-    (status?.type ?? meta?.type ?? message.statusType?.toString() ?? 'text')
-        .toString()
-        .toLowerCase();
+        (status?.type ?? meta?.type ?? message.statusType?.toString() ?? 'text')
+            .toString()
+            .toLowerCase();
 
     final isVideo = statusType == 'video' || (status?.isVideo ?? false);
     final isImage = statusType == 'image' ||
@@ -1882,8 +1886,8 @@ class GroupChatBubble extends StatelessWidget {
                           isVideo
                               ? Icons.videocam_rounded
                               : isImage
-                              ? Icons.photo_rounded
-                              : Icons.text_fields_rounded,
+                                  ? Icons.photo_rounded
+                                  : Icons.text_fields_rounded,
                           size: 13.sp,
                           color: Colors.grey.shade700,
                         ),
@@ -1990,46 +1994,139 @@ class GroupChatBubble extends StatelessWidget {
     }
 
     Get.to(() => StatusViewScreen(
-      isOwnStatus: false,
-      userName: status.creator?.name ??
-          message.replySenderName?.toString() ??
-          'Status',
-      userAvatar: status.creator?.profilePic,
-      statuses: [status],
-      currentIndex: 0,
-    ));
+          isOwnStatus: false,
+          userName: status.creator?.name ??
+              message.replySenderName?.toString() ??
+              'Status',
+          userAvatar: status.creator?.profilePic,
+          statuses: [status],
+          currentIndex: 0,
+        ));
   }
 
   Widget _buildMessageContent(
-      MessageData message,
-      Color textColor,
-      bool isSentByMe,
-      ) {
+    MessageData message,
+    Color textColor,
+    bool isSentByMe,
+  ) {
     if (message.messageType == "image" || message.messageType == "image_text") {
-      final imagePart = message.content ?? "";
-      final caption = message.caption ?? "";
+      final imageList = (message.images ?? [])
+          .where((image) => image.trim().isNotEmpty)
+          .toList();
+
+      if (imageList.isEmpty) {
+        final imagePart = message.content?.toString() ?? "";
+        if (imagePart.isNotEmpty) {
+          imageList.add(imagePart);
+        }
+      }
+
+      final caption = message.caption?.toString() ?? "";
+
+      String getImageUrl(String image) {
+        if (image.startsWith("http://") || image.startsWith("https://")) {
+          return image;
+        }
+        return "${ConstRes.aImageBaseUrl}$image";
+      }
+
+      Widget buildImageTile(int index, double width, double height) {
+        return GestureDetector(
+          onTap: () {
+            Get.to(
+              () => GroupImageGallery(
+                images: imageList,
+                initialIndex: index,
+              ),
+            );
+          },
+          child: SizedBox(
+            width: width,
+            height: height,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                Image.network(
+                  getImageUrl(imageList[index]),
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => Container(
+                    color: Colors.grey.shade200,
+                    child: const Icon(Icons.broken_image_outlined),
+                  ),
+                  loadingBuilder: (context, child, progress) {
+                    if (progress == null) return child;
+                    return Container(
+                      color: Colors.grey.shade200,
+                      alignment: Alignment.center,
+                      child: const CircularProgressIndicator(),
+                    );
+                  },
+                ),
+                if (index == 3 && imageList.length > 4)
+                  Container(
+                    color: Colors.black54,
+                    alignment: Alignment.center,
+                    child: Text(
+                      "+${imageList.length - 4}",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 26.sp,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        );
+      }
 
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(12.r),
-            child: ImageViewerWidget(
-              imageProvider: NetworkImage(
-                "${ConstRes.aImageBaseUrl}$imagePart",
+          if (imageList.length == 1)
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12.r),
+              child: buildImageTile(0, 220.w, 200.h),
+            )
+          else if (imageList.length > 1)
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12.r),
+              child: SizedBox(
+                width: 220.w,
+                child: Wrap(
+                  spacing: 3.w,
+                  runSpacing: 3.w,
+                  children: List.generate(
+                    imageList.length > 4 ? 4 : imageList.length,
+                    (index) {
+                      final tileSize = imageList.length == 2
+                          ? 108.w
+                          : imageList.length == 3 && index == 0
+                              ? 220.w
+                              : 108.w;
+
+                      final tileHeight =
+                          imageList.length == 3 && index == 0 ? 130.h : 108.h;
+
+                      return buildImageTile(
+                        index,
+                        tileSize,
+                        tileHeight,
+                      );
+                    },
+                  ),
+                ),
               ),
-              width: 220,
-              height: 200,
-              borderRadius: 10,
             ),
-          ),
-          if (caption.isNotEmpty) SizedBox(height: 8.h),
-          if (caption.isNotEmpty)
+          if (caption.isNotEmpty) ...[
+            SizedBox(height: 8.h),
             reausabletext(
               caption,
               color: textColor,
               fontsize: 12.sp,
             ),
+          ],
         ],
       );
     } else if (message.messageType == "audio") {
@@ -2074,7 +2171,7 @@ class GroupChatBubble extends StatelessWidget {
       final parts = message.content?.split("||") ?? [];
       final documentUrl = parts.isNotEmpty ? parts[0] : "";
       String documentName =
-      parts.length > 1 ? parts[1] : documentUrl.split('/').last;
+          parts.length > 1 ? parts[1] : documentUrl.split('/').last;
       documentName = removeDuplicateExtension(documentName);
       final extension = documentName.split('.').last.toLowerCase();
       final fileSize = parts.length > 2 ? parts[2] : "";
@@ -2217,7 +2314,7 @@ class GroupChatBubble extends StatelessWidget {
     if (message.seenBy is! List) return false;
 
     final currentUserId =
-    Global.storageServices.get(PrefConst.userId).toString();
+        Global.storageServices.get(PrefConst.userId).toString();
 
     final recipientIds = controller.groupMembers
         .where((member) => member.userId.toString() != currentUserId)
@@ -2392,7 +2489,7 @@ class GroupChatBubble extends StatelessWidget {
                               CommonDialog.ConfirmationDialog(
                                 title: "Delete for Everyone",
                                 content:
-                                "Are you sure you want to delete this message for everyone?",
+                                    "Are you sure you want to delete this message for everyone?",
                                 cancel: "No",
                                 confirm: "Yes",
                                 icon: Icons.delete_outline_rounded,
@@ -2417,7 +2514,7 @@ class GroupChatBubble extends StatelessWidget {
                             CommonDialog.ConfirmationDialog(
                               title: "Delete for Me",
                               content:
-                              "Are you sure you want to delete this message for you?",
+                                  "Are you sure you want to delete this message for you?",
                               cancel: "No",
                               confirm: "Yes",
                               icon: Icons.delete_rounded,
@@ -2472,6 +2569,96 @@ class GroupChatBubble extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class GroupImageGallery extends StatefulWidget {
+  final List<String> images;
+  final int initialIndex;
+
+  const GroupImageGallery({
+    super.key,
+    required this.images,
+    this.initialIndex = 0,
+  });
+
+  @override
+  State<GroupImageGallery> createState() => _GroupImageGalleryState();
+}
+
+class _GroupImageGalleryState extends State<GroupImageGallery> {
+  late final PageController _pageController;
+  late int _currentIndex;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentIndex = widget.initialIndex;
+    _pageController = PageController(
+      initialPage: widget.initialIndex,
+    );
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
+        elevation: 0,
+        title: Text(
+          "${_currentIndex + 1} / ${widget.images.length}",
+          style: const TextStyle(color: Colors.white),
+        ),
+      ),
+      body: PageView.builder(
+        controller: _pageController,
+        itemCount: widget.images.length,
+        onPageChanged: (index) {
+          setState(() => _currentIndex = index);
+        },
+        itemBuilder: (context, index) {
+          final image = widget.images[index];
+          final url =
+              image.startsWith('http://') || image.startsWith('https://')
+                  ? image
+                  : "${ConstRes.aImageBaseUrl}$image";
+
+          return Center(
+            child: InteractiveViewer(
+              minScale: 1,
+              maxScale: 4,
+              child: Image.network(
+                url,
+                fit: BoxFit.contain,
+                width: double.infinity,
+                errorBuilder: (_, __, ___) => const Icon(
+                  Icons.broken_image_outlined,
+                  color: Colors.white,
+                  size: 48,
+                ),
+                loadingBuilder: (context, child, progress) {
+                  if (progress == null) return child;
+
+                  return const Center(
+                    child: CircularProgressIndicator(
+                      color: Colors.white,
+                    ),
+                  );
+                },
+              ),
+            ),
+          );
+        },
       ),
     );
   }
