@@ -560,10 +560,10 @@ class SocketMessageService extends GetxService {
     );
 
     _privateChatListSocket?.onAny((event, data) {
-      log("========================================");
-      log("PRIVATE CHAT LIST SOCKET EVENT => $event");
-      log("PRIVATE CHAT LIST SOCKET DATA => $data");
-      log("========================================");
+      // log("========================================");
+      // log("PRIVATE CHAT LIST SOCKET EVENT => $event");
+      // log("PRIVATE CHAT LIST SOCKET DATA => $data");
+      // log("========================================");
     });
 
     _privateChatListSocket?.on(

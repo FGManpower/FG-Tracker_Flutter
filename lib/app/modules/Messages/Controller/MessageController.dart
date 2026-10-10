@@ -192,23 +192,31 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     showEmoji.value = false;
   }
 
+
   Future<void> scrollToMessage(int messageId) async {
     final index = _messages.indexWhere((e) => e.id == messageId);
 
-    if (index == -1) return;
+    if (index == -1 || !itemScrollController.isAttached) return;
 
     highlightedMessageId.value = messageId;
 
-    await itemScrollController.scrollTo(
-      index: index,
-      duration: const Duration(milliseconds: 400),
-      curve: Curves.easeInOut,
-    );
+    try {
+      await itemScrollController.scrollTo(
+        index: index,
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeInOut,
+      );
 
-    await Future.delayed(const Duration(seconds: 2));
+      await Future.delayed(const Duration(seconds: 2));
 
-    highlightedMessageId.value = -1;
+      if (!isClosed) {
+        highlightedMessageId.value = -1;
+      }
+    } catch (e) {
+      log("Scroll to message error: $e");
+    }
   }
+
 
   void _initializeChat() {
     final currentUserId =

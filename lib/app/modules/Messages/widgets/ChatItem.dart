@@ -430,30 +430,155 @@ class ChatBubble extends StatelessWidget {
     bool isSentByMe,
   ) {
     if (message.messageType == "image" || message.messageType == "image_text") {
-      final imagePart = message.content ?? "";
-      final caption = message.caption ?? "";
+      final imageList = (message.images ?? [])
+          .where((image) => image.trim().isNotEmpty)
+          .toList();
+
+      if (imageList.isEmpty) {
+        final imagePart = message.content?.toString() ?? "";
+        if (imagePart.trim().isNotEmpty) {
+          imageList.add(imagePart);
+        }
+      }
+
+      if (imageList.isEmpty) {
+        return const SizedBox.shrink();
+      }
+
+      final caption = message.caption?.toString() ?? "";
+
+      String getImageUrl(String image) {
+        final value = image.trim();
+
+        if (value.startsWith("http://") || value.startsWith("https://")) {
+          return value;
+        }
+
+        return "${ConstRes.aImageBaseUrl}$value";
+      }
+
+      void openGallery(int index) {
+        Get.to(
+          () => GroupImageGallery(
+            images: imageList,
+            initialIndex: index,
+          ),
+        );
+      }
+
+      Widget buildImageTile(
+        int index,
+        double width,
+        double height,
+      ) {
+        return GestureDetector(
+          onTap: () => openGallery(index),
+          child: SizedBox(
+            width: width,
+            height: height,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                Image.network(
+                  getImageUrl(imageList[index]),
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => Container(
+                    color: Colors.grey.shade200,
+                    alignment: Alignment.center,
+                    child: const Icon(Icons.broken_image_outlined),
+                  ),
+                  loadingBuilder: (context, child, progress) {
+                    if (progress == null) return child;
+
+                    return Container(
+                      color: Colors.grey.shade200,
+                      alignment: Alignment.center,
+                      child: const CircularProgressIndicator(),
+                    );
+                  },
+                ),
+                if (index == 3 && imageList.length > 4)
+                  Container(
+                    color: Colors.black54,
+                    alignment: Alignment.center,
+                    child: Text(
+                      "+${imageList.length - 4}",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 26.sp,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        );
+      }
+
+      final visibleCount = imageList.length > 4 ? 4 : imageList.length;
 
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(12.r),
-            child: ImageViewerWidget(
-              imageProvider: NetworkImage(
-                "${ConstRes.aImageBaseUrl}$imagePart",
+          if (visibleCount == 1)
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12.r),
+              child: GestureDetector(
+                onTap: () => openGallery(0),
+                child: Image.network(
+                  getImageUrl(imageList[0]),
+                  width: 220,
+                  height: 200,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => Container(
+                    width: 220,
+                    height: 200,
+                    color: Colors.grey.shade200,
+                    alignment: Alignment.center,
+                    child: const Icon(Icons.broken_image_outlined),
+                  ),
+                  loadingBuilder: (context, child, progress) {
+                    if (progress == null) return child;
+
+                    return Container(
+                      width: 220,
+                      height: 200,
+                      color: Colors.grey.shade200,
+                      alignment: Alignment.center,
+                      child: const CircularProgressIndicator(),
+                    );
+                  },
+                ),
               ),
+            )
+          else
+            SizedBox(
               width: 220,
-              height: 200,
-              borderRadius: 10,
+              child: Wrap(
+                spacing: 4.w,
+                runSpacing: 4.w,
+                children: List.generate(visibleCount, (index) {
+                  return ClipRRect(
+                    borderRadius: BorderRadius.circular(8.r),
+                    child: buildImageTile(
+                      index,
+                      108.w,
+                      108.w,
+                    ),
+                  );
+                }),
+              ),
             ),
-          ),
-          if (caption.isNotEmpty) SizedBox(height: 8.h),
-          if (caption.isNotEmpty)
+          if (caption.trim().isNotEmpty) ...[
+            SizedBox(height: 8.h),
             reausabletext(
               caption,
               color: textColor,
               fontsize: 12.sp,
             ),
+          ],
         ],
       );
     } else if (message.messageType == "audio") {

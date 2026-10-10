@@ -158,7 +158,7 @@ class ChatListController extends GetxController {
 
     socketService.listenPrivateChatListUpdated(
       callback: (data) {
-        log("PRIVATE CHAT LIST UPDATED => $data");
+         log("PRIVATE CHAT LIST UPDATED => $data");
 
         _handlePrivateChatUpdated(data);
       },
