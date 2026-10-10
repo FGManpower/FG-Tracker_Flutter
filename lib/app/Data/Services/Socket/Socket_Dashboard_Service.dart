@@ -60,20 +60,10 @@ class SocketDashboardService extends GetxService {
       log('Dashboard socket error: $error');
     });
 
-    _socket!.on('group_dashboard_counts', (data) {
-      log('[DashboardSocket] group_dashboard_counts received: $data');
-      dynamic payload = data;
-      if (data is Map && data.containsKey('data') && data['data'] != null) {
-        payload = data['data'];
-      }
 
-      if (Get.isRegistered<GroupCountService>()) {
-        GroupCountService.instance.updateFromSocket(payload);
-      }
-    });
-    _socket?.onAny((event, dynamic data) {
-      log('DashboardSocketAllEvent: $event | Data: $data');
-    });
+    // _socket?.onAny((event, dynamic data) {
+      // log('DashboardSocketAllEvent: $event | Data: $data');
+    // });
     _socket!.on('user-live-location', (response) {
       try {
         log('[DashboardSocket] user-live-location received: $response');
@@ -158,7 +148,7 @@ class SocketDashboardService extends GetxService {
 
     _lastLiveLocationParams = param;
 
-    log('📡 [DashboardSocket] Emitting get-user-live-location: $param');
+    log('[DashboardSocket] Emitting get-user-live-location: $param');
     _socket?.emit(
       'get-user-live-location',
       param,

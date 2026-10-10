@@ -13,7 +13,6 @@
         android:required="false"
         tools:targetApi="eclair" />
 
-
     <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
@@ -41,14 +40,12 @@
     <uses-permission android:name="android.permission.READ_CONTACTS"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION" />
 
-
-
     <application
         android:label="FG Tracker"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         android:usesCleartextTraffic="true"
-        android:foregroundServiceType="location"
+        android:foregroundServiceType="location|microphone"
         android:requestLegacyExternalStorage="true"
         android:enableOnBackInvokedCallback="true"
         android:allowBackup="false"
@@ -84,38 +81,27 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
 
-
-            <!-- Deep Links -->
-
             <meta-data
                 android:name="flutter_deeplinking_enabled"
                 android:value="true" />
 
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
-
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <!-- Accepts URIs that begin with YOUR_SCHEME://YOUR_HOST -->
                 <data
                     android:host="fgtracker.in"
                     android:scheme="https" />
             </intent-filter>
 
-            <!-- App Links -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
-
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <!-- Accepts URIs that begin with https://YOUR_HOST -->
                 <data
                     android:host="fgtracker.in"
                     android:scheme="https" />
             </intent-filter>
-
-
-
 
         </activity>
 
@@ -128,7 +114,6 @@
             android:name="com.google.firebase.messaging.default_notification_channel_id"
             android:value="high_importance_channel" />
 
-
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
@@ -137,6 +122,7 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyAgt-V8kmcQJb_6Cj6LHArWfhWjVPh7N_Q"/>
 
+        <!-- Location Service -->
         <service
             android:name="com.lyokone.location.FlutterLocationService"
             android:exported="false"
@@ -146,7 +132,7 @@
         <service
             android:name="com.connectycube.flutter.calls.CallService"
             android:exported="false"
-            android:foregroundServiceType="phoneCall" />
+            android:foregroundServiceType="phoneCall|microphone" />
 
         <service
             android:name="com.pravera.flutter_foreground_task.service.ForegroundService"
@@ -155,7 +141,6 @@
             android:stopWithTask="false"
             android:foregroundServiceType="mediaProjection"
             tools:replace="android:foregroundServiceType" />
-
 
         <meta-data
             android:name="com.facebook.sdk.ApplicationId"
@@ -185,23 +170,18 @@
 
     </application>
 
-
     <queries>
-
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
         </intent>
-
         <intent>
             <action android:name="android.intent.action.VIEW"/>
             <data android:scheme="https"/>
         </intent>
-
         <intent>
             <action android:name="android.intent.action.VIEW"/>
             <data android:scheme="http"/>
         </intent>
-
     </queries>
 </manifest>

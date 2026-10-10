@@ -26,7 +26,9 @@ import '../../../Data/Repositories/GetMessageRepo.dart';
 import '../../../Model/GetMessage.dart';
 
 import '../../../Data/Services/Socket/Socket_Message_Services.dart';
+import '../../../Data/Services/chat_translation_service.dart';
 import '../../Attendance/models/attendance_poll_model.dart';
+
 
 class GroupMessageController extends GetxController {
   final socketService = SocketMessageService.instance;
@@ -127,6 +129,7 @@ class GroupMessageController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    ChatTranslationService.instance.resetVisibility();
 
     groupId = arguments?["groupId"] is int
         ? (arguments!["groupId"] as int)
@@ -370,28 +373,37 @@ class GroupMessageController extends GetxController {
           videoPaths.isNotEmpty ||
           documentPath.value.isNotEmpty;
 
+
       if (imagePaths.isNotEmpty) {
         final imagesCopy = List<File>.from(imagePaths);
+        final uploadedImages = <String>[];
 
         for (final image in imagesCopy) {
           final result = await MessageRepo.uploadChatImage(image);
 
           if (result.status == true && result.filename != null) {
-            socketService.sendGroupMessage(
-              groupId: groupId,
-              content: result.filename!,
-              messageType: "image",
-              caption: text,
-              replyId: replyMessage.value?.id,
-              replyMessage: replyMessage.value?.content,
-              replyType: replyMessage.value?.messageType,
-              replySender: replyMessage.value?.senderName,
-            );
+            uploadedImages.add(result.filename!);
           } else {
             CommonDialog.errorMessage(
               "Failed to upload ${image.path}",
             );
           }
+        }
+
+        if (uploadedImages.isNotEmpty) {
+          socketService.sendGroupMessage(
+            groupId: groupId,
+            content: "",
+            messageType: "image",
+            images: uploadedImages,
+            caption: text,
+            replyId: replyMessage.value?.id,
+            replyMessage: replyMessage.value?.content,
+            replyType: replyMessage.value?.messageType,
+            replySender: replyMessage.value?.senderName,
+          );
+
+          clearReply();
         }
 
         imagePaths.clear();
@@ -508,7 +520,7 @@ class GroupMessageController extends GetxController {
       );
 
       final existingIndex =
-          pollData.responses.indexWhere((r) => r.userId == response.userId);
+      pollData.responses.indexWhere((r) => r.userId == response.userId);
       if (existingIndex != -1) {
         final oldStatus = pollData.responses[existingIndex].status;
         if (oldStatus == "Present" && response.status == "Absent") {
@@ -763,7 +775,7 @@ class GroupMessageController extends GetxController {
 
         updateMessageStream();
 
-        scrollToBottom();
+        scrollToBottom(instant: true); // Instantly jumps to the latest message
       } else {
         CommonDialog.errorMessage(result.message);
 
@@ -830,18 +842,37 @@ class GroupMessageController extends GetxController {
     }
   }
 
-  void scrollToBottom() {
-    Future.delayed(const Duration(milliseconds: 100), () {
-      if (_messages.isEmpty) return;
-
-      if (itemScrollController.isAttached) {
-        itemScrollController.scrollTo(
-          index: _messages.length - 1,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOut,
-        );
-      }
+  void scrollToBottom({bool instant = false}) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollToBottomExecution(instant: instant);
     });
+  }
+
+  void _scrollToBottomExecution({bool instant = false, int retryCount = 0}) {
+    if (_messages.isEmpty) return;
+
+    if (itemScrollController.isAttached) {
+      try {
+        if (instant) {
+          itemScrollController.jumpTo(
+            index: _messages.length - 1,
+          );
+        } else {
+          itemScrollController.scrollTo(
+            index: _messages.length - 1,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeOut,
+          );
+        }
+      } catch (e) {
+        log("Scroll execution error: $e");
+      }
+    } else if (retryCount < 10) {
+      // Retry a few times if the list layout hasn't fully computed yet
+      Future.delayed(const Duration(milliseconds: 50), () {
+        _scrollToBottomExecution(instant: instant, retryCount: retryCount + 1);
+      });
+    }
   }
 
   bool isUserAtBottom() {
@@ -915,7 +946,6 @@ class GroupMessageController extends GetxController {
     mentionStartIndex!.value = lastAtIndex;
     final query = wordAfterAt.substring(1).toLowerCase().trim();
 
-    // Filter members
     filteredMembers.value = groupMembers
         .where((member) =>
     (member.name?.toLowerCase().contains(query) ?? false) ||
@@ -1153,6 +1183,8 @@ class GroupMessageController extends GetxController {
 
   @override
   void onClose() {
+    ChatTranslationService.instance.resetVisibility();
+    ChatTranslationService.instance.stopAudio();
     focusNode.dispose();
     _messageStreamController.close();
     _floatingDateTimer?.cancel();

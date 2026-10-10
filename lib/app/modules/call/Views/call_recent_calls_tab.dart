@@ -56,6 +56,44 @@ class _CallRecentCallsTabState extends State<CallRecentCallsTab> {
     }
   }
 
+  void _handleAvatarTap(Map<String, dynamic> call) {
+    final bool isGroup = call['isGroup'] == 'true' ||
+        call['isGroup'] == true ||
+        call['callType'] == 'group';
+
+    if (isGroup) {
+      final gId = call['groupId']?.toString() ??
+          call['group_id']?.toString() ??
+          call['callerId']?.toString();
+
+      Get.to(
+        () => ContactProfileScreen(
+          isGroup: true,
+          groupId: gId,
+          groupName: call['name'] ?? call['groupName'] ?? "Group",
+          groupAvatar: call['avatar'] ?? call['groupAvatar'],
+        ),
+      );
+    } else {
+      final String phone = (call['mobileNo']?.isNotEmpty == true)
+          ? call['mobileNo']!
+          : (call['phone']?.toString() ?? '');
+
+      Get.to(
+        () => ContactProfileScreen(
+          isGroup: false,
+          contactData: MemberData(
+            userId: int.tryParse(call['callerId']?.toString() ?? '0'),
+            name: call['name'],
+            mobileNo: phone,
+            profileImage: call['avatar'],
+            isOnline: call['isOnline'] == 'true' || call['isOnline'] == true,
+          ),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Obx(() {
@@ -101,7 +139,8 @@ class _CallRecentCallsTabState extends State<CallRecentCallsTab> {
         child: ListView(
           controller: _scrollController,
           physics: const AlwaysScrollableScrollPhysics(),
-          padding: EdgeInsets.fromLTRB(16.w, 4.h, 16.w, isDialOpen ? 390.h : 90.h),
+          padding:
+              EdgeInsets.fromLTRB(16.w, 4.h, 16.w, isDialOpen ? 390.h : 90.h),
           children: [
             for (final entry in groupedCalls.entries) ...[
               Padding(
@@ -140,6 +179,7 @@ class _CallRecentCallsTabState extends State<CallRecentCallsTab> {
                         ),
                       InkWell(
                         onTap: () {
+                          // Standard flow for tapping the row (redirects to Chat screen or Contact Profile)
                           final isGroup = entry.value[i]['isGroup'] == 'true';
 
                           if (isGroup) {
@@ -151,16 +191,18 @@ class _CallRecentCallsTabState extends State<CallRecentCallsTab> {
                                 Routes.groupChatScreen,
                                 arguments: {
                                   "groupId": gId,
-                                  "groupName": entry.value[i]['name'] ?? "Group",
+                                  "groupName":
+                                      entry.value[i]['name'] ?? "Group",
                                   "groupProfile": entry.value[i]['avatar'],
                                 },
                               );
                             }
                           } else {
                             final call = entry.value[i];
-                            final String phone = (call['mobileNo']?.isNotEmpty == true)
-                                ? call['mobileNo']!
-                                : (call['phone'] ?? '');
+                            final String phone =
+                                (call['mobileNo']?.isNotEmpty == true)
+                                    ? call['mobileNo']!
+                                    : (call['phone'] ?? '');
 
                             Get.to(
                               () => ContactProfileScreen(
@@ -188,6 +230,8 @@ class _CallRecentCallsTabState extends State<CallRecentCallsTab> {
                           ),
                           child: _RecentCallTile(
                             call: entry.value[i],
+                            onAvatarTap: () => _handleAvatarTap(
+                                entry.value[i]), // DP tap handler
                             onCallTap: (type) {
                               final isGroup =
                                   entry.value[i]['isGroup'] == 'true';
@@ -211,9 +255,11 @@ class _CallRecentCallsTabState extends State<CallRecentCallsTab> {
                                 );
                               } else {
                                 final remoteId =
-                                    entry.value[i]['callerId']?.toString() ?? '';
+                                    entry.value[i]['callerId']?.toString() ??
+                                        '';
                                 final callerName =
-                                    entry.value[i]['name']?.toString() ?? 'User';
+                                    entry.value[i]['name']?.toString() ??
+                                        'User';
 
                                 if (remoteId.isNotEmpty &&
                                     remoteId !=
@@ -230,15 +276,16 @@ class _CallRecentCallsTabState extends State<CallRecentCallsTab> {
                                     callerName: callerName,
                                   );
                                 } else {
-                                  // If remoteId couldn't be resolved, fallback to dialing by controller
-                                  final String phone = entry.value[i]['mobileNo'] ??
+                                  final String phone = entry.value[i]
+                                          ['mobileNo'] ??
                                       entry.value[i]['phone'] ??
                                       '';
                                   if (phone.isNotEmpty) {
                                     controller.dialNumber.value = phone;
                                     controller.makeCall(isVideo: isVideo);
                                   } else {
-                                    Utils().fluttertoast("Unable to call this contact");
+                                    Utils().fluttertoast(
+                                        "Unable to call this contact");
                                   }
                                 }
                               }
@@ -267,10 +314,12 @@ class _RecentCallTile extends StatelessWidget {
   const _RecentCallTile({
     required this.call,
     required this.onCallTap,
+    required this.onAvatarTap, // Added avatar tap callback parameter
   });
 
   final Map<String, String> call;
   final void Function(dynamic) onCallTap;
+  final VoidCallback onAvatarTap; // Callback function definition
 
   @override
   Widget build(BuildContext context) {
@@ -284,18 +333,18 @@ class _RecentCallTile extends StatelessWidget {
     final Color statusColor = missed
         ? const Color(0xFFEF4444)
         : incoming
-        ? const Color(0xFF3B82F6)
-        : cancelled
-        ? const Color(0xFF9CA3AF)
-        : const Color(0xFF10B981);
+            ? const Color(0xFF3B82F6)
+            : cancelled
+                ? const Color(0xFF9CA3AF)
+                : const Color(0xFF10B981);
 
     final IconData statusIcon = missed
         ? Icons.south_west_rounded
         : cancelled
-        ? Icons.call_end_rounded
-        : incoming
-        ? Icons.south_west_rounded
-        : Icons.arrow_outward_rounded;
+            ? Icons.call_end_rounded
+            : incoming
+                ? Icons.south_west_rounded
+                : Icons.arrow_outward_rounded;
 
     final String name = call['name'] ?? '';
     final String? avatar = call['avatar'];
@@ -304,7 +353,12 @@ class _RecentCallTile extends StatelessWidget {
 
     return Row(
       children: [
-        _buildAvatar(name, avatar, isOnline, isGroup: isGroup),
+        // Wrap avatar in GestureDetector to capture DP clicks specifically
+        GestureDetector(
+          onTap: onAvatarTap,
+          behavior: HitTestBehavior.opaque,
+          child: _buildAvatar(name, avatar, isOnline, isGroup: isGroup),
+        ),
         SizedBox(width: 12.w),
         Expanded(
           child: Column(
@@ -385,7 +439,7 @@ class _RecentCallTile extends StatelessWidget {
         SizedBox(width: 10.w),
         CallActionChip(
           icon:
-          callType == "video" ? Icons.videocam_rounded : Icons.call_rounded,
+              callType == "video" ? Icons.videocam_rounded : Icons.call_rounded,
           onTap: () {
             onCallTap(callType);
           },
@@ -398,7 +452,7 @@ class _RecentCallTile extends StatelessWidget {
     final String trimmed = raw.trim();
     final String cleaned = trimmed
         .replaceAll(
-        RegExp(r'^(today|yesterday),?\s*', caseSensitive: false), '')
+            RegExp(r'^(today|yesterday),?\s*', caseSensitive: false), '')
         .trim();
     return cleaned.isNotEmpty ? cleaned : trimmed;
   }
@@ -412,11 +466,11 @@ class _RecentCallTile extends StatelessWidget {
   }
 
   Widget _buildAvatar(
-      String name,
-      String? avatar,
-      bool isOnline, {
-        bool isGroup = false,
-      }) {
+    String name,
+    String? avatar,
+    bool isOnline, {
+    bool isGroup = false,
+  }) {
     final String avatarUrl = _buildAvatarUrl(avatar);
     final String initial = (name.isNotEmpty ? name[0] : '?').toUpperCase();
 
@@ -452,12 +506,12 @@ class _RecentCallTile extends StatelessWidget {
             color: const Color(0xFFECEAFD),
             child: avatarUrl.isNotEmpty
                 ? CachedNetworkImage(
-              imageUrl: avatarUrl,
-              fit: BoxFit.cover,
-              placeholder: (context, url) => placeholderOrFallback(),
-              errorWidget: (context, url, error) =>
-                  placeholderOrFallback(),
-            )
+                    imageUrl: avatarUrl,
+                    fit: BoxFit.cover,
+                    placeholder: (context, url) => placeholderOrFallback(),
+                    errorWidget: (context, url, error) =>
+                        placeholderOrFallback(),
+                  )
                 : placeholderOrFallback(),
           ),
         ),
@@ -630,4 +684,3 @@ class _EmptyState extends StatelessWidget {
     );
   }
 }
-

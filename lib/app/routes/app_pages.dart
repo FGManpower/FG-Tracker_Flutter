@@ -262,23 +262,15 @@ class AppPages {
     ),
 
 
-    // GetPage(
-    //   name: Routes.groupCallingScreen,
-    //   page: () => const GroupCallingScreen(),
-    //   binding: GroupCallBinding(),
-    //   transition: Transition.rightToLeft,
-    //   transitionDuration: const Duration(milliseconds: 500),
-    // ),
-
     GetPage(
       name: Routes.groupCallingScreen,
       page: () => const GroupCallingScreen(),
-      binding: BindingsBuilder(() {
-        if (!Get.isRegistered<GroupCallingController>()) {
-          Get.put(GroupCallingController(), permanent: true);
-        }
-      }),
+      binding: GroupCallBinding(),
+      transition: Transition.rightToLeft,
+      transitionDuration: const Duration(milliseconds: 500),
     ),
+
+
     GetPage(
       name: Routes.groupIncomingCallScreen,
       page: () => const GroupIncomingCallScreen(),

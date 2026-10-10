@@ -8,6 +8,10 @@ class GetMessage {
   int? pinnedMessageId;
   MessagePagination? pagination;
   BlockStatus? blockStatus;
+  bool? isOnline;
+  String? lastSeen;
+  Map<String, dynamic>? otherUser;
+  List<String>? images;
 
   GetMessage({
     this.status,
@@ -17,6 +21,10 @@ class GetMessage {
     this.pinnedMessageId,
     this.pagination,
     this.blockStatus,
+    this.isOnline,
+    this.lastSeen,
+    this.otherUser,
+    this.images,
   });
 
   GetMessage.fromJson(Map<String, dynamic> json) {
@@ -24,6 +32,19 @@ class GetMessage {
     message = json['message'];
     isCreator = json['isCreator'];
     pinnedMessageId = json['pinnedMessageId'];
+
+    final user = json['otherUser'] is Map
+        ? Map<String, dynamic>.from(json['otherUser'])
+        : null;
+
+    otherUser = user;
+
+    isOnline = _parseBool(json['isOnline'] ?? user?['isOnline']);
+    lastSeen = (json['lastSeen'] ?? user?['lastSeen'])?.toString();
+
+    if (json['images'] is List) {
+      images = (json['images'] as List).map((e) => e.toString()).toList();
+    }
 
     if (json['blockStatus'] is Map) {
       blockStatus = BlockStatus.fromJson(
@@ -57,6 +78,25 @@ class GetMessage {
     }
   }
 
+  static bool? _parseBool(dynamic value) {
+    if (value is bool) return value;
+    if (value is num) return value != 0;
+
+    if (value is String) {
+      final normalized = value.trim().toLowerCase();
+
+      if (normalized == 'true' || normalized == '1') {
+        return true;
+      }
+
+      if (normalized == 'false' || normalized == '0') {
+        return false;
+      }
+    }
+
+    return null;
+  }
+
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
 
@@ -64,6 +104,10 @@ class GetMessage {
     data['message'] = message;
     data['isCreator'] = isCreator;
     data['pinnedMessageId'] = pinnedMessageId;
+    data['isOnline'] = isOnline;
+    data['lastSeen'] = lastSeen;
+    data['otherUser'] = otherUser;
+    data['images'] = images;
 
     if (blockStatus != null) {
       data['blockStatus'] = blockStatus!.toJson();
@@ -161,6 +205,7 @@ class MessageData {
   dynamic senderImage;
   dynamic thumbnail;
   dynamic caption;
+  List<String>? images;
   dynamic replyId;
   dynamic replyMessage;
   dynamic replyType;
@@ -190,6 +235,7 @@ class MessageData {
     this.editedAt,
     this.senderName,
     this.caption,
+    this.images,
     this.replyId,
     this.replyMessage,
     this.replyType,
@@ -215,9 +261,11 @@ class MessageData {
     if (replyStatus != null && replyStatus!.id > 0) {
       return replyStatus!.id;
     }
+
     if (statusMeta?.statusId != null && statusMeta!.statusId! > 0) {
       return statusMeta!.statusId;
     }
+
     final rawId = replyStatusId ?? replyId;
     return int.tryParse(rawId?.toString() ?? '');
   }
@@ -238,6 +286,12 @@ class MessageData {
     senderImage = json['senderImage'];
     thumbnail = json['thumbnail'];
     caption = json['caption'];
+
+    if (json['images'] is List) {
+      images = (json['images'] as List).map((e) => e.toString()).toList();
+    } else {
+      images = null;
+    }
 
     replyId = json['replyId'] ?? json['reply_id'];
     replyMessage = json['replyMessage'] ?? json['reply_message'];
@@ -267,7 +321,7 @@ class MessageData {
       replyStatus = StatusItemModel.fromStatusMeta(
         statusMeta!,
         content:
-        replyMessageContent?.toString() ?? replyMessage?.toString() ?? '',
+            replyMessageContent?.toString() ?? replyMessage?.toString() ?? '',
       );
     }
 
@@ -292,6 +346,7 @@ class MessageData {
     data['senderImage'] = senderImage;
     data['thumbnail'] = thumbnail;
     data['caption'] = caption;
+    data['images'] = images;
     data['reply_id'] = replyId;
     data['isEdited'] = isEdited;
     data['editedAt'] = editedAt;
