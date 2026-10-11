@@ -11,8 +11,8 @@ import '../../../global_widget/common_widget.dart';
 import '../../../Model/group_call_participant.dart';
 
 class GroupParticipantsSheet {
-  static void show(GroupCallingController controller) {
-    Get.bottomSheet(
+  static Future<void> show(GroupCallingController controller) {
+   return Get.bottomSheet(
       Container(
         height: Get.height * 0.75,
         decoration: BoxDecoration(
@@ -222,12 +222,12 @@ class _InCallChip extends StatelessWidget {
 }
 
 class GroupCallMoreSheet {
-  static void show({
+  static Future<void> show({
     required RxBool isScreenSharing,
     required VoidCallback onShareScreen,
     required VoidCallback onSendMessage,
   }) {
-    Get.bottomSheet(
+   return Get.bottomSheet(
       Container(
         decoration: BoxDecoration(
           color: const Color(0xFFF8F7FF),
@@ -279,21 +279,21 @@ class GroupCallMoreSheet {
                             const Icon(Icons.chevron_right, color: Colors.grey),
                         onTap: onShareScreen,
                       )),
-                  const Divider(height: 1, indent: 50),
-                  ListTile(
-                    leading: const Icon(Icons.chat_bubble_outline,
-                        color: Color(0xFF6E5CA4)),
-                    title: Text(
-                      "Send message",
-                      style: TextStyle(
-                        fontSize: 14.sp,
-                        fontFamily: FontFamily.interMedium,
-                      ),
-                    ),
-                    trailing:
-                        const Icon(Icons.chevron_right, color: Colors.grey),
-                    onTap: onSendMessage,
-                  ),
+                  // const Divider(height: 1, indent: 50),
+                  // ListTile(
+                  //   leading: const Icon(Icons.chat_bubble_outline,
+                  //       color: Color(0xFF6E5CA4)),
+                  //   title: Text(
+                  //     "Send message",
+                  //     style: TextStyle(
+                  //       fontSize: 14.sp,
+                  //       fontFamily: FontFamily.interMedium,
+                  //     ),
+                  //   ),
+                  //   trailing:
+                  //       const Icon(Icons.chevron_right, color: Colors.grey),
+                  //   onTap: onSendMessage,
+                  // ),
                 ],
               ),
             ),

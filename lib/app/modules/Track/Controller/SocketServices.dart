@@ -51,10 +51,7 @@ class SocketService extends GetxService {
 
       });
 
-      socket.on("group_dashboard_counts", (res)  {
-      log("Real-time Dashboard Counts:${res}");
 
-      });
 
       socket.on("location-update-error", (err)  {
       log("Error Response:${err}", );
@@ -64,7 +61,7 @@ class SocketService extends GetxService {
     _socket?.onDisconnect((_) => log(" Socket disconnected"));
     _socket?.onError((err) => log("Socket error: $err"));
     _socket?.onAny((event, data) {
-      print("===========LocationEvent:${event},Data:${data}");
+      // print("===========LocationEvent:${event},Data:${data}");
     },);
   }
 

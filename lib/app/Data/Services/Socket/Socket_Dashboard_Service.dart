@@ -61,9 +61,9 @@ class SocketDashboardService extends GetxService {
     });
 
 
-    _socket?.onAny((event, dynamic data) {
-      log('DashboardSocketAllEvent: $event | Data: $data');
-    });
+    // _socket?.onAny((event, dynamic data) {
+      // log('DashboardSocketAllEvent: $event | Data: $data');
+    // });
     _socket!.on('user-live-location', (response) {
       try {
         log('[DashboardSocket] user-live-location received: $response');

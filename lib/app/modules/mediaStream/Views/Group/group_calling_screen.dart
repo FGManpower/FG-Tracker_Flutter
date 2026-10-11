@@ -150,17 +150,23 @@ class GroupCallingScreen extends GetView<GroupCallingController> {
                 ),
                 SizedBox(height: 2.h),
                 Obx(
-                      () => Text(
-                    "${controller.activeParticipants.length} in call · ${controller.totalMemberCount} members",
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 13.sp,
-                      fontFamily: FontFamily.interRegular,
-                      color: Colors.white70,
-                    ),
-                  ),
+                      () {
+                        if (!Get.isRegistered<GroupCallingController>()) {
+                          return const SizedBox.shrink();
+                        }
+
+                       return Text(
+                          "${controller.activeParticipants.length} in call · ${controller.totalMemberCount} members",
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 13.sp,
+                            fontFamily: FontFamily.interRegular,
+                            color: Colors.white70,
+                          ),
+                        );
+                      },
                 ),
                 SizedBox(height: 6.h),
                 Row(

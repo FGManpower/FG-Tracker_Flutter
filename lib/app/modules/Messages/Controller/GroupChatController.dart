@@ -373,28 +373,37 @@ class GroupMessageController extends GetxController {
           videoPaths.isNotEmpty ||
           documentPath.value.isNotEmpty;
 
+
       if (imagePaths.isNotEmpty) {
         final imagesCopy = List<File>.from(imagePaths);
+        final uploadedImages = <String>[];
 
         for (final image in imagesCopy) {
           final result = await MessageRepo.uploadChatImage(image);
 
           if (result.status == true && result.filename != null) {
-            socketService.sendGroupMessage(
-              groupId: groupId,
-              content: result.filename!,
-              messageType: "image",
-              caption: text,
-              replyId: replyMessage.value?.id,
-              replyMessage: replyMessage.value?.content,
-              replyType: replyMessage.value?.messageType,
-              replySender: replyMessage.value?.senderName,
-            );
+            uploadedImages.add(result.filename!);
           } else {
             CommonDialog.errorMessage(
               "Failed to upload ${image.path}",
             );
           }
+        }
+
+        if (uploadedImages.isNotEmpty) {
+          socketService.sendGroupMessage(
+            groupId: groupId,
+            content: "",
+            messageType: "image",
+            images: uploadedImages,
+            caption: text,
+            replyId: replyMessage.value?.id,
+            replyMessage: replyMessage.value?.content,
+            replyType: replyMessage.value?.messageType,
+            replySender: replyMessage.value?.senderName,
+          );
+
+          clearReply();
         }
 
         imagePaths.clear();
