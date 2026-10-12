@@ -37,25 +37,6 @@ class ChatScreen extends GetView<MessageController> {
   @override
   Widget build(BuildContext context) {
     final userData = controller.memberData;
-
-    debugPrint("");
-    debugPrint("====================================================");
-    debugPrint("=============== CHAT SCREEN OPENED =================");
-    debugPrint("====================================================");
-
-    debugPrint("CHAT MEMBER USER ID   => ${userData.userId}");
-    debugPrint("CHAT MEMBER NAME      => ${userData.name}");
-    debugPrint("CHAT MEMBER IMAGE     => ${userData.profileImage}");
-    debugPrint("CHAT MEMBER GROUP ID  => ${userData.groupId}");
-
-    debugPrint("----------------------------------------------------");
-
-    debugPrint("GET ARGUMENTS => ${Get.arguments}");
-
-    debugPrint("====================================================");
-    debugPrint("");
-
-
     return WillPopScope(
       onWillPop: () async {
         controller.handleBackPressed(

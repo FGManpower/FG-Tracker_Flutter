@@ -189,6 +189,32 @@ class MessagePagination {
   }
 }
 
+class MessageVideo {
+  String? videoUrl;
+  String? thumbnail;
+  String? duration;
+
+  MessageVideo({
+    this.videoUrl,
+    this.thumbnail,
+    this.duration,
+  });
+
+  MessageVideo.fromJson(Map<String, dynamic> json) {
+    videoUrl = json['videoUrl']?.toString();
+    thumbnail = json['thumbnail']?.toString();
+    duration = json['duration']?.toString();
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'videoUrl': videoUrl,
+      'thumbnail': thumbnail,
+      'duration': duration,
+    };
+  }
+}
+
 class MessageData {
   int? id;
   dynamic senderId;
@@ -206,6 +232,7 @@ class MessageData {
   dynamic thumbnail;
   dynamic caption;
   List<String>? images;
+  List<MessageVideo>? videos;
   dynamic replyId;
   dynamic replyMessage;
   dynamic replyType;
@@ -213,7 +240,6 @@ class MessageData {
   dynamic locationSharing;
   dynamic isForwarded;
   dynamic forwardedFromMessageId;
-
   dynamic replyStatusId;
   dynamic statusType;
   dynamic replyMessageContent;
@@ -236,6 +262,7 @@ class MessageData {
     this.senderName,
     this.caption,
     this.images,
+    this.videos,
     this.replyId,
     this.replyMessage,
     this.replyType,
@@ -293,6 +320,19 @@ class MessageData {
       images = null;
     }
 
+    if (json['videos'] is List) {
+      videos = (json['videos'] as List)
+          .where((item) => item is Map)
+          .map(
+            (item) => MessageVideo.fromJson(
+          Map<String, dynamic>.from(item as Map),
+        ),
+      )
+          .toList();
+    } else {
+      videos = null;
+    }
+
     replyId = json['replyId'] ?? json['reply_id'];
     replyMessage = json['replyMessage'] ?? json['reply_message'];
     replyType = json['replyType'] ?? json['reply_type'];
@@ -321,7 +361,7 @@ class MessageData {
       replyStatus = StatusItemModel.fromStatusMeta(
         statusMeta!,
         content:
-            replyMessageContent?.toString() ?? replyMessage?.toString() ?? '',
+        replyMessageContent?.toString() ?? replyMessage?.toString() ?? '',
       );
     }
 
@@ -347,6 +387,7 @@ class MessageData {
     data['thumbnail'] = thumbnail;
     data['caption'] = caption;
     data['images'] = images;
+    data['videos'] = videos?.map((video) => video.toJson()).toList();
     data['reply_id'] = replyId;
     data['isEdited'] = isEdited;
     data['editedAt'] = editedAt;

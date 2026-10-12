@@ -16,6 +16,7 @@ class ChatListController extends GetxController {
   RxBool isRefreshing = false.obs;
   final Map<String, int> _previousChatPositions = {};
   RxList<PrivateChatModel> archivedChats = <PrivateChatModel>[].obs;
+  final Map<String, int> _archivedChatPositions = {};
 
   RxInt archivedCurrentPage = 1.obs;
   RxInt archivedTotalPages = 0.obs;
@@ -328,41 +329,40 @@ class ChatListController extends GetxController {
       final payload = Map<String, dynamic>.from(data);
       final updatedChat = PrivateChatModel.fromJson(payload);
 
+      log(
+        'SOCKET PARSED => '
+            'chatId=${updatedChat.id}, '
+            'userId=${updatedChat.userId}, '
+            'name=${updatedChat.name}, '
+            'unreadCount=${updatedChat.unreadCount}, '
+            'message=${updatedChat.message}',
+      );
+
       if (updatedChat.id == null && updatedChat.userId == null) {
-        log("PRIVATE CHAT UPDATED: chatId/userId missing");
+        log('PRIVATE CHAT UPDATED: chatId/userId missing');
         return;
       }
 
-      int index = -1;
+      bool isSameChat(PrivateChatModel chat) {
+        if (updatedChat.id != null && chat.id != null) {
+          if (updatedChat.id == chat.id) {
+            return true;
+          }
+        }
 
-      if (updatedChat.id != null) {
-        index = privateChats.indexWhere(
-              (chat) => chat.id == updatedChat.id,
-        );
+        if (updatedChat.userId != null && chat.userId != null) {
+          return updatedChat.userId == chat.userId;
+        }
+
+        return false;
       }
 
-      if (index == -1 && updatedChat.userId != null) {
-        index = privateChats.indexWhere(
-              (chat) => chat.userId == updatedChat.userId,
-        );
-      }
+      int index = privateChats.indexWhere(isSameChat);
 
       if (updatedChat.isArchived == true) {
-        privateChats.removeWhere(
-              (item) =>
-          (updatedChat.id != null && item.id == updatedChat.id) ||
-              (updatedChat.id == null &&
-                  updatedChat.userId != null &&
-                  item.userId == updatedChat.userId),
-        );
+        privateChats.removeWhere(isSameChat);
 
-        final archivedIndex = archivedChats.indexWhere(
-              (item) =>
-          (updatedChat.id != null && item.id == updatedChat.id) ||
-              (updatedChat.id == null &&
-                  updatedChat.userId != null &&
-                  item.userId == updatedChat.userId),
-        );
+        final archivedIndex = archivedChats.indexWhere(isSameChat);
 
         if (archivedIndex >= 0) {
           archivedChats[archivedIndex] = _mergePrivateChat(
@@ -377,21 +377,26 @@ class ChatListController extends GetxController {
         archivedChats.refresh();
 
         log(
-          "PRIVATE CHAT ARCHIVED - REMOVED FROM ALL CHATS: "
-              "${updatedChat.name} | chatId=${updatedChat.id}",
+          'PRIVATE CHAT ARCHIVED => '
+              'chatId=${updatedChat.id}, '
+              'userId=${updatedChat.userId}',
         );
 
         return;
       }
 
       if (index == -1) {
-        final hasChatDetails = payload['lastActivity'] is Map ||
-            updatedChat.unreadCount != null;
+        final hasChatDetails =
+            payload['lastActivity'] is Map ||
+                payload.containsKey('message') ||
+                payload.containsKey('lastMessage') ||
+                payload.containsKey('last_message') ||
+                updatedChat.unreadCount != null;
 
         if (!hasChatDetails) {
           log(
-            "PRIVATE CHAT STATUS UPDATE: chat not in current list, "
-                "userId=${updatedChat.userId}",
+            'PRIVATE CHAT STATUS UPDATE: '
+                'chat not found, userId=${updatedChat.userId}',
           );
           return;
         }
@@ -400,10 +405,11 @@ class ChatListController extends GetxController {
         privateChats.refresh();
 
         log(
-          "PRIVATE CHAT NEW: "
-              "${updatedChat.name} | "
-              "chatId=${updatedChat.id} | "
-              "movedToTop=true",
+          'PRIVATE CHAT NEW => '
+              'chatId=${updatedChat.id}, '
+              'userId=${updatedChat.userId}, '
+              'unreadCount=${updatedChat.unreadCount}, '
+              'message=${updatedChat.message}',
         );
 
         return;
@@ -412,46 +418,54 @@ class ChatListController extends GetxController {
       final currentChat = privateChats[index];
       final mergedChat = _mergePrivateChat(currentChat, updatedChat);
 
-      final hasUnreadCount = updatedChat.unreadCount != null;
-      final isMessageUpdate = payload['lastActivity'] is Map ||
-          payload.containsKey('message') ||
-          payload.containsKey('lastMessage') ||
-          payload.containsKey('last_message');
-
-      if (!hasUnreadCount ||
-          updatedChat.unreadCount == 0 ||
-          !isMessageUpdate) {
-        privateChats[index] = mergedChat;
-        privateChats.refresh();
-
-        log(
-          "PRIVATE CHAT UPDATED WITHOUT REORDER: "
-              "${mergedChat.name} | "
-              "chatId=${mergedChat.id} | "
-              "isOnline=${mergedChat.isOnline} | "
-              "lastSeen=${mergedChat.lastSeen}",
-        );
-
-        return;
-      }
-
-      privateChats.removeAt(index);
-      privateChats.insert(0, mergedChat);
+      privateChats[index] = mergedChat;
       privateChats.refresh();
 
+      final hasUnreadCount = updatedChat.unreadCount != null;
+
+      final isMessageUpdate =
+          payload['lastActivity'] is Map ||
+              payload.containsKey('message') ||
+              payload.containsKey('lastMessage') ||
+              payload.containsKey('last_message');
+
+      if (hasUnreadCount &&
+          updatedChat.unreadCount! > 0 &&
+          isMessageUpdate &&
+          mergedChat.isPinned != true) {
+        final updatedIndex = privateChats.indexWhere(isSameChat);
+
+        if (updatedIndex > 0) {
+          final chatToMove = privateChats.removeAt(updatedIndex);
+          privateChats.insert(0, chatToMove);
+          privateChats.refresh();
+        }
+      }
+
       log(
-        "PRIVATE CHAT UPDATED: "
-            "${mergedChat.name} | "
-            "chatId=${mergedChat.id} | "
-            "isPinned=${mergedChat.isPinned} | "
-            "unreadCount=${mergedChat.unreadCount} | "
-            "movedToTop=true",
+        'PRIVATE CHAT UI UPDATED => '
+            'chatId=${mergedChat.id}, '
+            'userId=${mergedChat.userId}, '
+            'name=${mergedChat.name}, '
+            'unreadCount=${mergedChat.unreadCount}, '
+            'message=${mergedChat.message}, '
+            'time=${mergedChat.time}',
       );
-    } catch (e) {
-      log("PRIVATE CHAT UPDATED PARSE ERROR => $e");
+
+      log(
+        'CHAT LIST STATE => ${privateChats.map((chat) => {
+          'chatId': chat.id,
+          'userId': chat.userId,
+          'name': chat.name,
+          'unreadCount': chat.unreadCount,
+          'message': chat.message,
+        }).toList()}',
+      );
+    } catch (e, stackTrace) {
+      log('PRIVATE CHAT UPDATED PARSE ERROR => $e');
+      log('$stackTrace');
     }
   }
-
   PrivateChatModel _mergePrivateChat(
       PrivateChatModel current,
       PrivateChatModel updated,

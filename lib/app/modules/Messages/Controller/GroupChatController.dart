@@ -369,33 +369,98 @@ class GroupMessageController extends GetxController {
     try {
       final text = textController.text.trim();
 
-      final bool hasMedia = imagePaths.isNotEmpty ||
-          videoPaths.isNotEmpty ||
-          documentPath.value.isNotEmpty;
+      final bool hasImages = imagePaths.isNotEmpty;
+      final bool hasVideos = videoPaths.isNotEmpty;
+      final bool hasDocument = documentPath.value.isNotEmpty;
+      final bool hasMedia = hasImages || hasVideos || hasDocument;
 
+      final bool shouldSendMixedMedia =
+          (hasImages && hasVideos) || videoPaths.length > 1;
 
-      if (imagePaths.isNotEmpty) {
+      if (shouldSendMixedMedia) {
         final imagesCopy = List<File>.from(imagePaths);
+        final videosCopy = List<String>.from(videoPaths);
         final uploadedImages = <String>[];
+        final uploadedVideos = <Map<String, dynamic>>[];
+        final successfulVideoIndexes = <int>[];
 
         for (final image in imagesCopy) {
-          final result = await MessageRepo.uploadChatImage(image);
+          try {
+            final result = await MessageRepo.uploadChatImage(image);
 
-          if (result.status == true && result.filename != null) {
-            uploadedImages.add(result.filename!);
-          } else {
+            if (result.status == true && result.filename != null) {
+              uploadedImages.add(result.filename!);
+            } else {
+              CommonDialog.errorMessage(
+                "Failed to upload ${image.path}",
+              );
+            }
+          } catch (e) {
+            log("GROUP IMAGE UPLOAD ERROR => $e");
             CommonDialog.errorMessage(
               "Failed to upload ${image.path}",
             );
           }
         }
 
-        if (uploadedImages.isNotEmpty) {
+        for (int i = 0; i < videosCopy.length; i++) {
+          final path = videosCopy[i];
+          final currentIndex = videoPaths.indexOf(path);
+
+          if (currentIndex == -1) continue;
+
+          uploadingVideoIndexes.add(currentIndex);
+          uploadingVideoIndexes.refresh();
+
+          try {
+            final thumbnailPath = await generateThumbnailFile(path);
+
+            if (thumbnailPath == null) continue;
+
+            final result = await MessageRepo.uploadChatVideo(
+              videoPath: path,
+              thumbnailPath: thumbnailPath,
+              onSendProgress: (sent, total) {
+                if (total > 0) {
+                  videoUploadProgress[currentIndex] = sent / total;
+                  videoUploadProgress.refresh();
+                }
+              },
+            );
+
+            if (result.status == true &&
+                result.videoUrl != null &&
+                result.videoUrl.toString().isNotEmpty) {
+              uploadedVideos.add({
+                "videoUrl": result.videoUrl,
+                "thumbnail": result.thumbnail,
+                "duration": result.duration,
+              });
+
+              successfulVideoIndexes.add(currentIndex);
+            } else {
+              CommonDialog.errorMessage(
+                "Failed to upload video",
+              );
+            }
+          } catch (e) {
+            log("GROUP VIDEO UPLOAD ERROR => $e");
+            CommonDialog.errorMessage(
+              "Failed to upload video",
+            );
+          } finally {
+            uploadingVideoIndexes.remove(currentIndex);
+            videoUploadProgress.remove(currentIndex);
+          }
+        }
+
+        if (uploadedImages.isNotEmpty || uploadedVideos.isNotEmpty) {
           socketService.sendGroupMessage(
             groupId: groupId,
             content: "",
-            messageType: "image",
+            messageType: "media",
             images: uploadedImages,
+            videos: uploadedVideos,
             caption: text,
             replyId: replyMessage.value?.id,
             replyMessage: replyMessage.value?.content,
@@ -404,32 +469,89 @@ class GroupMessageController extends GetxController {
           );
 
           clearReply();
+
+          imagePaths.clear();
+
+          successfulVideoIndexes.sort((a, b) => b.compareTo(a));
+
+          for (final index in successfulVideoIndexes) {
+            if (index < videoPaths.length) {
+              removeVideo(index);
+            }
+          }
         }
+      } else {
+        if (imagePaths.isNotEmpty) {
+          final imagesCopy = List<File>.from(imagePaths);
+          final uploadedImages = <String>[];
 
-        imagePaths.clear();
-      }
+          for (final image in imagesCopy) {
+            try {
+              final result = await MessageRepo.uploadChatImage(image);
 
-      if (videoPaths.isNotEmpty) {
-        final videosCopy = List<String>.from(videoPaths);
-
-        for (final vPath in videosCopy) {
-          final currentIndex = videoPaths.indexOf(vPath);
-          if (currentIndex == -1) continue;
-
-          uploadingVideoIndexes.add(currentIndex);
-          uploadingVideoIndexes.refresh();
-
-          final success = await uploadVideoAtIndex(vPath, text, currentIndex);
-
-          if (success) {
-            final idx = videoPaths.indexOf(vPath);
-            if (idx != -1) {
-              removeVideo(idx);
+              if (result.status == true && result.filename != null) {
+                uploadedImages.add(result.filename!);
+              } else {
+                CommonDialog.errorMessage(
+                  "Failed to upload ${image.path}",
+                );
+              }
+            } catch (e) {
+              log("GROUP IMAGE UPLOAD ERROR => $e");
+              CommonDialog.errorMessage(
+                "Failed to upload ${image.path}",
+              );
             }
           }
 
-          uploadingVideoIndexes.remove(currentIndex);
-          videoUploadProgress.remove(currentIndex);
+          if (uploadedImages.isNotEmpty) {
+            socketService.sendGroupMessage(
+              groupId: groupId,
+              content: "",
+              messageType: "image",
+              images: uploadedImages,
+              caption: text,
+              replyId: replyMessage.value?.id,
+              replyMessage: replyMessage.value?.content,
+              replyType: replyMessage.value?.messageType,
+              replySender: replyMessage.value?.senderName,
+            );
+
+            clearReply();
+          }
+
+          imagePaths.clear();
+        }
+
+        if (videoPaths.isNotEmpty) {
+          final videoPath = videoPaths.first;
+          final currentIndex = videoPaths.indexOf(videoPath);
+
+          if (currentIndex != -1) {
+            uploadingVideoIndexes.add(currentIndex);
+            uploadingVideoIndexes.refresh();
+
+            try {
+              final success = await uploadVideoAtIndex(
+                videoPath,
+                text,
+                currentIndex,
+              );
+
+              if (success) {
+                final index = videoPaths.indexOf(videoPath);
+
+                if (index != -1) {
+                  removeVideo(index);
+                }
+
+                clearReply();
+              }
+            } finally {
+              uploadingVideoIndexes.remove(currentIndex);
+              videoUploadProgress.remove(currentIndex);
+            }
+          }
         }
       }
 
@@ -451,6 +573,7 @@ class GroupMessageController extends GetxController {
       }
 
       textController.clear();
+      messageText.value = "";
       clearReply();
       scrollToBottom();
     } catch (e) {

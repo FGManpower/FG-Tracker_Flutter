@@ -425,52 +425,55 @@ class ChatBubble extends StatelessWidget {
   }
 
   Widget _buildMessageContent(
-    MessageData message,
-    Color textColor,
-    bool isSentByMe,
-  ) {
-    if (message.messageType == "image" || message.messageType == "image_text") {
+      MessageData message,
+      Color textColor,
+      bool isSentByMe,
+      ) {
+    if (message.messageType == "media" ||
+        message.messageType == "image" ||
+        message.messageType == "image_text") {
       final imageList = (message.images ?? [])
           .where((image) => image.trim().isNotEmpty)
           .toList();
 
-      if (imageList.isEmpty) {
+      if (imageList.isEmpty &&
+          (message.messageType == "image" ||
+              message.messageType == "image_text")) {
         final imagePart = message.content?.toString() ?? "";
         if (imagePart.trim().isNotEmpty) {
           imageList.add(imagePart);
         }
       }
 
-      if (imageList.isEmpty) {
-        return const SizedBox.shrink();
-      }
+      final videos = message.messageType == "media"
+          ? (message.videos ?? [])
+          : <MessageVideo>[];
 
-      final caption = message.caption?.toString() ?? "";
-
-      String getImageUrl(String image) {
-        final value = image.trim();
-
-        if (value.startsWith("http://") || value.startsWith("https://")) {
+      String getMediaUrl(String path) {
+        final value = path.trim();
+        if (value.isEmpty) return "";
+        if (value.startsWith("http://") ||
+            value.startsWith("https://")) {
           return value;
         }
-
         return "${ConstRes.aImageBaseUrl}$value";
       }
 
       void openGallery(int index) {
         Get.to(
-          () => GroupImageGallery(
+              () => GroupImageGallery(
             images: imageList,
+            videos: videos,
             initialIndex: index,
           ),
         );
       }
 
       Widget buildImageTile(
-        int index,
-        double width,
-        double height,
-      ) {
+          int index,
+          double width,
+          double height,
+          ) {
         return GestureDetector(
           onTap: () => openGallery(index),
           child: SizedBox(
@@ -480,7 +483,7 @@ class ChatBubble extends StatelessWidget {
               fit: StackFit.expand,
               children: [
                 Image.network(
-                  getImageUrl(imageList[index]),
+                  getMediaUrl(imageList[index]),
                   fit: BoxFit.cover,
                   errorBuilder: (_, __, ___) => Container(
                     color: Colors.grey.shade200,
@@ -489,7 +492,6 @@ class ChatBubble extends StatelessWidget {
                   ),
                   loadingBuilder: (context, child, progress) {
                     if (progress == null) return child;
-
                     return Container(
                       color: Colors.grey.shade200,
                       alignment: Alignment.center,
@@ -515,71 +517,123 @@ class ChatBubble extends StatelessWidget {
           ),
         );
       }
+      Widget buildVideoTile(MessageVideo video, int videoIndex) {
+        final videoUrl = getMediaUrl(video.videoUrl ?? "");
+        final thumbnailUrl = getMediaUrl(video.thumbnail ?? "");
+        final duration = (video.duration ?? "").trim().isNotEmpty
+            ? video.duration!
+            : "--:--";
 
-      final visibleCount = imageList.length > 4 ? 4 : imageList.length;
+        return VideoThumbnailWidget(
+          videoUrl: videoUrl,
+          thumbnail: thumbnailUrl,
+          duration: duration,
+          onTap: () => openGallery(imageList.length + videoIndex),
+        );
+      }
 
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (visibleCount == 1)
-            ClipRRect(
-              borderRadius: BorderRadius.circular(12.r),
-              child: GestureDetector(
-                onTap: () => openGallery(0),
-                child: Image.network(
-                  getImageUrl(imageList[0]),
-                  width: 220,
-                  height: 200,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => Container(
-                    width: 220,
-                    height: 200,
-                    color: Colors.grey.shade200,
-                    alignment: Alignment.center,
-                    child: const Icon(Icons.broken_image_outlined),
-                  ),
-                  loadingBuilder: (context, child, progress) {
-                    if (progress == null) return child;
+      final mediaCount = imageList.length + videos.length;
+      final caption = (message.caption ?? "").trim();
 
-                    return Container(
-                      width: 220,
-                      height: 200,
+      if (mediaCount == 0) {
+        return const SizedBox.shrink();
+      }
+
+      return SizedBox(
+        width: 220.w,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (mediaCount == 1 && imageList.length == 1)
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12.r),
+                child: GestureDetector(
+                  onTap: () => openGallery(0),
+                  child: Image.network(
+                    getMediaUrl(imageList.first),
+                    width: 220.w,
+                    height: 200.h,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => Container(
+                      width: 220.w,
+                      height: 200.h,
                       color: Colors.grey.shade200,
                       alignment: Alignment.center,
-                      child: const CircularProgressIndicator(),
-                    );
-                  },
-                ),
-              ),
-            )
-          else
-            SizedBox(
-              width: 220,
-              child: Wrap(
-                spacing: 4.w,
-                runSpacing: 4.w,
-                children: List.generate(visibleCount, (index) {
-                  return ClipRRect(
-                    borderRadius: BorderRadius.circular(8.r),
-                    child: buildImageTile(
-                      index,
-                      108.w,
-                      108.w,
+                      child: const Icon(Icons.broken_image_outlined),
                     ),
+                    loadingBuilder: (context, child, progress) {
+                      if (progress == null) return child;
+                      return Container(
+                        width: 220.w,
+                        height: 200.h,
+                        color: Colors.grey.shade200,
+                        alignment: Alignment.center,
+                        child: const CircularProgressIndicator(),
+                      );
+                    },
+                  ),
+                ),
+              )
+            else
+              Builder(
+                builder: (context) {
+                  final totalMedia = imageList.length + videos.length;
+                  final visibleCount = totalMedia > 4 ? 4 : totalMedia;
+
+                  return Wrap(
+                    spacing: 4.w,
+                    runSpacing: 4.w,
+                    children: List.generate(visibleCount, (index) {
+                      final isVideo = index >= imageList.length;
+                      final remainingCount = totalMedia - 4;
+
+                      return SizedBox(
+                        width: 108.w,
+                        height: 108.w,
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(8.r),
+                          child: Stack(
+                            fit: StackFit.expand,
+                            children: [
+                              if (isVideo)
+                                buildVideoTile(
+                                  videos[index - imageList.length],
+                                  index - imageList.length,
+                                )
+                              else
+                                buildImageTile(index, 108.w, 108.w),
+                              if (index == 3 && remainingCount > 0)
+                                Container(
+                                  color: Colors.black54,
+                                  alignment: Alignment.center,
+                                  child: Text(
+                                    "+$remainingCount",
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 26.sp,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }),
                   );
-                }),
+                },
               ),
-            ),
-          if (caption.trim().isNotEmpty) ...[
-            SizedBox(height: 8.h),
-            reausabletext(
-              caption,
-              color: textColor,
-              fontsize: 12.sp,
-            ),
+            if (caption.isNotEmpty) ...[
+              SizedBox(height: 8.h),
+              reausabletext(
+                caption,
+                color: textColor,
+                fontsize: 12.sp,
+              ),
+            ],
           ],
-        ],
+        ),
       );
     } else if (message.messageType == "audio") {
       return AudioBubble(
@@ -588,17 +642,14 @@ class ChatBubble extends StatelessWidget {
       );
     } else if (message.messageType == "video") {
       final parts = message.content?.split("||") ?? [];
-
       final videoPath = parts.isNotEmpty ? parts[0].trim() : "";
-
-      final rawThumbnailPath = parts.length > 1 ? parts[1].trim() : "";
-
-      final duration = parts.length > 2 && parts[2].trim().isNotEmpty
+      final rawThumbnailPath =
+      parts.length > 1 ? parts[1].trim() : "";
+      final duration =
+      parts.length > 2 && parts[2].trim().isNotEmpty
           ? parts[2].trim()
           : "--:--";
-
       final videoUrl = _buildMediaUrl(videoPath);
-
       final thumbnailUrl = _buildMediaUrl(rawThumbnailPath);
 
       return Column(
@@ -630,16 +681,11 @@ class ChatBubble extends StatelessWidget {
       );
     } else if (message.messageType == "document") {
       final parts = message.content?.split("||") ?? [];
-
       final documentUrl = parts.isNotEmpty ? parts[0] : "";
-
       String documentName =
-          parts.length > 1 ? parts[1] : documentUrl.split('/').last;
-
+      parts.length > 1 ? parts[1] : documentUrl.split('/').last;
       documentName = removeDuplicateExtension(documentName);
-
       final extension = documentName.split('.').last.toLowerCase();
-
       final fileSize = parts.length > 2 ? parts[2] : "";
 
       IconData icon;
@@ -648,22 +694,18 @@ class ChatBubble extends StatelessWidget {
         case "pdf":
           icon = Icons.picture_as_pdf_rounded;
           break;
-
         case "doc":
         case "docx":
           icon = Icons.description_rounded;
           break;
-
         case "xls":
         case "xlsx":
           icon = Icons.table_chart_rounded;
           break;
-
         case "ppt":
         case "pptx":
           icon = Icons.slideshow_rounded;
           break;
-
         default:
           icon = Icons.insert_drive_file_rounded;
       }
@@ -733,19 +775,16 @@ class ChatBubble extends StatelessWidget {
                     ),
                   ),
                   SizedBox(width: 6.w),
-                  Obx(
-                    () {
-                      final url = "${ConstRes.aImageBaseUrl}$documentUrl";
-
-                      return Icon(
-                        DocumentService.isDownloaded(url)
-                            ? Icons.download_done_rounded
-                            : Icons.download_rounded,
-                        color: _purple,
-                        size: 20.sp,
-                      );
-                    },
-                  ),
+                  Obx(() {
+                    final url = "${ConstRes.aImageBaseUrl}$documentUrl";
+                    return Icon(
+                      DocumentService.isDownloaded(url)
+                          ? Icons.download_done_rounded
+                          : Icons.download_rounded,
+                      color: _purple,
+                      size: 20.sp,
+                    );
+                  }),
                 ],
               ),
             ),
@@ -2129,42 +2168,61 @@ class GroupChatBubble extends StatelessWidget {
         ));
   }
 
+
   Widget _buildMessageContent(
-    MessageData message,
-    Color textColor,
-    bool isSentByMe,
-  ) {
-    if (message.messageType == "image" || message.messageType == "image_text") {
+      MessageData message,
+      Color textColor,
+      bool isSentByMe,
+      ) {
+    if (message.messageType == "media" ||
+        message.messageType == "image" ||
+        message.messageType == "image_text") {
       final imageList = (message.images ?? [])
           .where((image) => image.trim().isNotEmpty)
           .toList();
 
-      if (imageList.isEmpty) {
+      if (imageList.isEmpty &&
+          (message.messageType == "image" ||
+              message.messageType == "image_text")) {
         final imagePart = message.content?.toString() ?? "";
-        if (imagePart.isNotEmpty) {
+        if (imagePart.trim().isNotEmpty) {
           imageList.add(imagePart);
         }
       }
 
-      final caption = message.caption?.toString() ?? "";
+      final videos = message.messageType == "media"
+          ? (message.videos ?? [])
+          : <MessageVideo>[];
 
-      String getImageUrl(String image) {
-        if (image.startsWith("http://") || image.startsWith("https://")) {
-          return image;
+      final caption = (message.caption ?? "").trim();
+
+      String getMediaUrl(String path) {
+        final value = path.trim();
+        if (value.isEmpty) return "";
+        if (value.startsWith("http://") ||
+            value.startsWith("https://")) {
+          return value;
         }
-        return "${ConstRes.aImageBaseUrl}$image";
+        return "${ConstRes.aImageBaseUrl}$value";
       }
 
-      Widget buildImageTile(int index, double width, double height) {
-        return GestureDetector(
-          onTap: () {
-            Get.to(
+      void openGallery(int index) {
+        Get.to(
               () => GroupImageGallery(
-                images: imageList,
-                initialIndex: index,
-              ),
-            );
-          },
+            images: imageList,
+            videos: videos,
+            initialIndex: index,
+          ),
+        );
+      }
+
+      Widget buildImageTile(
+          int index,
+          double width,
+          double height,
+          ) {
+        return GestureDetector(
+          onTap: () => openGallery(index),
           child: SizedBox(
             width: width,
             height: height,
@@ -2172,10 +2230,11 @@ class GroupChatBubble extends StatelessWidget {
               fit: StackFit.expand,
               children: [
                 Image.network(
-                  getImageUrl(imageList[index]),
+                  getMediaUrl(imageList[index]),
                   fit: BoxFit.cover,
                   errorBuilder: (_, __, ___) => Container(
                     color: Colors.grey.shade200,
+                    alignment: Alignment.center,
                     child: const Icon(Icons.broken_image_outlined),
                   ),
                   loadingBuilder: (context, child, progress) {
@@ -2206,53 +2265,141 @@ class GroupChatBubble extends StatelessWidget {
         );
       }
 
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (imageList.length == 1)
-            ClipRRect(
-              borderRadius: BorderRadius.circular(12.r),
-              child: buildImageTile(0, 220.w, 200.h),
-            )
-          else if (imageList.length > 1)
-            ClipRRect(
-              borderRadius: BorderRadius.circular(12.r),
-              child: SizedBox(
-                width: 220.w,
-                child: Wrap(
-                  spacing: 3.w,
-                  runSpacing: 3.w,
-                  children: List.generate(
-                    imageList.length > 4 ? 4 : imageList.length,
-                    (index) {
-                      final tileSize = imageList.length == 2
-                          ? 108.w
-                          : imageList.length == 3 && index == 0
-                              ? 220.w
-                              : 108.w;
+      Widget buildVideoTile(MessageVideo video, int videoIndex) {
+        final videoUrl = getMediaUrl(video.videoUrl ?? "");
+        final thumbnailUrl = getMediaUrl(video.thumbnail ?? "");
+        final duration = (video.duration ?? "").trim().isNotEmpty
+            ? video.duration!
+            : "--:--";
 
-                      final tileHeight =
-                          imageList.length == 3 && index == 0 ? 130.h : 108.h;
+        return VideoThumbnailWidget(
+          videoUrl: videoUrl,
+          thumbnail: thumbnailUrl,
+          duration: duration,
+          onTap: () => openGallery(imageList.length + videoIndex),
+        );
+      }
 
-                      return buildImageTile(
-                        index,
-                        tileSize,
-                        tileHeight,
-                      );
-                    },
+      if (imageList.isEmpty && videos.isEmpty) {
+        return const SizedBox.shrink();
+      }
+
+      final hasMixedMedia = videos.isNotEmpty;
+      final totalImages = imageList.length;
+      final visibleImages = totalImages > 4 ? 4 : totalImages;
+
+      return SizedBox(
+        width: 220.w,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (!hasMixedMedia && totalImages == 1)
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12.r),
+                child: buildImageTile(
+                  0,
+                  220.w,
+                  200.h,
+                ),
+              )
+            else if (!hasMixedMedia && totalImages > 1)
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12.r),
+                child: SizedBox(
+                  width: 220.w,
+                  child: Wrap(
+                    spacing: 3.w,
+                    runSpacing: 3.w,
+                    children: List.generate(
+                      visibleImages,
+                          (index) {
+                        final tileSize = totalImages == 2
+                            ? 108.w
+                            : totalImages == 3 && index == 0
+                            ? 220.w
+                            : 108.w;
+
+                        final tileHeight =
+                        totalImages == 3 && index == 0
+                            ? 130.h
+                            : 108.h;
+
+                        return buildImageTile(
+                          index,
+                          tileSize,
+                          tileHeight,
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              )
+            else
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12.r),
+                child: SizedBox(
+                  width: 220.w,
+                  child: Wrap(
+                    spacing: 3.w,
+                    runSpacing: 3.w,
+                    children: List.generate(
+                      (imageList.length + videos.length).clamp(0, 4),
+                          (index) {
+                        final isVideo = index >= imageList.length;
+                        final totalMedia = imageList.length + videos.length;
+
+                        return SizedBox(
+                          width: 108.w,
+                          height: 108.w,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(8.r),
+                            child: Stack(
+                              fit: StackFit.expand,
+                              children: [
+                                if (isVideo)
+                                  buildVideoTile(
+                                    videos[index - imageList.length],
+                                    index - imageList.length,
+                                  )
+                                else
+                                  buildImageTile(
+                                    index,
+                                    108.w,
+                                    108.w,
+                                  ),
+                                if (index == 3 && totalMedia > 4)
+                                  Container(
+                                    color: Colors.black54,
+                                    alignment: Alignment.center,
+                                    child: Text(
+                                      "+${totalMedia - 4}",
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 26.sp,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
                   ),
                 ),
               ),
-            ),
-          if (caption.isNotEmpty) ...[
-            SizedBox(height: 8.h),
-            reausabletext(
-              caption,
-              color: textColor,
-              fontsize: 12.sp,
-            ),
+            if (caption.isNotEmpty) ...[
+              SizedBox(height: 8.h),
+              reausabletext(
+                caption,
+                color: textColor,
+                fontsize: 12.sp,
+              ),
+            ],
           ],
-        ],
+        ),
       );
     } else if (message.messageType == "audio") {
       return AudioBubble(
@@ -2261,22 +2408,32 @@ class GroupChatBubble extends StatelessWidget {
       );
     } else if (message.messageType == "video") {
       final parts = message.content?.split("||") ?? [];
-      final videoPath = parts.isNotEmpty ? parts[0] : "";
-      final thumbnailPath = parts.length > 1 ? parts[1] : "";
-      final duration = parts.length > 2 ? parts[2] : "--:--";
+      final videoPath = parts.isNotEmpty ? parts[0].trim() : "";
+      final thumbnailPath = parts.length > 1 ? parts[1].trim() : "";
+      final duration = parts.length > 2 && parts[2].trim().isNotEmpty
+          ? parts[2].trim()
+          : "--:--";
+      final videoUrl = videoPath.startsWith("http://") ||
+          videoPath.startsWith("https://")
+          ? videoPath
+          : "${ConstRes.aImageBaseUrl}$videoPath";
+      final thumbnailUrl = thumbnailPath.startsWith("http://") ||
+          thumbnailPath.startsWith("https://")
+          ? thumbnailPath
+          : "${ConstRes.aImageBaseUrl}$thumbnailPath";
 
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           VideoThumbnailWidget(
-            videoUrl: "${ConstRes.aImageBaseUrl}$videoPath",
-            thumbnail: thumbnailPath,
+            videoUrl: videoUrl,
+            thumbnail: thumbnailUrl,
             duration: duration,
             onTap: () {
               Get.toNamed(
                 Routes.videoPlayerScreen,
                 arguments: {
-                  "videoUrl": "${ConstRes.aImageBaseUrl}$videoPath",
+                  "videoUrl": videoUrl,
                 },
               );
             },
@@ -2296,7 +2453,7 @@ class GroupChatBubble extends StatelessWidget {
       final parts = message.content?.split("||") ?? [];
       final documentUrl = parts.isNotEmpty ? parts[0] : "";
       String documentName =
-          parts.length > 1 ? parts[1] : documentUrl.split('/').last;
+      parts.length > 1 ? parts[1] : documentUrl.split('/').last;
       documentName = removeDuplicateExtension(documentName);
       final extension = documentName.split('.').last.toLowerCase();
       final fileSize = parts.length > 2 ? parts[2] : "";
@@ -2349,7 +2506,11 @@ class GroupChatBubble extends StatelessWidget {
                       color: _purple.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(10.r),
                     ),
-                    child: Icon(icon, color: _purple, size: 24.sp),
+                    child: Icon(
+                      icon,
+                      color: _purple,
+                      size: 24.sp,
+                    ),
                   ),
                   SizedBox(width: 10.w),
                   Expanded(
@@ -2429,11 +2590,16 @@ class GroupChatBubble extends StatelessWidget {
             );
             Utils().fluttertoast("Message copied...");
           },
-          child: _buildTextContent(message, textColor, isSentByMe),
+          child: _buildTextContent(
+            message,
+            textColor,
+            isSentByMe,
+          ),
         ),
       );
     }
   }
+
 
   bool _areAllMembersSeen(MessageData message) {
     if (message.seenBy is! List) return false;
@@ -2699,13 +2865,29 @@ class GroupChatBubble extends StatelessWidget {
   }
 }
 
+class GroupGalleryMedia {
+  final String url;
+  final bool isVideo;
+  final String? thumbnail;
+  final String? duration;
+
+  const GroupGalleryMedia({
+    required this.url,
+    this.isVideo = false,
+    this.thumbnail,
+    this.duration,
+  });
+}
+
 class GroupImageGallery extends StatefulWidget {
   final List<String> images;
+  final List<MessageVideo> videos;
   final int initialIndex;
 
   const GroupImageGallery({
     super.key,
-    required this.images,
+    this.images = const [],
+    this.videos = const [],
     this.initialIndex = 0,
   });
 
@@ -2716,20 +2898,66 @@ class GroupImageGallery extends StatefulWidget {
 class _GroupImageGalleryState extends State<GroupImageGallery> {
   late final PageController _pageController;
   late int _currentIndex;
+  late final List<GroupGalleryMedia> _media;
 
   @override
   void initState() {
     super.initState();
-    _currentIndex = widget.initialIndex;
+
+    _media = [
+      ...widget.images
+          .where((image) => image.trim().isNotEmpty)
+          .map(
+            (image) => GroupGalleryMedia(
+          url: _buildMediaUrl(image),
+        ),
+      ),
+      ...widget.videos
+          .where((video) => (video.videoUrl ?? '').trim().isNotEmpty)
+          .map(
+            (video) => GroupGalleryMedia(
+          url: _buildMediaUrl(video.videoUrl!),
+          isVideo: true,
+          thumbnail: video.thumbnail == null
+              ? null
+              : _buildMediaUrl(video.thumbnail!),
+          duration: video.duration,
+        ),
+      ),
+    ];
+
+    _currentIndex = widget.initialIndex
+        .clamp(0, _media.isEmpty ? 0 : _media.length - 1);
+
     _pageController = PageController(
-      initialPage: widget.initialIndex,
+      initialPage: _currentIndex,
     );
+  }
+
+  String _buildMediaUrl(String path) {
+    final value = path.trim();
+
+    if (value.startsWith('http://') ||
+        value.startsWith('https://')) {
+      return value;
+    }
+
+    return '${ConstRes.aImageBaseUrl}$value';
   }
 
   @override
   void dispose() {
     _pageController.dispose();
     super.dispose();
+  }
+
+  void _openVideo(GroupGalleryMedia media) {
+    Get.toNamed(
+      Routes.videoPlayerScreen,
+      arguments: {
+        'videoUrl': media.url,
+      },
+    );
   }
 
   @override
@@ -2741,29 +2969,94 @@ class _GroupImageGalleryState extends State<GroupImageGallery> {
         foregroundColor: Colors.white,
         elevation: 0,
         title: Text(
-          "${_currentIndex + 1} / ${widget.images.length}",
+          _media.isEmpty ? '0 / 0' : '${_currentIndex + 1} / ${_media.length}',
           style: const TextStyle(color: Colors.white),
         ),
       ),
-      body: PageView.builder(
+      body: _media.isEmpty
+          ? const SizedBox.shrink()
+          : PageView.builder(
         controller: _pageController,
-        itemCount: widget.images.length,
+        itemCount: _media.length,
         onPageChanged: (index) {
           setState(() => _currentIndex = index);
         },
         itemBuilder: (context, index) {
-          final image = widget.images[index];
-          final url =
-              image.startsWith('http://') || image.startsWith('https://')
-                  ? image
-                  : "${ConstRes.aImageBaseUrl}$image";
+          final media = _media[index];
+
+          if (media.isVideo) {
+            return Center(
+              child: GestureDetector(
+                onTap: () => _openVideo(media),
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    if (media.thumbnail != null &&
+                        media.thumbnail!.isNotEmpty)
+                      Image.network(
+                        media.thumbnail!,
+                        fit: BoxFit.contain,
+                        width: double.infinity,
+                        height: double.infinity,
+                        errorBuilder: (_, __, ___) =>
+                        const Icon(
+                          Icons.videocam_rounded,
+                          color: Colors.white,
+                          size: 64,
+                        ),
+                      )
+                    else
+                      const Icon(
+                        Icons.videocam_rounded,
+                        color: Colors.white,
+                        size: 64,
+                      ),
+                    Container(
+                      decoration: const BoxDecoration(
+                        color: Colors.black54,
+                        shape: BoxShape.circle,
+                      ),
+                      padding: const EdgeInsets.all(12),
+                      child: const Icon(
+                        Icons.play_arrow_rounded,
+                        color: Colors.white,
+                        size: 48,
+                      ),
+                    ),
+                    if ((media.duration ?? '').isNotEmpty)
+                      Positioned(
+                        right: 16,
+                        bottom: 16,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.black87,
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            media.duration!,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            );
+          }
 
           return Center(
             child: InteractiveViewer(
               minScale: 1,
               maxScale: 4,
               child: Image.network(
-                url,
+                media.url,
                 fit: BoxFit.contain,
                 width: double.infinity,
                 errorBuilder: (_, __, ___) => const Icon(

@@ -219,6 +219,7 @@ class SocketMessageService extends GetxService {
     required String content,
     required String messageType,
     List<String>? images,
+    List<Map<String, dynamic>>? videos,
     String? caption,
     dynamic replyId,
     String? replyMessage,
@@ -229,18 +230,15 @@ class SocketMessageService extends GetxService {
       "senderId": Global.storageServices.get(PrefConst.userId).toString(),
       "groupId": groupId,
       "messageType": messageType,
-      "caption": caption,
-      "replyId": replyId,
-      "replyMessage": replyMessage,
-      "replyType": replyType,
-      "replySender": replySender,
+      "content": content,
+      if (images != null && images.isNotEmpty) "images": images,
+      if (videos != null && videos.isNotEmpty) "videos": videos,
+      if (caption != null) "caption": caption,
+      if (replyId != null) "replyId": replyId,
+      if (replyMessage != null) "replyMessage": replyMessage,
+      if (replyType != null) "replyType": replyType,
+      if (replySender != null) "replySender": replySender,
     };
-
-    if (messageType == "image" && images != null && images.isNotEmpty) {
-      payload["images"] = images;
-    } else {
-      payload["content"] = content;
-    }
 
     log("SEND GROUP MESSAGE => $payload");
 
@@ -389,6 +387,7 @@ class SocketMessageService extends GetxService {
     required String content,
     String messageType = "text",
     List<String>? images,
+    List<Map<String, dynamic>>? videos,
     String? caption,
     dynamic replyId,
     String? replyMessage,
@@ -407,12 +406,9 @@ class SocketMessageService extends GetxService {
       "senderId": senderId,
       "receiverId": receiverId,
       "messageType": messageType,
-      if (messageType == "image" &&
-          images != null &&
-          images.isNotEmpty)
-        "images": images
-      else
-        "content": content,
+      "content": content,
+      if (images != null && images.isNotEmpty) "images": images,
+      if (videos != null && videos.isNotEmpty) "videos": videos,
       if (caption != null) "caption": caption,
       if (replyId != null) "replyId": replyId,
       if (replyMessage != null) "replyMessage": replyMessage,
@@ -422,12 +418,8 @@ class SocketMessageService extends GetxService {
 
     log("PRIVATE SEND MESSAGE => $payload");
 
-    _privateChatSocket!.emit(
-      "send_message",
-      payload,
-    );
+    _privateChatSocket!.emit("send_message", payload);
   }
-
 
   void receivePrivateMessage({
     required String senderId,

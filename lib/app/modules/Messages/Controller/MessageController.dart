@@ -280,71 +280,71 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         },
       );
 
-      socketService.initPrivateChatListSocket(
-        ConstRes.socketUrl,
-        userId: currentUserId,
-      );
-      socketService.listenPrivateChatListUpdated(
-        callback: (data) {
-          log("CHAT SCREEN PRESENCE EVENT => $data");
-
-          if (data is! Map) return;
-
-          final payload = Map<String, dynamic>.from(data);
-
-          final user = payload['user'] is Map
-              ? Map<String, dynamic>.from(payload['user'])
-              : <String, dynamic>{};
-
-          final updatedUserId =
-              (user['id'] ?? payload['userId'] ?? '').toString();
-
-          final receiverId = memberData.userId.toString();
-
-          if (updatedUserId.isNotEmpty && updatedUserId != receiverId) {
-            return;
-          }
-
-          final onlineValue = payload['isOnline'] ?? user['isOnline'];
-
-          if (onlineValue is bool) {
-            isPeerOnline.value = onlineValue;
-            memberData.isOnline = onlineValue;
-          } else if (onlineValue is num) {
-            isPeerOnline.value = onlineValue != 0;
-            memberData.isOnline = onlineValue != 0;
-          } else if (onlineValue is String) {
-            final value = onlineValue.toLowerCase().trim();
-
-            if (['true', '1', 'yes'].contains(value)) {
-              isPeerOnline.value = true;
-              memberData.isOnline = true;
-            } else if (['false', '0', 'no'].contains(value)) {
-              isPeerOnline.value = false;
-              memberData.isOnline = false;
-            }
-          }
-
-          final lastSeenValue = payload['lastSeen'] ?? user['lastSeen'];
-
-          if (lastSeenValue != null) {
-            memberData.lastSeen = lastSeenValue.toString();
-          }
-
-          peerLastSeen.value = isPeerOnline.value
-              ? 'Online'
-              : (memberData.lastSeen?.trim().isNotEmpty == true
-                  ? memberData.lastSeen!.trim()
-                  : 'Offline');
-
-          log(
-            'PRIVATE CHAT PRESENCE UPDATED => '
-            'userId=$updatedUserId, '
-            'isOnline=${isPeerOnline.value}, '
-            'lastSeen=${peerLastSeen.value}',
-          );
-        },
-      );
+      // socketService.initPrivateChatListSocket(
+      //   ConstRes.socketUrl,
+      //   userId: currentUserId,
+      // );
+      // socketService.listenPrivateChatListUpdated(
+      //   callback: (data) {
+      //     log("CHAT SCREEN PRESENCE EVENT => $data");
+      //
+      //     if (data is! Map) return;
+      //
+      //     final payload = Map<String, dynamic>.from(data);
+      //
+      //     final user = payload['user'] is Map
+      //         ? Map<String, dynamic>.from(payload['user'])
+      //         : <String, dynamic>{};
+      //
+      //     final updatedUserId =
+      //         (user['id'] ?? payload['userId'] ?? '').toString();
+      //
+      //     final receiverId = memberData.userId.toString();
+      //
+      //     if (updatedUserId.isNotEmpty && updatedUserId != receiverId) {
+      //       return;
+      //     }
+      //
+      //     final onlineValue = payload['isOnline'] ?? user['isOnline'];
+      //
+      //     if (onlineValue is bool) {
+      //       isPeerOnline.value = onlineValue;
+      //       memberData.isOnline = onlineValue;
+      //     } else if (onlineValue is num) {
+      //       isPeerOnline.value = onlineValue != 0;
+      //       memberData.isOnline = onlineValue != 0;
+      //     } else if (onlineValue is String) {
+      //       final value = onlineValue.toLowerCase().trim();
+      //
+      //       if (['true', '1', 'yes'].contains(value)) {
+      //         isPeerOnline.value = true;
+      //         memberData.isOnline = true;
+      //       } else if (['false', '0', 'no'].contains(value)) {
+      //         isPeerOnline.value = false;
+      //         memberData.isOnline = false;
+      //       }
+      //     }
+      //
+      //     final lastSeenValue = payload['lastSeen'] ?? user['lastSeen'];
+      //
+      //     if (lastSeenValue != null) {
+      //       memberData.lastSeen = lastSeenValue.toString();
+      //     }
+      //
+      //     peerLastSeen.value = isPeerOnline.value
+      //         ? 'Online'
+      //         : (memberData.lastSeen?.trim().isNotEmpty == true
+      //             ? memberData.lastSeen!.trim()
+      //             : 'Offline');
+      //
+      //     log(
+      //       'PRIVATE CHAT PRESENCE UPDATED => '
+      //       'userId=$updatedUserId, '
+      //       'isOnline=${isPeerOnline.value}, '
+      //       'lastSeen=${peerLastSeen.value}',
+      //     );
+      //   },
+      // );
 
       socketService.receivePrivateMessage(
         senderId: currentUserId,
@@ -599,6 +599,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     return maxVisible >= _messages.length - 2;
   }
 
+
   Future<void> sendMessage({
     required TextEditingController textController,
   }) async {
@@ -613,9 +614,15 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     final bool hasMedia = hasImages || hasVideos || hasDocument;
 
     try {
-      if (hasImages) {
+      final bool shouldSendMixedMedia =
+          hasImages && hasVideos || videoPaths.length > 1;
+
+      if (shouldSendMixedMedia) {
         final imagesCopy = List<File>.from(imagePaths);
+        final videosCopy = List<String>.from(videoPaths);
         final uploadedImages = <String>[];
+        final uploadedVideos = <Map<String, dynamic>>[];
+        final successfulVideoIndexes = <int>[];
 
         for (final image in imagesCopy) {
           final result = await MessageRepo.uploadChatImage(image);
@@ -629,44 +636,142 @@ class MessageController extends GetxController with WidgetsBindingObserver {
           }
         }
 
-        if (uploadedImages.isNotEmpty) {
+        for (int i = 0; i < videosCopy.length; i++) {
+          final path = videosCopy[i];
+          final currentIndex = videoPaths.indexOf(path);
+
+          if (currentIndex == -1) continue;
+
+          uploadingVideoIndexes.add(currentIndex);
+          uploadingVideoIndexes.refresh();
+
+          try {
+            final thumbnailPath = await generateThumbnailFile(path);
+
+            if (thumbnailPath == null) {
+              CommonDialog.errorMessage(
+                "Failed to generate video thumbnail",
+              );
+              continue;
+            }
+
+            final result = await MessageRepo.uploadChatVideo(
+              videoPath: path,
+              thumbnailPath: thumbnailPath,
+              onSendProgress: (sent, total) {
+                if (total > 0) {
+                  videoUploadProgress[currentIndex] = sent / total;
+                  videoUploadProgress.refresh();
+                }
+              },
+            );
+
+            if (result.status == true && result.videoUrl != null) {
+              uploadedVideos.add({
+                "videoUrl": result.videoUrl,
+                "thumbnail": result.thumbnail,
+                "duration": result.duration,
+              });
+
+              successfulVideoIndexes.add(currentIndex);
+            } else {
+              CommonDialog.errorMessage(
+                "Failed to upload video",
+              );
+            }
+          } catch (e) {
+            log("Mixed media video upload error: $e");
+          } finally {
+            uploadingVideoIndexes.remove(currentIndex);
+            videoUploadProgress.remove(currentIndex);
+          }
+        }
+
+        if (uploadedImages.isNotEmpty || uploadedVideos.isNotEmpty) {
           socketService.sendPrivateMessage(
-            messageType: "image",
+            messageType: "media",
             receiverId: memberData.userId.toString(),
-            content: uploadedImages.first,
+            content: "",
             images: uploadedImages,
+            videos: uploadedVideos,
             caption: text,
             replyId: replyMessage.value?.id,
             replyMessage: replyMessage.value?.content,
             replyType: replyMessage.value?.messageType,
             replySender: replyMessage.value?.senderName,
           );
+
+          imagePaths.clear();
+
+          for (final index in successfulVideoIndexes.reversed) {
+            if (index < videoPaths.length) {
+              removeVideo(index);
+            }
+          }
+        }
+      } else {
+        if (hasImages) {
+          final imagesCopy = List<File>.from(imagePaths);
+          final uploadedImages = <String>[];
+
+          for (final image in imagesCopy) {
+            final result = await MessageRepo.uploadChatImage(image);
+
+            if (result.status == true && result.filename != null) {
+              uploadedImages.add(result.filename!);
+            } else {
+              CommonDialog.errorMessage(
+                "Failed to upload ${image.path}",
+              );
+            }
+          }
+
+          if (uploadedImages.isNotEmpty) {
+            socketService.sendPrivateMessage(
+              messageType: "image",
+              receiverId: memberData.userId.toString(),
+              content: uploadedImages.first,
+              images: uploadedImages,
+              caption: text,
+              replyId: replyMessage.value?.id,
+              replyMessage: replyMessage.value?.content,
+              replyType: replyMessage.value?.messageType,
+              replySender: replyMessage.value?.senderName,
+            );
+          }
+
+          imagePaths.clear();
         }
 
-        imagePaths.clear();
-      }
+        if (hasVideos) {
+          final videosCopy = List<String>.from(videoPaths);
 
-      if (hasVideos) {
-        final videosCopy = List<String>.from(videoPaths);
+          for (final vPath in videosCopy) {
+            final currentIndex = videoPaths.indexOf(vPath);
+            if (currentIndex == -1) continue;
 
-        for (final vPath in videosCopy) {
-          final currentIndex = videoPaths.indexOf(vPath);
-          if (currentIndex == -1) continue;
+            uploadingVideoIndexes.add(currentIndex);
+            uploadingVideoIndexes.refresh();
 
-          uploadingVideoIndexes.add(currentIndex);
-          uploadingVideoIndexes.refresh();
+            try {
+              final success = await uploadVideoAtIndex(
+                vPath,
+                text,
+                currentIndex,
+              );
 
-          await uploadVideoAtIndex(
-            vPath,
-            text,
-            currentIndex,
-          );
-
-          uploadingVideoIndexes.remove(currentIndex);
-          videoUploadProgress.remove(currentIndex);
+              if (success) {
+                final index = videoPaths.indexOf(vPath);
+                if (index != -1) {
+                  removeVideo(index);
+                }
+              }
+            } finally {
+              uploadingVideoIndexes.remove(currentIndex);
+              videoUploadProgress.remove(currentIndex);
+            }
+          }
         }
-
-        clearVideos();
       }
 
       if (hasDocument) {
@@ -935,7 +1040,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
       final result = await MessageRepo.privateChatHistory(
         chatId: chatId,
         page: 1,
-        limit: 50,
+        limit: 10,
       );
 
       if (result.status == true) {
@@ -1464,7 +1569,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
       final result = await MessageRepo.privateChatHistory(
         chatId: privateChatId.value,
         page: nextPage,
-        limit: 50,
+        limit: 10,
       );
 
       if (result.status == true) {
