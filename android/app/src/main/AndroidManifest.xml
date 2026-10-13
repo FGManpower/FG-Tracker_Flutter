@@ -136,11 +136,9 @@
 
         <service
             android:name="com.pravera.flutter_foreground_task.service.ForegroundService"
-            android:enabled="true"
             android:exported="false"
-            android:stopWithTask="false"
-            android:foregroundServiceType="mediaProjection"
-            tools:replace="android:foregroundServiceType" />
+            android:foregroundServiceType="microphone|mediaProjection"
+            android:stopWithTask="true" />
 
         <meta-data
             android:name="com.facebook.sdk.ApplicationId"

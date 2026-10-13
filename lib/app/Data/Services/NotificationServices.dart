@@ -305,11 +305,12 @@ class firebaseNotificationServices {
             "callingStatus": "Ringing",
           });
           if (Platform.isAndroid) {
+            print("==========CallingUser:${callData}");
             final Map<String, String> userInfo = callData.map<String, String>(
                 (key, value) => MapEntry(key.toString(), value.toString()));
             await ConnectycubeFlutterCallKit.showCallNotification(
               CallEvent(
-                sessionId: callIdToUuid(callData['callId'].toString()),
+                sessionId: callIdToUuid("${callData['callId'].toString()},test"),
                 callerName: callData['groupName'],
                 callType: callData['isVideo'] == true ? 1 : 0,
                 opponentsIds: {int.parse(callData['callerId'])},

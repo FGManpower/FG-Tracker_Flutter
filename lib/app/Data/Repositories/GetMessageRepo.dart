@@ -29,7 +29,7 @@ class MessageRepo {
   static Future<GetMessage> privateChatHistory({
     required String chatId,
     int page = 1,
-    int limit = 50,
+    int limit = 10,
   }) async {
     final response = await HttpUtil().get(
       "/private-chat/$chatId/messages?page=$page&limit=$limit",

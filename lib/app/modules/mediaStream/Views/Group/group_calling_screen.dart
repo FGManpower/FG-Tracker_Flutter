@@ -33,8 +33,8 @@ class GroupCallingScreen extends GetView<GroupCallingController> {
 
                   if (fullUserId != null && fullUserId.isNotEmpty) {
                     final participant =
-                    controller.activeParticipants.firstWhereOrNull(
-                          (p) => p.userId.toString().trim() == fullUserId.trim(),
+                        controller.activeParticipants.firstWhereOrNull(
+                      (p) => p.userId.toString().trim() == fullUserId.trim(),
                     );
                     if (participant != null) {
                       return GroupScreenShareFullScreen(
@@ -149,25 +149,6 @@ class GroupCallingScreen extends GetView<GroupCallingController> {
                   ),
                 ),
                 SizedBox(height: 2.h),
-                Obx(
-                      () {
-                        if (!Get.isRegistered<GroupCallingController>()) {
-                          return const SizedBox.shrink();
-                        }
-
-                       return Text(
-                          "${controller.activeParticipants.length} in call · ${controller.totalMemberCount} members",
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 13.sp,
-                            fontFamily: FontFamily.interRegular,
-                            color: Colors.white70,
-                          ),
-                        );
-                      },
-                ),
                 SizedBox(height: 6.h),
                 Row(
                   mainAxisSize: MainAxisSize.min,
@@ -183,7 +164,7 @@ class GroupCallingScreen extends GetView<GroupCallingController> {
                     ),
                     SizedBox(width: 6.w),
                     Obx(
-                          () => Text(
+                      () => Text(
                         controller.callStatus.value == "Connected"
                             ? controller.formattedDuration
                             : "${controller.callStatus.value}...",
