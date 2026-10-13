@@ -599,11 +599,6 @@ class _AllChatsBody extends StatelessWidget {
         tapPos = d.globalPosition;
       },
       onTap: () async {
-        final chat = controller.privateChats.firstWhere(
-              (item) => item.name == name && item.image == image,
-          orElse: () => controller.privateChats.first,
-        );
-
         if (chat.userId == null) {
           return;
         }
