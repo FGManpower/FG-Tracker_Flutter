@@ -19,18 +19,18 @@ class PrivateChatResponse {
       message: json['message']?.toString(),
       pagination: json['pagination'] is Map
           ? Pagination.fromJson(
-              Map<String, dynamic>.from(json['pagination']),
-            )
+        Map<String, dynamic>.from(json['pagination']),
+      )
           : null,
       data: json['data'] is List
           ? (json['data'] as List)
-              .whereType<Map>()
-              .map(
-                (x) => PrivateChatModel.fromJson(
-                  Map<String, dynamic>.from(x),
-                ),
-              )
-              .toList()
+          .whereType<Map>()
+          .map(
+            (x) => PrivateChatModel.fromJson(
+          Map<String, dynamic>.from(x),
+        ),
+      )
+          .toList()
           : <PrivateChatModel>[],
       isOnline: _parseBool(json['isOnline']),
     );
@@ -90,7 +90,7 @@ class Pagination {
       totalPages: _parseInt(json['totalPages'] ?? json['total_pages']),
       hasNextPage: _parseBool(json['hasNextPage'] ?? json['has_next_page']),
       hasPreviousPage:
-          _parseBool(json['hasPreviousPage'] ?? json['has_previous_page']),
+      _parseBool(json['hasPreviousPage'] ?? json['has_previous_page']),
     );
   }
 
@@ -175,7 +175,7 @@ class PrivateChatModel {
 
   factory PrivateChatModel.fromJson(Map<String, dynamic> json) {
     final user =
-        json['user'] is Map ? Map<String, dynamic>.from(json['user']) : null;
+    json['user'] is Map ? Map<String, dynamic>.from(json['user']) : null;
 
     final lastMessage = json['lastMessage'] is Map
         ? Map<String, dynamic>.from(json['lastMessage'])
@@ -226,17 +226,17 @@ class PrivateChatModel {
         'team_name',
       ]),
       message: _readString(
-            activity ?? {},
-            [
-              'message',
-              'lastMessage',
-              'last_message',
-              'latestMessage',
-              'latest_message',
-              'msg',
-              'content',
-            ],
-          ) ??
+        activity ?? {},
+        [
+          'message',
+          'lastMessage',
+          'last_message',
+          'latestMessage',
+          'latest_message',
+          'msg',
+          'content',
+        ],
+      ) ??
           _readString(json, [
             'message',
             'lastMessage',
@@ -248,24 +248,26 @@ class PrivateChatModel {
           ]) ??
           '',
       messageType: _readString(
-            activity ?? {},
-            ['messageType', 'message_type', 'type'],
-          ) ??
+        activity ?? {},
+        ['messageType', 'message_type', 'type'],
+      ) ??
           _readString(json, ['messageType', 'message_type']),
       mutedUntil: _readString(json, ['mutedUntil', 'muted_until']),
       time: _readString(
-            activity ?? {},
-            [
-              'timestamp',
-              'time',
-              'createdAt',
-              'created_at',
-              'updatedAt',
-              'updated_at',
-            ],
-          ) ??
+        activity ?? {},
+        [
+          'timestamp',
+          'time',
+          'createdAt',
+          'created_at',
+          'updatedAt',
+          'updated_at',
+        ],
+      ) ??
           _readString(json, [
             'timestamp',
+            'lastMessageAt',
+            'last_message_at',
             'time',
             'createdAt',
             'created_at',
@@ -279,12 +281,12 @@ class PrivateChatModel {
       status: online != null
           ? (online ? 'Online' : 'Offline')
           : _readString(json, [
-              'status',
-              'userStatus',
-              'user_status',
-              'onlineStatus',
-              'online_status',
-            ]),
+        'status',
+        'userStatus',
+        'user_status',
+        'onlineStatus',
+        'online_status',
+      ]),
       isOnline: online,
       lastSeen: _readString(json, ['lastSeen', 'last_seen']),
       isGroup: _parseBool(
@@ -338,9 +340,9 @@ class PrivateChatModel {
   }
 
   static String? _readString(
-    Map<String, dynamic> json,
-    List<String> keys,
-  ) {
+      Map<String, dynamic> json,
+      List<String> keys,
+      ) {
     for (final key in keys) {
       final value = json[key];
 

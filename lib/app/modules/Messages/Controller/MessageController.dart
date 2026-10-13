@@ -219,8 +219,10 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
 
   void _initializeChat() {
+    final stopwatch = Stopwatch()..start();
+
     final currentUserId =
-        Global.storageServices.get(PrefConst.userId).toString();
+    Global.storageServices.get(PrefConst.userId).toString();
 
     final receiverId = memberData.userId.toString();
 
@@ -236,23 +238,48 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     log("RECEIVER ID => $receiverId");
     log("GROUP ID => ${memberData.groupId}");
     log("=================================");
+    log("[CHAT-PERF] 1. Initialization started: ${stopwatch.elapsedMilliseconds} ms");
 
     try {
       GroupTrackingController.instance.initializeLocation();
+      log("[CHAT-PERF] Location initialization called: ${stopwatch.elapsedMilliseconds} ms");
     } catch (e) {
       log("==============MessageException======${e.toString()}");
     }
 
     ChatStateTracker.isChatCallScreenOpen = true;
 
+
     if (isPrivateChat) {
+      final passedChatId = arguments?['chatId']?.toString();
+
       isLoadingInitialMessages.value = true;
+
+      if (passedChatId != null &&
+          passedChatId.isNotEmpty &&
+          passedChatId != 'null') {
+        privateChatId.value = passedChatId;
+
+        getPrivateMessageHistory(passedChatId).then((_) {
+          if (!isClosed) {
+            socketService.markPrivateSeen(
+              chatId: passedChatId,
+              userId: currentUserId,
+              otherUserId: receiverId,
+            );
+          }
+        });
+      }
+
+
+      log("[CHAT-PERF] 2. Private chat socket initialization starting: ${stopwatch.elapsedMilliseconds} ms");
 
       socketService.initPrivateChat(
         ConstRes.socketUrl,
         userId: currentUserId,
         receiverId: receiverId,
         onJoined: (data) async {
+          log("[CHAT-PERF] 3. Socket joined after: ${stopwatch.elapsedMilliseconds} ms");
           log("=================================");
           log("PRIVATE CHAT JOINED");
           log("JOINED DATA => $data");
@@ -262,23 +289,34 @@ class MessageController extends GetxController with WidgetsBindingObserver {
               socketService.privateChatId?.toString();
 
           if (chatId == null || chatId.isEmpty) {
-            log("PRIVATE CHAT ID NOT FOUND");
+            log("[CHAT-PERF] ERROR: PRIVATE CHAT ID NOT FOUND after ${stopwatch.elapsedMilliseconds} ms");
+            isLoadingInitialMessages.value = false;
             return;
           }
+
 
           privateChatId.value = chatId;
 
           log("PRIVATE CHAT ID => $chatId");
 
-          await getPrivateMessageHistory(chatId);
+          if (passedChatId == null ||
+              passedChatId.isEmpty ||
+              passedChatId == 'null') {
+            await getPrivateMessageHistory(chatId);
 
-          socketService.markPrivateSeen(
-            chatId: chatId,
-            userId: currentUserId,
-            otherUserId: receiverId,
-          );
+            socketService.markPrivateSeen(
+              chatId: chatId,
+              userId: currentUserId,
+              otherUserId: receiverId,
+            );
+          }
+
+
+          log("[CHAT-PERF] 8. Mark seen called: ${stopwatch.elapsedMilliseconds} ms");
         },
       );
+
+      log("[CHAT-PERF] Socket initialization call returned: ${stopwatch.elapsedMilliseconds} ms");
 
       // socketService.initPrivateChatListSocket(
       //   ConstRes.socketUrl,
@@ -351,19 +389,22 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         receiverId: receiverId,
         callback: (message) {
           print("PRIVATE RECEIVE MESSAGE => $message");
+          log("[CHAT-PERF] Private message received: ${stopwatch.elapsedMilliseconds} ms");
 
           try {
             final messageData =
-                MessageData.fromJson(Map<String, dynamic>.from(message));
+            MessageData.fromJson(Map<String, dynamic>.from(message));
 
             final alreadyExists = _messages.any(
-              (msg) => msg.id == messageData.id && messageData.id != null,
+                  (msg) => msg.id == messageData.id && messageData.id != null,
             );
 
             if (!alreadyExists) {
               _messages.add(messageData);
               updateMessageStream();
               scrollToBottom();
+
+              log("[CHAT-PERF] Received message added to stream: ${stopwatch.elapsedMilliseconds} ms");
             }
 
             if (messageData.id != null) {
@@ -386,6 +427,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
           }
         },
       );
+
       socketService.listenPrivateChatCleared(
         handlePrivateChatCleared,
       );
@@ -410,7 +452,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
           for (var msg in _messages) {
             if (updatedIds.any(
-              (id) => id.toString() == msg.id.toString(),
+                  (id) => id.toString() == msg.id.toString(),
             )) {
               msg.seenCount = (msg.seenCount ?? 0) + 1;
             }
@@ -435,7 +477,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
             );
 
             final index = _messages.indexWhere(
-              (message) => message.id == editedMessage.id,
+                  (message) => message.id == editedMessage.id,
             );
 
             if (index == -1) {
@@ -480,7 +522,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
             }
 
             final index = _messages.indexWhere(
-              (message) => message.id == messageId,
+                  (message) => message.id == messageId,
             );
 
             if (index == -1) {
@@ -528,7 +570,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         if (data["chatType"] != "private") return;
 
         final currentUserId =
-            Global.storageServices.get(PrefConst.userId).toString();
+        Global.storageServices.get(PrefConst.userId).toString();
 
         final otherUserId = memberData.userId.toString();
 
@@ -544,7 +586,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         }
 
         final msg = _messages.firstWhereOrNull(
-          (e) => e.id == messageId,
+              (e) => e.id == messageId,
         );
 
         if (msg != null) {
@@ -563,7 +605,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         if (data["chatType"] != "private") return;
 
         final currentUserId =
-            Global.storageServices.get(PrefConst.userId).toString();
+        Global.storageServices.get(PrefConst.userId).toString();
 
         final otherUserId = memberData.userId.toString();
 
@@ -584,8 +626,9 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         print("✅ PRIVATE PIN REMOVED FROM UI");
       },
     );
-  }
 
+    log("[CHAT-PERF] Initialization method completed: ${stopwatch.elapsedMilliseconds} ms");
+  }
   bool isUserAtBottom() {
     if (_messages.isEmpty) return true;
 
@@ -1032,7 +1075,12 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     }
   }
 
+
   Future<void> getPrivateMessageHistory(String chatId) async {
+    final apiStopwatch = Stopwatch()..start();
+
+    log("[CHAT-PERF] 6. History API request started | chatId: $chatId");
+
     try {
       privateCurrentPage.value = 1;
       hasMoreOlderMessages.value = true;
@@ -1041,6 +1089,12 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         chatId: chatId,
         page: 1,
         limit: 10,
+      );
+
+      log(
+        "[CHAT-PERF] API response received: "
+            "${apiStopwatch.elapsedMilliseconds} ms | "
+            "status: ${result.status}",
       );
 
       if (result.status == true) {
@@ -1065,7 +1119,6 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         }
 
         final messages = result.messageData ?? [];
-
         final blockStatus = result.blockStatus;
 
         if (blockStatus != null) {
@@ -1080,11 +1133,13 @@ class MessageController extends GetxController with WidgetsBindingObserver {
           ..clear()
           ..addAll(messages.reversed);
 
+        log("[CHAT-PERF] Messages mapped: ${apiStopwatch.elapsedMilliseconds} ms | count: ${_messages.length}");
+
         final pinnedId = result.pinnedMessageId;
 
         if (pinnedId != null) {
           final pinned = _messages.firstWhereOrNull(
-            (message) => message.id == pinnedId,
+                (message) => message.id == pinnedId,
           );
 
           if (pinned != null) {
@@ -1101,10 +1156,13 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
         updateMessageStream();
 
+        log("[CHAT-PERF] Message stream updated: ${apiStopwatch.elapsedMilliseconds} ms");
+
         isCreator.value = result.isCreator ?? false;
 
         if (result.pagination != null) {
-          hasMoreOlderMessages.value = result.pagination!.hasNextPage == true;
+          hasMoreOlderMessages.value =
+              result.pagination!.hasNextPage == true;
         } else {
           hasMoreOlderMessages.value = false;
         }
@@ -1112,13 +1170,18 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         if (_messages.isNotEmpty) {
           scrollToBottom(instant: true);
         }
+
+        log("[CHAT-PERF] History processing completed: ${apiStopwatch.elapsedMilliseconds} ms");
       } else {
+        log("[CHAT-PERF] History API returned unsuccessful status");
         CommonDialog.errorMessage(result.message);
       }
-    } catch (e) {
-      log("Private History Error: $e");
+    } catch (e, stackTrace) {
+      log("[CHAT-PERF] Private History Error: $e");
+      log("[CHAT-PERF] StackTrace: $stackTrace");
     } finally {
       isLoadingInitialMessages.value = false;
+      log("[CHAT-PERF] Loading stopped; total API method time: ${apiStopwatch.elapsedMilliseconds} ms");
     }
   }
 
