@@ -49,45 +49,44 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   if (message.data['screen_name'] == "incomingCall") {
     final callData = jsonDecode(message.data['callData']);
     final originalCallId = callData['callId'].toString();
-    if (Platform.isIOS) {
-      // await RemoteLoggerTest.log("FCM_BG_HANDLER", "iOS detected in FCM background handler: ${message.data}");
-      return;
+    if (Platform.isAndroid) {
+
+      final Map<String, String> userInfo = {
+        "callId": originalCallId,
+        "callerId": callData['callerId'].toString(),
+        "receiverId": callData['receiverId'].toString(),
+        "isVideo": callData['isVideo'].toString(),
+        "callerName": callData['callerName'].toString(),
+        "callerProfileImage": callData['callerProfileImage'].toString(),
+        "sdpOfferCompressed": callData['sdpOfferCompressed'].toString(),
+        "notificationId": callData['notificationId']?.toString() ?? "",
+        "screen_name": "incomingCall",
+      };
+
+      try {
+        await ConnectycubeFlutterCallKit.showCallNotification(
+          CallEvent(
+            sessionId: callIdToUuid(originalCallId),
+            callerName: callData['callerName'],
+            callType: callData['isVideo'] == true ? 1 : 0,
+            opponentsIds: {int.parse(callData['callerId'])},
+            callerId: int.parse(callData['callerId']),
+            userInfo: userInfo,
+          ),
+        );
+      } catch (e) {
+        log("showCallNotification error: $e");
+      }
+      try {
+        await CallRepo.updateCallingStatus(
+            callId: originalCallId,
+            callingStatus: "Ringing",
+            remoteUserId: int.tryParse(callData['callerId'].toString()) ?? 0);
+      } catch (e) {
+        log(e.toString());
+      }
     }
 
-    final Map<String, String> userInfo = {
-      "callId": originalCallId,
-      "callerId": callData['callerId'].toString(),
-      "receiverId": callData['receiverId'].toString(),
-      "isVideo": callData['isVideo'].toString(),
-      "callerName": callData['callerName'].toString(),
-      "callerProfileImage": callData['callerProfileImage'].toString(),
-      "sdpOfferCompressed": callData['sdpOfferCompressed'].toString(),
-      "notificationId": callData['notificationId']?.toString() ?? "",
-      "screen_name": "incomingCall",
-    };
-
-    try {
-      await ConnectycubeFlutterCallKit.showCallNotification(
-        CallEvent(
-          sessionId: callIdToUuid(originalCallId),
-          callerName: callData['callerName'],
-          callType: callData['isVideo'] == true ? 1 : 0,
-          opponentsIds: {int.parse(callData['callerId'])},
-          callerId: int.parse(callData['callerId']),
-          userInfo: userInfo,
-        ),
-      );
-    } catch (e) {
-      log("showCallNotification error: $e");
-    }
-    try {
-      await CallRepo.updateCallingStatus(
-          callId: originalCallId,
-          callingStatus: "Ringing",
-          remoteUserId: int.tryParse(callData['callerId'].toString()) ?? 0);
-    } catch (e) {
-      log(e.toString());
-    }
   }
 
   if (message.data['screen_name'] == "incomingGroupCall") {
@@ -274,7 +273,6 @@ Future<void> main() async {
       onCallRejectedWhenTerminated;
   await firebaseNotificationServices().initialized();
   CallKitService.instance.init();
-  // await WalkieAwesomeNotificationService.instance.init();
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(statusBarColor: Colors.transparent),
   );
@@ -324,11 +322,6 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  @override
-  void initState() {
-    super.initState();
-    CallKitService.instance.init();
-  }
 
   @override
   Widget build(BuildContext context) {
