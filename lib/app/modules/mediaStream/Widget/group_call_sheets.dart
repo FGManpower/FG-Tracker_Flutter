@@ -1,4 +1,3 @@
-import 'package:fgtracker/app/Model/MemberDataRes.dart';
 import 'package:fgtracker/app/modules/mediaStream/Controller/group_calling_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -12,7 +11,7 @@ import '../../../Model/group_call_participant.dart';
 
 class GroupParticipantsSheet {
   static Future<void> show(GroupCallingController controller) {
-   return Get.bottomSheet(
+    return Get.bottomSheet(
       Container(
         height: Get.height * 0.75,
         decoration: BoxDecoration(
@@ -20,79 +19,79 @@ class GroupParticipantsSheet {
           borderRadius: BorderRadius.vertical(top: Radius.circular(25.r)),
         ),
         padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 15.h),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Container(
-                width: 40.w,
-                height: 4.h,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade400,
-                  borderRadius: BorderRadius.circular(10.r),
+        child: Obx(() {
+          // Depend on tick so ANY participant event rebuilds whole sheet
+          final _ = controller.participantsUiTick.value;
+
+          final inCall = controller.sheetInCallParticipants.isNotEmpty
+              ? controller.sheetInCallParticipants.toList()
+              : controller.activeParticipants.toList();
+
+          final notIn = controller.notInCallParticipants.toList();
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40.w,
+                  height: 4.h,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade400,
+                    borderRadius: BorderRadius.circular(10.r),
+                  ),
                 ),
               ),
-            ),
-            SizedBox(height: 16.h),
-            Obx(() => reausabletext(
-                  "In this call (${controller.activeParticipants.length})",
-                  fontsize: 16,
-                  fontfamily: FontFamily.interSemiBold,
-                  color: const Color(0xFF1E1147),
-                )),
-            SizedBox(height: 10.h),
-            Obx(() {
-              final inCall = controller.activeParticipants.toList();
-              if (inCall.isEmpty) {
-                return reausabletext("No active participants",
-                    fontsize: 13, color: Colors.grey);
-              }
-              return SizedBox(
-                height: 84.h,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: inCall.length,
-                  separatorBuilder: (_, __) => SizedBox(width: 12.w),
-                  itemBuilder: (_, index) {
-                    final p = inCall[index];
-                    return _InCallChip(participant: p);
-                  },
+              SizedBox(height: 16.h),
+              reausabletext(
+                "In this call (${inCall.length})",
+                fontsize: 16,
+                fontfamily: FontFamily.interSemiBold,
+                color: const Color(0xFF1E1147),
+              ),
+              SizedBox(height: 10.h),
+              if (inCall.isEmpty)
+                reausabletext("No active participants",
+                    fontsize: 13, color: Colors.grey)
+              else
+                SizedBox(
+                  height: 84.h,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: inCall.length,
+                    separatorBuilder: (_, __) => SizedBox(width: 12.w),
+                    itemBuilder: (_, index) {
+                      return _InCallChip(participant: inCall[index]);
+                    },
+                  ),
                 ),
-              );
-            }),
-            SizedBox(height: 18.h),
-            Obx(() => reausabletext(
-                  "Not in this call (${controller.notInCallParticipants.length})",
-                  fontsize: 16,
-                  fontfamily: FontFamily.interSemiBold,
-                  color: const Color(0xFF1E1147),
-                )),
-            SizedBox(height: 10.h),
-            Expanded(
-              child: Obx(() {
-                final list = controller.notInCallParticipants.toList();
-
-                if (list.isEmpty) {
-                  return Center(
-                    child: reausabletext(
-                      "Everyone is already in the call",
-                      fontsize: 14,
-                      color: Colors.grey,
-                    ),
-                  );
-                }
-
-                return ListView.separated(
-                  itemCount: list.length,
+              SizedBox(height: 18.h),
+              reausabletext(
+                "Not in this call (${notIn.length})",
+                fontsize: 16,
+                fontfamily: FontFamily.interSemiBold,
+                color: const Color(0xFF1E1147),
+              ),
+              SizedBox(height: 10.h),
+              Expanded(
+                child: notIn.isEmpty
+                    ? Center(
+                  child: reausabletext(
+                    "Everyone is already in the call",
+                    fontsize: 14,
+                    color: Colors.grey,
+                  ),
+                )
+                    : ListView.separated(
+                  itemCount: notIn.length,
                   separatorBuilder: (_, __) => SizedBox(height: 14.h),
                   itemBuilder: (context, index) {
-                    final participant = list[index];
-
-                    final imageUrl =
-                        Utility.isNullEmptyOrFalse(participant.profileImage)
-                            ? MyAppTheme.ProfilenotFoundImg
-                            : ConstRes.aImageBaseUrl +
-                                (participant.profileImage ?? '');
+                    final participant = notIn[index];
+                    final imageUrl = Utility.isNullEmptyOrFalse(
+                        participant.profileImage)
+                        ? MyAppTheme.ProfilenotFoundImg
+                        : ConstRes.aImageBaseUrl +
+                        (participant.profileImage ?? '');
 
                     return Row(
                       children: [
@@ -105,7 +104,8 @@ class GroupParticipantsSheet {
                         SizedBox(width: 14.w),
                         Expanded(
                           child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                            crossAxisAlignment:
+                            CrossAxisAlignment.start,
                             children: [
                               reausabletext(
                                 participant.name ?? "",
@@ -123,8 +123,8 @@ class GroupParticipantsSheet {
                           ),
                         ),
                         InkWell(
-                          onTap: () =>
-                              controller.notifyParticipant(participant),
+                          onTap: () => controller
+                              .notifyParticipant(participant),
                           borderRadius: BorderRadius.circular(30.r),
                           child: Container(
                             padding: EdgeInsets.symmetric(
@@ -156,13 +156,15 @@ class GroupParticipantsSheet {
                       ],
                     );
                   },
-                );
-              }),
-            )
-          ],
-        ),
+                ),
+              ),
+            ],
+          );
+        }),
       ),
       isScrollControlled: true,
+      enableDrag: true,
+      isDismissible: true,
     );
   }
 }
@@ -216,111 +218,6 @@ class _InCallChip extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class GroupCallMoreSheet {
-  static Future<void> show({
-    required RxBool isScreenSharing,
-    required VoidCallback onShareScreen,
-    required VoidCallback onSendMessage,
-  }) {
-   return Get.bottomSheet(
-      Container(
-        decoration: BoxDecoration(
-          color: const Color(0xFFF8F7FF),
-          borderRadius: BorderRadius.vertical(top: Radius.circular(25.r)),
-        ),
-        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 20.h),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Center(
-              child: Container(
-                width: 40.w,
-                height: 4.h,
-                decoration: BoxDecoration(
-                    color: Colors.grey.shade400,
-                    borderRadius: BorderRadius.circular(10.r)),
-              ),
-            ),
-            SizedBox(height: 20.h),
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(15.r),
-              ),
-              child: Column(
-                children: [
-                  Obx(() => ListTile(
-                        leading: Icon(
-                          isScreenSharing.value
-                              ? Icons.stop_screen_share_outlined
-                              : Icons.screen_share_outlined,
-                          color: isScreenSharing.value
-                              ? Colors.red
-                              : const Color(0xFF6E5CA4),
-                        ),
-                        title: Text(
-                          isScreenSharing.value
-                              ? "Stop sharing"
-                              : "Share screen",
-                          style: TextStyle(
-                            fontSize: 14.sp,
-                            fontFamily: FontFamily.interMedium,
-                            color: isScreenSharing.value
-                                ? Colors.red
-                                : Colors.black,
-                          ),
-                        ),
-                        trailing:
-                            const Icon(Icons.chevron_right, color: Colors.grey),
-                        onTap: onShareScreen,
-                      )),
-                  // const Divider(height: 1, indent: 50),
-                  // ListTile(
-                  //   leading: const Icon(Icons.chat_bubble_outline,
-                  //       color: Color(0xFF6E5CA4)),
-                  //   title: Text(
-                  //     "Send message",
-                  //     style: TextStyle(
-                  //       fontSize: 14.sp,
-                  //       fontFamily: FontFamily.interMedium,
-                  //     ),
-                  //   ),
-                  //   trailing:
-                  //       const Icon(Icons.chevron_right, color: Colors.grey),
-                  //   onTap: onSendMessage,
-                  // ),
-                ],
-              ),
-            ),
-            SizedBox(height: 15.h),
-            InkWell(
-              onTap: () => Get.back(),
-              child: Container(
-                width: double.infinity,
-                padding: EdgeInsets.symmetric(vertical: 15.h),
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(30.r),
-                ),
-                child: Text(
-                  "Cancel",
-                  style: TextStyle(
-                    fontSize: 14.sp,
-                    fontFamily: FontFamily.interSemiBold,
-                    color: const Color(0xFF1E1147),
-                  ),
-                ),
-              ),
-            ),
-            SizedBox(height: 10.h),
-          ],
-        ),
       ),
     );
   }
