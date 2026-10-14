@@ -9,7 +9,9 @@ class ProfileDetailsModel {
       ProfileDetailsModel(
         status: json['status'],
         message: json['message'],
-        data: json['data'] != null ? ProfileDetailsData.fromJson(json['data']) : null,
+        data: json['data'] != null
+            ? ProfileDetailsData.fromJson(json['data'])
+            : null,
       );
 }
 
@@ -46,7 +48,8 @@ class ProfileDetailsData {
         mediaSummary: json['mediaSummary'] != null
             ? MediaSummary.fromJson(json['mediaSummary'])
             : null,
-        media: json['media'] != null ? MediaDetails.fromJson(json['media']) : null,
+        media:
+        json['media'] != null ? MediaDetails.fromJson(json['media']) : null,
       );
 }
 
@@ -140,6 +143,7 @@ class MediaSummary {
   int? videosCount;
   int? audioCount;
   int? documentsCount;
+  int? linksCount;
 
   MediaSummary({
     this.totalMedia,
@@ -147,6 +151,7 @@ class MediaSummary {
     this.videosCount,
     this.audioCount,
     this.documentsCount,
+    this.linksCount,
   });
 
   factory MediaSummary.fromJson(Map<String, dynamic> json) => MediaSummary(
@@ -155,16 +160,31 @@ class MediaSummary {
     videosCount: json['videosCount'],
     audioCount: json['audioCount'],
     documentsCount: json['documentsCount'],
+    linksCount: json['linksCount'],
   );
 }
 
 class MediaDetails {
+  String? filter;
   List<MediaItem>? photos;
   List<MediaItem>? videos;
+  List<MediaItem>? audio;
+  List<MediaItem>? documents;
+  List<MediaItem>? links;
+  List<MediaItem>? items;
 
-  MediaDetails({this.photos, this.videos});
+  MediaDetails({
+    this.filter,
+    this.photos,
+    this.videos,
+    this.audio,
+    this.documents,
+    this.links,
+    this.items,
+  });
 
   factory MediaDetails.fromJson(Map<String, dynamic> json) => MediaDetails(
+    filter: json['filter'],
     photos: json['photos'] != null
         ? List<MediaItem>.from(
         json['photos'].map((x) => MediaItem.fromJson(x, 'image')))
@@ -172,6 +192,22 @@ class MediaDetails {
     videos: json['videos'] != null
         ? List<MediaItem>.from(
         json['videos'].map((x) => MediaItem.fromJson(x, 'video')))
+        : [],
+    audio: json['audio'] != null
+        ? List<MediaItem>.from(
+        json['audio'].map((x) => MediaItem.fromJson(x, 'audio')))
+        : [],
+    documents: json['documents'] != null
+        ? List<MediaItem>.from(json['documents']
+        .map((x) => MediaItem.fromJson(x, 'document')))
+        : [],
+    links: json['links'] != null
+        ? List<MediaItem>.from(
+        json['links'].map((x) => MediaItem.fromJson(x, 'link')))
+        : [],
+    items: json['items'] != null
+        ? List<MediaItem>.from(
+        json['items'].map((x) => MediaItem.fromJson(x, x['type'] ?? '')))
         : [],
   );
 }
@@ -181,13 +217,45 @@ class MediaItem {
   String? url;
   String? displayUrl;
   String? type;
+  String? link;
+  String? domain;
+  String? text;
+  String? caption;
 
-  MediaItem({this.id, this.url, this.displayUrl, this.type});
+  MediaItem({
+    this.id,
+    this.url,
+    this.displayUrl,
+    this.type,
+    this.link,
+    this.domain,
+    this.text,
+    this.caption,
+  });
 
-  factory MediaItem.fromJson(Map<String, dynamic> json, String type) => MediaItem(
-    id: json['id'],
-    url: json['url'],
-    displayUrl: type == 'video' ? json['thumbnail'] : json['imageUrl'],
-    type: type,
-  );
+  factory MediaItem.fromJson(Map<String, dynamic> json, [String? fallbackType]) {
+    final type = (json['type'] ?? fallbackType ?? '').toString();
+
+    return MediaItem(
+      id: json['id'],
+      url: json['url'] ??
+          json['link'] ??
+          json['mediaUrl'] ??
+          json['fileUrl'] ??
+          json['file_url'],
+      displayUrl: json['displayUrl'] ??
+          json['display_url'] ??
+          json['thumbnail'] ??
+          json['thumb'] ??
+          json['poster'] ??
+          json['cover'] ??
+          json['preview'] ??
+          json['imageUrl'],
+      type: type,
+      link: json['link'],
+      domain: json['domain'],
+      text: json['text'],
+      caption: json['caption'],
+    );
+  }
 }

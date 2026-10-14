@@ -66,8 +66,9 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
   String _statusText(GroupMemberInfo m) {
     if (m.locationSharing == false) return "Location Hidden";
     if (_isOnline(m)) return "Online";
-    if (m.rawLastSeen == null || m.rawLastSeen.toString().isEmpty)
+    if (m.rawLastSeen == null || m.rawLastSeen.toString().isEmpty) {
       return "Offline";
+    }
     final parsed = Tracking.parseDateTime(m.rawLastSeen);
     if (parsed == null) return "Offline";
     try {
@@ -333,26 +334,65 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
     );
   }
 
+  String _formatUrl(String? url) {
+    if (url == null || url.isEmpty) return "";
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      return url;
+    }
+    return "${ConstRes.aImageBaseUrl}$url";
+  }
+
   Widget _buildMediaCard(GroupMediaDetails? media, GroupMediaSummary? summary) {
     List<MessageData> convertedMessages = [];
+
     if (media != null) {
       for (var p in media.photos ?? []) {
-        convertedMessages
-            .add(MessageData(messageType: 'image', content: p.url));
+        String pUrl = _formatUrl(p.url ?? p.displayUrl);
+        if (pUrl.isNotEmpty) {
+          convertedMessages
+              .add(MessageData(messageType: 'image', content: pUrl));
+        }
       }
       for (var v in media.videos ?? []) {
-        convertedMessages.add(MessageData(
-            messageType: 'video', content: '${v.url}||${v.displayUrl}'));
+        String vUrl = _formatUrl(v.url);
+        String dUrl = _formatUrl(v.displayUrl);
+        String videoContent = dUrl.isNotEmpty ? "$vUrl||$dUrl" : vUrl;
+        if (vUrl.isNotEmpty) {
+          convertedMessages
+              .add(MessageData(messageType: 'video', content: videoContent));
+        }
+      }
+      for (var a in media.audio ?? []) {
+        String aUrl = _formatUrl(a.url);
+        if (aUrl.isNotEmpty) {
+          convertedMessages
+              .add(MessageData(messageType: 'audio', content: aUrl));
+        }
+      }
+      for (var d in media.documents ?? []) {
+        String dUrl = _formatUrl(d.url);
+        if (dUrl.isNotEmpty) {
+          convertedMessages
+              .add(MessageData(messageType: 'document', content: dUrl));
+        }
+      }
+      for (var l in media.links ?? []) {
+        String linkUrl = l.url ?? l.link ?? "";
+        if (linkUrl.isNotEmpty) {
+          convertedMessages
+              .add(MessageData(messageType: 'link', content: linkUrl));
+        }
       }
     }
 
-    List<GroupMediaItem> allMedia = [];
+    List<GroupMediaItem> previewMedia = [];
     if (media != null) {
-      allMedia.addAll(media.photos ?? []);
-      allMedia.addAll(media.videos ?? []);
+      previewMedia.addAll(media.photos ?? []);
+      previewMedia.addAll(media.videos ?? []);
+      previewMedia.addAll(media.audio ?? []);
     }
 
-    final displayMedia = allMedia.take(4).toList();
+    final displayMedia = previewMedia.take(4).toList();
     final total = summary?.totalMedia ?? 0;
 
     return _whiteCard(
@@ -413,13 +453,11 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
                   }
 
                   final m = displayMedia[i];
-                  String thumb = "";
-                  if (m.displayUrl != null && m.displayUrl!.isNotEmpty) {
-                    thumb = (m.displayUrl!.startsWith('http://') ||
-                            m.displayUrl!.startsWith('https://'))
-                        ? m.displayUrl!
-                        : "${ConstRes.aImageBaseUrl}${m.displayUrl}";
-                  }
+                  String rawThumb =
+                      (m.displayUrl != null && m.displayUrl!.isNotEmpty)
+                          ? m.displayUrl!
+                          : (m.url != null ? m.url! : "");
+                  String thumb = _formatUrl(rawThumb);
 
                   return GestureDetector(
                     onTap: () => Get.to(() =>
@@ -430,10 +468,12 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
                         width: 100.h,
                         color: const Color(0xFFEDEBFB),
                         child: thumb.isNotEmpty
-                            ? Image.network(thumb,
+                            ? Image.network(
+                                thumb,
                                 fit: BoxFit.cover,
                                 errorBuilder: (_, __, ___) =>
-                                    _mediaPlaceholder(m.type ?? ""))
+                                    _mediaPlaceholder(m.type ?? ""),
+                              )
                             : _mediaPlaceholder(m.type ?? ""),
                       ),
                     ),
@@ -453,8 +493,17 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
 
   Widget _mediaPlaceholder(String type) {
     IconData icon = Icons.insert_drive_file_rounded;
-    if (type == "image") icon = Icons.image_rounded;
-    if (type == "video") icon = Icons.videocam_rounded;
+    if (type == "image" || type == "photo") {
+      icon = Icons.image_rounded;
+    } else if (type == "video") {
+      icon = Icons.videocam_rounded;
+    } else if (type == "audio") {
+      icon = Icons.audiotrack_rounded;
+    } else if (type == "document") {
+      icon = Icons.description_rounded;
+    } else if (type == "link") {
+      icon = Icons.link_rounded;
+    }
     return Center(child: Icon(icon, color: _purple, size: 28.sp));
   }
 
@@ -641,7 +690,7 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
     final online = _isOnline(m);
     final name = m.name ?? "Unknown";
     final img = (m.profileImage?.isNotEmpty ?? false)
-        ? "${ConstRes.aImageBaseUrl}${m.profileImage}"
+        ? _formatUrl(m.profileImage)
         : null;
 
     return Padding(

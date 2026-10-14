@@ -345,32 +345,78 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     );
   }
 
+  String _formatUrl(String? url) {
+    if (url == null || url.isEmpty) return "";
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      return url;
+    }
+    return "${ConstRes.aImageBaseUrl}$url";
+  }
+
   Widget _buildMediaCard(MediaDetails? media, MediaSummary? summary) {
     List<MessageData> convertedMessages = [];
 
     if (media != null) {
       for (var p in media.photos ?? []) {
-        convertedMessages.add(MessageData(
-          messageType: 'image',
-          content: p.url,
-        ));
+        final pUrl = _formatUrl(p.url ?? p.displayUrl);
+        if (pUrl.isNotEmpty) {
+          convertedMessages.add(MessageData(
+            messageType: 'image',
+            content: pUrl,
+          ));
+        }
       }
 
       for (var v in media.videos ?? []) {
-        convertedMessages.add(MessageData(
-          messageType: 'video',
-          content: '${v.url}||${v.displayUrl}',
-        ));
+        final vUrl = _formatUrl(v.url);
+        final dUrl = _formatUrl(v.displayUrl);
+        if (vUrl.isNotEmpty) {
+          convertedMessages.add(MessageData(
+            messageType: 'video',
+            content: dUrl.isNotEmpty ? '$vUrl||$dUrl' : vUrl,
+          ));
+        }
+      }
+
+      for (var a in media.audio ?? []) {
+        final aUrl = _formatUrl(a.url);
+        if (aUrl.isNotEmpty) {
+          convertedMessages.add(MessageData(
+            messageType: 'audio',
+            content: aUrl,
+          ));
+        }
+      }
+
+      for (var d in media.documents ?? []) {
+        final dUrl = _formatUrl(d.url);
+        if (dUrl.isNotEmpty) {
+          convertedMessages.add(MessageData(
+            messageType: 'document',
+            content: dUrl,
+          ));
+        }
+      }
+
+      for (var l in media.links ?? []) {
+        final linkUrl = l.url ?? l.link ?? "";
+        if (linkUrl.isNotEmpty) {
+          convertedMessages.add(MessageData(
+            messageType: 'link',
+            content: linkUrl,
+          ));
+        }
       }
     }
 
-    List<MediaItem> allMedia = [];
+    List<MediaItem> previewMedia = [];
     if (media != null) {
-      allMedia.addAll(media.photos ?? []);
-      allMedia.addAll(media.videos ?? []);
+      previewMedia.addAll(media.photos ?? []);
+      previewMedia.addAll(media.videos ?? []);
+      previewMedia.addAll(media.audio ?? []);
     }
 
-    final displayMedia = allMedia.take(4).toList();
+    final displayMedia = previewMedia.take(4).toList();
     final total = summary?.totalMedia ?? 0;
 
     return _whiteCard(
@@ -450,13 +496,11 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                   }
 
                   final m = displayMedia[i];
-                  String thumb = "";
-                  if (m.displayUrl != null && m.displayUrl!.isNotEmpty) {
-                    thumb = (m.displayUrl!.startsWith('http://') ||
-                            m.displayUrl!.startsWith('https://'))
-                        ? m.displayUrl!
-                        : "${ConstRes.aImageBaseUrl}${m.displayUrl}";
-                  }
+                  final rawThumb =
+                      (m.displayUrl != null && m.displayUrl!.isNotEmpty)
+                          ? m.displayUrl!
+                          : (m.url ?? "");
+                  final thumb = _formatUrl(rawThumb);
 
                   return GestureDetector(
                     onTap: () => Get.to(
@@ -497,8 +541,17 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
   Widget _mediaPlaceholder(String type) {
     IconData icon = Icons.insert_drive_file_rounded;
-    if (type == "image") icon = Icons.image_rounded;
-    if (type == "video") icon = Icons.videocam_rounded;
+    if (type == "image" || type == "photo") {
+      icon = Icons.image_rounded;
+    } else if (type == "video") {
+      icon = Icons.videocam_rounded;
+    } else if (type == "audio") {
+      icon = Icons.audiotrack_rounded;
+    } else if (type == "document") {
+      icon = Icons.description_rounded;
+    } else if (type == "link") {
+      icon = Icons.link_rounded;
+    }
 
     return Center(child: Icon(icon, color: _lightPurple, size: 28.sp));
   }
