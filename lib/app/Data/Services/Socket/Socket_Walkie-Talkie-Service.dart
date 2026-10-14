@@ -9,6 +9,7 @@ import 'package:fgtracker/app/Core/constant/urls.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Controller/walkieController.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Views/walkie_invite_dialog.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:get/get.dart' hide navigator;
 import 'package:permission_handler/permission_handler.dart';
@@ -353,17 +354,30 @@ class GroupWalkieService {
       'force_logout',
       'exit_group_success',
       'pong_walkie',
+      'walkie_invite_declined',
+      'walkie_invite_rejected',
+      'walkie_invite_cancelled',
+      'walkie_peer_declined',
     ]) {
       socket?.off(e);
     }
 
     socket?.on('walkie_invite', (data) {
       if (data == null) return;
+      final rawJoinedCount = data['joinedMemberCount'] ??
+          data['joinedCount'] ??
+          data['activeMemberCount'] ??
+          data['totalJoinedMembers'] ??
+          data['membersJoined'];
+      final int? joinedCount = rawJoinedCount != null
+          ? int.tryParse(rawJoinedCount.toString())
+          : null;
       WalkieInviteDialog.show(
         groupId: data['groupId']?.toString() ?? '',
         groupName: data['groupName']?.toString() ?? 'Group',
         speakerName: data['speakerName']?.toString() ?? 'Someone',
         speakerImage: data['speakerImage']?.toString() ?? '',
+        joinedCount: joinedCount,
       );
     });
 
@@ -428,7 +442,8 @@ class GroupWalkieService {
       if (id.isEmpty || id == _selfUserId) return;
 
       if (Get.isRegistered<GroupWalkieController>()) {
-        Get.find<GroupWalkieController>().addOrUpdateParticipant(
+        final c = Get.find<GroupWalkieController>();
+        c.addOrUpdateParticipant(
           WalkieParticipant(
             userId: id,
             name: name,
@@ -437,6 +452,7 @@ class GroupWalkieService {
             isListening: true,
           ),
         );
+        c.showStatusMessage("$name joined", const Color(0xFF00C853));
       }
 
       if (!_offeredTo.contains(id)) {
@@ -453,11 +469,50 @@ class GroupWalkieService {
           ? (data['userId'] ?? data['id'])?.toString()
           : data.toString();
       if (id == null || id.isEmpty) return;
+      if (id == _selfUserId) return;
+
+      String name = 'A member';
+      if (data is Map && (data['name'] != null || data['userName'] != null)) {
+        name = (data['name'] ?? data['userName']).toString();
+      } else if (Get.isRegistered<GroupWalkieController>()) {
+        final existing = Get.find<GroupWalkieController>()
+            .participants
+            .firstWhereOrNull((p) => p.userId == id);
+        if (existing != null && existing.name.isNotEmpty) {
+          name = existing.name;
+        }
+      }
+
       if (Get.isRegistered<GroupWalkieController>()) {
-        Get.find<GroupWalkieController>().removeParticipant(id);
+        final c = Get.find<GroupWalkieController>();
+        c.removeParticipant(id);
+        c.showStatusMessage("$name left", Colors.orange.shade800);
       }
       await _closePeer(id);
     });
+
+    for (final eventName in [
+      'walkie_invite_declined',
+      'walkie_invite_rejected',
+      'walkie_invite_cancelled',
+      'walkie_peer_declined',
+    ]) {
+      socket?.on(eventName, (data) {
+        if (_isDisposed || data == null) return;
+        final id = data is Map ? (data['userId'] ?? data['id'])?.toString() : null;
+        if (id != null && id == _selfUserId) return;
+
+        String name = 'A member';
+        if (data is Map && (data['name'] != null || data['userName'] != null)) {
+          name = (data['name'] ?? data['userName']).toString();
+        }
+
+        if (Get.isRegistered<GroupWalkieController>()) {
+          Get.find<GroupWalkieController>()
+              .showStatusMessage("$name cancelled", const Color(0xFFFF5252));
+        }
+      });
+    }
 
     socket?.on('walkie_webrtc_offer', (data) async {
       if (_isDisposed || data == null) return;
