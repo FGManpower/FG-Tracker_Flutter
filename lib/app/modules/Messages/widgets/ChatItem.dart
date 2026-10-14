@@ -431,7 +431,9 @@ class ChatBubble extends StatelessWidget {
       ) {
     if (message.messageType == "media" ||
         message.messageType == "image" ||
-        message.messageType == "image_text") {
+        message.messageType == "image_text" ||
+        (message.messageType == "video" &&
+            (message.videos?.isNotEmpty ?? false))) {
       final imageList = (message.images ?? [])
           .where((image) => image.trim().isNotEmpty)
           .toList();
@@ -445,9 +447,12 @@ class ChatBubble extends StatelessWidget {
         }
       }
 
-      final videos = message.messageType == "media"
+
+      final videos = (message.messageType == "media" ||
+          message.messageType == "video")
           ? (message.videos ?? [])
           : <MessageVideo>[];
+
 
       String getMediaUrl(String path) {
         final value = path.trim();
@@ -545,34 +550,29 @@ class ChatBubble extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (mediaCount == 1 && imageList.length == 1)
+
+            if (mediaCount == 1)
               ClipRRect(
                 borderRadius: BorderRadius.circular(12.r),
-                child: GestureDetector(
-                  onTap: () => openGallery(0),
-                  child: Image.network(
-                    getMediaUrl(imageList.first),
-                    width: 220.w,
-                    height: 200.h,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => Container(
+                child: SizedBox(
+                  width: 220.w,
+                  height: 200.h,
+                  child: imageList.isNotEmpty
+                      ? GestureDetector(
+                    onTap: () => openGallery(0),
+                    child: Image.network(
+                      getMediaUrl(imageList.first),
                       width: 220.w,
                       height: 200.h,
-                      color: Colors.grey.shade200,
-                      alignment: Alignment.center,
-                      child: const Icon(Icons.broken_image_outlined),
-                    ),
-                    loadingBuilder: (context, child, progress) {
-                      if (progress == null) return child;
-                      return Container(
-                        width: 220.w,
-                        height: 200.h,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => Container(
                         color: Colors.grey.shade200,
                         alignment: Alignment.center,
-                        child: const CircularProgressIndicator(),
-                      );
-                    },
-                  ),
+                        child: const Icon(Icons.broken_image_outlined),
+                      ),
+                    ),
+                  )
+                      : buildVideoTile(videos.first, 0),
                 ),
               )
             else
@@ -835,7 +835,7 @@ class ChatBubble extends StatelessWidget {
         isAdmin: isCreator,
         currentUserId: currentUserId,
         currentUserName: currentUserName,
-        groupName: groupName,
+        groupName: groupName.toString(),
         onAttendanceSubmitted: (response) {
           if (controller is GroupMessageController && message.id != null) {
             (controller as GroupMessageController).updateAttendanceResponse(

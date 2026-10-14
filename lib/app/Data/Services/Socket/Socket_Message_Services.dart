@@ -231,6 +231,7 @@ class SocketMessageService extends GetxService {
       if (replySender != null) "replySender": replySender,
     };
 
+    print("GROUP SEND EVENT => $payload");
     socket.emit("send_group_message", payload);
   }
 

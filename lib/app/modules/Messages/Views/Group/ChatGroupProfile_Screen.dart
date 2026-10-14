@@ -6,7 +6,6 @@ import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Data/Services/Tracking.dart';
 import 'package:fgtracker/app/Model/GetMessage.dart';
-import 'package:fgtracker/app/Model/LocationDataRes.dart';
 import 'package:fgtracker/app/Model/MemberDataRes.dart';
 import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
 import 'package:fgtracker/app/modules/Group/controller/MemberController.dart';
@@ -19,7 +18,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:share_plus/share_plus.dart';
+import '../../Controller/group_profile_details_controller.dart';
 import 'media_links_docs_screen.dart';
+import 'package:fgtracker/app/Model/group_profile_details_model.dart';
 
 class GroupProfileScreen extends StatefulWidget {
   const GroupProfileScreen({super.key});
@@ -31,6 +32,8 @@ class GroupProfileScreen extends StatefulWidget {
 class _GroupProfileScreenState extends State<GroupProfileScreen> {
   final chatController = Get.find<GroupMessageController>();
   final groupController = Get.put(GroupController());
+  final GroupProfileDetailsController _apiController =
+      Get.put(GroupProfileDetailsController());
 
   static const Color _purple = Color(0xFF5045B9);
   static const Color _bg = Color(0xFFF5F3FB);
@@ -40,67 +43,38 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
 
   String get _myId => Global.storageServices.get(PrefConst.userId).toString();
 
-  List<MessageData> get _mediaMessages {
-    return chatController.messageData.where((m) {
-      final t = (m.messageType ?? "").toLowerCase();
-      return t == "image" ||
-          t == "image_text" ||
-          t == "video" ||
-          t == "document";
-    }).toList();
-  }
-
-  int get _onlineCount {
-    int c = 0;
-    for (final m in chatController.groupMembers) {
-      if (_isOnline(m)) c++;
+  @override
+  void initState() {
+    super.initState();
+    int gId = int.tryParse(chatController.groupId.toString()) ?? 0;
+    if (gId != 0) {
+      _apiController.fetchProfileDetails(gId);
+    } else {
+      _apiController.isLoading.value = false;
     }
-    return c;
   }
 
-  bool _isOnline(LocationData m) {
+  bool _isOnline(GroupMemberInfo m) {
     if (m.locationSharing == false) return false;
     return Tracking().isOnline(
       rawIsOnline: m.isOnline,
-      lastSeen: m.lastSeen,
+      lastSeen: m.rawLastSeen,
       thresholdMinutes: 5,
     );
   }
 
-  String _statusText(LocationData m) {
+  String _statusText(GroupMemberInfo m) {
     if (m.locationSharing == false) return "Location Hidden";
     if (_isOnline(m)) return "Online";
-    if (m.lastSeen == null || m.lastSeen.toString().isEmpty) return "Offline";
-    final parsed = Tracking.parseDateTime(m.lastSeen);
+    if (m.rawLastSeen == null || m.rawLastSeen.toString().isEmpty)
+      return "Offline";
+    final parsed = Tracking.parseDateTime(m.rawLastSeen);
     if (parsed == null) return "Offline";
     try {
       return Tracking().getTimeAgo(parsed);
     } catch (_) {
       return "Offline";
     }
-  }
-
-  String _mediaThumb(MessageData m) {
-    final type = (m.messageType ?? "").toLowerCase();
-    final content = m.content ?? "";
-    if (type == "video") {
-      final parts = content.split("||");
-      if (parts.length > 1 && parts[1].isNotEmpty) {
-        return "${ConstRes.aImageBaseUrl}${parts[1]}";
-      }
-      return "";
-    }
-    if (type == "image" || type == "image_text") {
-      final part = content.split("||").first;
-      return "${ConstRes.aImageBaseUrl}$part";
-    }
-    return "";
-  }
-
-  String _videoDuration(MessageData m) {
-    final parts = (m.content ?? "").split("||");
-    if (parts.length > 2) return parts[2];
-    return "";
   }
 
   @override
@@ -126,7 +100,9 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
               child: _roundBtn(
                 icon: Icons.edit_rounded,
                 onTap: () {
-                  groupController.groupName.text = chatController.groupName;
+                  final currentGroup = _apiController.profileData.value?.group;
+                  groupController.groupName.text = currentGroup?.groupName ??
+                      chatController.groupName.toString();
                   DialogBox().showUpdateGroupBottomSheet(
                     context: context,
                     controller: groupController,
@@ -139,26 +115,34 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
       ),
       body: SafeArea(
         child: Obx(() {
-          // Listen to changes
-          final _ = chatController.groupMembers.length;
-          final __ = chatController.pinnedMessage.value;
+          if (_apiController.isLoading.value) {
+            return const Center(
+                child: CircularProgressIndicator(color: _purple));
+          }
+
+          final data = _apiController.profileData.value;
+          if (data == null || data.group == null) {
+            return Center(
+                child: Text("Group details not found",
+                    style: TextStyle(fontSize: 16.sp, color: _purple)));
+          }
 
           return ListView(
             padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
             children: [
-              _buildProfileHeader(),
+              _buildProfileHeader(data),
               SizedBox(height: 18.h),
-              _buildQuickActions(context),
+              _buildQuickActions(data),
               SizedBox(height: 16.h),
-              _buildMediaCard(context),
+              _buildMediaCard(data.media, data.mediaSummary),
               SizedBox(height: 12.h),
-              _buildSettingsCard(context),
+              _buildSettingsCard(data),
               SizedBox(height: 16.h),
-              _buildMembersSection(context),
+              _buildMembersSection(data),
               SizedBox(height: 16.h),
               _buildFavoritesCard(),
               SizedBox(height: 12.h),
-              _buildDangerSection(context),
+              _buildDangerSection(data),
               SizedBox(height: 24.h),
             ],
           );
@@ -176,7 +160,7 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
           borderRadius: BorderRadius.circular(12.r),
           boxShadow: [
             BoxShadow(
-              color: _purple.withValues(alpha: 0.08),
+              color: _purple.withOpacity(0.08),
               blurRadius: 6,
               offset: const Offset(0, 2),
             ),
@@ -187,9 +171,11 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
     );
   }
 
-  Widget _buildProfileHeader() {
-    final total = chatController.groupMembers.length;
-    final online = _onlineCount;
+  Widget _buildProfileHeader(GroupProfileData data) {
+    final group = data.group!;
+    final summary = data.membersSummary;
+    final img = group.groupProfile ?? "";
+    final name = group.groupName ?? "Unknown Group";
 
     return Column(
       children: [
@@ -204,55 +190,50 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
               end: Alignment.bottomRight,
             ),
           ),
-          child: chatController.groupImage.isNotEmpty
+          child: (img.isNotEmpty && img.toLowerCase() != 'null')
               ? ClipOval(
                   child: Image.network(
-                    "${ConstRes.aImageBaseUrl}${chatController.groupImage}",
+                    (img.startsWith('http://') || img.startsWith('https://'))
+                        ? img
+                        : "${ConstRes.aImageBaseUrl}$img",
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => Icon(
-                      Icons.groups_rounded,
-                      color: Colors.white,
-                      size: 40.sp,
-                    ),
+                    errorBuilder: (_, __, ___) => Icon(Icons.groups_rounded,
+                        color: Colors.white, size: 40.sp),
                   ),
                 )
               : Icon(Icons.groups_rounded, color: Colors.white, size: 40.sp),
         ),
         SizedBox(height: 12.h),
         Text(
-          chatController.groupName.isEmpty
-              ? "Unknown Group"
-              : chatController.groupName,
+          name,
           textAlign: TextAlign.center,
           style: TextStyle(
-            fontSize: 20.sp,
-            fontWeight: FontWeight.w800,
-            color: Colors.black87,
-          ),
+              fontSize: 20.sp,
+              fontWeight: FontWeight.w800,
+              color: Colors.black87),
         ),
         SizedBox(height: 6.h),
         Text.rich(
           TextSpan(
             children: [
               TextSpan(
-                text: "${total.toString().padLeft(2, '0')} Members",
+                text:
+                    "${(summary?.totalMembers ?? 0).toString().padLeft(2, '0')} Members",
                 style: TextStyle(
-                  fontSize: 12.sp,
-                  color: Colors.grey.shade600,
-                  fontWeight: FontWeight.w500,
-                ),
+                    fontSize: 12.sp,
+                    color: Colors.grey.shade600,
+                    fontWeight: FontWeight.w500),
               ),
               TextSpan(
                 text: "  •  ",
                 style: TextStyle(fontSize: 12.sp, color: Colors.grey.shade500),
               ),
               TextSpan(
-                text: "$online Online",
+                text: "${summary?.onlineMembersCount ?? 0} Online",
                 style: TextStyle(
-                  fontSize: 12.sp,
-                  color: const Color(0xFF2BB673),
-                  fontWeight: FontWeight.w600,
-                ),
+                    fontSize: 12.sp,
+                    color: const Color(0xFF2BB673),
+                    fontWeight: FontWeight.w600),
               ),
             ],
           ),
@@ -260,59 +241,44 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
       ],
     );
   }
-  Future<void> _initiateGroupCall({
-    required bool isVideo,
-  }) async {
+
+  Future<void> _initiateGroupCall(GroupProfileData data,
+      {required bool isVideo}) async {
     try {
       Get.toNamed(
         Routes.groupCallingScreen,
         arguments: {
           "groupId": chatController.groupId.toString(),
-          "groupName": chatController.groupName.isEmpty
-              ? "Unknown Group"
-              : chatController.groupName,
-          "groupProfile": chatController.groupImage,
+          "groupName": data.group?.groupName ?? "Unknown Group",
+          "groupProfile": data.group?.groupProfile ?? "",
           "isVideo": isVideo,
-          "memberCount": chatController.groupMembers.length,
+          "memberCount": data.membersSummary?.totalMembers ?? 0,
           "callType": "outgoing",
         },
       );
     } catch (e) {
-      debugPrint("Error initiating group call: $e");
-      Get.snackbar(
-        "Error",
-        "Could not start group call. Please try again.",
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      Get.snackbar("Error", "Could not start group call. Please try again.",
+          backgroundColor: Colors.red, colorText: Colors.white);
     }
   }
-  Widget _buildQuickActions(BuildContext context) {
+
+  Widget _buildQuickActions(GroupProfileData data) {
     return Row(
       children: [
         _quickAction(
-          icon: Icons.call_outlined,
-          label: "Audio Call",
-          onTap: () => _initiateGroupCall(
-            isVideo: false,
-          ),
-        ),
+            icon: Icons.call_outlined,
+            label: "Audio Call",
+            onTap: () => _initiateGroupCall(data, isVideo: false)),
         SizedBox(width: 10.w),
         _quickAction(
-          icon: Icons.videocam_outlined,
-          label: "Video Call",
-          onTap: () => _initiateGroupCall(
-            isVideo: true,
-          ),
-        ),
+            icon: Icons.videocam_outlined,
+            label: "Video Call",
+            onTap: () => _initiateGroupCall(data, isVideo: true)),
         SizedBox(width: 10.w),
         _quickAction(
           icon: Icons.person_add_alt_1_outlined,
           label: "Add Members",
-          onTap: () {
-            Utils().fluttertoast("Add members");
-          },
+          onTap: () => Utils().fluttertoast("Add members"),
         ),
         SizedBox(width: 10.w),
         _quickAction(
@@ -327,11 +293,10 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
     );
   }
 
-  Widget _quickAction({
-    required IconData icon,
-    required String label,
-    required VoidCallback onTap,
-  }) {
+  Widget _quickAction(
+      {required IconData icon,
+      required String label,
+      required VoidCallback onTap}) {
     return Expanded(
       child: GestureDetector(
         onTap: onTap,
@@ -342,10 +307,9 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
             borderRadius: BorderRadius.circular(14.r),
             boxShadow: [
               BoxShadow(
-                color: _purple.withValues(alpha: 0.08),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
+                  color: _purple.withOpacity(0.08),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2))
             ],
           ),
           child: Column(
@@ -358,10 +322,9 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                  fontSize: 10.sp,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black87,
-                ),
+                    fontSize: 10.sp,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87),
               ),
             ],
           ),
@@ -370,115 +333,108 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
     );
   }
 
-  Widget _buildMediaCard(BuildContext context) {
-    final media = _mediaMessages.reversed.take(4).toList();
-    final total = _mediaMessages.length;
+  Widget _buildMediaCard(GroupMediaDetails? media, GroupMediaSummary? summary) {
+    List<MessageData> convertedMessages = [];
+    if (media != null) {
+      for (var p in media.photos ?? []) {
+        convertedMessages
+            .add(MessageData(messageType: 'image', content: p.url));
+      }
+      for (var v in media.videos ?? []) {
+        convertedMessages.add(MessageData(
+            messageType: 'video', content: '${v.url}||${v.displayUrl}'));
+      }
+    }
+
+    List<GroupMediaItem> allMedia = [];
+    if (media != null) {
+      allMedia.addAll(media.photos ?? []);
+      allMedia.addAll(media.videos ?? []);
+    }
+
+    final displayMedia = allMedia.take(4).toList();
+    final total = summary?.totalMedia ?? 0;
 
     return _whiteCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           InkWell(
-            onTap: () {
-              final all = chatController.messageData.where((m) {
-                final t = (m.messageType ?? "").toLowerCase().trim();
-                if (t == "image" ||
-                    t == "image_text" ||
-                    t == "video" ||
-                    t == "document" ||
-                    t == "doc" ||
-                    t == "file" ||
-                    t == "link" ||
-                    t == "url" ||
-                    t.contains("link")) {
-                  return true;
-                }
-                final c = m.content ?? "";
-                return RegExp(
-                  r'(https?:\/\/[^\s]+)|(www\.[^\s]+)',
-                  caseSensitive: false,
-                ).hasMatch(c);
-              }).toList();
-
-              Get.to(() => MediaLinksDocsScreen(mediaMessages: all));
-            },
+            onTap: () => Get.to(
+                () => MediaLinksDocsScreen(mediaMessages: convertedMessages)),
             child: Row(
               children: [
                 Icon(Icons.photo_library_outlined, color: _purple, size: 18.sp),
                 SizedBox(width: 8.w),
                 Expanded(
-                  child: Text(
-                    "Media, Links & Docs",
+                  child: Text("Media, Links & Docs",
+                      style: TextStyle(
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.black87)),
+                ),
+                Text("$total",
                     style: TextStyle(
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.black87,
-                    ),
-                  ),
-                ),
-                Text(
-                  "$total",
-                  style: TextStyle(
-                    fontSize: 13.sp,
-                    color: Colors.grey.shade600,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+                        fontSize: 13.sp,
+                        color: Colors.grey.shade600,
+                        fontWeight: FontWeight.w600)),
                 Icon(Icons.chevron_right_rounded,
                     color: Colors.grey.shade400, size: 20.sp),
               ],
             ),
           ),
-          if (media.isNotEmpty) ...[
+          if (displayMedia.isNotEmpty) ...[
             SizedBox(height: 12.h),
             SizedBox(
               height: 100.h,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
-                itemCount: media.length,
+                itemCount: displayMedia.length > 4 ? 4 : displayMedia.length,
                 separatorBuilder: (_, __) => SizedBox(width: 8.w),
                 itemBuilder: (_, i) {
-                  final m = media[i];
-                  final type = (m.messageType ?? "").toLowerCase();
-                  final thumb = _mediaThumb(m);
+                  if (i == 3 && total > 4) {
+                    return GestureDetector(
+                      onTap: () => Get.to(() => MediaLinksDocsScreen(
+                          mediaMessages: convertedMessages)),
+                      child: Container(
+                        width: 100.h,
+                        decoration: BoxDecoration(
+                            color: Colors.black54,
+                            borderRadius: BorderRadius.circular(12.r)),
+                        child: Center(
+                          child: Text("+${total - 4}",
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 18.sp,
+                                  fontWeight: FontWeight.bold)),
+                        ),
+                      ),
+                    );
+                  }
 
-                  return ClipRRect(
-                    borderRadius: BorderRadius.circular(12.r),
-                    child: Container(
-                      width: 100.h,
-                      color: const Color(0xFFEDEBFB),
-                      child: Stack(
-                        fit: StackFit.expand,
-                        children: [
-                          if (thumb.isNotEmpty)
-                            Image.network(
-                              thumb,
-                              fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) =>
-                                  _mediaPlaceholder(type),
-                            )
-                          else
-                            _mediaPlaceholder(type),
-                          if (type == "video")
-                            Positioned(
-                              left: 6.w,
-                              bottom: 6.h,
-                              child: Row(
-                                children: [
-                                  Icon(Icons.play_arrow_rounded,
-                                      color: Colors.white, size: 14.sp),
-                                  Text(
-                                    _videoDuration(m),
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 10.sp,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                        ],
+                  final m = displayMedia[i];
+                  String thumb = "";
+                  if (m.displayUrl != null && m.displayUrl!.isNotEmpty) {
+                    thumb = (m.displayUrl!.startsWith('http://') ||
+                            m.displayUrl!.startsWith('https://'))
+                        ? m.displayUrl!
+                        : "${ConstRes.aImageBaseUrl}${m.displayUrl}";
+                  }
+
+                  return GestureDetector(
+                    onTap: () => Get.to(() =>
+                        MediaLinksDocsScreen(mediaMessages: convertedMessages)),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(12.r),
+                      child: Container(
+                        width: 100.h,
+                        color: const Color(0xFFEDEBFB),
+                        child: thumb.isNotEmpty
+                            ? Image.network(thumb,
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, __, ___) =>
+                                    _mediaPlaceholder(m.type ?? ""))
+                            : _mediaPlaceholder(m.type ?? ""),
                       ),
                     ),
                   );
@@ -487,10 +443,8 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
             ),
           ] else ...[
             SizedBox(height: 10.h),
-            Text(
-              "No media shared yet",
-              style: TextStyle(fontSize: 12.sp, color: Colors.grey.shade500),
-            ),
+            Text("No media shared yet",
+                style: TextStyle(fontSize: 12.sp, color: Colors.grey.shade500)),
           ],
         ],
       ),
@@ -499,12 +453,12 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
 
   Widget _mediaPlaceholder(String type) {
     IconData icon = Icons.insert_drive_file_rounded;
-    if (type == "image" || type == "image_text") icon = Icons.image_rounded;
+    if (type == "image") icon = Icons.image_rounded;
     if (type == "video") icon = Icons.videocam_rounded;
     return Center(child: Icon(icon, color: _purple, size: 28.sp));
   }
 
-  Widget _buildSettingsCard(BuildContext context) {
+  Widget _buildSettingsCard(GroupProfileData data) {
     return _whiteCard(
       padding: EdgeInsets.zero,
       child: Column(
@@ -514,8 +468,7 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
             iconColor: _purple,
             title: "Starred Messages",
             onTap: () {
-              final pinned = chatController.pinnedMessage.value;
-              if (pinned != null) {
+              if (chatController.pinnedMessage.value != null) {
                 Get.back();
                 chatController.scrollToPinnedMessage();
               } else {
@@ -532,31 +485,21 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
                 trailing: Transform.scale(
                   scale: 0.8,
                   child: Switch(
-                    value: notificationsOn.value,
-                    activeThumbColor: _purple,
-                    onChanged: (v) => notificationsOn.value = v,
-                  ),
+                      value: notificationsOn.value,
+                      activeThumbColor: _purple,
+                      onChanged: (v) => notificationsOn.value = v),
                 ),
               )),
-          _divider(),
-          _settingTile(
-            icon: Icons.lock_outline_rounded,
-            iconColor: _purple,
-            title: "Disappearing Messages",
-            subtitle: "Messages will disappear after 7 days",
-            trailingText: "Off",
-            onTap: () => Utils().fluttertoast("Coming soon"),
-          ),
           _divider(),
           _settingTile(
             icon: Icons.reply_rounded,
             iconColor: _purple,
             title: "Invite via Link",
             onTap: () async {
-              final code = Get.arguments?["groupCode"]?.toString() ?? "";
+              final code = data.group?.groupCode ?? "";
               final text = code.isNotEmpty
-                  ? "Join my group \"${chatController.groupName}\" on FG Tracker. Code: $code"
-                  : "Join my group \"${chatController.groupName}\" on FG Tracker";
+                  ? "Join my group \"${data.group?.groupName}\" on FG Tracker. Code: $code"
+                  : "Join my group \"${data.group?.groupName}\" on FG Tracker";
               try {
                 await Share.share(text);
               } catch (_) {
@@ -565,15 +508,7 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
               }
             },
           ),
-          if (chatController.isCreator.value) ...[
-            _divider(),
-            _settingTile(
-              icon: Icons.admin_panel_settings_outlined,
-              iconColor: _purple,
-              title: "Member Permissions",
-              subtitle: "Only admins can send messages",
-              onTap: () => Utils().fluttertoast("Coming soon"),
-            ),
+          if (data.permissions?.canEditGroup == true) ...[
             _divider(),
             _settingTile(
               icon: Icons.settings_outlined,
@@ -581,11 +516,11 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
               title: "Group Settings",
               subtitle: "Edit group info, privacy, and more",
               onTap: () {
-                groupController.groupName.text = chatController.groupName;
+                groupController.groupName.text = data.group?.groupName ?? "";
                 DialogBox().showUpdateGroupBottomSheet(
                   context: context,
                   controller: groupController,
-                  groupId: chatController.groupId.toString(),
+                  groupId: data.group?.groupId.toString() ?? "",
                 );
               },
             ),
@@ -595,15 +530,14 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
     );
   }
 
-  Widget _buildMembersSection(BuildContext context) {
-    final members = chatController.groupMembers.toList();
+  Widget _buildMembersSection(GroupProfileData data) {
+    final members = data.members ?? [];
     members.sort((a, b) {
-      final aMe = a.userId.toString() == _myId ? 0 : 1;
-      final bMe = b.userId.toString() == _myId ? 0 : 1;
-      if (aMe != bMe) return aMe.compareTo(bMe);
-      final aAdmin = a.isCreator == true ? 0 : 1;
-      final bAdmin = b.isCreator == true ? 0 : 1;
-      return aAdmin.compareTo(bAdmin);
+      if (a.isMe == true) return -1;
+      if (b.isMe == true) return 1;
+      if (a.isAdmin == true && b.isAdmin != true) return -1;
+      if (b.isAdmin == true && a.isAdmin != true) return 1;
+      return 0;
     });
 
     final visible = showAllMembers.value ? members : members.take(3).toList();
@@ -615,22 +549,18 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
           padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 6.h),
           child: Row(
             children: [
-              Text(
-                "Members",
-                style: TextStyle(
-                  fontSize: 15.sp,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.black87,
-                ),
-              ),
+              Text("Members",
+                  style: TextStyle(
+                      fontSize: 15.sp,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.black87)),
               const Spacer(),
               Text(
                 "${members.length}".padLeft(2, '0'),
                 style: TextStyle(
-                  fontSize: 13.sp,
-                  color: Colors.grey.shade600,
-                  fontWeight: FontWeight.w600,
-                ),
+                    fontSize: 13.sp,
+                    color: Colors.grey.shade600,
+                    fontWeight: FontWeight.w600),
               ),
             ],
           ),
@@ -640,7 +570,7 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
           child: Column(
             children: [
               for (int i = 0; i < visible.length; i++) ...[
-                _memberTile(context, visible[i]),
+                _memberTile(context, visible[i], data),
                 if (i < visible.length - 1)
                   Divider(
                       height: 1,
@@ -657,17 +587,15 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
                       Text(
                         showAllMembers.value ? "Show less" : "View all members",
                         style: TextStyle(
-                          color: _purple,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 13.sp,
-                        ),
+                            color: _purple,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 13.sp),
                       ),
                       Icon(
-                        showAllMembers.value
-                            ? Icons.keyboard_arrow_up_rounded
-                            : Icons.keyboard_arrow_down_rounded,
-                        color: _purple,
-                      ),
+                          showAllMembers.value
+                              ? Icons.keyboard_arrow_up_rounded
+                              : Icons.keyboard_arrow_down_rounded,
+                          color: _purple),
                     ],
                   ),
                 ),
@@ -678,27 +606,18 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
     );
   }
 
-  void _openPrivateChat(LocationData m, bool online) {
-    final targetUserId = int.tryParse(m.userId?.toString() ?? "");
-    if (targetUserId == null || targetUserId == 0) {
-      Utils().fluttertoast("Unable to open chat for this user");
-      return;
-    }
-
+  void _openPrivateChat(GroupMemberInfo m, bool online) {
     if (Get.isRegistered<MessageController>()) {
       Get.delete<MessageController>(force: true);
     }
-
     final memberData = MemberData(
-      id: int.tryParse(m.id?.toString() ?? ""),
-      userId: targetUserId,
+      userId: m.userId,
       groupId: 0,
-      name: m.name?.toString() ?? "Member",
-      profileImage: m.profileImage?.toString(),
-      lastSeen: m.lastSeen?.toString(),
+      name: m.name ?? "Member",
+      profileImage: m.profileImage,
+      lastSeen: m.lastSeen,
       isOnline: online,
     );
-
     Get.to(
       () => ChatScreen(),
       arguments: {
@@ -706,7 +625,7 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
         "type": "chatScreen",
         "chatType": "private",
         "groupId": 0,
-        "groupName": m.name?.toString() ?? "Chat",
+        "groupName": m.name ?? "Chat",
         "isCreator": false,
       },
       binding: BindingsBuilder(() {
@@ -715,12 +634,13 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
     );
   }
 
-  Widget _memberTile(BuildContext context, LocationData m) {
-    final isMe = m.userId.toString() == _myId;
-    final isAdmin = m.isCreator == true;
+  Widget _memberTile(
+      BuildContext context, GroupMemberInfo m, GroupProfileData data) {
+    final isMe = m.isMe ?? false;
+    final isAdmin = m.isAdmin ?? false;
     final online = _isOnline(m);
-    final name = m.name?.toString() ?? "Unknown";
-    final img = (m.profileImage?.toString().isNotEmpty ?? false)
+    final name = m.name ?? "Unknown";
+    final img = (m.profileImage?.isNotEmpty ?? false)
         ? "${ConstRes.aImageBaseUrl}${m.profileImage}"
         : null;
 
@@ -735,14 +655,11 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
               backgroundColor: const Color(0xFFE8E4FF),
               backgroundImage: img != null ? NetworkImage(img) : null,
               child: img == null
-                  ? Text(
-                      name.isNotEmpty ? name[0].toUpperCase() : "?",
+                  ? Text(name.isNotEmpty ? name[0].toUpperCase() : "?",
                       style: TextStyle(
-                        color: _purple,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 16.sp,
-                      ),
-                    )
+                          color: _purple,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 16.sp))
                   : null,
             ),
           ),
@@ -757,16 +674,13 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
                   Row(
                     children: [
                       Flexible(
-                        child: Text(
-                          isMe ? "$name (You)" : name,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 14.sp,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.black87,
-                          ),
-                        ),
+                        child: Text(isMe ? "$name (You)" : name,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                                fontSize: 14.sp,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.black87)),
                       ),
                       if (isMe && isAdmin) ...[
                         SizedBox(width: 6.w),
@@ -776,16 +690,13 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
                     ],
                   ),
                   SizedBox(height: 2.h),
-                  Text(
-                    _statusText(m),
-                    style: TextStyle(
-                      fontSize: 11.sp,
-                      color: online
-                          ? const Color(0xFF2BB673)
-                          : Colors.grey.shade500,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
+                  Text(_statusText(m),
+                      style: TextStyle(
+                          fontSize: 11.sp,
+                          color: online
+                              ? const Color(0xFF2BB673)
+                              : Colors.grey.shade500,
+                          fontWeight: FontWeight.w500)),
                 ],
               ),
             ),
@@ -799,28 +710,26 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
                 color: Colors.grey.shade500, size: 20.sp),
             color: Colors.white,
             onSelected: (value) {
-              if (value == "chat") {
+              if (value == "chat")
                 _openPrivateChat(m, online);
-              } else if (value == "call") {
+              else if (value == "call")
                 Get.toNamed(Routes.callScreen, arguments: {
                   "callerId": _myId,
                   "remoteUserId": m.userId.toString(),
                   "callerName": name,
-                  "offer": null,
                   "is_video": false,
-                  "callType": "outGoing",
+                  "callType": "outGoing"
                 });
-              } else if (value == "video") {
+              else if (value == "video")
                 Get.toNamed(Routes.callScreen, arguments: {
                   "callerId": _myId,
                   "remoteUserId": m.userId.toString(),
                   "callerName": name,
-                  "offer": null,
                   "is_video": true,
-                  "callType": "outGoing",
+                  "callType": "outGoing"
                 });
-              } else if (value == "remove" &&
-                  chatController.isCreator.value &&
+              else if (value == "remove" &&
+                  (data.permissions?.canAddMember ?? false) &&
                   !isMe) {
                 CommonDialog.ConfirmationDialog(
                   title: "Remove Member",
@@ -831,16 +740,12 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
                     Get.back();
                     groupController.deleteGroupMember(
                       context,
-                      groupId: chatController.groupId.toString(),
+                      groupId: data.group!.groupId.toString(),
                       groupMemberId: m.userId.toString(),
-                      onSuccess: (success) async {
+                      onSuccess: (success) {
                         if (success) {
-                          chatController.groupMembers
-                              .removeWhere((e) => e.userId.toString() == m.userId.toString());
-
-                          chatController.groupMembers.refresh();
-
-                          await chatController.getGroupMembers();
+                          _apiController
+                              .fetchProfileDetails(data.group!.groupId!);
                         }
                       },
                     );
@@ -855,7 +760,7 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
                 const PopupMenuItem(value: "call", child: Text("Audio Call")),
               if (!isMe)
                 const PopupMenuItem(value: "video", child: Text("Video Call")),
-              if (!isMe && chatController.isCreator.value)
+              if (!isMe && (data.permissions?.canAddMember ?? false))
                 const PopupMenuItem(
                     value: "remove", child: Text("Remove from group")),
             ],
@@ -868,37 +773,17 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
   Widget _badge(String text, Color bg, Color fg) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
-      decoration: BoxDecoration(
-        color: bg,
-        borderRadius: BorderRadius.circular(20.r),
-      ),
-      child: Text(
-        text,
-        style: TextStyle(
-          color: fg,
-          fontSize: 10.sp,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
+      decoration:
+          BoxDecoration(color: bg, borderRadius: BorderRadius.circular(20.r)),
+      child: Text(text,
+          style: TextStyle(
+              color: fg, fontSize: 10.sp, fontWeight: FontWeight.w600)),
     );
   }
 
   Widget _buildFavoritesCard() {
-    return Container(
-      width: double.infinity,
-      margin: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF8F7FF),
-        borderRadius: BorderRadius.circular(16.r),
-        boxShadow: [
-          BoxShadow(
-            color: _purple.withValues(alpha: 0.12),
-            blurRadius: 12,
-            spreadRadius: 2,
-            offset: const Offset(0, 0),
-          ),
-        ],
-      ),
+    return _whiteCard(
+      padding: EdgeInsets.zero,
       child: _settingTile(
         icon: Icons.favorite_border_rounded,
         iconColor: _purple,
@@ -909,7 +794,7 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
     );
   }
 
-  Widget _buildDangerSection(BuildContext context) {
+  Widget _buildDangerSection(GroupProfileData data) {
     return _whiteCard(
       padding: EdgeInsets.zero,
       child: Column(
@@ -931,42 +816,36 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
               );
             },
           ),
-          _divider(),
-          _settingTile(
-            icon: Icons.logout_rounded,
-            iconColor: Colors.redAccent,
-            title: "Exit Group",
-            titleColor: Colors.redAccent,
-            onTap: () {
-              CommonDialog.ConfirmationDialog(
-                title: "Exit Group",
-                content:
-                    "Are you sure you want to exit \"${chatController.groupName}\"?",
-                confirm: "Exit",
-                onConfirm: () {
-                  Get.back();
-                  MemberController().exitGroup(
-                    context,
-                    groupId: chatController.groupId.toString(),
-                    userId: _myId,
-                    onSuccess: (success) {
-                      if (success) {
-                        Get.offAllNamed(Routes.Home_Screen);
-                      }
-                    },
-                  );
-                },
-              );
-            },
-          ),
-          _divider(),
-          _settingTile(
-            icon: Icons.flag_outlined,
-            iconColor: Colors.redAccent,
-            title: "Report Group",
-            titleColor: Colors.redAccent,
-            onTap: () => Utils().fluttertoast("Report submitted"),
-          ),
+          if (data.permissions?.canLeaveGroup == true) ...[
+            _divider(),
+            _settingTile(
+              icon: Icons.logout_rounded,
+              iconColor: Colors.redAccent,
+              title: "Exit Group",
+              titleColor: Colors.redAccent,
+              onTap: () {
+                CommonDialog.ConfirmationDialog(
+                  title: "Exit Group",
+                  content:
+                      "Are you sure you want to exit \"${data.group?.groupName}\"?",
+                  confirm: "Exit",
+                  onConfirm: () {
+                    Get.back();
+                    MemberController().exitGroup(
+                      context,
+                      groupId: data.group!.groupId.toString(),
+                      userId: _myId,
+                      onSuccess: (success) {
+                        if (success) {
+                          Get.offAllNamed(Routes.Home_Screen);
+                        }
+                      },
+                    );
+                  },
+                );
+              },
+            ),
+          ]
         ],
       ),
     );
@@ -982,11 +861,9 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 10,
-            spreadRadius: 1,
-            offset: const Offset(0, 2),
-          ),
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 10,
+              offset: const Offset(0, 2))
         ],
       ),
       child: child,
@@ -1018,23 +895,16 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w600,
-                      color: titleColor ?? Colors.black87,
-                    ),
-                  ),
+                  Text(title,
+                      style: TextStyle(
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w600,
+                          color: titleColor ?? Colors.black87)),
                   if (subtitle != null) ...[
                     SizedBox(height: 2.h),
-                    Text(
-                      subtitle,
-                      style: TextStyle(
-                        fontSize: 11.sp,
-                        color: Colors.grey.shade500,
-                      ),
-                    ),
+                    Text(subtitle,
+                        style: TextStyle(
+                            fontSize: 11.sp, color: Colors.grey.shade500)),
                   ],
                 ],
               ),
@@ -1042,14 +912,11 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
             if (trailing != null)
               trailing
             else if (trailingText != null)
-              Text(
-                trailingText,
-                style: TextStyle(
-                  fontSize: 12.sp,
-                  color: Colors.grey.shade500,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
+              Text(trailingText,
+                  style: TextStyle(
+                      fontSize: 12.sp,
+                      color: Colors.grey.shade500,
+                      fontWeight: FontWeight.w500)),
             if (trailing == null)
               Icon(Icons.chevron_right_rounded,
                   color: Colors.grey.shade400, size: 20.sp),

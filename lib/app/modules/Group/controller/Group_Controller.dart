@@ -11,6 +11,8 @@ import 'package:get/get.dart';
 import 'package:google_mlkit_barcode_scanning/google_mlkit_barcode_scanning.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../Messages/Controller/GroupChatController.dart';
+
 class GroupController extends GetxController {
   GlobalKey<FormState> createGroupKey = GlobalKey<FormState>();
   final groupName = TextEditingController();
@@ -69,24 +71,53 @@ class GroupController extends GetxController {
     }
   }
 
+
   Future<void> updateGroupDetail({required String groupId}) async {
+    CommonDialog.ConfirmationDialog(
+      title: "Update Group",
+      content: "Are you sure you want to update the group name?",
+      cancel: "No",
+      confirm: "Yes",
+      icon: Icons.edit_rounded,
+      onCancel: () {
+        Get.back();
+      },
+      onConfirm: () {
+        Get.back();
+        _performUpdateGroupDetail(groupId: groupId);
+      },
+    );
+  }
+
+  Future<void> _performUpdateGroupDetail({
+    required String groupId,
+  }) async {
     try {
       Loading().showloading();
-      dynamic param = {
-        "groupName": groupName.text,
+
+      final param = {
+        "groupName": groupName.text.trim(),
         "groupId": groupId,
       };
-      var result = await GroupRepo.updateGroup(param);
+
+      final result = await GroupRepo.updateGroup(param);
+
+      Loading().dismissloading();
+
       if (result.status == true) {
-        Loading().dismissloading();
-        Get.offAllNamed(Routes.Home_Screen);
+        if (Get.isRegistered<GroupMessageController>()) {
+          final chatController = Get.find<GroupMessageController>();
+          chatController.groupName.value = groupName.text.trim();
+        }
+
+        Get.back();
+        Utils().fluttertoast(result.message.toString());
       } else {
-        Loading().dismissloading();
-        CommonDialog.errorMessage(result.message);
+        Utils().fluttertoast(result.message.toString());
       }
     } catch (e) {
       Loading().dismissloading();
-      CommonDialog.errorMessage(e.toString());
+      Utils().fluttertoast(e.toString());
     }
   }
 
