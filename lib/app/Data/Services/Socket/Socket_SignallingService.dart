@@ -113,6 +113,6 @@ callEnded(String sessionId, {String? type}) async {
   await ConnectycubeFlutterCallKit.clearCallData(
     sessionId: sessionId,
   );
-  log('==========CallEnded:$sessionId,===Type:$type');
+  // log('==========CallEnded:$sessionId,===Type:$type');
   CallSessionState.reset();
 }

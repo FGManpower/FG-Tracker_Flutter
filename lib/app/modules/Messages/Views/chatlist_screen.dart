@@ -1,22 +1,28 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
+import 'package:skeletonizer/skeletonizer.dart';
+
 import 'package:fgtracker/app/Model/MemberDataRes.dart';
 import 'package:fgtracker/app/Model/PrivateChatModel.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/modules/status/views/status_section.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:get/get.dart';
-import 'package:skeletonizer/skeletonizer.dart';
 import '../../../Core/constant/const_res.dart';
 import '../../../Core/util/chatutil.dart';
 import '../../../Core/values/Dialog/Common_dialog.dart';
 import '../../../routes/app_pages.dart';
+import '../../home/Controller/total_group_controller.dart';
 import '../Controller/MessageController.dart';
 import '../Controller/chat_list_controller.dart';
 import '../widgets/custom_dropdown_menu.dart';
 import 'ArchivedChatsScreen.dart';
 import 'Chat_Screen.dart';
 import 'new_chat_screen.dart';
+
+import 'package:fgtracker/app/Core/values/colorPool.dart';
+import 'package:fgtracker/app/Model/GroupChatListModel.dart';
+import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
 
 class ChatListScreen extends StatelessWidget {
   ChatListScreen({super.key});
@@ -25,34 +31,38 @@ class ChatListScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8F7FF),
-      appBar: _buildAppBar(),
-      body: Stack(
-        children: [
-          Positioned.fill(child: _AllChatsBody(controller: controller),),
-          Positioned(
-            right: 16.w,
-            bottom: 170.h,
-            child: FloatingActionButton(
-              onPressed: () => Get.to(() => const NewChatScreen()),
-              backgroundColor: const Color(0xFF6B4DFF),
-              shape: const CircleBorder(),
-              elevation: 4,
-              child: const Icon(
-                Icons.chat_bubble_outline,
-                color: Colors.white,
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        backgroundColor: const Color(0xFFF8F7FF),
+        appBar: _buildAppBar(),
+
+        floatingActionButton: FloatingActionButton(
+          onPressed: () => Get.to(() => const NewChatScreen()),
+          backgroundColor: const Color(0xFF6B4DFF),
+          shape: const CircleBorder(),
+          elevation: 4,
+          child: const Icon(
+            Icons.chat_bubble_outline,
+            color: Colors.white,
+          ),
+        ),
+
+        bottomNavigationBar: const QuickCommunicationBar(),
+
+        body: Column(
+          children: [
+            _buildCustomTabBar(),
+            Expanded(
+              child: TabBarView(
+                children: [
+                  _AllChatsBody(controller: controller),
+                  const _GroupsTabBody(),
+                ],
               ),
             ),
-          ),
-
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: _buildQuickCommunication(context),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -91,19 +101,70 @@ class ChatListScreen extends StatelessWidget {
               ],
             ),
           ),
-          _circleIcon(
-            Icons.more_vert,
-                () {},
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCustomTabBar() {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+      height: 40.h,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24.r),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: TabBar(
+        indicatorSize: TabBarIndicatorSize.tab,
+        dividerColor: Colors.transparent,
+        indicator: BoxDecoration(
+          borderRadius: BorderRadius.circular(24.r),
+          color: const Color(0xFF6B4DFF),
+        ),
+        labelColor: Colors.white,
+        unselectedLabelColor: Colors.black87,
+        labelStyle: TextStyle(
+          fontSize: 13.sp,
+          fontFamily: FontFamily.interSemiBold,
+        ),
+        unselectedLabelStyle: TextStyle(
+          fontSize: 13.sp,
+          fontFamily: FontFamily.interMedium,
+        ),
+        tabs: [
+          Tab(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.chat_bubble_rounded, size: 18.sp),
+                SizedBox(width: 8.w),
+                const Text("All Chats"),
+              ],
+            ),
+          ),
+          Tab(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.people_alt_rounded, size: 18.sp),
+                SizedBox(width: 8.w),
+                const Text("Groups"),
+              ],
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _circleIcon(
-      IconData icon,
-      VoidCallback onTap,
-      ) {
+  Widget _circleIcon(IconData icon, VoidCallback onTap) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -114,7 +175,7 @@ class ChatListScreen extends StatelessWidget {
           borderRadius: BorderRadius.circular(14.r),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
+              color: Colors.black.withOpacity(0.04),
               blurRadius: 10,
               offset: const Offset(0, 2),
             ),
@@ -130,74 +191,125 @@ class ChatListScreen extends StatelessWidget {
       ),
     );
   }
+}
 
-  Widget _buildQuickCommunication(BuildContext context) {
+class QuickCommunicationBar extends StatefulWidget {
+  const QuickCommunicationBar({Key? key}) : super(key: key);
+
+  @override
+  State<QuickCommunicationBar> createState() => _QuickCommunicationBarState();
+}
+
+class _QuickCommunicationBarState extends State<QuickCommunicationBar> {
+  bool isExpanded = false;
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.only(top: 10.h, bottom: 15.h, left: 8.w, right: 8.w),
       decoration: BoxDecoration(
         color: const Color(0xFFF8F7FF),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Padding(
-            padding: EdgeInsets.only(left: 8.w),
-            child: reausabletext(
-              "Quick Communication",
-              fontsize: 12.sp,
-              fontfamily: FontFamily.interBold,
-              color: const Color(0xFF1B1B50),
-            ),
-          ),
-          Padding(
-            padding: EdgeInsets.only(left: 8.w),
-            child: reausabletext(
-              "Connect with your team instantly",
-              fontsize: 10.sp,
-              color: const Color(0xFF6B4DFF),
-              fontweight: FontWeight.w500,
-            ),
-          ),
-          SizedBox(height: 12.h),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _quickCommCard(
-                icon: Icons.speaker_phone_rounded,
-                title: "Walkie",
-                subtitle: "Push to Talk",
-                onTap: () {
-                  Get.toNamed(Routes.WalkieGroupSelect);
-                },
-              ),
-              _quickCommCard(
-                icon: Icons.location_on,
-                title: "Tracking",
-                subtitle: "Live Location",
-                onTap: () {
-                  Get.toNamed(Routes.TrackingScreen);
-                },
-              ),
-              _quickCommCard(
-                icon: Icons.people_alt_rounded,
-                title: "Groups",
-                subtitle: "Team Chats",
-                onTap: () {
-                  Get.toNamed(Routes.totalGroup);
-                },
-              ),
-              _quickCommCard(
-                icon: Icons.verified_user_rounded,
-                title: "Safe Zone",
-                subtitle: "Safety & Alerts",
-                onTap: () {
-                  Get.toNamed(Routes.SafetyDashboard);
-                },
-              ),
-            ],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, -3),
           ),
         ],
+      ),
+      child: SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            InkWell(
+              onTap: () {
+                setState(() {
+                  isExpanded = !isExpanded;
+                });
+              },
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        reausabletext(
+                          "Quick Communication",
+                          fontsize: 13.sp,
+                          fontfamily: FontFamily.interBold,
+                          color: const Color(0xFF1B1B50),
+                        ),
+                        SizedBox(height: 2.h),
+                        reausabletext(
+                          "Connect with your team instantly",
+                          fontsize: 10.sp,
+                          color: const Color(0xFF6B4DFF),
+                          fontweight: FontWeight.w500,
+                        ),
+                      ],
+                    ),
+                    Icon(
+                      isExpanded
+                          ? Icons.keyboard_arrow_down_rounded
+                          : Icons.keyboard_arrow_up_rounded,
+                      color: const Color(0xFF6B4DFF),
+                      size: 28.sp,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            AnimatedSize(
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
+              child: isExpanded
+                  ? Padding(
+                padding: EdgeInsets.only(left: 8.w, right: 8.w, bottom: 15.h),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    _quickCommCard(
+                      icon: Icons.speaker_phone_rounded,
+                      title: "Walkie",
+                      subtitle: "Push to Talk",
+                      onTap: () {
+                        Get.toNamed(Routes.WalkieGroupSelect);
+                      },
+                    ),
+                    _quickCommCard(
+                      icon: Icons.location_on,
+                      title: "Tracking",
+                      subtitle: "Live Location",
+                      onTap: () {
+                        Get.toNamed(Routes.TrackingScreen);
+                      },
+                    ),
+                    _quickCommCard(
+                      icon: Icons.people_alt_rounded,
+                      title: "Groups",
+                      subtitle: "Team Chats",
+                      onTap: () {
+                        Get.toNamed(Routes.totalGroup);
+                      },
+                    ),
+                    _quickCommCard(
+                      icon: Icons.verified_user_rounded,
+                      title: "Safe Zone",
+                      subtitle: "Safety & Alerts",
+                      onTap: () {
+                        Get.toNamed(Routes.SafetyDashboard);
+                      },
+                    ),
+                  ],
+                ),
+              )
+                  : SizedBox(width: double.infinity, height: 0.h),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -207,7 +319,6 @@ class ChatListScreen extends StatelessWidget {
     required String title,
     required String subtitle,
     required VoidCallback onTap,
-    bool isNewChat = false,
   }) {
     return Expanded(
       child: GestureDetector(
@@ -215,7 +326,7 @@ class ChatListScreen extends StatelessWidget {
         child: Container(
           margin: EdgeInsets.symmetric(horizontal: 4.w),
           padding: EdgeInsets.symmetric(
-            vertical: 6.h,
+            vertical: 8.h,
             horizontal: 2.w,
           ),
           decoration: BoxDecoration(
@@ -223,38 +334,35 @@ class ChatListScreen extends StatelessWidget {
             borderRadius: BorderRadius.circular(16.r),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.025),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
+                color: Colors.black.withOpacity(0.03),
+                blurRadius: 8,
+                offset: const Offset(0, 3),
               ),
             ],
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Transform.translate(
-                offset: Offset(0, isNewChat ? -3.h : 0),
-                child: Container(
-                  width: 38.w,
-                  height: 38.w,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: const Color(0xFFE9E7FF),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFF6B4DFF).withValues(alpha: 0.12),
-                        blurRadius: 12,
-                        spreadRadius: 1,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Center(
-                    child: Icon(
-                      icon,
-                      color: const Color(0xFF5B50E8),
-                      size: 24.sp,
+              Container(
+                width: 38.w,
+                height: 38.w,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: const Color(0xFFE9E7FF),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF6B4DFF).withOpacity(0.12),
+                      blurRadius: 12,
+                      spreadRadius: 1,
+                      offset: const Offset(0, 4),
                     ),
+                  ],
+                ),
+                child: Center(
+                  child: Icon(
+                    icon,
+                    color: const Color(0xFF5B50E8),
+                    size: 24.sp,
                   ),
                 ),
               ),
@@ -274,7 +382,7 @@ class ChatListScreen extends StatelessWidget {
                   subtitle,
                   fontsize: 8.sp,
                   fontfamily: FontFamily.interMedium,
-                  color: const Color(0xFF6B4DFF).withValues(alpha: 0.58),
+                  color: const Color(0xFF6B4DFF).withOpacity(0.58),
                   maxline: 1,
                 ),
               ),
@@ -298,7 +406,7 @@ class _AllChatsBody extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-         StatusSection(),
+        StatusSection(),
         Expanded(
           child: RefreshIndicator(
             color: const Color(0xFF6B4DFF),
@@ -325,20 +433,14 @@ class _AllChatsBody extends StatelessWidget {
                     }
 
                     return Container(
-                      margin: EdgeInsets.symmetric(
-                        horizontal: 16.w,
-                      ),
-                      padding: EdgeInsets.symmetric(
-                        vertical: 4.h,
-                      ),
+                      margin: EdgeInsets.symmetric(horizontal: 16.w),
+                      padding: EdgeInsets.symmetric(vertical: 4.h),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(18.r),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withValues(
-                              alpha: 0.03,
-                            ),
+                            color: Colors.black.withOpacity(0.03),
                             blurRadius: 12,
                             offset: const Offset(0, 3),
                           ),
@@ -350,9 +452,7 @@ class _AllChatsBody extends StatelessWidget {
                         padding: EdgeInsets.zero,
                         itemCount: controller.privateChats.length,
                         separatorBuilder: (_, __) => Divider(
-                          color: Colors.grey.withValues(
-                            alpha: 0.12,
-                          ),
+                          color: Colors.grey.withOpacity(0.12),
                           height: 1,
                           indent: 16.w,
                           endIndent: 16.w,
@@ -366,9 +466,7 @@ class _AllChatsBody extends StatelessWidget {
                             name: chat.name ?? "Unknown User",
                             role: chat.role ?? "",
                             msg: ChatUtil.formatLastMessage(chat.message),
-                            time: _formatChatTime(
-                              chat.time ?? "",
-                            ),
+                            time: _formatChatTime(chat.time ?? ""),
                             unreadCount: chat.unreadCount ?? 0,
                             statusColor: chat.isOnline == true
                                 ? const Color(0xFF16A765)
@@ -380,7 +478,7 @@ class _AllChatsBody extends StatelessWidget {
                       ),
                     );
                   }),
-                  SizedBox(height: 150.h),
+                  SizedBox(height: 20.h),
                 ],
               ),
             ),
@@ -401,7 +499,7 @@ class _AllChatsBody extends StatelessWidget {
           borderRadius: BorderRadius.circular(18.r),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.03),
+              color: Colors.black.withOpacity(0.03),
               blurRadius: 12,
               offset: const Offset(0, 3),
             ),
@@ -413,7 +511,7 @@ class _AllChatsBody extends StatelessWidget {
           padding: EdgeInsets.zero,
           itemCount: 6,
           separatorBuilder: (_, __) => Divider(
-            color: Colors.grey.withValues(alpha: 0.12),
+            color: Colors.grey.withOpacity(0.12),
             height: 1,
             indent: 16.w,
             endIndent: 16.w,
@@ -475,13 +573,8 @@ class _AllChatsBody extends StatelessWidget {
 
   Widget _emptyChats() {
     return Container(
-      margin: EdgeInsets.symmetric(
-        horizontal: 16.w,
-      ),
-      padding: EdgeInsets.symmetric(
-        horizontal: 20.w,
-        vertical: 35.h,
-      ),
+      margin: EdgeInsets.symmetric(horizontal: 16.w),
+      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 35.h),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(18.r),
@@ -522,10 +615,7 @@ class _AllChatsBody extends StatelessWidget {
     final bool isPinned = title == "Pinned Chats 📌";
 
     return Padding(
-      padding: EdgeInsets.symmetric(
-        horizontal: 16.w,
-        vertical: 8.h,
-      ),
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
       child: Row(
         children: [
           reausabletext(
@@ -599,11 +689,6 @@ class _AllChatsBody extends StatelessWidget {
         tapPos = d.globalPosition;
       },
       onTap: () async {
-        final chat = controller.privateChats.firstWhere(
-              (item) => item.name == name && item.image == image,
-          orElse: () => controller.privateChats.first,
-        );
-
         if (chat.userId == null) {
           return;
         }
@@ -617,23 +702,17 @@ class _AllChatsBody extends StatelessWidget {
               profileImage: chat.image,
               groupId: 0,
             ),
+            "chatId": chat.id?.toString(),
           },
           binding: BindingsBuilder(() {
             Get.put(MessageController());
           }),
         );
       },
-      onLongPress: () => _showChatOptions(
-        context,
-        tapPos,
-        chat,
-      ),
+      onLongPress: () => _showChatOptions(context, tapPos, chat),
       child: Container(
         color: Colors.transparent,
-        padding: EdgeInsets.symmetric(
-          horizontal: 14.w,
-          vertical: 12.h,
-        ),
+        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
         child: _chatRowContent(
           name: name,
           role: role,
@@ -877,21 +956,6 @@ class _AllChatsBody extends StatelessWidget {
     );
   }
 
-  Color? _statusColor(String? status) {
-    final value = (status ?? "").toLowerCase().trim();
-    if (value == "online" || value == "active" || value == "available") {
-      return Colors.green;
-    }
-    if (value == "away" || value == "busy") return Colors.orange;
-    if (value == "offline" || value == "inactive") return Colors.grey;
-    if (value == "dnd" ||
-        value == "do_not_disturb" ||
-        value == "do not disturb") {
-      return Colors.red;
-    }
-    return null;
-  }
-
   String _formatChatTime(String value) {
     if (value.isEmpty) return "";
     final parsed = DateTime.tryParse(value);
@@ -930,24 +994,9 @@ class _AllChatsBody extends StatelessWidget {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(14.r),
               ),
-              titlePadding: EdgeInsets.fromLTRB(
-                20.w,
-                18.h,
-                20.w,
-                4.h,
-              ),
-              contentPadding: EdgeInsets.fromLTRB(
-                20.w,
-                0,
-                20.w,
-                2.h,
-              ),
-              actionsPadding: EdgeInsets.fromLTRB(
-                12.w,
-                0,
-                12.w,
-                6.h,
-              ),
+              titlePadding: EdgeInsets.fromLTRB(20.w, 18.h, 20.w, 4.h),
+              contentPadding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 2.h),
+              actionsPadding: EdgeInsets.fromLTRB(12.w, 0, 12.w, 6.h),
               title: reausabletext(
                 "Mute notifications",
                 fontsize: 20.sp,
@@ -972,49 +1021,35 @@ class _AllChatsBody extends StatelessWidget {
                     title: "1 hour",
                     value: "1_hour",
                     groupValue: selectedOption,
-                    onChanged: (value) {
-                      setState(() {
-                        selectedOption = value;
-                      });
-                    },
+                    onChanged: (value) =>
+                        setState(() => selectedOption = value),
                   ),
                   _muteDialogOption(
                     title: "8 hours",
                     value: "8_hours",
                     groupValue: selectedOption,
-                    onChanged: (value) {
-                      setState(() {
-                        selectedOption = value;
-                      });
-                    },
+                    onChanged: (value) =>
+                        setState(() => selectedOption = value),
                   ),
                   _muteDialogOption(
                     title: "Until tomorrow",
                     value: "until_tomorrow",
                     groupValue: selectedOption,
-                    onChanged: (value) {
-                      setState(() {
-                        selectedOption = value;
-                      });
-                    },
+                    onChanged: (value) =>
+                        setState(() => selectedOption = value),
                   ),
                   _muteDialogOption(
                     title: "Until I turn it back on",
                     value: "always",
                     groupValue: selectedOption,
-                    onChanged: (value) {
-                      setState(() {
-                        selectedOption = value;
-                      });
-                    },
+                    onChanged: (value) =>
+                        setState(() => selectedOption = value),
                   ),
                 ],
               ),
               actions: [
                 TextButton(
-                  onPressed: () {
-                    Navigator.pop(dialogContext);
-                  },
+                  onPressed: () => Navigator.pop(dialogContext),
                   child: reausabletext(
                     "Cancel",
                     fontsize: 14.sp,
@@ -1025,7 +1060,6 @@ class _AllChatsBody extends StatelessWidget {
                 TextButton(
                   onPressed: () {
                     String? mutedUntil;
-
                     if (selectedOption == "1_hour") {
                       mutedUntil = DateTime.now()
                           .add(const Duration(hours: 1))
@@ -1035,27 +1069,16 @@ class _AllChatsBody extends StatelessWidget {
                           .add(const Duration(hours: 8))
                           .toIso8601String();
                     } else if (selectedOption == "until_tomorrow") {
-                      final tomorrow = DateTime.now().add(
-                        const Duration(days: 1),
-                      );
-
+                      final tomorrow =
+                      DateTime.now().add(const Duration(days: 1));
                       mutedUntil = DateTime(
-                        tomorrow.year,
-                        tomorrow.month,
-                        tomorrow.day,
-                        8,
-                        0,
-                      ).toIso8601String();
+                          tomorrow.year, tomorrow.month, tomorrow.day, 8, 0)
+                          .toIso8601String();
                     } else {
                       mutedUntil = null;
                     }
-
                     Navigator.pop(dialogContext);
-
-                    controller.muteChat(
-                      chat,
-                      mutedUntil: mutedUntil,
-                    );
+                    controller.muteChat(chat, mutedUntil: mutedUntil);
                   },
                   child: reausabletext(
                     "OK",
@@ -1081,9 +1104,7 @@ class _AllChatsBody extends StatelessWidget {
     final bool selected = value == groupValue;
 
     return InkWell(
-      onTap: () {
-        onChanged(value);
-      },
+      onTap: () => onChanged(value),
       borderRadius: BorderRadius.circular(8.r),
       child: Padding(
         padding: EdgeInsets.symmetric(vertical: 4.h),
@@ -1130,29 +1151,17 @@ class _AllChatsBody extends StatelessWidget {
 
   Widget _archivedChatsRow() {
     return Padding(
-      padding: EdgeInsets.only(
-        left: 16.w,
-        right: 16.w,
-        top: 8.h,
-        bottom: 4.h,
-      ),
+      padding: EdgeInsets.only(left: 16.w, right: 16.w, top: 8.h, bottom: 4.h),
       child: GestureDetector(
-        onTap: () {
-          Get.to(
-                () => const ArchivedChatsScreen(),
-          );
-        },
+        onTap: () => Get.to(() => const ArchivedChatsScreen()),
         child: Container(
-          padding: EdgeInsets.symmetric(
-            horizontal: 14.w,
-            vertical: 12.h,
-          ),
+          padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(16.r),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.025),
+                color: Colors.black.withOpacity(0.025),
                 blurRadius: 10,
                 offset: const Offset(0, 3),
               ),
@@ -1202,6 +1211,489 @@ class _AllChatsBody extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _GroupsTabBody extends StatelessWidget {
+  const _GroupsTabBody();
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = Get.put(TotalGroupController());
+
+    return Padding(
+      padding: EdgeInsets.symmetric(
+        horizontal: 16.w,
+        vertical: 10.h,
+      ),
+      child: Column(
+        children: [
+          Container(
+            height: 48.h,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(14.r),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.03),
+                  blurRadius: 10,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+              border: Border.all(
+                color: Colors.grey.withOpacity(0.12),
+              ),
+            ),
+            child: Obx(
+                  () => TextField(
+                controller: controller.searchController,
+                decoration: InputDecoration(
+                  hintText: "Search groups...",
+                  hintStyle: TextStyle(
+                    fontSize: 13.5.sp,
+                    color: Colors.grey.shade400,
+                    fontFamily: FontFamily.interRegular,
+                  ),
+                  prefixIcon: Icon(
+                    Icons.search_rounded,
+                    size: 20.sp,
+                    color: Colors.grey.shade400,
+                  ),
+                  border: InputBorder.none,
+                  enabledBorder: InputBorder.none,
+                  focusedBorder: InputBorder.none,
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 16.w,
+                    vertical: 14.h,
+                  ),
+                  suffixIcon: controller.searchText.value.isNotEmpty
+                      ? GestureDetector(
+                    onTap: controller.clearSearch,
+                    child: Icon(
+                      Icons.close_rounded,
+                      size: 18.sp,
+                      color: Colors.grey.shade400,
+                    ),
+                  )
+                      : null,
+                ),
+              ),
+            ),
+          ),
+          SizedBox(height: 16.h),
+          Expanded(
+            child: Obx(() {
+              if (controller.isLoading.value && controller.groupList.isEmpty) {
+                return _buildGroupList(
+                  controller: controller,
+                  isLoading: true,
+                );
+              }
+
+              if (controller.hasError.value && controller.groupList.isEmpty) {
+                return Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.error_outline_rounded,
+                        size: 45.sp,
+                        color: Colors.grey.shade400,
+                      ),
+                      SizedBox(height: 10.h),
+                      Text(
+                        controller.errorMessage.value.isNotEmpty
+                            ? controller.errorMessage.value
+                            : "Something went wrong",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 13.sp,
+                          color: Colors.grey.shade600,
+                          fontFamily: FontFamily.interRegular,
+                        ),
+                      ),
+                      SizedBox(height: 12.h),
+                      ElevatedButton(
+                        onPressed: controller.refreshGroups,
+                        child: const Text("Retry"),
+                      ),
+                    ],
+                  ),
+                );
+              }
+
+              final groups = controller.filteredGroupList;
+
+              if (groups.isEmpty) {
+                return RefreshIndicator(
+                  onRefresh: controller.refreshGroups,
+                  child: ListView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    children: [
+                      SizedBox(
+                        height: 250.h,
+                        child: Center(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                controller.searchText.value.isNotEmpty
+                                    ? Icons.search_off_rounded
+                                    : Icons.groups_outlined,
+                                size: 45.sp,
+                                color: Colors.grey.shade400,
+                              ),
+                              SizedBox(height: 10.h),
+                              Text(
+                                controller.searchText.value.isNotEmpty
+                                    ? "No groups found"
+                                    : "No groups available",
+                                style: TextStyle(
+                                  fontSize: 13.sp,
+                                  color: Colors.grey.shade600,
+                                  fontFamily: FontFamily.interRegular,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }
+
+              return RefreshIndicator(
+                onRefresh: controller.refreshGroups,
+                child: _buildGroupList(
+                  controller: controller,
+                  data: groups,
+                ),
+              );
+            }),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGroupList({
+    required TotalGroupController controller,
+    List<GroupChatData>? data,
+    bool isLoading = false,
+  }) {
+    final List<GroupChatData>? items = isLoading ? null : data;
+
+    final int itemCount = items?.length ?? 6;
+
+    return Skeletonizer(
+      enabled: items == null,
+      child: ListView.separated(
+        controller: controller.scrollController,
+        padding: EdgeInsets.only(bottom: 20.h),
+        itemCount: itemCount,
+        separatorBuilder: (_, __) => SizedBox(height: 12.h),
+        physics: const AlwaysScrollableScrollPhysics(
+          parent: BouncingScrollPhysics(),
+        ),
+        itemBuilder: (context, index) {
+          if (items == null) {
+            return const _GroupCardSkeleton();
+          }
+
+          return apiGroupCard(
+            items[index],
+            index,
+            controller,
+          );
+        },
+      ),
+    );
+  }
+
+  Widget apiGroupCard(
+      GroupChatData group,
+      int index,
+      TotalGroupController controller,
+      ) {
+    final colors = colorPool[index % colorPool.length];
+
+    final String groupName = controller.getGroupName(group);
+    final String description = controller.getGroupDescription(group);
+    final int memberCount = controller.getMemberCount(group);
+    final int unreadCount = controller.getUnreadCount(group);
+    final String groupDate = controller.getGroupDate(group);
+
+    return Padding(
+      padding: EdgeInsets.only(bottom: 0.h),
+      child: InkWell(
+        onTap: () {
+          final gId = group.groupId?.toString() ?? '';
+          if (gId.isEmpty) return;
+
+          String groupCode = '';
+          String isCreator = 'false';
+          String isActive = 'true';
+          String profileImg = group.groupProfile ?? '';
+
+          if (Get.isRegistered<GroupController>()) {
+            final gc = Get.find<GroupController>();
+            final matched = gc.groupData.firstWhereOrNull(
+                  (g) => g.id == group.groupId,
+            );
+            if (matched != null) {
+              groupCode = matched.groupCode ?? '';
+              isCreator = (matched.isCreator ?? false).toString();
+              isActive = (matched.isActive ?? true).toString();
+              if (profileImg.isEmpty && matched.groupProfile != null) {
+                profileImg = matched.groupProfile!;
+              }
+            }
+          }
+
+          Get.toNamed(
+            Routes.groupChatScreen,
+            arguments: {
+              "groupId": gId,
+              "groupName": groupName,
+              "groupProfile": profileImg,
+              "groupImage": profileImg,
+              "groupCode": groupCode,
+              "isCreator": isCreator,
+              "isActive": isActive,
+            },
+          )?.then((_) {
+            controller.getGroupChatList(refresh: true);
+          });
+        },
+        borderRadius: BorderRadius.circular(20.r),
+        child: Container(
+          padding: EdgeInsets.symmetric(
+            horizontal: 14.w,
+            vertical: 14.h,
+          ),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20.r),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.03),
+                blurRadius: 10,
+                offset: const Offset(0, 3),
+              ),
+            ],
+            border: Border.all(
+              color: Colors.grey.withOpacity(0.08),
+            ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 48.w,
+                height: 48.w,
+                decoration: BoxDecoration(
+                  color: colors['bg'],
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.groups_rounded,
+                  color: colors['icon'],
+                  size: 24.sp,
+                ),
+              ),
+              SizedBox(width: 14.w),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      groupName,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 14.5.sp,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.black87,
+                        fontFamily: FontFamily.interBold,
+                      ),
+                    ),
+                    SizedBox(height: 3.h),
+                    Text(
+                      "$memberCount Members",
+                      style: TextStyle(
+                        fontSize: 11.5.sp,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF6B4DFF),
+                        fontFamily: FontFamily.interMedium,
+                      ),
+                    ),
+                    if (description.isNotEmpty) ...[
+                      SizedBox(height: 3.h),
+                      Text(
+                        description,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 11.sp,
+                          color: Colors.grey.shade600,
+                          fontFamily: FontFamily.interRegular,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              SizedBox(width: 10.w),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  if (groupDate.isNotEmpty)
+                    Text(
+                      groupDate,
+                      style: TextStyle(
+                        fontSize: 10.5.sp,
+                        color: Colors.grey.shade500,
+                        fontFamily: FontFamily.interRegular,
+                      ),
+                    ),
+                  SizedBox(height: 8.h),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (unreadCount > 0)
+                        Container(
+                          constraints: BoxConstraints(
+                            minWidth: 20.w,
+                            minHeight: 20.w,
+                          ),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 5.w,
+                          ),
+                          decoration: const BoxDecoration(
+                            color: Color(0xFF6B4DFF),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Center(
+                            child: Text(
+                              unreadCount > 99 ? "99+" : unreadCount.toString(),
+                              style: TextStyle(
+                                fontSize: 10.sp,
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      if (unreadCount > 0) SizedBox(width: 8.w),
+                      Icon(
+                        Icons.arrow_forward_ios_rounded,
+                        size: 14.sp,
+                        color: Colors.grey.shade400,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _GroupCardSkeleton extends StatelessWidget {
+  const _GroupCardSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: 14.w,
+        vertical: 14.h,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20.r),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+        border: Border.all(
+          color: Colors.grey.withOpacity(0.08),
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 48.w,
+            height: 48.w,
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+            ),
+          ),
+          SizedBox(width: 14.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "Group Name Placeholder",
+                  style: TextStyle(
+                    fontSize: 14.5.sp,
+                    fontWeight: FontWeight.w800,
+                    fontFamily: FontFamily.interBold,
+                  ),
+                ),
+                SizedBox(height: 5.h),
+                Text(
+                  "12 Members",
+                  style: TextStyle(
+                    fontSize: 11.5.sp,
+                    fontWeight: FontWeight.w600,
+                    fontFamily: FontFamily.interMedium,
+                  ),
+                ),
+                SizedBox(height: 4.h),
+                Text(
+                  "Last message placeholder",
+                  style: TextStyle(
+                    fontSize: 11.sp,
+                    fontFamily: FontFamily.interRegular,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          SizedBox(width: 10.w),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                "Yesterday",
+                style: TextStyle(
+                  fontSize: 10.5.sp,
+                  fontFamily: FontFamily.interRegular,
+                ),
+              ),
+              SizedBox(height: 8.h),
+              Container(
+                width: 20.w,
+                height: 20.w,
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
