@@ -1,11 +1,9 @@
 import 'dart:io';
-
 import 'package:fgtracker/app/Core/theme/AppText.dart';
 import 'package:fgtracker/app/Core/values/Context_Utility.dart';
 import 'package:fgtracker/app/Core/values/colors.dart';
 import 'package:fgtracker/app/config/themes_data.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
-
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -308,7 +306,7 @@ class CommonDialog {
             : AppText.wthtLocationAccessWeWont.tr;
 
         return WillPopScope(
-          onWillPop: () async => false, // Disables back button and gesture
+          onWillPop: () async => false,
           child: Center(
             child: Material(
               color: Colors.transparent,
@@ -324,7 +322,6 @@ class CommonDialog {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     const SizedBox(height: 20),
-                    // Title
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
                       child: reausabletext(
@@ -340,7 +337,6 @@ class CommonDialog {
                       ),
                     ),
                     const SizedBox(height: 20),
-                    // Content
                     Padding(
                       padding: EdgeInsets.symmetric(horizontal: 20.w),
                       child: reausabletext(
@@ -415,7 +411,6 @@ class CommonDialog {
     );
   }
 
-  //********** Location Permission ****************//
   LocationPermission_dialog(
     BuildContext context, {
     void Function()? acceptontap,

@@ -1,6 +1,5 @@
 import 'package:get/get.dart';
 import 'package:fgtracker/app/Model/PrivateChatModel.dart';
-
 import '../../../Core/constant/const_res.dart';
 import '../../../Core/constant/pref_res.dart';
 import '../../../Core/values/global.dart';
@@ -491,6 +490,7 @@ class ChatListController extends GetxController {
     privateChats.refresh();
   }
 
+
   void markChatAsRead(PrivateChatModel chat) {
     if (chat.id == null) {
       return;
@@ -500,10 +500,8 @@ class ChatListController extends GetxController {
       userId: currentUserId,
       chatId: chat.id.toString(),
     );
-
-    chat.unreadCount = 0;
-    privateChats.refresh();
   }
+
 
   void deleteChat(PrivateChatModel chat) {
     if (chat.id == null) {

@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
@@ -41,10 +43,10 @@ class SocketMessageService extends GetxService {
   String? get privateChatId => _privateChatId;
 
   Future<void> init(
-      String socketUrl, {
-        required String userId,
-        int? groupId,
-      }) async {
+    String socketUrl, {
+    required String userId,
+    int? groupId,
+  }) async {
     if (_socket != null && _socket!.connected) {
       if (groupId != null) {
         joinUserInGroup(userId, groupId);
@@ -75,9 +77,9 @@ class SocketMessageService extends GetxService {
   }
 
   void joinUserInGroup(
-      String userId,
-      int groupId,
-      ) {
+    String userId,
+    int groupId,
+  ) {
     if (!isSocketConnected) return;
 
     _socket!.emit(
@@ -90,9 +92,9 @@ class SocketMessageService extends GetxService {
   }
 
   void leaveUserFromGroup(
-      String userId,
-      int groupId,
-      ) {
+    String userId,
+    int groupId,
+  ) {
     if (!isSocketConnected) return;
 
     _socket!.emit(
@@ -135,9 +137,9 @@ class SocketMessageService extends GetxService {
   }
 
   void markSeen(
-      String userId,
-      int groupId,
-      ) {
+    String userId,
+    int groupId,
+  ) {
     _socket?.emit(
       "mark_seen",
       {
@@ -157,12 +159,12 @@ class SocketMessageService extends GetxService {
 
     _socket?.on(
       'receive_message',
-          (data) {
+      (data) {
         final dataGroupId = int.tryParse(data['groupId'].toString());
 
         if (dataGroupId == groupId) {
           if ((data['senderId'] == senderId &&
-              data['receiverId'] == recieverId) ||
+                  data['receiverId'] == recieverId) ||
               (data['senderId'] == recieverId &&
                   data['receiverId'] == senderId)) {
             callback?.call(data);
@@ -180,7 +182,7 @@ class SocketMessageService extends GetxService {
 
     _socket?.on(
       "messages_seen_update",
-          (data) {
+      (data) {
         final dataGroupId = int.tryParse(data["groupId"].toString());
 
         if (dataGroupId == groupId) {
@@ -242,25 +244,25 @@ class SocketMessageService extends GetxService {
 
     socket.on(
       "receive_group_message",
-          (data) {
+      (data) {
         callback(data);
       },
     );
   }
 
   Future<void> initPrivateChat(
-      String socketUrl, {
-        required String userId,
-        required String receiverId,
-        Function(dynamic)? onJoined,
-      }) async {
+    String socketUrl, {
+    required String userId,
+    required String receiverId,
+    Function(dynamic)? onJoined,
+  }) async {
     if (_privateChatSocket != null && _privateChatSocket!.connected) {
       _privateChatSocket?.off("joined");
 
       if (onJoined != null) {
         _privateChatSocket?.on(
           "joined",
-              (data) {
+          (data) {
             if (data is Map) {
               _privateChatId = data["chatId"]?.toString();
             }
@@ -306,7 +308,7 @@ class SocketMessageService extends GetxService {
 
     _privateChatSocket?.on(
       "joined",
-          (data) {
+      (data) {
         if (data is Map) {
           _privateChatId = data["chatId"]?.toString();
         }
@@ -355,8 +357,7 @@ class SocketMessageService extends GetxService {
       return;
     }
 
-    final senderId =
-    Global.storageServices.get(PrefConst.userId).toString();
+    final senderId = Global.storageServices.get(PrefConst.userId).toString();
 
     final payload = <String, dynamic>{
       "senderId": senderId,
@@ -384,7 +385,7 @@ class SocketMessageService extends GetxService {
 
     _privateChatSocket?.on(
       "receive_message",
-          (data) {
+      (data) {
         if (data is! Map) return;
 
         final dataSenderId = data["senderId"]?.toString();
@@ -429,7 +430,7 @@ class SocketMessageService extends GetxService {
 
     _privateChatSocket?.on(
       "messages_delivered",
-          (data) {
+      (data) {
         callback(data);
       },
     );
@@ -440,7 +441,9 @@ class SocketMessageService extends GetxService {
     required String userId,
     required String otherUserId,
   }) {
-    if (!isPrivateChatSocketConnected) return;
+    if (!isPrivateChatSocketConnected) {
+      return;
+    }
 
     final payload = {
       "chatId": chatId,
@@ -452,6 +455,8 @@ class SocketMessageService extends GetxService {
       "mark_seen",
       payload,
     );
+
+    log("MARK SEEN EMIT CALLED");
   }
 
   void listenPrivateMessagesSeenUpdate({
@@ -461,18 +466,17 @@ class SocketMessageService extends GetxService {
 
     _privateChatSocket?.on(
       "messages_seen_update",
-          (data) {
+      (data) {
         callback(data);
       },
     );
   }
 
   void initPrivateChatListSocket(
-      String socketUrl, {
-        required String userId,
-      }) {
-    if (_privateChatListSocket != null &&
-        _privateChatListSocket!.connected) {
+    String socketUrl, {
+    required String userId,
+  }) {
+    if (_privateChatListSocket != null && _privateChatListSocket!.connected) {
       return;
     }
 
@@ -494,7 +498,7 @@ class SocketMessageService extends GetxService {
 
     _privateChatListSocket?.on(
       "archived_private_chats",
-          (data) {
+      (data) {
         _archivedPrivateChatsCallback?.call(data);
       },
     );
@@ -513,7 +517,7 @@ class SocketMessageService extends GetxService {
       if (_privateChatRemovedCallback != null) {
         _privateChatListSocket?.on(
           "private_chat_removed",
-              (data) {
+          (data) {
             _privateChatRemovedCallback?.call(data);
           },
         );
@@ -524,7 +528,7 @@ class SocketMessageService extends GetxService {
       if (_privateChatActionErrorCallback != null) {
         _privateChatListSocket?.on(
           "private_chat_action_error",
-              (data) {
+          (data) {
             _privateChatActionErrorCallback?.call(data);
           },
         );
@@ -548,8 +552,7 @@ class SocketMessageService extends GetxService {
   }) {
     _privateChatListUpdatedCallback = callback;
 
-    if (_privateChatListSocket == null ||
-        !_privateChatListSocket!.connected) {
+    if (_privateChatListSocket == null || !_privateChatListSocket!.connected) {
       return;
     }
 
@@ -567,7 +570,7 @@ class SocketMessageService extends GetxService {
 
     _privateChatSocket?.on(
       "private_chat_updated",
-          (data) {
+      (data) {
         callback(data);
       },
     );
@@ -657,14 +660,14 @@ class SocketMessageService extends GetxService {
 
     _socket?.on(
       "messageEdited",
-          (data) {
+      (data) {
         callback(data);
       },
     );
 
     _privateChatSocket?.on(
       "messageEdited",
-          (data) {
+      (data) {
         callback(data);
       },
     );
@@ -706,14 +709,14 @@ class SocketMessageService extends GetxService {
 
     _socket?.on(
       "message_deleted",
-          (data) {
+      (data) {
         callback(data);
       },
     );
 
     _privateChatSocket?.on(
       "message_deleted",
-          (data) {
+      (data) {
         callback(data);
       },
     );
@@ -809,7 +812,7 @@ class SocketMessageService extends GetxService {
 
     _socket?.on(
       "message_pinned",
-          (data) {
+      (data) {
         callback(
           Map<String, dynamic>.from(data),
         );
@@ -818,7 +821,7 @@ class SocketMessageService extends GetxService {
 
     _privateChatSocket?.on(
       "message_pinned",
-          (data) {
+      (data) {
         callback(
           Map<String, dynamic>.from(data),
         );
@@ -834,7 +837,7 @@ class SocketMessageService extends GetxService {
 
     _socket?.on(
       "message_unpinned",
-          (data) {
+      (data) {
         callback(
           Map<String, dynamic>.from(data),
         );
@@ -843,7 +846,7 @@ class SocketMessageService extends GetxService {
 
     _privateChatSocket?.on(
       "message_unpinned",
-          (data) {
+      (data) {
         callback(
           Map<String, dynamic>.from(data),
         );
@@ -1007,7 +1010,13 @@ class SocketMessageService extends GetxService {
     required String userId,
     required String chatId,
   }) {
+    log("========== MARK PRIVATE CHAT READ DEBUG ==========");
+    log("Socket Connected => $isPrivateChatListSocketConnected");
+    log("User ID => $userId");
+    log("Chat ID => $chatId");
+
     if (!isPrivateChatListSocketConnected) {
+      log("MARK PRIVATE CHAT READ FAILED => SOCKET NOT CONNECTED");
       return;
     }
 
@@ -1016,10 +1025,15 @@ class SocketMessageService extends GetxService {
       "userId": int.tryParse(userId) ?? userId,
     };
 
+    log("EVENT => mark_private_chat_read");
+    log("PAYLOAD => $payload");
+
     _privateChatListSocket!.emit(
       "mark_private_chat_read",
       payload,
     );
+
+    log("MARK PRIVATE CHAT READ EMIT CALLED");
   }
 
   void deletePrivateChat({
@@ -1056,7 +1070,7 @@ class SocketMessageService extends GetxService {
 
     _privateChatListSocket!.on(
       "private_chat_removed",
-          (data) {
+      (data) {
         _privateChatRemovedCallback?.call(data);
       },
     );
@@ -1077,7 +1091,7 @@ class SocketMessageService extends GetxService {
 
     _privateChatListSocket?.on(
       "private_chat_action_error",
-          (data) {
+      (data) {
         _privateChatActionErrorCallback?.call(data);
       },
     );
@@ -1098,7 +1112,7 @@ class SocketMessageService extends GetxService {
 
     _privateChatListSocket!.on(
       "archived_private_chats",
-          (data) {
+      (data) {
         _archivedPrivateChatsCallback?.call(data);
       },
     );
@@ -1141,8 +1155,8 @@ class SocketMessageService extends GetxService {
   }
 
   void listenPrivateChatCleared(
-      Function(Map<String, dynamic>) callback,
-      ) {
+    Function(Map<String, dynamic>) callback,
+  ) {
     if (_privateChatSocket == null) {
       return;
     }
@@ -1151,7 +1165,7 @@ class SocketMessageService extends GetxService {
 
     _privateChatSocket!.on(
       "private_chat_cleared",
-          (data) {
+      (data) {
         if (data is Map) {
           callback(Map<String, dynamic>.from(data));
         }

@@ -44,6 +44,7 @@ class ChatInputArea extends StatefulWidget {
   final RxSet<int> uploadingVideoIndexes;
   final RxMap<int, double> videoUploadProgress;
 
+
   ChatInputArea({
     super.key,
     required this.messageText,

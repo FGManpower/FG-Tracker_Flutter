@@ -58,7 +58,9 @@ class GroupMessageController extends GetxController {
   RxList<Uint8List?> videoThumbnails = <Uint8List?>[].obs;
   RxList<LocationData> groupMembers = <LocationData>[].obs;
   final Rxn<MessageData> editingMessage = Rxn<MessageData>();
-
+  final RxString groupName = ''.obs;
+  final RxString groupDesc = ''.obs;
+  late String groupImage;
   RxBool isLoadingMembers = false.obs;
   final RxBool isUploadingVideo = false.obs;
   final RxDouble uploadProgress = 0.0.obs;
@@ -82,7 +84,6 @@ class GroupMessageController extends GetxController {
   final RxMap<int, double> videoUploadProgress = <int, double>{}.obs;
   final RxString floatingDate = "".obs;
   final RxBool showFloatingDate = false.obs;
-
   Timer? _floatingDateTimer;
 
   Future<void> scrollToMessage(int messageId) async {
@@ -121,9 +122,6 @@ class GroupMessageController extends GetxController {
 
   late int groupId;
 
-  final RxString groupName = ''.obs;
-  late String groupImage;
-
   @override
   void onInit() {
     super.onInit();
@@ -134,8 +132,9 @@ class GroupMessageController extends GetxController {
         : (int.tryParse(arguments?["groupId"]?.toString() ?? '0') ?? 0);
 
     groupName.value = arguments?["groupName"]?.toString() ?? "";
-    groupImage = arguments?["groupImage"]?.toString() ?? "";
-    print("isCreator = ${isCreator.value}");
+    groupDesc.value = arguments?["groupDesc"]?.toString() ?? "";
+    groupImage =
+        arguments?["groupImage"] ?? arguments?["groupProfile"] ?? "";    print("isCreator = ${isCreator.value}");
 
     initializeGroupChat();
     itemPositionsListener.itemPositions.addListener(_onScrollDateChanged);

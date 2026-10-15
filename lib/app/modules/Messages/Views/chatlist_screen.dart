@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -36,7 +38,6 @@ class ChatListScreen extends StatelessWidget {
       child: Scaffold(
         backgroundColor: const Color(0xFFF8F7FF),
         appBar: _buildAppBar(),
-
         floatingActionButton: FloatingActionButton(
           onPressed: () => Get.to(() => const NewChatScreen()),
           backgroundColor: const Color(0xFF6B4DFF),
@@ -47,9 +48,7 @@ class ChatListScreen extends StatelessWidget {
             color: Colors.white,
           ),
         ),
-
         bottomNavigationBar: const QuickCommunicationBar(),
-
         body: Column(
           children: [
             _buildCustomTabBar(),
@@ -78,7 +77,7 @@ class ChatListScreen extends StatelessWidget {
         children: [
           _circleIcon(
             Icons.arrow_back,
-                () => Get.back(),
+            () => Get.back(),
           ),
           SizedBox(width: 12.w),
           Expanded(
@@ -261,51 +260,51 @@ class _QuickCommunicationBarState extends State<QuickCommunicationBar> {
                 ),
               ),
             ),
-
             AnimatedSize(
               duration: const Duration(milliseconds: 300),
               curve: Curves.easeInOut,
               child: isExpanded
                   ? Padding(
-                padding: EdgeInsets.only(left: 8.w, right: 8.w, bottom: 15.h),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    _quickCommCard(
-                      icon: Icons.speaker_phone_rounded,
-                      title: "Walkie",
-                      subtitle: "Push to Talk",
-                      onTap: () {
-                        Get.toNamed(Routes.WalkieGroupSelect);
-                      },
-                    ),
-                    _quickCommCard(
-                      icon: Icons.location_on,
-                      title: "Tracking",
-                      subtitle: "Live Location",
-                      onTap: () {
-                        Get.toNamed(Routes.TrackingScreen);
-                      },
-                    ),
-                    _quickCommCard(
-                      icon: Icons.people_alt_rounded,
-                      title: "Groups",
-                      subtitle: "Team Chats",
-                      onTap: () {
-                        Get.toNamed(Routes.totalGroup);
-                      },
-                    ),
-                    _quickCommCard(
-                      icon: Icons.verified_user_rounded,
-                      title: "Safe Zone",
-                      subtitle: "Safety & Alerts",
-                      onTap: () {
-                        Get.toNamed(Routes.SafetyDashboard);
-                      },
-                    ),
-                  ],
-                ),
-              )
+                      padding:
+                          EdgeInsets.only(left: 8.w, right: 8.w, bottom: 15.h),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          _quickCommCard(
+                            icon: Icons.speaker_phone_rounded,
+                            title: "Walkie",
+                            subtitle: "Push to Talk",
+                            onTap: () {
+                              Get.toNamed(Routes.WalkieGroupSelect);
+                            },
+                          ),
+                          _quickCommCard(
+                            icon: Icons.location_on,
+                            title: "Tracking",
+                            subtitle: "Live Location",
+                            onTap: () {
+                              Get.toNamed(Routes.TrackingScreen);
+                            },
+                          ),
+                          _quickCommCard(
+                            icon: Icons.people_alt_rounded,
+                            title: "Groups",
+                            subtitle: "Team Chats",
+                            onTap: () {
+                              Get.toNamed(Routes.totalGroup);
+                            },
+                          ),
+                          _quickCommCard(
+                            icon: Icons.verified_user_rounded,
+                            title: "Safe Zone",
+                            subtitle: "Safety & Alerts",
+                            onTap: () {
+                              Get.toNamed(Routes.SafetyDashboard);
+                            },
+                          ),
+                        ],
+                      ),
+                    )
                   : SizedBox(width: double.infinity, height: 0.h),
             ),
           ],
@@ -417,7 +416,7 @@ class _AllChatsBody extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Obx(
-                        () => controller.archivedChats.isNotEmpty
+                    () => controller.archivedChats.isNotEmpty
                         ? _archivedChatsRow()
                         : const SizedBox.shrink(),
                   ),
@@ -607,11 +606,11 @@ class _AllChatsBody extends StatelessWidget {
   }
 
   Widget _sectionTitle(
-      String title, {
-        bool showViewAll = false,
-        int? badgeCount,
-        bool showDropdown = false,
-      }) {
+    String title, {
+    bool showViewAll = false,
+    int? badgeCount,
+    bool showDropdown = false,
+  }) {
     final bool isPinned = title == "Pinned Chats 📌";
 
     return Padding(
@@ -693,8 +692,13 @@ class _AllChatsBody extends StatelessWidget {
           return;
         }
 
+
+        if (Get.isRegistered<ChatListController>()) {
+          Get.find<ChatListController>().markChatAsRead(chat);
+        }
+
         await Get.to(
-              () => ChatScreen(),
+          () => ChatScreen(),
           arguments: {
             "userData": MemberData(
               userId: chat.userId,
@@ -708,6 +712,7 @@ class _AllChatsBody extends StatelessWidget {
             Get.put(MessageController());
           }),
         );
+
       },
       onLongPress: () => _showChatOptions(context, tapPos, chat),
       child: Container(
@@ -750,28 +755,28 @@ class _AllChatsBody extends StatelessWidget {
             CircleAvatar(
               radius: 26.r,
               backgroundColor:
-              isGroup ? const Color(0xFF6B4DFF) : Colors.grey.shade300,
+                  isGroup ? const Color(0xFF6B4DFF) : Colors.grey.shade300,
               backgroundImage: (!isGroup && image != null && image.isNotEmpty)
                   ? NetworkImage(
-                image.startsWith("http://") ||
-                    image.startsWith("https://")
-                    ? image
-                    : "${ConstRes.production}$image",
-              )
+                      image.startsWith("http://") ||
+                              image.startsWith("https://")
+                          ? image
+                          : "${ConstRes.production}$image",
+                    )
                   : null,
               child: isGroup
                   ? Icon(
-                Icons.groups,
-                color: Colors.white,
-                size: 24.sp,
-              )
+                      Icons.groups,
+                      color: Colors.white,
+                      size: 24.sp,
+                    )
                   : (image == null || image.isEmpty
-                  ? Icon(
-                Icons.person,
-                color: Colors.white,
-                size: 26.sp,
-              )
-                  : null),
+                      ? Icon(
+                          Icons.person,
+                          color: Colors.white,
+                          size: 26.sp,
+                        )
+                      : null),
             ),
             if (statusColor != null)
               Positioned(
@@ -885,10 +890,10 @@ class _AllChatsBody extends StatelessWidget {
   }
 
   void _showChatOptions(
-      BuildContext context,
-      Offset position,
-      PrivateChatModel chat,
-      ) {
+    BuildContext context,
+    Offset position,
+    PrivateChatModel chat,
+  ) {
     final bool isPinned = chat.isPinned == true;
     final bool isMuted = chat.isMuted == true;
     CustomDropdownMenu.show(
@@ -978,9 +983,9 @@ class _AllChatsBody extends StatelessWidget {
   }
 
   void _showMuteOptions(
-      BuildContext context,
-      PrivateChatModel chat,
-      ) {
+    BuildContext context,
+    PrivateChatModel chat,
+  ) {
     String selectedOption = "1_hour";
 
     showDialog(
@@ -1070,9 +1075,9 @@ class _AllChatsBody extends StatelessWidget {
                           .toIso8601String();
                     } else if (selectedOption == "until_tomorrow") {
                       final tomorrow =
-                      DateTime.now().add(const Duration(days: 1));
+                          DateTime.now().add(const Duration(days: 1));
                       mutedUntil = DateTime(
-                          tomorrow.year, tomorrow.month, tomorrow.day, 8, 0)
+                              tomorrow.year, tomorrow.month, tomorrow.day, 8, 0)
                           .toIso8601String();
                     } else {
                       mutedUntil = null;
@@ -1122,15 +1127,15 @@ class _AllChatsBody extends StatelessWidget {
               ),
               child: selected
                   ? Center(
-                child: Container(
-                  width: 10.w,
-                  height: 10.w,
-                  decoration: const BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Color(0xFF8080EE),
-                  ),
-                ),
-              )
+                      child: Container(
+                        width: 10.w,
+                        height: 10.w,
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Color(0xFF8080EE),
+                        ),
+                      ),
+                    )
                   : null,
             ),
             SizedBox(width: 14.w),
@@ -1247,7 +1252,7 @@ class _GroupsTabBody extends StatelessWidget {
               ),
             ),
             child: Obx(
-                  () => TextField(
+              () => TextField(
                 controller: controller.searchController,
                 decoration: InputDecoration(
                   hintText: "Search groups...",
@@ -1270,13 +1275,13 @@ class _GroupsTabBody extends StatelessWidget {
                   ),
                   suffixIcon: controller.searchText.value.isNotEmpty
                       ? GestureDetector(
-                    onTap: controller.clearSearch,
-                    child: Icon(
-                      Icons.close_rounded,
-                      size: 18.sp,
-                      color: Colors.grey.shade400,
-                    ),
-                  )
+                          onTap: controller.clearSearch,
+                          child: Icon(
+                            Icons.close_rounded,
+                            size: 18.sp,
+                            color: Colors.grey.shade400,
+                          ),
+                        )
                       : null,
                 ),
               ),
@@ -1414,10 +1419,10 @@ class _GroupsTabBody extends StatelessWidget {
   }
 
   Widget apiGroupCard(
-      GroupChatData group,
-      int index,
-      TotalGroupController controller,
-      ) {
+    GroupChatData group,
+    int index,
+    TotalGroupController controller,
+  ) {
     final colors = colorPool[index % colorPool.length];
 
     final String groupName = controller.getGroupName(group);
@@ -1441,7 +1446,7 @@ class _GroupsTabBody extends StatelessWidget {
           if (Get.isRegistered<GroupController>()) {
             final gc = Get.find<GroupController>();
             final matched = gc.groupData.firstWhereOrNull(
-                  (g) => g.id == group.groupId,
+              (g) => g.id == group.groupId,
             );
             if (matched != null) {
               groupCode = matched.groupCode ?? '';

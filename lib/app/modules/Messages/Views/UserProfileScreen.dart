@@ -11,6 +11,7 @@ import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import 'package:fgtracker/app/modules/mediaStream/Controller/calling_controller.dart';
 import '../../../Data/Services/Socket/Socket_Message_Services.dart';
 import '../Controller/user_profile_details_controller.dart';
@@ -55,6 +56,48 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     }
   }
 
+  ProfileDetailsData? get _profileData {
+    final dynamic val = _apiController.profileData.value;
+    if (val is ProfileDetailsData) {
+      return val;
+    }
+    if (val is ProfileDetailsModel) {
+      return val.data;
+    }
+    return null;
+  }
+
+  ProfileDetailsData _getDummyData() {
+    return ProfileDetailsData(
+      user: UserDetails(
+        userId: 0,
+        name: "Loading User Name Full",
+        profileImage: "",
+        isOnline: true,
+        lastSeen: "Loading status...",
+        mobileNo: "+91 00000 00000",
+        location: LocationData(
+          area: "Loading Area",
+          city: "Loading City",
+        ),
+      ),
+      media: MediaDetails(
+        photos: [
+          MediaItem(id: 1, type: "photo"),
+          MediaItem(id: 2, type: "photo"),
+        ],
+        videos: [MediaItem(id: 3, type: "video")],
+        audio: [MediaItem(id: 4, type: "audio")],
+      ),
+      mediaSummary: MediaSummary(totalMedia: 4),
+      blockStatus: BlockStatus(
+        isBlocked: false,
+        blockedByMe: false,
+        canMessage: true,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -74,12 +117,11 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       ),
       body: SafeArea(
         child: Obx(() {
-          if (_apiController.isLoading.value) {
-            return _buildSkeleton();
-          }
+          final bool isLoading = _apiController.isLoading.value;
+          final ProfileDetailsData? data =
+              isLoading ? _getDummyData() : _profileData;
 
-          final data = _apiController.profileData.value;
-          if (data == null || data.user == null) {
+          if (!isLoading && (data == null || data.user == null)) {
             return Center(
               child: Text(
                 "Profile details not found",
@@ -88,24 +130,27 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             );
           }
 
-          return ListView(
-            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-            children: [
-              _buildProfileHeader(data.user!),
-              SizedBox(height: 24.h),
-              _buildQuickActions(data.user!),
-              SizedBox(height: 16.h),
-              _buildMediaCard(data.media, data.mediaSummary),
-              SizedBox(height: 12.h),
-              _buildAboutCard(data.user!),
-              SizedBox(height: 12.h),
-              _buildEncryptionCard(),
-              SizedBox(height: 8.h),
-              _buildClearChatCard(),
-              SizedBox(height: 8.h),
-              _buildBlockCard(data.user!, data.blockStatus),
-              SizedBox(height: 24.h),
-            ],
+          return Skeletonizer(
+            enabled: isLoading,
+            child: ListView(
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+              children: [
+                _buildProfileHeader(data!.user!),
+                SizedBox(height: 24.h),
+                _buildQuickActions(data.user!),
+                SizedBox(height: 16.h),
+                _buildMediaCard(data.media, data.mediaSummary),
+                SizedBox(height: 12.h),
+                _buildAboutCard(data.user!),
+                SizedBox(height: 12.h),
+                _buildEncryptionCard(),
+                SizedBox(height: 8.h),
+                _buildClearChatCard(),
+                SizedBox(height: 8.h),
+                _buildBlockCard(data.user!, data.blockStatus, isLoading),
+                SizedBox(height: 24.h),
+              ],
+            ),
           );
         }),
       ),
@@ -569,30 +614,36 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     }
 
     return _whiteCard(
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             "Contact & Info",
             style: TextStyle(
-              fontSize: 15.sp,
+              fontSize: 16.sp,
               fontWeight: FontWeight.w800,
               color: _purple,
             ),
           ),
           if (phone.isNotEmpty) ...[
-            SizedBox(height: 10.h),
+            SizedBox(height: 14.h),
             Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Icon(Icons.phone_rounded, color: _lightPurple, size: 18.sp),
-                SizedBox(width: 8.w),
+                Icon(
+                  Icons.phone_rounded,
+                  color: _lightPurple,
+                  size: 19.sp,
+                ),
+                SizedBox(width: 12.w),
                 Expanded(
                   child: Text(
                     phone,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      fontSize: 13.5.sp,
+                      fontSize: 14.sp,
                       color: _purple,
                       fontWeight: FontWeight.w600,
                     ),
@@ -601,39 +652,67 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               ],
             ),
           ],
-          if (locationStr.isNotEmpty) ...[
-            SizedBox(height: 8.h),
+          if (phone.isNotEmpty && locationStr.trim().isNotEmpty) ...[
+            SizedBox(height: 14.h),
+            Divider(
+              height: 1,
+              thickness: 0.8,
+              color: Colors.grey.shade200,
+            ),
+          ],
+          if (locationStr.trim().isNotEmpty) ...[
+            SizedBox(height: 14.h),
             Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Icon(
                   Icons.location_on_outlined,
                   color: _lightPurple,
-                  size: 18.sp,
+                  size: 20.sp,
                 ),
-                SizedBox(width: 8.w),
+                SizedBox(width: 12.w),
                 Expanded(
                   child: Text(
                     locationStr.trim().replaceAll(RegExp(r',$'), ''),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      fontSize: 13.sp,
+                      fontSize: 13.5.sp,
                       color: Colors.grey.shade700,
                       fontWeight: FontWeight.w500,
+                      height: 1.4,
                     ),
                   ),
                 ),
               ],
             ),
           ],
-          SizedBox(height: 8.h),
-          Text(
-            "Available for team communication.",
-            style: TextStyle(
-              fontSize: 13.sp,
-              color: _purple.withOpacity(0.8),
-              fontWeight: FontWeight.w500,
-            ),
+          SizedBox(height: 14.h),
+          Divider(
+            height: 1,
+            thickness: 0.8,
+            color: Colors.grey.shade200,
+          ),
+          SizedBox(height: 12.h),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(
+                Icons.info_outline_rounded,
+                color: _lightPurple,
+                size: 18.sp,
+              ),
+              SizedBox(width: 10.w),
+              Expanded(
+                child: Text(
+                  "Available for team communication.",
+                  style: TextStyle(
+                    fontSize: 13.sp,
+                    color: _purple.withOpacity(0.8),
+                    fontWeight: FontWeight.w500,
+                    height: 1.4,
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -685,7 +764,20 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     );
   }
 
-  Widget _buildBlockCard(UserDetails user, BlockStatus? blockStatus) {
+  Widget _buildBlockCard(
+      UserDetails user, BlockStatus? blockStatus, bool isLoading) {
+    if (isLoading) {
+      return _buildSingleTileCard(
+        icon: Icons.block_rounded,
+        iconBgColor: const Color(0xFFFFF0F0),
+        iconColor: Colors.redAccent,
+        title: "Block User Name",
+        titleColor: Colors.redAccent,
+        arrowColor: Colors.redAccent,
+        onTap: () {},
+      );
+    }
+
     final controller = _chatController;
     if (controller == null) {
       return const SizedBox.shrink();
@@ -845,123 +937,6 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       width: double.infinity,
       padding:
           padding ?? EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.025),
-            blurRadius: 8,
-            offset: const Offset(0, 1),
-          ),
-        ],
-      ),
-      child: child,
-    );
-  }
-
-  Widget _buildSkeleton() {
-    return ListView(
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-      physics: const NeverScrollableScrollPhysics(),
-      children: [
-        Column(
-          children: [
-            _skel(height: 100.w, width: 100.w, radius: 50.r),
-            SizedBox(height: 12.h),
-            _skel(height: 22.h, width: 160.w, radius: 6.r),
-            SizedBox(height: 8.h),
-            _skel(height: 14.h, width: 120.w, radius: 6.r),
-            SizedBox(height: 10.h),
-            _skel(height: 28.h, width: 90.w, radius: 20.r),
-          ],
-        ),
-        SizedBox(height: 24.h),
-        Row(
-          children: [
-            Expanded(child: _skel(height: 70.h, radius: 14.r)),
-            SizedBox(width: 10.w),
-            Expanded(child: _skel(height: 70.h, radius: 14.r)),
-            SizedBox(width: 10.w),
-            Expanded(child: _skel(height: 70.h, radius: 14.r)),
-          ],
-        ),
-        SizedBox(height: 16.h),
-        _skelBox(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: _skel(height: 16.h, width: 140.w, radius: 4.r),
-                  ),
-                  SizedBox(width: 8.w),
-                  _skel(height: 14.h, width: 60.w, radius: 4.r),
-                ],
-              ),
-              SizedBox(height: 14.h),
-              SizedBox(
-                height: 75.h,
-                child: Row(
-                  children: [
-                    Expanded(child: _skel(height: 75.h, radius: 12.r)),
-                    SizedBox(width: 10.w),
-                    Expanded(child: _skel(height: 75.h, radius: 12.r)),
-                    SizedBox(width: 10.w),
-                    Expanded(child: _skel(height: 75.h, radius: 12.r)),
-                    SizedBox(width: 10.w),
-                    Expanded(child: _skel(height: 75.h, radius: 12.r)),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-        SizedBox(height: 12.h),
-        _skelBox(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _skel(height: 16.h, width: 120.w, radius: 4.r),
-              SizedBox(height: 14.h),
-              _skel(height: 14.h, width: 180.w, radius: 4.r),
-              SizedBox(height: 10.h),
-              _skel(height: 14.h, width: 140.w, radius: 4.r),
-              SizedBox(height: 10.h),
-              _skel(height: 14.h, width: 200.w, radius: 4.r),
-            ],
-          ),
-        ),
-        SizedBox(height: 12.h),
-        _skel(height: 56.h, radius: 14.r),
-        SizedBox(height: 8.h),
-        _skel(height: 56.h, radius: 14.r),
-        SizedBox(height: 8.h),
-        _skel(height: 56.h, radius: 14.r),
-      ],
-    );
-  }
-
-  Widget _skel({
-    required double height,
-    double? width,
-    double radius = 8,
-  }) {
-    return Container(
-      height: height,
-      width: width,
-      decoration: BoxDecoration(
-        color: Colors.grey.shade300.withOpacity(0.5),
-        borderRadius: BorderRadius.circular(radius),
-      ),
-    );
-  }
-
-  Widget _skelBox({required Widget child}) {
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(14.r),

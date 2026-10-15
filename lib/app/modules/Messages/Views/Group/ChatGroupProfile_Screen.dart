@@ -18,6 +18,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import '../../Controller/group_profile_details_controller.dart';
 import 'media_links_docs_screen.dart';
 import 'package:fgtracker/app/Model/group_profile_details_model.dart';
@@ -52,6 +53,72 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
     } else {
       _apiController.isLoading.value = false;
     }
+  }
+
+  GroupProfileData? get _profileData {
+    final dynamic val = _apiController.profileData.value;
+    if (val is GroupProfileData) {
+      return val;
+    }
+    if (val is GroupProfileDetailsModel) {
+      return val.data;
+    }
+    return null;
+  }
+
+  GroupProfileData _getDummyData() {
+    return GroupProfileData(
+      group: GroupDetailsInfo(
+        groupId: 0,
+        groupName: "Loading Group Name...",
+        groupProfile: "",
+        groupCode: "XXXX",
+      ),
+      membersSummary: GroupMembersSummary(
+        totalMembers: 12,
+        onlineMembersCount: 4,
+      ),
+      permissions: GroupPermissions(
+        canEditGroup: true,
+        canAddMember: true,
+        canLeaveGroup: true,
+        canSendMessage: true,
+      ),
+      myStatus: MyStatus(
+        isMember: true,
+        isAdmin: true,
+        isCreator: false,
+      ),
+      members: [
+        GroupMemberInfo(
+          userId: 1,
+          name: "Loading Member 1",
+          profileImage: "",
+          isMe: true,
+          isAdmin: true,
+          isOnline: true,
+        ),
+        GroupMemberInfo(
+          userId: 2,
+          name: "Loading Member 2",
+          profileImage: "",
+          isMe: false,
+          isAdmin: false,
+          isOnline: false,
+        ),
+      ],
+      mediaSummary: GroupMediaSummary(
+        totalMedia: 4,
+      ),
+      media: GroupMediaDetails(
+        photos: [
+          GroupMediaItem(id: 1, type: "photo"),
+          GroupMediaItem(id: 2, type: "photo")
+        ],
+        videos: [GroupMediaItem(id: 3, type: "video")],
+        audio: [GroupMediaItem(id: 4, type: "audio")],
+      ),
+    );
   }
 
   bool _isOnline(GroupMemberInfo m) {
@@ -101,7 +168,7 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
               child: _roundBtn(
                 icon: Icons.edit_rounded,
                 onTap: () {
-                  final currentGroup = _apiController.profileData.value?.group;
+                  final currentGroup = _profileData?.group;
                   groupController.groupName.text = currentGroup?.groupName ??
                       chatController.groupName.toString();
                   DialogBox().showUpdateGroupBottomSheet(
@@ -116,36 +183,37 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
       ),
       body: SafeArea(
         child: Obx(() {
-          if (_apiController.isLoading.value) {
-            return const Center(
-                child: CircularProgressIndicator(color: _purple));
-          }
+          final bool isLoading = _apiController.isLoading.value;
+          final GroupProfileData? data =
+              isLoading ? _getDummyData() : _profileData;
 
-          final data = _apiController.profileData.value;
-          if (data == null || data.group == null) {
+          if (!isLoading && (data == null || data.group == null)) {
             return Center(
                 child: Text("Group details not found",
                     style: TextStyle(fontSize: 16.sp, color: _purple)));
           }
 
-          return ListView(
-            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-            children: [
-              _buildProfileHeader(data),
-              SizedBox(height: 18.h),
-              _buildQuickActions(data),
-              SizedBox(height: 16.h),
-              _buildMediaCard(data.media, data.mediaSummary),
-              SizedBox(height: 12.h),
-              _buildSettingsCard(data),
-              SizedBox(height: 16.h),
-              _buildMembersSection(data),
-              SizedBox(height: 16.h),
-              _buildFavoritesCard(),
-              SizedBox(height: 12.h),
-              _buildDangerSection(data),
-              SizedBox(height: 24.h),
-            ],
+          return Skeletonizer(
+            enabled: isLoading,
+            child: ListView(
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+              children: [
+                _buildProfileHeader(data!),
+                SizedBox(height: 18.h),
+                _buildQuickActions(data),
+                SizedBox(height: 16.h),
+                _buildMediaCard(data.media, data.mediaSummary),
+                SizedBox(height: 12.h),
+                _buildSettingsCard(data),
+                SizedBox(height: 16.h),
+                _buildMembersSection(data),
+                SizedBox(height: 16.h),
+                _buildFavoritesCard(),
+                SizedBox(height: 12.h),
+                _buildDangerSection(data),
+                SizedBox(height: 24.h),
+              ],
+            ),
           );
         }),
       ),

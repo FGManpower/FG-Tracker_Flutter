@@ -451,6 +451,9 @@ class GroupChatScreen extends GetView<GroupMessageController> {
                     controller.startSearch();
                   } else if (value == 1) {
                     groupController.groupName.text = controller.groupName.value;
+                    groupController.groupDesc.text = controller.groupDesc.value;
+                    groupController.selectedGroupImage.value = null;
+
                     DialogBox().showUpdateGroupBottomSheet(
                       context: context,
                       controller: groupController,

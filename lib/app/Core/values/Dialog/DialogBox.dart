@@ -85,6 +85,14 @@ class DialogBox {
                         Validator.validate(value: value, title: "Group Name"),
                   ),
                   SizedBox(height: 25.h),
+                  inputField(
+                    context,
+                    title: "Group Description (Optional)",
+                    maxLength: 200,
+                    maxLines: 1,
+                    hintname: "Enter Group Description",
+                    textctr: controller.groupDesc,
+                  ),
                   reausablebutton(
                     title: "Done",
                     ontap: () async {
@@ -120,6 +128,7 @@ class DialogBox {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
       ),
@@ -150,6 +159,50 @@ class DialogBox {
                   SizedBox(height: 15.h),
                   reausabletext(AppText.updateGroup,
                       fontsize: 18.sp, fontfamily: FontFamily.interSemiBold),
+                  Obx(() {
+                    final image = controller.selectedGroupImage.value;
+
+                    return Center(
+                      child: GestureDetector(
+                        onTap: controller.pickGroupImage,
+                        child: Stack(
+                          children: [
+                            CircleAvatar(
+                              radius: 42.r,
+                              backgroundColor: const Color(0xFFEDE7FF),
+                              backgroundImage:
+                              image != null ? FileImage(File(image.path)) : null,
+                              child: image == null
+                                  ? Icon(
+                                Icons.camera_alt_outlined,
+                                size: 30.sp,
+                                color: const Color(0xFF6B4DFF),
+                              )
+                                  : null,
+                            ),
+                            if (image != null)
+                              Positioned(
+                                right: 0,
+                                top: 0,
+                                child: GestureDetector(
+                                  onTap: controller.removeSelectedGroupImage,
+                                  child: CircleAvatar(
+                                    radius: 12.r,
+                                    backgroundColor: Colors.red,
+                                    child: Icon(
+                                      Icons.close,
+                                      size: 14.sp,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }),
+
                   SizedBox(height: 20.h),
                   inputField(
                     context,
@@ -160,7 +213,17 @@ class DialogBox {
                     validators: (value) =>
                         Validator.validate(value: value, title: "Group Name"),
                   ),
-                  SizedBox(height: 25.h),
+                  SizedBox(height: 15.h),
+                  inputField(
+                    context,
+                    title: "Group Description (Optional)",
+                    maxLength: 200,
+                    maxLines: 1,
+                    hintname: "Enter Group Description",
+                    textctr: controller.groupDesc,
+                  ),
+                  SizedBox(height: 15.h),
+
                   reausablebutton(
                     title: "Update",
                     ontap: () async {
