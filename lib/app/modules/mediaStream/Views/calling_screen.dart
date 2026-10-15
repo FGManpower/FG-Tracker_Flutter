@@ -462,35 +462,47 @@ class CallingScreen extends StatelessWidget {
                 },
               ),
               Obx(() {
+                // Icon = active route ONLY (never invent Headphones while on earpiece)
                 final String activeRoute = c.currentAudioRoute.value;
+                // still read flags so menu/state stays reactive if needed
+                c.isBluetoothConnected.value;
+                c.isWiredHeadsetConnected.value;
 
-                IconData speakerIcon;
-                String speakerLabel;
-                Color? activeIconColor;
-                bool isButtonActive = false;
+                late IconData speakerIcon;
+                late String speakerLabel;
+                late Color? activeIconColor;
+                late bool isButtonActive;
 
-                if (activeRoute == "bluetooth") {
-                  speakerIcon = Icons.bluetooth_audio_rounded;
-                  speakerLabel = "Bluetooth";
-                  activeIconColor = const Color(0xFF2196F3);
-                  isButtonActive = true;
-                } else if (activeRoute == "speaker") {
-                  speakerIcon = Icons.volume_up_rounded;
-                  speakerLabel = "Speaker";
-                  activeIconColor = isVideo ? Colors.white : AppColors.primaryPurple;
-                  isButtonActive = true;
-                } else if (activeRoute == "wired") {
-                  speakerIcon = Icons.headset_rounded;
-                  speakerLabel = "Headphones";
-                  activeIconColor = AppColors.primaryPurple;
-                  isButtonActive = true;
-                } else {
-                  speakerIcon = Icons.phone_in_talk_rounded;
-                  speakerLabel = "Earpiece";
-                  activeIconColor = isVideo
-                      ? Colors.white60
-                      : AppColors.darkText.withOpacity(0.6);
-                  isButtonActive = false;
+                switch (activeRoute) {
+                  case 'bluetooth':
+                    speakerIcon = Icons.bluetooth_audio_rounded;
+                    speakerLabel = 'Bluetooth';
+                    activeIconColor = const Color(0xFF2196F3);
+                    isButtonActive = true;
+                    break;
+                  case 'wired':
+                    speakerIcon = Icons.headset_rounded;
+                    speakerLabel = 'Headphones';
+                    activeIconColor =
+                    isVideo ? Colors.white : AppColors.primaryPurple;
+                    isButtonActive = true;
+                    break;
+                  case 'speaker':
+                    speakerIcon = Icons.volume_up_rounded;
+                    speakerLabel = 'Speaker';
+                    activeIconColor =
+                    isVideo ? Colors.white : AppColors.primaryPurple;
+                    isButtonActive = true;
+                    break;
+                  case 'earpiece':
+                  default:
+                    speakerIcon = Icons.phone_in_talk_rounded;
+                    speakerLabel = 'Earpiece';
+                    activeIconColor = isVideo
+                        ? Colors.white60
+                        : AppColors.darkText.withOpacity(0.6);
+                    isButtonActive = false;
+                    break;
                 }
 
                 return Builder(
@@ -508,7 +520,8 @@ class CallingScreen extends StatelessWidget {
                     );
                   },
                 );
-              }),              Column(
+              }),
+              Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   GestureDetector(

@@ -357,7 +357,7 @@ class GroupChatList extends StatelessWidget {
                   context: context,
                   isGroup: true,
                   groupId: controller.groupId,
-                  groupName: controller.groupName,
+                  groupName: controller.groupName.toString(),
                 ),
               );
             },

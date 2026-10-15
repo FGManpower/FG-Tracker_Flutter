@@ -42,7 +42,7 @@ class BottomSheetUi {
             ? Get.find<GroupMessageController>().groupId
             : null);
 
-    final String effectiveGroupName = groupName ??
+    final Object effectiveGroupName = groupName ??
         argsMap?['groupName']?.toString() ??
         (Get.isRegistered<GroupMessageController>()
             ? Get.find<GroupMessageController>().groupName

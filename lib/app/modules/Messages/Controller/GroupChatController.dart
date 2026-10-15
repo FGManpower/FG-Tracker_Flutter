@@ -29,18 +29,17 @@ import '../../../Data/Services/Socket/Socket_Message_Services.dart';
 import '../../../Data/Services/chat_translation_service.dart';
 import '../../Attendance/models/attendance_poll_model.dart';
 
-
 class GroupMessageController extends GetxController {
   final socketService = SocketMessageService.instance;
 
   final ItemScrollController itemScrollController = ItemScrollController();
 
   final ItemPositionsListener itemPositionsListener =
-  ItemPositionsListener.create();
+      ItemPositionsListener.create();
   final List<MessageData> _messages = [];
 
   final StreamController<List<MessageData>> _messageStreamController =
-  StreamController<List<MessageData>>.broadcast();
+      StreamController<List<MessageData>>.broadcast();
 
   Stream<List<MessageData>> get messageStream =>
       _messageStreamController.stream;
@@ -122,8 +121,7 @@ class GroupMessageController extends GetxController {
 
   late int groupId;
 
-  late String groupName;
-
+  final RxString groupName = ''.obs;
   late String groupImage;
 
   @override
@@ -135,8 +133,7 @@ class GroupMessageController extends GetxController {
         ? (arguments!["groupId"] as int)
         : (int.tryParse(arguments?["groupId"]?.toString() ?? '0') ?? 0);
 
-    groupName = arguments?["groupName"]?.toString() ?? "";
-
+    groupName.value = arguments?["groupName"]?.toString() ?? "";
     groupImage = arguments?["groupImage"]?.toString() ?? "";
     print("isCreator = ${isCreator.value}");
 
@@ -154,7 +151,7 @@ class GroupMessageController extends GetxController {
 
   void initializeGroupChat() {
     final currentUserId =
-    Global.storageServices.get(PrefConst.userId).toString();
+        Global.storageServices.get(PrefConst.userId).toString();
 
     socketService.init(
       ConstRes.socketUrl,
@@ -167,17 +164,27 @@ class GroupMessageController extends GetxController {
       userId: currentUserId,
     );
 
+
     socketService.receiveGroupMessage(
       callback: (message) {
-        _messages.add(
-          MessageData.fromJson(message),
-        );
+        debugPrint("GROUP RECEIVE EVENT => $message");
 
+        final incomingMessage = MessageData.fromJson(message);
+        debugPrint("RECEIVED MESSAGE ID => ${incomingMessage.id}");
+
+        final incomingId = incomingMessage.id;
+
+        if (incomingId != null &&
+            _messages.any((item) => item.id == incomingId)) {
+          debugPrint("DUPLICATE MESSAGE IGNORED => $incomingId");
+          return;
+        }
+
+        _messages.add(incomingMessage);
         updateMessageStream();
         scrollToBottom();
       },
     );
-
     socketService.listenMessageEdited(
       callback: (data) {
         final messageId = int.tryParse(
@@ -187,7 +194,7 @@ class GroupMessageController extends GetxController {
         if (messageId == null) return;
 
         final index = _messages.indexWhere(
-              (message) => message.id == messageId,
+          (message) => message.id == messageId,
         );
 
         if (index == -1) return;
@@ -222,18 +229,19 @@ class GroupMessageController extends GetxController {
 
     socketService.listenPinMessage(
       callback: (data) {
-        print("📌 GROUP MESSAGE PINNED =====> $data");
-
-        final messageId = int.tryParse(
-          data["messageId"].toString(),
+        final eventGroupId = int.tryParse(
+          (data["groupId"] ?? data["group_id"] ?? "").toString(),
         );
 
-        if (messageId == null) return;
+        final messageId = int.tryParse(
+          (data["messageId"] ?? data["message_id"] ?? "").toString(),
+        );
 
         if (data["chatType"] != "group") return;
+        if (eventGroupId != groupId || messageId == null) return;
 
         final msg = _messages.firstWhereOrNull(
-              (e) => e.id == messageId,
+          (e) => e.id == messageId,
         );
 
         if (msg != null) {
@@ -317,10 +325,10 @@ class GroupMessageController extends GetxController {
   }
 
   Future<bool> uploadVideoAtIndex(
-      String path,
-      String caption,
-      int index,
-      ) async {
+    String path,
+    String caption,
+    int index,
+  ) async {
     try {
       final thumbnailPath = await generateThumbnailFile(path);
 
@@ -344,7 +352,7 @@ class GroupMessageController extends GetxController {
           groupId: groupId,
           messageType: "video",
           content:
-          "${result.videoUrl}||${result.thumbnail}||${result.duration}",
+              "${result.videoUrl}||${result.thumbnail}||${result.duration}",
           caption: caption,
           replyId: replyMessage.value?.id,
           replyMessage: replyMessage.value?.content,
@@ -590,7 +598,8 @@ class GroupMessageController extends GetxController {
   }) {
     try {
       final currentUserName =
-          Global.storageServices.get(PrefConst.userName)?.toString() ?? "Rahul Verma";
+          Global.storageServices.get(PrefConst.userName)?.toString() ??
+              "Rahul Verma";
 
       final pollData = AttendancePollData(
         id: "att_${DateTime.now().millisecondsSinceEpoch}",
@@ -643,7 +652,7 @@ class GroupMessageController extends GetxController {
       );
 
       final existingIndex =
-      pollData.responses.indexWhere((r) => r.userId == response.userId);
+          pollData.responses.indexWhere((r) => r.userId == response.userId);
       if (existingIndex != -1) {
         final oldStatus = pollData.responses[existingIndex].status;
         if (oldStatus == "Present" && response.status == "Absent") {
@@ -730,7 +739,7 @@ class GroupMessageController extends GetxController {
           groupId: groupId,
           messageType: "video",
           content:
-          "${result.videoUrl}||${result.thumbnail}||${result.duration}",
+              "${result.videoUrl}||${result.thumbnail}||${result.duration}",
           caption: caption,
           replyId: replyMessage.value?.id,
           replyMessage: replyMessage.value?.content,
@@ -747,9 +756,9 @@ class GroupMessageController extends GetxController {
   }
 
   Future<void> uploadDocument(
-      String path,
-      String caption,
-      ) async {
+    String path,
+    String caption,
+  ) async {
     try {
       var result = await MessageRepo.uploadChatDocument(path);
 
@@ -837,7 +846,7 @@ class GroupMessageController extends GetxController {
       ..addAll(
         List.generate(
           8,
-              (index) => MessageData(
+          (index) => MessageData(
             senderId: index.isEven ? 1 : 2,
             senderName: "",
             messageType: "text",
@@ -857,7 +866,6 @@ class GroupMessageController extends GetxController {
       );
 
       if (result.status == true) {
-
         final messages = List<MessageData>.from(
           result.messageData ?? [],
         );
@@ -881,7 +889,7 @@ class GroupMessageController extends GetxController {
 
         if (pinnedId != null) {
           final pinned = _messages.firstWhereOrNull(
-                (message) => message.id == pinnedId,
+            (message) => message.id == pinnedId,
           );
 
           if (pinned != null) {
@@ -920,6 +928,7 @@ class GroupMessageController extends GetxController {
       isLoading.value = false;
     }
   }
+
   Future getGroupMembers() async {
     print(
       "MY USER ID => ${Global.storageServices.get(PrefConst.userId)}",
@@ -940,7 +949,7 @@ class GroupMessageController extends GetxController {
         groupMembers.value = result.locations ?? [];
 
         final currentUserId =
-        Global.storageServices.get(PrefConst.userId).toString();
+            Global.storageServices.get(PrefConst.userId).toString();
 
         // Default
         isCreator.value = false;
@@ -1006,7 +1015,7 @@ class GroupMessageController extends GetxController {
     if (positions.isEmpty) return false;
 
     final maxVisible =
-    positions.map((e) => e.index).reduce((a, b) => a > b ? a : b);
+        positions.map((e) => e.index).reduce((a, b) => a > b ? a : b);
 
     return maxVisible >= _messages.length - 2;
   }
@@ -1071,8 +1080,8 @@ class GroupMessageController extends GetxController {
 
     filteredMembers.value = groupMembers
         .where((member) =>
-    (member.name?.toLowerCase().contains(query) ?? false) ||
-        (member.name?.toLowerCase().contains(query) ?? false))
+            (member.name?.toLowerCase().contains(query) ?? false) ||
+            (member.name?.toLowerCase().contains(query) ?? false))
         .toList();
 
     showMentionList.value = filteredMembers.isNotEmpty;
@@ -1141,11 +1150,11 @@ class GroupMessageController extends GetxController {
 
     final results = _messages
         .where((msg) =>
-    msg.messageType == "text" &&
-        (msg.content?.toLowerCase().contains(
-          searchQuery.value.toLowerCase(),
-        ) ??
-            false))
+            msg.messageType == "text" &&
+            (msg.content?.toLowerCase().contains(
+                      searchQuery.value.toLowerCase(),
+                    ) ??
+                false))
         .map((msg) => msg.id!)
         .toList();
 
@@ -1259,7 +1268,7 @@ class GroupMessageController extends GetxController {
 
     _floatingDateTimer = Timer(
       const Duration(milliseconds: 800),
-          () {
+      () {
         showFloatingDate.value = false;
       },
     );
@@ -1271,7 +1280,7 @@ class GroupMessageController extends GetxController {
     }
 
     final currentUserId =
-    Global.storageServices.get(PrefConst.userId).toString();
+        Global.storageServices.get(PrefConst.userId).toString();
 
     if (message.senderId.toString() != currentUserId) {
       return;

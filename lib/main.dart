@@ -49,7 +49,6 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     final callData = jsonDecode(message.data['callData']);
     final originalCallId = callData['callId'].toString();
     if (Platform.isAndroid) {
-
       final Map<String, String> userInfo = {
         "callId": originalCallId,
         "callerId": callData['callerId'].toString(),
@@ -85,7 +84,6 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
         log(e.toString());
       }
     }
-
   }
 
   if (message.data['screen_name'] == "incomingGroupCall") {
@@ -296,7 +294,6 @@ Future<void> main() async {
   }
   ScreenShareForegroundService.init();
 
-
   runApp(const MyApp());
 }
 
@@ -317,7 +314,6 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
@@ -357,11 +353,7 @@ class _MyAppState extends State<MyApp> {
               Locale('hi', 'IN'),
               Locale('ur', 'PK'),
             ],
-
           ),
-
-
-
         ),
       ),
     );

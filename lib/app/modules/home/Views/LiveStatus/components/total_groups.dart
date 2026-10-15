@@ -276,7 +276,7 @@ class totalGroup extends StatelessWidget {
 
     final String groupName = controller.getGroupName(group);
     final String description = controller.getGroupDescription(group);
-    final int memberCount = controller.getMemberCount(group);
+    // final int memberCount = controller.getMemberCount(group);
     final int unreadCount = controller.getUnreadCount(group);
     final String groupDate = controller.getGroupDate(group);
 
@@ -373,16 +373,16 @@ class totalGroup extends StatelessWidget {
                         fontFamily: FontFamily.interBold,
                       ),
                     ),
-                    SizedBox(height: 3.h),
-                    Text(
-                      "$memberCount Members",
-                      style: TextStyle(
-                        fontSize: 11.5.sp,
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xFF6B4DFF),
-                        fontFamily: FontFamily.interMedium,
-                      ),
-                    ),
+                    // SizedBox(height: 3.h),
+                    // Text(
+                    //   "$memberCount Members",
+                    //   style: TextStyle(
+                    //     fontSize: 11.5.sp,
+                    //     fontWeight: FontWeight.w600,
+                    //     color: const Color(0xFF6B4DFF),
+                    //     fontFamily: FontFamily.interMedium,
+                    //   ),
+                    // ),
                     if (description.isNotEmpty) ...[
                       SizedBox(height: 3.h),
                       Text(
