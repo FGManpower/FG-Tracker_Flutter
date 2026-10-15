@@ -522,14 +522,18 @@ class GroupWalkieController extends GetxController {
     );
   }
 
-  void _displayBanner(String msg, Color color) {
+  void showStatusMessage(String msg, Color color, {Duration duration = const Duration(seconds: 3)}) {
     _bannerTimer?.cancel();
     statusMessage.value = msg;
     statusColor.value = color;
     showStatus.value = true;
-    _bannerTimer = Timer(const Duration(seconds: 2), () {
+    _bannerTimer = Timer(duration, () {
       showStatus.value = false;
     });
+  }
+
+  void _displayBanner(String msg, Color color) {
+    showStatusMessage(msg, color, duration: const Duration(seconds: 2));
   }
 
   String get currentGroupName {

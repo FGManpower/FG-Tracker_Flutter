@@ -12,12 +12,10 @@ import 'package:fgtracker/app/Data/Services/Socket/Socket_Dashboard_Service.dart
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Group_Calling.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Walkie-Talkie-Service.dart';
 import 'package:fgtracker/app/Data/Services/screen_share_service.dart';
-import 'package:fgtracker/app/modules/Walkie-talkie/Services/walkie_notification_manager.dart';
 import 'package:fgtracker/app/modules/status/binding/status_binding.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_in_app_pip/flutter_in_app_pip.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -44,6 +42,7 @@ final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
 
 @pragma('vm:entry-point')
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   log("====Background-Bg===${message.data}");
   if (message.data['screen_name'] == "incomingCall") {
@@ -132,56 +131,53 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   } else if (message.data['screen_name'] == "group_walkie" ||
       message.data['screenName'] == "group_walkie" ||
       message.data['screen_name'] == "groupWalkie" ||
-      message.data['screen'] == "group_walkie") {
-    if (message.notification != null) return;
+      message.data['screen'] == "group_walkie" ||
+      message.data['screen'] == "walkie") {
+    try {
+      await flutterLocalNotificationsPlugin.cancelAll();
+    } catch (_) {}
+
+    final rawJoinedCount = message.data['joinedMemberCount'] ??
+        message.data['joinedCount'] ??
+        message.data['activeMemberCount'] ??
+        message.data['totalJoinedMembers'] ??
+        message.data['membersJoined'];
+    final int? joinedCount = rawJoinedCount != null
+        ? int.tryParse(rawJoinedCount.toString())
+        : null;
+
+    final groupId = (message.data['groupId'] ??
+            message.data['group_id'] ??
+            message.data['id'] ??
+            '')
+        .toString();
     final groupName = (message.data['groupName'] ??
             message.data['group_name'] ??
-            message.data['title'])
-        ?.toString();
+            message.data['title'] ??
+            'Walkie-Talkie')
+        .toString();
     final speakerName = (message.data['speakerName'] ??
             message.data['speaker_name'] ??
-            message.data['callerName'])
-        ?.toString();
+            message.data['name'] ??
+            'Someone')
+        .toString();
+    final speakerImage = (message.data['speakerImage'] ??
+            message.data['speaker_image'] ??
+            '')
+        .toString();
 
-    final title = (groupName != null && groupName.trim().isNotEmpty)
-        ? "Walkie-Talkie: $groupName"
-        : "Walkie-Talkie Active";
-    final body = (speakerName != null && speakerName.trim().isNotEmpty)
-        ? "$speakerName is speaking in Walkie-Talkie. Tap to join."
-        : "Active walkie-talkie channel. Tap to join.";
-
-    const AndroidNotificationDetails androidNotificationDetails =
-        AndroidNotificationDetails(
-      'walkie_fcm_channel',
-      'Walkie-Talkie Notifications',
-      channelDescription: 'Notifications for active Walkie-Talkie channels',
-      importance: Importance.high,
-      priority: Priority.high,
-      ticker: 'ticker',
-      sound: RawResourceAndroidNotificationSound('recieve_notification'),
-      enableVibration: true,
-    );
-
-    const DarwinNotificationDetails darwinNotificationDetails =
-        DarwinNotificationDetails(
-      presentAlert: true,
-      presentBadge: true,
-      presentSound: true,
-      sound: 'recieve_notification.mp3',
-    );
-
-    const NotificationDetails notificationDetails = NotificationDetails(
-      android: androidNotificationDetails,
-      iOS: darwinNotificationDetails,
-    );
-
-    await flutterLocalNotificationsPlugin.show(
-      502,
-      title,
-      body,
-      notificationDetails,
-      payload: jsonEncode(message.data),
-    );
+    try {
+      await firebaseNotificationServices.showWalkieNotification(
+        groupId: groupId,
+        groupName: groupName,
+        speakerName: speakerName,
+        speakerImage: speakerImage,
+        joinedCount: joinedCount,
+        extraData: Map<String, dynamic>.from(message.data),
+      );
+    } catch (e, st) {
+      log("Error calling showWalkieNotification: $e\n$st");
+    }
   }
   // else if (message.data['screen_name'] == 'groupCallNotify') {
   //   FlutterRingtonePlayer().play(
@@ -214,7 +210,6 @@ Future<void> onCallRejectedWhenTerminated(CallEvent event) async {
     }
   }
 
-  if (data.isEmpty) return;
 
   final callId = int.tryParse(data['callId'].toString());
   if (callId == null) return;
