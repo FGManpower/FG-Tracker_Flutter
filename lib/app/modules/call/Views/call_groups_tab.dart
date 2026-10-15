@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fgtracker/app/Model/GroupRes.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/modules/call/widget/call_widget.dart';
@@ -8,6 +9,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
+import '../../../Core/constant/const_res.dart';
 import '../../../routes/app_pages.dart';
 
 class CallGroupsTab extends StatelessWidget {
@@ -31,7 +33,7 @@ class CallGroupsTab extends StatelessWidget {
       if (groups.isEmpty) {
         return _EmptyState(
           message:
-          controller.groups.isEmpty ? "No groups yet" : "No groups found",
+              controller.groups.isEmpty ? "No groups yet" : "No groups found",
         );
       }
       return RefreshIndicator(
@@ -133,22 +135,58 @@ class _GroupTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final String groupName = group.groupName ?? "No Name Group";
     final int memberCount = group.memberCount ?? 0;
+    final String rawProfile = (group.groupProfile ?? '').trim();
 
+    final String groupImageUrl = rawProfile.isEmpty ||
+            rawProfile.toLowerCase() == 'null'
+        ? ''
+        : rawProfile.startsWith('http://') || rawProfile.startsWith('https://')
+            ? rawProfile
+            : '${ConstRes.aImageBaseUrl.replaceFirst(RegExp(r'/+$'), '')}/${rawProfile.replaceFirst(RegExp(r'^/+'), '')}';
     return GestureDetector(
       onTap: _openGroup,
       child: Row(
         children: [
-          Container(
-            width: 42.w,
-            height: 42.w,
-            decoration: const BoxDecoration(
-              color: Color(0xFFF1F0FE),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              Icons.groups_rounded,
-              size: 20.sp,
-              color: const Color(0xFF4818F0),
+          ClipOval(
+            child: SizedBox(
+              width: 42.w,
+              height: 42.w,
+              child: groupImageUrl.isNotEmpty
+                  ? CachedNetworkImage(
+                      imageUrl: groupImageUrl,
+                      width: 42.w,
+                      height: 42.w,
+                      fit: BoxFit.cover,
+                      placeholder: (context, url) => Container(
+                        color: const Color(0xFFF1F0FE),
+                        child: const Icon(
+                          Icons.groups_rounded,
+                          color: Color(0xFF4818F0),
+                          size: 20,
+                        ),
+                      ),
+                      errorWidget: (context, url, error) {
+                        debugPrint('Group DP URL: $url');
+                        debugPrint('Group DP Error: $error');
+
+                        return Container(
+                          color: const Color(0xFFF1F0FE),
+                          child: const Icon(
+                            Icons.groups_rounded,
+                            color: Color(0xFF4818F0),
+                            size: 20,
+                          ),
+                        );
+                      },
+                    )
+                  : Container(
+                      color: const Color(0xFFF1F0FE),
+                      child: const Icon(
+                        Icons.groups_rounded,
+                        color: Color(0xFF4818F0),
+                        size: 20,
+                      ),
+                    ),
             ),
           ),
           SizedBox(width: 12.w),
@@ -201,6 +239,7 @@ class _GroupTile extends StatelessWidget {
     );
   }
 }
+
 class _GroupListSkeleton extends StatelessWidget {
   const _GroupListSkeleton();
 
@@ -291,4 +330,3 @@ class _EmptyState extends StatelessWidget {
     );
   }
 }
-

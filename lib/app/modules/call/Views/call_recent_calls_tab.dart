@@ -459,10 +459,17 @@ class _RecentCallTile extends StatelessWidget {
 
   String _buildAvatarUrl(String? raw) {
     if (raw == null || raw.trim().isEmpty) return '';
-    raw = raw.trim();
-    if (raw.startsWith('http://') || raw.startsWith('https://')) return raw;
-    if (raw.startsWith('/')) raw = raw.substring(1);
-    return '${ConstRes.aImageBaseUrl}$raw';
+
+    final String profile = raw.trim();
+
+    if (profile.toLowerCase() == 'null') return '';
+
+    if (profile.startsWith('http://') ||
+        profile.startsWith('https://')) {
+      return profile;
+    }
+
+    return '${ConstRes.aImageBaseUrl.replaceFirst(RegExp(r'/+$'), '')}/${profile.replaceFirst(RegExp(r'^/+'), '')}';
   }
 
   Widget _buildAvatar(
