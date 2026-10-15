@@ -20,6 +20,8 @@ class GroupController extends GetxController {
   RxBool groupDataLoading = false.obs;
   var groupData = <GroupsResData>[].obs;
   var responseError = "".obs;
+  final Rxn<XFile> selectedGroupImage = Rxn<XFile>();
+  final ImagePicker _imagePicker = ImagePicker();
 
   Future<void> decodeQRCodeFromGallery() async {
     final picker = ImagePicker();
@@ -51,8 +53,10 @@ class GroupController extends GetxController {
         "groupName": groupName.text,
         "groupDesc": groupDesc.text,
       };
-      var result = await GroupRepo.createGroup(param);
-      if (result.status == true) {
+      final result = await GroupRepo.createGroup(
+        param,
+        imagePath: selectedGroupImage.value?.path,
+      );      if (result.status == true) {
         Loading().dismissloading();
         Utils().fluttertoast(result.message.toString());
 
@@ -75,7 +79,7 @@ class GroupController extends GetxController {
   Future<void> updateGroupDetail({required String groupId}) async {
     CommonDialog.ConfirmationDialog(
       title: "Update Group",
-      content: "Are you sure you want to update the group name?",
+      content: "Are you sure you want to update the group details?",
       cancel: "No",
       confirm: "Yes",
       icon: Icons.edit_rounded,
@@ -94,17 +98,22 @@ class GroupController extends GetxController {
   }) async {
     try {
       Loading().showloading();
-
       final param = {
         "groupName": groupName.text.trim(),
+        "groupDesc": groupDesc.text.trim(),
         "groupId": groupId,
       };
 
-      final result = await GroupRepo.updateGroup(param);
+      final result = await GroupRepo.updateGroup(
+        param,
+        imagePath: selectedGroupImage.value?.path,
+      );
 
       Loading().dismissloading();
 
       if (result.status == true) {
+        selectedGroupImage.value = null;
+
         if (Get.isRegistered<GroupMessageController>()) {
           final chatController = Get.find<GroupMessageController>();
           chatController.groupName.value = groupName.text.trim();
@@ -232,4 +241,25 @@ class GroupController extends GetxController {
       CommonDialog.errorMessage(e.toString());
     }
   }
+
+
+  Future<void> pickGroupImage() async {
+    final image = await _imagePicker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 80,
+    );
+
+    if (image != null) {
+      selectedGroupImage.value = image;
+    }
+  }
+
+  void removeSelectedGroupImage() {
+    selectedGroupImage.value = null;
+  }
+
+
+
+
+
 }

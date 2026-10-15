@@ -192,7 +192,6 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     showEmoji.value = false;
   }
 
-
   Future<void> scrollToMessage(int messageId) async {
     final index = _messages.indexWhere((e) => e.id == messageId);
 
@@ -217,12 +216,11 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     }
   }
 
-
   void _initializeChat() {
     final stopwatch = Stopwatch()..start();
 
     final currentUserId =
-    Global.storageServices.get(PrefConst.userId).toString();
+        Global.storageServices.get(PrefConst.userId).toString();
 
     final receiverId = memberData.userId.toString();
 
@@ -249,7 +247,6 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
     ChatStateTracker.isChatCallScreenOpen = true;
 
-
     if (isPrivateChat) {
       final passedChatId = arguments?['chatId']?.toString();
 
@@ -271,7 +268,6 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         });
       }
 
-
       log("[CHAT-PERF] 2. Private chat socket initialization starting: ${stopwatch.elapsedMilliseconds} ms");
 
       socketService.initPrivateChat(
@@ -280,10 +276,6 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         receiverId: receiverId,
         onJoined: (data) async {
           log("[CHAT-PERF] 3. Socket joined after: ${stopwatch.elapsedMilliseconds} ms");
-          log("=================================");
-          log("PRIVATE CHAT JOINED");
-          log("JOINED DATA => $data");
-          log("=================================");
 
           final chatId = data["chatId"]?.toString() ??
               socketService.privateChatId?.toString();
@@ -293,7 +285,6 @@ class MessageController extends GetxController with WidgetsBindingObserver {
             isLoadingInitialMessages.value = false;
             return;
           }
-
 
           privateChatId.value = chatId;
 
@@ -310,13 +301,8 @@ class MessageController extends GetxController with WidgetsBindingObserver {
               otherUserId: receiverId,
             );
           }
-
-
-          log("[CHAT-PERF] 8. Mark seen called: ${stopwatch.elapsedMilliseconds} ms");
         },
       );
-
-      log("[CHAT-PERF] Socket initialization call returned: ${stopwatch.elapsedMilliseconds} ms");
 
       // socketService.initPrivateChatListSocket(
       //   ConstRes.socketUrl,
@@ -388,23 +374,18 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         senderId: currentUserId,
         receiverId: receiverId,
         callback: (message) {
-          print("PRIVATE RECEIVE MESSAGE => $message");
-          log("[CHAT-PERF] Private message received: ${stopwatch.elapsedMilliseconds} ms");
-
           try {
             final messageData =
-            MessageData.fromJson(Map<String, dynamic>.from(message));
+                MessageData.fromJson(Map<String, dynamic>.from(message));
 
             final alreadyExists = _messages.any(
-                  (msg) => msg.id == messageData.id && messageData.id != null,
+              (msg) => msg.id == messageData.id && messageData.id != null,
             );
 
             if (!alreadyExists) {
               _messages.add(messageData);
               updateMessageStream();
               scrollToBottom();
-
-              log("[CHAT-PERF] Received message added to stream: ${stopwatch.elapsedMilliseconds} ms");
             }
 
             if (messageData.id != null) {
@@ -422,9 +403,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
                 otherUserId: receiverId,
               );
             }
-          } catch (e) {
-            log("PRIVATE MESSAGE PARSE ERROR => $e");
-          }
+          } catch (e) {}
         },
       );
 
@@ -433,9 +412,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
       );
 
       socketService.listenPrivateMessagesDelivered(
-        callback: (data) {
-          print("PRIVATE MESSAGES DELIVERED =====> $data");
-        },
+        callback: (data) {},
       );
 
       socketService.listenPrivateMessagesSeenUpdate(
@@ -452,7 +429,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
           for (var msg in _messages) {
             if (updatedIds.any(
-                  (id) => id.toString() == msg.id.toString(),
+              (id) => id.toString() == msg.id.toString(),
             )) {
               msg.seenCount = (msg.seenCount ?? 0) + 1;
             }
@@ -464,10 +441,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
       socketService.listenMessageEdited(
         callback: (data) {
-          log("PRIVATE EDIT SOCKET CALLBACK => $data");
-
           if (data is! Map) {
-            log("PRIVATE EDIT INVALID DATA => $data");
             return;
           }
 
@@ -477,35 +451,23 @@ class MessageController extends GetxController with WidgetsBindingObserver {
             );
 
             final index = _messages.indexWhere(
-                  (message) => message.id == editedMessage.id,
+              (message) => message.id == editedMessage.id,
             );
 
             if (index == -1) {
-              log(
-                "PRIVATE EDIT MESSAGE NOT FOUND => messageId=${editedMessage.id}",
-              );
               return;
             }
 
             _messages[index] = editedMessage;
 
             updateMessageStream();
-
-            log(
-              "PRIVATE EDIT APPLIED FROM SOCKET => messageId=${editedMessage.id}, content=${editedMessage.content}, isEdited=${editedMessage.isEdited}",
-            );
-          } catch (e) {
-            log("PRIVATE EDIT PARSE ERROR => $e");
-          }
+          } catch (e) {}
         },
       );
 
       socketService.listenMessageDeleted(
         callback: (data) {
-          log("PRIVATE DELETE SOCKET CALLBACK => $data");
-
           if (data is! Map) {
-            log("PRIVATE DELETE INVALID DATA => $data");
             return;
           }
 
@@ -517,50 +479,32 @@ class MessageController extends GetxController with WidgetsBindingObserver {
             final deleteType = data["deleteType"]?.toString();
 
             if (messageId == null) {
-              log("PRIVATE DELETE MESSAGE ID NOT FOUND => $data");
               return;
             }
 
             final index = _messages.indexWhere(
-                  (message) => message.id == messageId,
+              (message) => message.id == messageId,
             );
 
             if (index == -1) {
-              log("PRIVATE DELETE MESSAGE NOT FOUND => messageId=$messageId");
               return;
             }
 
             if (deleteType == "for_me") {
               _messages.removeAt(index);
-
-              log(
-                "PRIVATE DELETE FOR ME APPLIED => messageId=$messageId",
-              );
             } else if (deleteType == "for_everyone") {
               _messages[index].content = "This message was deleted";
               _messages[index].messageType = "text";
-
-              log(
-                "PRIVATE DELETE FOR EVERYONE APPLIED => messageId=$messageId",
-              );
             }
 
             updateMessageStream();
-
-            log(
-              "PRIVATE DELETE STREAM UPDATED => messageId=$messageId",
-            );
-          } catch (e) {
-            log("PRIVATE DELETE PARSE ERROR => $e");
-          }
+          } catch (e) {}
         },
       );
     } else {}
 
     socketService.listenPinMessage(
       callback: (data) {
-        print("📌 MESSAGE PINNED =====> $data");
-
         final messageId = int.tryParse(
           data["messageId"].toString(),
         );
@@ -570,7 +514,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         if (data["chatType"] != "private") return;
 
         final currentUserId =
-        Global.storageServices.get(PrefConst.userId).toString();
+            Global.storageServices.get(PrefConst.userId).toString();
 
         final otherUserId = memberData.userId.toString();
 
@@ -586,7 +530,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         }
 
         final msg = _messages.firstWhereOrNull(
-              (e) => e.id == messageId,
+          (e) => e.id == messageId,
         );
 
         if (msg != null) {
@@ -600,12 +544,10 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
     socketService.listenUnpinMessage(
       callback: (data) {
-        print("📌 MESSAGE UNPINNED =====> $data");
-
         if (data["chatType"] != "private") return;
 
         final currentUserId =
-        Global.storageServices.get(PrefConst.userId).toString();
+            Global.storageServices.get(PrefConst.userId).toString();
 
         final otherUserId = memberData.userId.toString();
 
@@ -622,13 +564,12 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         showPinnedBanner.value = false;
 
         updateMessageStream();
-
-        print("✅ PRIVATE PIN REMOVED FROM UI");
       },
     );
 
     log("[CHAT-PERF] Initialization method completed: ${stopwatch.elapsedMilliseconds} ms");
   }
+
   bool isUserAtBottom() {
     if (_messages.isEmpty) return true;
 
@@ -641,7 +582,6 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
     return maxVisible >= _messages.length - 2;
   }
-
 
   Future<void> sendMessage({
     required TextEditingController textController,
@@ -1075,7 +1015,6 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     }
   }
 
-
   Future<void> getPrivateMessageHistory(String chatId) async {
     final apiStopwatch = Stopwatch()..start();
 
@@ -1093,8 +1032,8 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
       log(
         "[CHAT-PERF] API response received: "
-            "${apiStopwatch.elapsedMilliseconds} ms | "
-            "status: ${result.status}",
+        "${apiStopwatch.elapsedMilliseconds} ms | "
+        "status: ${result.status}",
       );
 
       if (result.status == true) {
@@ -1139,7 +1078,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
         if (pinnedId != null) {
           final pinned = _messages.firstWhereOrNull(
-                (message) => message.id == pinnedId,
+            (message) => message.id == pinnedId,
           );
 
           if (pinned != null) {
@@ -1161,8 +1100,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         isCreator.value = result.isCreator ?? false;
 
         if (result.pagination != null) {
-          hasMoreOlderMessages.value =
-              result.pagination!.hasNextPage == true;
+          hasMoreOlderMessages.value = result.pagination!.hasNextPage == true;
         } else {
           hasMoreOlderMessages.value = false;
         }

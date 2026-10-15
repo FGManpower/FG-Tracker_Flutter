@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fgtracker/app/Core/values/colorPool.dart';
 import 'package:fgtracker/app/Model/GroupChatListModel.dart';
 import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
@@ -7,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:skeletonizer/skeletonizer.dart';
+import '../../../../../Core/constant/const_res.dart';
 import '../../../Controller/total_group_controller.dart';
 
 class totalGroup extends StatelessWidget {
@@ -279,7 +281,15 @@ class totalGroup extends StatelessWidget {
     // final int memberCount = controller.getMemberCount(group);
     final int unreadCount = controller.getUnreadCount(group);
     final String groupDate = controller.getGroupDate(group);
+    final String rawProfile = (group.groupProfile ?? '').trim();
 
+    final String groupImageUrl = rawProfile.isEmpty ||
+        rawProfile.toLowerCase() == 'null'
+        ? ''
+        : rawProfile.startsWith('http://') ||
+        rawProfile.startsWith('https://')
+        ? rawProfile
+        : '${ConstRes.aImageBaseUrl.replaceFirst(RegExp(r'/+$'), '')}/${rawProfile.replaceFirst(RegExp(r'^/+'), '')}';
     return Padding(
       padding: EdgeInsets.only(bottom: 0.h),
       child: InkWell(
@@ -301,8 +311,13 @@ class totalGroup extends StatelessWidget {
               groupCode = matched.groupCode ?? '';
               isCreator = (matched.isCreator ?? false).toString();
               isActive = (matched.isActive ?? true).toString();
-              if (profileImg.isEmpty && matched.groupProfile != null) {
-                profileImg = matched.groupProfile!;
+              if (profileImg.trim().isEmpty ||
+                  profileImg.trim().toLowerCase() == 'null') {
+                if (matched.groupProfile != null &&
+                    matched.groupProfile!.trim().isNotEmpty &&
+                    matched.groupProfile!.trim().toLowerCase() != 'null') {
+                  profileImg = matched.groupProfile!.trim();
+                }
               }
             }
           }
@@ -315,6 +330,7 @@ class totalGroup extends StatelessWidget {
               "groupProfile": profileImg,
               "groupImage": profileImg,
               "groupCode": groupCode,
+              "groupDesc": description,
               "isCreator": isCreator,
               "isActive": isActive,
             },
@@ -344,17 +360,41 @@ class totalGroup extends StatelessWidget {
           ),
           child: Row(
             children: [
-              Container(
-                width: 48.w,
-                height: 48.w,
-                decoration: BoxDecoration(
-                  color: colors['bg'],
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Icons.groups_rounded,
-                  color: colors['icon'],
-                  size: 24.sp,
+              ClipOval(
+                child: SizedBox(
+                  width: 48.w,
+                  height: 48.w,
+                  child: groupImageUrl.isNotEmpty
+                      ? CachedNetworkImage(
+                    imageUrl: groupImageUrl,
+                    width: 48.w,
+                    height: 48.w,
+                    fit: BoxFit.cover,
+                    placeholder: (context, url) => Container(
+                      color: colors['bg'],
+                      child: Icon(
+                        Icons.groups_rounded,
+                        color: colors['icon'],
+                        size: 24.sp,
+                      ),
+                    ),
+                    errorWidget: (context, url, error) => Container(
+                      color: colors['bg'],
+                      child: Icon(
+                        Icons.groups_rounded,
+                        color: colors['icon'],
+                        size: 24.sp,
+                      ),
+                    ),
+                  )
+                      : Container(
+                    color: colors['bg'],
+                    child: Icon(
+                      Icons.groups_rounded,
+                      color: colors['icon'],
+                      size: 24.sp,
+                    ),
+                  ),
                 ),
               ),
               SizedBox(width: 14.w),
