@@ -15,6 +15,7 @@ import 'package:get/get.dart' hide navigator;
 import 'package:permission_handler/permission_handler.dart';
 import 'package:proximity_screen_lock/proximity_screen_lock.dart';
 import 'package:socket_io_client/socket_io_client.dart';
+import 'package:fgtracker/app/Data/Services/NotificationServices.dart';
 
 enum WalkieAudioRoute { speaker, earpiece, bluetooth, headset }
 
@@ -372,13 +373,33 @@ class GroupWalkieService {
       final int? joinedCount = rawJoinedCount != null
           ? int.tryParse(rawJoinedCount.toString())
           : null;
-      WalkieInviteDialog.show(
-        groupId: data['groupId']?.toString() ?? '',
-        groupName: data['groupName']?.toString() ?? 'Group',
-        speakerName: data['speakerName']?.toString() ?? 'Someone',
-        speakerImage: data['speakerImage']?.toString() ?? '',
-        joinedCount: joinedCount,
-      );
+
+      final speakerId = (data['speakerId'] ?? data['speaker_id'])?.toString();
+      if (speakerId != null && _selfUserId != null && speakerId == _selfUserId) {
+        return;
+      }
+
+      final isForeground =
+          WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed;
+
+      if (isForeground) {
+        WalkieInviteDialog.show(
+          groupId: data['groupId']?.toString() ?? '',
+          groupName: data['groupName']?.toString() ?? 'Group',
+          speakerName: data['speakerName']?.toString() ?? 'Someone',
+          speakerImage: data['speakerImage']?.toString() ?? '',
+          joinedCount: joinedCount,
+        );
+      } else {
+        firebaseNotificationServices.showWalkieNotification(
+          groupId: data['groupId']?.toString() ?? '',
+          groupName: data['groupName']?.toString() ?? 'Group',
+          speakerName: data['speakerName']?.toString() ?? 'Someone',
+          speakerImage: data['speakerImage']?.toString() ?? '',
+          joinedCount: joinedCount,
+          extraData: data is Map ? Map<String, dynamic>.from(data) : null,
+        );
+      }
     });
 
     socket?.on('force_logout', (_) async => dispose());

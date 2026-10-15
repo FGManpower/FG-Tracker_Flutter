@@ -242,7 +242,7 @@ class CallKitService {
           "callerName": data["callerName"].toString(),
           "callerProfileImage": data['callerProfileImage'],
           "isVideo": data["isVideo"].toString() == "true" ? true : false,
-          "totalGroupMember": data['totalGroupMember'].toString() ?? 10,
+          "totalGroupMember": data['totalGroupMember']?.toString() ?? "10",
           "callId": data['callId'].toString(),
           "callType": "incoming",
         },
@@ -258,6 +258,7 @@ class CallKitService {
       log("navigateToCallScreen error: $e");
     }
   }
+
 
   Future<void> declineCall(Map<String, dynamic> data) async {
     try {
