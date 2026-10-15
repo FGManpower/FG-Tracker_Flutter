@@ -11,6 +11,15 @@ enum WalkieRole { caller, receiver }
 
 enum WalkieAudioState { idle, listening, talking }
 
+enum WalkieNetworkQuality {
+  unknown,
+  disconnected,
+  weak,
+  fair,
+  good,
+  strong,
+}
+
 class WalkieParticipant {
   final String userId;
   final String name;
@@ -89,6 +98,9 @@ class GroupWalkieController extends GetxController {
   final activeSpeakerName = "".obs;
   final activeSpeakerImage = "".obs;
 
+  final networkQuality = WalkieNetworkQuality.unknown.obs;
+  final networkLatencyMs = 0.obs;
+
   final statusMessage = "".obs;
   final showStatus = false.obs;
   final statusColor = Rx<Color>(Colors.orange);
@@ -96,11 +108,35 @@ class GroupWalkieController extends GetxController {
   String? currentGroupId;
   Timer? _bannerTimer;
   Timer? _lockCountdownTimer;
+  Timer? _speakerWatchdogTimer;
 
   bool get isTalking => audioState.value == WalkieAudioState.talking;
   bool get isListening => audioState.value == WalkieAudioState.listening;
   bool get hasActiveSpeaker => activeSpeakerId.value.isNotEmpty;
   bool get isVoiceActive => isTalking || hasActiveSpeaker;
+
+  bool get isRemoteSpeakerActive {
+    final activeId = activeSpeakerId.value.trim();
+    if (activeId.isEmpty) return false;
+    final selfId = (GroupWalkieService.instance.selfUserId ??
+            Global.storageServices.get(PrefConst.userId)?.toString() ??
+            '')
+        .trim();
+    if (selfId.isNotEmpty) {
+      if (activeId == selfId) return false;
+      final activeNum = int.tryParse(activeId);
+      final selfNum = int.tryParse(selfId);
+      if (activeNum != null && selfNum != null && activeNum == selfNum) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  void updateNetworkQuality(WalkieNetworkQuality quality, int latencyMs) {
+    networkQuality.value = quality;
+    networkLatencyMs.value = latencyMs;
+  }
 
   Map<String, dynamic>? args = Get.arguments;
 
@@ -141,6 +177,7 @@ class GroupWalkieController extends GetxController {
   void onClose() {
     _bannerTimer?.cancel();
     _lockCountdownTimer?.cancel();
+    _speakerWatchdogTimer?.cancel();
     reset();
     super.onClose();
   }
@@ -351,6 +388,12 @@ class GroupWalkieController extends GetxController {
     required String speakerName,
     required String speakerImage,
   }) {
+    _speakerWatchdogTimer?.cancel();
+    // Auto-expire after 32 seconds in case release packet is dropped
+    _speakerWatchdogTimer = Timer(const Duration(seconds: 32), () {
+      onSpeakerStopped();
+    });
+
     activeSpeakerId.value = speakerId;
     activeSpeakerName.value = speakerName;
     activeSpeakerImage.value = speakerImage;
@@ -395,6 +438,8 @@ class GroupWalkieController extends GetxController {
   }
 
   void onSpeakerStopped() {
+    _speakerWatchdogTimer?.cancel();
+    _speakerWatchdogTimer = null;
     activeSpeakerId.value = "";
     activeSpeakerName.value = "";
     activeSpeakerImage.value = "";
@@ -417,6 +462,18 @@ class GroupWalkieController extends GetxController {
   void stopTalking() {
     if (audioState.value == WalkieAudioState.talking) {
       audioState.value = WalkieAudioState.listening;
+    }
+    final selfId = (GroupWalkieService.instance.selfUserId ??
+            Global.storageServices.get(PrefConst.userId)?.toString() ??
+            '')
+        .trim();
+    final activeId = activeSpeakerId.value.trim();
+    if (activeId.isNotEmpty && selfId.isNotEmpty) {
+      if (activeId == selfId ||
+          (int.tryParse(activeId) != null &&
+              int.tryParse(activeId) == int.tryParse(selfId))) {
+        onSpeakerStopped();
+      }
     }
   }
 
@@ -596,8 +653,12 @@ class GroupWalkieController extends GetxController {
   void reset() {
     _bannerTimer?.cancel();
     _lockCountdownTimer?.cancel();
+    _speakerWatchdogTimer?.cancel();
     _bannerTimer = null;
     _lockCountdownTimer = null;
+    _speakerWatchdogTimer = null;
+    networkQuality.value = WalkieNetworkQuality.unknown;
+    networkLatencyMs.value = 0;
     role.value = WalkieRole.caller;
     audioState.value = WalkieAudioState.idle;
     isChannelLocked.value = false;

@@ -22,6 +22,7 @@ import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Walkie-Talkie-Service.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Views/walkie_invite_dialog.dart';
+import 'package:fgtracker/app/Core/constant/notification_holder.dart';
 import 'package:walkie_custom_notification/walkie_custom_notification.dart';
 
 @pragma('vm:entry-point')
@@ -172,6 +173,7 @@ class firebaseNotificationServices {
           final speakerImage = (data['speakerImage'] ?? data['speaker_image'] ?? '')?.toString() ?? '';
 
           if (groupId.isNotEmpty) {
+            WalkieLaunchTracker.fromWalkieCall = true;
             if (GroupWalkieService.instance.currentGroupId != null &&
                 GroupWalkieService.instance.currentGroupId != groupId) {
               await GroupWalkieService.instance.leaveGroup();
@@ -235,6 +237,7 @@ class firebaseNotificationServices {
     String? speakerImage,
   }) async {
     if (groupId.isEmpty) return;
+    WalkieLaunchTracker.fromWalkieCall = true;
     if (GroupWalkieService.instance.currentGroupId != null &&
         GroupWalkieService.instance.currentGroupId != groupId) {
       await GroupWalkieService.instance.leaveGroup();
@@ -612,6 +615,7 @@ class firebaseNotificationServices {
           final speakerName = data['speakerName']?.toString() ?? 'Someone';
 
           if (action == 'accept' && groupId.isNotEmpty) {
+            WalkieLaunchTracker.fromWalkieCall = true;
             Future.delayed(const Duration(milliseconds: 600), () {
               navigateToWalkieScreen(
                 groupId: groupId,

@@ -164,7 +164,14 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
     } else {
       log('Error: Invalid Group ID. Returning to previous screen.');
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        Get.back();
+        if (WalkieLaunchTracker.fromWalkieCall ||
+            Get.previousRoute == Routes.Splash ||
+            Get.previousRoute.isEmpty) {
+          WalkieLaunchTracker.fromWalkieCall = false;
+          Get.offAllNamed(Routes.Home_Screen);
+        } else {
+          Get.back();
+        }
         Get.snackbar("Error", "Please select a group first",
             snackPosition: SnackPosition.BOTTOM);
       });
@@ -243,6 +250,27 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
     controller.reset();
   }
 
+  Future<void> _handleExitNavigation() async {
+    log('Exit confirmed. Closing channel sessions...');
+    final bool canPopNavigator = Navigator.of(context).canPop();
+    Get.back();
+    await _safeLeave();
+
+    final bool wasLaunchedCold = WalkieLaunchTracker.fromWalkieCall ||
+        Get.previousRoute == Routes.Splash ||
+        Get.previousRoute.isEmpty ||
+        !canPopNavigator;
+
+    WalkieLaunchTracker.fromWalkieCall = false;
+
+    if (wasLaunchedCold) {
+      log('GroupWalkie: Launched cold from notification. Navigating to Home_Screen on exit.');
+      Get.offAllNamed(Routes.Home_Screen);
+    } else {
+      Get.back();
+    }
+  }
+
   Future<void> _onPTTPressed() async {
     log('PTT Touch initiated. Checking parameters...');
     if (_pttInProgress) {
@@ -301,13 +329,22 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
       return;
     }
 
-    final selfId = GroupWalkieService.instance.selfUserId;
-    if (controller.activeSpeakerId.value.isNotEmpty &&
-        controller.activeSpeakerId.value != selfId) {
-      log('Block: Channel occupied by ${controller.activeSpeakerName.value}');
-      HapticFeedback.heavyImpact();
-      controller.showBusyMessage(controller.activeSpeakerName.value);
-      return;
+    final selfId = (GroupWalkieService.instance.selfUserId ??
+            Global.storageServices.get(PrefConst.userId)?.toString() ??
+            '')
+        .trim();
+    final activeId = controller.activeSpeakerId.value.trim();
+    if (activeId.isNotEmpty) {
+      final isSelf = selfId.isNotEmpty &&
+          (activeId == selfId ||
+              (int.tryParse(activeId) != null &&
+                  int.tryParse(activeId) == int.tryParse(selfId)));
+      if (!isSelf) {
+        log('Block: Channel occupied by ${controller.activeSpeakerName.value}');
+        HapticFeedback.heavyImpact();
+        controller.showBusyMessage(controller.activeSpeakerName.value);
+        return;
+      }
     }
 
     log('Triggering PTT Session...');
@@ -316,15 +353,28 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
     _lockHintController.repeat(reverse: true);
     HapticFeedback.mediumImpact();
 
-    final ok = await GroupWalkieService.instance.startTalking();
-    log('PTT activation result: $ok');
-    _pttInProgress = false;
+    try {
+      final ok = await GroupWalkieService.instance
+          .startTalking()
+          .timeout(const Duration(seconds: 4), onTimeout: () {
+        log('⚠️ startTalking timed out after 4 seconds');
+        return false;
+      });
+      log('PTT activation result: $ok');
 
-    if (!ok) {
-      log('Failed to start transmission. Reverting changes...');
+      if (!ok) {
+        log('Failed to start transmission. Reverting changes...');
+        controller.setPressed(false);
+        _lockHintController.stop();
+        _lockHintController.reset();
+      }
+    } catch (e) {
+      log('Error during PTT session activation: $e');
       controller.setPressed(false);
       _lockHintController.stop();
       _lockHintController.reset();
+    } finally {
+      _pttInProgress = false;
     }
   }
 
@@ -348,6 +398,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
     _lockHintController.stop();
     _lockHintController.reset();
     controller.resetSelfLock();
+    _pttInProgress = false;
     await GroupWalkieService.instance.stopTalking();
   }
 
@@ -408,12 +459,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
         log('OnPopInvoked triggered. didPop=$didPop');
         if (didPop) return;
         showExitDialog(
-          onTap: () async {
-            log('Exit confirmed. Closing channel sessions...');
-            Get.back();
-            await _safeLeave();
-            Get.back();
-          },
+          onTap: () => _handleExitNavigation(),
         );
       },
       child: Scaffold(
@@ -615,12 +661,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
             iconColor: textDark,
             onTap: () {
               showExitDialog(
-                onTap: () async {
-                  log('Exit confirmed. Closing channel sessions...');
-                  Get.back();
-                  await _safeLeave();
-                  Get.back();
-                },
+                onTap: () => _handleExitNavigation(),
               );
             },
           ),
@@ -684,12 +725,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                     break;
                   case 'exit':
                     showExitDialog(
-                      onTap: () async {
-                        log('Exit confirmed. Closing channel sessions...');
-                        Get.back();
-                        await _safeLeave();
-                        Get.back();
-                      },
+                      onTap: () => _handleExitNavigation(),
                     );
                     break;
                 }
@@ -1731,49 +1767,87 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
         return Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
-              padding: EdgeInsets.symmetric(
-                horizontal: 14.w.clamp(12.0, 18.0),
-                vertical: 6.h.clamp(5.0, 8.0),
-              ),
-              decoration: BoxDecoration(
-                color: cardWhite,
-                borderRadius: BorderRadius.circular(20.r),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
-                    blurRadius: 10,
-                    offset: const Offset(0, 2),
-                  )
-                ],
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Obx(() => Container(
-                        width: 8.r.clamp(7.0, 9.0),
-                        height: 8.r.clamp(7.0, 9.0),
-                        decoration: BoxDecoration(
-                          color: controller.isConnected.value
-                              ? activeGreen
-                              : mutedRed,
-                          shape: BoxShape.circle,
-                        ),
-                      )),
-                  SizedBox(width: 8.w.clamp(6.0, 10.0)),
-                  Obx(() => Text(
-                        controller.isConnected.value
-                            ? "You are Connected"
-                            : "Connecting...",
-                        style: TextStyle(
-                          color: textDark,
-                          fontSize: 12.sp.clamp(11.0, 13.5),
-                          fontWeight: FontWeight.w600,
-                        ),
-                      )),
-                ],
-              ),
-            ),
+            Obx(() {
+              final isConn = controller.isConnected.value;
+              final quality = controller.networkQuality.value;
+              final latency = controller.networkLatencyMs.value;
+
+              final Color statusColor;
+              final IconData statusIcon;
+              final String statusText;
+
+              if (!isConn) {
+                statusColor = mutedRed;
+                statusIcon = Icons.signal_cellular_connected_no_internet_0_bar_rounded;
+                statusText = "Connecting...";
+              } else {
+                switch (quality) {
+                  case WalkieNetworkQuality.strong:
+                    statusColor = activeGreen;
+                    statusIcon = Icons.signal_cellular_alt_rounded;
+                    statusText = latency > 0 ? "Strong Connection (${latency}ms)" : "Strong Connection";
+                    break;
+                  case WalkieNetworkQuality.good:
+                    statusColor = const Color(0xFF10B981);
+                    statusIcon = Icons.signal_cellular_alt_rounded;
+                    statusText = latency > 0 ? "Good Connection (${latency}ms)" : "Connected";
+                    break;
+                  case WalkieNetworkQuality.fair:
+                    statusColor = Colors.orange;
+                    statusIcon = Icons.signal_cellular_alt_2_bar_rounded;
+                    statusText = latency > 0 ? "Fair Connection (${latency}ms)" : "Fair Connection";
+                    break;
+                  case WalkieNetworkQuality.weak:
+                    statusColor = mutedRed;
+                    statusIcon = Icons.signal_cellular_alt_1_bar_rounded;
+                    statusText = latency > 0 ? "Weak Signal (${latency}ms)" : "Weak Signal";
+                    break;
+                  case WalkieNetworkQuality.disconnected:
+                    statusColor = mutedRed;
+                    statusIcon = Icons.signal_cellular_null_rounded;
+                    statusText = "Disconnected";
+                    break;
+                  case WalkieNetworkQuality.unknown:
+                    statusColor = activeGreen;
+                    statusIcon = Icons.signal_cellular_alt_rounded;
+                    statusText = "You are Connected";
+                    break;
+                }
+              }
+
+              return Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: 14.w.clamp(12.0, 18.0),
+                  vertical: 6.h.clamp(5.0, 8.0),
+                ),
+                decoration: BoxDecoration(
+                  color: cardWhite,
+                  borderRadius: BorderRadius.circular(20.r),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.04),
+                      blurRadius: 10,
+                      offset: const Offset(0, 2),
+                    )
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(statusIcon, color: statusColor, size: 14.sp.clamp(13.0, 16.0)),
+                    SizedBox(width: 7.w.clamp(5.0, 9.0)),
+                    Text(
+                      statusText,
+                      style: TextStyle(
+                        color: textDark,
+                        fontSize: 12.sp.clamp(11.0, 13.5),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }),
             SizedBox(height: 8.h.clamp(4.0, 12.0)),
             SizedBox(
               height: availableStackH,
@@ -1958,17 +2032,15 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                           _onPTTReleased();
                         }
                       },
-                      child: GestureDetector(
-                        behavior: HitTestBehavior.opaque,
-                        onTap: () {
-                          if (controller.isSelfLocked.value) {
-                            _unlockAndStop();
-                          }
-                        },
-                        child: Transform.translate(
-                          offset: Offset(0, -dragOffset),
-                          child: buildPTTButton(size: buttonSize),
-                        ),
+                      child: Transform.translate(
+                        offset: Offset(0, -dragOffset),
+                        child: controller.isSelfLocked.value
+                            ? GestureDetector(
+                                behavior: HitTestBehavior.opaque,
+                                onTap: _unlockAndStop,
+                                child: buildPTTButton(size: buttonSize),
+                              )
+                            : buildPTTButton(size: buttonSize),
                       ),
                     );
                   }),
@@ -2345,7 +2417,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
   Widget buildPTTButton({required double size}) {
     return Obx(() {
       final isTalking = controller.isTalking;
-      final isBusy = controller.hasActiveSpeaker && !controller.isTalking;
+      final isBusy = controller.isRemoteSpeakerActive && !controller.isTalking;
       final isLocked = controller.isChannelLocked.value;
       final isSelfLocked = controller.isSelfLocked.value;
       final bool isNoSeat = _isTeamAdminWithoutSeat && !_canSpeak;

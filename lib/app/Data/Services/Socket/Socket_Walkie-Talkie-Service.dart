@@ -134,22 +134,54 @@ class GroupWalkieService {
     socket!.onError((e) => _log('error: $e'));
   }
 
+  int? _lastPingTime;
+  int _lastLatencyMs = 0;
+
   void _notifyConnectionState(bool connected) {
     if (Get.isRegistered<GroupWalkieController>()) {
-      Get.find<GroupWalkieController>().setConnected(connected);
+      final c = Get.find<GroupWalkieController>();
+      c.setConnected(connected);
+      if (!connected) {
+        c.updateNetworkQuality(WalkieNetworkQuality.disconnected, 0);
+      } else {
+        c.updateNetworkQuality(WalkieNetworkQuality.good, _lastLatencyMs > 0 ? _lastLatencyMs : 60);
+      }
     }
   }
 
   void _startPing() {
     _stopPing();
-    _pingTimer = Timer.periodic(const Duration(seconds: 15), (_) {
-      socket?.emit('ping_walkie');
+    _lastPingTime = DateTime.now().millisecondsSinceEpoch;
+    socket?.emit('ping_walkie', {'t': _lastPingTime});
+
+    _pingTimer = Timer.periodic(const Duration(seconds: 5), (_) {
+      if (_isDisposed || socket?.connected != true) return;
+      _lastPingTime = DateTime.now().millisecondsSinceEpoch;
+      socket?.emit('ping_walkie', {'t': _lastPingTime});
     });
   }
 
   void _stopPing() {
     _pingTimer?.cancel();
     _pingTimer = null;
+  }
+
+  void _updateLatency(int ms) {
+    if (_isDisposed) return;
+    _lastLatencyMs = ms;
+    final WalkieNetworkQuality quality;
+    if (ms < 150) {
+      quality = WalkieNetworkQuality.strong;
+    } else if (ms < 300) {
+      quality = WalkieNetworkQuality.good;
+    } else if (ms < 600) {
+      quality = WalkieNetworkQuality.fair;
+    } else {
+      quality = WalkieNetworkQuality.weak;
+    }
+    if (Get.isRegistered<GroupWalkieController>()) {
+      Get.find<GroupWalkieController>().updateNetworkQuality(quality, ms);
+    }
   }
 
   Future<bool> _requestMicPermission() async {
@@ -355,6 +387,11 @@ class GroupWalkieService {
       'force_logout',
       'exit_group_success',
       'pong_walkie',
+      'walkie_toggle_mute',
+      'walkie_user_muted',
+      'walkie_peer_muted',
+      'walkie_mute_status',
+      'user_mute_status',
       'walkie_invite_declined',
       'walkie_invite_rejected',
       'walkie_invite_cancelled',
@@ -416,11 +453,13 @@ class GroupWalkieService {
         var id = '';
         var name = 'User';
         var image = '';
+        bool isMuted = false;
         if (p is Map) {
           id = p['userId']?.toString() ?? p['id']?.toString() ?? '';
           name = p['name']?.toString() ?? 'User';
           image =
               p['image']?.toString() ?? p['profileImage']?.toString() ?? '';
+          isMuted = (p['isMuted'] ?? p['muted'] ?? p['is_muted']) == true;
         } else {
           id = p.toString();
         }
@@ -432,17 +471,23 @@ class GroupWalkieService {
               userId: id,
               name: name,
               image: image,
+              isMuted: isMuted,
               isSpeaking: false,
               isListening: true,
+              hasExplicitMute: p is Map &&
+                  (p.containsKey('isMuted') ||
+                      p.containsKey('muted') ||
+                      p.containsKey('is_muted')),
             ),
           );
         }
 
         if (_offeredTo.contains(id)) continue;
         _offeredTo.add(id);
-        await _createPeer(id);
-        await Future.delayed(const Duration(milliseconds: 80));
-        await _createOfferTo(id);
+        _createPeer(id).then((_) async {
+          await Future.delayed(const Duration(milliseconds: 40));
+          await _createOfferTo(id);
+        });
       }
     });
 
@@ -452,11 +497,13 @@ class GroupWalkieService {
       var id = '';
       var name = 'User';
       var image = '';
+      bool isMuted = false;
       if (data is Map) {
         id = data['userId']?.toString() ?? data['id']?.toString() ?? '';
         name = data['name']?.toString() ?? 'User';
         image =
             data['image']?.toString() ?? data['profileImage']?.toString() ?? '';
+        isMuted = (data['isMuted'] ?? data['muted'] ?? data['is_muted']) == true;
       } else {
         id = data.toString();
       }
@@ -469,19 +516,21 @@ class GroupWalkieService {
             userId: id,
             name: name,
             image: image,
+            isMuted: isMuted,
             isSpeaking: false,
             isListening: true,
+            hasExplicitMute: data is Map &&
+                (data.containsKey('isMuted') ||
+                    data.containsKey('muted') ||
+                    data.containsKey('is_muted')),
           ),
         );
         c.showStatusMessage("$name joined", const Color(0xFF00C853));
       }
 
-      if (!_offeredTo.contains(id)) {
-        _offeredTo.add(id);
-        await _createPeer(id);
-        await Future.delayed(const Duration(milliseconds: 80));
-        await _createOfferTo(id);
-      }
+      // Prepare peer connection and await offer from the joining peer
+      // (avoids simultaneous offer collision/glare that delays connection by 5-10s)
+      await _createPeer(id);
     });
 
     socket?.on('walkie_peer_left', (data) async {
@@ -695,6 +744,46 @@ class GroupWalkieService {
             .onChannelLocked(isLocked: data['isLocked'] == true);
       }
     });
+
+    socket?.on('pong_walkie', (data) {
+      if (_isDisposed) return;
+      int rtt = 60;
+      if (_lastPingTime != null) {
+        rtt = (DateTime.now().millisecondsSinceEpoch - _lastPingTime!).clamp(1, 9999);
+      } else if (data is Map && data['t'] != null) {
+        final sent = int.tryParse(data['t'].toString());
+        if (sent != null) {
+          rtt = (DateTime.now().millisecondsSinceEpoch - sent).clamp(1, 9999);
+        }
+      }
+      _updateLatency(rtt);
+    });
+
+    for (final eventName in [
+      'walkie_toggle_mute',
+      'walkie_user_muted',
+      'walkie_peer_muted',
+      'walkie_mute_status',
+      'user_mute_status',
+    ]) {
+      socket?.on(eventName, (data) {
+        if (_isDisposed || data == null) return;
+        _log('🔇 Mute event received on $eventName: $data');
+        String? targetUserId;
+        bool isMuted = true;
+        if (data is Map) {
+          targetUserId = (data['userId'] ?? data['id'] ?? data['user_id'])?.toString();
+          isMuted = (data['isMuted'] ?? data['muted'] ?? data['is_muted'] ?? true) == true;
+        } else if (data is String) {
+          targetUserId = data;
+        }
+        if (targetUserId != null && targetUserId.isNotEmpty) {
+          if (Get.isRegistered<GroupWalkieController>()) {
+            Get.find<GroupWalkieController>().setParticipantMuted(targetUserId, isMuted);
+          }
+        }
+      });
+    }
 
     socket?.on('walkie_error', (data) {
       if (_isDisposed || data == null) return;
@@ -1231,6 +1320,12 @@ class GroupWalkieService {
     }
 
     socket?.emit('walkie_toggle_mute', {
+      'groupId': _currentGroupId,
+      'userId': _selfUserId,
+      'isMuted': _isMuted,
+    });
+
+    socket?.emit('walkie_user_muted', {
       'groupId': _currentGroupId,
       'userId': _selfUserId,
       'isMuted': _isMuted,
