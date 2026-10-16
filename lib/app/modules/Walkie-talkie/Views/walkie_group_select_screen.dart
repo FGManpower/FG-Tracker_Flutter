@@ -861,7 +861,15 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
     final colors = colorPool[index % colorPool.length];
     final String groupId = group.id?.toString() ?? "unknown";
     final bool isOnline = (index % 2 == 0);
+    final String rawProfile = (group.groupProfile ?? '').trim();
 
+    final String groupImageUrl = rawProfile.isEmpty ||
+        rawProfile.toLowerCase() == 'null'
+        ? ''
+        : rawProfile.startsWith('http://') ||
+        rawProfile.startsWith('https://')
+        ? rawProfile
+        : '${ConstRes.aImageBaseUrl.replaceFirst(RegExp(r'/+$'), '')}/${rawProfile.replaceFirst(RegExp(r'^/+'), '')}';
     return InkWell(
       onTap: () async {
         final canAccess = await _canAccessWalkie();
@@ -876,6 +884,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
             'groupName': group.groupName ?? "Unknown Group",
             'groupDesc': group.groupDesc ?? "",
             'groupCode': group.groupCode ?? "",
+            'groupProfile': rawProfile,
             'isSubscribed': !hasNoPlan.value,
           },
         );
@@ -903,10 +912,29 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                 color: colors['bg'],
                 shape: BoxShape.circle,
               ),
-              child: Icon(
-                Icons.groups_rounded,
-                color: colors['icon'],
-                size: 24.sp,
+              child: ClipOval(
+                child: groupImageUrl.isNotEmpty
+                    ? CachedNetworkImage(
+                  imageUrl: groupImageUrl,
+                  width: 48.w,
+                  height: 48.w,
+                  fit: BoxFit.cover,
+                  placeholder: (_, __) => Icon(
+                    Icons.groups_rounded,
+                    color: colors['icon'],
+                    size: 24.sp,
+                  ),
+                  errorWidget: (_, __, ___) => Icon(
+                    Icons.groups_rounded,
+                    color: colors['icon'],
+                    size: 24.sp,
+                  ),
+                )
+                    : Icon(
+                  Icons.groups_rounded,
+                  color: colors['icon'],
+                  size: 24.sp,
+                ),
               ),
             ),
             SizedBox(width: 12.w),
@@ -982,6 +1010,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                     'groupName': group.groupName ?? "Unknown Group",
                     'groupDesc': group.groupDesc ?? "",
                     'groupCode': group.groupCode ?? "",
+                    'groupProfile': rawProfile,
                     'isSubscribed': !hasNoPlan.value,
                   },
                 );

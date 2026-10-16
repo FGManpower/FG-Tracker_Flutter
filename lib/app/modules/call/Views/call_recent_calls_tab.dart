@@ -464,8 +464,7 @@ class _RecentCallTile extends StatelessWidget {
 
     if (profile.toLowerCase() == 'null') return '';
 
-    if (profile.startsWith('http://') ||
-        profile.startsWith('https://')) {
+    if (profile.startsWith('http://') || profile.startsWith('https://')) {
       return profile;
     }
 
