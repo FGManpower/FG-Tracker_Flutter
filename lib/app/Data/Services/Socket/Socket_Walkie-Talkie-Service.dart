@@ -45,6 +45,15 @@ class GroupWalkieService {
 
   Timer? _pingTimer;
   StreamSubscription? _devicesSub;
+  Timer? _deviceCheckTimer;
+  bool _isCheckingDevices = false;
+
+  String? _bluetoothDeviceId;
+  String? _wiredDeviceId;
+  String? _speakerDeviceId;
+  String? _earpieceDeviceId;
+  String? _bluetoothInputDeviceId;
+  String? _wiredInputDeviceId;
 
   final Rx<WalkieAudioRoute> audioRoute = WalkieAudioRoute.speaker.obs;
   final RxBool hasBluetoothDevice = false.obs;
@@ -97,8 +106,8 @@ class GroupWalkieService {
     _selfUserId = selfUserId;
     _log('GroupWalkieService init user=$selfUserId');
 
-    await _configureAudioSession(speakerOn: true);
     await _listenAudioDevices();
+    await _configureAudioSession(route: audioRoute.value);
 
     socket = io(
       '$websocketUrl/groupWalkie',
@@ -134,22 +143,54 @@ class GroupWalkieService {
     socket!.onError((e) => _log('error: $e'));
   }
 
+  int? _lastPingTime;
+  int _lastLatencyMs = 0;
+
   void _notifyConnectionState(bool connected) {
     if (Get.isRegistered<GroupWalkieController>()) {
-      Get.find<GroupWalkieController>().setConnected(connected);
+      final c = Get.find<GroupWalkieController>();
+      c.setConnected(connected);
+      if (!connected) {
+        c.updateNetworkQuality(WalkieNetworkQuality.disconnected, 0);
+      } else {
+        c.updateNetworkQuality(WalkieNetworkQuality.good, _lastLatencyMs > 0 ? _lastLatencyMs : 60);
+      }
     }
   }
 
   void _startPing() {
     _stopPing();
-    _pingTimer = Timer.periodic(const Duration(seconds: 15), (_) {
-      socket?.emit('ping_walkie');
+    _lastPingTime = DateTime.now().millisecondsSinceEpoch;
+    socket?.emit('ping_walkie', {'t': _lastPingTime});
+
+    _pingTimer = Timer.periodic(const Duration(seconds: 5), (_) {
+      if (_isDisposed || socket?.connected != true) return;
+      _lastPingTime = DateTime.now().millisecondsSinceEpoch;
+      socket?.emit('ping_walkie', {'t': _lastPingTime});
     });
   }
 
   void _stopPing() {
     _pingTimer?.cancel();
     _pingTimer = null;
+  }
+
+  void _updateLatency(int ms) {
+    if (_isDisposed) return;
+    _lastLatencyMs = ms;
+    final WalkieNetworkQuality quality;
+    if (ms < 150) {
+      quality = WalkieNetworkQuality.strong;
+    } else if (ms < 300) {
+      quality = WalkieNetworkQuality.good;
+    } else if (ms < 600) {
+      quality = WalkieNetworkQuality.fair;
+    } else {
+      quality = WalkieNetworkQuality.weak;
+    }
+    if (Get.isRegistered<GroupWalkieController>()) {
+      Get.find<GroupWalkieController>().updateNetworkQuality(quality, ms);
+    }
   }
 
   Future<bool> _requestMicPermission() async {
@@ -169,21 +210,240 @@ class GroupWalkieService {
     }
   }
 
-  Future<void> _configureAudioSession({required bool speakerOn}) async {
+  bool _isBluetoothLabel(String label, String id) {
+    final l = label.toLowerCase().trim();
+    final i = id.toLowerCase().trim();
+    if (l.isEmpty && i.isEmpty) return false;
+
+    return l.contains('bluetooth') ||
+        l.contains('airpods') ||
+        l.contains('beats') ||
+        l.contains('buds') ||
+        l.contains('galaxy buds') ||
+        l.contains('hands-free') ||
+        l.contains('handsfree') ||
+        l.contains('headset bt') ||
+        l.contains('hfp') ||
+        l.contains('a2dp') ||
+        l.contains('le audio') ||
+        i.contains('bluetooth') ||
+        i.contains('airpods') ||
+        i.contains('btheadset') ||
+        i.contains('bt_a2dp') ||
+        i.contains('a2dp') ||
+        i.contains('hfp') ||
+        i.contains('sco') ||
+        i == 'bluetooth';
+  }
+
+  bool _isWiredLabel(String label, String id) {
+    final l = label.toLowerCase().trim();
+    final i = id.toLowerCase().trim();
+    if (l.isEmpty && i.isEmpty) return false;
+
+    if (_isBluetoothLabel(label, id)) return false;
+
+    if (l.contains('receiver') ||
+        l.contains('earpiece') ||
+        l.contains('handset') ||
+        l.contains('built-in') ||
+        l.contains('speaker') ||
+        i == 'earpiece' ||
+        i == 'speaker' ||
+        i.contains('receiver') ||
+        i.contains('builtin') ||
+        i.contains('built-in')) {
+      return false;
+    }
+
+    if (i == 'wired-headset' ||
+        i == 'wired_headset' ||
+        i == 'headphones' ||
+        i == 'wired' ||
+        i.contains('usb')) {
+      return true;
+    }
+    if (l.contains('earpods')) return true;
+    if (l.contains('wired')) return true;
+    if (l == 'headphones' || l.contains('headphones')) return true;
+    if (l.contains('headphone') && !l.contains('microphone')) return true;
+    if (l.contains('headset')) return true;
+    if (l.contains('usb-c') || l.contains('type-c') || l.contains('lightning')) {
+      return true;
+    }
+
+    return false;
+  }
+
+  Future<void> _checkAudioDevices({bool isInitial = false}) async {
+    if (_isDisposed || _isCheckingDevices) return;
+    _isCheckingDevices = true;
+
+    try {
+      bool isBtFound = false;
+      bool isWiredFound = false;
+      String btName = 'Bluetooth';
+      String headsetName = 'Headset';
+
+      // 1. WebRTC device enumeration
+      try {
+        final webrtcDevices = await navigator.mediaDevices.enumerateDevices();
+        for (final d in webrtcDevices) {
+          final kind = (d.kind ?? '').toLowerCase();
+          final id = d.deviceId.toLowerCase();
+          final label = d.label.trim();
+
+          final isInput = kind.contains('audioinput');
+          final isOutput = kind.contains('audiooutput');
+
+          if (_isBluetoothLabel(label, id)) {
+            isBtFound = true;
+            if (isOutput && d.deviceId.isNotEmpty) {
+              _bluetoothDeviceId = d.deviceId;
+            }
+            if (isInput && d.deviceId.isNotEmpty) {
+              _bluetoothInputDeviceId = d.deviceId;
+            }
+            if (label.isNotEmpty &&
+                !label.toLowerCase().contains('unknown') &&
+                btName == 'Bluetooth') {
+              btName = label;
+            }
+          } else if (_isWiredLabel(label, id)) {
+            isWiredFound = true;
+            if (isOutput && d.deviceId.isNotEmpty) {
+              _wiredDeviceId = d.deviceId;
+            }
+            if (isInput && d.deviceId.isNotEmpty) {
+              _wiredInputDeviceId = d.deviceId;
+            }
+            if (label.isNotEmpty &&
+                !label.toLowerCase().contains('unknown') &&
+                headsetName == 'Headset') {
+              headsetName = label;
+            }
+          } else if (isOutput) {
+            if (id == 'speaker' ||
+                id.contains('speaker') ||
+                label.toLowerCase().contains('speaker')) {
+              _speakerDeviceId = d.deviceId;
+            } else if (id == 'earpiece' ||
+                id.contains('receiver') ||
+                label.toLowerCase().contains('earpiece')) {
+              _earpieceDeviceId = d.deviceId;
+            }
+          }
+        }
+      } catch (e) {
+        _log('WebRTC enumerateDevices error: $e');
+      }
+
+      // 2. AudioSession device enumeration
+      try {
+        final session = await AudioSession.instance;
+        final audioSessionDevices = await session.getDevices();
+        for (final d in audioSessionDevices) {
+          if (d.type == AudioDeviceType.bluetoothA2dp ||
+              d.type == AudioDeviceType.bluetoothSco ||
+              d.type == AudioDeviceType.bluetoothLe) {
+            isBtFound = true;
+            if (d.name.trim().isNotEmpty && btName == 'Bluetooth') {
+              btName = d.name.trim();
+            }
+          } else if (d.type == AudioDeviceType.wiredHeadset ||
+              d.type == AudioDeviceType.wiredHeadphones ||
+              d.type == AudioDeviceType.usbAudio) {
+            isWiredFound = true;
+            if (d.name.trim().isNotEmpty && headsetName == 'Headset') {
+              headsetName = d.name.trim();
+            }
+          }
+        }
+      } catch (e) {
+        _log('AudioSession getDevices error: $e');
+      }
+
+      final prevBT = hasBluetoothDevice.value;
+      final prevHS = hasHeadsetDevice.value;
+
+      hasBluetoothDevice.value = isBtFound;
+      bluetoothDeviceName.value = btName;
+      hasHeadsetDevice.value = isWiredFound;
+      headsetDeviceName.value = headsetName;
+
+      if (Get.isRegistered<GroupWalkieController>()) {
+        Get.find<GroupWalkieController>().updateAvailableRoutes(
+          hasBt: isBtFound,
+          btName: btName,
+          hasHeadset: isWiredFound,
+          headsetName: headsetName,
+        );
+      }
+
+      if (isInitial) {
+        if (isBtFound) {
+          await setAudioRoute(WalkieAudioRoute.bluetooth);
+        } else if (isWiredFound) {
+          await setAudioRoute(WalkieAudioRoute.headset);
+        } else {
+          await setAudioRoute(WalkieAudioRoute.speaker);
+        }
+        return;
+      }
+
+      // Edge triggers
+      final btPlugged = isBtFound && !prevBT;
+      final wiredPlugged = isWiredFound && !prevHS;
+      final btUnplugged = !isBtFound && prevBT;
+      final wiredUnplugged = !isWiredFound && prevHS;
+
+      if (btPlugged) {
+        _log('🎧 BT device plugged ($btName) -> auto-switching to bluetooth');
+        await setAudioRoute(WalkieAudioRoute.bluetooth);
+      } else if (wiredPlugged) {
+        _log('🎧 Wired device plugged ($headsetName) -> auto-switching to headset');
+        await setAudioRoute(WalkieAudioRoute.headset);
+      } else if (btUnplugged && audioRoute.value == WalkieAudioRoute.bluetooth) {
+        _log('🎧 BT device unplugged -> switching to ${isWiredFound ? "headset" : "speaker"}');
+        await setAudioRoute(
+          isWiredFound ? WalkieAudioRoute.headset : WalkieAudioRoute.speaker,
+        );
+      } else if (wiredUnplugged &&
+          audioRoute.value == WalkieAudioRoute.headset) {
+        _log('🎧 Wired device unplugged -> switching to ${isBtFound ? "bluetooth" : "speaker"}');
+        await setAudioRoute(
+          isBtFound ? WalkieAudioRoute.bluetooth : WalkieAudioRoute.speaker,
+        );
+      }
+    } catch (e) {
+      _log('❌ _checkAudioDevices: $e');
+    } finally {
+      _isCheckingDevices = false;
+    }
+  }
+
+  Future<void> _configureAudioSession({WalkieAudioRoute? route}) async {
     if (_isDisposed) return;
+    final targetRoute = route ?? audioRoute.value;
     try {
       final session = await AudioSession.instance;
 
       if (Platform.isIOS) {
+        final isSpeaker = targetRoute == WalkieAudioRoute.speaker;
+        final options = isSpeaker
+            ? (AVAudioSessionCategoryOptions.allowBluetooth |
+                AVAudioSessionCategoryOptions.allowBluetoothA2dp |
+                AVAudioSessionCategoryOptions.allowAirPlay |
+                AVAudioSessionCategoryOptions.defaultToSpeaker)
+            : (AVAudioSessionCategoryOptions.allowBluetooth |
+                AVAudioSessionCategoryOptions.allowBluetoothA2dp |
+                AVAudioSessionCategoryOptions.allowAirPlay);
+
         await session.configure(
           AudioSessionConfiguration(
             avAudioSessionCategory: AVAudioSessionCategory.playAndRecord,
             avAudioSessionMode: AVAudioSessionMode.voiceChat,
-            avAudioSessionCategoryOptions:
-            AVAudioSessionCategoryOptions.allowBluetooth |
-            AVAudioSessionCategoryOptions.allowBluetoothA2dp |
-            AVAudioSessionCategoryOptions.allowAirPlay |
-            AVAudioSessionCategoryOptions.defaultToSpeaker,
+            avAudioSessionCategoryOptions: options,
           ),
         );
       } else {
@@ -196,22 +456,162 @@ class GroupWalkieService {
               contentType: AndroidAudioContentType.speech,
             ),
             androidAudioFocusGainType:
-            AndroidAudioFocusGainType.gainTransientMayDuck,
+                AndroidAudioFocusGainType.gainTransientMayDuck,
           ),
         );
       }
 
       await session.setActive(true);
-      _isSpeakerOn = speakerOn;
+      _isSpeakerOn = targetRoute == WalkieAudioRoute.speaker;
       _audioSessionReady = true;
 
-      try {
-        await Helper.setSpeakerphoneOn(speakerOn);
-      } catch (_) {}
-
-      _log('🎧 AudioSession configured speakerOn=$speakerOn');
+      _log('🎧 AudioSession configured for route=$targetRoute');
     } catch (e) {
       _log('❌ AudioSession configure error: $e');
+    }
+  }
+
+  Future<void> _applyCurrentAudioRoute() async {
+    final route = audioRoute.value;
+    try {
+      if (Platform.isAndroid) {
+        final am = AndroidAudioManager();
+        try {
+          await am.setMode(AndroidAudioHardwareMode.inCommunication);
+        } catch (_) {}
+
+        switch (route) {
+          case WalkieAudioRoute.speaker:
+            try {
+              await am.stopBluetoothSco();
+              await am.setBluetoothScoOn(false);
+            } catch (_) {}
+            try {
+              await am.setSpeakerphoneOn(true);
+              await Helper.setSpeakerphoneOn(true);
+              await Helper.selectAudioOutput('speaker');
+            } catch (_) {}
+            try {
+              await ProximityScreenLock.setActive(false);
+            } catch (_) {}
+            break;
+
+          case WalkieAudioRoute.bluetooth:
+            try {
+              await am.setSpeakerphoneOn(false);
+              await Helper.setSpeakerphoneOn(false);
+            } catch (_) {}
+            try {
+              await am.startBluetoothSco();
+              await Future.delayed(const Duration(milliseconds: 100));
+              await am.setBluetoothScoOn(true);
+            } catch (_) {}
+            try {
+              await Helper.selectAudioOutput('bluetooth');
+            } catch (_) {}
+            try {
+              await Helper.selectAudioInput('bluetooth');
+            } catch (_) {}
+            try {
+              await ProximityScreenLock.setActive(false);
+            } catch (_) {}
+            break;
+
+          case WalkieAudioRoute.headset:
+            try {
+              await am.stopBluetoothSco();
+              await am.setBluetoothScoOn(false);
+            } catch (_) {}
+            try {
+              await am.setSpeakerphoneOn(false);
+              await Helper.setSpeakerphoneOn(false);
+              await Helper.selectAudioOutput('wired-headset');
+            } catch (_) {}
+            try {
+              await ProximityScreenLock.setActive(false);
+            } catch (_) {}
+            break;
+
+          case WalkieAudioRoute.earpiece:
+            try {
+              await am.stopBluetoothSco();
+              await am.setBluetoothScoOn(false);
+            } catch (_) {}
+            try {
+              await am.setSpeakerphoneOn(false);
+              await Helper.setSpeakerphoneOn(false);
+              await Helper.selectAudioOutput('earpiece');
+            } catch (_) {}
+            try {
+              await ProximityScreenLock.setActive(true);
+            } catch (_) {}
+            break;
+        }
+      } else if (Platform.isIOS) {
+        switch (route) {
+          case WalkieAudioRoute.speaker:
+            try {
+              await Helper.setSpeakerphoneOn(true);
+              await Helper.selectAudioOutput(_speakerDeviceId ?? 'speaker');
+            } catch (_) {}
+            try {
+              await ProximityScreenLock.setActive(false);
+            } catch (_) {}
+            break;
+
+          case WalkieAudioRoute.bluetooth:
+            try {
+              await Helper.setSpeakerphoneOnButPreferBluetooth();
+            } catch (_) {
+              try {
+                await Helper.setSpeakerphoneOn(false);
+              } catch (_) {}
+            }
+            try {
+              await Helper.selectAudioOutput(
+                _bluetoothDeviceId ?? 'bluetooth',
+              );
+            } catch (_) {}
+            if (_bluetoothInputDeviceId != null) {
+              try {
+                await Helper.selectAudioInput(_bluetoothInputDeviceId!);
+              } catch (_) {}
+            }
+            try {
+              await ProximityScreenLock.setActive(false);
+            } catch (_) {}
+            break;
+
+          case WalkieAudioRoute.headset:
+            try {
+              await Helper.setSpeakerphoneOn(false);
+              await Helper.selectAudioOutput(
+                _wiredDeviceId ?? 'wired-headset',
+              );
+            } catch (_) {}
+            if (_wiredInputDeviceId != null) {
+              try {
+                await Helper.selectAudioInput(_wiredInputDeviceId!);
+              } catch (_) {}
+            }
+            try {
+              await ProximityScreenLock.setActive(false);
+            } catch (_) {}
+            break;
+
+          case WalkieAudioRoute.earpiece:
+            try {
+              await Helper.setSpeakerphoneOn(false);
+              await Helper.selectAudioOutput(_earpieceDeviceId ?? 'earpiece');
+            } catch (_) {}
+            try {
+              await ProximityScreenLock.setActive(true);
+            } catch (_) {}
+            break;
+        }
+      }
+    } catch (e) {
+      _log('❌ _applyCurrentAudioRoute error: $e');
     }
   }
 
@@ -219,7 +619,7 @@ class GroupWalkieService {
     if (_isDisposed) return;
     try {
       if (forceSession || !_audioSessionReady) {
-        await _configureAudioSession(speakerOn: _isSpeakerOn);
+        await _configureAudioSession(route: audioRoute.value);
       } else {
         try {
           final session = await AudioSession.instance;
@@ -227,32 +627,22 @@ class GroupWalkieService {
         } catch (_) {}
       }
 
-      if (Platform.isAndroid) {
-        try {
-          final am = AndroidAudioManager();
-          await am.setMode(AndroidAudioHardwareMode.inCommunication);
-          await am.setSpeakerphoneOn(_isSpeakerOn);
-        } catch (e) {
-          _log('⚠️ Android AudioManager: $e');
-        }
-      }
-
-      try {
-        await Helper.setSpeakerphoneOn(_isSpeakerOn);
-      } catch (_) {}
+      await _applyCurrentAudioRoute();
 
       for (final stream in _remoteStreams.values) {
         for (final track in stream.getAudioTracks()) {
           try {
             track.enabled = true;
-            track.enableSpeakerphone(_isSpeakerOn);
+            track.enableSpeakerphone(
+              audioRoute.value == WalkieAudioRoute.speaker,
+            );
           } catch (_) {}
         }
       }
 
       _log(
-        '🔊 Playback path ensured speakerOn=$_isSpeakerOn '
-            'peers=${_peers.length} remoteStreams=${_remoteStreams.length}',
+        '🔊 Playback path ensured route=${audioRoute.value} speaker=$_isSpeakerOn '
+        'peers=${_peers.length} remoteStreams=${_remoteStreams.length}',
       );
     } catch (e) {
       _log('❌ _ensurePlaybackPath: $e');
@@ -263,72 +653,17 @@ class GroupWalkieService {
     try {
       final session = await AudioSession.instance;
       await _devicesSub?.cancel();
-      _devicesSub = session.devicesStream.listen(_updateRoute);
-      await _updateRoute(await session.getDevices());
-    } catch (_) {}
-  }
-
-  Future<void> _updateRoute(Set<AudioDevice> devices) async {
-    final hasBT = devices.any((d) =>
-    d.type == AudioDeviceType.bluetoothA2dp ||
-        d.type == AudioDeviceType.bluetoothSco ||
-        d.type == AudioDeviceType.bluetoothLe);
-
-    var btName = 'Bluetooth';
-    for (final d in devices) {
-      if ((d.type == AudioDeviceType.bluetoothA2dp ||
-          d.type == AudioDeviceType.bluetoothSco ||
-          d.type == AudioDeviceType.bluetoothLe) &&
-          d.name.trim().isNotEmpty) {
-        btName = d.name.trim();
-        break;
-      }
-    }
-
-    final headsets = devices
-        .where((d) =>
-    d.type == AudioDeviceType.wiredHeadset ||
-        d.type == AudioDeviceType.wiredHeadphones)
-        .toList();
-    final hasHeadset = headsets.isNotEmpty;
-    final headsetName =
-    (hasHeadset && headsets.first.name.trim().isNotEmpty)
-        ? headsets.first.name.trim()
-        : 'Headset';
-
-    final prevBT = hasBluetoothDevice.value;
-    final prevHS = hasHeadsetDevice.value;
-
-    hasBluetoothDevice.value = hasBT;
-    bluetoothDeviceName.value = btName;
-    hasHeadsetDevice.value = hasHeadset;
-    headsetDeviceName.value = headsetName;
-
-    if (Get.isRegistered<GroupWalkieController>()) {
-      Get.find<GroupWalkieController>().updateAvailableRoutes(
-        hasBt: hasBT,
-        btName: btName,
-        hasHeadset: hasHeadset,
-        headsetName: headsetName,
-      );
-    }
-
-    if (!prevBT && hasBT) {
-      await setAudioRoute(WalkieAudioRoute.bluetooth);
-      return;
-    }
-    if (prevBT && !hasBT && audioRoute.value == WalkieAudioRoute.bluetooth) {
-      await setAudioRoute(WalkieAudioRoute.speaker);
-      return;
-    }
-    if (!prevHS && hasHeadset) {
-      await setAudioRoute(WalkieAudioRoute.headset);
-      return;
-    }
-    if (prevHS &&
-        !hasHeadset &&
-        audioRoute.value == WalkieAudioRoute.headset) {
-      await setAudioRoute(WalkieAudioRoute.speaker);
+      _devicesSub = session.devicesStream.listen((_) => _checkAudioDevices());
+      _deviceCheckTimer?.cancel();
+      _deviceCheckTimer =
+          Timer.periodic(const Duration(milliseconds: 2500), (_) {
+        if (!_isDisposed) {
+          _checkAudioDevices();
+        }
+      });
+      await _checkAudioDevices(isInitial: true);
+    } catch (e) {
+      _log('❌ _listenAudioDevices error: $e');
     }
   }
 
@@ -355,6 +690,11 @@ class GroupWalkieService {
       'force_logout',
       'exit_group_success',
       'pong_walkie',
+      'walkie_toggle_mute',
+      'walkie_user_muted',
+      'walkie_peer_muted',
+      'walkie_mute_status',
+      'user_mute_status',
       'walkie_invite_declined',
       'walkie_invite_rejected',
       'walkie_invite_cancelled',
@@ -416,11 +756,13 @@ class GroupWalkieService {
         var id = '';
         var name = 'User';
         var image = '';
+        bool isMuted = false;
         if (p is Map) {
           id = p['userId']?.toString() ?? p['id']?.toString() ?? '';
           name = p['name']?.toString() ?? 'User';
           image =
               p['image']?.toString() ?? p['profileImage']?.toString() ?? '';
+          isMuted = (p['isMuted'] ?? p['muted'] ?? p['is_muted']) == true;
         } else {
           id = p.toString();
         }
@@ -432,17 +774,23 @@ class GroupWalkieService {
               userId: id,
               name: name,
               image: image,
+              isMuted: isMuted,
               isSpeaking: false,
               isListening: true,
+              hasExplicitMute: p is Map &&
+                  (p.containsKey('isMuted') ||
+                      p.containsKey('muted') ||
+                      p.containsKey('is_muted')),
             ),
           );
         }
 
         if (_offeredTo.contains(id)) continue;
         _offeredTo.add(id);
-        await _createPeer(id);
-        await Future.delayed(const Duration(milliseconds: 80));
-        await _createOfferTo(id);
+        _createPeer(id).then((_) async {
+          await Future.delayed(const Duration(milliseconds: 40));
+          await _createOfferTo(id);
+        });
       }
     });
 
@@ -452,11 +800,13 @@ class GroupWalkieService {
       var id = '';
       var name = 'User';
       var image = '';
+      bool isMuted = false;
       if (data is Map) {
         id = data['userId']?.toString() ?? data['id']?.toString() ?? '';
         name = data['name']?.toString() ?? 'User';
         image =
             data['image']?.toString() ?? data['profileImage']?.toString() ?? '';
+        isMuted = (data['isMuted'] ?? data['muted'] ?? data['is_muted']) == true;
       } else {
         id = data.toString();
       }
@@ -469,19 +819,21 @@ class GroupWalkieService {
             userId: id,
             name: name,
             image: image,
+            isMuted: isMuted,
             isSpeaking: false,
             isListening: true,
+            hasExplicitMute: data is Map &&
+                (data.containsKey('isMuted') ||
+                    data.containsKey('muted') ||
+                    data.containsKey('is_muted')),
           ),
         );
         c.showStatusMessage("$name joined", const Color(0xFF00C853));
       }
 
-      if (!_offeredTo.contains(id)) {
-        _offeredTo.add(id);
-        await _createPeer(id);
-        await Future.delayed(const Duration(milliseconds: 80));
-        await _createOfferTo(id);
-      }
+      // Prepare peer connection and await offer from the joining peer
+      // (avoids simultaneous offer collision/glare that delays connection by 5-10s)
+      await _createPeer(id);
     });
 
     socket?.on('walkie_peer_left', (data) async {
@@ -696,6 +1048,46 @@ class GroupWalkieService {
       }
     });
 
+    socket?.on('pong_walkie', (data) {
+      if (_isDisposed) return;
+      int rtt = 60;
+      if (_lastPingTime != null) {
+        rtt = (DateTime.now().millisecondsSinceEpoch - _lastPingTime!).clamp(1, 9999);
+      } else if (data is Map && data['t'] != null) {
+        final sent = int.tryParse(data['t'].toString());
+        if (sent != null) {
+          rtt = (DateTime.now().millisecondsSinceEpoch - sent).clamp(1, 9999);
+        }
+      }
+      _updateLatency(rtt);
+    });
+
+    for (final eventName in [
+      'walkie_toggle_mute',
+      'walkie_user_muted',
+      'walkie_peer_muted',
+      'walkie_mute_status',
+      'user_mute_status',
+    ]) {
+      socket?.on(eventName, (data) {
+        if (_isDisposed || data == null) return;
+        _log('🔇 Mute event received on $eventName: $data');
+        String? targetUserId;
+        bool isMuted = true;
+        if (data is Map) {
+          targetUserId = (data['userId'] ?? data['id'] ?? data['user_id'])?.toString();
+          isMuted = (data['isMuted'] ?? data['muted'] ?? data['is_muted'] ?? true) == true;
+        } else if (data is String) {
+          targetUserId = data;
+        }
+        if (targetUserId != null && targetUserId.isNotEmpty) {
+          if (Get.isRegistered<GroupWalkieController>()) {
+            Get.find<GroupWalkieController>().setParticipantMuted(targetUserId, isMuted);
+          }
+        }
+      });
+    }
+
     socket?.on('walkie_error', (data) {
       if (_isDisposed || data == null) return;
       final msg = data is Map
@@ -730,7 +1122,7 @@ class GroupWalkieService {
 
     try {
       await _requestMicPermission();
-      await _configureAudioSession(speakerOn: _isSpeakerOn);
+      await _configureAudioSession(route: audioRoute.value);
 
       _log('Acquiring getUserMedia...');
 
@@ -1122,7 +1514,8 @@ class GroupWalkieService {
       return false;
     }
 
-    await _configureAudioSession(speakerOn: _isSpeakerOn);
+    await _checkAudioDevices();
+    await _configureAudioSession(route: audioRoute.value);
     await _ensurePlaybackPath(forceSession: true);
 
     socket?.emit('join_walkie_session', {'groupId': groupId});
@@ -1236,6 +1629,12 @@ class GroupWalkieService {
       'isMuted': _isMuted,
     });
 
+    socket?.emit('walkie_user_muted', {
+      'groupId': _currentGroupId,
+      'userId': _selfUserId,
+      'isMuted': _isMuted,
+    });
+
     if (Get.isRegistered<GroupWalkieController>()) {
       Get.find<GroupWalkieController>().setMuteFromService(_isMuted);
     }
@@ -1247,80 +1646,16 @@ class GroupWalkieService {
     _isSpeakerOn = route == WalkieAudioRoute.speaker;
     _log('🎧 setAudioRoute $route speaker=$_isSpeakerOn');
 
-    try {
-      if (Platform.isAndroid) {
-        final am = AndroidAudioManager();
-        try {
-          await am.setMode(AndroidAudioHardwareMode.inCommunication);
-        } catch (_) {}
+    await _configureAudioSession(route: route);
+    await _applyCurrentAudioRoute();
 
-        switch (route) {
-          case WalkieAudioRoute.speaker:
-            try {
-              await am.stopBluetoothSco();
-              await am.setBluetoothScoOn(false);
-            } catch (_) {}
-            try {
-              await Helper.setSpeakerphoneOn(true);
-              await am.setSpeakerphoneOn(true);
-            } catch (_) {}
-            try {
-              await ProximityScreenLock.setActive(false);
-            } catch (_) {}
-            break;
-          case WalkieAudioRoute.bluetooth:
-            try {
-              await Helper.setSpeakerphoneOn(false);
-              await am.setSpeakerphoneOn(false);
-            } catch (_) {}
-            try {
-              await am.startBluetoothSco();
-              await Future.delayed(const Duration(milliseconds: 150));
-              await am.setBluetoothScoOn(true);
-            } catch (_) {}
-            try {
-              await ProximityScreenLock.setActive(false);
-            } catch (_) {}
-            break;
-          case WalkieAudioRoute.earpiece:
-          case WalkieAudioRoute.headset:
-            try {
-              await am.stopBluetoothSco();
-              await am.setBluetoothScoOn(false);
-            } catch (_) {}
-            try {
-              await Helper.setSpeakerphoneOn(false);
-              await am.setSpeakerphoneOn(false);
-            } catch (_) {}
-            try {
-              await ProximityScreenLock.setActive(false);
-            } catch (_) {}
-            break;
-        }
-
-        for (final stream in _remoteStreams.values) {
-          for (final track in stream.getAudioTracks()) {
-            try {
-              track.enabled = true;
-              track.enableSpeakerphone(route == WalkieAudioRoute.speaker);
-            } catch (_) {}
-          }
-        }
-      } else {
+    for (final stream in _remoteStreams.values) {
+      for (final track in stream.getAudioTracks()) {
         try {
-          await Helper.setSpeakerphoneOn(_isSpeakerOn);
+          track.enabled = true;
+          track.enableSpeakerphone(route == WalkieAudioRoute.speaker);
         } catch (_) {}
-        for (final stream in _remoteStreams.values) {
-          for (final track in stream.getAudioTracks()) {
-            try {
-              track.enabled = true;
-              track.enableSpeakerphone(_isSpeakerOn);
-            } catch (_) {}
-          }
-        }
       }
-    } catch (e) {
-      _log('❌ setAudioRoute: $e');
     }
 
     if (Get.isRegistered<GroupWalkieController>()) {
@@ -1377,6 +1712,8 @@ class GroupWalkieService {
     _streamCompleter = null;
     _audioSessionReady = false;
 
+    _deviceCheckTimer?.cancel();
+    _deviceCheckTimer = null;
     await _devicesSub?.cancel();
     _devicesSub = null;
 
