@@ -44,3 +44,6 @@
 -keepclassmembers class * {
     @androidx.annotation.Keep *;
 }
+
+-dontwarn com.google.android.play.core.**
+
