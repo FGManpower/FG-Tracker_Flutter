@@ -264,6 +264,10 @@ class GroupWalkieController extends GetxController {
     participants.refresh();
   }
 
+  void updateParticipantMute(String userId, bool isMuted) {
+    setParticipantMuted(userId, isMuted);
+  }
+
   IconData get audioRouteIcon {
     switch (audioRoute.value) {
       case WalkieAudioRoute.bluetooth:
@@ -294,6 +298,34 @@ class GroupWalkieController extends GetxController {
       default:
         return "Speaker";
     }
+  }
+
+  void addOrUpdateParticipantsBatch(List<WalkieParticipant> newParticipants) {
+    if (newParticipants.isEmpty) return;
+    final map = <String, WalkieParticipant>{};
+    for (final p in participants) {
+      map[p.userId.trim()] = p;
+    }
+    for (final p in newParticipants) {
+      if (p.userId.isEmpty) continue;
+      final cleanId = p.userId.trim();
+      final existing = map[cleanId];
+      if (existing != null) {
+        map[cleanId] = WalkieParticipant(
+          userId: p.userId,
+          name: (p.name.isNotEmpty && p.name != 'User') ? p.name : existing.name,
+          image: p.image.isNotEmpty ? p.image : existing.image,
+          isMuted: p.hasExplicitMute ? p.isMuted : existing.isMuted,
+          isListening: p.isListening,
+          isSpeaking: p.isSpeaking,
+          hasExplicitMute: p.hasExplicitMute || existing.hasExplicitMute,
+        );
+      } else {
+        map[cleanId] = p;
+      }
+    }
+    participants.assignAll(map.values.toList());
+    totalParticipants.value = participants.length;
   }
 
   void addOrUpdateParticipant(WalkieParticipant p) {
@@ -389,8 +421,8 @@ class GroupWalkieController extends GetxController {
     required String speakerImage,
   }) {
     _speakerWatchdogTimer?.cancel();
-    // Auto-expire after 32 seconds in case release packet is dropped
-    _speakerWatchdogTimer = Timer(const Duration(seconds: 32), () {
+    // Auto-expire after 15 seconds in case release packet is dropped
+    _speakerWatchdogTimer = Timer(const Duration(seconds: 15), () {
       onSpeakerStopped();
     });
 
@@ -440,14 +472,21 @@ class GroupWalkieController extends GetxController {
   void onSpeakerStopped() {
     _speakerWatchdogTimer?.cancel();
     _speakerWatchdogTimer = null;
+    final hadActiveSpeaker = activeSpeakerId.value.isNotEmpty;
     activeSpeakerId.value = "";
     activeSpeakerName.value = "";
     activeSpeakerImage.value = "";
 
+    bool hadSpeakingParticipant = false;
     for (final p in participants) {
-      p.isSpeaking = false;
+      if (p.isSpeaking) {
+        p.isSpeaking = false;
+        hadSpeakingParticipant = true;
+      }
     }
-    participants.refresh();
+    if (hadActiveSpeaker || hadSpeakingParticipant) {
+      participants.refresh();
+    }
 
     if (!isTalking) {
       audioState.value = WalkieAudioState.listening;
