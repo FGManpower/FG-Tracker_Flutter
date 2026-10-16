@@ -2365,20 +2365,32 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                           await controller.setRoute(WalkieAudioRoute.bluetooth);
                         },
                       ),
-                      if (hasHeadset) ...[
-                        buildAudioRouteDivider(),
-                        buildAudioRouteItem(
-                          title: headsetName,
-                          trailingIcon: Icons.headphones_rounded,
-                          isSelected: currentRoute == WalkieAudioRoute.headset,
-                          onTap: () async {
-                            log('User changed audio route to: WIRED HEADSET');
-                            HapticFeedback.mediumImpact();
-                            Navigator.of(sheetContext).pop();
-                            await controller.setRoute(WalkieAudioRoute.headset);
-                          },
-                        ),
-                      ],
+                      buildAudioRouteDivider(),
+                      buildAudioRouteItem(
+                        title: hasHeadset ? headsetName : "Wired Headphones",
+                        subtitle: hasHeadset ? "Connected" : "Not connected",
+                        trailingIcon: Icons.headphones_rounded,
+                        isSelected: currentRoute == WalkieAudioRoute.headset,
+                        isEnabled: hasHeadset,
+                        onTap: () async {
+                          if (!hasHeadset) {
+                            log('Warning: Attempted to switch to Wired Headset but no device is active.');
+                            Get.snackbar(
+                              "Wired Headphones",
+                              "No wired earphones or headset connected. Please plug them into your device.",
+                              snackPosition: SnackPosition.BOTTOM,
+                              backgroundColor: Colors.black87,
+                              colorText: Colors.white,
+                              duration: const Duration(seconds: 3),
+                            );
+                            return;
+                          }
+                          log('User changed audio route to: WIRED HEADSET');
+                          HapticFeedback.mediumImpact();
+                          Navigator.of(sheetContext).pop();
+                          await controller.setRoute(WalkieAudioRoute.headset);
+                        },
+                      ),
                       SizedBox(height: 10.h),
                       Container(
                         width: double.infinity,
