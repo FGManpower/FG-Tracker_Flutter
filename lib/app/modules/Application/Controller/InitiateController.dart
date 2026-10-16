@@ -12,6 +12,7 @@ import '../../../Core/global/launchedFromCall.dart';
 import '../../../Core/constant/notification_holder.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Walkie-Talkie-Service.dart';
 import '../../../modules/AppUpdate/Controller/UpdateCubit/update_cubit.dart';
+import '../../../modules/Walkie-talkie/Services/walkie_notification_manager.dart';
 
 class InitiateController extends GetxController
     with GetTickerProviderStateMixin {
@@ -27,6 +28,7 @@ class InitiateController extends GetxController
     return CallSessionState.launchedFromCall ||
         CallSessionState.isCallActive ||
         WalkieLaunchTracker.fromWalkieCall ||
+        WalkieNotificationManager.instance.isWalkieScreenActive.value ||
         GroupWalkieService.instance.currentGroupId != null ||
         Get.currentRoute == Routes.groupWalkieScreen ||
         Get.currentRoute == Routes.callScreen ||

@@ -194,9 +194,12 @@ class WalkieCustomNotificationPlugin : FlutterPlugin, MethodCallHandler, Activit
 
             val builder = NotificationCompat.Builder(ctx, CHANNEL_ID)
                 .setSmallIcon(smallIconRes)
+                .setContentTitle(displayGroupName)
+                .setContentText(displaySpeakerText)
                 .setCustomContentView(collapsedViews)
                 .setCustomBigContentView(expandedViews)
                 .setCustomHeadsUpContentView(collapsedViews)
+                .setStyle(NotificationCompat.DecoratedCustomViewStyle())
                 .setContentIntent(contentPendingIntent)
                 .setAutoCancel(true)
                 .setPriority(NotificationCompat.PRIORITY_MAX)

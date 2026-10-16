@@ -264,6 +264,10 @@ class GroupWalkieController extends GetxController {
     participants.refresh();
   }
 
+  void updateParticipantMute(String userId, bool isMuted) {
+    setParticipantMuted(userId, isMuted);
+  }
+
   IconData get audioRouteIcon {
     switch (audioRoute.value) {
       case WalkieAudioRoute.bluetooth:
@@ -417,8 +421,8 @@ class GroupWalkieController extends GetxController {
     required String speakerImage,
   }) {
     _speakerWatchdogTimer?.cancel();
-    // Auto-expire after 32 seconds in case release packet is dropped
-    _speakerWatchdogTimer = Timer(const Duration(seconds: 32), () {
+    // Auto-expire after 15 seconds in case release packet is dropped
+    _speakerWatchdogTimer = Timer(const Duration(seconds: 15), () {
       onSpeakerStopped();
     });
 

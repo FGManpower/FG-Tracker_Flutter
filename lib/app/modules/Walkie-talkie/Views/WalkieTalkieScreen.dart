@@ -38,7 +38,7 @@ class GroupWalkieScreen extends StatefulWidget {
 }
 
 class _GroupWalkieScreenState extends State<GroupWalkieScreen>
-    with TickerProviderStateMixin {
+    with TickerProviderStateMixin, WidgetsBindingObserver {
   final controller = Get.put(GroupWalkieController());
   Map<String, dynamic>? args;
   String get _groupProfileUrl {
@@ -90,6 +90,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     log('initState() initiated');
     WalkieLaunchTracker.fromWalkieCall = true;
     WalkieNotificationManager.instance.setWalkieScreenActive(true);
@@ -236,6 +237,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
   @override
   void dispose() {
     log('dispose() called');
+    WidgetsBinding.instance.removeObserver(this);
     _isDisposed = true;
     _rippleWorker.dispose();
     _pulseWorker.dispose();
@@ -250,6 +252,25 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
     _pulseController.dispose();
     _lockHintController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    log('GroupWalkieScreen lifecycle state changed: $state');
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.detached) {
+      if (_wantsToTalk ||
+          controller.isPressed.value ||
+          controller.isSelfLocked.value ||
+          GroupWalkieService.instance.isTalking) {
+        log('Stopping PTT transmission due to app backgrounding / interruption');
+        _wantsToTalk = false;
+        controller.forceUnlockAndReset();
+        _stopTalking();
+      }
+    }
   }
 
   Future<void> _safeLeave() async {
@@ -1908,8 +1929,8 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                 clipBehavior: Clip.none,
                 children: [
                   Container(
-                    width: (buttonSize * 2.2).clamp(190.0, maxRingRadius),
-                    height: (buttonSize * 2.2).clamp(190.0, maxRingRadius),
+                    width: math.min(buttonSize * 2.2, maxRingRadius),
+                    height: math.min(buttonSize * 2.2, maxRingRadius),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
@@ -1919,8 +1940,8 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                     ),
                   ),
                   Container(
-                    width: (buttonSize * 1.75).clamp(160.0, maxRingRadius),
-                    height: (buttonSize * 1.75).clamp(160.0, maxRingRadius),
+                    width: math.min(buttonSize * 1.75, maxRingRadius),
+                    height: math.min(buttonSize * 1.75, maxRingRadius),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
@@ -1930,8 +1951,8 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                     ),
                   ),
                   Container(
-                    width: (buttonSize * 1.35).clamp(130.0, maxRingRadius),
-                    height: (buttonSize * 1.35).clamp(130.0, maxRingRadius),
+                    width: math.min(buttonSize * 1.35, maxRingRadius),
+                    height: math.min(buttonSize * 1.35, maxRingRadius),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
@@ -1941,8 +1962,8 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                     ),
                   ),
                   Container(
-                    width: (buttonSize * 1.05).clamp(100.0, maxRingRadius),
-                    height: (buttonSize * 1.05).clamp(100.0, maxRingRadius),
+                    width: math.min(buttonSize * 1.05, maxRingRadius),
+                    height: math.min(buttonSize * 1.05, maxRingRadius),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(

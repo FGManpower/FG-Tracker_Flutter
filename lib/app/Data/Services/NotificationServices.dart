@@ -68,6 +68,20 @@ class firebaseNotificationServices {
   static const String walkieCancelActionId = 'WALKIE_CANCEL';
   static const String walkieCategoryIdentifier = 'walkie_invite_category';
 
+  static final Map<String, int> _recentWalkieEvents = <String, int>{};
+  static bool isDuplicateWalkieEvent(String eventKey, {int debounceSeconds = 3}) {
+    final now = DateTime.now().millisecondsSinceEpoch;
+    _recentWalkieEvents.removeWhere((_, time) => now - time > 15000);
+    if (_recentWalkieEvents.containsKey(eventKey)) {
+      final prevTime = _recentWalkieEvents[eventKey]!;
+      if (now - prevTime < (debounceSeconds * 1000)) {
+        return true;
+      }
+    }
+    _recentWalkieEvents[eventKey] = now;
+    return false;
+  }
+
   static DarwinInitializationSettings createDarwinSettings() {
     final darwinNotificationCategories = <DarwinNotificationCategory>[
       DarwinNotificationCategory(
@@ -262,6 +276,12 @@ class firebaseNotificationServices {
       WidgetsFlutterBinding.ensureInitialized();
     } catch (_) {}
 
+    final eventKey = extraData?['eventId']?.toString() ?? "${groupId}_$speakerName";
+    if (isDuplicateWalkieEvent(eventKey)) {
+      log("🔔 [showWalkieNotification] Skipping duplicate walkie event: $eventKey");
+      return;
+    }
+
     bool isForeground = false;
     try {
       isForeground =
@@ -302,7 +322,7 @@ class firebaseNotificationServices {
       return;
     }
 
-    // iOS: Use Native UserNotifications with Action Buttons (Accept / Cancel)
+    // iOS: Use Native UserNotifications with Action Buttons (Accept / Cancel) and Content Extension
     if (Platform.isIOS) {
       log("🔔 [showWalkieNotification] iOS: Displaying native notification with Accept/Cancel actions");
       try {
@@ -327,13 +347,14 @@ class firebaseNotificationServices {
           );
         } catch (_) {}
 
-        const DarwinNotificationDetails darwinNotificationDetails =
+        final DarwinNotificationDetails darwinNotificationDetails =
             DarwinNotificationDetails(
           presentAlert: true,
           presentBadge: true,
           presentSound: true,
-          sound: 'walkie-talkie-ringtone.mp3',
+          sound: 'walkie-talkie-ringtone.caf',
           categoryIdentifier: 'WALKIE_INVITE',
+          threadIdentifier: 'walkie_$groupId',
         );
 
         final NotificationDetails notificationDetails = NotificationDetails(
@@ -350,9 +371,14 @@ class firebaseNotificationServices {
           if (extraData != null) ...extraData,
         };
 
-        log("🔔 [showWalkieNotification] Invoking localNotifications.show(502) on iOS...");
+        final int notificationId = 5000 + (groupId.hashCode.abs() % 1000);
+        log("🔔 [showWalkieNotification] Invoking localNotifications.show($notificationId) on iOS (group: $groupId)...");
+        try {
+          await localNotifications.cancel(notificationId);
+          await localNotifications.cancel(502);
+        } catch (_) {}
         await localNotifications.show(
-          502,
+          notificationId,
           title,
           body,
           notificationDetails,
