@@ -425,10 +425,10 @@ class ChatBubble extends StatelessWidget {
   }
 
   Widget _buildMessageContent(
-      MessageData message,
-      Color textColor,
-      bool isSentByMe,
-      ) {
+    MessageData message,
+    Color textColor,
+    bool isSentByMe,
+  ) {
     if (message.messageType == "media" ||
         message.messageType == "image" ||
         message.messageType == "image_text" ||
@@ -447,18 +447,15 @@ class ChatBubble extends StatelessWidget {
         }
       }
 
-
-      final videos = (message.messageType == "media" ||
-          message.messageType == "video")
-          ? (message.videos ?? [])
-          : <MessageVideo>[];
-
+      final videos =
+          (message.messageType == "media" || message.messageType == "video")
+              ? (message.videos ?? [])
+              : <MessageVideo>[];
 
       String getMediaUrl(String path) {
         final value = path.trim();
         if (value.isEmpty) return "";
-        if (value.startsWith("http://") ||
-            value.startsWith("https://")) {
+        if (value.startsWith("http://") || value.startsWith("https://")) {
           return value;
         }
         return "${ConstRes.aImageBaseUrl}$value";
@@ -466,7 +463,7 @@ class ChatBubble extends StatelessWidget {
 
       void openGallery(int index) {
         Get.to(
-              () => GroupImageGallery(
+          () => GroupImageGallery(
             images: imageList,
             videos: videos,
             initialIndex: index,
@@ -475,10 +472,10 @@ class ChatBubble extends StatelessWidget {
       }
 
       Widget buildImageTile(
-          int index,
-          double width,
-          double height,
-          ) {
+        int index,
+        double width,
+        double height,
+      ) {
         return GestureDetector(
           onTap: () => openGallery(index),
           child: SizedBox(
@@ -522,6 +519,7 @@ class ChatBubble extends StatelessWidget {
           ),
         );
       }
+
       Widget buildVideoTile(MessageVideo video, int videoIndex) {
         final videoUrl = getMediaUrl(video.videoUrl ?? "");
         final thumbnailUrl = getMediaUrl(video.thumbnail ?? "");
@@ -550,7 +548,6 @@ class ChatBubble extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-
             if (mediaCount == 1)
               ClipRRect(
                 borderRadius: BorderRadius.circular(12.r),
@@ -559,19 +556,19 @@ class ChatBubble extends StatelessWidget {
                   height: 200.h,
                   child: imageList.isNotEmpty
                       ? GestureDetector(
-                    onTap: () => openGallery(0),
-                    child: Image.network(
-                      getMediaUrl(imageList.first),
-                      width: 220.w,
-                      height: 200.h,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Container(
-                        color: Colors.grey.shade200,
-                        alignment: Alignment.center,
-                        child: const Icon(Icons.broken_image_outlined),
-                      ),
-                    ),
-                  )
+                          onTap: () => openGallery(0),
+                          child: Image.network(
+                            getMediaUrl(imageList.first),
+                            width: 220.w,
+                            height: 200.h,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => Container(
+                              color: Colors.grey.shade200,
+                              alignment: Alignment.center,
+                              child: const Icon(Icons.broken_image_outlined),
+                            ),
+                          ),
+                        )
                       : buildVideoTile(videos.first, 0),
                 ),
               )
@@ -643,10 +640,8 @@ class ChatBubble extends StatelessWidget {
     } else if (message.messageType == "video") {
       final parts = message.content?.split("||") ?? [];
       final videoPath = parts.isNotEmpty ? parts[0].trim() : "";
-      final rawThumbnailPath =
-      parts.length > 1 ? parts[1].trim() : "";
-      final duration =
-      parts.length > 2 && parts[2].trim().isNotEmpty
+      final rawThumbnailPath = parts.length > 1 ? parts[1].trim() : "";
+      final duration = parts.length > 2 && parts[2].trim().isNotEmpty
           ? parts[2].trim()
           : "--:--";
       final videoUrl = _buildMediaUrl(videoPath);
@@ -683,7 +678,7 @@ class ChatBubble extends StatelessWidget {
       final parts = message.content?.split("||") ?? [];
       final documentUrl = parts.isNotEmpty ? parts[0] : "";
       String documentName =
-      parts.length > 1 ? parts[1] : documentUrl.split('/').last;
+          parts.length > 1 ? parts[1] : documentUrl.split('/').last;
       documentName = removeDuplicateExtension(documentName);
       final extension = documentName.split('.').last.toLowerCase();
       final fileSize = parts.length > 2 ? parts[2] : "";
@@ -775,16 +770,31 @@ class ChatBubble extends StatelessWidget {
                     ),
                   ),
                   SizedBox(width: 6.w),
-                  Obx(() {
-                    final url = "${ConstRes.aImageBaseUrl}$documentUrl";
-                    return Icon(
-                      DocumentService.isDownloaded(url)
-                          ? Icons.download_done_rounded
-                          : Icons.download_rounded,
-                      color: _purple,
-                      size: 20.sp,
-                    );
-                  }),
+                  if (!isSentByMe) ...[
+                    SizedBox(width: 6.w),
+                    Obx(() {
+                      final url = "${ConstRes.aImageBaseUrl}$documentUrl";
+
+                      if (DocumentService.isDownloading(url)) {
+                        return SizedBox(
+                          width: 20.sp,
+                          height: 20.sp,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: _purple,
+                          ),
+                        );
+                      }
+
+                      return Icon(
+                        DocumentService.isDownloaded(url)
+                            ? Icons.download_done_rounded
+                            : Icons.download_rounded,
+                        color: _purple,
+                        size: 20.sp,
+                      );
+                    }),
+                  ],
                 ],
               ),
             ),
@@ -2168,15 +2178,22 @@ class GroupChatBubble extends StatelessWidget {
         ));
   }
 
-
   Widget _buildMessageContent(
-      MessageData message,
-      Color textColor,
-      bool isSentByMe,
-      ) {
-    if (message.messageType == "media" ||
-        message.messageType == "image" ||
-        message.messageType == "image_text") {
+    MessageData message,
+    Color textColor,
+    bool isSentByMe,
+  ) {
+    final messageType =
+        (message.messageType?.toString() ?? '').toLowerCase().trim();
+
+    final videos = message.videos ?? [];
+
+    final hasMultipleVideos = videos.length > 1;
+
+    if (messageType == "media" ||
+        messageType == "image" ||
+        messageType == "image_text" ||
+        (messageType == "video" && hasMultipleVideos)) {
       final imageList = (message.images ?? [])
           .where((image) => image.trim().isNotEmpty)
           .toList();
@@ -2190,7 +2207,7 @@ class GroupChatBubble extends StatelessWidget {
         }
       }
 
-      final videos = message.messageType == "media"
+      final videos = (messageType == "media" || messageType == "video")
           ? (message.videos ?? [])
           : <MessageVideo>[];
 
@@ -2199,8 +2216,7 @@ class GroupChatBubble extends StatelessWidget {
       String getMediaUrl(String path) {
         final value = path.trim();
         if (value.isEmpty) return "";
-        if (value.startsWith("http://") ||
-            value.startsWith("https://")) {
+        if (value.startsWith("http://") || value.startsWith("https://")) {
           return value;
         }
         return "${ConstRes.aImageBaseUrl}$value";
@@ -2208,7 +2224,7 @@ class GroupChatBubble extends StatelessWidget {
 
       void openGallery(int index) {
         Get.to(
-              () => GroupImageGallery(
+          () => GroupImageGallery(
             images: imageList,
             videos: videos,
             initialIndex: index,
@@ -2217,10 +2233,10 @@ class GroupChatBubble extends StatelessWidget {
       }
 
       Widget buildImageTile(
-          int index,
-          double width,
-          double height,
-          ) {
+        int index,
+        double width,
+        double height,
+      ) {
         return GestureDetector(
           onTap: () => openGallery(index),
           child: SizedBox(
@@ -2313,17 +2329,15 @@ class GroupChatBubble extends StatelessWidget {
                     runSpacing: 3.w,
                     children: List.generate(
                       visibleImages,
-                          (index) {
+                      (index) {
                         final tileSize = totalImages == 2
                             ? 108.w
                             : totalImages == 3 && index == 0
-                            ? 220.w
-                            : 108.w;
+                                ? 220.w
+                                : 108.w;
 
                         final tileHeight =
-                        totalImages == 3 && index == 0
-                            ? 130.h
-                            : 108.h;
+                            totalImages == 3 && index == 0 ? 130.h : 108.h;
 
                         return buildImageTile(
                           index,
@@ -2345,7 +2359,7 @@ class GroupChatBubble extends StatelessWidget {
                     runSpacing: 3.w,
                     children: List.generate(
                       (imageList.length + videos.length).clamp(0, 4),
-                          (index) {
+                      (index) {
                         final isVideo = index >= imageList.length;
                         final totalMedia = imageList.length + videos.length;
 
@@ -2406,19 +2420,19 @@ class GroupChatBubble extends StatelessWidget {
         audioUrl: "${ConstRes.aImageBaseUrl}${message.content}",
         isMe: false,
       );
-    } else if (message.messageType == "video") {
+    } else if (messageType == "video") {
       final parts = message.content?.split("||") ?? [];
       final videoPath = parts.isNotEmpty ? parts[0].trim() : "";
       final thumbnailPath = parts.length > 1 ? parts[1].trim() : "";
       final duration = parts.length > 2 && parts[2].trim().isNotEmpty
           ? parts[2].trim()
           : "--:--";
-      final videoUrl = videoPath.startsWith("http://") ||
-          videoPath.startsWith("https://")
-          ? videoPath
-          : "${ConstRes.aImageBaseUrl}$videoPath";
+      final videoUrl =
+          videoPath.startsWith("http://") || videoPath.startsWith("https://")
+              ? videoPath
+              : "${ConstRes.aImageBaseUrl}$videoPath";
       final thumbnailUrl = thumbnailPath.startsWith("http://") ||
-          thumbnailPath.startsWith("https://")
+              thumbnailPath.startsWith("https://")
           ? thumbnailPath
           : "${ConstRes.aImageBaseUrl}$thumbnailPath";
 
@@ -2453,7 +2467,7 @@ class GroupChatBubble extends StatelessWidget {
       final parts = message.content?.split("||") ?? [];
       final documentUrl = parts.isNotEmpty ? parts[0] : "";
       String documentName =
-      parts.length > 1 ? parts[1] : documentUrl.split('/').last;
+          parts.length > 1 ? parts[1] : documentUrl.split('/').last;
       documentName = removeDuplicateExtension(documentName);
       final extension = documentName.split('.').last.toLowerCase();
       final fileSize = parts.length > 2 ? parts[2] : "";
@@ -2543,11 +2557,31 @@ class GroupChatBubble extends StatelessWidget {
                     ),
                   ),
                   SizedBox(width: 6.w),
-                  Icon(
-                    Icons.download_rounded,
-                    color: _purple,
-                    size: 20.sp,
-                  ),
+                  if (!isSentByMe) ...[
+                    SizedBox(width: 6.w),
+                    Obx(() {
+                      final url = "${ConstRes.aImageBaseUrl}$documentUrl";
+
+                      if (DocumentService.isDownloading(url)) {
+                        return SizedBox(
+                          width: 20.sp,
+                          height: 20.sp,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: _purple,
+                          ),
+                        );
+                      }
+
+                      return Icon(
+                        DocumentService.isDownloaded(url)
+                            ? Icons.download_done_rounded
+                            : Icons.download_rounded,
+                        color: _purple,
+                        size: 20.sp,
+                      );
+                    }),
+                  ],
                 ],
               ),
             ),
@@ -2599,7 +2633,6 @@ class GroupChatBubble extends StatelessWidget {
       );
     }
   }
-
 
   bool _areAllMembersSeen(MessageData message) {
     if (message.seenBy is! List) return false;
@@ -2905,29 +2938,27 @@ class _GroupImageGalleryState extends State<GroupImageGallery> {
     super.initState();
 
     _media = [
-      ...widget.images
-          .where((image) => image.trim().isNotEmpty)
-          .map(
+      ...widget.images.where((image) => image.trim().isNotEmpty).map(
             (image) => GroupGalleryMedia(
-          url: _buildMediaUrl(image),
-        ),
-      ),
+              url: _buildMediaUrl(image),
+            ),
+          ),
       ...widget.videos
           .where((video) => (video.videoUrl ?? '').trim().isNotEmpty)
           .map(
             (video) => GroupGalleryMedia(
-          url: _buildMediaUrl(video.videoUrl!),
-          isVideo: true,
-          thumbnail: video.thumbnail == null
-              ? null
-              : _buildMediaUrl(video.thumbnail!),
-          duration: video.duration,
-        ),
-      ),
+              url: _buildMediaUrl(video.videoUrl!),
+              isVideo: true,
+              thumbnail: video.thumbnail == null
+                  ? null
+                  : _buildMediaUrl(video.thumbnail!),
+              duration: video.duration,
+            ),
+          ),
     ];
 
-    _currentIndex = widget.initialIndex
-        .clamp(0, _media.isEmpty ? 0 : _media.length - 1);
+    _currentIndex =
+        widget.initialIndex.clamp(0, _media.isEmpty ? 0 : _media.length - 1);
 
     _pageController = PageController(
       initialPage: _currentIndex,
@@ -2937,8 +2968,7 @@ class _GroupImageGalleryState extends State<GroupImageGallery> {
   String _buildMediaUrl(String path) {
     final value = path.trim();
 
-    if (value.startsWith('http://') ||
-        value.startsWith('https://')) {
+    if (value.startsWith('http://') || value.startsWith('https://')) {
       return value;
     }
 
@@ -2976,108 +3006,107 @@ class _GroupImageGalleryState extends State<GroupImageGallery> {
       body: _media.isEmpty
           ? const SizedBox.shrink()
           : PageView.builder(
-        controller: _pageController,
-        itemCount: _media.length,
-        onPageChanged: (index) {
-          setState(() => _currentIndex = index);
-        },
-        itemBuilder: (context, index) {
-          final media = _media[index];
+              controller: _pageController,
+              itemCount: _media.length,
+              onPageChanged: (index) {
+                setState(() => _currentIndex = index);
+              },
+              itemBuilder: (context, index) {
+                final media = _media[index];
 
-          if (media.isVideo) {
-            return Center(
-              child: GestureDetector(
-                onTap: () => _openVideo(media),
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    if (media.thumbnail != null &&
-                        media.thumbnail!.isNotEmpty)
-                      Image.network(
-                        media.thumbnail!,
-                        fit: BoxFit.contain,
-                        width: double.infinity,
-                        height: double.infinity,
-                        errorBuilder: (_, __, ___) =>
-                        const Icon(
-                          Icons.videocam_rounded,
-                          color: Colors.white,
-                          size: 64,
-                        ),
-                      )
-                    else
-                      const Icon(
-                        Icons.videocam_rounded,
-                        color: Colors.white,
-                        size: 64,
+                if (media.isVideo) {
+                  return Center(
+                    child: GestureDetector(
+                      onTap: () => _openVideo(media),
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          if (media.thumbnail != null &&
+                              media.thumbnail!.isNotEmpty)
+                            Image.network(
+                              media.thumbnail!,
+                              fit: BoxFit.contain,
+                              width: double.infinity,
+                              height: double.infinity,
+                              errorBuilder: (_, __, ___) => const Icon(
+                                Icons.videocam_rounded,
+                                color: Colors.white,
+                                size: 64,
+                              ),
+                            )
+                          else
+                            const Icon(
+                              Icons.videocam_rounded,
+                              color: Colors.white,
+                              size: 64,
+                            ),
+                          Container(
+                            decoration: const BoxDecoration(
+                              color: Colors.black54,
+                              shape: BoxShape.circle,
+                            ),
+                            padding: const EdgeInsets.all(12),
+                            child: const Icon(
+                              Icons.play_arrow_rounded,
+                              color: Colors.white,
+                              size: 48,
+                            ),
+                          ),
+                          if ((media.duration ?? '').isNotEmpty)
+                            Positioned(
+                              right: 16,
+                              bottom: 16,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.black87,
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  media.duration!,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
                       ),
-                    Container(
-                      decoration: const BoxDecoration(
-                        color: Colors.black54,
-                        shape: BoxShape.circle,
-                      ),
-                      padding: const EdgeInsets.all(12),
-                      child: const Icon(
-                        Icons.play_arrow_rounded,
+                    ),
+                  );
+                }
+
+                return Center(
+                  child: InteractiveViewer(
+                    minScale: 1,
+                    maxScale: 4,
+                    child: Image.network(
+                      media.url,
+                      fit: BoxFit.contain,
+                      width: double.infinity,
+                      errorBuilder: (_, __, ___) => const Icon(
+                        Icons.broken_image_outlined,
                         color: Colors.white,
                         size: 48,
                       ),
-                    ),
-                    if ((media.duration ?? '').isNotEmpty)
-                      Positioned(
-                        right: 16,
-                        bottom: 16,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 6,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.black87,
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Text(
-                            media.duration!,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-            );
-          }
+                      loadingBuilder: (context, child, progress) {
+                        if (progress == null) return child;
 
-          return Center(
-            child: InteractiveViewer(
-              minScale: 1,
-              maxScale: 4,
-              child: Image.network(
-                media.url,
-                fit: BoxFit.contain,
-                width: double.infinity,
-                errorBuilder: (_, __, ___) => const Icon(
-                  Icons.broken_image_outlined,
-                  color: Colors.white,
-                  size: 48,
-                ),
-                loadingBuilder: (context, child, progress) {
-                  if (progress == null) return child;
-
-                  return const Center(
-                    child: CircularProgressIndicator(
-                      color: Colors.white,
+                        return const Center(
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                          ),
+                        );
+                      },
                     ),
-                  );
-                },
-              ),
+                  ),
+                );
+              },
             ),
-          );
-        },
-      ),
     );
   }
 }

@@ -2757,20 +2757,35 @@ class TrackingScreen extends StatelessWidget {
                     Container(
                       width: 42.w,
                       height: 42.w,
-                      decoration: BoxDecoration(
+                      decoration: const BoxDecoration(
                         color: AppColors.primaryElementLight,
                         shape: BoxShape.circle,
-                        image: profileUrl != null
-                            ? DecorationImage(
-                                image: NetworkImage(profileUrl),
-                                fit: BoxFit.cover,
-                              )
-                            : null,
                       ),
-                      child: profileUrl == null
-                          ? Icon(Icons.groups_rounded,
-                              color: AppColors.primaryElement, size: 21.sp)
-                          : null,
+                      child: ClipOval(
+                        child: profileUrl != null
+                            ? Image.network(
+                          profileUrl,
+                          width: 42.w,
+                          height: 42.w,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              color: AppColors.primaryElementLight,
+                              alignment: Alignment.center,
+                              child: Icon(
+                                Icons.groups_rounded,
+                                color: AppColors.primaryElement,
+                                size: 21.sp,
+                              ),
+                            );
+                          },
+                        )
+                            : Icon(
+                          Icons.groups_rounded,
+                          color: AppColors.primaryElement,
+                          size: 21.sp,
+                        ),
+                      ),
                     ),
                     SizedBox(width: 12.w),
                     Expanded(
@@ -3226,18 +3241,21 @@ class TrackingScreen extends StatelessWidget {
                 CircleAvatar(
                   radius: 19.r,
                   backgroundColor: const Color(0xFFEEF2FF),
-                  backgroundImage:
-                      profileUrl != null ? NetworkImage(profileUrl) : null,
-                  child: profileUrl == null
-                      ? Text(
-                          name.isNotEmpty ? name[0].toUpperCase() : "?",
-                          style: TextStyle(
-                            color: const Color(0xFF4338CA),
-                            fontWeight: FontWeight.w700,
-                            fontSize: 14.sp,
-                          ),
-                        )
-                      : null,
+                  child: ClipOval(
+                    child: SizedBox(
+                      width: 38.r,
+                      height: 38.r,
+                      child: profileUrl != null
+                          ? Image.network(
+                        profileUrl,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return _buildDefaultMemberAvatar(name);
+                        },
+                      )
+                          : _buildDefaultMemberAvatar(name),
+                    ),
+                  ),
                 ),
                 Positioned(
                   bottom: -1,
@@ -3421,6 +3439,20 @@ class TrackingScreen extends StatelessWidget {
               ),
             ],
           ],
+        ),
+      ),
+    );
+  }
+  Widget _buildDefaultMemberAvatar(String name) {
+    return Container(
+      color: const Color(0xFFEEF2FF),
+      alignment: Alignment.center,
+      child: Text(
+        name.trim().isNotEmpty ? name.trim()[0].toUpperCase() : "?",
+        style: TextStyle(
+          color: const Color(0xFF4338CA),
+          fontWeight: FontWeight.w700,
+          fontSize: 14.sp,
         ),
       ),
     );

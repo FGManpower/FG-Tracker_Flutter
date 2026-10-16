@@ -27,8 +27,10 @@
 			<key>UNNotificationExtensionCategory</key>
 			<string>WALKIE_INVITE</string>
 			<key>UNNotificationExtensionInitialContentSizeRatio</key>
-			<real>0.35</real>
+			<real>0.48</real>
 			<key>UNNotificationExtensionDefaultContentHidden</key>
+			<true/>
+			<key>UNNotificationExtensionUserInteractionEnabled</key>
 			<true/>
 		</dict>
 		<key>NSExtensionPointIdentifier</key>

@@ -36,6 +36,7 @@ class GroupWalkieService {
   final Set<String> _offeredTo = {};
 
   bool _isTalking = false;
+  int _talkSessionId = 0;
   bool _isMuted = false;
   bool _isSpeakerOn = true;
   bool _listenersBound = false;
@@ -45,6 +46,7 @@ class GroupWalkieService {
 
   Timer? _pingTimer;
   StreamSubscription? _devicesSub;
+  StreamSubscription? _interruptionSub;
   Timer? _deviceCheckTimer;
   bool _isCheckingDevices = false;
 
@@ -124,19 +126,37 @@ class GroupWalkieService {
     );
 
     socket!.onConnect((_) {
+      _log('✅ Socket connected');
       _listenersBound = false;
       _bindSocketListeners();
       _startPing();
       _notifyConnectionState(true);
       if (_currentGroupId != null) {
+        _offeredTo.clear();
+        _makingOffer.clear();
         socket?.emit('join_walkie_session', {'groupId': _currentGroupId});
       }
     });
 
-    socket!.onDisconnect((_) {
+    socket!.onDisconnect((_) async {
+      _log('⚠️ Socket disconnected');
       _listenersBound = false;
       _stopPing();
       _notifyConnectionState(false);
+
+      if (_isTalking) {
+        _isTalking = false;
+        await _enableMic(false);
+        if (Get.isRegistered<GroupWalkieController>()) {
+          Get.find<GroupWalkieController>().forceUnlockAndReset();
+        }
+      }
+
+      _offeredTo.clear();
+      _makingOffer.clear();
+      for (final id in _peers.keys.toList()) {
+        await _closePeer(id);
+      }
     });
 
     socket!.onConnectError((e) => _log('connect_error: $e'));
@@ -654,6 +674,32 @@ class GroupWalkieService {
       final session = await AudioSession.instance;
       await _devicesSub?.cancel();
       _devicesSub = session.devicesStream.listen((_) => _checkAudioDevices());
+
+      await _interruptionSub?.cancel();
+      _interruptionSub = session.interruptionEventStream.listen((event) async {
+        _log('🔔 Audio interruption event: begin=${event.begin} type=${event.type}');
+        if (event.begin) {
+          if (_isTalking) {
+            _isTalking = false;
+            await _enableMic(false);
+            if (Get.isRegistered<GroupWalkieController>()) {
+              Get.find<GroupWalkieController>().forceUnlockAndReset();
+            }
+            if (_currentGroupId != null) {
+              final payload = {
+                'groupId': _currentGroupId,
+                'userId': _selfUserId,
+              };
+              socket?.emit('ptt_release', payload);
+              socket?.emit('walkie_speaker_stopped', payload);
+            }
+          }
+        } else {
+          await _configureAudioSession(route: audioRoute.value);
+          await _ensurePlaybackPath(forceSession: true);
+        }
+      });
+
       _deviceCheckTimer?.cancel();
       _deviceCheckTimer =
           Timer.periodic(const Duration(milliseconds: 2500), (_) {
@@ -690,6 +736,7 @@ class GroupWalkieService {
       'force_logout',
       'exit_group_success',
       'pong_walkie',
+      'walkie_mute_status_changed',
       'walkie_toggle_mute',
       'walkie_user_muted',
       'walkie_peer_muted',
@@ -752,6 +799,8 @@ class GroupWalkieService {
           : null) as List? ??
           (data is List ? data : []);
 
+      final newParticipants = <WalkieParticipant>[];
+
       for (final p in peers) {
         var id = '';
         var name = 'User';
@@ -768,22 +817,20 @@ class GroupWalkieService {
         }
         if (id.isEmpty || id == _selfUserId) continue;
 
-        if (Get.isRegistered<GroupWalkieController>()) {
-          Get.find<GroupWalkieController>().addOrUpdateParticipant(
-            WalkieParticipant(
-              userId: id,
-              name: name,
-              image: image,
-              isMuted: isMuted,
-              isSpeaking: false,
-              isListening: true,
-              hasExplicitMute: p is Map &&
-                  (p.containsKey('isMuted') ||
-                      p.containsKey('muted') ||
-                      p.containsKey('is_muted')),
-            ),
-          );
-        }
+        newParticipants.add(
+          WalkieParticipant(
+            userId: id,
+            name: name,
+            image: image,
+            isMuted: isMuted,
+            isSpeaking: false,
+            isListening: true,
+            hasExplicitMute: p is Map &&
+                (p.containsKey('isMuted') ||
+                    p.containsKey('muted') ||
+                    p.containsKey('is_muted')),
+          ),
+        );
 
         if (_offeredTo.contains(id)) continue;
         _offeredTo.add(id);
@@ -791,6 +838,10 @@ class GroupWalkieService {
           await Future.delayed(const Duration(milliseconds: 40));
           await _createOfferTo(id);
         });
+      }
+
+      if (Get.isRegistered<GroupWalkieController>() && newParticipants.isNotEmpty) {
+        Get.find<GroupWalkieController>().addOrUpdateParticipantsBatch(newParticipants);
       }
     });
 
@@ -1063,6 +1114,7 @@ class GroupWalkieService {
     });
 
     for (final eventName in [
+      'walkie_mute_status_changed',
       'walkie_toggle_mute',
       'walkie_user_muted',
       'walkie_peer_muted',
@@ -1075,7 +1127,7 @@ class GroupWalkieService {
         String? targetUserId;
         bool isMuted = true;
         if (data is Map) {
-          targetUserId = (data['userId'] ?? data['id'] ?? data['user_id'])?.toString();
+          targetUserId = (data['userId'] ?? data['id'] ?? data['user_id'] ?? data['fromUserId'])?.toString();
           isMuted = (data['isMuted'] ?? data['muted'] ?? data['is_muted'] ?? true) == true;
         } else if (data is String) {
           targetUserId = data;
@@ -1139,11 +1191,6 @@ class GroupWalkieService {
       await navigator.mediaDevices.getUserMedia(mediaConstraints);
 
       for (final t in _localStream!.getAudioTracks()) {
-        t.enabled = true;
-      }
-      await _setMicMuteHelper(false);
-      await Future.delayed(const Duration(milliseconds: 120));
-      for (final t in _localStream!.getAudioTracks()) {
         t.enabled = false;
       }
       await _setMicMuteHelper(true);
@@ -1189,10 +1236,9 @@ class GroupWalkieService {
     final pc = await createPeerConnection(_rtcConfig);
 
     for (final t in _localStream!.getAudioTracks()) {
-      final was = t.enabled;
-      t.enabled = true;
+      t.enabled = false;
       await pc.addTrack(t, _localStream!);
-      t.enabled = was;
+      t.enabled = false;
     }
 
     pc.onTrack = (event) async {
@@ -1441,7 +1487,7 @@ class GroupWalkieService {
 
   Future<void> _enableMic(bool enabled) async {
     if (_localStream == null) return;
-    final actual = enabled && !_isMuted;
+    final actual = enabled && !_isMuted && _isTalking;
 
     for (final t in _localStream!.getAudioTracks()) {
       t.enabled = actual;
@@ -1460,7 +1506,7 @@ class GroupWalkieService {
       } catch (_) {}
     }
 
-    _log('🎤 TX mic => $actual (requested=$enabled muted=$_isMuted)');
+    _log('🎤 TX mic => $actual (requested=$enabled muted=$_isMuted talking=$_isTalking)');
   }
 
   Future<void> _kickLocalSenders() async {
@@ -1497,13 +1543,25 @@ class GroupWalkieService {
       _selfUserId = savedUserId;
     }
 
-    if (socket == null || socket?.connected != true) {
+    if (socket == null) {
       if (savedUserId != null && savedUserId.isNotEmpty) {
         await init(
           websocketUrl: ConstRes.socketUrl,
           selfUserId: savedUserId,
         );
       }
+    }
+
+    if (socket != null && socket?.connected != true) {
+      _log('Waiting for socket to connect before joining group...');
+      final completer = Completer<void>();
+      void onConnectHandler(_) {
+        if (!completer.isCompleted) completer.complete();
+      }
+      socket?.once('connect', onConnectHandler);
+      await completer.future.timeout(const Duration(seconds: 4), onTimeout: () {
+        _log('Socket connect wait timed out');
+      });
     }
 
     final ok = await _ensureLocalStream();
@@ -1531,7 +1589,9 @@ class GroupWalkieService {
     if (_isTalking) {
       _isTalking = false;
       await _enableMic(false);
-      socket?.emit('ptt_release', {'groupId': groupId});
+      final payload = {'groupId': groupId, 'userId': _selfUserId};
+      socket?.emit('ptt_release', payload);
+      socket?.emit('walkie_speaker_stopped', payload);
     }
 
     socket?.emit('leave_walkie_session', {'groupId': groupId});
@@ -1570,8 +1630,10 @@ class GroupWalkieService {
     );
 
     if (_currentGroupId == null || _currentGroupId!.isEmpty) return false;
-    if (_isTalking) return false;
+    if (_isTalking) return true;
     if (_isMuted) return false;
+
+    final currentSession = ++_talkSessionId;
 
     final ok = await _ensureLocalStream();
     if (!ok) {
@@ -1581,7 +1643,20 @@ class GroupWalkieService {
       return false;
     }
 
+    if (_talkSessionId != currentSession) {
+      _log('startTalking cancelled while ensuring local stream');
+      await _enableMic(false);
+      return false;
+    }
+
     await _ensurePlaybackPath();
+
+    if (_talkSessionId != currentSession) {
+      _log('startTalking cancelled while ensuring playback path');
+      await _enableMic(false);
+      return false;
+    }
+
     _logPeerSnapshot('before ptt_request');
 
     if (_peers.isEmpty) {
@@ -1595,10 +1670,17 @@ class GroupWalkieService {
   }
 
   Future<void> stopTalking() async {
+    _talkSessionId++;
     _isTalking = false;
     await _enableMic(false);
     if (_currentGroupId != null) {
-      socket?.emit('ptt_release', {'groupId': _currentGroupId});
+      final payload = {
+        'groupId': _currentGroupId,
+        'userId': _selfUserId,
+        'sessionId': _talkSessionId,
+      };
+      socket?.emit('ptt_release', payload);
+      socket?.emit('walkie_speaker_stopped', payload);
     }
     await _ensurePlaybackPath();
     if (Get.isRegistered<GroupWalkieController>()) {
@@ -1613,7 +1695,12 @@ class GroupWalkieService {
       await _enableMic(false);
       if (_isTalking) {
         _isTalking = false;
-        socket?.emit('ptt_release', {'groupId': _currentGroupId});
+        final releasePayload = {
+          'groupId': _currentGroupId,
+          'userId': _selfUserId,
+        };
+        socket?.emit('ptt_release', releasePayload);
+        socket?.emit('walkie_speaker_stopped', releasePayload);
         if (Get.isRegistered<GroupWalkieController>()) {
           Get.find<GroupWalkieController>().forceUnlockAndReset();
         }
@@ -1623,17 +1710,20 @@ class GroupWalkieService {
       await _kickLocalSenders();
     }
 
-    socket?.emit('walkie_toggle_mute', {
+    final mutePayload = {
       'groupId': _currentGroupId,
       'userId': _selfUserId,
+      'user_id': _selfUserId,
+      'fromUserId': _selfUserId,
       'isMuted': _isMuted,
-    });
+      'muted': _isMuted,
+      'timestamp': DateTime.now().toUtc().toIso8601String(),
+    };
 
-    socket?.emit('walkie_user_muted', {
-      'groupId': _currentGroupId,
-      'userId': _selfUserId,
-      'isMuted': _isMuted,
-    });
+    socket?.emit('walkie_mute_status_changed', mutePayload);
+    socket?.emit('walkie_toggle_mute', mutePayload);
+    socket?.emit('walkie_user_muted', mutePayload);
+    socket?.emit('walkie_mute_status', mutePayload);
 
     if (Get.isRegistered<GroupWalkieController>()) {
       Get.find<GroupWalkieController>().setMuteFromService(_isMuted);
@@ -1716,6 +1806,8 @@ class GroupWalkieService {
     _deviceCheckTimer = null;
     await _devicesSub?.cancel();
     _devicesSub = null;
+    await _interruptionSub?.cancel();
+    _interruptionSub = null;
 
     try {
       socket?.clearListeners();

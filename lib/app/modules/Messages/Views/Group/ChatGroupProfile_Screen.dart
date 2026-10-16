@@ -38,7 +38,6 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
 
   static const Color _purple = Color(0xFF5045B9);
   static const Color _bg = Color(0xFFF5F3FB);
-
   final RxBool notificationsOn = true.obs;
   final RxBool showAllMembers = false.obs;
 
@@ -208,7 +207,7 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
                 SizedBox(height: 16.h),
                 _buildMembersSection(data),
                 SizedBox(height: 16.h),
-                _buildFavoritesCard(),
+                // _buildFavoritesCard(),
                 SizedBox(height: 12.h),
                 _buildDangerSection(data),
                 SizedBox(height: 24.h),
@@ -245,6 +244,7 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
     final summary = data.membersSummary;
     final img = group.groupProfile ?? "";
     final name = group.groupName ?? "Unknown Group";
+    final description = (group.description ?? '').trim();
 
     return Column(
       children: [
@@ -281,7 +281,23 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
               fontWeight: FontWeight.w800,
               color: Colors.black87),
         ),
+        if (description.isNotEmpty) ...[
+          SizedBox(height: 6.h),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.w),
+            child: Text(
+              description,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 12.sp,
+                color: Colors.grey.shade600,
+                height: 1.4,
+              ),
+            ),
+          ),
+        ],
         SizedBox(height: 6.h),
+
         Text.rich(
           TextSpan(
             children: [
@@ -898,18 +914,18 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
     );
   }
 
-  Widget _buildFavoritesCard() {
-    return _whiteCard(
-      padding: EdgeInsets.zero,
-      child: _settingTile(
-        icon: Icons.favorite_border_rounded,
-        iconColor: _purple,
-        title: "Add to Favorites",
-        titleColor: _purple,
-        onTap: () => Utils().fluttertoast("Added to favorites"),
-      ),
-    );
-  }
+  // Widget _buildFavoritesCard() {
+  //   return _whiteCard(
+  //     padding: EdgeInsets.zero,
+  //     child: _settingTile(
+  //       icon: Icons.favorite_border_rounded,
+  //       iconColor: _purple,
+  //       title: "Add to Favorites",
+  //       titleColor: _purple,
+  //       onTap: () => Utils().fluttertoast("Added to favorites"),
+  //     ),
+  //   );
+  // }
 
   Widget _buildDangerSection(GroupProfileData data) {
     return _whiteCard(

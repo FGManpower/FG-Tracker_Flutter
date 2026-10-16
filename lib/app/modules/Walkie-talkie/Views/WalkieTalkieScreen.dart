@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:developer';
 import 'dart:io';
 import 'dart:math' as math;
+import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/values/Curve/walkie_painter.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Walkie-Talkie-Service.dart';
 import 'package:fgtracker/app/config/themes_data.dart';
@@ -37,10 +38,27 @@ class GroupWalkieScreen extends StatefulWidget {
 }
 
 class _GroupWalkieScreenState extends State<GroupWalkieScreen>
-    with TickerProviderStateMixin {
+    with TickerProviderStateMixin, WidgetsBindingObserver {
   final controller = Get.put(GroupWalkieController());
   Map<String, dynamic>? args;
+  String get _groupProfileUrl {
+    final profile = (
+        args?['groupProfile'] ??
+            args?['groupImage'] ??
+            ''
+    ).toString().trim();
 
+    if (profile.isEmpty || profile.toLowerCase() == 'null') {
+      return '';
+    }
+
+    if (profile.startsWith('http://') ||
+        profile.startsWith('https://')) {
+      return profile;
+    }
+
+    return '${ConstRes.aImageBaseUrl}$profile';
+  }
   late final AnimationController _rippleController;
   late final AnimationController _pulseController;
   late final AnimationController _lockHintController;
@@ -49,6 +67,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
   bool _hasLeft = false;
   bool _isDisposed = false;
   bool _pttInProgress = false;
+  bool _wantsToTalk = false;
   final bool _allowPop = false;
 
   double _startY = 0.0;
@@ -71,6 +90,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     log('initState() initiated');
     WalkieLaunchTracker.fromWalkieCall = true;
     WalkieNotificationManager.instance.setWalkieScreenActive(true);
@@ -119,6 +139,9 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
           'groupDesc': g.groupDesc ?? '',
           'groupCode': g.groupCode ?? '',
           'isSubscribed': args?['isSubscribed'] ?? _isSubscribed,
+          'groupProfile': args?['groupProfile'] ??
+              gc.groupData.first.groupProfile ??
+              '',
         };
       } else if (groupId.isNotEmpty &&
           (args?['groupName'] == null ||
@@ -214,6 +237,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
   @override
   void dispose() {
     log('dispose() called');
+    WidgetsBinding.instance.removeObserver(this);
     _isDisposed = true;
     _rippleWorker.dispose();
     _pulseWorker.dispose();
@@ -228,6 +252,25 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
     _pulseController.dispose();
     _lockHintController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    log('GroupWalkieScreen lifecycle state changed: $state');
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.detached) {
+      if (_wantsToTalk ||
+          controller.isPressed.value ||
+          controller.isSelfLocked.value ||
+          GroupWalkieService.instance.isTalking) {
+        log('Stopping PTT transmission due to app backgrounding / interruption');
+        _wantsToTalk = false;
+        controller.forceUnlockAndReset();
+        _stopTalking();
+      }
+    }
   }
 
   Future<void> _safeLeave() async {
@@ -348,6 +391,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
     }
 
     log('Triggering PTT Session...');
+    _wantsToTalk = true;
     _pttInProgress = true;
     controller.setPressed(true);
     _lockHintController.repeat(reverse: true);
@@ -362,6 +406,12 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
       });
       log('PTT activation result: $ok');
 
+      if (!_wantsToTalk && !controller.isSelfLocked.value) {
+        log('Finger released before startTalking completed — stopping audio transmission immediately');
+        await _stopTalking();
+        return;
+      }
+
       if (!ok) {
         log('Failed to start transmission. Reverting changes...');
         controller.setPressed(false);
@@ -375,13 +425,27 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
       _lockHintController.reset();
     } finally {
       _pttInProgress = false;
+      if (!_wantsToTalk &&
+          !controller.isSelfLocked.value &&
+          (controller.isPressed.value || GroupWalkieService.instance.isTalking)) {
+        await _stopTalking();
+      }
+    }
+  }
+
+  void _onPointerUpOrCancel() {
+    _wantsToTalk = false;
+    if (!controller.isSelfLocked.value) {
+      controller.setDragOffset(0.0);
+      _onPTTReleased();
     }
   }
 
   Future<void> _onPTTReleased() async {
+    _wantsToTalk = false;
     log('PTT Touch released. Checking state...');
-    if (!controller.isPressed.value) {
-      log('Release skipped: PTT is not pressed.');
+    if (!controller.isPressed.value && !_pttInProgress) {
+      log('Release skipped: PTT is not pressed and not in progress.');
       return;
     }
     if (controller.isSelfLocked.value) {
@@ -394,6 +458,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
 
   Future<void> _stopTalking() async {
     log('Stopping audio transmission and releasing lock state...');
+    _wantsToTalk = false;
     controller.setPressed(false);
     _lockHintController.stop();
     _lockHintController.reset();
@@ -404,6 +469,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
 
   Future<void> _unlockAndStop() async {
     log('Manual unlock and stop request received.');
+    _wantsToTalk = false;
     controller.resetSelfLock();
     await _stopTalking();
   }
@@ -412,11 +478,9 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
     if (!controller.isPressed.value) return;
     if (controller.isSelfLocked.value) return;
 
-    // Convert screen coordinates to drag distance (dragging up reduces Y position)
     double newOffset = _startY - currentY;
     if (newOffset < 0) newOffset = 0;
 
-    log('PTT Drag moving upwards -> offset: ${newOffset.toStringAsFixed(1)}px / $_lockThreshold px');
     controller.setDragOffset(newOffset);
 
     if (newOffset >= _lockThreshold) {
@@ -579,8 +643,8 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
               arguments: {
                 "groupId": args?['groupId']?.toString() ?? "",
                 "groupName": controller.currentGroupName,
-                "groupImage": "",
-              },
+                "groupImage": _groupProfileUrl,
+                "groupProfile": _groupProfileUrl,              },
             );
           },
         ),
@@ -613,8 +677,8 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                     arguments: {
                       "groupId": args?['groupId']?.toString() ?? "",
                       "groupName": controller.currentGroupName,
-                      "groupImage": "",
-                    },
+                      "groupImage": _groupProfileUrl,
+                      "groupProfile": _groupProfileUrl,                    },
                   );
                 },
               ),
@@ -1417,20 +1481,35 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
               Stack(
                 clipBehavior: Clip.none,
                 children: [
-                  Container(
-                    width: 42.r.clamp(36.0, 46.0),
-                    height: 42.r.clamp(36.0, 46.0),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [lightPurple, primaryPurple],
+                  ClipOval(
+                    child: _groupProfileUrl.isNotEmpty
+                        ? Image.network(
+                      _groupProfileUrl,
+                      width: 52,
+                      height: 52,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          width: 52,
+                          height: 52,
+                          color: primaryPurple.withOpacity(0.1),
+                          child: Icon(
+                            Icons.groups_rounded,
+                            color: primaryPurple,
+                            size: 28,
+                          ),
+                        );
+                      },
+                    )
+                        : Container(
+                      width: 52,
+                      height: 52,
+                      color: primaryPurple.withOpacity(0.1),
+                      child: Icon(
+                        Icons.groups_rounded,
+                        color: primaryPurple,
+                        size: 28,
                       ),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Center(
-                      child: Icon(Icons.people_alt_rounded,
-                          color: Colors.white, size: 20.sp.clamp(18.0, 23.0)),
                     ),
                   ),
                   Positioned(
@@ -1724,28 +1803,21 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
         return buildEmptyMembersState();
       }
 
-      return Align(
-        alignment: Alignment.centerLeft,
-        child: SingleChildScrollView(
+      return SizedBox(
+        height: 96.h.clamp(88.0, 108.0),
+        child: ListView.separated(
           scrollDirection: Axis.horizontal,
           physics: const BouncingScrollPhysics(),
-          child: Padding(
-            padding: EdgeInsets.symmetric(vertical: 4.h),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                for (int index = 0; index < sortedList.length; index++) ...[
-                  if (index > 0) SizedBox(width: 12.w),
-                  buildMemberAvatar(
-                    sortedList[index],
-                    index: index,
-                    args: args,
-                  ),
-                ],
-              ],
-            ),
-          ),
+          padding: EdgeInsets.symmetric(vertical: 4.h),
+          itemCount: sortedList.length,
+          separatorBuilder: (_, __) => SizedBox(width: 12.w),
+          itemBuilder: (context, index) {
+            return buildMemberAvatar(
+              sortedList[index],
+              index: index,
+              args: args,
+            );
+          },
         ),
       );
     });
@@ -1857,8 +1929,8 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                 clipBehavior: Clip.none,
                 children: [
                   Container(
-                    width: (buttonSize * 2.2).clamp(190.0, maxRingRadius),
-                    height: (buttonSize * 2.2).clamp(190.0, maxRingRadius),
+                    width: math.min(buttonSize * 2.2, maxRingRadius),
+                    height: math.min(buttonSize * 2.2, maxRingRadius),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
@@ -1868,8 +1940,8 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                     ),
                   ),
                   Container(
-                    width: (buttonSize * 1.75).clamp(160.0, maxRingRadius),
-                    height: (buttonSize * 1.75).clamp(160.0, maxRingRadius),
+                    width: math.min(buttonSize * 1.75, maxRingRadius),
+                    height: math.min(buttonSize * 1.75, maxRingRadius),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
@@ -1879,8 +1951,8 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                     ),
                   ),
                   Container(
-                    width: (buttonSize * 1.35).clamp(130.0, maxRingRadius),
-                    height: (buttonSize * 1.35).clamp(130.0, maxRingRadius),
+                    width: math.min(buttonSize * 1.35, maxRingRadius),
+                    height: math.min(buttonSize * 1.35, maxRingRadius),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
@@ -1890,8 +1962,8 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                     ),
                   ),
                   Container(
-                    width: (buttonSize * 1.05).clamp(100.0, maxRingRadius),
-                    height: (buttonSize * 1.05).clamp(100.0, maxRingRadius),
+                    width: math.min(buttonSize * 1.05, maxRingRadius),
+                    height: math.min(buttonSize * 1.05, maxRingRadius),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
@@ -2006,8 +2078,13 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                     if (controller.isMuted.value) {
                       return buildMutedListeningView(size: buttonSize);
                     }
-                    final dragOffset =
-                        controller.dragOffset.value.clamp(0.0, _lockThreshold);
+                    if (controller.isSelfLocked.value) {
+                      return GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: _unlockAndStop,
+                        child: buildPTTButton(size: buttonSize),
+                      );
+                    }
                     return Listener(
                       behavior: HitTestBehavior.opaque,
                       onPointerDown: (PointerDownEvent event) {
@@ -2020,28 +2097,20 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                       },
                       onPointerUp: (PointerUpEvent event) {
                         log('Raw pointer up captured.');
-                        if (!controller.isSelfLocked.value) {
-                          controller.setDragOffset(0.0);
-                          _onPTTReleased();
-                        }
+                        _onPointerUpOrCancel();
                       },
                       onPointerCancel: (PointerCancelEvent event) {
-                        log('⚠️ Warning: Raw touch input canceled by iOS gesture recognizer.');
-                        if (!controller.isSelfLocked.value) {
-                          controller.setDragOffset(0.0);
-                          _onPTTReleased();
-                        }
+                        log('⚠️ Warning: Raw touch input canceled by gesture recognizer.');
+                        _onPointerUpOrCancel();
                       },
-                      child: Transform.translate(
-                        offset: Offset(0, -dragOffset),
-                        child: controller.isSelfLocked.value
-                            ? GestureDetector(
-                                behavior: HitTestBehavior.opaque,
-                                onTap: _unlockAndStop,
-                                child: buildPTTButton(size: buttonSize),
-                              )
-                            : buildPTTButton(size: buttonSize),
-                      ),
+                      child: Obx(() {
+                        final dragOffset =
+                            controller.dragOffset.value.clamp(0.0, _lockThreshold);
+                        return Transform.translate(
+                          offset: Offset(0, -dragOffset),
+                          child: buildPTTButton(size: buttonSize),
+                        );
+                      }),
                     );
                   }),
                   Positioned(

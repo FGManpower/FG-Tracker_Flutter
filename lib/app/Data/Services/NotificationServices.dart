@@ -68,6 +68,20 @@ class firebaseNotificationServices {
   static const String walkieCancelActionId = 'WALKIE_CANCEL';
   static const String walkieCategoryIdentifier = 'walkie_invite_category';
 
+  static final Map<String, int> _recentWalkieEvents = <String, int>{};
+  static bool isDuplicateWalkieEvent(String eventKey, {int debounceSeconds = 3}) {
+    final now = DateTime.now().millisecondsSinceEpoch;
+    _recentWalkieEvents.removeWhere((_, time) => now - time > 15000);
+    if (_recentWalkieEvents.containsKey(eventKey)) {
+      final prevTime = _recentWalkieEvents[eventKey]!;
+      if (now - prevTime < (debounceSeconds * 1000)) {
+        return true;
+      }
+    }
+    _recentWalkieEvents[eventKey] = now;
+    return false;
+  }
+
   static DarwinInitializationSettings createDarwinSettings() {
     final darwinNotificationCategories = <DarwinNotificationCategory>[
       DarwinNotificationCategory(
@@ -160,13 +174,20 @@ class firebaseNotificationServices {
       return;
     }
 
-    if (action == walkieAcceptActionId || action.contains('ACCEPT')) {
-      final plugin = FlutterLocalNotificationsPlugin();
-      await plugin.cancel(payload.id ?? 502);
-      await plugin.cancel(502);
-      if (payload.payload != null && payload.payload!.isNotEmpty) {
-        try {
-          final data = jsonDecode(payload.payload!);
+    if (payload.payload != null && payload.payload!.isNotEmpty) {
+      try {
+        final data = jsonDecode(payload.payload!);
+        final isWalkie = (data['screen_name'] == 'group_walkie' ||
+            data['screenName'] == 'group_walkie' ||
+            data['screen_name'] == 'groupWalkie' ||
+            data['groupId'] != null ||
+            data['group_id'] != null);
+
+        if (isWalkie) {
+          final plugin = FlutterLocalNotificationsPlugin();
+          await plugin.cancel(payload.id ?? 502);
+          await plugin.cancel(502);
+
           final groupId = (data['groupId'] ?? data['group_id'] ?? '')?.toString() ?? '';
           final groupName = (data['groupName'] ?? data['group_name'] ?? 'Walkie-Talkie')?.toString() ?? 'Walkie-Talkie';
           final speakerName = (data['speakerName'] ?? data['speaker_name'] ?? 'Someone')?.toString() ?? 'Someone';
@@ -174,31 +195,19 @@ class firebaseNotificationServices {
 
           if (groupId.isNotEmpty) {
             WalkieLaunchTracker.fromWalkieCall = true;
-            if (GroupWalkieService.instance.currentGroupId != null &&
-                GroupWalkieService.instance.currentGroupId != groupId) {
-              await GroupWalkieService.instance.leaveGroup();
-            }
-            Get.toNamed(
-              Routes.groupWalkieScreen,
-              arguments: {
-                "groupId": groupId,
-                "groupName": groupName,
-                "speakerName": speakerName,
-                "speakerImage": speakerImage,
-                "autoOpened": true,
-              },
-            );
+            log("🔔 [onNotificationResponse] Walkie notification tapped -> navigating directly to walkie screen: groupId=$groupId");
+            Future.delayed(const Duration(milliseconds: 300), () {
+              navigateToWalkieScreen(
+                groupId: groupId,
+                groupName: groupName,
+                speakerName: speakerName,
+                speakerImage: speakerImage,
+              );
+            });
+            return;
           }
-          return;
-        } catch (e) {
-          debugPrint("Walkie accept parse error: $e");
         }
-      }
-    }
 
-    if (payload.payload != null && payload.payload!.isNotEmpty) {
-      try {
-        final data = jsonDecode(payload.payload!);
         final ctx = ContextUtility.navigatorkey.currentState?.context ?? Get.context;
         if (ctx != null) {
           firebaseNotificationServices().handleMessage(
@@ -267,6 +276,12 @@ class firebaseNotificationServices {
       WidgetsFlutterBinding.ensureInitialized();
     } catch (_) {}
 
+    final eventKey = extraData?['eventId']?.toString() ?? "${groupId}_$speakerName";
+    if (isDuplicateWalkieEvent(eventKey)) {
+      log("🔔 [showWalkieNotification] Skipping duplicate walkie event: $eventKey");
+      return;
+    }
+
     bool isForeground = false;
     try {
       isForeground =
@@ -307,7 +322,7 @@ class firebaseNotificationServices {
       return;
     }
 
-    // iOS: Use Native UserNotifications with Action Buttons (Accept / Cancel)
+    // iOS: Use Native UserNotifications with Action Buttons (Accept / Cancel) and Content Extension
     if (Platform.isIOS) {
       log("🔔 [showWalkieNotification] iOS: Displaying native notification with Accept/Cancel actions");
       try {
@@ -332,13 +347,14 @@ class firebaseNotificationServices {
           );
         } catch (_) {}
 
-        const DarwinNotificationDetails darwinNotificationDetails =
+        final DarwinNotificationDetails darwinNotificationDetails =
             DarwinNotificationDetails(
           presentAlert: true,
           presentBadge: true,
           presentSound: true,
-          sound: 'recieve_notification.mp3',
+          sound: 'walkie-talkie-ringtone.caf',
           categoryIdentifier: 'WALKIE_INVITE',
+          threadIdentifier: 'walkie_$groupId',
         );
 
         final NotificationDetails notificationDetails = NotificationDetails(
@@ -355,9 +371,14 @@ class firebaseNotificationServices {
           if (extraData != null) ...extraData,
         };
 
-        log("🔔 [showWalkieNotification] Invoking localNotifications.show(502) on iOS...");
+        final int notificationId = 5000 + (groupId.hashCode.abs() % 1000);
+        log("🔔 [showWalkieNotification] Invoking localNotifications.show($notificationId) on iOS (group: $groupId)...");
+        try {
+          await localNotifications.cancel(notificationId);
+          await localNotifications.cancel(502);
+        } catch (_) {}
         await localNotifications.show(
-          502,
+          notificationId,
           title,
           body,
           notificationDetails,
@@ -577,8 +598,34 @@ class firebaseNotificationServices {
       } else if (response?.payload != null && response!.payload!.isNotEmpty) {
         try {
           final data = jsonDecode(response.payload!);
-          pendingInitialMessage =
-              RemoteMessage(data: Map<String, dynamic>.from(data));
+          final isWalkie = (data['screen_name'] == 'group_walkie' ||
+              data['screenName'] == 'group_walkie' ||
+              data['screen_name'] == 'groupWalkie' ||
+              data['groupId'] != null ||
+              data['group_id'] != null);
+
+          if (isWalkie) {
+            final groupId = (data['groupId'] ?? data['group_id'] ?? '')?.toString() ?? '';
+            final groupName = (data['groupName'] ?? data['group_name'] ?? 'Walkie-Talkie')?.toString() ?? 'Walkie-Talkie';
+            final speakerName = (data['speakerName'] ?? data['speaker_name'] ?? 'Someone')?.toString() ?? 'Someone';
+            final speakerImage = (data['speakerImage'] ?? data['speaker_image'] ?? '')?.toString() ?? '';
+
+            if (groupId.isNotEmpty) {
+              WalkieLaunchTracker.fromWalkieCall = true;
+              log("🔔 [initNotificationServices] App launched from Walkie notification -> scheduling navigation");
+              Future.delayed(const Duration(milliseconds: 800), () {
+                navigateToWalkieScreen(
+                  groupId: groupId,
+                  groupName: groupName,
+                  speakerName: speakerName,
+                  speakerImage: speakerImage,
+                );
+              });
+            }
+          } else {
+            pendingInitialMessage =
+                RemoteMessage(data: Map<String, dynamic>.from(data));
+          }
         } catch (_) {}
       }
     }
@@ -784,6 +831,20 @@ class firebaseNotificationServices {
             '';
 
         if (groupId.isNotEmpty) {
+          if (type == "frombackground") {
+            log("🔔 [handleMessage] Walkie notification opened from background -> navigating to walkie screen directly");
+            WalkieLaunchTracker.fromWalkieCall = true;
+            Future.delayed(const Duration(milliseconds: 300), () {
+              navigateToWalkieScreen(
+                groupId: groupId,
+                groupName: groupName,
+                speakerName: speakerName,
+                speakerImage: speakerImage,
+              );
+            });
+            return;
+          }
+
           if (GroupWalkieService.instance.currentGroupId != null &&
               GroupWalkieService.instance.currentGroupId != groupId) {
             await GroupWalkieService.instance.leaveGroup();
