@@ -344,8 +344,10 @@ class GroupChatScreen extends GetView<GroupMessageController> {
                       child: controller.groupImage.isNotEmpty
                           ? ClipOval(
                         child: Image.network(
-                          "${ConstRes.aImageBaseUrl}${controller.groupImage}",
-                          fit: BoxFit.cover,
+                          controller.groupImage.startsWith('http://') ||
+                              controller.groupImage.startsWith('https://')
+                              ? controller.groupImage
+                              : "${ConstRes.aImageBaseUrl}${controller.groupImage}",                          fit: BoxFit.cover,
                           errorBuilder: (_, __, ___) => Icon(
                             Icons.groups_rounded,
                             color: Colors.white,

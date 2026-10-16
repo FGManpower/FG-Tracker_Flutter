@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:developer';
 import 'dart:io';
 import 'dart:math' as math;
+import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/values/Curve/walkie_painter.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Walkie-Talkie-Service.dart';
 import 'package:fgtracker/app/config/themes_data.dart';
@@ -40,7 +41,24 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
     with TickerProviderStateMixin {
   final controller = Get.put(GroupWalkieController());
   Map<String, dynamic>? args;
+  String get _groupProfileUrl {
+    final profile = (
+        args?['groupProfile'] ??
+            args?['groupImage'] ??
+            ''
+    ).toString().trim();
 
+    if (profile.isEmpty || profile.toLowerCase() == 'null') {
+      return '';
+    }
+
+    if (profile.startsWith('http://') ||
+        profile.startsWith('https://')) {
+      return profile;
+    }
+
+    return '${ConstRes.aImageBaseUrl}$profile';
+  }
   late final AnimationController _rippleController;
   late final AnimationController _pulseController;
   late final AnimationController _lockHintController;
@@ -119,6 +137,9 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
           'groupDesc': g.groupDesc ?? '',
           'groupCode': g.groupCode ?? '',
           'isSubscribed': args?['isSubscribed'] ?? _isSubscribed,
+          'groupProfile': args?['groupProfile'] ??
+              gc.groupData.first.groupProfile ??
+              '',
         };
       } else if (groupId.isNotEmpty &&
           (args?['groupName'] == null ||
@@ -579,8 +600,8 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
               arguments: {
                 "groupId": args?['groupId']?.toString() ?? "",
                 "groupName": controller.currentGroupName,
-                "groupImage": "",
-              },
+                "groupImage": _groupProfileUrl,
+                "groupProfile": _groupProfileUrl,              },
             );
           },
         ),
@@ -613,8 +634,8 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                     arguments: {
                       "groupId": args?['groupId']?.toString() ?? "",
                       "groupName": controller.currentGroupName,
-                      "groupImage": "",
-                    },
+                      "groupImage": _groupProfileUrl,
+                      "groupProfile": _groupProfileUrl,                    },
                   );
                 },
               ),
@@ -1417,20 +1438,35 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
               Stack(
                 clipBehavior: Clip.none,
                 children: [
-                  Container(
-                    width: 42.r.clamp(36.0, 46.0),
-                    height: 42.r.clamp(36.0, 46.0),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [lightPurple, primaryPurple],
+                  ClipOval(
+                    child: _groupProfileUrl.isNotEmpty
+                        ? Image.network(
+                      _groupProfileUrl,
+                      width: 52,
+                      height: 52,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          width: 52,
+                          height: 52,
+                          color: primaryPurple.withOpacity(0.1),
+                          child: Icon(
+                            Icons.groups_rounded,
+                            color: primaryPurple,
+                            size: 28,
+                          ),
+                        );
+                      },
+                    )
+                        : Container(
+                      width: 52,
+                      height: 52,
+                      color: primaryPurple.withOpacity(0.1),
+                      child: Icon(
+                        Icons.groups_rounded,
+                        color: primaryPurple,
+                        size: 28,
                       ),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Center(
-                      child: Icon(Icons.people_alt_rounded,
-                          color: Colors.white, size: 20.sp.clamp(18.0, 23.0)),
                     ),
                   ),
                   Positioned(
