@@ -36,6 +36,7 @@ class GroupWalkieService {
   final Set<String> _offeredTo = {};
 
   bool _isTalking = false;
+  int _talkSessionId = 0;
   bool _isMuted = false;
   bool _isSpeakerOn = true;
   bool _listenersBound = false;
@@ -752,6 +753,8 @@ class GroupWalkieService {
           : null) as List? ??
           (data is List ? data : []);
 
+      final newParticipants = <WalkieParticipant>[];
+
       for (final p in peers) {
         var id = '';
         var name = 'User';
@@ -768,22 +771,20 @@ class GroupWalkieService {
         }
         if (id.isEmpty || id == _selfUserId) continue;
 
-        if (Get.isRegistered<GroupWalkieController>()) {
-          Get.find<GroupWalkieController>().addOrUpdateParticipant(
-            WalkieParticipant(
-              userId: id,
-              name: name,
-              image: image,
-              isMuted: isMuted,
-              isSpeaking: false,
-              isListening: true,
-              hasExplicitMute: p is Map &&
-                  (p.containsKey('isMuted') ||
-                      p.containsKey('muted') ||
-                      p.containsKey('is_muted')),
-            ),
-          );
-        }
+        newParticipants.add(
+          WalkieParticipant(
+            userId: id,
+            name: name,
+            image: image,
+            isMuted: isMuted,
+            isSpeaking: false,
+            isListening: true,
+            hasExplicitMute: p is Map &&
+                (p.containsKey('isMuted') ||
+                    p.containsKey('muted') ||
+                    p.containsKey('is_muted')),
+          ),
+        );
 
         if (_offeredTo.contains(id)) continue;
         _offeredTo.add(id);
@@ -791,6 +792,10 @@ class GroupWalkieService {
           await Future.delayed(const Duration(milliseconds: 40));
           await _createOfferTo(id);
         });
+      }
+
+      if (Get.isRegistered<GroupWalkieController>() && newParticipants.isNotEmpty) {
+        Get.find<GroupWalkieController>().addOrUpdateParticipantsBatch(newParticipants);
       }
     });
 
@@ -1570,8 +1575,10 @@ class GroupWalkieService {
     );
 
     if (_currentGroupId == null || _currentGroupId!.isEmpty) return false;
-    if (_isTalking) return false;
+    if (_isTalking) return true;
     if (_isMuted) return false;
+
+    final currentSession = ++_talkSessionId;
 
     final ok = await _ensureLocalStream();
     if (!ok) {
@@ -1581,7 +1588,20 @@ class GroupWalkieService {
       return false;
     }
 
+    if (_talkSessionId != currentSession) {
+      _log('startTalking cancelled while ensuring local stream');
+      await _enableMic(false);
+      return false;
+    }
+
     await _ensurePlaybackPath();
+
+    if (_talkSessionId != currentSession) {
+      _log('startTalking cancelled while ensuring playback path');
+      await _enableMic(false);
+      return false;
+    }
+
     _logPeerSnapshot('before ptt_request');
 
     if (_peers.isEmpty) {
@@ -1595,6 +1615,7 @@ class GroupWalkieService {
   }
 
   Future<void> stopTalking() async {
+    _talkSessionId++;
     _isTalking = false;
     await _enableMic(false);
     if (_currentGroupId != null) {

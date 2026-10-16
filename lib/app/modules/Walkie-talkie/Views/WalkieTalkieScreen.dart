@@ -49,6 +49,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
   bool _hasLeft = false;
   bool _isDisposed = false;
   bool _pttInProgress = false;
+  bool _wantsToTalk = false;
   final bool _allowPop = false;
 
   double _startY = 0.0;
@@ -348,6 +349,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
     }
 
     log('Triggering PTT Session...');
+    _wantsToTalk = true;
     _pttInProgress = true;
     controller.setPressed(true);
     _lockHintController.repeat(reverse: true);
@@ -362,6 +364,12 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
       });
       log('PTT activation result: $ok');
 
+      if (!_wantsToTalk && !controller.isSelfLocked.value) {
+        log('Finger released before startTalking completed — stopping audio transmission immediately');
+        await _stopTalking();
+        return;
+      }
+
       if (!ok) {
         log('Failed to start transmission. Reverting changes...');
         controller.setPressed(false);
@@ -375,13 +383,27 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
       _lockHintController.reset();
     } finally {
       _pttInProgress = false;
+      if (!_wantsToTalk &&
+          !controller.isSelfLocked.value &&
+          (controller.isPressed.value || GroupWalkieService.instance.isTalking)) {
+        await _stopTalking();
+      }
+    }
+  }
+
+  void _onPointerUpOrCancel() {
+    _wantsToTalk = false;
+    if (!controller.isSelfLocked.value) {
+      controller.setDragOffset(0.0);
+      _onPTTReleased();
     }
   }
 
   Future<void> _onPTTReleased() async {
+    _wantsToTalk = false;
     log('PTT Touch released. Checking state...');
-    if (!controller.isPressed.value) {
-      log('Release skipped: PTT is not pressed.');
+    if (!controller.isPressed.value && !_pttInProgress) {
+      log('Release skipped: PTT is not pressed and not in progress.');
       return;
     }
     if (controller.isSelfLocked.value) {
@@ -394,6 +416,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
 
   Future<void> _stopTalking() async {
     log('Stopping audio transmission and releasing lock state...');
+    _wantsToTalk = false;
     controller.setPressed(false);
     _lockHintController.stop();
     _lockHintController.reset();
@@ -404,6 +427,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
 
   Future<void> _unlockAndStop() async {
     log('Manual unlock and stop request received.');
+    _wantsToTalk = false;
     controller.resetSelfLock();
     await _stopTalking();
   }
@@ -412,11 +436,9 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
     if (!controller.isPressed.value) return;
     if (controller.isSelfLocked.value) return;
 
-    // Convert screen coordinates to drag distance (dragging up reduces Y position)
     double newOffset = _startY - currentY;
     if (newOffset < 0) newOffset = 0;
 
-    log('PTT Drag moving upwards -> offset: ${newOffset.toStringAsFixed(1)}px / $_lockThreshold px');
     controller.setDragOffset(newOffset);
 
     if (newOffset >= _lockThreshold) {
@@ -1724,28 +1746,21 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
         return buildEmptyMembersState();
       }
 
-      return Align(
-        alignment: Alignment.centerLeft,
-        child: SingleChildScrollView(
+      return SizedBox(
+        height: 96.h.clamp(88.0, 108.0),
+        child: ListView.separated(
           scrollDirection: Axis.horizontal,
           physics: const BouncingScrollPhysics(),
-          child: Padding(
-            padding: EdgeInsets.symmetric(vertical: 4.h),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                for (int index = 0; index < sortedList.length; index++) ...[
-                  if (index > 0) SizedBox(width: 12.w),
-                  buildMemberAvatar(
-                    sortedList[index],
-                    index: index,
-                    args: args,
-                  ),
-                ],
-              ],
-            ),
-          ),
+          padding: EdgeInsets.symmetric(vertical: 4.h),
+          itemCount: sortedList.length,
+          separatorBuilder: (_, __) => SizedBox(width: 12.w),
+          itemBuilder: (context, index) {
+            return buildMemberAvatar(
+              sortedList[index],
+              index: index,
+              args: args,
+            );
+          },
         ),
       );
     });
@@ -2006,8 +2021,13 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                     if (controller.isMuted.value) {
                       return buildMutedListeningView(size: buttonSize);
                     }
-                    final dragOffset =
-                        controller.dragOffset.value.clamp(0.0, _lockThreshold);
+                    if (controller.isSelfLocked.value) {
+                      return GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: _unlockAndStop,
+                        child: buildPTTButton(size: buttonSize),
+                      );
+                    }
                     return Listener(
                       behavior: HitTestBehavior.opaque,
                       onPointerDown: (PointerDownEvent event) {
@@ -2020,28 +2040,20 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
                       },
                       onPointerUp: (PointerUpEvent event) {
                         log('Raw pointer up captured.');
-                        if (!controller.isSelfLocked.value) {
-                          controller.setDragOffset(0.0);
-                          _onPTTReleased();
-                        }
+                        _onPointerUpOrCancel();
                       },
                       onPointerCancel: (PointerCancelEvent event) {
-                        log('⚠️ Warning: Raw touch input canceled by iOS gesture recognizer.');
-                        if (!controller.isSelfLocked.value) {
-                          controller.setDragOffset(0.0);
-                          _onPTTReleased();
-                        }
+                        log('⚠️ Warning: Raw touch input canceled by gesture recognizer.');
+                        _onPointerUpOrCancel();
                       },
-                      child: Transform.translate(
-                        offset: Offset(0, -dragOffset),
-                        child: controller.isSelfLocked.value
-                            ? GestureDetector(
-                                behavior: HitTestBehavior.opaque,
-                                onTap: _unlockAndStop,
-                                child: buildPTTButton(size: buttonSize),
-                              )
-                            : buildPTTButton(size: buttonSize),
-                      ),
+                      child: Obx(() {
+                        final dragOffset =
+                            controller.dragOffset.value.clamp(0.0, _lockThreshold);
+                        return Transform.translate(
+                          offset: Offset(0, -dragOffset),
+                          child: buildPTTButton(size: buttonSize),
+                        );
+                      }),
                     );
                   }),
                   Positioned(

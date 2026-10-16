@@ -15,8 +15,10 @@ import android.graphics.PorterDuffXfermode
 import android.graphics.Rect
 import android.graphics.RectF
 import android.media.AudioAttributes
+import android.media.RingtoneManager
 import android.net.Uri
 import android.os.Build
+import android.os.PowerManager
 import android.widget.RemoteViews
 import androidx.core.app.NotificationCompat
 import io.flutter.embedding.engine.plugins.FlutterPlugin
@@ -33,7 +35,7 @@ import java.util.concurrent.Executors
 
 class WalkieCustomNotificationPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry.NewIntentListener {
     companion object {
-        const val CHANNEL_ID = "fg_tracker_walkie_custom_channel_v2"
+        const val CHANNEL_ID = "fg_tracker_walkie_heads_up_channel_v6"
         const val CHANNEL_NAME = "Walkie-Talkie Active Channels"
         const val NOTIFICATION_ID = 90210
         const val ACTION_ACCEPT = "com.fg.walkie.ACTION_ACCEPT"
@@ -56,29 +58,46 @@ class WalkieCustomNotificationPlugin : FlutterPlugin, MethodCallHandler, Activit
                 nm.cancelAll()
             } catch (_: Exception) {}
 
-            val soundResId = ctx.resources.getIdentifier("recieve_notification", "raw", ctx.packageName)
-            val soundUri = if (soundResId != 0) {
+            val soundResId = ctx.resources.getIdentifier("walkie_talkie_ringtone", "raw", ctx.packageName).let {
+                if (it != 0) it else ctx.resources.getIdentifier("recieve_notification", "raw", ctx.packageName)
+            }
+            val soundUri: Uri = if (soundResId != 0) {
                 Uri.parse("android.resource://${ctx.packageName}/$soundResId")
-            } else null
+            } else {
+                RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+            }
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                // Delete older channels to ensure cached settings don't suppress Heads-Up
+                try {
+                    nm.deleteNotificationChannel("fg_tracker_walkie_custom_channel_v1")
+                    nm.deleteNotificationChannel("fg_tracker_walkie_custom_channel_v2")
+                    nm.deleteNotificationChannel("fg_tracker_walkie_heads_up_channel_v4")
+                    nm.deleteNotificationChannel("fg_tracker_walkie_heads_up_channel_v5")
+                } catch (_: Exception) {}
+
+                val audioAttr = AudioAttributes.Builder()
+                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                    .setUsage(AudioAttributes.USAGE_NOTIFICATION_RINGTONE)
+                    .build()
+
                 var nChannel = nm.getNotificationChannel(CHANNEL_ID)
-                if (nChannel == null) {
+                if (nChannel == null || nChannel.importance < NotificationManager.IMPORTANCE_HIGH) {
+                    if (nChannel != null) {
+                        try {
+                            nm.deleteNotificationChannel(CHANNEL_ID)
+                        } catch (_: Exception) {}
+                    }
                     nChannel = NotificationChannel(
                         CHANNEL_ID,
                         CHANNEL_NAME,
-                        NotificationManager.IMPORTANCE_DEFAULT
+                        NotificationManager.IMPORTANCE_HIGH
                     ).apply {
                         description = "Walkie Talkie Active Speaker Notifications"
                         enableVibration(true)
                         vibrationPattern = longArrayOf(0, 250, 250, 250)
-                        if (soundUri != null) {
-                            val audioAttr = AudioAttributes.Builder()
-                                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-                                .setUsage(AudioAttributes.USAGE_NOTIFICATION)
-                                .build()
-                            setSound(soundUri, audioAttr)
-                        }
+                        lockscreenVisibility = android.app.Notification.VISIBILITY_PUBLIC
+                        setSound(soundUri, audioAttr)
                     }
                     nm.createNotificationChannel(nChannel)
                 }
@@ -177,27 +196,44 @@ class WalkieCustomNotificationPlugin : FlutterPlugin, MethodCallHandler, Activit
                 .setSmallIcon(smallIconRes)
                 .setCustomContentView(collapsedViews)
                 .setCustomBigContentView(expandedViews)
+                .setCustomHeadsUpContentView(collapsedViews)
                 .setContentIntent(contentPendingIntent)
-                .setFullScreenIntent(fullScreenPendingIntent, true)
                 .setAutoCancel(true)
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setPriority(NotificationCompat.PRIORITY_MAX)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .setCategory(NotificationCompat.CATEGORY_CALL)
+                .setSound(soundUri)
+                .setVibrate(longArrayOf(0, 250, 250, 250))
+                .setDefaults(NotificationCompat.DEFAULT_LIGHTS or NotificationCompat.DEFAULT_VIBRATE)
                 .setOngoing(false)
 
-            if (soundUri != null) {
-                builder.setSound(soundUri)
+            // On Android 14+ (API 34+), fullScreenIntent is rejected and suppresses Heads-Up if permission is not granted
+            val canUseFsi = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                nm.canUseFullScreenIntent()
+            } else {
+                true
             }
+            if (canUseFsi) {
+                builder.setFullScreenIntent(fullScreenPendingIntent, true)
+            }
+
+            // Briefly wake up screen if interactive is false (screen is off/locked)
+            try {
+                val pm = ctx.getSystemService(Context.POWER_SERVICE) as? PowerManager
+                if (pm != null && !pm.isInteractive) {
+                    @Suppress("DEPRECATION")
+                    val wl = pm.newWakeLock(
+                        PowerManager.FULL_WAKE_LOCK or
+                        PowerManager.ACQUIRE_CAUSES_WAKEUP or
+                        PowerManager.ON_AFTER_RELEASE,
+                        "fgtracker:walkie_notif_wake"
+                    )
+                    wl.acquire(3000)
+                }
+            } catch (_: Exception) {}
 
             // Post notification
             nm.notify(NOTIFICATION_ID, builder.build())
-
-            // Launch floating Heads-Up Activity directly if context permits
-            try {
-                ctx.startActivity(fullScreenIntent)
-            } catch (e: Exception) {
-                android.util.Log.d("WalkieCustomNotification", "Direct activity start fell back to fullScreenIntent: ${e.message}")
-            }
         }
     }
 

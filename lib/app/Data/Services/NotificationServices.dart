@@ -160,13 +160,20 @@ class firebaseNotificationServices {
       return;
     }
 
-    if (action == walkieAcceptActionId || action.contains('ACCEPT')) {
-      final plugin = FlutterLocalNotificationsPlugin();
-      await plugin.cancel(payload.id ?? 502);
-      await plugin.cancel(502);
-      if (payload.payload != null && payload.payload!.isNotEmpty) {
-        try {
-          final data = jsonDecode(payload.payload!);
+    if (payload.payload != null && payload.payload!.isNotEmpty) {
+      try {
+        final data = jsonDecode(payload.payload!);
+        final isWalkie = (data['screen_name'] == 'group_walkie' ||
+            data['screenName'] == 'group_walkie' ||
+            data['screen_name'] == 'groupWalkie' ||
+            data['groupId'] != null ||
+            data['group_id'] != null);
+
+        if (isWalkie) {
+          final plugin = FlutterLocalNotificationsPlugin();
+          await plugin.cancel(payload.id ?? 502);
+          await plugin.cancel(502);
+
           final groupId = (data['groupId'] ?? data['group_id'] ?? '')?.toString() ?? '';
           final groupName = (data['groupName'] ?? data['group_name'] ?? 'Walkie-Talkie')?.toString() ?? 'Walkie-Talkie';
           final speakerName = (data['speakerName'] ?? data['speaker_name'] ?? 'Someone')?.toString() ?? 'Someone';
@@ -174,31 +181,19 @@ class firebaseNotificationServices {
 
           if (groupId.isNotEmpty) {
             WalkieLaunchTracker.fromWalkieCall = true;
-            if (GroupWalkieService.instance.currentGroupId != null &&
-                GroupWalkieService.instance.currentGroupId != groupId) {
-              await GroupWalkieService.instance.leaveGroup();
-            }
-            Get.toNamed(
-              Routes.groupWalkieScreen,
-              arguments: {
-                "groupId": groupId,
-                "groupName": groupName,
-                "speakerName": speakerName,
-                "speakerImage": speakerImage,
-                "autoOpened": true,
-              },
-            );
+            log("🔔 [onNotificationResponse] Walkie notification tapped -> navigating directly to walkie screen: groupId=$groupId");
+            Future.delayed(const Duration(milliseconds: 300), () {
+              navigateToWalkieScreen(
+                groupId: groupId,
+                groupName: groupName,
+                speakerName: speakerName,
+                speakerImage: speakerImage,
+              );
+            });
+            return;
           }
-          return;
-        } catch (e) {
-          debugPrint("Walkie accept parse error: $e");
         }
-      }
-    }
 
-    if (payload.payload != null && payload.payload!.isNotEmpty) {
-      try {
-        final data = jsonDecode(payload.payload!);
         final ctx = ContextUtility.navigatorkey.currentState?.context ?? Get.context;
         if (ctx != null) {
           firebaseNotificationServices().handleMessage(
@@ -337,7 +332,7 @@ class firebaseNotificationServices {
           presentAlert: true,
           presentBadge: true,
           presentSound: true,
-          sound: 'recieve_notification.mp3',
+          sound: 'walkie-talkie-ringtone.mp3',
           categoryIdentifier: 'WALKIE_INVITE',
         );
 
@@ -577,8 +572,34 @@ class firebaseNotificationServices {
       } else if (response?.payload != null && response!.payload!.isNotEmpty) {
         try {
           final data = jsonDecode(response.payload!);
-          pendingInitialMessage =
-              RemoteMessage(data: Map<String, dynamic>.from(data));
+          final isWalkie = (data['screen_name'] == 'group_walkie' ||
+              data['screenName'] == 'group_walkie' ||
+              data['screen_name'] == 'groupWalkie' ||
+              data['groupId'] != null ||
+              data['group_id'] != null);
+
+          if (isWalkie) {
+            final groupId = (data['groupId'] ?? data['group_id'] ?? '')?.toString() ?? '';
+            final groupName = (data['groupName'] ?? data['group_name'] ?? 'Walkie-Talkie')?.toString() ?? 'Walkie-Talkie';
+            final speakerName = (data['speakerName'] ?? data['speaker_name'] ?? 'Someone')?.toString() ?? 'Someone';
+            final speakerImage = (data['speakerImage'] ?? data['speaker_image'] ?? '')?.toString() ?? '';
+
+            if (groupId.isNotEmpty) {
+              WalkieLaunchTracker.fromWalkieCall = true;
+              log("🔔 [initNotificationServices] App launched from Walkie notification -> scheduling navigation");
+              Future.delayed(const Duration(milliseconds: 800), () {
+                navigateToWalkieScreen(
+                  groupId: groupId,
+                  groupName: groupName,
+                  speakerName: speakerName,
+                  speakerImage: speakerImage,
+                );
+              });
+            }
+          } else {
+            pendingInitialMessage =
+                RemoteMessage(data: Map<String, dynamic>.from(data));
+          }
         } catch (_) {}
       }
     }
@@ -784,6 +805,20 @@ class firebaseNotificationServices {
             '';
 
         if (groupId.isNotEmpty) {
+          if (type == "frombackground") {
+            log("🔔 [handleMessage] Walkie notification opened from background -> navigating to walkie screen directly");
+            WalkieLaunchTracker.fromWalkieCall = true;
+            Future.delayed(const Duration(milliseconds: 300), () {
+              navigateToWalkieScreen(
+                groupId: groupId,
+                groupName: groupName,
+                speakerName: speakerName,
+                speakerImage: speakerImage,
+              );
+            });
+            return;
+          }
+
           if (GroupWalkieService.instance.currentGroupId != null &&
               GroupWalkieService.instance.currentGroupId != groupId) {
             await GroupWalkieService.instance.leaveGroup();
