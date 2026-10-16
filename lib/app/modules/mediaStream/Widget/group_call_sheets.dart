@@ -20,13 +20,9 @@ class GroupParticipantsSheet {
         ),
         padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 15.h),
         child: Obx(() {
-          // Depend on tick so ANY participant event rebuilds whole sheet
           final _ = controller.participantsUiTick.value;
 
-          final inCall = controller.sheetInCallParticipants.isNotEmpty
-              ? controller.sheetInCallParticipants.toList()
-              : controller.activeParticipants.toList();
-
+          final inCall = controller.sheetInCallParticipants.toList();
           final notIn = controller.notInCallParticipants.toList();
 
           return Column(
@@ -61,7 +57,10 @@ class GroupParticipantsSheet {
                     itemCount: inCall.length,
                     separatorBuilder: (_, __) => SizedBox(width: 12.w),
                     itemBuilder: (_, index) {
-                      return _InCallChip(participant: inCall[index]);
+                      return _InCallChip(
+                        participant: inCall[index],
+                        key: ValueKey('in_${inCall[index].userId}'),
+                      );
                     },
                   ),
                 ),
@@ -76,87 +75,87 @@ class GroupParticipantsSheet {
               Expanded(
                 child: notIn.isEmpty
                     ? Center(
-                  child: reausabletext(
-                    "Everyone is already in the call",
-                    fontsize: 14,
-                    color: Colors.grey,
-                  ),
-                )
-                    : ListView.separated(
-                  itemCount: notIn.length,
-                  separatorBuilder: (_, __) => SizedBox(height: 14.h),
-                  itemBuilder: (context, index) {
-                    final participant = notIn[index];
-                    final imageUrl = Utility.isNullEmptyOrFalse(
-                        participant.profileImage)
-                        ? MyAppTheme.ProfilenotFoundImg
-                        : ConstRes.aImageBaseUrl +
-                        (participant.profileImage ?? '');
-
-                    return Row(
-                      children: [
-                        CircleAvatar(
-                          radius: 24.r,
-                          backgroundColor: Colors.black12,
-                          backgroundImage: NetworkImage(imageUrl),
-                          onBackgroundImageError: (_, __) {},
+                        child: reausabletext(
+                          "Everyone is already in the call",
+                          fontsize: 14,
+                          color: Colors.grey,
                         ),
-                        SizedBox(width: 14.w),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment:
-                            CrossAxisAlignment.start,
+                      )
+                    : ListView.separated(
+                        itemCount: notIn.length,
+                        separatorBuilder: (_, __) => SizedBox(height: 14.h),
+                        itemBuilder: (context, index) {
+                          final participant = notIn[index];
+                          final imageUrl = Utility.isNullEmptyOrFalse(
+                                  participant.profileImage)
+                              ? MyAppTheme.ProfilenotFoundImg
+                              : ConstRes.aImageBaseUrl +
+                                  (participant.profileImage ?? '');
+
+                          return Row(
+                            key: ValueKey('out_${participant.userId}'),
                             children: [
-                              reausabletext(
-                                participant.name ?? "",
-                                fontsize: 15,
-                                fontfamily: FontFamily.interMedium,
-                                color: const Color(0xFF1E1147),
+                              CircleAvatar(
+                                radius: 24.r,
+                                backgroundColor: Colors.black12,
+                                backgroundImage: NetworkImage(imageUrl),
+                                onBackgroundImageError: (_, __) {},
                               ),
-                              SizedBox(height: 2.h),
-                              reausabletext(
-                                "Tap notify to invite",
-                                fontsize: 12,
-                                color: Colors.grey,
+                              SizedBox(width: 14.w),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    reausabletext(
+                                      participant.name ?? "",
+                                      fontsize: 15,
+                                      fontfamily: FontFamily.interMedium,
+                                      color: const Color(0xFF1E1147),
+                                    ),
+                                    SizedBox(height: 2.h),
+                                    reausabletext(
+                                      "Tap notify to invite",
+                                      fontsize: 12,
+                                      color: Colors.grey,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              InkWell(
+                                onTap: () =>
+                                    controller.notifyParticipant(participant),
+                                borderRadius: BorderRadius.circular(30.r),
+                                child: Container(
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: 12.w,
+                                    vertical: 8.h,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFE9E5FE),
+                                    borderRadius: BorderRadius.circular(20.r),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      const Icon(
+                                        Icons.notifications_active,
+                                        color: Color(0xFF6E5CA4),
+                                        size: 18,
+                                      ),
+                                      SizedBox(width: 6.w),
+                                      reausabletext(
+                                        "Notify",
+                                        fontsize: 12,
+                                        fontfamily: FontFamily.interSemiBold,
+                                        color: const Color(0xFF6E5CA4),
+                                      ),
+                                    ],
+                                  ),
+                                ),
                               ),
                             ],
-                          ),
-                        ),
-                        InkWell(
-                          onTap: () => controller
-                              .notifyParticipant(participant),
-                          borderRadius: BorderRadius.circular(30.r),
-                          child: Container(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 12.w,
-                              vertical: 8.h,
-                            ),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFE9E5FE),
-                              borderRadius: BorderRadius.circular(20.r),
-                            ),
-                            child: Row(
-                              children: [
-                                const Icon(
-                                  Icons.notifications_active,
-                                  color: Color(0xFF6E5CA4),
-                                  size: 18,
-                                ),
-                                SizedBox(width: 6.w),
-                                reausabletext(
-                                  "Notify",
-                                  fontsize: 12,
-                                  fontfamily: FontFamily.interSemiBold,
-                                  color: const Color(0xFF6E5CA4),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    );
-                  },
-                ),
+                          );
+                        },
+                      ),
               ),
             ],
           );
@@ -171,7 +170,8 @@ class GroupParticipantsSheet {
 
 class _InCallChip extends StatelessWidget {
   final GroupCallParticipant participant;
-  const _InCallChip({required this.participant});
+
+  _InCallChip({super.key, required this.participant});
 
   @override
   Widget build(BuildContext context) {

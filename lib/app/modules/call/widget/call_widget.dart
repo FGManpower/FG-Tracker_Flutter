@@ -103,6 +103,7 @@ Widget ctrl({
   );
 }
 
+
 Widget sheetDivider() {
   return Divider(
     height: 1,
@@ -149,7 +150,6 @@ Widget sheetTile({
   );
 }
 
-
 String formatSectionTitle(String raw) {
   if (raw.isEmpty) return 'Recent';
   final lower = raw.toLowerCase().replaceAll(RegExp(r'[_-]'), ' ').trim();
@@ -166,7 +166,6 @@ String formatSectionTitle(String raw) {
     return word[0].toUpperCase() + word.substring(1);
   }).join(' ');
 }
-
 
 String formatPhoneForDisplay(String raw) {
   if (raw.trim().isEmpty) return 'Unknown';
@@ -194,4 +193,3 @@ String normalizePhone(String phone) {
   }
   return digits;
 }
-

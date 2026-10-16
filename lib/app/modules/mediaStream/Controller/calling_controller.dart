@@ -68,15 +68,11 @@ class CallingController extends GetxController with WidgetsBindingObserver {
   late final CallAudioRouteController audioRouteController;
   late final String _audioRouteTag;
 
-  // NEW: remote ICE candidates that arrive before the remote description is
-  // set (or before the peer exists) are queued instead of being dropped.
   final List<dynamic> _pendingRemoteCandidates = [];
   bool _remoteDescriptionSet = false;
 
-  // NEW: used when a remote track arrives without an associated stream.
   MediaStream? _remoteFallbackStream;
 
-  // NEW: re-binds the remote renderer if no video frame arrives.
   Timer? _remoteVideoWatchdog;
 
   void toggleVideoViews() {
@@ -92,7 +88,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     _controlsTimer?.cancel();
     _controlsTimer = Timer(
       const Duration(seconds: 5),
-          () {
+      () {
         if (!isClosed) {
           areControlsVisible.value = false;
         }
@@ -130,7 +126,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     isVideoCall.value = is_video;
 
     _audioRouteTag =
-    "call_audio_${callId ?? DateTime.now().microsecondsSinceEpoch}";
+        "call_audio_${callId ?? DateTime.now().microsecondsSinceEpoch}";
 
     audioRouteController = Get.put(
       CallAudioRouteController(),
@@ -386,12 +382,12 @@ class CallingController extends GetxController with WidgetsBindingObserver {
   Future<void> _handleRemoteTrack(RTCTrackEvent event) async {
     try {
       MediaStream? stream =
-      event.streams.isNotEmpty ? event.streams.first : null;
+          event.streams.isNotEmpty ? event.streams.first : null;
 
       // A track without a stream used to throw (event.streams[0]).
       if (stream == null) {
         _remoteFallbackStream ??=
-        await createLocalMediaStream('remote_fallback');
+            await createLocalMediaStream('remote_fallback');
         await _remoteFallbackStream!.addTrack(event.track);
         stream = _remoteFallbackStream;
       }
@@ -479,7 +475,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
 
       final myUserId = Global.storageServices.get(PrefConst.userId).toString();
       final targetUserId =
-      (myUserId == callerId.toString()) ? remoteUserId : callerId;
+          (myUserId == callerId.toString()) ? remoteUserId : callerId;
 
       socket?.emit("upgradeToVideo", {
         "callId": callId,
@@ -1089,10 +1085,10 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       await _stopForegroundCallService();
 
       final String myUserId =
-      Global.storageServices.get(PrefConst.userId).toString();
+          Global.storageServices.get(PrefConst.userId).toString();
 
       final String targetUser =
-      myUserId == callerId.toString() ? remoteUserId : callerId;
+          myUserId == callerId.toString() ? remoteUserId : callerId;
 
       final Map<String, dynamic> payload = {
         "callId": callId,
@@ -1167,62 +1163,21 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     showAudioRoutePicker(context);
   }
 
-  // Future<void> showAudioRoutePicker(
-  //     BuildContext context,
-  //     ) async {
-  //   if (!context.mounted) {
-  //     return;
-  //   }
-  //
-  //   final CallAudioRoute? selectedRoute = await showMenu<CallAudioRoute>(
-  //     context: context,
-  //     position: const RelativeRect.fromLTRB(
-  //       100,
-  //       500,
-  //       100,
-  //       100,
-  //     ),
-  //     items: [
-  //       const PopupMenuItem<CallAudioRoute>(
-  //         value: CallAudioRoute.earpiece,
-  //         child: Text("Earpiece"),
-  //       ),
-  //       const PopupMenuItem<CallAudioRoute>(
-  //         value: CallAudioRoute.speaker,
-  //         child: Text("Speaker"),
-  //       ),
-  //       if (audioRouteController.isBluetoothConnected.value)
-  //         const PopupMenuItem<CallAudioRoute>(
-  //           value: CallAudioRoute.bluetooth,
-  //           child: Text("Bluetooth"),
-  //         ),
-  //     ],
-  //   );
-  //
-  //   if (selectedRoute != null) {
-  //     await audioRouteController.selectRoute(
-  //       selectedRoute,
-  //     );
-  //   }
-  // }
-
-
   Future<void> showAudioRoutePicker(BuildContext context) async {
     if (!context.mounted) return;
 
-
+    // Refresh devices so Bluetooth / headset state is current when it opens.
     await audioRouteController.checkDevices();
     if (!context.mounted) return;
 
-    final CallAudioRoute? selectedRoute = await showAudioRouteSheet(
-      context,
-      audioRouteController,
-    );
+    final CallAudioRoute? selected =
+        await showAudioRouteSheet(context, audioRouteController);
 
-    if (selectedRoute != null) {
-      await audioRouteController.selectRoute(selectedRoute);
+    if (selected != null) {
+      await audioRouteController.selectRoute(selected);
     }
   }
+
   String get formattedDuration {
     final minutes = (callDurationSeconds ~/ 60).toString().padLeft(2, '0');
     final seconds = (callDurationSeconds % 60).toString().padLeft(2, '0');

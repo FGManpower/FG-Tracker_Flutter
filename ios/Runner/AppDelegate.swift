@@ -12,12 +12,6 @@ import GoogleMaps
         FirebaseApp.configure()
         GMSServices.provideAPIKey("AIzaSyAgt-V8kmcQJb_6Cj6LHArWfhWjVPh7N_Q")
         GeneratedPluginRegistrant.register(with: self)
-
-        // ADD: audio route bridge (does not depend on the window existing)
-        if let registrar = self.registrar(forPlugin: "AudioRouteBridge") {
-            AudioRouteBridge.register(with: registrar.messenger())
-        }
-
         return super.application(application, didFinishLaunchingWithOptions: launchOptions)
     }
 

@@ -3,8 +3,8 @@ import 'package:fgtracker/app/modules/mediaStream/Controller/call_audio_route_co
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart' hide navigator;
-
 import '../../../../gen/fonts.gen.dart';
+
 
 class _RouteUi {
   final String label;
@@ -95,20 +95,26 @@ class _AudioRouteSheet extends StatelessWidget {
           SizedBox(height: 16.h),
           Obx(() {
             final CallAudioRoute active = controller.currentRoute.value;
+            final bool isVideo = controller.isVideoCall.value;
             final bool btConnected = controller.isBluetoothConnected.value;
+            final bool headsetConnected = controller.isHeadsetConnected.value;
+            final String btName = controller.bluetoothDeviceName.value;
+            final String headsetName = controller.headsetDeviceName.value;
 
             return Column(
               children: [
-                _RouteTile(
-                  ui: const _RouteUi(
-                    "Earpiece",
-                    "Private listening at your ear",
-                    Icons.phone_in_talk_rounded,
+                // Earpiece is not available during video calls.
+                if (!isVideo)
+                  _RouteTile(
+                    ui: const _RouteUi(
+                      "Earpiece",
+                      "Private listening at your ear",
+                      Icons.phone_in_talk_rounded,
+                    ),
+                    selected: active == CallAudioRoute.earpiece,
+                    onTap: () =>
+                        Navigator.of(context).pop(CallAudioRoute.earpiece),
                   ),
-                  selected: active == CallAudioRoute.earpiece,
-                  onTap: () =>
-                      Navigator.of(context).pop(CallAudioRoute.earpiece),
-                ),
                 _RouteTile(
                   ui: const _RouteUi(
                     "Speaker",
@@ -121,14 +127,29 @@ class _AudioRouteSheet extends StatelessWidget {
                 ),
                 if (btConnected)
                   _RouteTile(
-                    ui: const _RouteUi(
+                    ui: _RouteUi(
                       "Bluetooth",
-                      "Connected headset",
+                      (btName.isNotEmpty && btName != 'Bluetooth')
+                          ? btName
+                          : "Connected headset",
                       Icons.bluetooth_audio_rounded,
                     ),
                     selected: active == CallAudioRoute.bluetooth,
                     onTap: () =>
                         Navigator.of(context).pop(CallAudioRoute.bluetooth),
+                  ),
+                if (headsetConnected)
+                  _RouteTile(
+                    ui: _RouteUi(
+                      "Headset",
+                      (headsetName.isNotEmpty && headsetName != 'Headset')
+                          ? headsetName
+                          : "Wired headset",
+                      Icons.headphones_rounded,
+                    ),
+                    selected: active == CallAudioRoute.headset,
+                    onTap: () =>
+                        Navigator.of(context).pop(CallAudioRoute.headset),
                   ),
               ],
             );
