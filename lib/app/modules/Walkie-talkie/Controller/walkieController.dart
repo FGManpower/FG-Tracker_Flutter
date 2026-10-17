@@ -20,6 +20,26 @@ enum WalkieNetworkQuality {
   strong,
 }
 
+enum WalkieMicPermissionState {
+  granted,
+  denied,
+  permanentlyDenied,
+  checking,
+}
+
+enum WalkieInitStage {
+  notStarted,
+  checkingPrerequisites,
+  loadingChannel,
+  connecting,
+  preparingAudio,
+  ready,
+  permissionRequired,
+  offline,
+  recovering,
+  failed,
+}
+
 class WalkieParticipant {
   final String userId;
   final String name;
@@ -84,7 +104,21 @@ class GroupWalkieController extends GetxController {
   final isSelfLocked = false.obs;
   final isChannelLocked = false.obs;
   final isConnected = false.obs;
-  final hasMicPermission = true.obs;
+  final hasMicPermission = false.obs;
+  final micPermissionState = WalkieMicPermissionState.checking.obs;
+  final initStage = WalkieInitStage.notStarted.obs;
+
+  bool get isMicGranted =>
+      micPermissionState.value == WalkieMicPermissionState.granted;
+
+  void setMicPermissionState(WalkieMicPermissionState state) {
+    micPermissionState.value = state;
+    hasMicPermission.value = state == WalkieMicPermissionState.granted;
+  }
+
+  void setInitStage(WalkieInitStage stage) {
+    initStage.value = stage;
+  }
 
   final isPressed = false.obs;
   final dragOffset = 0.0.obs;
