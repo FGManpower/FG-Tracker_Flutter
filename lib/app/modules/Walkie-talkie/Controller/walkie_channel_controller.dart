@@ -1,10 +1,12 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Data/Repositories/walkie_channel_repo.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Walkie-Talkie-Service.dart';
 import 'package:fgtracker/app/Model/walkie_channel_model.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:get/get.dart';
 
 class WalkieChannelController extends GetxController {
@@ -15,6 +17,19 @@ class WalkieChannelController extends GetxController {
   final RxMap<int, bool> isTogglingPreference = <int, bool>{}.obs;
   final RxBool isSwitchingChannel = false.obs;
   final RxBool isSubscriptionExpired = false.obs;
+
+  void _safeChannelsRefresh() {
+    if (WidgetsBinding.instance.schedulerPhase ==
+            SchedulerPhase.persistentCallbacks ||
+        WidgetsBinding.instance.schedulerPhase ==
+            SchedulerPhase.midFrameMicrotasks) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        channels.refresh();
+      });
+    } else {
+      channels.refresh();
+    }
+  }
 
   StreamSubscription? _socketSub;
 
@@ -28,6 +43,7 @@ class WalkieChannelController extends GetxController {
   @override
   void onClose() {
     _socketSub?.cancel();
+    unsubscribeChannelUpdates();
     _unbindSocketListeners();
     super.onClose();
   }
@@ -36,6 +52,9 @@ class WalkieChannelController extends GetxController {
     final socket = GroupWalkieService.instance.socket;
     if (socket != null) {
       _bindSocketEvents();
+      if (socket.connected) {
+        subscribeChannelUpdates();
+      }
     }
 
     // Also watch when socket connects
@@ -47,6 +66,7 @@ class WalkieChannelController extends GetxController {
       final s = GroupWalkieService.instance.socket;
       if (s != null && s.connected) {
         _bindSocketEvents();
+        subscribeChannelUpdates();
         timer.cancel();
       }
     });
@@ -56,6 +76,8 @@ class WalkieChannelController extends GetxController {
   dynamic _pttReleaseHandler;
   dynamic _speakerStoppedHandler;
   dynamic _channelChangedHandler;
+  dynamic _channelSpeakerUpdateHandler;
+  dynamic _inviteHandler;
 
   void _bindSocketEvents() {
     final socket = GroupWalkieService.instance.socket;
@@ -63,73 +85,45 @@ class WalkieChannelController extends GetxController {
 
     _unbindSocketListeners();
 
-    _speakerActiveHandler = (data) {
-      if (data == null) return;
-      final gIdStr = data['groupId']?.toString();
-      if (gIdStr == null || gIdStr.isEmpty) return;
-
-      final gId = int.tryParse(gIdStr);
-      final idx = channels.indexWhere((c) => c.groupId == gId);
-      if (idx != -1) {
-        channels[idx].isChannelSpeaking = true;
-        channels[idx].activeSpeakerName = data['speakerName']?.toString();
-        channels[idx].activeSpeakerId =
-            int.tryParse(data['speakerId']?.toString() ?? '');
-        channels[idx].activeSpeakerImage = data['speakerImage']?.toString();
-        channels.refresh();
-      }
-    };
+    _speakerActiveHandler = (data) => onSpeakerActiveFromSocket(data);
     socket.on('walkie_speaker_active', _speakerActiveHandler);
 
-    _pttReleaseHandler = (data) {
-      if (data == null) return;
-      final gIdStr = data['groupId']?.toString();
-      if (gIdStr == null || gIdStr.isEmpty) return;
-
-      final gId = int.tryParse(gIdStr);
-      final idx = channels.indexWhere((c) => c.groupId == gId);
-      if (idx != -1) {
-        channels[idx].isChannelSpeaking = false;
-        channels[idx].activeSpeakerName = null;
-        channels[idx].activeSpeakerId = null;
-        channels.refresh();
-      }
-    };
+    _pttReleaseHandler = (data) => onSpeakerStoppedFromSocket(data);
     socket.on('ptt_release', _pttReleaseHandler);
 
-    _speakerStoppedHandler = (data) {
-      if (data == null) return;
-      final gIdStr = data['groupId']?.toString();
-      if (gIdStr == null || gIdStr.isEmpty) return;
-
-      final gId = int.tryParse(gIdStr);
-      final idx = channels.indexWhere((c) => c.groupId == gId);
-      if (idx != -1) {
-        channels[idx].isChannelSpeaking = false;
-        channels[idx].activeSpeakerName = null;
-        channels[idx].activeSpeakerId = null;
-        channels.refresh();
-      }
-    };
+    _speakerStoppedHandler = (data) => onSpeakerStoppedFromSocket(data);
     socket.on('walkie_speaker_stopped', _speakerStoppedHandler);
+
+    _channelSpeakerUpdateHandler = (data) => onChannelSpeakerUpdateFromSocket(data);
+    socket.on('walkie_channel_speaker_update', _channelSpeakerUpdateHandler);
+
+    _inviteHandler = (data) => onSpeakerActiveFromSocket(data);
+    socket.on('walkie_invite', _inviteHandler);
 
     _channelChangedHandler = (data) {
       if (data == null) return;
-      final activeGroupIdStr =
-          (data['activeNotificationGroupId'] ?? data['groupId'])?.toString();
-      final bool enabled = data['enabled'] == true ||
-          data['enabled'] == 1 ||
-          data['enabled']?.toString() == 'true';
-      final activeGroupId = int.tryParse(activeGroupIdStr ?? '');
+      try {
+        final Map<String, dynamic> map = data is Map
+            ? Map<String, dynamic>.from(data)
+            : (data is String ? jsonDecode(data) : {});
+        final activeGroupIdStr =
+            (map['activeNotificationGroupId'] ?? map['groupId'])?.toString();
+        final bool enabled = map['enabled'] == true ||
+            map['enabled'] == 1 ||
+            map['enabled']?.toString() == 'true';
+        final activeGroupId = int.tryParse(activeGroupIdStr ?? '');
 
-      for (var c in channels) {
-        if (activeGroupId != null && enabled) {
-          c.notificationsEnabled = (c.groupId == activeGroupId);
-        } else {
-          c.notificationsEnabled = false;
+        for (var c in channels) {
+          if (activeGroupId != null && enabled) {
+            c.notificationsEnabled = (c.groupId == activeGroupId);
+          } else {
+            c.notificationsEnabled = false;
+          }
         }
+        _safeChannelsRefresh();
+      } catch (e) {
+        debugPrint("⚠️ [WalkieChannelController] channelChangedHandler error: $e");
       }
-      channels.refresh();
     };
     socket.on('walkie_notification_channel_changed', _channelChangedHandler);
   }
@@ -149,9 +143,158 @@ class WalkieChannelController extends GetxController {
       socket.off('walkie_speaker_stopped', _speakerStoppedHandler);
       _speakerStoppedHandler = null;
     }
+    if (_channelSpeakerUpdateHandler != null) {
+      socket.off('walkie_channel_speaker_update', _channelSpeakerUpdateHandler);
+      _channelSpeakerUpdateHandler = null;
+    }
+    if (_inviteHandler != null) {
+      socket.off('walkie_invite', _inviteHandler);
+      _inviteHandler = null;
+    }
     if (_channelChangedHandler != null) {
       socket.off('walkie_notification_channel_changed', _channelChangedHandler);
       _channelChangedHandler = null;
+    }
+  }
+
+  void subscribeChannelUpdates() {
+    try {
+      final socket = GroupWalkieService.instance.socket;
+      if (socket != null && socket.connected && channels.isNotEmpty) {
+        final groupIds = channels.map((c) => c.groupId).toList();
+        socket.emit('subscribe_channel_updates', {'groupIds': groupIds});
+        debugPrint("📡 [WalkieChannelController] Emitted subscribe_channel_updates: $groupIds");
+      }
+    } catch (e) {
+      debugPrint("⚠️ [WalkieChannelController] subscribeChannelUpdates error: $e");
+    }
+  }
+
+  void unsubscribeChannelUpdates() {
+    try {
+      final socket = GroupWalkieService.instance.socket;
+      if (socket != null && socket.connected && channels.isNotEmpty) {
+        final groupIds = channels.map((c) => c.groupId).toList();
+        socket.emit('unsubscribe_channel_updates', {'groupIds': groupIds});
+      }
+    } catch (_) {}
+  }
+
+  void onSpeakerActiveFromSocket(dynamic rawData) {
+    if (rawData == null) return;
+    try {
+      final Map<String, dynamic> data = rawData is Map
+          ? Map<String, dynamic>.from(rawData)
+          : (rawData is String ? jsonDecode(rawData) : {});
+
+      final gIdStr = (data['groupId'] ??
+              data['group_id'] ??
+              data['channelId'] ??
+              data['id'])
+          ?.toString();
+      if (gIdStr == null || gIdStr.isEmpty) return;
+
+      final gId = int.tryParse(gIdStr);
+      if (gId == null) return;
+
+      final idx = channels.indexWhere((c) => c.groupId == gId);
+      if (idx != -1) {
+        final parsedSpeakerName = (data['speakerName'] ??
+                data['speaker_name'] ??
+                data['activeSpeakerName'] ??
+                data['name'] ??
+                data['userName'])
+            ?.toString();
+        final parsedSpeakerId = int.tryParse((data['speakerId'] ??
+                data['speaker_id'] ??
+                data['activeSpeakerId'] ??
+                data['userId'])
+            ?.toString() ?? '');
+        final parsedSpeakerImage = (data['speakerImage'] ??
+                data['speaker_image'] ??
+                data['activeSpeakerImage'] ??
+                data['image'] ??
+                data['profile'])
+            ?.toString();
+
+        // Avoid redundant refreshes if state already matches
+        if (channels[idx].isChannelSpeaking &&
+            channels[idx].activeSpeakerName == parsedSpeakerName &&
+            channels[idx].activeSpeakerId == parsedSpeakerId) {
+          return;
+        }
+
+        channels[idx].isChannelSpeaking = true;
+        channels[idx].activeSpeakerName = parsedSpeakerName;
+        channels[idx].activeSpeakerId = parsedSpeakerId;
+        channels[idx].activeSpeakerImage = parsedSpeakerImage;
+        _safeChannelsRefresh();
+        debugPrint(
+            "🎙️ [WalkieChannelController] Real-time active speaker updated: group $gId -> ${channels[idx].activeSpeakerName}");
+      }
+    } catch (e) {
+      debugPrint("⚠️ [WalkieChannelController] onSpeakerActiveFromSocket error: $e");
+    }
+  }
+
+  void onSpeakerStoppedFromSocket(dynamic rawData) {
+    if (rawData == null) return;
+    try {
+      final Map<String, dynamic> data = rawData is Map
+          ? Map<String, dynamic>.from(rawData)
+          : (rawData is String ? jsonDecode(rawData) : {});
+
+      final gIdStr = (data['groupId'] ??
+              data['group_id'] ??
+              data['channelId'] ??
+              data['id'])
+          ?.toString();
+      if (gIdStr == null || gIdStr.isEmpty) return;
+
+      final gId = int.tryParse(gIdStr);
+      if (gId == null) return;
+
+      final idx = channels.indexWhere((c) => c.groupId == gId);
+      if (idx != -1) {
+        // Avoid redundant refreshes if already stopped
+        if (!channels[idx].isChannelSpeaking &&
+            channels[idx].activeSpeakerName == null &&
+            channels[idx].activeSpeakerId == null) {
+          return;
+        }
+
+        channels[idx].isChannelSpeaking = false;
+        channels[idx].activeSpeakerName = null;
+        channels[idx].activeSpeakerId = null;
+        _safeChannelsRefresh();
+        debugPrint(
+            "⏹️ [WalkieChannelController] Real-time speaker stopped: group $gId");
+      }
+    } catch (e) {
+      debugPrint("⚠️ [WalkieChannelController] onSpeakerStoppedFromSocket error: $e");
+    }
+  }
+
+  void onChannelSpeakerUpdateFromSocket(dynamic rawData) {
+    if (rawData == null) return;
+    try {
+      final Map<String, dynamic> data = rawData is Map
+          ? Map<String, dynamic>.from(rawData)
+          : (rawData is String ? jsonDecode(rawData) : {});
+
+      final bool isSpeaking = data['isSpeaking'] == true ||
+          data['isChannelSpeaking'] == true ||
+          data['speaking'] == true ||
+          data['isSpeaking'] == 1 ||
+          data['isChannelSpeaking'] == 1;
+
+      if (isSpeaking) {
+        onSpeakerActiveFromSocket(data);
+      } else {
+        onSpeakerStoppedFromSocket(data);
+      }
+    } catch (e) {
+      debugPrint("⚠️ [WalkieChannelController] onChannelSpeakerUpdateFromSocket error: $e");
     }
   }
 
@@ -202,6 +345,7 @@ class WalkieChannelController extends GetxController {
       }
 
       channels.assignAll(loadedChannels);
+      subscribeChannelUpdates();
     } catch (e) {
       errorMessage.value = e.toString();
       debugPrint("❌ [WalkieChannelController] fetchChannels error: $e");
@@ -233,7 +377,7 @@ class WalkieChannelController extends GetxController {
         c.notificationsEnabled = false;
       }
     }
-    channels.refresh();
+    _safeChannelsRefresh();
 
     // 2. Real-time Socket Event (emit to /groupWalkie namespace if connected)
     final socket = GroupWalkieService.instance.socket;
@@ -260,7 +404,7 @@ class WalkieChannelController extends GetxController {
           c.notificationsEnabled = previousStates[c.groupId]!;
         }
       }
-      channels.refresh();
+      _safeChannelsRefresh();
 
       Get.snackbar(
         "Notification Setting",
@@ -299,7 +443,7 @@ class WalkieChannelController extends GetxController {
       for (var c in channels) {
         c.isSelectedChannel = (c.groupId == channel.groupId);
       }
-      channels.refresh();
+      _safeChannelsRefresh();
 
       // 4. Ensure socket is connected and join new channel session
       final selfId = Global.storageServices.get(PrefConst.userId)?.toString();
@@ -347,7 +491,7 @@ class WalkieChannelController extends GetxController {
       for (var c in channels) {
         c.isSelectedChannel = false;
       }
-      channels.refresh();
+      _safeChannelsRefresh();
     } catch (e) {
       debugPrint("❌ [WalkieChannelController] clearActiveChannel error: $e");
     }

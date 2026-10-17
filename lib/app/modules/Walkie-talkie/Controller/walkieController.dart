@@ -140,6 +140,7 @@ class GroupWalkieController extends GetxController {
   final statusColor = Rx<Color>(Colors.orange);
 
   String? currentGroupId;
+  Future<void> Function(Map<String, dynamic> newArgs)? onSwitchGroupRequested;
   Timer? _bannerTimer;
   Timer? _lockCountdownTimer;
   Timer? _speakerWatchdogTimer;
@@ -147,15 +148,22 @@ class GroupWalkieController extends GetxController {
   bool get isTalking => audioState.value == WalkieAudioState.talking;
   bool get isListening => audioState.value == WalkieAudioState.listening;
   bool get hasActiveSpeaker => activeSpeakerId.value.isNotEmpty;
+  String get _safeSelfUserId {
+    final serviceId = GroupWalkieService.instance.selfUserId;
+    if (serviceId != null && serviceId.isNotEmpty) return serviceId.trim();
+    try {
+      final storageId = Global.storageServices.get(PrefConst.userId)?.toString();
+      if (storageId != null) return storageId.trim();
+    } catch (_) {}
+    return '';
+  }
+
   bool get isVoiceActive => isTalking || hasActiveSpeaker;
 
   bool get isRemoteSpeakerActive {
     final activeId = activeSpeakerId.value.trim();
     if (activeId.isEmpty) return false;
-    final selfId = (GroupWalkieService.instance.selfUserId ??
-            Global.storageServices.get(PrefConst.userId)?.toString() ??
-            '')
-        .trim();
+    final selfId = _safeSelfUserId;
     if (selfId.isNotEmpty) {
       if (activeId == selfId) return false;
       final activeNum = int.tryParse(activeId);
@@ -177,9 +185,7 @@ class GroupWalkieController extends GetxController {
   List<WalkieParticipant> get sortedParticipants {
     if (participants.isEmpty) return const [];
     final list = List<WalkieParticipant>.from(participants);
-    final selfId = GroupWalkieService.instance.selfUserId ??
-        Global.storageServices.get(PrefConst.userId)?.toString() ??
-        '';
+    final selfId = _safeSelfUserId;
 
     list.sort((a, b) {
       if (selfId.isNotEmpty) {
@@ -212,6 +218,7 @@ class GroupWalkieController extends GetxController {
     _bannerTimer?.cancel();
     _lockCountdownTimer?.cancel();
     _speakerWatchdogTimer?.cancel();
+    onSwitchGroupRequested = null;
     reset();
     super.onClose();
   }
@@ -251,9 +258,7 @@ class GroupWalkieController extends GetxController {
 
   void setMuteFromService(bool muted) {
     isMuted.value = muted;
-    final selfId = GroupWalkieService.instance.selfUserId ??
-        Global.storageServices.get(PrefConst.userId)?.toString() ??
-        '';
+    final selfId = _safeSelfUserId;
     if (selfId.isNotEmpty) {
       setParticipantMuted(selfId, muted);
     }
@@ -536,10 +541,7 @@ class GroupWalkieController extends GetxController {
     if (audioState.value == WalkieAudioState.talking) {
       audioState.value = WalkieAudioState.listening;
     }
-    final selfId = (GroupWalkieService.instance.selfUserId ??
-            Global.storageServices.get(PrefConst.userId)?.toString() ??
-            '')
-        .trim();
+    final selfId = _safeSelfUserId;
     final activeId = activeSpeakerId.value.trim();
     if (activeId.isNotEmpty && selfId.isNotEmpty) {
       if (activeId == selfId ||

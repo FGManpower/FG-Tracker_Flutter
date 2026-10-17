@@ -4,12 +4,14 @@ import 'package:fgtracker/app/Core/constant/notification_holder.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Walkie-Talkie-Service.dart';
 import 'package:fgtracker/gen/assets.gen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import '../Controller/walkieController.dart';
+import '../Services/walkie_notification_manager.dart';
 import '../../../routes/app_pages.dart';
 
 class WalkieInviteDialog {
@@ -26,35 +28,58 @@ class WalkieInviteDialog {
   }) {
     if (WalkieLaunchTracker.fromWalkieCall) return;
 
-    // Dismiss any existing open dialog to prevent stacking
-    if (Get.isDialogOpen ?? false) {
-      Get.back();
+    // Do not show dialog if user is already connected to this exact group
+    if (GroupWalkieService.instance.currentGroupId != null &&
+        GroupWalkieService.instance.currentGroupId == groupId) {
+      return;
     }
 
-    Get.dialog(
-      Align(
-        alignment: Alignment.topCenter,
-        child: SafeArea(
-          child: Material(
-            color: Colors.transparent,
-            child: _BannerInviteWidget(
-              groupId: groupId,
-              groupName: groupName,
-              speakerName: speakerName,
-              speakerImage: speakerImage,
-              title: title,
-              subtitle: subtitle,
-              location: location,
-              alertTime: alertTime,
-              joinedCount: joinedCount,
+    void openDialog() {
+      if (WalkieLaunchTracker.fromWalkieCall) return;
+      Get.dialog(
+        Align(
+          alignment: Alignment.topCenter,
+          child: SafeArea(
+            child: Material(
+              color: Colors.transparent,
+              child: _BannerInviteWidget(
+                groupId: groupId,
+                groupName: groupName,
+                speakerName: speakerName,
+                speakerImage: speakerImage,
+                title: title,
+                subtitle: subtitle,
+                location: location,
+                alertTime: alertTime,
+                joinedCount: joinedCount,
+              ),
             ),
           ),
         ),
-      ),
-      barrierDismissible: true,
-      barrierColor: Colors.black26, // Subtle soft backdrop
-      useSafeArea: false,
-    );
+        barrierDismissible: true,
+        barrierColor: Colors.black26, // Subtle soft backdrop
+        useSafeArea: false,
+      );
+    }
+
+    // Dismiss any existing open dialog cleanly first
+    if (Get.isDialogOpen ?? false) {
+      Get.back();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        openDialog();
+      });
+    } else {
+      if (WidgetsBinding.instance.schedulerPhase ==
+              SchedulerPhase.persistentCallbacks ||
+          WidgetsBinding.instance.schedulerPhase ==
+              SchedulerPhase.midFrameMicrotasks) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          openDialog();
+        });
+      } else {
+        openDialog();
+      }
+    }
   }
 }
 
@@ -128,7 +153,7 @@ class _BannerInviteWidgetState extends State<_BannerInviteWidget>
   }
 
   Future<void> _navigateToWalkie() async {
-    // Dismiss banner
+    // 1. Dismiss banner cleanly
     if (Get.isDialogOpen ?? false) {
       Get.back();
     }
@@ -137,23 +162,41 @@ class _BannerInviteWidgetState extends State<_BannerInviteWidget>
       FlutterRingtonePlayer().stop();
     } catch (_) {}
 
+    final targetGroupId = widget.groupId;
+    final newArgs = <String, dynamic>{
+      "groupId": targetGroupId,
+      "groupName": widget.groupName,
+      "speakerName": widget.speakerName,
+      "speakerImage": widget.speakerImage,
+      "autoOpened": true,
+    };
+
+    // 2. If GroupWalkieScreen is ALREADY active, switch to target group in-place!
+    if (WalkieNotificationManager.instance.isWalkieScreenActive.value &&
+        Get.isRegistered<GroupWalkieController>()) {
+      final controller = Get.find<GroupWalkieController>();
+      if (controller.onSwitchGroupRequested != null) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          controller.onSwitchGroupRequested?.call(newArgs);
+        });
+        return;
+      }
+    }
+
+    // 3. If not already on GroupWalkieScreen:
     // Leave previous group if connected to a different group
     if (GroupWalkieService.instance.currentGroupId != null &&
-        GroupWalkieService.instance.currentGroupId != widget.groupId) {
+        GroupWalkieService.instance.currentGroupId != targetGroupId) {
       await GroupWalkieService.instance.leaveGroup();
     }
 
-    // Navigate to Group Walkie Screen
-    Get.toNamed(
-      Routes.groupWalkieScreen,
-      arguments: {
-        "groupId": widget.groupId,
-        "groupName": widget.groupName,
-        "speakerName": widget.speakerName,
-        "speakerImage": widget.speakerImage,
-        "autoOpened": true,
-      },
-    );
+    // Navigate to Group Walkie Screen safely after frame
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Get.toNamed(
+        Routes.groupWalkieScreen,
+        arguments: newArgs,
+      );
+    });
   }
 
   void _declineInvite() {
@@ -192,7 +235,7 @@ class _BannerInviteWidgetState extends State<_BannerInviteWidget>
     }
     if (Get.isRegistered<GroupWalkieController>()) {
       final wc = Get.find<GroupWalkieController>();
-      if (wc.participants.isNotEmpty) {
+      if (wc.currentGroupId == widget.groupId && wc.participants.isNotEmpty) {
         return "${wc.participants.length} Joined";
       }
     }

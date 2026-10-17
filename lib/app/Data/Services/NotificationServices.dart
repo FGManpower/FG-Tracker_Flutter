@@ -22,6 +22,8 @@ import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_Walkie-Talkie-Service.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Views/walkie_invite_dialog.dart';
+import 'package:fgtracker/app/modules/Walkie-talkie/Controller/walkieController.dart';
+import 'package:fgtracker/app/modules/Walkie-talkie/Services/walkie_notification_manager.dart';
 import 'package:fgtracker/app/Core/constant/notification_holder.dart';
 import 'package:walkie_custom_notification/walkie_custom_notification.dart';
 
@@ -273,7 +275,15 @@ class firebaseNotificationServices {
       "autoOpened": true,
     };
 
-    if (Get.currentRoute == Routes.groupWalkieScreen) {
+    if (Get.currentRoute == Routes.groupWalkieScreen ||
+        WalkieNotificationManager.instance.isWalkieScreenActive.value) {
+      if (Get.isRegistered<GroupWalkieController>()) {
+        final wc = Get.find<GroupWalkieController>();
+        if (wc.onSwitchGroupRequested != null) {
+          wc.onSwitchGroupRequested!(args);
+          return;
+        }
+      }
       if (GroupWalkieService.instance.currentGroupId != null &&
           GroupWalkieService.instance.currentGroupId != groupId) {
         await GroupWalkieService.instance.leaveGroup();

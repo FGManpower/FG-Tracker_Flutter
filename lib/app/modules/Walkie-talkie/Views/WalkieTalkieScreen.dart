@@ -16,6 +16,7 @@ import 'package:fgtracker/app/modules/Walkie-talkie/widgets/group_info_bottom_sh
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -42,6 +43,23 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
     with TickerProviderStateMixin, WidgetsBindingObserver {
   final controller = Get.put(GroupWalkieController());
   Map<String, dynamic>? args;
+  bool _isPlaceholderImage(String url) {
+    final lower = url.toLowerCase().trim();
+    return lower.isEmpty ||
+        lower == 'null' ||
+        lower == 'undefined' ||
+        lower.endsWith('/null') ||
+        lower.contains('default-profile') ||
+        lower.contains('default_profile') ||
+        lower.contains('default-avatar') ||
+        lower.contains('default_avatar') ||
+        lower.contains('default-group') ||
+        lower.contains('default_group') ||
+        lower.contains('default.png') ||
+        lower.contains('default-image') ||
+        lower.contains('default_image');
+  }
+
   String get _groupProfileUrl {
     final profile = (
         args?['groupProfile'] ??
@@ -49,7 +67,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
             ''
     ).toString().trim();
 
-    if (profile.isEmpty || profile.toLowerCase() == 'null') {
+    if (_isPlaceholderImage(profile)) {
       return '';
     }
 
@@ -68,6 +86,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
   bool _hasLeft = false;
   bool _isDisposed = false;
   bool _pttInProgress = false;
+  bool _isStopping = false;
   bool _wantsToTalk = false;
   final bool _allowPop = false;
 
@@ -88,12 +107,95 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
   late final Worker _rippleWorker;
   late final Worker _pulseWorker;
 
+  void _safeSetState(VoidCallback fn) {
+    if (!mounted || _isDisposed) return;
+    if (WidgetsBinding.instance.schedulerPhase ==
+            SchedulerPhase.persistentCallbacks ||
+        WidgetsBinding.instance.schedulerPhase ==
+            SchedulerPhase.midFrameMicrotasks) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && !_isDisposed) {
+          setState(fn);
+        }
+      });
+    } else {
+      setState(fn);
+    }
+  }
+
+  Future<void> _handleGroupSwitch(Map<String, dynamic> newArgs) async {
+    if (_isDisposed || !mounted) return;
+    final newGroupId = newArgs['groupId']?.toString() ?? '';
+    if (newGroupId.isEmpty) return;
+
+    log('🔄 Seamlessly switching GroupWalkieScreen from ${controller.currentGroupId} to $newGroupId');
+
+    // 1. Leave the old group's WebRTC session safely
+    _hasLeft = true;
+    try {
+      if (_rippleController.isAnimating) _rippleController.stop();
+      if (_pulseController.isAnimating) _pulseController.stop();
+      if (_lockHintController.isAnimating) _lockHintController.stop();
+    } catch (_) {}
+
+    await GroupWalkieService.instance.leaveGroup();
+    controller.reset();
+    _hasLeft = false;
+
+    // 2. Update screen arguments and state
+    args = Map<String, dynamic>.from(newArgs);
+
+    // Resolve group details if available in GroupController
+    if (Get.isRegistered<GroupController>()) {
+      final gc = Get.find<GroupController>();
+      final match =
+          gc.groupData.firstWhereOrNull((g) => g.id?.toString() == newGroupId);
+      if (match != null) {
+        args!['groupName'] =
+            match.groupName ?? args!['groupName'] ?? 'Walkie Group';
+        args!['groupDesc'] = match.groupDesc ?? '';
+        args!['groupCode'] = match.groupCode ?? '';
+        args!['groupProfile'] =
+            args!['groupProfile'] ?? match.groupProfile ?? '';
+      }
+    }
+
+    _safeSetState(() {});
+
+    // 3. Setup controller for new group
+    controller.setCurrentGroup(newGroupId);
+    controller.setConnected(
+        GroupWalkieService.instance.socket?.connected == true);
+
+    final myId =
+        Global.storageServices.get(PrefConst.userId)?.toString() ?? '';
+    final myName =
+        Global.storageServices.get(PrefConst.userName)?.toString() ?? 'You';
+    final myImage =
+        Global.storageServices.get(PrefConst.profileImage)?.toString() ?? '';
+    if (myId.isNotEmpty) {
+      controller.addOrUpdateParticipant(
+        WalkieParticipant(
+          userId: myId,
+          name: myName,
+          image: myImage,
+          isSpeaking: false,
+          isListening: true,
+        ),
+      );
+    }
+
+    // 4. Start progressive initialization for new group
+    await _runProgressiveInitialization(newGroupId);
+  }
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     log('initState() initiated');
     WalkieNotificationManager.instance.setWalkieScreenActive(true);
+    controller.onSwitchGroupRequested = _handleGroupSwitch;
     try {
       WakelockPlus.enable();
     } catch (_) {}
@@ -161,30 +263,31 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
       final groupName = args?['groupName']?.toString() ?? 'Walkie Group';
       log('Configuring active session for group ID: $groupId ($groupName)');
       controller.setCurrentGroup(groupId);
-      controller
-          .setConnected(GroupWalkieService.instance.socket?.connected == true);
-
-      final myId =
-          Global.storageServices.get(PrefConst.userId)?.toString() ?? '';
-      final myName =
-          Global.storageServices.get(PrefConst.userName)?.toString() ?? 'You';
-      final myImage =
-          Global.storageServices.get(PrefConst.profileImage)?.toString() ?? '';
-      if (myId.isNotEmpty) {
-        controller.addOrUpdateParticipant(
-          WalkieParticipant(
-            userId: myId,
-            name: myName,
-            image: myImage,
-            isSpeaking: false,
-            isListening: true,
-          ),
-        );
-      }
 
       // Stage 1: Immediate UI rendering, then schedule asynchronous progressive initialization
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!_isDisposed && mounted) {
+          controller.setConnected(
+              GroupWalkieService.instance.socket?.connected == true);
+
+          final myId =
+              Global.storageServices.get(PrefConst.userId)?.toString() ?? '';
+          final myName =
+              Global.storageServices.get(PrefConst.userName)?.toString() ?? 'You';
+          final myImage =
+              Global.storageServices.get(PrefConst.profileImage)?.toString() ?? '';
+          if (myId.isNotEmpty) {
+            controller.addOrUpdateParticipant(
+              WalkieParticipant(
+                userId: myId,
+                name: myName,
+                image: myImage,
+                isSpeaking: false,
+                isListening: true,
+              ),
+            );
+          }
+
           _runProgressiveInitialization(groupId);
         }
       });
@@ -246,6 +349,9 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
     _saveTrialRemainingSeconds();
     WalkieLaunchTracker.fromWalkieCall = false;
     WalkieNotificationManager.instance.setWalkieScreenActive(false);
+    if (controller.onSwitchGroupRequested == _handleGroupSwitch) {
+      controller.onSwitchGroupRequested = null;
+    }
     try {
       WakelockPlus.disable();
     } catch (_) {}
@@ -522,14 +628,20 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
   }
 
   Future<void> _stopTalking() async {
-    log('Stopping audio transmission and releasing lock state...');
-    _wantsToTalk = false;
-    controller.setPressed(false);
-    _lockHintController.stop();
-    _lockHintController.reset();
-    controller.resetSelfLock();
-    _pttInProgress = false;
-    await GroupWalkieService.instance.stopTalking();
+    if (_isStopping) return;
+    _isStopping = true;
+    try {
+      log('Stopping audio transmission and releasing lock state...');
+      _wantsToTalk = false;
+      controller.setPressed(false);
+      _lockHintController.stop();
+      _lockHintController.reset();
+      controller.resetSelfLock();
+      _pttInProgress = false;
+      await GroupWalkieService.instance.stopTalking();
+    } finally {
+      _isStopping = false;
+    }
   }
 
   Future<void> _unlockAndStop() async {
@@ -897,7 +1009,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
   Future<void> _loadGroupMembersFromDb(String groupId) async {
     if (groupId.isEmpty) return;
     try {
-      if (mounted) setState(() => _isMembersLoading = true);
+      _safeSetState(() => _isMembersLoading = true);
       final res = await GroupRepo.getMemberData(groupId);
       if (res.status == true &&
           res.memberData != null &&
@@ -933,15 +1045,20 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
           }
         }
         if (updated) {
-          controller.participants.refresh();
+          if (WidgetsBinding.instance.schedulerPhase ==
+              SchedulerPhase.persistentCallbacks) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              controller.participants.refresh();
+            });
+          } else {
+            controller.participants.refresh();
+          }
         }
       }
     } catch (e) {
       log('Error loading members from DB: $e');
     } finally {
-      if (mounted) {
-        setState(() => _isMembersLoading = false);
-      }
+      _safeSetState(() => _isMembersLoading = false);
     }
   }
 
@@ -959,7 +1076,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
         _trialRemainingSeconds = 3600;
         await prefs.setInt('walkie_trial_remaining_seconds_$_userId', 3600);
       }
-      if (mounted) setState(() {});
+      _safeSetState(() {});
 
       // Sync with overview backend API if reachable
       try {
@@ -1027,7 +1144,7 @@ class _GroupWalkieScreenState extends State<GroupWalkieScreen>
           _trialRemainingSeconds = 0;
         }
 
-        if (mounted) setState(() {});
+        _safeSetState(() {});
       } catch (e) {
         log('Backend overview check skipped: $e');
       }

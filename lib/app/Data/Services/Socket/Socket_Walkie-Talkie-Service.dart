@@ -8,6 +8,7 @@ import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/constant/urls.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Controller/walkieController.dart';
+import 'package:fgtracker/app/modules/Walkie-talkie/Controller/walkie_channel_controller.dart';
 import 'package:fgtracker/app/modules/Walkie-talkie/Views/walkie_invite_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
@@ -47,7 +48,6 @@ class GroupWalkieService {
   Timer? _pingTimer;
   StreamSubscription? _devicesSub;
   StreamSubscription? _interruptionSub;
-  Timer? _deviceCheckTimer;
   bool _isCheckingDevices = false;
 
   String? _bluetoothDeviceId;
@@ -135,6 +135,9 @@ class GroupWalkieService {
         _offeredTo.clear();
         _makingOffer.clear();
         socket?.emit('join_walkie_session', {'groupId': _currentGroupId});
+      }
+      if (Get.isRegistered<WalkieChannelController>()) {
+        Get.find<WalkieChannelController>().subscribeChannelUpdates();
       }
     });
 
@@ -824,13 +827,6 @@ class GroupWalkieService {
         }
       });
 
-      _deviceCheckTimer?.cancel();
-      _deviceCheckTimer =
-          Timer.periodic(const Duration(milliseconds: 2500), (_) {
-        if (!_isDisposed) {
-          _checkAudioDevices();
-        }
-      });
       await _checkAudioDevices(isInitial: true);
     } catch (e) {
       _log('❌ _listenAudioDevices error: $e');
@@ -875,12 +871,23 @@ class GroupWalkieService {
       'walkie_invite_rejected',
       'walkie_invite_cancelled',
       'walkie_peer_declined',
+      'walkie_channel_speaker_update',
     ]) {
       socket?.off(e);
     }
 
+    socket?.on('walkie_channel_speaker_update', (data) {
+      if (data == null) return;
+      if (Get.isRegistered<WalkieChannelController>()) {
+        Get.find<WalkieChannelController>().onChannelSpeakerUpdateFromSocket(data);
+      }
+    });
+
     socket?.on('walkie_invite', (data) {
       if (data == null) return;
+      if (Get.isRegistered<WalkieChannelController>()) {
+        Get.find<WalkieChannelController>().onSpeakerActiveFromSocket(data);
+      }
       final rawJoinedCount = data['joinedMemberCount'] ??
           data['joinedCount'] ??
           data['activeMemberCount'] ??
@@ -892,6 +899,13 @@ class GroupWalkieService {
 
       final speakerId = (data['speakerId'] ?? data['speaker_id'])?.toString();
       if (speakerId != null && _selfUserId != null && speakerId == _selfUserId) {
+        return;
+      }
+
+      final inviteGroupId = (data['groupId'] ?? data['group_id'])?.toString();
+      if (inviteGroupId != null &&
+          _currentGroupId != null &&
+          inviteGroupId == _currentGroupId) {
         return;
       }
 
@@ -929,6 +943,7 @@ class GroupWalkieService {
           (data is List ? data : []);
 
       final newParticipants = <WalkieParticipant>[];
+      final candidatePeerIds = <String>[];
 
       for (final p in peers) {
         var id = '';
@@ -961,19 +976,23 @@ class GroupWalkieService {
           ),
         );
 
-        if (_offeredTo.contains(id)) continue;
-        _offeredTo.add(id);
-        _createPeer(id).then((_) async {
-          await Future.delayed(const Duration(milliseconds: 60));
-          await _createOfferTo(id);
-        });
+        if (!_offeredTo.contains(id)) {
+          candidatePeerIds.add(id);
+        }
       }
 
+      // 1. Immediately update UI with all participants in one reactive batch
+      if (Get.isRegistered<GroupWalkieController>() && newParticipants.isNotEmpty) {
+        Get.find<GroupWalkieController>().addOrUpdateParticipantsBatch(newParticipants);
+      }
+
+      // 2. Identify active speaker if present and prioritize
+      String? activeSpeakerId;
       if (data is Map) {
         final activeSpeaker = data['activeSpeaker'] ??
             data['currentSpeaker'] ??
             data['speaker'];
-        final activeSpeakerId = (data['activeSpeakerId'] ??
+        activeSpeakerId = (data['activeSpeakerId'] ??
                 data['speakerId'] ??
                 (activeSpeaker is Map ? activeSpeaker['userId'] : null))
             ?.toString();
@@ -995,12 +1014,12 @@ class GroupWalkieService {
               speakerImage: speakerImage,
             );
           }
-          await _ensurePlaybackPath();
         }
       }
 
-      if (Get.isRegistered<GroupWalkieController>() && newParticipants.isNotEmpty) {
-        Get.find<GroupWalkieController>().addOrUpdateParticipantsBatch(newParticipants);
+      // 3. Stagger WebRTC connection creations to prevent iOS thread/FD exhaustion (up to 100 users)
+      if (candidatePeerIds.isNotEmpty) {
+        _queuePeerOffers(candidatePeerIds, prioritizeUserId: activeSpeakerId);
       }
     });
 
@@ -1145,9 +1164,7 @@ class GroupWalkieService {
         }
       }
 
-      await _ensurePlaybackPath();
       await _enableMic(true);
-      await _kickLocalSenders();
 
       _logPeerSnapshot('after PTT_GRANTED');
 
@@ -1200,14 +1217,15 @@ class GroupWalkieService {
 
     socket?.on('walkie_speaker_active', (data) async {
       if (_isDisposed || data == null) return;
+      if (Get.isRegistered<WalkieChannelController>()) {
+        Get.find<WalkieChannelController>().onSpeakerActiveFromSocket(data);
+      }
       final gId = data is Map ? data['groupId']?.toString() : null;
       if (gId != null &&
           _currentGroupId != null &&
           gId != _currentGroupId) {
         return;
       }
-
-      await _ensurePlaybackPath();
 
       if (Get.isRegistered<GroupWalkieController>()) {
         Get.find<GroupWalkieController>().onSpeakerActive(
@@ -1220,6 +1238,9 @@ class GroupWalkieService {
 
     socket?.on('ptt_release', (data) {
       if (_isDisposed) return;
+      if (Get.isRegistered<WalkieChannelController>()) {
+        Get.find<WalkieChannelController>().onSpeakerStoppedFromSocket(data);
+      }
       final gId = data is Map ? data['groupId']?.toString() : null;
       if (gId != null &&
           _currentGroupId != null &&
@@ -1233,6 +1254,9 @@ class GroupWalkieService {
 
     socket?.on('walkie_speaker_stopped', (data) {
       if (_isDisposed) return;
+      if (Get.isRegistered<WalkieChannelController>()) {
+        Get.find<WalkieChannelController>().onSpeakerStoppedFromSocket(data);
+      }
       final gId = data is Map ? data['groupId']?.toString() : null;
       if (gId != null &&
           _currentGroupId != null &&
@@ -1401,27 +1425,31 @@ class GroupWalkieService {
     if (audioTracks.isEmpty) return;
     final track = audioTracks.first;
 
+    final futures = <Future>[];
     for (final entry in _peers.entries) {
-      try {
-        final pc = entry.value;
-        final senders = await pc.getSenders();
-        bool hasAudioSender = false;
-        for (final s in senders) {
-          if (s.track == null || s.track?.kind == 'audio') {
-            await s.replaceTrack(track);
-            s.track?.enabled = track.enabled;
-            hasAudioSender = true;
+      futures.add(() async {
+        try {
+          final pc = entry.value;
+          final senders = await pc.getSenders();
+          bool hasAudioSender = false;
+          for (final s in senders) {
+            if (s.track == null || s.track?.kind == 'audio') {
+              await s.replaceTrack(track);
+              s.track?.enabled = track.enabled;
+              hasAudioSender = true;
+            }
           }
+          if (!hasAudioSender) {
+            await pc.addTrack(track, _localStream!);
+            _createOfferTo(entry.key);
+          }
+          _log('Attached local track to peer ${entry.key}');
+        } catch (e) {
+          _log('⚠️ attachLocalTrack ${entry.key}: $e');
         }
-        if (!hasAudioSender) {
-          await pc.addTrack(track, _localStream!);
-          _createOfferTo(entry.key);
-        }
-        _log('Attached local track to peer ${entry.key}');
-      } catch (e) {
-        _log('⚠️ attachLocalTrack ${entry.key}: $e');
-      }
+      }());
     }
+    await Future.wait(futures);
   }
 
   Future<RTCPeerConnection?> _createPeer(String remoteUserId) async {
@@ -1472,8 +1500,6 @@ class GroupWalkieService {
         await stream.addTrack(event.track);
         _remoteStreams[remoteUserId] = stream;
       }
-
-      await _ensurePlaybackPath();
     };
 
     pc.onIceCandidate = (c) {
@@ -1498,10 +1524,6 @@ class GroupWalkieService {
 
     pc.onIceConnectionState = (state) async {
       _log('🧊 ICE $remoteUserId => $state');
-      if (state ==
-          RTCIceConnectionState.RTCIceConnectionStateConnected) {
-        await _ensurePlaybackPath();
-      }
       if (state == RTCIceConnectionState.RTCIceConnectionStateFailed) {
         _log('🧊 ICE failed $remoteUserId — restartIce');
         try {
@@ -1512,10 +1534,7 @@ class GroupWalkieService {
 
     pc.onConnectionState = (state) async {
       _log('📡 Peer $remoteUserId state: $state');
-      if (state == RTCPeerConnectionState.RTCPeerConnectionStateConnected) {
-        await _ensurePlaybackPath();
-        await _kickLocalSenders();
-      } else if (state ==
+      if (state ==
           RTCPeerConnectionState.RTCPeerConnectionStateFailed ||
           state == RTCPeerConnectionState.RTCPeerConnectionStateClosed) {
         await _closePeer(remoteUserId);
@@ -1532,6 +1551,49 @@ class GroupWalkieService {
     }
 
     return pc;
+  }
+
+  Future<void> _queuePeerOffers(
+    List<String> peerIds, {
+    String? prioritizeUserId,
+  }) async {
+    if (_isDisposed || peerIds.isEmpty) return;
+
+    final orderedIds = List<String>.from(peerIds);
+    if (prioritizeUserId != null && orderedIds.contains(prioritizeUserId)) {
+      orderedIds.remove(prioritizeUserId);
+      orderedIds.insert(0, prioritizeUserId);
+    }
+
+    // Process in batches of 2 with 80ms interval to prevent iOS platform thread/socket starvation
+    const batchSize = 2;
+    for (int i = 0; i < orderedIds.length; i += batchSize) {
+      if (_isDisposed) break;
+      final batch = orderedIds.sublist(
+        i,
+        (i + batchSize > orderedIds.length) ? orderedIds.length : i + batchSize,
+      );
+
+      final futures = batch.map((id) async {
+        if (_isDisposed) return;
+        if (_offeredTo.contains(id)) return;
+        _offeredTo.add(id);
+        try {
+          await _createPeer(id);
+          await Future.delayed(const Duration(milliseconds: 40));
+          if (!_isDisposed) {
+            await _createOfferTo(id);
+          }
+        } catch (e) {
+          _log('⚠️ Staggered peer creation error for $id: $e');
+        }
+      });
+
+      await Future.wait(futures);
+      if (i + batchSize < orderedIds.length && !_isDisposed) {
+        await Future.delayed(const Duration(milliseconds: 80));
+      }
+    }
   }
 
   Future<void> _createOfferTo(String remoteUserId) async {
@@ -1708,40 +1770,7 @@ class GroupWalkieService {
 
     await _setMicMuteHelper(!actual);
 
-    for (final pc in _peers.values) {
-      try {
-        final senders = await pc.getSenders();
-        for (final s in senders) {
-          if (s.track?.kind == 'audio') {
-            s.track!.enabled = actual;
-          }
-        }
-      } catch (_) {}
-    }
-
     _log('🎤 TX mic => $actual (requested=$enabled muted=$_isMuted talking=$_isTalking)');
-  }
-
-  Future<void> _kickLocalSenders() async {
-    if (_localStream == null) return;
-    final audioTracks = _localStream!.getAudioTracks();
-    if (audioTracks.isEmpty) return;
-    final track = audioTracks.first;
-
-    for (final entry in _peers.entries) {
-      try {
-        final senders = await entry.value.getSenders();
-        for (final s in senders) {
-          if (s.track == null || s.track?.kind == 'audio') {
-            await s.replaceTrack(track);
-            s.track?.enabled = track.enabled;
-          }
-        }
-        _log('🚀 kick sender -> peer ${entry.key} enabled=${track.enabled}');
-      } catch (e) {
-        _log('⚠️ kick sender ${entry.key}: $e');
-      }
-    }
   }
 
   Future<bool> joinGroup(String groupId) async {
@@ -1883,14 +1912,6 @@ class GroupWalkieService {
       return false;
     }
 
-    await _ensurePlaybackPath();
-
-    if (_talkSessionId != currentSession) {
-      _log('startTalking cancelled while ensuring playback path');
-      await _enableMic(false);
-      return false;
-    }
-
     _logPeerSnapshot('before ptt_request');
 
     if (_peers.isEmpty) {
@@ -1916,7 +1937,6 @@ class GroupWalkieService {
       socket?.emit('ptt_release', payload);
       socket?.emit('walkie_speaker_stopped', payload);
     }
-    await _ensurePlaybackPath();
     if (Get.isRegistered<GroupWalkieController>()) {
       Get.find<GroupWalkieController>().stopTalking();
     }
@@ -1941,7 +1961,6 @@ class GroupWalkieService {
       }
     } else if (_isTalking) {
       await _enableMic(true);
-      await _kickLocalSenders();
     }
 
     final mutePayload = {
@@ -1998,7 +2017,6 @@ class GroupWalkieService {
   Future<void> debugForceHear() async {
     _logPeerSnapshot('debugForceHear');
     await _ensurePlaybackPath(forceSession: true);
-    await _kickLocalSenders();
     if (_isTalking) await _enableMic(true);
   }
 
@@ -2036,8 +2054,6 @@ class GroupWalkieService {
     _streamCompleter = null;
     _audioSessionReady = false;
 
-    _deviceCheckTimer?.cancel();
-    _deviceCheckTimer = null;
     await _devicesSub?.cancel();
     _devicesSub = null;
     await _interruptionSub?.cancel();
