@@ -100,7 +100,7 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     try {
       await ConnectycubeFlutterCallKit.showCallNotification(
         CallEvent(
-          sessionId: callData('session_id'),
+          sessionId: message.data['session_id'].toString(),
           callerName: callData['groupName'],
           callType: callData['isVideo'] == true ? 1 : 0,
           opponentsIds: {int.parse(callData['callerId'])},
@@ -142,9 +142,8 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
         message.data['activeMemberCount'] ??
         message.data['totalJoinedMembers'] ??
         message.data['membersJoined'];
-    final int? joinedCount = rawJoinedCount != null
-        ? int.tryParse(rawJoinedCount.toString())
-        : null;
+    final int? joinedCount =
+        rawJoinedCount != null ? int.tryParse(rawJoinedCount.toString()) : null;
 
     final groupId = (message.data['groupId'] ??
             message.data['group_id'] ??
@@ -161,10 +160,9 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
             message.data['name'] ??
             'Someone')
         .toString();
-    final speakerImage = (message.data['speakerImage'] ??
-            message.data['speaker_image'] ??
-            '')
-        .toString();
+    final speakerImage =
+        (message.data['speakerImage'] ?? message.data['speaker_image'] ?? '')
+            .toString();
 
     try {
       await firebaseNotificationServices.showWalkieNotification(
@@ -209,7 +207,6 @@ Future<void> onCallRejectedWhenTerminated(CallEvent event) async {
       data = Map<String, dynamic>.from(rawUserInfo);
     }
   }
-
 
   final callId = int.tryParse(data['callId'].toString());
   if (callId == null) return;
