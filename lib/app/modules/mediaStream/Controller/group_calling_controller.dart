@@ -150,16 +150,15 @@ class GroupCallingController extends GetxController {
 
   void _bindServiceCallbacks() {
     final svc = Socket_GroupCallService.instance;
+
+    // Trigger sync when remote stream arrives or participant list updates
     svc.onParticipantsUpdated = _syncParticipants;
     svc.onParticipantJoined = _onParticipantJoined;
     svc.onParticipantLeft = _onParticipantLeft;
     svc.onCallEnded = _onRemoteCallEnded;
     svc.onParticipantRejected = _onParticipantRejected;
     svc.onParticipantMuteChanged = _onParticipantMuteChanged;
-
-    // Completely re-sync to free up or block video slots in real time
     svc.onParticipantCameraChanged = (uid, state) => _syncParticipants();
-
     svc.onParticipantsRosterUpdated = _onParticipantsRosterUpdated;
 
     svc.onScreenShareStarted = (userId) {
@@ -630,8 +629,7 @@ class GroupCallingController extends GetxController {
     }
   }
 
-  /// Syncs UI participants dynamically. Solves Blank Screens by ensuring renderers
-  /// are cached correctly. Auto-forces camera off if max limit reached on join.
+  /// Syncs UI participants and safely binds WebRTC Stream track objects.
   void _syncParticipants() {
     final svc = Socket_GroupCallService.instance;
     final local = activeParticipants.firstWhereOrNull((p) => p.isLocal);
@@ -639,7 +637,6 @@ class GroupCallingController extends GetxController {
     final seen = <String>{};
 
     final remoteIds = svc.connectedRemoteIds;
-    int remoteVideoCount = 0;
 
     for (final userId in remoteIds) {
       if (userId.isEmpty) continue;
@@ -651,18 +648,17 @@ class GroupCallingController extends GetxController {
       final name = svc.getParticipantName(userId);
       final image = svc.getParticipantProfileImage(userId);
       final muted = svc.getParticipantMuted(userId);
-      final remoteCamState = svc.remoteCameraStates[userId] ?? true;
 
-      // Track how many remote users currently have their video on
-      if (remoteCamState) remoteVideoCount++;
+      // Determine camera state safely (default to track existence if unknown)
+      final hasVideoTrack = renderer?.srcObject?.getVideoTracks().isNotEmpty == true;
+      final remoteCamState = svc.remoteCameraStates[userId] ?? hasVideoTrack;
 
       if (existing != null && !existing.isLocal) {
         existing.name = name;
         existing.profileImage = image;
 
-        // FIXED: Safe Renderer Sync. Only reassign if the renderer is genuinely new.
-        // This stops UI rebuild destruction preventing "Blank Screens".
-        if (renderer != null && existing.renderer != renderer) {
+        // FIXED: Cache renderer and ensure srcObject stream is bound
+        if (renderer != null) {
           existing.renderer = renderer;
           existing.stream = renderer.srcObject;
         }
@@ -686,15 +682,6 @@ class GroupCallingController extends GetxController {
           )..isMuted.value = muted,
         );
       }
-    }
-
-    // ENFORCE LIMIT ON JOIN: If local user joins with video ON but the room is full
-    if (local != null && local.isVideoOn.value && remoteVideoCount >= maxAllowedVideos) {
-      local.isVideoOn.value = false;
-      isVideoOn.value = false;
-      svc.localStream?.getVideoTracks().forEach((t) => t.enabled = false);
-      svc.emitCameraChange(isVideoOn: false);
-      Utils().fluttertoast("Maximum video limit ($maxAllowedVideos) reached. Your camera joined disabled.");
     }
 
     activeParticipants
@@ -724,22 +711,20 @@ class GroupCallingController extends GetxController {
   void toggleCamera() {
     if (!isVideo || isScreenSharing.value) return;
 
-    // LIMIT CHECK: Prevent turning ON if slots are full
+    // Check 4-video limit before allowing turn ON
     if (!isVideoOn.value) {
-      final remoteVideoCount = activeParticipants.where((p) => !p.isLocal && p.isVideoOn.value).length;
-      if (remoteVideoCount >= maxAllowedVideos) {
+      final activeVideoCount = activeParticipants.where((p) => p.isVideoOn.value).length;
+      if (activeVideoCount >= maxAllowedVideos) {
         Utils().fluttertoast("Sorry, camera access is currently unavailable. Please try again later.");
-        return; // Block the action completely
+        return;
       }
     }
 
-    // Process toggle
     isVideoOn.value = !isVideoOn.value;
     Socket_GroupCallService.instance.localStream?.getVideoTracks().forEach((t) => t.enabled = isVideoOn.value);
     activeParticipants.firstWhereOrNull((p) => p.isLocal)?.isVideoOn.value = isVideoOn.value;
     Socket_GroupCallService.instance.emitCameraChange(isVideoOn: isVideoOn.value);
 
-    // Re-sync to accurately update counts dynamically
     _syncParticipants();
   }
 

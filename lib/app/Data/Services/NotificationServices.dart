@@ -26,7 +26,8 @@ import 'package:fgtracker/app/Core/constant/notification_holder.dart';
 import 'package:walkie_custom_notification/walkie_custom_notification.dart';
 
 @pragma('vm:entry-point')
-void notificationTapBackground(NotificationResponse notificationResponse) async {
+void notificationTapBackground(
+    NotificationResponse notificationResponse) async {
   final action = (notificationResponse.actionId ?? '').toUpperCase();
   if (action == firebaseNotificationServices.walkieCancelActionId ||
       action == firebaseNotificationServices.walkieDeclineActionId ||
@@ -69,7 +70,8 @@ class firebaseNotificationServices {
   static const String walkieCategoryIdentifier = 'walkie_invite_category';
 
   static final Map<String, int> _recentWalkieEvents = <String, int>{};
-  static bool isDuplicateWalkieEvent(String eventKey, {int debounceSeconds = 3}) {
+  static bool isDuplicateWalkieEvent(String eventKey,
+      {int debounceSeconds = 3}) {
     final now = DateTime.now().millisecondsSinceEpoch;
     _recentWalkieEvents.removeWhere((_, time) => now - time > 15000);
     if (_recentWalkieEvents.containsKey(eventKey)) {
@@ -151,11 +153,15 @@ class firebaseNotificationServices {
       try {
         if (payload.payload != null && payload.payload!.isNotEmpty) {
           final data = jsonDecode(payload.payload!);
-          final groupId = (data['groupId'] ?? data['group_id'] ?? '')?.toString();
+          final groupId =
+              (data['groupId'] ?? data['group_id'] ?? '')?.toString();
           if (groupId != null && groupId.isNotEmpty) {
             final myId = GroupWalkieService.instance.selfUserId ??
-                Global.storageServices.get(PrefConst.userId)?.toString() ?? '';
-            final myName = Global.storageServices.get(PrefConst.userName)?.toString() ?? 'A member';
+                Global.storageServices.get(PrefConst.userId)?.toString() ??
+                '';
+            final myName =
+                Global.storageServices.get(PrefConst.userName)?.toString() ??
+                    'A member';
             GroupWalkieService.instance.socket?.emit('decline_walkie_invite', {
               'groupId': groupId,
               'userId': myId,
@@ -188,10 +194,20 @@ class firebaseNotificationServices {
           await plugin.cancel(payload.id ?? 502);
           await plugin.cancel(502);
 
-          final groupId = (data['groupId'] ?? data['group_id'] ?? '')?.toString() ?? '';
-          final groupName = (data['groupName'] ?? data['group_name'] ?? 'Walkie-Talkie')?.toString() ?? 'Walkie-Talkie';
-          final speakerName = (data['speakerName'] ?? data['speaker_name'] ?? 'Someone')?.toString() ?? 'Someone';
-          final speakerImage = (data['speakerImage'] ?? data['speaker_image'] ?? '')?.toString() ?? '';
+          final groupId =
+              (data['groupId'] ?? data['group_id'] ?? '')?.toString() ?? '';
+          final groupName =
+              (data['groupName'] ?? data['group_name'] ?? 'Walkie-Talkie')
+                      ?.toString() ??
+                  'Walkie-Talkie';
+          final speakerName =
+              (data['speakerName'] ?? data['speaker_name'] ?? 'Someone')
+                      ?.toString() ??
+                  'Someone';
+          final speakerImage =
+              (data['speakerImage'] ?? data['speaker_image'] ?? '')
+                      ?.toString() ??
+                  '';
 
           if (groupId.isNotEmpty) {
             WalkieLaunchTracker.fromWalkieCall = true;
@@ -208,7 +224,8 @@ class firebaseNotificationServices {
           }
         }
 
-        final ctx = ContextUtility.navigatorkey.currentState?.context ?? Get.context;
+        final ctx =
+            ContextUtility.navigatorkey.currentState?.context ?? Get.context;
         if (ctx != null) {
           firebaseNotificationServices().handleMessage(
             ctx,
@@ -289,7 +306,8 @@ class firebaseNotificationServices {
       WidgetsFlutterBinding.ensureInitialized();
     } catch (_) {}
 
-    final eventKey = extraData?['eventId']?.toString() ?? "${groupId}_$speakerName";
+    final eventKey =
+        extraData?['eventId']?.toString() ?? "${groupId}_$speakerName";
     if (isDuplicateWalkieEvent(eventKey)) {
       log("🔔 [showWalkieNotification] Skipping duplicate walkie event: $eventKey");
       return;
@@ -339,7 +357,9 @@ class firebaseNotificationServices {
     if (Platform.isIOS) {
       log("🔔 [showWalkieNotification] iOS: Displaying native notification with Accept/Cancel actions");
       try {
-        final title = (groupName.trim().isNotEmpty) ? groupName.trim() : "Walkie-Talkie Active";
+        final title = (groupName.trim().isNotEmpty)
+            ? groupName.trim()
+            : "Walkie-Talkie Active";
         final joinedText = (joinedCount != null && joinedCount > 0)
             ? " • $joinedCount Joined"
             : "";
@@ -356,7 +376,8 @@ class firebaseNotificationServices {
           await localNotifications.initialize(
             initializationSetting,
             onDidReceiveNotificationResponse: onNotificationResponse,
-            onDidReceiveBackgroundNotificationResponse: notificationTapBackground,
+            onDidReceiveBackgroundNotificationResponse:
+                notificationTapBackground,
           );
         } catch (_) {}
 
@@ -456,10 +477,14 @@ class firebaseNotificationServices {
       return;
     }
 
-    var title = message.notification?.title ?? message.data['title']?.toString();
+    var title =
+        message.notification?.title ?? message.data['title']?.toString();
     var body = message.notification?.body ?? message.data['body']?.toString();
-
-    if ((title == null || title.trim().isEmpty) && (body == null || body.trim().isEmpty)) {
+    if (message.data['screen_name'] == "incomingGroupCall") {
+      return;
+    }
+    if ((title == null || title.trim().isEmpty) &&
+        (body == null || body.trim().isEmpty)) {
       debugPrint("⏭️ Skipping local notification: message has no title/body");
       return;
     }
@@ -590,8 +615,8 @@ class firebaseNotificationServices {
       sound: RawResourceAndroidNotificationSound('recieve_notification'),
     );
 
-    final androidPlugin = flutterLocalNotificationsPlugin
-        .resolvePlatformSpecificImplementation<
+    final androidPlugin =
+        flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<
             AndroidFlutterLocalNotificationsPlugin>();
     await androidPlugin?.createNotificationChannel(walkieChannel);
     await androidPlugin?.createNotificationChannel(highImportanceChannel);
@@ -618,10 +643,20 @@ class firebaseNotificationServices {
               data['group_id'] != null);
 
           if (isWalkie) {
-            final groupId = (data['groupId'] ?? data['group_id'] ?? '')?.toString() ?? '';
-            final groupName = (data['groupName'] ?? data['group_name'] ?? 'Walkie-Talkie')?.toString() ?? 'Walkie-Talkie';
-            final speakerName = (data['speakerName'] ?? data['speaker_name'] ?? 'Someone')?.toString() ?? 'Someone';
-            final speakerImage = (data['speakerImage'] ?? data['speaker_image'] ?? '')?.toString() ?? '';
+            final groupId =
+                (data['groupId'] ?? data['group_id'] ?? '')?.toString() ?? '';
+            final groupName =
+                (data['groupName'] ?? data['group_name'] ?? 'Walkie-Talkie')
+                        ?.toString() ??
+                    'Walkie-Talkie';
+            final speakerName =
+                (data['speakerName'] ?? data['speaker_name'] ?? 'Someone')
+                        ?.toString() ??
+                    'Someone';
+            final speakerImage =
+                (data['speakerImage'] ?? data['speaker_image'] ?? '')
+                        ?.toString() ??
+                    '';
 
             if (groupId.isNotEmpty) {
               WalkieLaunchTracker.fromWalkieCall = true;
@@ -705,12 +740,14 @@ class firebaseNotificationServices {
     });
 
     FirebaseMessaging.onMessageOpenedApp.listen((event) async {
-      final ctx = ContextUtility.navigatorkey.currentState?.context ?? Get.context;
+      final ctx =
+          ContextUtility.navigatorkey.currentState?.context ?? Get.context;
       if (ctx != null) {
         handleMessage(ctx, event, type: "frombackground");
       } else {
         Future.delayed(const Duration(milliseconds: 300), () {
-          final retryCtx = ContextUtility.navigatorkey.currentState?.context ?? Get.context;
+          final retryCtx =
+              ContextUtility.navigatorkey.currentState?.context ?? Get.context;
           if (retryCtx != null) {
             handleMessage(retryCtx, event, type: "frombackground");
           }
@@ -821,26 +858,26 @@ class firebaseNotificationServices {
           message.data['screen'] == "group_walkie" ||
           message.data['screen'] == "walkie") {
         final groupId = (message.data['groupId'] ??
-                message.data['group_id'] ??
-                message.data['id'])
-            ?.toString() ??
+                    message.data['group_id'] ??
+                    message.data['id'])
+                ?.toString() ??
             '';
         final groupName = (message.data['groupName'] ??
-                message.data['group_name'] ??
-                message.data['title'])
-            ?.toString() ??
+                    message.data['group_name'] ??
+                    message.data['title'])
+                ?.toString() ??
             'Walkie-Talkie';
         final speakerName = (message.data['speakerName'] ??
-                message.data['speaker_name'] ??
-                message.data['callerName'] ??
-                message.data['name'])
-            ?.toString() ??
+                    message.data['speaker_name'] ??
+                    message.data['callerName'] ??
+                    message.data['name'])
+                ?.toString() ??
             'Someone';
         final speakerImage = (message.data['speakerImage'] ??
-                message.data['speaker_image'] ??
-                message.data['speakerProfile'] ??
-                message.data['callerProfileImage'])
-            ?.toString() ??
+                    message.data['speaker_image'] ??
+                    message.data['speakerProfile'] ??
+                    message.data['callerProfileImage'])
+                ?.toString() ??
             '';
 
         if (groupId.isNotEmpty) {
@@ -884,32 +921,33 @@ class firebaseNotificationServices {
         }
       }
     } else {
+      print("===========groupcallingscreenworkig....");
       if (message.data['screen_name'] == "group_walkie" ||
           message.data['screenName'] == "group_walkie" ||
           message.data['screen_name'] == "groupWalkie" ||
           message.data['screen'] == "group_walkie" ||
           message.data['screen'] == "walkie") {
         final groupId = (message.data['groupId'] ??
-                message.data['group_id'] ??
-                message.data['id'])
-            ?.toString() ??
+                    message.data['group_id'] ??
+                    message.data['id'])
+                ?.toString() ??
             '';
         final groupName = (message.data['groupName'] ??
-                message.data['group_name'] ??
-                message.data['title'])
-            ?.toString() ??
+                    message.data['group_name'] ??
+                    message.data['title'])
+                ?.toString() ??
             'Walkie-Talkie';
         final speakerName = (message.data['speakerName'] ??
-                message.data['speaker_name'] ??
-                message.data['callerName'] ??
-                message.data['name'])
-            ?.toString() ??
+                    message.data['speaker_name'] ??
+                    message.data['callerName'] ??
+                    message.data['name'])
+                ?.toString() ??
             'Someone';
         final speakerImage = (message.data['speakerImage'] ??
-                message.data['speaker_image'] ??
-                message.data['speakerProfile'] ??
-                message.data['callerProfileImage'])
-            ?.toString() ??
+                    message.data['speaker_image'] ??
+                    message.data['speakerProfile'] ??
+                    message.data['callerProfileImage'])
+                ?.toString() ??
             '';
 
         final rawJoinedCount = message.data['joinedMemberCount'] ??
@@ -943,67 +981,68 @@ class firebaseNotificationServices {
             groupName: groupName,
             speakerName: speakerName,
             speakerImage: speakerImage,
-            title: message.notification?.title ?? message.data['title']?.toString(),
-            subtitle: message.notification?.body ?? message.data['body']?.toString(),
-            location: message.data['location']?.toString() ?? message.data['area']?.toString(),
+            title: message.notification?.title ??
+                message.data['title']?.toString(),
+            subtitle:
+                message.notification?.body ?? message.data['body']?.toString(),
+            location: message.data['location']?.toString() ??
+                message.data['area']?.toString(),
             joinedCount: joinedCount,
           );
         }
       }
 
-        if (message.data['screen_name'] == "incomingCall") {
-          final callData = jsonDecode(message.data['callData']);
+      if (message.data['screen_name'] == "incomingCall") {
+        final callData = jsonDecode(message.data['callData']);
 
-          final originalCallId = callData['callId'].toString();
-          socket?.emit("CallingStatus", {
-            "callId": originalCallId,
-            "remoteUserId": int.tryParse(callData['callerId'].toString()) ?? 0,
-            "callingStatus": "Ringing",
-          });
-          if (Platform.isAndroid) {
-            final Map<String, String> userInfo = callData.map<String, String>(
-                (key, value) => MapEntry(key.toString(), value.toString()));
-            await ConnectycubeFlutterCallKit.showCallNotification(
-              CallEvent(
-                sessionId: callIdToUuid(callData['callId'].toString()),
-                callerName: callData['callerName'],
-                callType: callData['isVideo'] == true ? 1 : 0,
-                opponentsIds: {int.parse(callData['callerId'])},
-                callerId: int.parse(callData['callerId']),
-                userInfo: userInfo,
-              ),
-            );
-            CallSessionState.sessionId = callData['callId'].toString();
-          }
+        final originalCallId = callData['callId'].toString();
+        socket?.emit("CallingStatus", {
+          "callId": originalCallId,
+          "remoteUserId": int.tryParse(callData['callerId'].toString()) ?? 0,
+          "callingStatus": "Ringing",
+        });
+        if (Platform.isAndroid) {
+          final Map<String, String> userInfo = callData.map<String, String>(
+              (key, value) => MapEntry(key.toString(), value.toString()));
+          await ConnectycubeFlutterCallKit.showCallNotification(
+            CallEvent(
+              sessionId: callIdToUuid(callData['callId'].toString()),
+              callerName: callData['callerName'],
+              callType: callData['isVideo'] == true ? 1 : 0,
+              opponentsIds: {int.parse(callData['callerId'])},
+              callerId: int.parse(callData['callerId']),
+              userInfo: userInfo,
+            ),
+          );
+          CallSessionState.sessionId = callData['callId'].toString();
         }
+      }
 
-
-        if (message.data['screen_name'] == "incomingGroupCall") {
-          final callData = jsonDecode(message.data['callData']);
-          final originalCallId = callData['callId'].toString();
-          socket?.emit("CallingStatus", {
-            "callId": originalCallId,
-            "remoteUserId": int.tryParse(callData['callerId'].toString()) ?? 0,
-            "callingStatus": "Ringing",
-          });
-          if (Platform.isAndroid) {
-            print("==========CallingUser:${callData}");
-            final Map<String, String> userInfo = callData.map<String, String>(
-                (key, value) => MapEntry(key.toString(), value.toString()));
-            await ConnectycubeFlutterCallKit.showCallNotification(
-              CallEvent(
-                sessionId: callIdToUuid("${callData['callId'].toString()},test"),
-                callerName: callData['groupName'],
-                callType: callData['isVideo'] == true ? 1 : 0,
-                opponentsIds: {int.parse(callData['callerId'])},
-                callerId: int.parse(callData['callerId']),
-                userInfo: userInfo,
-              ),
-            );
-            CallSessionState.sessionId = callData['callId'].toString();
-          }
+      if (message.data['screen_name'] == "incomingGroupCall") {
+        final callData = jsonDecode(message.data['callData']);
+        final originalCallId = callData['callId'].toString();
+        socket?.emit("CallingStatus", {
+          "callId": originalCallId,
+          "remoteUserId": int.tryParse(callData['callerId'].toString()) ?? 0,
+          "callingStatus": "Ringing",
+        });
+        if (Platform.isAndroid) {
+          log("==========CallingUser:${callData}");
+          final Map<String, String> userInfo = callData.map<String, String>(
+              (key, value) => MapEntry(key.toString(), value.toString()));
+          await ConnectycubeFlutterCallKit.showCallNotification(
+            CallEvent(
+              sessionId: callData('session_id'),
+              callerName: callData['groupName'],
+              callType: callData['isVideo'] == true ? 1 : 0,
+              opponentsIds: {int.parse(callData['callerId'])},
+              callerId: int.parse(callData['callerId']),
+              userInfo: userInfo,
+            ),
+          );
+          CallSessionState.sessionId = callData('session_id').toString();
         }
-
+      }
 
       if (message.data['screen_name'] == "missedCall") {
         final callData = jsonDecode(message.data['callData']);
@@ -1015,7 +1054,6 @@ class firebaseNotificationServices {
         CallStateTracker.isIncomingCallScreenOpen = false;
         flutterLocalNotificationsPlugin.cancelAll();
       }
-
     }
   }
 }

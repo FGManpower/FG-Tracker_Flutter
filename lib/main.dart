@@ -100,7 +100,7 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     try {
       await ConnectycubeFlutterCallKit.showCallNotification(
         CallEvent(
-          sessionId: callIdToUuid(originalCallId),
+          sessionId: callData('session_id'),
           callerName: callData['groupName'],
           callType: callData['isVideo'] == true ? 1 : 0,
           opponentsIds: {int.parse(callData['callerId'])},
