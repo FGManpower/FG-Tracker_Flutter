@@ -213,6 +213,119 @@ class GroupWalkieService {
     }
   }
 
+  Future<WalkieMicPermissionState> checkMicPermissionSilently() async {
+    try {
+      final status = await Permission.microphone.status;
+      _hasMicPermission = status.isGranted;
+      final WalkieMicPermissionState state;
+      if (status.isGranted) {
+        state = WalkieMicPermissionState.granted;
+      } else if (status.isPermanentlyDenied || status.isRestricted) {
+        state = WalkieMicPermissionState.permanentlyDenied;
+      } else {
+        state = WalkieMicPermissionState.denied;
+      }
+
+      if (Get.isRegistered<GroupWalkieController>()) {
+        final ctrl = Get.find<GroupWalkieController>();
+        ctrl.setMicPermissionState(state);
+        ctrl.setMicPermission(status.isGranted);
+      }
+      return state;
+    } catch (e) {
+      _log('checkMicPermissionSilently error: $e');
+      return WalkieMicPermissionState.denied;
+    }
+  }
+
+  Future<bool> requestMicPermissionUserInitiated() async {
+    try {
+      if (Get.isRegistered<GroupWalkieController>()) {
+        Get.find<GroupWalkieController>()
+            .setMicPermissionState(WalkieMicPermissionState.checking);
+      }
+
+      var status = await Permission.microphone.status;
+      if (status.isGranted) {
+        _hasMicPermission = true;
+        if (Get.isRegistered<GroupWalkieController>()) {
+          Get.find<GroupWalkieController>()
+            ..setMicPermissionState(WalkieMicPermissionState.granted)
+            ..setMicPermission(true);
+        }
+        final ok = await _ensureLocalStream();
+        if (ok) await _attachLocalTrackToExistingPeers();
+        return ok;
+      }
+
+      status = await Permission.microphone.request();
+      _hasMicPermission = status.isGranted;
+
+      // On iOS: If permission_handler did not grant, invoke native WebRTC getUserMedia
+      // which directly calls AVAudioSession.requestRecordPermission
+      if (!_hasMicPermission && Platform.isIOS) {
+        _log('Triggering iOS native AVAudioSession record permission via getUserMedia...');
+        try {
+          final mediaConstraints = <String, dynamic>{
+            'audio': {
+              'echoCancellation': true,
+              'noiseSuppression': true,
+              'autoGainControl': true,
+            },
+            'video': false,
+          };
+          final stream = await navigator.mediaDevices.getUserMedia(mediaConstraints);
+          if (stream.getAudioTracks().isNotEmpty) {
+            _localStream = stream;
+            for (final t in stream.getAudioTracks()) {
+              t.enabled = false;
+            }
+            await _setMicMuteHelper(true);
+            _hasMicPermission = true;
+            status = PermissionStatus.granted;
+            _log('✅ iOS native getUserMedia granted mic permission!');
+          }
+        } catch (webrtcErr) {
+          _log('iOS native WebRTC mic prompt error / user denied: $webrtcErr');
+        }
+      }
+
+      if (Get.isRegistered<GroupWalkieController>()) {
+        final ctrl = Get.find<GroupWalkieController>();
+        if (_hasMicPermission || status.isGranted) {
+          ctrl.setMicPermissionState(WalkieMicPermissionState.granted);
+          ctrl.setMicPermission(true);
+        } else if (status.isPermanentlyDenied || status.isRestricted) {
+          ctrl.setMicPermissionState(WalkieMicPermissionState.permanentlyDenied);
+          ctrl.setMicPermission(false);
+        } else {
+          ctrl.setMicPermissionState(WalkieMicPermissionState.denied);
+          ctrl.setMicPermission(false);
+        }
+      }
+
+      if (_hasMicPermission) {
+        final ok = await _ensureLocalStream();
+        if (ok) {
+          await _attachLocalTrackToExistingPeers();
+        }
+        return ok;
+      }
+      return false;
+    } catch (e) {
+      _log('requestMicPermissionUserInitiated error: $e');
+      return false;
+    }
+  }
+
+  Future<bool> ensureLocalStreamAndAttach() async {
+    final ok = await _ensureLocalStream();
+    if (ok) {
+      await _attachLocalTrackToExistingPeers();
+    }
+    return ok;
+  }
+
   Future<bool> _requestMicPermission() async {
     try {
       var status = await Permission.microphone.status;
@@ -222,6 +335,11 @@ class GroupWalkieService {
       _hasMicPermission = status.isGranted;
       if (Get.isRegistered<GroupWalkieController>()) {
         Get.find<GroupWalkieController>().setMicPermission(_hasMicPermission);
+        Get.find<GroupWalkieController>().setMicPermissionState(
+          _hasMicPermission
+              ? WalkieMicPermissionState.granted
+              : WalkieMicPermissionState.denied,
+        );
       }
       return _hasMicPermission;
     } catch (e) {
@@ -572,7 +690,13 @@ class GroupWalkieService {
           case WalkieAudioRoute.speaker:
             try {
               await Helper.setSpeakerphoneOn(true);
-              await Helper.selectAudioOutput(_speakerDeviceId ?? 'speaker');
+            } catch (_) {}
+            try {
+              if (_speakerDeviceId != null &&
+                  _speakerDeviceId!.isNotEmpty &&
+                  _speakerDeviceId != 'speaker') {
+                await Helper.selectAudioOutput(_speakerDeviceId!);
+              }
             } catch (_) {}
             try {
               await ProximityScreenLock.setActive(false);
@@ -713,6 +837,11 @@ class GroupWalkieService {
     }
   }
 
+  void ensureSocketListenersBound() {
+    _listenersBound = false;
+    _bindSocketListeners();
+  }
+
   void _bindSocketListeners() {
     if (_listenersBound) return;
     _listenersBound = true;
@@ -835,9 +964,39 @@ class GroupWalkieService {
         if (_offeredTo.contains(id)) continue;
         _offeredTo.add(id);
         _createPeer(id).then((_) async {
-          await Future.delayed(const Duration(milliseconds: 40));
+          await Future.delayed(const Duration(milliseconds: 60));
           await _createOfferTo(id);
         });
+      }
+
+      if (data is Map) {
+        final activeSpeaker = data['activeSpeaker'] ??
+            data['currentSpeaker'] ??
+            data['speaker'];
+        final activeSpeakerId = (data['activeSpeakerId'] ??
+                data['speakerId'] ??
+                (activeSpeaker is Map ? activeSpeaker['userId'] : null))
+            ?.toString();
+        if (activeSpeakerId != null &&
+            activeSpeakerId.isNotEmpty &&
+            activeSpeakerId != _selfUserId) {
+          final speakerName = (data['speakerName'] ??
+                  (activeSpeaker is Map ? activeSpeaker['name'] : null) ??
+                  'Someone')
+              .toString();
+          final speakerImage = (data['speakerImage'] ??
+                  (activeSpeaker is Map ? activeSpeaker['image'] : null) ??
+                  '')
+              .toString();
+          if (Get.isRegistered<GroupWalkieController>()) {
+            Get.find<GroupWalkieController>().onSpeakerActive(
+              speakerId: activeSpeakerId,
+              speakerName: speakerName,
+              speakerImage: speakerImage,
+            );
+          }
+          await _ensurePlaybackPath();
+        }
       }
 
       if (Get.isRegistered<GroupWalkieController>() && newParticipants.isNotEmpty) {
@@ -881,6 +1040,14 @@ class GroupWalkieService {
         );
         c.showStatusMessage("$name joined", const Color(0xFF00C853));
       }
+
+      // Close previous stale peer connection if re-joining
+      if (_peers.containsKey(id)) {
+        _log('Closing previous stale peer for newly joined peer: $id');
+        await _closePeer(id);
+      }
+      _offeredTo.remove(id);
+      _makingOffer.remove(id);
 
       // Prepare peer connection and await offer from the joining peer
       // (avoids simultaneous offer collision/glare that delays connection by 5-10s)
@@ -1170,10 +1337,18 @@ class GroupWalkieService {
     if (_localStream != null) return true;
     if (_streamCompleter != null) return _streamCompleter!.future;
 
+    final status = await Permission.microphone.status;
+    if (!status.isGranted) {
+      _hasMicPermission = false;
+      if (Get.isRegistered<GroupWalkieController>()) {
+        Get.find<GroupWalkieController>().setMicPermission(false);
+      }
+      return false;
+    }
+
     _streamCompleter = Completer<bool>();
 
     try {
-      await _requestMicPermission();
       await _configureAudioSession(route: audioRoute.value);
 
       _log('Acquiring getUserMedia...');
@@ -1190,20 +1365,24 @@ class GroupWalkieService {
       _localStream =
       await navigator.mediaDevices.getUserMedia(mediaConstraints);
 
+      final bool shouldEnable = _isTalking && !_isMuted;
       for (final t in _localStream!.getAudioTracks()) {
-        t.enabled = false;
+        t.enabled = shouldEnable;
       }
-      await _setMicMuteHelper(true);
+      await _setMicMuteHelper(!shouldEnable);
 
       _hasMicPermission = true;
       if (Get.isRegistered<GroupWalkieController>()) {
         Get.find<GroupWalkieController>().setMicPermission(true);
+        Get.find<GroupWalkieController>()
+            .setMicPermissionState(WalkieMicPermissionState.granted);
       }
 
       _log('✅ local audio stream ready (warmed)');
       _streamCompleter!.complete(true);
       final result = await _streamCompleter!.future;
       _streamCompleter = null;
+      await _attachLocalTrackToExistingPeers();
       return result;
     } catch (e) {
       _log('❌ getUserMedia failed: $e');
@@ -1216,6 +1395,35 @@ class GroupWalkieService {
     }
   }
 
+  Future<void> _attachLocalTrackToExistingPeers() async {
+    if (_localStream == null) return;
+    final audioTracks = _localStream!.getAudioTracks();
+    if (audioTracks.isEmpty) return;
+    final track = audioTracks.first;
+
+    for (final entry in _peers.entries) {
+      try {
+        final pc = entry.value;
+        final senders = await pc.getSenders();
+        bool hasAudioSender = false;
+        for (final s in senders) {
+          if (s.track == null || s.track?.kind == 'audio') {
+            await s.replaceTrack(track);
+            s.track?.enabled = track.enabled;
+            hasAudioSender = true;
+          }
+        }
+        if (!hasAudioSender) {
+          await pc.addTrack(track, _localStream!);
+          _createOfferTo(entry.key);
+        }
+        _log('Attached local track to peer ${entry.key}');
+      } catch (e) {
+        _log('⚠️ attachLocalTrack ${entry.key}: $e');
+      }
+    }
+  }
+
   Future<RTCPeerConnection?> _createPeer(String remoteUserId) async {
     if (_isDisposed) return null;
 
@@ -1223,22 +1431,27 @@ class GroupWalkieService {
       final existing = _peers[remoteUserId]!;
       final st = existing.connectionState;
       if (st == RTCPeerConnectionState.RTCPeerConnectionStateClosed ||
-          st == RTCPeerConnectionState.RTCPeerConnectionStateFailed) {
+          st == RTCPeerConnectionState.RTCPeerConnectionStateFailed ||
+          st == RTCPeerConnectionState.RTCPeerConnectionStateDisconnected) {
         await _closePeer(remoteUserId);
       } else {
         return existing;
       }
     }
 
-    final ok = await _ensureLocalStream();
-    if (!ok || _localStream == null) return null;
+    if (_hasMicPermission && _localStream == null) {
+      await _ensureLocalStream();
+    }
 
     final pc = await createPeerConnection(_rtcConfig);
 
-    for (final t in _localStream!.getAudioTracks()) {
-      t.enabled = false;
-      await pc.addTrack(t, _localStream!);
-      t.enabled = false;
+    final bool shouldEnable = _isTalking && !_isMuted;
+    if (_localStream != null) {
+      for (final t in _localStream!.getAudioTracks()) {
+        t.enabled = shouldEnable;
+        await pc.addTrack(t, _localStream!);
+        t.enabled = shouldEnable;
+      }
     }
 
     pc.onTrack = (event) async {
@@ -1535,6 +1748,7 @@ class GroupWalkieService {
     _isDisposed = false;
     _currentGroupId = groupId;
     _offeredTo.clear();
+    ensureSocketListenersBound();
     _log('Joining group $groupId');
 
     final savedUserId =
@@ -1554,6 +1768,9 @@ class GroupWalkieService {
 
     if (socket != null && socket?.connected != true) {
       _log('Waiting for socket to connect before joining group...');
+      try {
+        socket?.connect();
+      } catch (_) {}
       final completer = Completer<void>();
       void onConnectHandler(_) {
         if (!completer.isCompleted) completer.complete();
@@ -1564,12 +1781,19 @@ class GroupWalkieService {
       });
     }
 
-    final ok = await _ensureLocalStream();
-    if (!ok) {
-      if (Get.isRegistered<GroupWalkieController>()) {
-        Get.find<GroupWalkieController>().showPermissionDeniedMessage();
-      }
-      return false;
+    // Clean up any stale peers from previous session to guarantee fresh WebRTC negotiation
+    for (final id in _peers.keys.toList()) {
+      await _closePeer(id);
+    }
+    _peers.clear();
+    _offeredTo.clear();
+    _makingOffer.clear();
+    _pendingIce.clear();
+    _remoteStreams.clear();
+
+    final micState = await checkMicPermissionSilently();
+    if (micState == WalkieMicPermissionState.granted) {
+      await _ensureLocalStream();
     }
 
     await _checkAudioDevices();
@@ -1578,6 +1802,16 @@ class GroupWalkieService {
 
     socket?.emit('join_walkie_session', {'groupId': groupId});
     _log('✅ join_walkie_session emitted');
+
+    if (Get.isRegistered<GroupWalkieController>()) {
+      final ctrl = Get.find<GroupWalkieController>();
+      if (micState == WalkieMicPermissionState.granted) {
+        ctrl.setInitStage(WalkieInitStage.ready);
+      } else {
+        ctrl.setInitStage(WalkieInitStage.permissionRequired);
+      }
+    }
+
     return true;
   }
 
