@@ -18,7 +18,7 @@ class ForwardMessageScreen extends StatefulWidget {
 
 class _ForwardMessageScreenState extends State<ForwardMessageScreen> {
   final ForwardMessageController controller =
-      Get.find<ForwardMessageController>();
+  Get.find<ForwardMessageController>();
 
   final ScrollController _scrollController = ScrollController();
 
@@ -100,17 +100,17 @@ class _ForwardMessageScreenState extends State<ForwardMessageScreen> {
                 duration: const Duration(milliseconds: 250),
                 child: _isSearchCollapsed && !_showSearchInAppBar
                     ? IconButton(
-                        key: const ValueKey("search"),
-                        onPressed: _showSearch,
-                        icon: const Icon(
-                          Icons.search,
-                          color: Colors.white,
-                        ),
-                      )
+                  key: const ValueKey("search"),
+                  onPressed: _showSearch,
+                  icon: const Icon(
+                    Icons.search,
+                    color: Colors.white,
+                  ),
+                )
                     : const SizedBox(
-                        key: ValueKey("empty"),
-                        width: 0,
-                      ),
+                  key: ValueKey("empty"),
+                  width: 0,
+                ),
               ),
             ],
           ),
@@ -135,8 +135,8 @@ class _ForwardMessageScreenState extends State<ForwardMessageScreen> {
               child: (!_isSearchCollapsed || _showSearchInAppBar)
                   ? _searchBar()
                   : const SizedBox(
-                      width: double.infinity,
-                    ),
+                width: double.infinity,
+              ),
             ),
             SizedBox(height: 8.h),
             Expanded(
@@ -149,11 +149,10 @@ class _ForwardMessageScreenState extends State<ForwardMessageScreen> {
           ],
         );
       }),
-      bottomNavigationBar:Obx(
+      bottomNavigationBar: Obx(
             () => controller.selectedDestinations.isNotEmpty
             ? _sendButton()
             : const SizedBox.shrink(),
-
       ),
     );
   }
@@ -244,8 +243,9 @@ class _ForwardMessageScreenState extends State<ForwardMessageScreen> {
   Widget _destinationList() {
     final users = controller.users;
     final groups = controller.groups;
+    final numberUsers = controller.numberUsers;
 
-    if (users.isEmpty && groups.isEmpty) {
+    if (users.isEmpty && groups.isEmpty && numberUsers.isEmpty) {
       return ListView(
         controller: _scrollController,
         physics: const AlwaysScrollableScrollPhysics(),
@@ -284,6 +284,11 @@ class _ForwardMessageScreenState extends State<ForwardMessageScreen> {
           SizedBox(height: 10.h),
           _sectionTitle("GROUPS"),
           ...groups.map(_groupTile),
+        ],
+        if (numberUsers.isNotEmpty) ...[
+          SizedBox(height: 10.h),
+          _sectionTitle("NUMBERS"),
+          ...numberUsers.map(_userTile),
         ],
       ],
     );
@@ -330,17 +335,17 @@ class _ForwardMessageScreenState extends State<ForwardMessageScreen> {
                     backgroundColor: Colors.grey.shade200,
                     backgroundImage: image.isNotEmpty
                         ? CachedNetworkImageProvider(
-                            image.startsWith("http")
-                                ? image
-                                : "${ConstRes.aImageBaseUrl}$image",
-                          )
+                      image.startsWith("http")
+                          ? image
+                          : "${ConstRes.aImageBaseUrl}$image",
+                    )
                         : null,
                     child: image.isEmpty
                         ? Icon(
-                            Icons.person,
-                            color: Colors.grey.shade500,
-                            size: 28.sp,
-                          )
+                      Icons.person,
+                      color: Colors.grey.shade500,
+                      size: 28.sp,
+                    )
                         : null,
                   ),
                   if (selected)
@@ -402,17 +407,17 @@ class _ForwardMessageScreenState extends State<ForwardMessageScreen> {
                     backgroundColor: Colors.grey.shade200,
                     backgroundImage: image.isNotEmpty
                         ? CachedNetworkImageProvider(
-                            image.startsWith("http")
-                                ? image
-                                : "${ConstRes.aImageBaseUrl}$image",
-                          )
+                      image.startsWith("http")
+                          ? image
+                          : "${ConstRes.aImageBaseUrl}$image",
+                    )
                         : null,
                     child: image.isEmpty
                         ? Icon(
-                            Icons.groups,
-                            color: ToggleThemeData.darkPurple,
-                            size: 28.sp,
-                          )
+                      Icons.groups,
+                      color: ToggleThemeData.darkPurple,
+                      size: 28.sp,
+                    )
                         : null,
                   ),
                   if (selected)
@@ -466,10 +471,10 @@ class _ForwardMessageScreenState extends State<ForwardMessageScreen> {
       ),
       child: selected
           ? Icon(
-              Icons.check,
-              color: Colors.white,
-              size: 16.sp,
-            )
+        Icons.check,
+        color: Colors.white,
+        size: 16.sp,
+      )
           : null,
     );
   }
@@ -486,23 +491,23 @@ class _ForwardMessageScreenState extends State<ForwardMessageScreen> {
         child: SizedBox(
           height: 52.h,
           child: Obx(
-            () => ElevatedButton.icon(
+                () => ElevatedButton.icon(
               onPressed: controller.isForwarding.value
                   ? null
                   : controller.forwardMessage,
               icon: controller.isForwarding.value
                   ? SizedBox(
-                      width: 20.w,
-                      height: 20.w,
-                      child: const CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
+                width: 20.w,
+                height: 20.w,
+                child: const CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Colors.white,
+                ),
+              )
                   : const Icon(
-                      Icons.send,
-                      color: Colors.white,
-                    ),
+                Icons.send,
+                color: Colors.white,
+              ),
               label: Text(
                 controller.isForwarding.value
                     ? "Sending..."
@@ -516,7 +521,7 @@ class _ForwardMessageScreenState extends State<ForwardMessageScreen> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: ToggleThemeData.darkPurple,
                 disabledBackgroundColor:
-                    ToggleThemeData.darkPurple.withValues(alpha: 0.7),
+                ToggleThemeData.darkPurple.withValues(alpha: 0.7),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14.r),
                 ),

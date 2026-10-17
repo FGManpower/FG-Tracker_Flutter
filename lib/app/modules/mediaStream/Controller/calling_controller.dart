@@ -2,13 +2,15 @@ import 'dart:async';
 import 'dart:developer';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/constant/urls.dart';
+import 'package:fgtracker/app/Core/util/CallKit/callkit_service.dart';
 import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Core/values/utility.dart';
+import 'package:fgtracker/app/Data/Services/CallStateTracker.dart';
 import 'package:fgtracker/app/modules/Track/Controller/GroupTrackController.dart';
+import 'package:fgtracker/app/modules/mediaStream/Controller/call_audio_route_controller.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:get/get.dart' hide navigator;
@@ -16,11 +18,10 @@ import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:proximity_screen_lock/proximity_screen_lock.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 import '../../../../gen/assets.gen.dart';
-import 'package:fgtracker/app/Data/Repositories/call_repo.dart';
 import 'package:fgtracker/app/Model/callDetailRes.dart';
-import 'package:intl/intl.dart';
 import '../../../Core/global/launchedFromCall.dart';
 import '../../../Data/Services/Socket/Socket_SignallingService.dart';
+import '../Widget/audio_route_sheet.dart';
 
 class CallingController extends GetxController with WidgetsBindingObserver {
   final socket = SignallingService.instance.socket;
@@ -43,16 +44,15 @@ class CallingController extends GetxController with WidgetsBindingObserver {
   dynamic offer;
   bool isSpeakerOn = false;
   bool fromCallKit = false;
+  bool _isCleaningUp = false;
+  bool _remoteEndSent = false;
 
+  Timer? _peerDisconnectTimer;
   final args = Get.arguments;
   Timer? callTimer;
   int callDurationSeconds = 0;
   Offset? pipPosition;
   final Rxn<CallDetail> apiCallDetail = Rxn<CallDetail>();
-
-  final RxBool isBluetoothConnected = false.obs;
-  final RxString currentAudioRoute = "earpiece".obs;
-  Timer? _deviceCheckTimer;
 
   Timer? missedCallTimer;
   var missCallDurationSeconds = 40.obs;
@@ -65,6 +65,16 @@ class CallingController extends GetxController with WidgetsBindingObserver {
   final RxBool areControlsVisible = true.obs;
   Timer? _controlsTimer;
 
+  late final CallAudioRouteController audioRouteController;
+  late final String _audioRouteTag;
+
+  final List<dynamic> _pendingRemoteCandidates = [];
+  bool _remoteDescriptionSet = false;
+
+  MediaStream? _remoteFallbackStream;
+
+  Timer? _remoteVideoWatchdog;
+
   void toggleVideoViews() {
     if (!isVideoCall.value) return;
 
@@ -75,9 +85,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
 
   void showControlsTemporarily() {
     areControlsVisible.value = true;
-
     _controlsTimer?.cancel();
-
     _controlsTimer = Timer(
       const Duration(seconds: 5),
       () {
@@ -86,22 +94,20 @@ class CallingController extends GetxController with WidgetsBindingObserver {
         }
       },
     );
-
     update();
   }
 
   void toggleControls() {
     areControlsVisible.value = !areControlsVisible.value;
-
     _controlsTimer?.cancel();
-
     update();
   }
 
   @override
   void onInit() {
+    super.onInit();
+
     WidgetsBinding.instance.addObserver(this);
-    _initForegroundTask();
 
     callerId = args["callerId"]?.toString() ?? "";
     remoteUserId = args["remoteUserId"]?.toString() ?? "";
@@ -116,11 +122,17 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     if (callId == null && args["sessionId"] != null) {
       callId = args["sessionId"];
     }
-    isVideoCall.value = is_video == true;
-    localRenderer.initialize();
-    remoteRenderer.initialize();
 
-    _setupPeer();
+    isVideoCall.value = is_video;
+
+    _audioRouteTag =
+        "call_audio_${callId ?? DateTime.now().microsecondsSinceEpoch}";
+
+    audioRouteController = Get.put(
+      CallAudioRouteController(),
+      tag: _audioRouteTag,
+    );
+
     _listenForCallEvents();
 
     if (args["callType"] == "outGoing") {
@@ -128,60 +140,107 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     }
 
     WakelockPlus.enable();
-    _startForegroundCallService();
 
     try {
       GroupTrackingController.instance.initializeLocation();
     } catch (e) {
-      log("==============CallLocationException======${e.toString()}");
+      log("[Call] Location initialization error: $e");
     }
 
-    if (callId != null) {
-      fetchCallDetail();
-    }
-
-    super.onInit();
+    unawaited(_initializeCall());
   }
 
-  void _initForegroundTask() {
-    FlutterForegroundTask.init(
-      androidNotificationOptions: AndroidNotificationOptions(
-        channelId: 'fgtracker_call_channel',
-        channelName: 'FG Tracker Ongoing Call',
-        channelDescription:
-            'Maintains active microphone and audio in background',
-        channelImportance: NotificationChannelImportance.HIGH,
-        priority: NotificationPriority.HIGH,
-      ),
-      iosNotificationOptions: const IOSNotificationOptions(
-        showNotification: true,
-        playSound: false,
-      ),
-      foregroundTaskOptions: ForegroundTaskOptions(
-        eventAction: ForegroundTaskEventAction.repeat(5000),
-        autoRunOnBoot: false,
-        allowWakeLock: true,
-        allowWifiLock: true,
-      ),
-    );
-  }
-
-  Future<void> _startForegroundCallService() async {
+  Future<void> _initializeCall() async {
     try {
-      if (await FlutterForegroundTask.isRunningService) {
-        await FlutterForegroundTask.restartService();
-      } else {
-        await FlutterForegroundTask.startService(
-          notificationTitle: args["callerName"] != null
-              ? "Call with ${args["callerName"]}"
-              : "Active Call",
-          notificationText: "Microphone active in background",
-        );
-      }
-      log("🎙️ Foreground Service successfully started to keep Background Mic active.");
-    } catch (e) {
-      log("Error starting call foreground task: $e");
+      await localRenderer.initialize();
+      await remoteRenderer.initialize();
+
+      await _setupPeer();
+    } catch (e, stackTrace) {
+      log("[Call] Initialization error: $e", stackTrace: stackTrace);
+
+      await _cleanupCall(
+        notifyRemote: true,
+        navigateHome: true,
+      );
     }
+  }
+
+  Future<void> _cleanupCall({
+    required bool notifyRemote,
+    required bool navigateHome,
+  }) async {
+    if (_isCleaningUp) {
+      return;
+    }
+
+    _isCleaningUp = true;
+
+    try {
+      _clearTimers();
+
+      _controlsTimer?.cancel();
+      _peerDisconnectTimer?.cancel();
+
+      stopSound();
+      await audioRouteController.stopCall();
+      if (notifyRemote && !_remoteEndSent) {
+        _remoteEndSent = true;
+
+        var param = {
+          "callId": callId,
+          "remoteUserId": remoteUserId,
+          "sessionId": _sessionId,
+        };
+
+        socket?.emit(
+          "endCall",
+          param,
+        );
+        print("=======CallEndedFromSide:${param}");
+      }
+
+      await _disposePeerResources();
+      await _stopForegroundCallService();
+
+      final String sessionId = _sessionId;
+
+      if (sessionId.isNotEmpty) {
+        try {
+          await callEnded(
+            sessionId,
+            type: "CallCleanedUp",
+          );
+        } catch (e) {
+          log("[Call] Call history cleanup error: $e");
+        }
+      }
+
+      CallSessionState.reset();
+      CallStateTracker.isIncomingCallScreenOpen = false;
+
+      await WakelockPlus.disable();
+      await ProximityScreenLock.setActive(false);
+
+      if (navigateHome && Get.currentRoute != Routes.Home_Screen) {
+        Get.offAllNamed(Routes.Home_Screen);
+      }
+    } catch (e, stackTrace) {
+      log("[Call] General cleanup error: $e", stackTrace: stackTrace);
+    } finally {
+      _isCleaningUp = false;
+    }
+  }
+
+  String get _sessionId {
+    if (CallSessionState.sessionId != null &&
+        CallSessionState.sessionId!.isNotEmpty) {
+      return CallSessionState.sessionId!;
+    }
+    if (callId != null) {
+      return callIdToUuid(callId.toString());
+    }
+    return "";
   }
 
   Future<void> _stopForegroundCallService() async {
@@ -198,7 +257,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     log("📱 CallingController: AppLifecycleState changed to: $state");
     if (state == AppLifecycleState.resumed) {
-      log("🔄 App Foregrounded: Forcefully restoring audio routes and reactivating WebRTC tracks...");
+      log("App Foregrounded: Forcefully restoring audio routes...");
       _ensureAudioTracksActive();
     } else if (state == AppLifecycleState.paused) {
       log("⏸️ App Backgrounded: Keeping WebRTC mic tracks alive...");
@@ -209,25 +268,43 @@ class CallingController extends GetxController with WidgetsBindingObserver {
   void _ensureAudioTracksActive() {
     try {
       if (localStream != null) {
-        for (var track in localStream!.getAudioTracks()) {
+        for (final track in localStream!.getAudioTracks()) {
           track.enabled = isAudioOn;
         }
-      }
-      if (remoteRenderer.srcObject != null) {
-        for (var track in remoteRenderer.srcObject!.getAudioTracks()) {
-          track.enabled = true;
+
+        if (isVideoCall.value && isVideoOn) {
+          for (final track in localStream!.getVideoTracks()) {
+            track.enabled = true;
+          }
         }
       }
-      if (currentAudioRoute.value == "speaker") {
-        enableSpeaker();
-      } else if (currentAudioRoute.value == "bluetooth" &&
-          isBluetoothConnected.value) {
-        selectBluetooth();
-      } else {
-        selectEarpiece();
+
+      if (remoteRenderer.srcObject != null) {
+        for (final track in remoteRenderer.srcObject!.getAudioTracks()) {
+          track.enabled = true;
+        }
+
+        if (isVideoCall.value) {
+          for (final track in remoteRenderer.srcObject!.getVideoTracks()) {
+            track.enabled = true;
+          }
+        }
       }
+
+      // NEW: the remote renderer can stay black after the app returns from
+      // the background, so bind it again.
+      if (isVideoCall.value) {
+        unawaited(_rebindRemoteRenderer());
+        _scheduleRemoteVideoCheck();
+      }
+
+      unawaited(
+        audioRouteController.restoreCurrentRoute(),
+      );
     } catch (e) {
-      log("Error restoring active WebRTC audio states: $e");
+      log(
+        "Error restoring active WebRTC audio states: $e",
+      );
     }
   }
 
@@ -237,9 +314,109 @@ class CallingController extends GetxController with WidgetsBindingObserver {
         for (var track in localStream!.getAudioTracks()) {
           track.enabled = isAudioOn;
         }
+        if (isVideoCall.value) {
+          for (var track in localStream!.getVideoTracks()) {
+            track.enabled = false;
+          }
+        }
       }
     } catch (e) {
       log("Error keeping background WebRTC audio alive: $e");
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // NEW: remote video helpers
+  // ---------------------------------------------------------------------------
+
+  /// Re-attaches the remote stream to the renderer. flutter_webrtc binds the
+  /// renderer to the video track that exists at the moment srcObject is
+  /// assigned, so a video track that arrives later (or a renderer that missed
+  /// the first frames) needs a fresh bind.
+  Future<void> _rebindRemoteRenderer([MediaStream? stream]) async {
+    final MediaStream? s = stream ?? remoteRenderer.srcObject;
+    if (s == null) return;
+
+    remoteRenderer.srcObject = null;
+    await Future<void>.delayed(const Duration(milliseconds: 50));
+
+    if (isClosed || peer == null) return;
+
+    remoteRenderer.srcObject = s;
+    update();
+  }
+
+  /// If a remote video track exists but no frame has arrived, re-bind the
+  /// renderer a few times (every 2s, max 5 tries).
+  void _scheduleRemoteVideoCheck() {
+    _remoteVideoWatchdog?.cancel();
+
+    int attempts = 0;
+    _remoteVideoWatchdog = Timer.periodic(const Duration(seconds: 2), (t) {
+      attempts++;
+
+      if (isClosed || peer == null || !isVideoCall.value || attempts > 5) {
+        t.cancel();
+        return;
+      }
+
+      final tracks = remoteRenderer.srcObject?.getVideoTracks() ?? [];
+      if (tracks.isEmpty) return;
+
+      int width = 0;
+      try {
+        width = remoteRenderer.videoWidth;
+      } catch (_) {}
+
+      if (width > 0) {
+        t.cancel();
+        return;
+      }
+
+      log("[Call] Remote video has no frames yet, rebinding renderer "
+          "(attempt $attempts)");
+      unawaited(_rebindRemoteRenderer());
+    });
+  }
+
+  Future<void> _handleRemoteTrack(RTCTrackEvent event) async {
+    try {
+      MediaStream? stream =
+          event.streams.isNotEmpty ? event.streams.first : null;
+
+      // A track without a stream used to throw (event.streams[0]).
+      if (stream == null) {
+        _remoteFallbackStream ??=
+            await createLocalMediaStream('remote_fallback');
+        await _remoteFallbackStream!.addTrack(event.track);
+        stream = _remoteFallbackStream;
+      }
+
+      if (stream == null || peer == null) return;
+
+      final bool isVideoTrack = event.track.kind == 'video';
+      final bool sameStream = remoteRenderer.srcObject?.id == stream.id;
+
+      if (!sameStream) {
+        remoteRenderer.srcObject = stream;
+      } else if (isVideoTrack) {
+        // Same stream, but the video track was added after the renderer
+        // was bound: bind again.
+        await _rebindRemoteRenderer(stream);
+      }
+
+      missedCallTimer?.cancel();
+      missedCallTimer = null;
+
+      startCallTimer();
+      callStatus.value = "Connected";
+      update();
+
+      if (isVideoTrack) {
+        _scheduleRemoteVideoCheck();
+      }
+    } catch (e, stackTrace) {
+      log("[Call] onTrack error: $e", stackTrace: stackTrace);
     }
   }
 
@@ -291,7 +468,10 @@ class CallingController extends GetxController with WidgetsBindingObserver {
         'offerToReceiveVideo': true,
       });
       await peer!.setLocalDescription(offer);
-      await setDefaultAudioRouteForCallType(isVideo: true);
+
+      await audioRouteController.updateCallType(
+        isVideo: true,
+      );
 
       final myUserId = Global.storageServices.get(PrefConst.userId).toString();
       final targetUserId =
@@ -344,8 +524,13 @@ class CallingController extends GetxController with WidgetsBindingObserver {
         isVideoCall.value = true;
 
         callStatus.value = "Connected";
-        await setDefaultAudioRouteForCallType(isVideo: true);
+        await audioRouteController.updateCallType(
+          isVideo: true,
+        );
         update();
+
+        // NEW: make sure the new remote video track is actually displayed.
+        _scheduleRemoteVideoCheck();
       } catch (e) {
         log("upgradeToVideo handler error: $e");
       }
@@ -365,9 +550,14 @@ class CallingController extends GetxController with WidgetsBindingObserver {
         isVideoOn = true;
         isVideoCall.value = true;
         callStatus.value = "Connected";
-        await setDefaultAudioRouteForCallType(isVideo: true);
+        await audioRouteController.updateCallType(
+          isVideo: true,
+        );
 
         update();
+
+        // NEW
+        _scheduleRemoteVideoCheck();
       } catch (e) {
         log("upgradeToVideoAnswer error: $e");
       }
@@ -385,35 +575,47 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     socket?.off("callError");
     socket?.off("callBlocked");
 
-    socket?.on("callError", (data) {
+    socket?.on("callError", (data) async {
       log("CALL ERROR => $data");
+
       stopSound();
       _clearTimers();
-      resetPeer();
+
+      await audioRouteController.stopCall();
+      await resetPeer();
+
       if (Get.isOverlaysOpen) {
         Get.back();
       }
+
       Get.snackbar(
-          "Call Failed", data?['message']?.toString() ?? "Unable to make call");
+        "Call Failed",
+        data?["message"]?.toString() ?? "Unable to make call",
+      );
     });
 
-    socket?.on("callBlocked", (data) {
+    socket?.on("callBlocked", (data) async {
       log("CALL BLOCKED => $data");
+
       stopSound();
       _clearTimers();
-      resetPeer();
+
+      await audioRouteController.stopCall();
+      await resetPeer();
+
       if (Get.isOverlaysOpen) {
         Get.back();
       }
+
       Get.snackbar(
-          "Call unavailable",
-          data?['message']?.toString() ??
-              "Communication is not available with this user");
+        "Call unavailable",
+        data?["message"]?.toString() ??
+            "Communication is not available with this user",
+      );
     });
 
     socket?.on("sdpOfferFromCaller", (data) async {
       log("====== Received SDP Offer from Caller (CallKit flow) ======");
-      log("Data: $data");
       if (peer == null) return;
 
       try {
@@ -422,11 +624,8 @@ class CallingController extends GetxController with WidgetsBindingObserver {
         offer = sdp;
         callId = data["callId"] ?? callId;
 
-        await peer!.setRemoteDescription(
-            RTCSessionDescription(sdp["sdp"], sdp["type"]));
-        final answer = await peer!.createAnswer();
-        await peer!.setLocalDescription(answer);
-
+        // CHANGED: send local candidates from the very first one
+        // (handler is set BEFORE setLocalDescription).
         peer!.onIceCandidate = (c) {
           if (c.candidate == null) return;
           socket!.emit("IceCandidate", {
@@ -438,6 +637,13 @@ class CallingController extends GetxController with WidgetsBindingObserver {
             },
           });
         };
+
+        await peer!.setRemoteDescription(
+            RTCSessionDescription(sdp["sdp"], sdp["type"]));
+        await _markRemoteDescriptionSet(); // NEW: flush queued candidates
+
+        final answer = await peer!.createAnswer();
+        await peer!.setLocalDescription(answer);
 
         socket!.emit("answerCall", {
           "callId": callId,
@@ -458,84 +664,226 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       });
     });
 
-    socket!.on("callRejected", (data) async {
-      _clearTimers();
-      if (CallSessionState.sessionId != null) {
-        callEnded(CallSessionState.sessionId.toString(),
-            type: "CallRejectedFromController");
-      }
-      resetPeer();
-      Get.back();
+    socket?.on("callEnded", (data) async {
+      log("[Socket] callEnded RECEIVED: $data");
+      Utils().fluttertoast('Call Ended By ${args["callerName"] ?? "Unknown"}');
+      await _cleanupCall(notifyRemote: false, navigateHome: true);
     });
 
-    socket!.on("callEnded", (data) async {
+    socket?.on("missedCall", (data) async {
+      log("[Socket] missedCall RECEIVED: $data");
+
+      if (_isCleaningUp) {
+        return;
+      }
+
+      // NEW: a late/stale missedCall must never end a call that is already
+      // connected.
+      if (callTimer != null || callDurationSeconds > 0) {
+        log("[Socket] missedCall ignored: call already connected");
+        return;
+      }
+
       _clearTimers();
-      resetPeer();
-      if (CallSessionState.sessionId != null) {
-        callEnded(data['sessionId'].toString(),
-            type: "callEndedFromController");
+      stopSound();
+
+      final String sessionId = data["sessionId"]?.toString().isNotEmpty == true
+          ? data["sessionId"].toString()
+          : CallSessionState.sessionId?.toString() ?? "";
+
+      if (sessionId.isNotEmpty) {
+        await callEnded(
+          sessionId,
+          type: "missedCallFromSocket",
+        );
       }
-      if (args["callType"] == "outGoing") {
-        stopSound();
-      }
+
+      await resetPeer();
+
+      await _stopForegroundCallService();
+      await WakelockPlus.disable();
+      await ProximityScreenLock.setActive(false);
+
       if (Get.currentRoute != Routes.Home_Screen) {
         Get.offAllNamed(Routes.Home_Screen);
       }
     });
 
-    socket!.on("missedCall", (data) async {
-      log("==========MissedCallCalled=======$data");
-      _clearTimers();
-      if (CallSessionState.sessionId != null) {
-        callEnded(CallSessionState.sessionId.toString(),
-            type: "missedCallFromController");
+    socket?.on("callRejected", (data) async {
+      log("[Socket] callRejected RECEIVED: $data");
+
+      // NEW: ignore a stale reject for a call that is already connected.
+      if (callTimer != null || callDurationSeconds > 0) {
+        log("[Socket] callRejected ignored: call already connected");
+        return;
       }
-      resetPeer();
-      Get.back();
+
+      Utils().fluttertoast(
+          'Call Rejected By ${args["callerName"] ?? "Unknown"}',
+          bgColor: Colors.red);
+      await _cleanupCall(notifyRemote: false, navigateHome: true);
     });
 
     socket?.on("callStatus", (data) {
-      log("CALL STATUS: $data");
-      if (data['status'] != null) {
-        callStatus.value = data['status'];
+      print("========CallingStatusData:${data}");
+      final status = data["status"]?.toString();
+      if (status != null && status.isNotEmpty) {
+        callStatus.value = status;
+        // CHANGED: never overwrite a valid callId with null.
+        if (data['callId'] != null) {
+          callId = data['callId'];
+        }
       }
-    });
-
-    socket?.on("callCreated", (data) {
-      callId = data['callId'];
-      fetchCallDetail();
-      startMissedCallTimer();
     });
 
     _listenVideoUpgradeEvents();
   }
 
-  void resetPeer() {
-    try {
-      peer?.close();
-      localStream?.dispose();
-    } catch (_) {}
-    peer = null;
-    localStream = null;
+  Future<void> resetPeer() async {
+    await _disposePeerResources();
   }
 
+  Future<void> _disposePeerResources({
+    bool stopDeviceMonitoring = true,
+  }) async {
+    try {
+      _peerDisconnectTimer?.cancel();
+      _peerDisconnectTimer = null;
+      _remoteVideoWatchdog?.cancel();
+      _remoteVideoWatchdog = null;
+
+      if (stopDeviceMonitoring) {
+        navigator.mediaDevices.ondevicechange = null;
+      }
+
+      // CHANGED: detach the peer first. close() used to fire a "Closed"
+      // state callback that ended the call a second time.
+      final RTCPeerConnection? pc = peer;
+      peer = null;
+      _remoteDescriptionSet = false;
+      _pendingRemoteCandidates.clear();
+
+      if (pc != null) {
+        pc.onIceConnectionState = null;
+        pc.onConnectionState = null;
+        pc.onTrack = null;
+        pc.onIceCandidate = null;
+      }
+
+      localStream?.getTracks().forEach((track) {
+        track.stop();
+      });
+
+      await localStream?.dispose();
+      localStream = null;
+
+      remoteRenderer.srcObject = null;
+      localRenderer.srcObject = null;
+
+      await _remoteFallbackStream?.dispose();
+      _remoteFallbackStream = null;
+
+      await pc?.close();
+
+      socket?.off("IceCandidate");
+      socket?.off("callAnswered");
+    } catch (e, stackTrace) {
+      log(
+        "[Call] Peer dispose error: $e",
+        stackTrace: stackTrace,
+      );
+    }
+  }
+
+  // CHANGED: queues candidates until the peer + remote description exist and
+  // never throws.
   void safeAddCandidate(dynamic data) {
-    if (peer == null) return;
-    final c = RTCIceCandidate(
-      data["iceCandidate"]["candidate"],
-      data["iceCandidate"]["id"],
-      data["iceCandidate"]["label"],
-    );
-    peer!.addCandidate(c);
+    try {
+      final ice = data["iceCandidate"];
+      if (ice == null) return;
+
+      if (peer == null || !_remoteDescriptionSet) {
+        _pendingRemoteCandidates.add(data);
+        return;
+      }
+
+      final c = RTCIceCandidate(
+        ice["candidate"],
+        ice["id"],
+        ice["label"],
+      );
+
+      unawaited(
+        peer!.addCandidate(c).catchError((e) {
+          log("[Call] addCandidate error: $e");
+        }),
+      );
+    } catch (e) {
+      log("[Call] safeAddCandidate error: $e");
+    }
+  }
+
+  // NEW
+  Future<void> _markRemoteDescriptionSet() async {
+    _remoteDescriptionSet = true;
+
+    if (_pendingRemoteCandidates.isEmpty) return;
+
+    final List<dynamic> pending = List<dynamic>.from(_pendingRemoteCandidates);
+    _pendingRemoteCandidates.clear();
+
+    log("[Call] Flushing ${pending.length} queued remote ICE candidates");
+    for (final d in pending) {
+      safeAddCandidate(d);
+    }
+  }
+
+  // NEW: a "Disconnected" state is usually temporary. End the call only if
+  // the connection has not recovered after the grace period.
+  void _startPeerDisconnectTimer() {
+    _peerDisconnectTimer?.cancel();
+    _peerDisconnectTimer = Timer(const Duration(seconds: 8), () {
+      final RTCIceConnectionState? ice = peer?.iceConnectionState;
+      final RTCPeerConnectionState? conn = peer?.connectionState;
+
+      final bool recovered =
+          ice == RTCIceConnectionState.RTCIceConnectionStateConnected ||
+              ice == RTCIceConnectionState.RTCIceConnectionStateCompleted ||
+              conn == RTCPeerConnectionState.RTCPeerConnectionStateConnected;
+
+      if (recovered) {
+        log("[Call] Connection recovered, keeping the call");
+        return;
+      }
+
+      log("[Call] Connection did not recover in 8s, ending call");
+      _handlePeerDisconnected();
+    });
+  }
+
+  void _cancelPeerDisconnectTimer() {
+    _peerDisconnectTimer?.cancel();
+    _peerDisconnectTimer = null;
   }
 
   Future<void> _setupPeer() async {
-    resetPeer();
+    await resetPeer();
+
+    if (socket == null) {
+      throw Exception("Socket is not initialized");
+    }
 
     socket!.off("IceCandidate");
     socket!.off("callAnswered");
 
-    peer = await createPeerConnection({
+    // CHANGED: listen for remote candidates immediately (they are queued
+    // until the remote description is set) instead of after getUserMedia and
+    // the audio route setup.
+    socket!.on("IceCandidate", (data) {
+      safeAddCandidate(data);
+    });
+
+    final RTCPeerConnection pc = await createPeerConnection({
       'iceServers': [
         {
           'urls': ['stun:stun.l.google.com:19302']
@@ -548,17 +896,58 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       ],
       'iceTransportPolicy': 'all',
     });
+    peer = pc;
 
-    peer!.onTrack = (event) {
-      remoteRenderer.srcObject = event.streams[0];
-      update();
+    // CHANGED: callbacks ignore events from an old peer and cancel the
+    // disconnect timer when the connection recovers.
+    pc.onIceConnectionState = (state) {
+      if (!identical(peer, pc)) return;
+      log("[Call] ICE state: $state");
 
-      missedCallTimer?.cancel();
-      missedCallTimer = null;
+      if (state == RTCIceConnectionState.RTCIceConnectionStateConnected ||
+          state == RTCIceConnectionState.RTCIceConnectionStateCompleted) {
+        _cancelPeerDisconnectTimer();
+        missedCallTimer?.cancel();
+        missedCallTimer = null;
+        return;
+      }
 
-      startCallTimer();
-      callStatus.value = "Connected";
-      fetchCallDetail();
+      if (state == RTCIceConnectionState.RTCIceConnectionStateDisconnected) {
+        _startPeerDisconnectTimer();
+        return;
+      }
+
+      if (state == RTCIceConnectionState.RTCIceConnectionStateFailed ||
+          state == RTCIceConnectionState.RTCIceConnectionStateClosed) {
+        _handlePeerDisconnected();
+      }
+    };
+
+    pc.onConnectionState = (state) {
+      if (!identical(peer, pc)) return;
+      log("[Call] Peer connection state: $state");
+
+      if (state == RTCPeerConnectionState.RTCPeerConnectionStateConnected) {
+        _cancelPeerDisconnectTimer();
+        return;
+      }
+
+      if (state == RTCPeerConnectionState.RTCPeerConnectionStateFailed ||
+          state == RTCPeerConnectionState.RTCPeerConnectionStateClosed) {
+        _handlePeerDisconnected();
+        return;
+      }
+
+      if (state == RTCPeerConnectionState.RTCPeerConnectionStateDisconnected) {
+        _startPeerDisconnectTimer();
+      }
+    };
+
+    // CHANGED: robust remote track handling (no event.streams[0] crash,
+    // renderer re-bind when the video track arrives).
+    pc.onTrack = (event) {
+      if (!identical(peer, pc)) return;
+      unawaited(_handleRemoteTrack(event));
     };
 
     localStream = await navigator.mediaDevices.getUserMedia({
@@ -566,44 +955,35 @@ class CallingController extends GetxController with WidgetsBindingObserver {
         'echoCancellation': true,
         'noiseSuppression': true,
         'autoGainControl': true,
-        'googEchoCancellation': true,
-        'googAutoGainControl': true,
-        'googNoiseSuppression': true,
-        'googHighpassFilter': true,
       },
       'video': is_video == true
           ? {'facingMode': isFrontCamera ? 'user' : 'environment'}
           : false,
     });
 
-    _startDeviceMonitoring();
-
-    await setDefaultAudioRouteForCallType(isVideo: is_video == true);
-
     for (var t in localStream!.getTracks()) {
-      peer!.addTrack(t, localStream!);
+      pc.addTrack(t, localStream!);
     }
-
     localRenderer.srcObject = localStream;
+
+    // CHANGED: do not block signalling (answer/offer) on the audio route
+    // setup, which has delays of its own.
+    unawaited(
+      audioRouteController
+          .startCall(
+        isVideo: is_video,
+      )
+          .catchError((e) {
+        log("[Call] Audio route start error: $e");
+      }),
+    );
+
     update();
 
-    socket!.on("IceCandidate", (data) {
-      if (peer == null) {
-        Future.delayed(const Duration(milliseconds: 300), () {
-          if (peer != null) safeAddCandidate(data);
-        });
-        return;
-      }
-      safeAddCandidate(data);
-    });
-
     if (offer != null) {
-      await peer!.setRemoteDescription(
-          RTCSessionDescription(offer["sdp"], offer["type"]));
-      final answer = await peer!.createAnswer();
-      await peer!.setLocalDescription(answer);
-
-      peer!.onIceCandidate = (c) {
+      // CHANGED: candidate sender is installed BEFORE setLocalDescription so
+      // the first local candidates are not lost.
+      pc.onIceCandidate = (c) {
         if (c.candidate == null) return;
         socket!.emit("IceCandidate", {
           "remoteUserId": callerId,
@@ -614,6 +994,13 @@ class CallingController extends GetxController with WidgetsBindingObserver {
           },
         });
       };
+
+      await pc.setRemoteDescription(
+          RTCSessionDescription(offer["sdp"], offer["type"]));
+      await _markRemoteDescriptionSet(); // NEW
+
+      final answer = await pc.createAnswer();
+      await pc.setLocalDescription(answer);
 
       socket!.emit("answerCall", {
         "callId": callId,
@@ -630,13 +1017,22 @@ class CallingController extends GetxController with WidgetsBindingObserver {
         "receiverId": Global.storageServices.get(PrefConst.userId),
       });
     } else {
-      peer!.onIceCandidate = (c) => iceCandidates.add(c);
+      pc.onIceCandidate = (c) => iceCandidates.add(c);
 
       socket!.on("callAnswered", (data) async {
-        await peer!.setRemoteDescription(
-          RTCSessionDescription(
-              data["sdpAnswer"]["sdp"], data["sdpAnswer"]["type"]),
-        );
+        // NEW: ignore duplicates / answers for an old peer.
+        if (!identical(peer, pc) || _remoteDescriptionSet) return;
+
+        try {
+          await pc.setRemoteDescription(
+            RTCSessionDescription(
+                data["sdpAnswer"]["sdp"], data["sdpAnswer"]["type"]),
+          );
+          await _markRemoteDescriptionSet(); // NEW
+        } catch (e) {
+          log("[Call] callAnswered handler error: $e");
+          return;
+        }
 
         for (var c in iceCandidates) {
           if (c.candidate == null) continue;
@@ -651,7 +1047,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
         }
         iceCandidates.clear();
 
-        peer!.onIceCandidate = (c) {
+        pc.onIceCandidate = (c) {
           if (c.candidate == null) return;
           socket!.emit("IceCandidate", {
             "remoteUserId": remoteUserId,
@@ -664,8 +1060,8 @@ class CallingController extends GetxController with WidgetsBindingObserver {
         };
       });
 
-      final sdpOffer = await peer!.createOffer();
-      await peer!.setLocalDescription(sdpOffer);
+      final sdpOffer = await pc.createOffer();
+      await pc.setLocalDescription(sdpOffer);
 
       socket!.emit("makeCall", {
         "remoteUserId": remoteUserId,
@@ -676,40 +1072,61 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     }
   }
 
-  Future<void> endCall({String? type}) async {
-    _clearTimers();
-    await _stopForegroundCallService();
+  Future<void> endCall({
+    String? type,
+  }) async {
+    // NEW: avoid running twice (button + socket + peer callbacks).
+    if (_isCleaningUp) return;
+    _isCleaningUp = true;
 
-    final myUserId = Global.storageServices.get(PrefConst.userId).toString();
-    final targetUser =
-        (myUserId == callerId.toString()) ? remoteUserId : callerId;
+    try {
+      _clearTimers();
+      await audioRouteController.stopCall();
+      await _stopForegroundCallService();
 
-    var param = {
-      "callId": callId,
-      "remoteUserId": targetUser.toString(),
-    };
+      final String myUserId =
+          Global.storageServices.get(PrefConst.userId).toString();
 
-    if (type != "missedCall") {
-      socket?.emit("endCall", param);
+      final String targetUser =
+          myUserId == callerId.toString() ? remoteUserId : callerId;
+
+      final Map<String, dynamic> payload = {
+        "callId": callId,
+        "remoteUserId": targetUser,
+      };
+
+      if (type != "missedCall") {
+        socket?.emit("endCall", payload);
+      }
+
+      await resetPeer();
+
+      if (CallSessionState.sessionId != null) {
+        await callEnded(
+          CallSessionState.sessionId.toString(),
+          type: "endCallMethodHittedFromController-Type:$type",
+        );
+      }
+
+      if (args["callType"] == "outGoing") {
+        stopSound();
+      }
+
+      await WakelockPlus.disable();
+      await ProximityScreenLock.setActive(false);
+
+      if (Get.currentRoute != Routes.Home_Screen) {
+        Get.offAllNamed(Routes.Home_Screen);
+      }
+    } finally {
+      _isCleaningUp = false;
     }
+  }
 
-    resetPeer();
-
-    if (CallSessionState.sessionId != null) {
-      callEnded(CallSessionState.sessionId.toString(),
-          type: "endCallMethodHittedFromController-Type:$type");
-    }
-
-    if (args["callType"] == "outGoing") {
-      stopSound();
-    }
-
-    await WakelockPlus.disable();
-    await ProximityScreenLock.setActive(false);
-
-    if (Get.currentRoute != Routes.Home_Screen) {
-      Get.offAllNamed(Routes.Home_Screen);
-    }
+  void _handlePeerDisconnected() {
+    if (_isCleaningUp || isClosed) return;
+    log("[Call] Remote peer disconnected");
+    unawaited(_cleanupCall(notifyRemote: false, navigateHome: true));
   }
 
   void toggleMic() {
@@ -742,167 +1159,23 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     update();
   }
 
-  Future<void> enableSpeaker() async {
-    await Helper.setSpeakerphoneOn(true);
-    isSpeakerOn = true;
-    currentAudioRoute.value = "speaker";
-    await ProximityScreenLock.setActive(false);
-    update();
-  }
-
-  Future<void> disableSpeaker() async {
-    await Helper.setSpeakerphoneOn(false);
-    isSpeakerOn = false;
-    currentAudioRoute.value =
-        isBluetoothConnected.value ? "bluetooth" : "earpiece";
-
-    if (!isVideoCall.value && !isBluetoothConnected.value) {
-      await ProximityScreenLock.setActive(true);
-    } else {
-      await ProximityScreenLock.setActive(false);
-    }
-    update();
-  }
-
-  Future<void> selectEarpiece() async {
-    await Helper.setSpeakerphoneOn(false);
-    isSpeakerOn = false;
-    currentAudioRoute.value = "earpiece";
-    if (!isVideoCall.value) {
-      await ProximityScreenLock.setActive(true);
-    }
-    update();
-  }
-
-  Future<void> selectBluetooth() async {
-    await Helper.setSpeakerphoneOnButPreferBluetooth();
-    isSpeakerOn = false;
-    currentAudioRoute.value = "bluetooth";
-    await ProximityScreenLock.setActive(false);
-    update();
-  }
-
   Future<void> toggleSpeaker(BuildContext context) async {
     showAudioRoutePicker(context);
   }
 
-  void showAudioRoutePicker(BuildContext context) async {
-    final RenderBox renderBox = context.findRenderObject() as RenderBox;
-    final Offset offset = renderBox.localToGlobal(Offset.zero);
+  Future<void> showAudioRoutePicker(BuildContext context) async {
+    if (!context.mounted) return;
 
-    final RelativeRect position = RelativeRect.fromRect(
-      Rect.fromLTWH(
-        offset.dx,
-        offset.dy - (isBluetoothConnected.value ? 140.h : 95.h),
-        renderBox.size.width,
-        renderBox.size.height,
-      ),
-      Offset.zero & MediaQuery.of(context).size,
-    );
+    // Refresh devices so Bluetooth / headset state is current when it opens.
+    await audioRouteController.checkDevices();
+    if (!context.mounted) return;
 
-    const Color primaryPurple = Color(0xFF7B58FF);
+    final CallAudioRoute? selected =
+        await showAudioRouteSheet(context, audioRouteController);
 
-    final String? selectedRoute = await showMenu<String>(
-      context: context,
-      position: position,
-      color: Colors.white,
-      elevation: 6,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10.r),
-        side: BorderSide(
-          color: primaryPurple.withOpacity(0.12),
-          width: 0.8,
-        ),
-      ),
-      constraints: BoxConstraints(
-        minWidth: 105.w,
-        maxWidth: 125.w,
-      ),
-      items: [
-        PopupMenuItem<String>(
-          value: "earpiece",
-          height: 35.h,
-          padding: EdgeInsets.symmetric(horizontal: 8.w),
-          child: _buildRouteRow(
-            icon: Icons.phone_in_talk_rounded,
-            label: "Earpiece",
-            routeKey: "earpiece",
-          ),
-        ),
-        PopupMenuItem<String>(
-          value: "speaker",
-          height: 35.h,
-          padding: EdgeInsets.symmetric(horizontal: 8.w),
-          child: _buildRouteRow(
-            icon: Icons.volume_up_rounded,
-            label: "Speaker",
-            routeKey: "speaker",
-          ),
-        ),
-        if (isBluetoothConnected.value)
-          PopupMenuItem<String>(
-            value: "bluetooth",
-            height: 35.h,
-            padding: EdgeInsets.symmetric(horizontal: 8.w),
-            child: _buildRouteRow(
-              icon: Icons.bluetooth_audio_rounded,
-              label: "Bluetooth",
-              routeKey: "bluetooth",
-            ),
-          ),
-      ],
-    );
-
-    if (selectedRoute != null) {
-      if (selectedRoute == "earpiece") {
-        await selectEarpiece();
-      } else if (selectedRoute == "speaker") {
-        await enableSpeaker();
-      } else if (selectedRoute == "bluetooth") {
-        await selectBluetooth();
-      }
+    if (selected != null) {
+      await audioRouteController.selectRoute(selected);
     }
-  }
-
-  Widget _buildRouteRow({
-    required IconData icon,
-    required String label,
-    required String routeKey,
-  }) {
-    final bool isSelected = currentAudioRoute.value == routeKey;
-    const Color primaryPurple = Color(0xFF7B58FF);
-    const Color darkText = Color(0xFF0F0B4C);
-
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(
-          icon,
-          color: isSelected ? primaryPurple : darkText.withOpacity(0.6),
-          size: 15.sp,
-        ),
-        SizedBox(width: 6.w),
-        Expanded(
-          child: Text(
-            label,
-            style: TextStyle(
-              fontSize: 12.sp,
-              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-              color: isSelected ? primaryPurple : darkText,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-        Icon(
-          isSelected
-              ? Icons.radio_button_checked_rounded
-              : Icons.radio_button_off_rounded,
-          color: isSelected ? primaryPurple : darkText.withOpacity(0.2),
-          size: 13.sp,
-        ),
-      ],
-    );
   }
 
   String get formattedDuration {
@@ -914,18 +1187,6 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       }
     }
     return "$minutes:$seconds";
-  }
-
-  Future<void> fetchCallDetail() async {
-    if (callId == null) return;
-    try {
-      final res = await CallRepo.callDetailData(callId.toString());
-      if (res.status == true && res.callDetail != null) {
-        apiCallDetail.value = res.callDetail;
-      }
-    } catch (e) {
-      log("Error fetching call detail: $e");
-    }
   }
 
   void startCallTimer() {
@@ -954,17 +1215,29 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     });
   }
 
-  void missedCall() {
-    var param = {"callId": callId, "remoteUserId": remoteUserId};
-    socket?.emit("missCall", param);
-    endCall(type: "missedCall");
+  Future<void> missedCall() async {
+    final Map<String, dynamic> param = {
+      // "callId": callId,
+      "remoteUserId": remoteUserId,
+    };
+
+    socket?.emit(
+      "missCall",
+      param,
+    );
+
+    await endCall(
+      type: "missedCall",
+    );
   }
 
   void _clearTimers() {
     callTimer?.cancel();
     missedCallTimer?.cancel();
+    _remoteVideoWatchdog?.cancel(); // NEW
     callTimer = null;
     missedCallTimer = null;
+    _remoteVideoWatchdog = null;
     missCallDurationSeconds.value = 0;
   }
 
@@ -983,101 +1256,15 @@ class CallingController extends GetxController with WidgetsBindingObserver {
 
   Future<void> startAudioCall() async {
     await WakelockPlus.enable();
-    if (!isBluetoothConnected.value) {
+
+    if (!audioRouteController.isBluetoothConnected.value) {
       await ProximityScreenLock.setActive(true);
     }
-  }
-
-  Future<void> setDefaultAudioRouteForCallType({
-    required bool isVideo,
-  }) async {
-    await checkAudioDevices();
-
-    if (isBluetoothConnected.value) {
-      await Helper.setSpeakerphoneOnButPreferBluetooth();
-      isSpeakerOn = false;
-      currentAudioRoute.value = "bluetooth";
-      await ProximityScreenLock.setActive(false);
-    } else if (isVideo) {
-      await enableSpeaker();
-    } else {
-      await selectEarpiece();
-    }
-
-    update();
   }
 
   Future<void> endAudioCall() async {
     await WakelockPlus.disable();
     await ProximityScreenLock.setActive(false);
-  }
-
-  void _startDeviceMonitoring() {
-    checkAudioDevices();
-
-    navigator.mediaDevices.ondevicechange = (event) {
-      log("🔄 Audio Routing Device Changed!");
-      checkAudioDevices();
-    };
-
-    _deviceCheckTimer?.cancel();
-    _deviceCheckTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
-      checkAudioDevices();
-    });
-  }
-
-  Future<void> checkAudioDevices() async {
-    try {
-      final List<MediaDeviceInfo> devices =
-          await navigator.mediaDevices.enumerateDevices();
-      bool isBtFound = false;
-
-      for (var device in devices) {
-        if (device.kind == 'audiooutput') {
-          final String label = device.label.toLowerCase();
-          if (label.contains('bluetooth') ||
-              label.contains('blue') ||
-              label.contains('buds') ||
-              label.contains('headset') ||
-              label.contains('freebuds') ||
-              label.contains('airpods') ||
-              label.contains('hands-free') ||
-              label.contains('wireless') ||
-              label.contains('hearing aid')) {
-            isBtFound = true;
-            break;
-          }
-        }
-      }
-
-      final bool wasBtConnected = isBluetoothConnected.value;
-      isBluetoothConnected.value = isBtFound;
-
-      if (!wasBtConnected && isBtFound) {
-        await Helper.setSpeakerphoneOnButPreferBluetooth();
-        isSpeakerOn = false;
-        currentAudioRoute.value = "bluetooth";
-        await ProximityScreenLock.setActive(false);
-      } else if (wasBtConnected && !isBtFound) {
-        if (isVideoCall.value) {
-          await enableSpeaker();
-        } else {
-          await selectEarpiece();
-        }
-      } else {
-        if (isSpeakerOn) {
-          currentAudioRoute.value = "speaker";
-        } else if (isBtFound) {
-          currentAudioRoute.value = "bluetooth";
-        } else {
-          currentAudioRoute.value = "earpiece";
-        }
-      }
-
-      update();
-    } catch (e) {
-      log("checkAudioDevices error: $e");
-    }
   }
 
   void updatePipPosition({
@@ -1089,44 +1276,59 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     required double minTop,
     required double maxTop,
   }) {
-    final Offset currentPosition = pipPosition ??
-        Offset(
-          minLeft,
-          maxTop,
-        );
-
+    final Offset currentPosition = pipPosition ?? Offset(minLeft, maxTop);
     final double boundedMaxLeft = maxLeft < minLeft ? minLeft : maxLeft;
-
     final double boundedMaxTop = maxTop < minTop ? minTop : maxTop;
 
     pipPosition = Offset(
-      (currentPosition.dx + delta.dx).clamp(
-        minLeft,
-        boundedMaxLeft,
-      ),
-      (currentPosition.dy + delta.dy).clamp(
-        minTop,
-        boundedMaxTop,
-      ),
+      (currentPosition.dx + delta.dx).clamp(minLeft, boundedMaxLeft),
+      (currentPosition.dy + delta.dy).clamp(minTop, boundedMaxTop),
     );
-
     update();
   }
 
   @override
   void onClose() {
     WidgetsBinding.instance.removeObserver(this);
-    _stopForegroundCallService();
 
+    _peerDisconnectTimer?.cancel();
     _controlsTimer?.cancel();
-    _clearTimers();
-    resetPeer();
-    localRenderer.dispose();
-    remoteRenderer.dispose();
+    _remoteVideoWatchdog?.cancel(); // NEW
 
-    if (args["callType"] == "outGoing") {
-      stopSound();
+    stopSound();
+
+    navigator.mediaDevices.ondevicechange = null;
+
+    socket?.off("IceCandidate");
+    socket?.off("callAnswered");
+    socket?.off("upgradeToVideo");
+    socket?.off("upgradeToVideoAnswer");
+    socket?.off("callRejected");
+    socket?.off("callEnded");
+    socket?.off("missedCall");
+    socket?.off("callStatus");
+    socket?.off("callCreated");
+    socket?.off("newCall");
+    socket?.off("sdpOfferFromCaller");
+    socket?.off("callError");
+    socket?.off("callBlocked");
+
+    unawaited(_disposePeerResources());
+    unawaited(_stopForegroundCallService());
+    unawaited(audioRouteController.stopCall());
+
+    if (Get.isRegistered<CallAudioRouteController>(
+      tag: _audioRouteTag,
+    )) {
+      Get.delete<CallAudioRouteController>(
+        tag: _audioRouteTag,
+      );
     }
+
+    _clearTimers();
+
+    CallSessionState.reset();
+    CallStateTracker.isIncomingCallScreenOpen = false;
 
     WakelockPlus.disable();
     ProximityScreenLock.setActive(false);

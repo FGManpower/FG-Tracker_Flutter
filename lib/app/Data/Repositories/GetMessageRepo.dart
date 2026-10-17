@@ -13,6 +13,8 @@ import 'package:dio/dio.dart';
 import 'package:path/path.dart' as p;
 
 import '../../Model/GroupChatListModel.dart';
+import '../../Model/group_profile_details_model.dart';
+import '../../Model/profile_details_model.dart';
 
 class MessageRepo {
   static Future<GetMessage> MessageHistory({
@@ -29,7 +31,7 @@ class MessageRepo {
   static Future<GetMessage> privateChatHistory({
     required String chatId,
     int page = 1,
-    int limit = 50,
+    int limit = 10,
   }) async {
     final response = await HttpUtil().get(
       "/private-chat/$chatId/messages?page=$page&limit=$limit",
@@ -49,8 +51,8 @@ class MessageRepo {
   }
 
   static Future<ChatImageUploadResponse> uploadChatImage(
-    File imageFile,
-  ) async {
+      File imageFile,
+      ) async {
     FormData data = FormData.fromMap({
       "chatImage": await MultipartFile.fromFile(
         imageFile.path,
@@ -69,8 +71,8 @@ class MessageRepo {
   }
 
   static Future<ChatImageUploadResponse> uploadChatAudio(
-    String audioPath,
-  ) async {
+      String audioPath,
+      ) async {
     FormData data = FormData.fromMap({
       "chatAudio": await MultipartFile.fromFile(
         audioPath,
@@ -93,12 +95,6 @@ class MessageRepo {
     required String thumbnailPath,
     ProgressCallback? onSendProgress,
   }) async {
-    print("Video Path: $videoPath");
-    print("Thumbnail Path: $thumbnailPath");
-    print("Video Exists: ${await File(videoPath).exists()}");
-    print("Video Size: ${await File(videoPath).length()}");
-    print("Extension: ${p.extension(videoPath)}");
-
     final ext = p.extension(videoPath).replaceFirst('.', '');
 
     FormData data = FormData.fromMap({
@@ -125,8 +121,8 @@ class MessageRepo {
   }
 
   static Future<ChatImageUploadResponse> uploadChatDocument(
-    String documentPath,
-  ) async {
+      String documentPath,
+      ) async {
     final ext = p.extension(documentPath).replaceFirst('.', '');
 
     FormData data = FormData.fromMap({
@@ -235,4 +231,23 @@ class MessageRepo {
     return response;
   }
 
+  static Future<ProfileDetailsModel> getProfileDetails({
+    required int chatId,
+  }) async {
+    final response = await HttpUtil().get(
+      "/chat/profile-details?type=private&chatId=$chatId",
+    );
+
+    return ProfileDetailsModel.fromJson(response);
+  }
+
+
+  static Future<GroupProfileDetailsModel> getGroupProfileDetails({
+    required int groupId,
+  }) async {
+    final response = await HttpUtil().get(
+      "/chat/profile-details?type=group&groupId=$groupId",
+    );
+    return GroupProfileDetailsModel.fromJson(response);
+  }
 }

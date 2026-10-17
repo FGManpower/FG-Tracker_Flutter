@@ -9,7 +9,10 @@ import '../../../Core/values/global.dart';
 import '../../../Core/values/utility.dart';
 import '../../../routes/app_pages.dart';
 import '../../../Core/global/launchedFromCall.dart';
+import '../../../Core/constant/notification_holder.dart';
+import 'package:fgtracker/app/Data/Services/Socket/Socket_Walkie-Talkie-Service.dart';
 import '../../../modules/AppUpdate/Controller/UpdateCubit/update_cubit.dart';
+import '../../../modules/Walkie-talkie/Services/walkie_notification_manager.dart';
 
 class InitiateController extends GetxController
     with GetTickerProviderStateMixin {
@@ -20,6 +23,17 @@ class InitiateController extends GetxController
   late Animation<double> fadeAnimation;
 
   Timer? _splashTimer;
+
+  bool get _isCallOrWalkieActive {
+    return CallSessionState.launchedFromCall ||
+        CallSessionState.isCallActive ||
+        WalkieLaunchTracker.fromWalkieCall ||
+        WalkieNotificationManager.instance.isWalkieScreenActive.value ||
+        GroupWalkieService.instance.currentGroupId != null ||
+        Get.currentRoute == Routes.groupWalkieScreen ||
+        Get.currentRoute == Routes.callScreen ||
+        Get.currentRoute == Routes.groupCallingScreen;
+  }
 
   @override
   void onInit() {
@@ -39,7 +53,7 @@ class InitiateController extends GetxController
 
     animationController.forward();
 
-    if (CallSessionState.launchedFromCall || CallSessionState.isCallActive) {
+    if (_isCallOrWalkieActive) {
       _splashTimer?.cancel();
       return;
     }
@@ -47,7 +61,8 @@ class InitiateController extends GetxController
     Future.microtask(() async {
       await CallKitService.instance.checkCallOnLaunch();
 
-      if (CallSessionState.isCallActive || CallSessionState.launchedFromCall) {
+      if (_isCallOrWalkieActive) {
+        _splashTimer?.cancel();
         return;
       }
 
@@ -59,11 +74,19 @@ class InitiateController extends GetxController
   }
 
   void checkLoginStatus() async {
-    if (CallSessionState.isCallActive || CallSessionState.launchedFromCall) {
+    if (_isCallOrWalkieActive ||
+        (Get.currentRoute.isNotEmpty && Get.currentRoute != Routes.Splash)) {
+      _splashTimer?.cancel();
       return;
     }
 
     await Future.delayed(const Duration(seconds: 1));
+
+    if (_isCallOrWalkieActive ||
+        (Get.currentRoute.isNotEmpty && Get.currentRoute != Routes.Splash)) {
+      _splashTimer?.cancel();
+      return;
+    }
 
     if (Utility.isNotNullEmptyOrFalse(
             Global.storageServices.getaccesstoken()) &&

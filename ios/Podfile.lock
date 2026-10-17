@@ -1336,6 +1336,8 @@ PODS:
     - Flutter
     - flutter_sound_core (= 9.30.0)
   - flutter_sound_core (9.30.0)
+  - flutter_timezone (0.0.1):
+    - Flutter
   - flutter_webrtc (1.6.2):
     - Flutter
     - WebRTC-SDK (= 150.7871.01)
@@ -1617,6 +1619,7 @@ DEPENDENCIES:
   - flutter_pdfview (from `.symlinks/plugins/flutter_pdfview/ios`)
   - flutter_ringtone_player (from `.symlinks/plugins/flutter_ringtone_player/ios`)
   - flutter_sound (from `.symlinks/plugins/flutter_sound/ios`)
+  - flutter_timezone (from `.symlinks/plugins/flutter_timezone/ios`)
   - flutter_webrtc (from `.symlinks/plugins/flutter_webrtc/ios`)
   - fluttertoast (from `.symlinks/plugins/fluttertoast/ios`)
   - gal (from `.symlinks/plugins/gal/darwin`)
@@ -1736,6 +1739,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/flutter_ringtone_player/ios"
   flutter_sound:
     :path: ".symlinks/plugins/flutter_sound/ios"
+  flutter_timezone:
+    :path: ".symlinks/plugins/flutter_timezone/ios"
   flutter_webrtc:
     :path: ".symlinks/plugins/flutter_webrtc/ios"
   fluttertoast:
@@ -1835,6 +1840,7 @@ SPEC CHECKSUMS:
   flutter_ringtone_player: 15eba85187230b87b2512f0e1b92225618bc03e7
   flutter_sound: 0e2f5015f122fc8be5ab9afd9e4b7f2aefbd65c8
   flutter_sound_core: 7f2626d249d3a57bfa6da892ef7e22d234482c1a
+  flutter_timezone: ac3da59ac941ff1c98a2e1f0293420e020120282
   flutter_webrtc: e0ea105ab0892632c46cf0cdd61b865259777f55
   fluttertoast: 21eecd6935e7064cc1fcb733a4c5a428f3f24f0f
   gal: 6a522c75909f1244732d4596d11d6a2f86ff37a5
@@ -1890,6 +1896,6 @@ SPEC CHECKSUMS:
   wakelock_plus: 76957ab028e12bfa4e66813c99e46637f367fc7e
   WebRTC-SDK: 7dc931c64c00c735a614382f1a59cf65019c3c17
 
-PODFILE CHECKSUM: 8349e2a3f44213368e815dacbffe2d713e3e9789
+PODFILE CHECKSUM: 9a88104ce6b2bdb766b0286786f2117fc36e05b2
 
 COCOAPODS: 1.16.2

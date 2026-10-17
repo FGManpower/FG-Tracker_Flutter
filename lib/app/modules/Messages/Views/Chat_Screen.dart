@@ -37,36 +37,6 @@ class ChatScreen extends GetView<MessageController> {
   @override
   Widget build(BuildContext context) {
     final userData = controller.memberData;
-
-    debugPrint("");
-    debugPrint("====================================================");
-    debugPrint("=============== CHAT SCREEN OPENED =================");
-    debugPrint("====================================================");
-
-    debugPrint("CHAT MEMBER USER ID   => ${userData.userId}");
-    debugPrint("CHAT MEMBER NAME      => ${userData.name}");
-    debugPrint("CHAT MEMBER IMAGE     => ${userData.profileImage}");
-    debugPrint("CHAT MEMBER GROUP ID  => ${userData.groupId}");
-
-    debugPrint("----------------------------------------------------");
-
-    debugPrint("GET ARGUMENTS => ${Get.arguments}");
-
-    debugPrint("====================================================");
-    debugPrint("");
-    String lastSeenText = "Offline";
-    bool isOnline = false;
-
-    if (userData.lastSeen != null && userData.lastSeen!.trim().isNotEmpty) {
-      final rawLastSeen = userData.lastSeen!.trim();
-      try {
-        lastSeenText = Tracking().getTimeAgo(DateTime.parse(rawLastSeen));
-      } catch (_) {
-        lastSeenText = rawLastSeen;
-      }
-      isOnline = lastSeenText.toLowerCase() == "just now";
-    }
-
     return WillPopScope(
       onWillPop: () async {
         controller.handleBackPressed(
@@ -79,13 +49,24 @@ class ChatScreen extends GetView<MessageController> {
         backgroundColor: _scaffoldBg,
         resizeToAvoidBottomInset: true,
         appBar: PreferredSize(
-          preferredSize: Size.fromHeight(64.h),
-          child: Obx(() {
-            if (controller.isSearching.value) return _buildSearchAppBar();
-            return _buildNormalAppBar(
-                context, userData, isOnline, lastSeenText);
-          }),
-        ),
+        preferredSize: Size.fromHeight(64.h),
+        child: Obx(() {
+          if (controller.isSearching.value) {
+            return _buildSearchAppBar();
+          }
+
+          final isOnline = controller.isPeerOnline.value;
+          final lastSeenText = controller.peerLastSeen.value;
+
+          return _buildNormalAppBar(
+            context,
+            userData,
+            isOnline,
+            lastSeenText,
+          );
+        }),
+      ),
+
         body: SafeArea(
           child: Column(
             children: [

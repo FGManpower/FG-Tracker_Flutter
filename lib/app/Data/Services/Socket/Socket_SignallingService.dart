@@ -43,8 +43,6 @@ class SignallingService {
       log('==========CallRejectedbyRemoteUserass');
     });
 
-
-
     socket!.on("callEnded", (data) async {
       log('==========CallEndedFromRemoteParam========$data');
       CallSessionState.sessionId = data['sessionId'].toString();
@@ -107,10 +105,6 @@ class SignallingService {
   }
 }
 
-
-
-
-
 callEnded(String sessionId, {String? type}) async {
   await ConnectycubeFlutterCallKit.reportCallEnded(
     sessionId: sessionId,
@@ -119,6 +113,6 @@ callEnded(String sessionId, {String? type}) async {
   await ConnectycubeFlutterCallKit.clearCallData(
     sessionId: sessionId,
   );
-  log('==========CallEnded:$sessionId,===Type:$type');
+  // log('==========CallEnded:$sessionId,===Type:$type');
   CallSessionState.reset();
 }

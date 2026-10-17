@@ -76,7 +76,7 @@ class _AudiocallScreenState extends State<AudiocallScreen>
               SizedBox(height: 10.h),
 
               Text(
-                isOutgoing ? "Calling" : "Call From",
+                isOutgoing ? "" : "Call From",
                 style: TextStyle(
                   color: primaryPurple.withOpacity(0.85),
                   fontSize: 14.sp,

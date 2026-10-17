@@ -48,16 +48,27 @@ Widget headerUi(HomeController controller) {
             child: IconButton(
               icon: CircleAvatar(
                 radius: 27.r,
-                backgroundColor: Colors.grey[200],
-                backgroundImage: NetworkImage(
-                  Utility.isNotNullEmptyOrFalse(
-                          controller.userData.value.profileImage)
-                      ? "${ConstRes.aImageBaseUrl}${controller.userData.value.profileImage}"
-                      : MyAppTheme.ProfilenotFoundImg,
-                ),
-                child: controller.userData.value.profileImage == null
-                    ? Icon(Icons.person, color: Colors.white)
-                    : null,
+                backgroundColor: const Color(0xFFEDE9FE),
+                child: Utility.isNotNullEmptyOrFalse(
+                        controller.userData.value.profileImage)
+                    ? ClipOval(
+                        child: Image.network(
+                          "${ConstRes.aImageBaseUrl}${controller.userData.value.profileImage}",
+                          width: 54.r,
+                          height: 54.r,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => Icon(
+                            Icons.person_rounded,
+                            size: 30.r,
+                            color: const Color(0xFF5D47F1),
+                          ),
+                        ),
+                      )
+                    : Icon(
+                        Icons.person_rounded,
+                        size: 30.r,
+                        color: const Color(0xFF5D47F1),
+                      ),
               ),
               onPressed: () {
                 Get.toNamed(Routes.Register, arguments: {

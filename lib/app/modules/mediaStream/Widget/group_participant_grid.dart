@@ -1,9 +1,11 @@
 import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:get/get.dart';
+
+import 'package:fgtracker/app/modules/mediaStream/Controller/group_calling_controller.dart';
+import 'package:fgtracker/app/Data/Services/Socket/Socket_Group_Calling.dart';
 import '../../../../gen/fonts.gen.dart';
 import '../../../Core/constant/const_res.dart';
 import '../../../Core/theme/appTheme.dart';
@@ -18,7 +20,6 @@ class GroupParticipantGrid extends StatelessWidget {
   final String? pinnedUserId;
   final void Function(String userId)? onTogglePin;
   final VoidCallback? onSwitchCamera;
-
 
   const GroupParticipantGrid({
     super.key,
@@ -36,6 +37,20 @@ class GroupParticipantGrid extends StatelessWidget {
         .contains(userId.toString().trim());
   }
 
+  RTCVideoRenderer? _getLiveRenderer(GroupCallParticipant participant) {
+    if (participant.isLocal) return participant.renderer;
+    return Socket_GroupCallService.instance.remoteRenderers[participant.userId] ??
+        participant.renderer;
+  }
+
+  /// A renderer can show video as soon as its stream has a video track.
+  /// (Old code also required track.muted != true, which hid valid remote
+  /// video because remote tracks often report muted for a long time.)
+  bool _hasRenderableVideo(RTCVideoRenderer? r) {
+    final videos = r?.srcObject?.getVideoTracks();
+    return videos != null && videos.isNotEmpty;
+  }
+
   @override
   Widget build(BuildContext context) {
     if (participants.isEmpty) return const SizedBox();
@@ -46,8 +61,7 @@ class GroupParticipantGrid extends StatelessWidget {
       return _buildTile(participants[0], isFullScreen: true);
     }
 
-    final pinnedIndex =
-    participants.indexWhere((p) => p.userId == pinnedUserId);
+    final pinnedIndex = participants.indexWhere((p) => p.userId == pinnedUserId);
 
     if (pinnedIndex >= 0 && count >= 2) {
       final pinnedUser = participants[pinnedIndex];
@@ -59,7 +73,6 @@ class GroupParticipantGrid extends StatelessWidget {
       final isPinnedSharing = _isSharing(pinnedUser.userId);
 
       return Padding(
-
         padding: EdgeInsets.only(
           left: 6.w,
           right: 6.w,
@@ -77,9 +90,7 @@ class GroupParticipantGrid extends StatelessWidget {
                 forceContain: isPinnedSharing,
               ),
             ),
-
             SizedBox(height: 6.h),
-
             SizedBox(
               height: 78.h,
               child: ListView.separated(
@@ -104,7 +115,6 @@ class GroupParticipantGrid extends StatelessWidget {
       );
     }
 
-
     if (count == 2) {
       return Padding(
         padding: EdgeInsets.only(
@@ -122,7 +132,6 @@ class GroupParticipantGrid extends StatelessWidget {
         ),
       );
     }
-
 
     return GridView.builder(
       padding: EdgeInsets.only(
@@ -160,7 +169,6 @@ class GroupParticipantGrid extends StatelessWidget {
         bool forceContain = false,
       }) {
     final sharing = _isSharing(participant.userId);
-
     final useContain = forceContain || sharing;
 
     Widget tileContent = ClipRRect(
@@ -168,7 +176,6 @@ class GroupParticipantGrid extends StatelessWidget {
         isFullScreen ? 0 : (isThumbnail ? 12.r : 16.r),
       ),
       child: Container(
-
         decoration: BoxDecoration(
           color: const Color(0xFF12101F),
           borderRadius: BorderRadius.circular(
@@ -181,15 +188,32 @@ class GroupParticipantGrid extends StatelessWidget {
         child: Stack(
           fit: StackFit.expand,
           children: [
-
             Obx(() {
-              final isVideoOn = participant.isVideoOn.value;
-              final rendererReady = participant.renderer != null &&
-                  participant.renderer!.textureId != null;
+              // 1. Force UI rebuild when new WebRTC streams attach to peers
+              if (Get.isRegistered<GroupCallingController>()) {
+                Get.find<GroupCallingController>().participantsUiTick.value;
+              }
 
-              if ((isVideoOn || sharing) && rendererReady) {
+              final isVideoOn = participant.isVideoOn.value;
+
+              // 2. Fetch the live renderer from the socket service directly
+              final liveRenderer = _getLiveRenderer(participant);
+              final rendererReady = liveRenderer?.textureId != null;
+              final hasVideo = _hasRenderableVideo(liveRenderer);
+              final streamId = liveRenderer?.srcObject?.id ?? 'none';
+              final trackId =
+                  liveRenderer?.srcObject?.getVideoTracks().firstOrNull?.id ??
+                      'none';
+
+              // 3. Render video only for slot holders (or screen share)
+              if ((isVideoOn || sharing) &&
+                  rendererReady &&
+                  hasVideo &&
+                  liveRenderer != null) {
                 return RTCVideoView(
-                  participant.renderer!,
+                  liveRenderer,
+                  // Key changes when stream OR video track changes -> texture refresh
+                  key: ValueKey('rtc_${participant.userId}_${streamId}_$trackId'),
                   mirror: participant.isLocal && !sharing,
                   objectFit: useContain
                       ? RTCVideoViewObjectFit.RTCVideoViewObjectFitContain
@@ -197,6 +221,7 @@ class GroupParticipantGrid extends StatelessWidget {
                 );
               }
 
+              // Everyone else: profile picture, audio keeps flowing
               return _buildFallback(
                 participant,
                 cameraOff: !isVideoOn && !sharing,
@@ -223,7 +248,6 @@ class GroupParticipantGrid extends StatelessWidget {
                 ),
               ),
 
-
             if (sharing && !isThumbnail)
               Positioned(
                 top: 10.h,
@@ -236,8 +260,10 @@ class GroupParticipantGrid extends StatelessWidget {
                 ),
               ),
 
-
-            if (!isPinned && !isFullScreen && !isThumbnail && isVideoMode==true)
+            if (!isPinned &&
+                !isFullScreen &&
+                !isThumbnail &&
+                isVideoMode == true)
               Positioned(
                 top: 10.h,
                 right: 10.w,
@@ -247,7 +273,10 @@ class GroupParticipantGrid extends StatelessWidget {
                 ),
               ),
 
-            if (isPinned && !isFullScreen && !isThumbnail && isVideoMode==true)
+            if (isPinned &&
+                !isFullScreen &&
+                !isThumbnail &&
+                isVideoMode == true)
               Positioned(
                 right: 12.w,
                 bottom: 12.h,
@@ -257,7 +286,6 @@ class GroupParticipantGrid extends StatelessWidget {
                   onTap: () => onTogglePin?.call(participant.userId),
                 ),
               ),
-
 
             if (!isFullScreen)
               Positioned(
@@ -327,7 +355,6 @@ class GroupParticipantGrid extends StatelessWidget {
         ),
       ),
     );
-
 
     if (isThumbnail) {
       return GestureDetector(
@@ -419,13 +446,6 @@ class GroupParticipantGrid extends StatelessWidget {
     final imageUrl = Utility.isNullEmptyOrFalse(participant.profileImage)
         ? MyAppTheme.ProfilenotFoundImg
         : ConstRes.aImageBaseUrl + (participant.profileImage ?? '');
-    log(
-      "GROUP CALL DP => "
-          "userId=${participant.userId} | "
-          "profileImage=${participant.profileImage} | "
-          "baseUrl=${ConstRes.aImageBaseUrl} | "
-          "finalUrl=$imageUrl",
-    );
     return Stack(
       fit: StackFit.expand,
       children: [

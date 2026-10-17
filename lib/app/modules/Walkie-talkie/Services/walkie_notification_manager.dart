@@ -353,6 +353,7 @@ class WalkieNotificationManager {
     if (isWalkieScreenActive.value &&
         WalkieLaunchTracker.fromWalkieCall &&
         GroupWalkieService.instance.currentGroupId == groupId) {
+      await GroupWalkieService.instance.joinGroup(groupId);
       return;
     }
 

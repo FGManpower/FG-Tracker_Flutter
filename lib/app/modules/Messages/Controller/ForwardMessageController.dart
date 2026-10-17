@@ -98,8 +98,8 @@ class ForwardMessageController extends GetxController {
     if (targetId == null) return false;
 
     return selectedDestinations.any(
-      (selected) =>
-          selected.type == destination.type && selected.targetId == targetId,
+          (selected) =>
+      selected.type == destination.type && selected.targetId == targetId,
     );
   }
 
@@ -109,8 +109,8 @@ class ForwardMessageController extends GetxController {
     if (targetId == null) return;
 
     final index = selectedDestinations.indexWhere(
-      (selected) =>
-          selected.type == destination.type && selected.targetId == targetId,
+          (selected) =>
+      selected.type == destination.type && selected.targetId == targetId,
     );
 
     if (index != -1) {
@@ -124,15 +124,25 @@ class ForwardMessageController extends GetxController {
 
   bool get hasSelection => selectedDestinations.isNotEmpty;
 
+  bool _hasName(ForwardDestination destination) {
+    return ('${destination.name ?? ''}').trim().isNotEmpty;
+  }
+
   List<ForwardDestination> get users {
     return filteredDestinations
-        .where((destination) => !destination.isGroup)
+        .where((destination) => !destination.isGroup && _hasName(destination))
         .toList();
   }
 
   List<ForwardDestination> get groups {
     return filteredDestinations
         .where((destination) => destination.isGroup)
+        .toList();
+  }
+
+  List<ForwardDestination> get numberUsers {
+    return filteredDestinations
+        .where((destination) => !destination.isGroup && !_hasName(destination))
         .toList();
   }
 
@@ -166,10 +176,10 @@ class ForwardMessageController extends GetxController {
           .where((destination) => destination.targetId != null)
           .map(
             (destination) => ForwardTarget(
-              type: destination.isGroup ? "group" : "private",
-              userId: destination.targetId!,
-            ),
-          )
+          type: destination.isGroup ? "group" : "private",
+          userId: destination.targetId!,
+        ),
+      )
           .toList();
 
       final response = await MessageRepo.forwardMessage(
@@ -213,9 +223,9 @@ class ForwardMessageController extends GetxController {
         page: () => ChatListScreen(),
         transition: instant ? Transition.noTransition : null,
         transitionDuration:
-            instant ? Duration.zero : const Duration(milliseconds: 300),
+        instant ? Duration.zero : const Duration(milliseconds: 300),
       ),
-      (route) => route.isFirst,
+          (route) => route.isFirst,
     );
   }
 
@@ -232,7 +242,7 @@ class ForwardMessageController extends GetxController {
     await Future.delayed(const Duration(milliseconds: 50));
 
     Get.to(
-      () => ChatScreen(),
+          () => ChatScreen(),
       arguments: {
         "userData": userData,
       },

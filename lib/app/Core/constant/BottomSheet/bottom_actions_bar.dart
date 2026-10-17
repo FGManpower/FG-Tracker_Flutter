@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'dart:io';
 
 Future<void> showCreateGroupSheet() {
   return Get.bottomSheet(
@@ -105,6 +106,50 @@ class _CreateGroupSheetState extends State<CreateGroupSheet> {
                 SizedBox(height: 18.h),
                 const Divider(height: 1, color: Color(0xFFF0EEF7)),
                 SizedBox(height: 24.h),
+                Obx(() {
+                  final image = _controller.selectedGroupImage.value;
+
+                  return Center(
+                    child: GestureDetector(
+                      onTap: _controller.pickGroupImage,
+                      child: Stack(
+                        children: [
+                          CircleAvatar(
+                            radius: 42,
+                            backgroundColor: const Color(0xFFEDE7FF),
+                            backgroundImage:
+                            image != null ? FileImage(File(image.path)) : null,
+                            child: image == null
+                                ? const Icon(
+                              Icons.camera_alt_outlined,
+                              size: 30,
+                              color: Color(0xFF6B4DFF),
+                            )
+                                : null,
+                          ),
+                          if (image != null)
+                            Positioned(
+                              right: 0,
+                              top: 0,
+                              child: GestureDetector(
+                                onTap: _controller.removeSelectedGroupImage,
+                                child: const CircleAvatar(
+                                  radius: 12,
+                                  backgroundColor: Colors.red,
+                                  child: Icon(
+                                    Icons.close,
+                                    size: 14,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  );
+                }),
+                SizedBox(height: 20.h),
                 _FieldLabel(
                   icon: Icons.groups_outlined,
                   title: AppText.groupName,
@@ -125,23 +170,23 @@ class _CreateGroupSheetState extends State<CreateGroupSheet> {
                   ),
                   onFieldSubmitted: (_) => _descFocus.requestFocus(),
                 ),
-                SizedBox(height: 5.h),
-                // _FieldLabel(
-                //   icon: Icons.description_outlined,
-                //   title: "Group Description",
-                //   required: false,
-                // ),
-                // SizedBox(height: 12.h),
-                // _RoundedField(
-                //   controller: _controller.groupDesc,
-                //   hint: "Enter Group Description",
-                //   icon: Icons.description_outlined,
-                //   maxLength: 200,
-                //   maxLines: 1,
-                //   focusNode: _descFocus,
-                //   textInputAction: TextInputAction.done,
-                //   onFieldSubmitted: (_) => _submit(),
-                // ),
+                SizedBox(height: 12.h),
+                _FieldLabel(
+                  icon: Icons.description_outlined,
+                  title: "Group Description (Optional)",
+                  required: false,
+                ),
+                SizedBox(height: 12.h),
+                _RoundedField(
+                  controller: _controller.groupDesc,
+                  hint: "Enter Group Description",
+                  icon: Icons.description_outlined,
+                  maxLength: 200,
+                  maxLines: 1,
+                  focusNode: _descFocus,
+                  textInputAction: TextInputAction.done,
+                  onFieldSubmitted: (_) => _submit(),
+                ),
                 _CharacterCounter(controller: _controller.groupDesc),
                 SizedBox(height: 24.h),
                 _SubmitButton(

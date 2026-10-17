@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Data/Repositories/InitializeRepo.dart';

@@ -746,15 +746,30 @@ class RegistrationScreen extends GetView<RegistrationController> {
         controller.userData.profileImage)) {
       return CircleAvatar(
         radius: radius,
-        backgroundImage: NetworkImage(
-            "${ConstRes.aImageBaseUrl}${controller.userData.profileImage}"),
         backgroundColor: defaultBgColor,
+        child: ClipOval(
+          child: Image.network(
+            "${ConstRes.aImageBaseUrl}${controller.userData.profileImage}",
+            width: radius * 2,
+            height: radius * 2,
+            fit: BoxFit.cover,
+            errorBuilder: (_, __, ___) => Icon(
+              Icons.person_rounded,
+              size: radius * 1.1,
+              color: const Color(0xFF5D47F1),
+            ),
+          ),
+        ),
       );
     } else {
       return CircleAvatar(
         radius: radius,
         backgroundColor: defaultBgColor,
-        backgroundImage: Assets.images.userAvatar.provider(),
+        child: Icon(
+          Icons.person_rounded,
+          size: radius * 1.1,
+          color: const Color(0xFF5D47F1),
+        ),
       );
     }
   }
