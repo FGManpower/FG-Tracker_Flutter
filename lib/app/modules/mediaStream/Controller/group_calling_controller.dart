@@ -40,6 +40,9 @@ class GroupCallingController extends GetxController {
   RxInt callDurationSeconds = 0.obs;
 
   RxBool isAudioOn = true.obs;
+
+  /// Camera INTENT (what the user wants). The effective state, which also
+  /// depends on the 4-slot limit, is computed in Socket_GroupCallService.
   RxBool isVideoOn = true.obs;
   RxBool isFrontCamera = true.obs;
 
@@ -69,9 +72,6 @@ class GroupCallingController extends GetxController {
   late final String _audioRouteTag;
   Worker? _routeWorker;
   final Set<String> _groupMemberIds = <String>{};
-
-  // MAXIMUM ALLOWED VIDEO STREAMS IN THE GROUP
-  static const int maxAllowedVideos = 4;
 
   @override
   void onInit() {
@@ -116,6 +116,8 @@ class GroupCallingController extends GetxController {
         onResponse: (success, generatedCallId, errorMessage) {
           if (success) {
             callId = generatedCallId;
+            // callId now known -> publish our camera state / slot
+            svc.recomputeVideoSlots(force: true);
           } else {
             _stopSound();
             Utils().fluttertoast(errorMessage ?? "Unable to initialize group call");
@@ -132,6 +134,7 @@ class GroupCallingController extends GetxController {
             Utils().fluttertoast("Failed to connect to the call session");
             Get.back();
           } else {
+            svc.recomputeVideoSlots(force: true);
             _syncParticipants();
           }
         });
@@ -139,7 +142,10 @@ class GroupCallingController extends GetxController {
     }
 
     _setupLocalMedia().then((_) async {
-      await Socket_GroupCallService.instance.onLocalStreamReady();
+      final s = Socket_GroupCallService.instance;
+      s.callIsVideo = isVideo;
+      s.setLocalWantsVideo(isVideo); // applies slot result to the local track
+      await s.onLocalStreamReady();
     }).catchError((e) {
       Utils().fluttertoast("Camera or Mic permissions are required");
       Get.back();
@@ -160,6 +166,7 @@ class GroupCallingController extends GetxController {
     svc.onParticipantMuteChanged = _onParticipantMuteChanged;
     svc.onParticipantCameraChanged = (uid, state) => _syncParticipants();
     svc.onParticipantsRosterUpdated = _onParticipantsRosterUpdated;
+    svc.onLocalVideoSlotChanged = _onLocalVideoSlot;
 
     svc.onScreenShareStarted = (userId) {
       screenSharingUsers.add(userId);
@@ -171,6 +178,21 @@ class GroupCallingController extends GetxController {
       if (pinnedUserId.value == userId) pinnedUserId.value = null;
       if (fullScreenShareUserId.value == userId) closeFullScreenShare();
     };
+  }
+
+  /// Called by the service whenever our own video slot result changes.
+  void _onLocalVideoSlot(bool effective, bool wants) {
+    final svc = Socket_GroupCallService.instance;
+    if (!isScreenSharing.value) {
+      svc.localStream?.getVideoTracks().forEach((t) => t.enabled = effective);
+    }
+    activeParticipants.firstWhereOrNull((p) => p.isLocal)?.isVideoOn.value = effective;
+
+    if (wants && !effective && isVideo) {
+      Utils().fluttertoast(
+          "${Socket_GroupCallService.maxVideoSlots} video slots are in use. "
+              "Your video will start when a slot frees up.");
+    }
   }
 
   void _updateProximitySensor({bool forceDisable = false}) {
@@ -264,6 +286,7 @@ class GroupCallingController extends GetxController {
     callType = args["callType"]?.toString() ?? "outgoing";
     callId = args["callId"]?.toString();
     isVideoOn.value = isVideo;
+    Socket_GroupCallService.instance.callIsVideo = isVideo;
 
     final callerId = args["callerId"]?.toString();
     final callerName = args["callerName"]?.toString();
@@ -401,14 +424,14 @@ class GroupCallingController extends GetxController {
       if (cameraTrack != null) {
         await Socket_GroupCallService.instance.replaceVideoTrack(cameraTrack);
         localRenderer.srcObject = Socket_GroupCallService.instance.localStream;
-        if (!isVideoOn.value) cameraTrack.enabled = false;
+        cameraTrack.enabled = Socket_GroupCallService.instance.localVideoEffective;
       }
       if (pinnedUserId.value == myUserId) pinnedUserId.value = null;
     } else {
       try {
         final constraints = webrtc.WebRTC.platformIsIOS
-            ? { 'video': {'deviceId': 'broadcast'} }
-            : { 'video': true, 'audio': false };
+            ? {'video': {'deviceId': 'broadcast'}}
+            : {'video': true, 'audio': false};
 
         screenStream = await webrtc.navigator.mediaDevices.getDisplayMedia(constraints);
         if (screenStream == null || screenStream!.getVideoTracks().isEmpty) {
@@ -511,7 +534,7 @@ class GroupCallingController extends GetxController {
           if (res is Map && res["success"] == false) {
             Utils().fluttertoast(res["message"]?.toString() ?? "Notify failed");
           } else {
-            Utils().fluttertoast( "Notify Successfully");
+            Utils().fluttertoast("Notify Successfully");
             _refreshNotInCallList();
           }
         },
@@ -552,7 +575,7 @@ class GroupCallingController extends GetxController {
             name: svc.getParticipantName(uid),
             profileImage: svc.getParticipantProfileImage(uid),
             isLocal: uid == myUserId,
-            videoOn: svc.remoteCameraStates[uid] ?? false,
+            videoOn: svc.isRemoteVideoOn(uid),
             connected: true,
           )..isMuted.value = svc.getParticipantMuted(uid));
       inCallList.add(obj);
@@ -630,7 +653,7 @@ class GroupCallingController extends GetxController {
     }
   }
 
-  /// Syncs UI participants and safely binds WebRTC Stream track objects.
+  /// Syncs UI participants and safely binds WebRTC stream objects.
   void _syncParticipants() {
     final svc = Socket_GroupCallService.instance;
     final local = activeParticipants.firstWhereOrNull((p) => p.isLocal);
@@ -650,15 +673,13 @@ class GroupCallingController extends GetxController {
       final image = svc.getParticipantProfileImage(userId);
       final muted = svc.getParticipantMuted(userId);
 
-      // Determine camera state safely (default to track existence if unknown)
-      final hasVideoTrack = renderer?.srcObject?.getVideoTracks().isNotEmpty == true;
-      final remoteCamState = svc.remoteCameraStates[userId] ?? hasVideoTrack;
+      // Camera state comes from the deterministic slot logic / socket events
+      final remoteCamState = svc.isRemoteVideoOn(userId);
 
       if (existing != null && !existing.isLocal) {
         existing.name = name;
         existing.profileImage = image;
 
-        // FIXED: Cache renderer and ensure srcObject stream is bound
         if (renderer != null) {
           existing.renderer = renderer;
           existing.stream = renderer.srcObject;
@@ -712,19 +733,10 @@ class GroupCallingController extends GetxController {
   void toggleCamera() {
     if (!isVideo || isScreenSharing.value) return;
 
-    // Check 4-video limit before allowing turn ON
-    if (!isVideoOn.value) {
-      final activeVideoCount = activeParticipants.where((p) => p.isVideoOn.value).length;
-      if (activeVideoCount >= maxAllowedVideos) {
-        Utils().fluttertoast("Sorry, camera access is currently unavailable. Please try again later.");
-        return;
-      }
-    }
-
-    isVideoOn.value = !isVideoOn.value;
-    Socket_GroupCallService.instance.localStream?.getVideoTracks().forEach((t) => t.enabled = isVideoOn.value);
-    activeParticipants.firstWhereOrNull((p) => p.isLocal)?.isVideoOn.value = isVideoOn.value;
-    Socket_GroupCallService.instance.emitCameraChange(isVideoOn: isVideoOn.value);
+    isVideoOn.value = !isVideoOn.value; // intent
+    // Service decides if we actually hold a slot, updates the track via
+    // _onLocalVideoSlot and broadcasts to everyone.
+    Socket_GroupCallService.instance.setLocalWantsVideo(isVideoOn.value);
 
     _syncParticipants();
   }
@@ -897,6 +909,7 @@ class GroupCallingController extends GetxController {
     svc.onScreenShareStopped = null;
     svc.onParticipantCameraChanged = null;
     svc.onParticipantsRosterUpdated = null;
+    svc.onLocalVideoSlotChanged = null;
 
     try {
       localRenderer.dispose();

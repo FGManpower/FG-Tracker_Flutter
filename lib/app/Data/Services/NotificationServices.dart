@@ -1032,7 +1032,7 @@ class firebaseNotificationServices {
               (key, value) => MapEntry(key.toString(), value.toString()));
           await ConnectycubeFlutterCallKit.showCallNotification(
             CallEvent(
-              sessionId: callData('session_id'),
+              sessionId: message.data['session_id'].toString(),
               callerName: callData['groupName'],
               callType: callData['isVideo'] == true ? 1 : 0,
               opponentsIds: {int.parse(callData['callerId'])},
