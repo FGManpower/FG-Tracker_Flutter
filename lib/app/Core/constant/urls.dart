@@ -35,6 +35,12 @@ class Urls {
   static const String walkieUpdateMemberSubscription =
       '${ConstRes.aBaseUrl}walkie/update-member-subscription';
 
+  static const String walkieChannels = '${ConstRes.aBaseUrl}walkie/channels';
+  static String walkieChannelNotifications(dynamic groupId) =>
+      '${ConstRes.aBaseUrl}walkie/channels/$groupId/notifications';
+  static const String walkieActiveChannel =
+      '${ConstRes.aBaseUrl}walkie/active-channel';
+
   static const String createStatus = "status/create";
   static const String statusFeed = "status/feed";
   static const String myStatus = "status/my-status";

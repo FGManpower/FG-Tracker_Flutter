@@ -93,6 +93,35 @@ class HttpUtil {
     }
   }
 
+  Future<dynamic> Authpatch(
+    String path, {
+    dynamic data,
+    Map<String, dynamic>? queryParameteres,
+    FormData? formdata,
+    String? type,
+  }) async {
+    try {
+      api.sendRequest.options.headers["authorization"] =
+          "Bearer ${Global.storageServices.getaccesstoken()!}";
+
+      api.sendRequest.options.headers['accept'] = 'application/json';
+
+      var response = await api.sendRequest.patch(
+        path,
+        data: type == "formdata" ? formdata : data,
+        queryParameters: queryParameteres,
+      );
+
+      return response.data;
+    } catch (e) {
+      if (e is DioException) {
+        throw ApiErrorHandler.handleDioError(e);
+      }
+
+      throw AppText.anUnexpectedError;
+    }
+  }
+
   Future<dynamic> Authdelete(
     String path, {
     dynamic data,

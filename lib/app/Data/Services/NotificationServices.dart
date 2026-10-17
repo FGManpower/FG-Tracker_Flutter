@@ -247,20 +247,33 @@ class firebaseNotificationServices {
   }) async {
     if (groupId.isEmpty) return;
     WalkieLaunchTracker.fromWalkieCall = true;
-    if (GroupWalkieService.instance.currentGroupId != null &&
-        GroupWalkieService.instance.currentGroupId != groupId) {
-      await GroupWalkieService.instance.leaveGroup();
+
+    final args = {
+      "groupId": groupId,
+      "groupName": groupName,
+      "speakerName": speakerName,
+      "speakerImage": speakerImage ?? '',
+      "autoOpened": true,
+    };
+
+    if (Get.currentRoute == Routes.groupWalkieScreen) {
+      if (GroupWalkieService.instance.currentGroupId != null &&
+          GroupWalkieService.instance.currentGroupId != groupId) {
+        await GroupWalkieService.instance.leaveGroup();
+        Get.offNamed(Routes.groupWalkieScreen, arguments: args);
+      } else {
+        await GroupWalkieService.instance.joinGroup(groupId);
+      }
+    } else {
+      if (GroupWalkieService.instance.currentGroupId != null &&
+          GroupWalkieService.instance.currentGroupId != groupId) {
+        await GroupWalkieService.instance.leaveGroup();
+      }
+      Get.toNamed(
+        Routes.groupWalkieScreen,
+        arguments: args,
+      );
     }
-    Get.toNamed(
-      Routes.groupWalkieScreen,
-      arguments: {
-        "groupId": groupId,
-        "groupName": groupName,
-        "speakerName": speakerName,
-        "speakerImage": speakerImage ?? '',
-        "autoOpened": true,
-      },
-    );
   }
 
   static Future<void> showWalkieNotification({
