@@ -511,6 +511,7 @@ class GroupCallingController extends GetxController {
           if (res is Map && res["success"] == false) {
             Utils().fluttertoast(res["message"]?.toString() ?? "Notify failed");
           } else {
+            Utils().fluttertoast( "Notify Successfully");
             _refreshNotInCallList();
           }
         },

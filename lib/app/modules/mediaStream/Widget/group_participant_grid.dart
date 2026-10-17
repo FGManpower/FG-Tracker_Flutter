@@ -37,14 +37,12 @@ class GroupParticipantGrid extends StatelessWidget {
         .contains(userId.toString().trim());
   }
 
-  /// Get live renderer from socket service (Fixes Blank Screens)
   RTCVideoRenderer? _getLiveRenderer(GroupCallParticipant participant) {
     if (participant.isLocal) return participant.renderer;
     return Socket_GroupCallService.instance.remoteRenderers[participant.userId] ??
         participant.renderer;
   }
 
-  /// Ensure the stream actually has valid video tracks flowing
   bool _hasRenderableVideo(RTCVideoRenderer? renderer) {
     if (renderer == null || renderer.srcObject == null) return false;
     final videos = renderer.srcObject!.getVideoTracks();
