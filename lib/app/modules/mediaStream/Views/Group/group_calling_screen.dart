@@ -32,9 +32,8 @@ class GroupCallingScreen extends GetView<GroupCallingController> {
                   final fullUserId = controller.fullScreenShareUserId.value;
 
                   if (fullUserId != null && fullUserId.isNotEmpty) {
-                    final participant =
-                        controller.activeParticipants.firstWhereOrNull(
-                      (p) => p.userId.toString().trim() == fullUserId.trim(),
+                    final participant = controller.activeParticipants.firstWhereOrNull(
+                          (p) => p.userId.toString().trim() == fullUserId.trim(),
                     );
                     if (participant != null) {
                       return GroupScreenShareFullScreen(
@@ -43,6 +42,9 @@ class GroupCallingScreen extends GetView<GroupCallingController> {
                       );
                     }
                   }
+
+                  // Force rebuild when tracks attach / roster changes
+                  final _ = controller.participantsUiTick.value;
 
                   return GroupParticipantGrid(
                     pinnedUserId: controller.pinnedUserId.value,
