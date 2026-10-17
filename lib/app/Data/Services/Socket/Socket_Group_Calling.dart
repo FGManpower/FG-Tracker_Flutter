@@ -253,7 +253,6 @@ class Socket_GroupCallService {
     socket?.on("group_call_started", (raw) {});
 
     socket?.on("group_call_participant_joined", (raw) {
-      _log("group_call_participant_joined: $raw");
       if (raw == null) return;
       final data = Map<String, dynamic>.from(raw);
       final joinedUserId = data['userId']?.toString();
@@ -261,14 +260,7 @@ class Socket_GroupCallService {
 
       final name = (data['name'] ?? data['userName'] ?? '').toString();
       final profileImage =
-          (data['profileImage'] ?? data['userProfileImage'] ?? '').toString();
-
-      _log(
-        "JOIN PARTICIPANT PARSED => "
-        "userId=$joinedUserId | "
-        "name=$name | "
-        "profileImage=$profileImage",
-      );
+      (data['profileImage'] ?? data['userProfileImage'] ?? '').toString();
 
       _saveParticipantMeta(
         joinedUserId,
@@ -276,6 +268,9 @@ class Socket_GroupCallService {
         profileImage: profileImage,
         isMuted: data['isMuted'] == true,
       );
+
+      participantStatus[joinedUserId] = 'accepted';
+      _addRemoteUser(joinedUserId);
 
       onParticipantJoined?.call(joinedUserId);
       onParticipantsUpdated?.call();
@@ -1023,11 +1018,10 @@ class Socket_GroupCallService {
     remoteUsers.clear();
     remoteCameraStates.clear();
     participantStatus.clear();
-    // Keep participantMeta if you want names next call; clear if you prefer fresh:
-    // participantMeta.clear();
+    participantMeta.clear();
     totalParticipants = 0;
 
-    // 4) STOP LOCAL TRACKS — this is what frees Android camera
+
     final ls = localStream;
     localStream = null;
     activeVideoTrack = null;
@@ -1134,19 +1128,26 @@ class Socket_GroupCallService {
     final remoteId = remoteUserId.toString();
 
     final pc = _peers.remove(remoteId);
-    if (pc != null) await pc.close();
+    final hadState = pc != null ||
+        remoteUsers.contains(remoteId) ||
+        remoteRenderers.containsKey(remoteId);
+
+    if (pc != null) {
+      try { await pc.close(); } catch (_) {}
+    }
 
     _pendingIce.remove(remoteId);
     remoteCameraStates.remove(remoteId);
     final renderer = remoteRenderers.remove(remoteId);
     if (renderer != null) {
       renderer.srcObject = null;
-      await renderer.dispose();
+      try { await renderer.dispose(); } catch (_) {}
     }
 
     remoteUsers.remove(remoteId);
-    participantStatus.remove(remoteId);
+    participantStatus[remoteId] = 'left';
 
+    if (!hadState) return;
     onParticipantLeft?.call(remoteId);
     onParticipantsUpdated?.call();
   }

@@ -1,3 +1,4 @@
+import 'package:fgtracker/app/modules/mediaStream/Controller/call_audio_route_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -29,45 +30,6 @@ class GroupCallControls extends StatelessWidget {
         final isVideo = controller.isVideo;
         final isVideoOn = controller.isVideoOn.value;
         final isAudioOn = controller.isAudioOn.value;
-
-        final route = controller.audioRoute.value;
-        final wired = controller.isWiredHeadsetConnected.value;
-        final deviceName = controller.audioDeviceLabel.value;
-
-        late IconData routeIcon;
-        late String routeLabel;
-        late Color routeBg;
-        late Color routeIconColor;
-        late Color routeBorder;
-
-        switch (route) {
-          case AudioRoute.bluetooth:
-            routeIcon = Icons.bluetooth_connected_rounded;
-            routeLabel = deviceName.isNotEmpty ? deviceName : 'Bluetooth';
-            routeBg = const Color(0xFFE8F0FF);
-            routeIconColor = const Color(0xFF2F6BFF);
-            routeBorder = const Color(0xFF2F6BFF);
-            break;
-          case AudioRoute.earpiece:
-            if (wired) {
-              routeIcon = Icons.headphones_rounded;
-              routeLabel = 'Headphones';
-            } else {
-              routeIcon = Icons.phone_in_talk_rounded;
-              routeLabel = 'Earpiece';
-            }
-            routeBg = Colors.white;
-            routeIconColor = const Color(0xFF6E5CA4);
-            routeBorder = const Color(0xFFE9E5FE);
-            break;
-          case AudioRoute.speaker:
-            routeIcon = Icons.volume_up_rounded;
-            routeLabel = 'Speaker';
-            routeBg = Colors.white;
-            routeIconColor = const Color(0xFF6E5CA4);
-            routeBorder = const Color(0xFFE9E5FE);
-            break;
-        }
 
         return Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -114,20 +76,68 @@ class GroupCallControls extends StatelessWidget {
               onTap: controller.toggleMic,
             ),
             SizedBox(width: 8.w),
-            ControlItem(
-              icon: routeIcon,
-              label: routeLabel,
-              bgColor: routeBg,
-              iconColor: routeIconColor,
-              borderColor: routeBorder,
-              onTap: () => AudioRouteSheet.show(controller),
-            ),
+            Obx(() {
+              final CallAudioRoute route =
+                  controller.audioRouteController.currentRoute.value;
+
+              return groupCtrl(
+                icon: controller.audioRouteController.currentAudioRouteIcon,
+                label: controller.audioRouteController.currentAudioRouteLabel,
+                active: route != CallAudioRoute.earpiece,
+                isVideo: isVideo,
+                onTap: () async {
+                  await controller.toggleSpeaker(context);
+                  // c.showControlsTemporarily();
+                },
+              );
+            }),
             SizedBox(width: 4.w),
           ],
         );
       }),
     );
   }
+}
+
+Widget groupCtrl({
+  required IconData icon,
+  required String label,
+  required bool isVideo,
+  required VoidCallback onTap,
+  bool active = false,
+  Color? iconColor,
+}) {
+  return Column(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      GestureDetector(
+        onTap: onTap,
+        child: Container(
+          width: 46.r,
+          height: 46.r,
+          decoration: BoxDecoration(
+            border: Border.all(color: Color(0xFFE9E5FE)),
+            color: Colors.white,
+            shape: BoxShape.circle,
+          ),
+          child: Icon(
+            icon,
+            color: Color(0xFF6E5CA4),
+            size: 22.sp,
+          ),
+        ),
+      ),
+      SizedBox(height: 6.h),
+      Text(
+        label,
+        style: TextStyle(
+          fontSize: 10.sp,
+          fontFamily: FontFamily.interMedium,
+          color: const Color(0xFF5B4B8A),
+        ),
+      ),
+    ],
+  );
 }
 
 class ControlItem extends StatelessWidget {
@@ -173,19 +183,19 @@ class ControlItem extends StatelessWidget {
                     : null,
                 boxShadow: bgColor == const Color(0xFFFF3B30)
                     ? [
-                  BoxShadow(
-                    color: const Color(0xFFFF3B30).withOpacity(0.35),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ]
+                        BoxShadow(
+                          color: const Color(0xFFFF3B30).withOpacity(0.35),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ]
                     : [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
-                    blurRadius: 6,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.04),
+                          blurRadius: 6,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
               ),
               child: Icon(icon, color: iconColor, size: iconSize.sp),
             ),
@@ -203,171 +213,6 @@ class ControlItem extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-}
-
-// ---------------------------------------------------------
-// Bottom Sheet to manually choose the Audio Route
-// ---------------------------------------------------------
-class AudioRouteSheet {
-  static void show(GroupCallingController controller) {
-    controller.onSheetOpened();
-    Get.bottomSheet(
-      Container(
-        decoration: BoxDecoration(
-          color: const Color(0xFFF8F7FF),
-          borderRadius: BorderRadius.vertical(top: Radius.circular(25.r)),
-        ),
-        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 20.h),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Center(
-              child: Container(
-                width: 40.w,
-                height: 4.h,
-                decoration: BoxDecoration(
-                    color: Colors.grey.shade400,
-                    borderRadius: BorderRadius.circular(10.r)),
-              ),
-            ),
-            SizedBox(height: 20.h),
-            Text(
-              "Select Audio Output",
-              style: TextStyle(
-                fontSize: 16.sp,
-                fontFamily: FontFamily.interSemiBold,
-                color: const Color(0xFF1E1147),
-              ),
-            ),
-            SizedBox(height: 15.h),
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(15.r),
-              ),
-              child: Obx(() {
-                final currentRoute = controller.audioRoute.value;
-                final hasBluetooth = controller.isBluetoothConnected.value;
-                final hasWired = controller.isWiredHeadsetConnected.value;
-                final btName = controller.audioDeviceLabel.value;
-
-                return Column(
-                  children: [
-                    _RouteTile(
-                      icon: Icons.volume_up_rounded,
-                      title: "Speaker",
-                      subtitle: "Play sound on loudspeaker",
-                      isSelected: currentRoute == AudioRoute.speaker,
-                      onTap: () {
-                        controller.setAudioRoute(AudioRoute.speaker);
-                        Get.back();
-                      },
-                    ),
-                    const Divider(height: 1, indent: 50),
-                    _RouteTile(
-                      icon: hasWired
-                          ? Icons.headphones_rounded
-                          : Icons.phone_in_talk_rounded,
-                      title: hasWired ? "Headphones" : "Earpiece",
-                      subtitle: hasWired
-                          ? "Wired headset"
-                          : "Phone earpiece",
-                      isSelected: currentRoute == AudioRoute.earpiece,
-                      onTap: () {
-                        controller.setAudioRoute(AudioRoute.earpiece);
-                        Get.back();
-                      },
-                    ),
-                    if (hasBluetooth) ...[
-                      const Divider(height: 1, indent: 50),
-                      _RouteTile(
-                        icon: Icons.bluetooth_connected_rounded,
-                        title: btName.isNotEmpty ? btName : "Bluetooth",
-                        subtitle: "Wireless headset",
-                        isSelected: currentRoute == AudioRoute.bluetooth,
-                        onTap: () {
-                          controller.setAudioRoute(AudioRoute.bluetooth);
-                          Get.back();
-                        },
-                      ),
-                    ]
-                  ],
-                );
-              }),
-            ),
-            SizedBox(height: 15.h),
-            InkWell(
-              onTap: () => Get.back(),
-              child: Container(
-                width: double.infinity,
-                padding: EdgeInsets.symmetric(vertical: 15.h),
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(30.r),
-                ),
-                child: Text(
-                  "Cancel",
-                  style: TextStyle(
-                    fontSize: 14.sp,
-                    fontFamily: FontFamily.interSemiBold,
-                    color: const Color(0xFF1E1147),
-                  ),
-                ),
-              ),
-            ),
-            SizedBox(height: 10.h),
-          ],
-        ),
-      ),
-    ).whenComplete(() => controller.onSheetClosed());
-  }
-}
-
-class _RouteTile extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String? subtitle;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  const _RouteTile({
-    required this.icon,
-    required this.title,
-    this.subtitle,
-    required this.isSelected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final color = isSelected ? const Color(0xFF2F6BFF) : const Color(0xFF6E5CA4);
-    return ListTile(
-      leading: Icon(icon, color: color),
-      title: Text(
-        title,
-        style: TextStyle(
-          fontSize: 14.sp,
-          fontFamily: isSelected ? FontFamily.interSemiBold : FontFamily.interMedium,
-          color: isSelected ? const Color(0xFF2F6BFF) : Colors.black,
-        ),
-      ),
-      subtitle: subtitle == null
-          ? null
-          : Text(
-        subtitle!,
-        style: TextStyle(
-          fontSize: 11.sp,
-          color: Colors.grey.shade600,
-          fontFamily: FontFamily.interMedium,
-        ),
-      ),
-      trailing: isSelected
-          ? const Icon(Icons.check_circle_rounded, color: Color(0xFF2F6BFF))
-          : null,
-      onTap: onTap,
     );
   }
 }
