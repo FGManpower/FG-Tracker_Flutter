@@ -182,8 +182,20 @@ class GroupWalkieController extends GetxController {
 
   Map<String, dynamic>? args = Get.arguments;
 
+  List<WalkieParticipant>? _sortedParticipantsCache;
+
+  void _invalidateSortedCache() {
+    _sortedParticipantsCache = null;
+  }
+
   List<WalkieParticipant> get sortedParticipants {
-    if (participants.isEmpty) return const [];
+    if (participants.isEmpty) {
+      _sortedParticipantsCache = const [];
+      return const [];
+    }
+    if (_sortedParticipantsCache != null) {
+      return _sortedParticipantsCache!;
+    }
     final list = List<WalkieParticipant>.from(participants);
     final selfId = _safeSelfUserId;
 
@@ -196,6 +208,7 @@ class GroupWalkieController extends GetxController {
       if (!a.isSpeaking && b.isSpeaking) return 1;
       return a.name.toLowerCase().compareTo(b.name.toLowerCase());
     });
+    _sortedParticipantsCache = list;
     return list;
   }
 
@@ -300,6 +313,7 @@ class GroupWalkieController extends GetxController {
       );
     }
     totalParticipants.value = participants.length;
+    _invalidateSortedCache();
     participants.refresh();
   }
 
@@ -365,6 +379,7 @@ class GroupWalkieController extends GetxController {
     }
     participants.assignAll(map.values.toList());
     totalParticipants.value = participants.length;
+    _invalidateSortedCache();
   }
 
   void addOrUpdateParticipant(WalkieParticipant p) {
@@ -389,6 +404,7 @@ class GroupWalkieController extends GetxController {
       participants.add(p);
     }
     totalParticipants.value = participants.length;
+    _invalidateSortedCache();
     participants.refresh();
   }
 
@@ -400,6 +416,7 @@ class GroupWalkieController extends GetxController {
         (int.tryParse(p.userId) != null &&
             int.tryParse(p.userId) == int.tryParse(cleanId)));
     totalParticipants.value = participants.length;
+    _invalidateSortedCache();
     participants.refresh();
   }
 
@@ -451,6 +468,7 @@ class GroupWalkieController extends GetxController {
         p.isSpeaking = false;
       }
     }
+    _invalidateSortedCache();
     participants.refresh();
   }
 
@@ -505,6 +523,7 @@ class GroupWalkieController extends GetxController {
       }
     }
     totalParticipants.value = participants.length;
+    _invalidateSortedCache();
     participants.refresh();
   }
 
@@ -524,6 +543,7 @@ class GroupWalkieController extends GetxController {
       }
     }
     if (hadActiveSpeaker || hadSpeakingParticipant) {
+      _invalidateSortedCache();
       participants.refresh();
     }
 
@@ -742,6 +762,7 @@ class GroupWalkieController extends GetxController {
     isPressed.value = false;
     dragOffset.value = 0.0;
     lockRemainingSeconds.value = 0;
+    _invalidateSortedCache();
     participants.clear();
     totalParticipants.value = 0;
     activeSpeakerId.value = "";

@@ -432,7 +432,8 @@ class WalkieChannelController extends GetxController {
         if (GroupWalkieService.instance.isTalking) {
           await GroupWalkieService.instance.stopTalking();
         }
-        await GroupWalkieService.instance.leaveGroup();
+        await GroupWalkieService.instance
+            .leaveGroup(targetGroupId: previousActiveId.toString());
       }
 
       // 2. Persist new selection on backend

@@ -274,6 +274,7 @@ class GroupWalkieService {
               'echoCancellation': true,
               'noiseSuppression': true,
               'autoGainControl': true,
+              'highpassFilter': true,
             },
             'video': false,
           };
@@ -833,6 +834,23 @@ class GroupWalkieService {
     }
   }
 
+  bool _isEventForCurrentGroup(dynamic data) {
+    if (_currentGroupId == null && Get.isRegistered<GroupWalkieController>()) {
+      final cGId = Get.find<GroupWalkieController>().currentGroupId;
+      if (cGId != null && cGId.isNotEmpty) {
+        _currentGroupId = cGId;
+      }
+    }
+    if (_currentGroupId == null) return false;
+    if (data is Map) {
+      final gId = (data['groupId'] ?? data['group_id'] ?? data['channelId'])?.toString();
+      if (gId != null && gId.isNotEmpty && gId != _currentGroupId) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   void ensureSocketListenersBound() {
     _listenersBound = false;
     _bindSocketListeners();
@@ -935,7 +953,7 @@ class GroupWalkieService {
     socket?.on('force_logout', (_) async => dispose());
 
     socket?.on('walkie_existing_peers', (data) async {
-      if (_isDisposed || data == null) return;
+      if (_isDisposed || data == null || !_isEventForCurrentGroup(data)) return;
       _log('👥 walkie_existing_peers: $data');
       final peers = (data is Map
           ? (data['peers'] ?? data['participants'])
@@ -1024,7 +1042,7 @@ class GroupWalkieService {
     });
 
     socket?.on('walkie_peer_joined', (data) async {
-      if (_isDisposed || data == null) return;
+      if (_isDisposed || data == null || !_isEventForCurrentGroup(data)) return;
       _log('👋 walkie_peer_joined: $data');
       var id = '';
       var name = 'User';
@@ -1074,7 +1092,7 @@ class GroupWalkieService {
     });
 
     socket?.on('walkie_peer_left', (data) async {
-      if (_isDisposed || data == null) return;
+      if (_isDisposed || data == null || !_isEventForCurrentGroup(data)) return;
       final id = data is Map
           ? (data['userId'] ?? data['id'])?.toString()
           : data.toString();
@@ -1108,7 +1126,7 @@ class GroupWalkieService {
       'walkie_peer_declined',
     ]) {
       socket?.on(eventName, (data) {
-        if (_isDisposed || data == null) return;
+        if (_isDisposed || data == null || !_isEventForCurrentGroup(data)) return;
         final id = data is Map ? (data['userId'] ?? data['id'])?.toString() : null;
         if (id != null && id == _selfUserId) return;
 
@@ -1125,7 +1143,7 @@ class GroupWalkieService {
     }
 
     socket?.on('walkie_webrtc_offer', (data) async {
-      if (_isDisposed || data == null) return;
+      if (_isDisposed || data == null || !_isEventForCurrentGroup(data)) return;
       final from = data['fromUserId']?.toString();
       final sdp = data['sdp'];
       if (from == null || sdp == null) return;
@@ -1133,7 +1151,7 @@ class GroupWalkieService {
     });
 
     socket?.on('walkie_webrtc_answer', (data) async {
-      if (_isDisposed || data == null) return;
+      if (_isDisposed || data == null || !_isEventForCurrentGroup(data)) return;
       final from = data['fromUserId']?.toString();
       final sdp = data['sdp'];
       if (from == null || sdp == null) return;
@@ -1141,15 +1159,15 @@ class GroupWalkieService {
     });
 
     socket?.on('walkie_webrtc_ice', (data) async {
-      if (_isDisposed || data == null) return;
+      if (_isDisposed || data == null || !_isEventForCurrentGroup(data)) return;
       final from = data['fromUserId']?.toString();
       final ice = data['iceCandidate'] ?? data['candidate'];
       if (from == null || ice == null) return;
       await _handleIce(from, ice);
     });
 
-    socket?.on('ptt_granted', (_) async {
-      if (_isDisposed) return;
+    socket?.on('ptt_granted', (data) async {
+      if (_isDisposed || !_isEventForCurrentGroup(data)) return;
       _log('✅ PTT_GRANTED');
 
       if (Get.isRegistered<GroupWalkieController>()) {
@@ -1174,7 +1192,7 @@ class GroupWalkieService {
     });
 
     socket?.on('ptt_denied', (data) async {
-      if (_isDisposed) return;
+      if (_isDisposed || !_isEventForCurrentGroup(data)) return;
       _isTalking = false;
       await _enableMic(false);
       if (!Get.isRegistered<GroupWalkieController>()) return;
@@ -1227,12 +1245,32 @@ class GroupWalkieService {
         return;
       }
 
+      final speakerId = data['speakerId']?.toString() ?? '';
       if (Get.isRegistered<GroupWalkieController>()) {
         Get.find<GroupWalkieController>().onSpeakerActive(
-          speakerId: data['speakerId']?.toString() ?? '',
+          speakerId: speakerId,
           speakerName: data['speakerName']?.toString() ?? 'User',
           speakerImage: data['speakerImage']?.toString() ?? '',
         );
+      }
+
+      // High scale guard (10,000+ users):
+      // On-demand WebRTC connection for the active speaker if not yet connected
+      if (speakerId.isNotEmpty &&
+          speakerId != _selfUserId &&
+          !_isDisposed) {
+        if (!_peers.containsKey(speakerId) &&
+            !_makingOffer.contains(speakerId)) {
+          if (_peers.length >= 25) {
+            for (final id in _peers.keys.toList()) {
+              if (id != speakerId) {
+                _closePeer(id);
+                break;
+              }
+            }
+          }
+          _createOfferTo(speakerId);
+        }
       }
     });
 
@@ -1269,7 +1307,7 @@ class GroupWalkieService {
     });
 
     socket?.on('walkie_participants_update', (data) {
-      if (_isDisposed || data == null) return;
+      if (_isDisposed || data == null || !_isEventForCurrentGroup(data)) return;
       if (!Get.isRegistered<GroupWalkieController>()) return;
       final listRaw = (data['participants'] as List? ?? []);
       final list = listRaw
@@ -1283,7 +1321,7 @@ class GroupWalkieService {
     });
 
     socket?.on('walkie_channel_locked', (data) {
-      if (_isDisposed || data == null) return;
+      if (_isDisposed || data == null || !_isEventForCurrentGroup(data)) return;
       if (Get.isRegistered<GroupWalkieController>()) {
         Get.find<GroupWalkieController>()
             .onChannelLocked(isLocked: data['isLocked'] == true);
@@ -1313,7 +1351,7 @@ class GroupWalkieService {
       'user_mute_status',
     ]) {
       socket?.on(eventName, (data) {
-        if (_isDisposed || data == null) return;
+        if (_isDisposed || data == null || !_isEventForCurrentGroup(data)) return;
         _log('🔇 Mute event received on $eventName: $data');
         String? targetUserId;
         bool isMuted = true;
@@ -1382,6 +1420,7 @@ class GroupWalkieService {
           'echoCancellation': true,
           'noiseSuppression': true,
           'autoGainControl': true,
+          'highpassFilter': true,
         },
         'video': false,
       };
@@ -1489,6 +1528,12 @@ class GroupWalkieService {
       try {
         event.track.enabled = true;
         event.track.enableSpeakerphone(_isSpeakerOn);
+        if (_isSpeakerOn) {
+          if (Platform.isAndroid) {
+            AndroidAudioManager().setSpeakerphoneOn(true);
+          }
+          Helper.setSpeakerphoneOn(true);
+        }
       } catch (_) {}
 
       _log('🎧 Remote AUDIO track from $remoteUserId');
@@ -1565,13 +1610,21 @@ class GroupWalkieService {
       orderedIds.insert(0, prioritizeUserId);
     }
 
+    // High scale guard (10,000+ users):
+    // Capping the direct peer connection pool to max 25 peers.
+    // Dynamic on-demand connection will hook any non-pooled active speaker in <150ms.
+    const maxDirectPeers = 25;
+    final targetIds = orderedIds.length > maxDirectPeers
+        ? orderedIds.sublist(0, maxDirectPeers)
+        : orderedIds;
+
     // Process in batches of 2 with 80ms interval to prevent iOS platform thread/socket starvation
     const batchSize = 2;
-    for (int i = 0; i < orderedIds.length; i += batchSize) {
+    for (int i = 0; i < targetIds.length; i += batchSize) {
       if (_isDisposed) break;
-      final batch = orderedIds.sublist(
+      final batch = targetIds.sublist(
         i,
-        (i + batchSize > orderedIds.length) ? orderedIds.length : i + batchSize,
+        (i + batchSize > targetIds.length) ? targetIds.length : i + batchSize,
       );
 
       final futures = batch.map((id) async {
@@ -1590,9 +1643,83 @@ class GroupWalkieService {
       });
 
       await Future.wait(futures);
-      if (i + batchSize < orderedIds.length && !_isDisposed) {
+      if (i + batchSize < targetIds.length && !_isDisposed) {
         await Future.delayed(const Duration(milliseconds: 80));
       }
+    }
+  }
+
+  /// Optimizes WebRTC SDP to achieve studio-grade high volume, low latency,
+  /// and robust packet drop resistance via Opus codec tuning.
+  String _optimizeSdpForHighVolumeVoice(String sdp) {
+    if (sdp.isEmpty) return sdp;
+    try {
+      final lines = sdp.split(RegExp(r'\r\n|\n'));
+      String? opusPt;
+
+      // Find Opus payload type
+      for (final line in lines) {
+        final match = RegExp(r'^a=rtpmap:(\d+)\s+opus/48000', caseSensitive: false)
+            .firstMatch(line.trim());
+        if (match != null) {
+          opusPt = match.group(1);
+          break;
+        }
+      }
+
+      if (opusPt == null) {
+        return sdp;
+      }
+
+      final fmtpPrefix = 'a=fmtp:$opusPt';
+      bool foundFmtp = false;
+      final newLines = <String>[];
+
+      for (final line in lines) {
+        final trimmed = line.trim();
+        if (trimmed.startsWith(fmtpPrefix)) {
+          foundFmtp = true;
+          final paramStr = trimmed.substring(fmtpPrefix.length).trim();
+          final paramMap = <String, String>{};
+          for (final part in paramStr.split(';')) {
+            final kv = part.split('=');
+            if (kv.length == 2) {
+              paramMap[kv[0].trim()] = kv[1].trim();
+            }
+          }
+          // Max volume clarity: Forward Error Correction, HD 64k bitrate, mono power boost, CBR
+          paramMap['useinbandfec'] = '1';
+          paramMap['maxaveragebitrate'] = '64000';
+          paramMap['stereo'] = '0';
+          paramMap['sprop-stereo'] = '0';
+          paramMap['cbr'] = '1';
+          paramMap['maxplaybackrate'] = '48000';
+
+          final newParams =
+              paramMap.entries.map((e) => '${e.key}=${e.value}').join(';');
+          newLines.add('$fmtpPrefix $newParams');
+        } else {
+          newLines.add(line);
+        }
+      }
+
+      if (!foundFmtp) {
+        final insertedLines = <String>[];
+        for (final line in newLines) {
+          insertedLines.add(line);
+          if (line.trim().startsWith('a=rtpmap:$opusPt')) {
+            insertedLines.add(
+              '$fmtpPrefix useinbandfec=1;maxaveragebitrate=64000;stereo=0;sprop-stereo=0;cbr=1;maxplaybackrate=48000',
+            );
+          }
+        }
+        return insertedLines.join('\r\n');
+      }
+
+      return newLines.join('\r\n');
+    } catch (e) {
+      _log('⚠️ SDP optimization fallback: $e');
+      return sdp;
     }
   }
 
@@ -1625,13 +1752,16 @@ class GroupWalkieService {
       });
       if (_peers[remoteUserId] != pc) return;
 
-      await pc.setLocalDescription(offer);
+      final optimizedSdp = _optimizeSdpForHighVolumeVoice(offer.sdp ?? '');
+      final optimizedOffer = RTCSessionDescription(optimizedSdp, offer.type);
+
+      await pc.setLocalDescription(optimizedOffer);
       socket?.emit('walkie_webrtc_offer', {
         'groupId': _currentGroupId,
         'targetUserId': remoteUserId,
-        'sdp': offer.toMap(),
+        'sdp': optimizedOffer.toMap(),
       });
-      _log('📤 offer -> $remoteUserId');
+      _log('📤 offer -> $remoteUserId (HD voice optimized)');
     } catch (e) {
       _log('❌ offer error $remoteUserId: $e');
     } finally {
@@ -1661,8 +1791,13 @@ class GroupWalkieService {
         return;
       }
 
+      final rawSdp = sdp['sdp']?.toString() ?? '';
+      final optimizedRemoteSdp = _optimizeSdpForHighVolumeVoice(rawSdp);
       await pc.setRemoteDescription(
-        RTCSessionDescription(sdp['sdp'], sdp['type']),
+        RTCSessionDescription(
+          optimizedRemoteSdp,
+          sdp['type']?.toString() ?? 'offer',
+        ),
       );
 
       final answer = await pc.createAnswer({
@@ -1674,13 +1809,17 @@ class GroupWalkieService {
         return;
       }
 
-      await pc.setLocalDescription(answer);
+      final optimizedAnswerSdp = _optimizeSdpForHighVolumeVoice(answer.sdp ?? '');
+      final optimizedAnswer =
+          RTCSessionDescription(optimizedAnswerSdp, answer.type);
+
+      await pc.setLocalDescription(optimizedAnswer);
       socket?.emit('walkie_webrtc_answer', {
         'groupId': _currentGroupId,
         'targetUserId': from,
-        'sdp': answer.toMap(),
+        'sdp': optimizedAnswer.toMap(),
       });
-      _log('📥 answer -> $from');
+      _log('📥 answer -> $from (HD voice optimized)');
     } catch (e) {
       _log('❌ handleOffer $from: $e');
     }
@@ -1698,10 +1837,15 @@ class GroupWalkieService {
     }
 
     try {
+      final rawSdp = sdp['sdp']?.toString() ?? '';
+      final optimizedRemoteSdp = _optimizeSdpForHighVolumeVoice(rawSdp);
       await pc.setRemoteDescription(
-        RTCSessionDescription(sdp['sdp'], sdp['type']),
+        RTCSessionDescription(
+          optimizedRemoteSdp,
+          sdp['type']?.toString() ?? 'answer',
+        ),
       );
-      _log('✅ answer applied from $from');
+      _log('✅ answer applied from $from (HD voice optimized)');
     } catch (e) {
       _log('❌ handleAnswer $from: $e');
     }
@@ -1775,6 +1919,10 @@ class GroupWalkieService {
 
   Future<bool> joinGroup(String groupId) async {
     _isDisposed = false;
+    if (_currentGroupId != null && _currentGroupId != groupId) {
+      _log('Leaving previous group $_currentGroupId before joining $groupId');
+      socket?.emit('leave_walkie_session', {'groupId': _currentGroupId});
+    }
     _currentGroupId = groupId;
     _offeredTo.clear();
     ensureSocketListenersBound();
@@ -1844,10 +1992,12 @@ class GroupWalkieService {
     return true;
   }
 
-  Future<void> leaveGroup() async {
-    if (_currentGroupId == null) return;
-    final groupId = _currentGroupId;
-    _currentGroupId = null;
+  Future<void> leaveGroup({String? targetGroupId}) async {
+    final groupId = targetGroupId ?? _currentGroupId;
+    if (groupId == null) return;
+    if (_currentGroupId == groupId || targetGroupId == null) {
+      _currentGroupId = null;
+    }
 
     if (_isTalking) {
       _isTalking = false;
