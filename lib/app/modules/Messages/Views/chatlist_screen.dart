@@ -761,7 +761,7 @@ class _AllChatsBody extends StatelessWidget {
                       image.startsWith("http://") ||
                               image.startsWith("https://")
                           ? image
-                          : "${ConstRes.production}$image",
+                          : "${ConstRes.aImageBaseUrl}$image",
                     )
                   : null,
               child: isGroup
