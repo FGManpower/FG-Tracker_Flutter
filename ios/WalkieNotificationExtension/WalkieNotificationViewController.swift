@@ -113,6 +113,7 @@ class WalkieNotificationViewController: UIViewController, UNNotificationContentE
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        preferredContentSize = CGSize(width: UIScreen.main.bounds.width, height: 168)
         setupUI()
     }
 
@@ -136,11 +137,14 @@ class WalkieNotificationViewController: UIViewController, UNNotificationContentE
         cardView.addSubview(cancelButton)
         cardView.addSubview(acceptButton)
 
+        let cardBottom = cardView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -8)
+        cardBottom.priority = UILayoutPriority(750)
+
         NSLayoutConstraint.activate([
             cardView.topAnchor.constraint(equalTo: view.topAnchor, constant: 8),
             cardView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 10),
             cardView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -10),
-            cardView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -8),
+            cardBottom,
 
             // Top row: Live badge
             liveBadge.topAnchor.constraint(equalTo: cardView.topAnchor, constant: 12),

@@ -1,6 +1,4 @@
 import 'dart:async';
-import 'package:fgtracker/app/Core/deep_Link/Context_Utility.dart';
-import 'package:fgtracker/app/Data/Services/NotificationServices.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../Core/constant/pref_res.dart';
@@ -21,6 +19,7 @@ class InitiateController extends GetxController
   late AnimationController animationController;
   late Animation<double> scaleAnimation;
   late Animation<double> fadeAnimation;
+  late Animation<double> pulseAnimation;
 
   Timer? _splashTimer;
 
@@ -43,12 +42,22 @@ class InitiateController extends GetxController
       duration: const Duration(seconds: 3),
     );
 
-    scaleAnimation = Tween<double>(begin: 1.0, end: 0.85).animate(
+    scaleAnimation = Tween<double>(begin: 2.0, end: 1.0).animate(
       CurvedAnimation(parent: animationController, curve: Curves.easeOutCubic),
     );
 
     fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: animationController, curve: Curves.easeInOut),
+      CurvedAnimation(
+        parent: animationController,
+        curve: const Interval(0.0, 0.3, curve: Curves.easeIn),
+      ),
+    );
+
+    pulseAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: animationController,
+        curve: const Interval(0.35, 1.0, curve: Curves.easeOut),
+      ),
     );
 
     animationController.forward();

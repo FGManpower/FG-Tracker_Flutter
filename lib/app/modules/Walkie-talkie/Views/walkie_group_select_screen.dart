@@ -903,33 +903,48 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
     }
   }
 
+  bool _isPlaceholderImage(String url) {
+    final lower = url.toLowerCase().trim();
+    return lower.isEmpty ||
+        lower == 'null' ||
+        lower == 'undefined' ||
+        lower.endsWith('/null') ||
+        lower.contains('default-profile') ||
+        lower.contains('default_profile') ||
+        lower.contains('default-avatar') ||
+        lower.contains('default_avatar') ||
+        lower.contains('default-group') ||
+        lower.contains('default_group') ||
+        lower.contains('default.png') ||
+        lower.contains('default-image') ||
+        lower.contains('default_image');
+  }
+
   String _resolveGroupProfile(WalkieChannelItem channel) {
     String profile = (channel.groupProfile ?? channel.groupImage ?? '').trim();
-    if (profile.isEmpty ||
-        profile.toLowerCase() == 'null' ||
-        profile.toLowerCase() == 'undefined') {
+    if (_isPlaceholderImage(profile)) {
       try {
         final match = controller.groupData
             .firstWhereOrNull((g) => g.id == channel.groupId);
         if (match != null &&
             match.groupProfile != null &&
-            match.groupProfile!.trim().isNotEmpty &&
-            match.groupProfile!.trim().toLowerCase() != 'null') {
+            !_isPlaceholderImage(match.groupProfile!)) {
           profile = match.groupProfile!.trim();
+        } else {
+          profile = '';
         }
-      } catch (_) {}
+      } catch (_) {
+        profile = '';
+      }
     }
-    return profile;
+    return _isPlaceholderImage(profile) ? '' : profile;
   }
 
   Widget _buildGroupAvatar(
       WalkieChannelItem channel, Map<String, Color> colors) {
     final String rawProfile = _resolveGroupProfile(channel);
 
-    final bool hasValidImage = rawProfile.isNotEmpty &&
-        rawProfile.toLowerCase() != 'null' &&
-        rawProfile.toLowerCase() != 'undefined' &&
-        !rawProfile.toLowerCase().endsWith('/null');
+    final bool hasValidImage = rawProfile.isNotEmpty && !_isPlaceholderImage(rawProfile);
 
     final String groupImageUrl = !hasValidImage
         ? ''
@@ -1019,11 +1034,16 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
     final String rawProfile = _resolveGroupProfile(channel);
 
     return Obx(() {
-      final bool isSelected = channel.isSelectedChannel ||
-          (walkieChannelController.activeChannelId.value == channel.groupId);
+      final currentChannel = walkieChannelController.channels.firstWhereOrNull(
+            (c) => c.groupId == channel.groupId,
+          ) ??
+          channel;
+
+      final bool isSelected = currentChannel.isSelectedChannel ||
+          (walkieChannelController.activeChannelId.value == currentChannel.groupId);
       final bool isSwitching = walkieChannelController.isSwitchingChannel.value;
       final bool isToggling =
-          walkieChannelController.isTogglingPreference[channel.groupId] ?? false;
+          walkieChannelController.isTogglingPreference[currentChannel.groupId] ?? false;
 
       return InkWell(
         onTap: () async {
@@ -1083,7 +1103,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
           child: Row(
             children: [
               // Avatar with mute badge
-              _buildGroupAvatar(channel, colors),
+              _buildGroupAvatar(currentChannel, colors),
               SizedBox(width: 12.w),
               // Channel Info & Speaking status
               Expanded(
@@ -1091,13 +1111,13 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     reausabletext(
-                      channel.groupName,
+                      currentChannel.groupName,
                       fontsize: 15.sp,
                       fontfamily: FontFamily.interSemiBold,
                       color: const Color(0xFF1E1B4B),
                     ),
                     SizedBox(height: 6.h),
-                    if (channel.isChannelSpeaking)
+                    if (currentChannel.isChannelSpeaking)
                       Row(
                         children: [
                           Icon(
@@ -1108,9 +1128,9 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                           SizedBox(width: 4.w),
                           Expanded(
                             child: reausabletext(
-                              channel.activeSpeakerName != null &&
-                                      channel.activeSpeakerName!.isNotEmpty
-                                  ? "${channel.activeSpeakerName} speaking..."
+                              currentChannel.activeSpeakerName != null &&
+                                      currentChannel.activeSpeakerName!.isNotEmpty
+                                  ? "${currentChannel.activeSpeakerName} speaking..."
                                   : "Channel speaking...",
                               fontsize: 12.sp,
                               fontfamily: FontFamily.interMedium,
@@ -1130,7 +1150,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                           ),
                           SizedBox(width: 4.w),
                           reausabletext(
-                            "${channel.memberCount} Members",
+                            "${currentChannel.memberCount} Members",
                             fontsize: 12.sp,
                             color: const Color(0xFF8C90A0),
                           ),
@@ -1163,13 +1183,13 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                 child: FittedBox(
                   fit: BoxFit.scaleDown,
                   child: CupertinoSwitch(
-                    value: channel.notificationsEnabled,
+                    value: currentChannel.notificationsEnabled,
                     activeTrackColor: const Color(0xFF6B4DFF),
                     onChanged: isToggling
                         ? null
                         : (_) {
                             walkieChannelController
-                                .toggleNotificationPreference(channel);
+                                .toggleNotificationPreference(currentChannel);
                           },
                   ),
                 ),
@@ -1190,7 +1210,7 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                         }
 
                         final success = await walkieChannelController
-                            .selectActiveSpeakingChannel(channel);
+                            .selectActiveSpeakingChannel(currentChannel);
                         if (!success) {
                           if (mounted &&
                               walkieChannelController
@@ -1206,9 +1226,9 @@ class _WalkieGroupSelectScreenState extends State<WalkieGroupSelectScreen> {
                           () => const GroupWalkieScreen(),
                           arguments: {
                             'groupId': groupId,
-                            'groupName': channel.groupName,
-                            'groupDesc': channel.groupDesc ?? "",
-                            'groupCode': channel.groupCode ?? "",
+                            'groupName': currentChannel.groupName,
+                            'groupDesc': currentChannel.groupDesc ?? "",
+                            'groupCode': currentChannel.groupCode ?? "",
                             'groupProfile': rawProfile,
                             'isSubscribed': !hasNoPlan.value,
                           },
