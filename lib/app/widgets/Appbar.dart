@@ -161,7 +161,7 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
               ),
               SizedBox(height: 2.h),
               Text(
-                'Premium',
+                'Premiums',
                 style: TextStyle(
                   fontFamily: FontFamily.interBold,
                   fontSize: 10.sp,

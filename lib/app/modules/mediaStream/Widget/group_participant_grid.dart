@@ -43,12 +43,11 @@ class GroupParticipantGrid extends StatelessWidget {
         participant.renderer;
   }
 
-  /// A renderer can show video as soon as its stream has a video track.
-  /// (Old code also required track.muted != true, which hid valid remote
-  /// video because remote tracks often report muted for a long time.)
-  bool _hasRenderableVideo(RTCVideoRenderer? r) {
-    final videos = r?.srcObject?.getVideoTracks();
-    return videos != null && videos.isNotEmpty;
+  bool _hasRenderableVideo(RTCVideoRenderer? renderer) {
+    if (renderer == null || renderer.srcObject == null) return false;
+    final videos = renderer.srcObject!.getVideoTracks();
+    if (videos.isEmpty) return false;
+    return videos.first.enabled && videos.first.muted != true;
   }
 
   @override
@@ -61,7 +60,8 @@ class GroupParticipantGrid extends StatelessWidget {
       return _buildTile(participants[0], isFullScreen: true);
     }
 
-    final pinnedIndex = participants.indexWhere((p) => p.userId == pinnedUserId);
+    final pinnedIndex =
+    participants.indexWhere((p) => p.userId == pinnedUserId);
 
     if (pinnedIndex >= 0 && count >= 2) {
       final pinnedUser = participants[pinnedIndex];
@@ -196,24 +196,18 @@ class GroupParticipantGrid extends StatelessWidget {
 
               final isVideoOn = participant.isVideoOn.value;
 
-              // 2. Fetch the live renderer from the socket service directly
+              // 2. Fetch the live renderer from the Socket Service directly
               final liveRenderer = _getLiveRenderer(participant);
               final rendererReady = liveRenderer?.textureId != null;
               final hasVideo = _hasRenderableVideo(liveRenderer);
               final streamId = liveRenderer?.srcObject?.id ?? 'none';
-              final trackId =
-                  liveRenderer?.srcObject?.getVideoTracks().firstOrNull?.id ??
-                      'none';
 
-              // 3. Render video only for slot holders (or screen share)
-              if ((isVideoOn || sharing) &&
-                  rendererReady &&
-                  hasVideo &&
-                  liveRenderer != null) {
+              // 3. Render video only if data is actually flowing
+              if ((isVideoOn || sharing) && rendererReady && hasVideo && liveRenderer != null) {
                 return RTCVideoView(
                   liveRenderer,
-                  // Key changes when stream OR video track changes -> texture refresh
-                  key: ValueKey('rtc_${participant.userId}_${streamId}_$trackId'),
+                  // Key forces Texture refresh if stream id changes avoiding blank screens
+                  key: ValueKey('rtc_${participant.userId}_$streamId'),
                   mirror: participant.isLocal && !sharing,
                   objectFit: useContain
                       ? RTCVideoViewObjectFit.RTCVideoViewObjectFitContain
@@ -221,7 +215,6 @@ class GroupParticipantGrid extends StatelessWidget {
                 );
               }
 
-              // Everyone else: profile picture, audio keeps flowing
               return _buildFallback(
                 participant,
                 cameraOff: !isVideoOn && !sharing,
@@ -347,7 +340,8 @@ class GroupParticipantGrid extends StatelessWidget {
                       color: Colors.black.withOpacity(0.55),
                       shape: BoxShape.circle,
                     ),
-                    child: Icon(Icons.mic_off, color: Colors.white, size: 14.sp),
+                    child:
+                    Icon(Icons.mic_off, color: Colors.white, size: 14.sp),
                   );
                 }),
               ),

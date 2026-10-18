@@ -261,6 +261,7 @@ Future<void> main() async {
   FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
   ConnectycubeFlutterCallKit.onCallRejectedWhenTerminated =
       onCallRejectedWhenTerminated;
+
   await firebaseNotificationServices().initialized();
   CallKitService.instance.init();
   SystemChrome.setSystemUIOverlayStyle(

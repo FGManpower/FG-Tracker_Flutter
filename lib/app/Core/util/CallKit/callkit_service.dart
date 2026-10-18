@@ -442,6 +442,7 @@ class CallKitService {
           break;
 
         case "missed":
+          log('State: missed → report API + cleanup');
           await _cleanupCall(sessionId);
           break;
 
