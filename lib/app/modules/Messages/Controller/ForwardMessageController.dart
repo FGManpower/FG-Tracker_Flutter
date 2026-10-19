@@ -177,7 +177,8 @@ class ForwardMessageController extends GetxController {
           .map(
             (destination) => ForwardTarget(
           type: destination.isGroup ? "group" : "private",
-          userId: destination.targetId!,
+          userId: destination.isGroup ? null : destination.targetId!,
+          groupId: destination.isGroup ? destination.targetId! : null,
         ),
       )
           .toList();

@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/Dialog/Common_dialog.dart';
@@ -297,7 +299,6 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
           ),
         ],
         SizedBox(height: 6.h),
-
         Text.rich(
           TextSpan(
             children: [
@@ -739,10 +740,25 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
     );
   }
 
-  void _openPrivateChat(GroupMemberInfo m, bool online) {
-    if (Get.isRegistered<MessageController>()) {
-      Get.delete<MessageController>(force: true);
+  Future<void> _openPrivateChat(
+      GroupMemberInfo m,
+      bool online,
+      ) async {
+    final receiverId = m.userId?.toString();
+    final chatId = m.chatId?.toString();
+    if (receiverId == null ||
+        receiverId.isEmpty ||
+        receiverId == 'null' ||
+        receiverId == _myId) {
+      return;
     }
+
+    if (chatId == null ||
+        chatId.isEmpty ||
+        chatId == 'null') {
+      return;
+    }
+
     final memberData = MemberData(
       userId: m.userId,
       groupId: 0,
@@ -751,22 +767,26 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
       lastSeen: m.lastSeen,
       isOnline: online,
     );
-    Get.to(
-      () => ChatScreen(),
+
+
+    await Get.to(
+          () => ChatScreen(),
       arguments: {
         "userData": memberData,
         "type": "chatScreen",
         "chatType": "private",
+        "chatId": chatId,
         "groupId": 0,
         "groupName": m.name ?? "Chat",
         "isCreator": false,
       },
       binding: BindingsBuilder(() {
-        Get.put(MessageController());
+        if (!Get.isRegistered<MessageController>()) {
+          Get.put(MessageController());
+        }
       }),
     );
   }
-
   Widget _memberTile(
       BuildContext context, GroupMemberInfo m, GroupProfileData data) {
     final isMe = m.isMe ?? false;

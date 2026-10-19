@@ -133,8 +133,8 @@ class GroupMessageController extends GetxController {
 
     groupName.value = arguments?["groupName"]?.toString() ?? "";
     groupDesc.value = arguments?["groupDesc"]?.toString() ?? "";
-    groupImage =
-        arguments?["groupImage"] ?? arguments?["groupProfile"] ?? "";    print("isCreator = ${isCreator.value}");
+    groupImage = arguments?["groupImage"] ?? arguments?["groupProfile"] ?? "";
+    print("isCreator = ${isCreator.value}");
 
     initializeGroupChat();
     itemPositionsListener.itemPositions.addListener(_onScrollDateChanged);
@@ -162,7 +162,6 @@ class GroupMessageController extends GetxController {
       groupId: groupId,
       userId: currentUserId,
     );
-
 
     socketService.receiveGroupMessage(
       callback: (message) {
@@ -212,17 +211,55 @@ class GroupMessageController extends GetxController {
 
     socketService.listenMessageDeleted(
       callback: (data) {
-        final int? messageId = data["messageId"];
+        debugPrint("RAW DELETE EVENT: $data");
+
+        if (data is! Map) return;
+
+        final messageId = int.tryParse(
+          (data["messageId"] ?? data["message_id"] ?? data["id"] ?? "")
+              .toString(),
+        );
+
+        final eventGroupId = int.tryParse(
+          (data["groupId"] ?? data["group_id"] ?? "").toString(),
+        );
+
         if (messageId == null) return;
+        if (eventGroupId != null && eventGroupId != groupId) return;
+
+        final deleteType =
+        (data["deleteType"] ?? data["delete_type"] ?? "for_everyone")
+            .toString();
+
+        final index = _messages.indexWhere((m) => m.id == messageId);
+
+        debugPrint(
+          "DELETE TYPE => $deleteType | INDEX => $index | MSG ID => $messageId",
+        );
+
+        if (index != -1) {
+          if (deleteType == "for_me") {
+            _messages.removeAt(index);
+          } else {
+            final msg = _messages[index];
+            msg.messageType = "text";
+            msg.content = "This message was deleted";
+            msg.caption = null;
+            msg.images = [];
+            msg.videos = [];
+            msg.replyId = null;
+            msg.isDeleted = true;
+          }
+        }
 
         if (pinnedMessage.value?.id == messageId) {
           pinnedMessage.value = null;
           showPinnedBanner.value = false;
         }
 
-        _messages.removeWhere((e) => e.id == messageId);
         updateMessageStream();
-        log("GROUP MESSAGE DELETED => $messageId");
+
+
       },
     );
 
@@ -830,11 +867,27 @@ class GroupMessageController extends GetxController {
     required int messageId,
     required String deleteType,
   }) async {
+    final userId =
+    Global.storageServices.get(PrefConst.userId).toString();
+
+    debugPrint("========== DELETE MESSAGE START ==========");
+    debugPrint("DELETE messageId: $messageId");
+    debugPrint("DELETE userId: $userId");
+    debugPrint("DELETE deleteType: $deleteType");
+    debugPrint("DELETE groupId: $groupId");
+
+    debugPrint(
+      "DELETE SOCKET CONNECTED: ${socketService.isSocketConnected}",
+    );
+
     socketService.deleteMessage(
       messageId: messageId,
-      userId: Global.storageServices.get(PrefConst.userId).toString(),
+      userId: userId,
       deleteType: deleteType,
     );
+
+    debugPrint("DELETE MESSAGE EMIT CALLED");
+    debugPrint("==========================================");
   }
 
   Future<void> getGroupMessages() async {

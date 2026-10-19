@@ -1,15 +1,18 @@
+import 'dart:async';
 import 'dart:developer';
 
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:get/get.dart';
+import 'package:socket_io_common/src/util/event_emitter.dart';
 
 class SocketMessageService extends GetxService {
   static SocketMessageService get instance => Get.put(SocketMessageService());
-
+  Timer? _privateJoinDebugTimer;
   IO.Socket? _socket;
-
+  EventHandler<dynamic>? _privateMessageHandler;
   bool get isSocketConnected => _socket?.connected == true;
 
   IO.Socket get socket {
@@ -43,18 +46,34 @@ class SocketMessageService extends GetxService {
   String? get privateChatId => _privateChatId;
 
   Future<void> init(
-    String socketUrl, {
-    required String userId,
-    int? groupId,
-  }) async {
+      String socketUrl, {
+        required String userId,
+        int? groupId,
+      }) async {
+    log("========== GROUP CHAT SOCKET INIT ==========");
+    log("SOCKET URL: $socketUrl/chat");
+    log("USER ID: $userId");
+    log("GROUP ID: ${groupId ?? 'NULL'}");
+    log("EXISTING SOCKET: ${_socket != null}");
+    log("EXISTING SOCKET CONNECTED: ${_socket?.connected ?? false}");
+
     if (_socket != null && _socket!.connected) {
+      log("SOCKET ALREADY CONNECTED");
+
       if (groupId != null) {
+        log("JOIN GROUP REQUEST: userId=$userId, groupId=$groupId");
         joinUserInGroup(userId, groupId);
+
+        log("MARK SEEN REQUEST: userId=$userId, groupId=$groupId");
         markSeen(userId, groupId);
+      } else {
+        log("GROUP ID IS NULL — JOIN AND MARK SEEN SKIPPED");
       }
 
       return;
     }
+
+    log("CREATING NEW SOCKET: $socketUrl/chat");
 
     _socket = IO.io(
       "$socketUrl/chat",
@@ -65,15 +84,48 @@ class SocketMessageService extends GetxService {
     );
 
     _socket?.onConnect((_) {
+      log("========== SOCKET CONNECTED ==========");
+      log("SOCKET ID: ${_socket?.id}");
+      log("USER ID: $userId");
+      log("GROUP ID: ${groupId ?? 'NULL'}");
+      log("CONNECTED STATUS: ${_socket?.connected}");
+
       if (groupId != null) {
+        log("EMITTING JOIN GROUP");
+        log("JOIN PARAMS: userId=$userId, groupId=$groupId");
         joinUserInGroup(userId, groupId);
+
+        log("EMITTING MARK SEEN");
+        log("MARK SEEN PARAMS: userId=$userId, groupId=$groupId");
         markSeen(userId, groupId);
+      } else {
+        log("GROUP ID IS NULL — JOIN AND MARK SEEN SKIPPED");
       }
     });
 
-    _socket?.onDisconnect((_) {});
+    _socket?.onDisconnect((reason) {
+      log("========== SOCKET DISCONNECTED ==========");
+      log("DISCONNECT REASON: $reason");
+      log("USER ID: $userId");
+      log("GROUP ID: ${groupId ?? 'NULL'}");
+    });
 
-    _socket?.onError((error) {});
+    _socket?.onConnectError((error) {
+      log("========== SOCKET CONNECT ERROR ==========");
+      log("ERROR: $error");
+      log("USER ID: $userId");
+      log("GROUP ID: ${groupId ?? 'NULL'}");
+    });
+
+    _socket?.onError((error) {
+      log("========== SOCKET ERROR ==========");
+      log("ERROR: $error");
+      log("USER ID: $userId");
+      log("GROUP ID: ${groupId ?? 'NULL'}");
+    });
+
+    log("SOCKET INIT COMPLETED — WAITING FOR CONNECTION");
+    log("===========================================");
   }
 
   void joinUserInGroup(
@@ -251,25 +303,32 @@ class SocketMessageService extends GetxService {
   }
 
   Future<void> initPrivateChat(
-    String socketUrl, {
-    required String userId,
-    required String receiverId,
-    Function(dynamic)? onJoined,
-  }) async {
+      String socketUrl, {
+        required String userId,
+        required String receiverId,
+        Function(dynamic)? onJoined,
+      }) async {
+    // Reuse existing connected socket.
     if (_privateChatSocket != null && _privateChatSocket!.connected) {
+      log("PRIVATE CHAT SOCKET ALREADY CONNECTED");
+
       _privateChatSocket?.off("joined");
 
       if (onJoined != null) {
-        _privateChatSocket?.on(
-          "joined",
-          (data) {
-            if (data is Map) {
-              _privateChatId = data["chatId"]?.toString();
-            }
+        _privateChatSocket?.on("joined", (data) {
+          _privateJoinDebugTimer?.cancel();
 
-            onJoined.call(data);
-          },
-        );
+          log("========== PRIVATE CHAT JOINED ==========");
+          log("JOINED RAW DATA => $data");
+
+          if (data is Map) {
+            _privateChatId = data["chatId"]?.toString();
+          }
+
+          log("SAVED CHAT ID => $_privateChatId");
+
+          onJoined?.call(data);
+        });
       }
 
       joinPrivateChat(
@@ -280,10 +339,12 @@ class SocketMessageService extends GetxService {
       return;
     }
 
+    // Dispose the old disconnected socket.
     if (_privateChatSocket != null) {
       _privateChatSocket?.disconnect();
       _privateChatSocket?.dispose();
       _privateChatSocket = null;
+      _privateMessageHandler = null;
     }
 
     _privateChatId = null;
@@ -299,34 +360,92 @@ class SocketMessageService extends GetxService {
       },
     );
 
+    // Register receive_message immediately after socket creation,
+    // before connection and join events can arrive.
+    receivePrivateMessage(
+      senderId: userId,
+      receiverId: receiverId,
+    );
+
+
     _privateChatSocket?.onConnect((_) {
+      log("PRIVATE CHAT SOCKET CONNECTED");
+      log("NAMESPACE => /privateChat");
+
+      _privateJoinDebugTimer?.cancel();
+
       joinPrivateChat(
         userId: userId,
         receiverId: receiverId,
       );
+
+      _privateJoinDebugTimer = Timer(
+        const Duration(seconds: 8),
+            () {
+          log("========== JOIN TIMEOUT DEBUG ==========");
+          log("JOINED EVENT NOT RECEIVED WITHIN 8 SECONDS");
+          log("SOCKET CONNECTED => $isPrivateChatSocketConnected");
+          log("SOCKET ID => ${_privateChatSocket?.id}");
+          log("PRIVATE CHAT ID => $_privateChatId");
+        },
+      );
     });
 
-    _privateChatSocket?.on(
-      "joined",
-      (data) {
-        if (data is Map) {
-          _privateChatId = data["chatId"]?.toString();
-        }
+    _privateChatSocket?.on("joined", (data) {
+      log("========== JOINED EVENT RECEIVED ==========");
+      log("JOINED RAW DATA => $data");
+      log("JOINED DATA TYPE => ${data.runtimeType}");
 
-        onJoined?.call(data);
-      },
-    );
+      if (data is Map) {
+        log("JOINED CHAT ID => ${data["chatId"]}");
 
-    _privateChatSocket?.onDisconnect((reason) {});
+        _privateChatId = data["chatId"]?.toString();
 
-    _privateChatSocket?.onError((error) {});
+        log("SAVED PRIVATE CHAT ID => $_privateChatId");
+      } else {
+        log("WARNING => JOINED DATA IS NOT A MAP");
+      }
+
+      if (onJoined != null) {
+        log("CALLING CONTROLLER onJoined CALLBACK");
+        onJoined.call(data);
+      } else {
+        log("WARNING => onJoined CALLBACK IS NULL");
+      }
+    });
+
+    _privateChatSocket?.onDisconnect((reason) {
+      log("========== PRIVATE SOCKET DISCONNECTED ==========");
+      log("DISCONNECT REASON => $reason");
+    });
+
+    _privateChatSocket?.onError((error) {
+      log("========== PRIVATE SOCKET ERROR ==========");
+      log("SOCKET ERROR => $error");
+    });
+
+// Diagnostic only: checks whether the server sends this event.
+// Keep this if the backend uses "connect_error" for connection failures.
+    _privateChatSocket?.onConnectError((error) {
+      log("========== PRIVATE SOCKET CONNECT ERROR ==========");
+      log("CONNECT ERROR => $error");
+    });
+
   }
 
   void joinPrivateChat({
     required String userId,
     required String receiverId,
   }) {
+    log("========== PRIVATE JOIN DEBUG START ==========");
+    log("JOIN USER ID => $userId");
+    log("JOIN RECEIVER ID => $receiverId");
+    log("SOCKET EXISTS => ${_privateChatSocket != null}");
+    log("SOCKET CONNECTED => $isPrivateChatSocketConnected");
+    log("SOCKET ID => ${_privateChatSocket?.id}");
+
     if (!isPrivateChatSocketConnected) {
+      log("JOIN ABORTED => SOCKET NOT CONNECTED");
       return;
     }
 
@@ -335,11 +454,16 @@ class SocketMessageService extends GetxService {
       "receiverId": receiverId,
     };
 
-    _privateChatSocket!.emit(
-      "join",
-      payload,
-    );
+    log("JOIN EVENT NAME => join");
+    log("JOIN PAYLOAD => $payload");
+    log("EMITTING JOIN EVENT NOW");
+
+    _privateChatSocket!.emit("join", payload);
+
+    log("JOIN EVENT EMIT CALLED");
+    log("========== PRIVATE JOIN DEBUG END ==========");
   }
+
 
   void sendPrivateMessage({
     required String receiverId,
@@ -381,27 +505,62 @@ class SocketMessageService extends GetxService {
     required String receiverId,
     Function(dynamic)? callback,
   }) {
-    _privateChatSocket?.off("receive_message");
+    final socket = _privateChatSocket;
 
-    _privateChatSocket?.on(
-      "receive_message",
-      (data) {
-        if (data is! Map) return;
+    log("========== REGISTER PRIVATE MESSAGE LISTENER ==========");
+    log("EXPECTED SENDER ID => $senderId");
+    log("EXPECTED RECEIVER ID => $receiverId");
+    log("PRIVATE SOCKET EXISTS => ${socket != null}");
+    log("PRIVATE SOCKET CONNECTED => ${socket?.connected ?? false}");
 
-        final dataSenderId = data["senderId"]?.toString();
-        final dataReceiverId = data["receiverId"]?.toString();
+    if (socket == null) {
+      log("LISTENER NOT REGISTERED => PRIVATE SOCKET IS NULL");
+      return;
+    }
 
-        final isSameChat =
-            (dataSenderId == senderId && dataReceiverId == receiverId) ||
-                (dataSenderId == receiverId && dataReceiverId == senderId);
+    if (_privateMessageHandler != null) {
+      socket.off("receive_message", _privateMessageHandler);
+    }
 
-        if (!isSameChat) {
-          return;
-        }
+    _privateMessageHandler = (dynamic data) {
+      log("========== SOCKET RECEIVE MESSAGE EVENT ==========");
+      log("RAW SOCKET DATA => $data");
 
-        callback?.call(data);
-      },
-    );
+      if (data is! Map) {
+        log("MESSAGE IGNORED => DATA IS NOT A MAP");
+        return;
+      }
+
+      final dataSenderId = data["senderId"]?.toString();
+      final dataReceiverId = data["receiverId"]?.toString();
+
+      final isSameChat =
+          (dataSenderId == senderId &&
+              dataReceiverId == receiverId) ||
+              (dataSenderId == receiverId &&
+                  dataReceiverId == senderId);
+
+      log("EXPECTED SENDER => $senderId");
+      log("EXPECTED RECEIVER => $receiverId");
+      log("ACTUAL SENDER => $dataSenderId");
+      log("ACTUAL RECEIVER => $dataReceiverId");
+      log("IS SAME CHAT => $isSameChat");
+
+      if (!isSameChat) {
+        log("MESSAGE IGNORED => DIFFERENT CHAT");
+        return;
+      }
+
+      log("MESSAGE ACCEPTED => CALLING CONTROLLER CALLBACK");
+
+      callback?.call(Map<String, dynamic>.from(data));
+
+      log("CONTROLLER CALLBACK COMPLETED");
+    };
+
+    socket.on("receive_message", _privateMessageHandler!);
+
+    log("RECEIVE MESSAGE LISTENER REGISTERED");
   }
 
   void markPrivateDelivered({
@@ -686,19 +845,20 @@ class SocketMessageService extends GetxService {
       if (otherUserId != null) "otherUserId": otherUserId,
     };
 
-    if (otherUserId != null && isPrivateChatSocketConnected) {
-      _privateChatSocket!.emit(
-        "delete_message",
-        payload,
-      );
+    debugPrint("========== SOCKET DELETE EMIT ==========");
+    debugPrint("EVENT: delete_message");
+    debugPrint("PAYLOAD: $payload");
+    debugPrint("GROUP SOCKET CONNECTED: ${_socket?.connected}");
+    debugPrint("PRIVATE SOCKET CONNECTED: ${_privateChatSocket?.connected}");
 
+    if (otherUserId != null && isPrivateChatSocketConnected) {
+      debugPrint("EMITTING ON PRIVATE CHAT SOCKET");
+      _privateChatSocket!.emit("delete_message", payload);
       return;
     }
 
-    socket.emit(
-      "delete_message",
-      payload,
-    );
+    debugPrint("EMITTING ON CHAT SOCKET");
+    _socket?.emit("delete_message", payload);
   }
 
   void listenMessageDeleted({
@@ -707,19 +867,15 @@ class SocketMessageService extends GetxService {
     _socket?.off("message_deleted");
     _privateChatSocket?.off("message_deleted");
 
-    _socket?.on(
-      "message_deleted",
-      (data) {
-        callback(data);
-      },
-    );
+    _socket?.on("message_deleted", (data) {
+      debugPrint("MAIN SOCKET message_deleted => $data");
+      callback(data);
+    });
 
-    _privateChatSocket?.on(
-      "message_deleted",
-      (data) {
-        callback(data);
-      },
-    );
+    _privateChatSocket?.on("message_deleted", (data) {
+      debugPrint("PRIVATE SOCKET message_deleted => $data");
+      callback(data);
+    });
   }
 
   void pinMessage({
@@ -865,29 +1021,42 @@ class SocketMessageService extends GetxService {
       "groupId": groupId,
     };
 
+    log("========== FORWARD MESSAGE START ==========");
+    log("EVENT => forward_message");
+    log("PAYLOAD => $payload");
+    log("MESSAGE ID => $messageId");
+    log("RECEIVER ID => $receiverId");
+    log("GROUP ID => $groupId");
+    log("PRIVATE SOCKET CONNECTED => $isPrivateChatSocketConnected");
+    log("GROUP SOCKET CONNECTED => $isSocketConnected");
+
     if (receiverId != null && receiverId.isNotEmpty) {
       if (!isPrivateChatSocketConnected) {
+        log("FORWARD FAILED => PRIVATE SOCKET NOT CONNECTED");
         return;
       }
 
-      _privateChatSocket!.emit(
-        "forward_message",
-        payload,
-      );
+      _privateChatSocket!.emit("forward_message", payload);
 
+      log("FORWARD MESSAGE EMITTED ON PRIVATE SOCKET");
+      log("========== FORWARD MESSAGE END ==========");
       return;
     }
 
     if (groupId != null) {
       if (!isSocketConnected) {
+        log("FORWARD FAILED => GROUP SOCKET NOT CONNECTED");
         return;
       }
 
-      socket.emit(
-        "forward_message",
-        payload,
-      );
+      socket.emit("forward_message", payload);
+
+      log("FORWARD MESSAGE EMITTED ON GROUP SOCKET");
+      log("========== FORWARD MESSAGE END ==========");
+      return;
     }
+
+    log("FORWARD FAILED => RECEIVER ID AND GROUP ID BOTH MISSING");
   }
 
   void pinPrivateChat({

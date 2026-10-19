@@ -245,6 +245,7 @@ class MessageData {
   dynamic replyMessageContent;
   StatusMetaModel? statusMeta;
   StatusItemModel? replyStatus;
+  bool isDeleted = false;
 
   MessageData({
     this.id,
@@ -276,6 +277,7 @@ class MessageData {
     this.replyMessageContent,
     this.statusMeta,
     this.replyStatus,
+    this.isDeleted = false,
   });
 
   bool get isStatusReply {
@@ -368,6 +370,13 @@ class MessageData {
     locationSharing = json['locationSharing'] ?? json['location_sharing'];
     isForwarded = json['isForwarded'];
     forwardedFromMessageId = json['forwardedFromMessageId'];
+
+    isDeleted = json['isDeleted'] == true ||
+        json['is_deleted'] == true ||
+        json['deletedForEveryone'] == true ||
+        json['deleted_for_everyone'] == true ||
+        json['isDeleted']?.toString() == '1' ||
+        json['is_deleted']?.toString() == '1';
   }
 
   Map<String, dynamic> toJson() {
@@ -411,6 +420,7 @@ class MessageData {
     data['locationSharing'] = locationSharing;
     data['isForwarded'] = isForwarded;
     data['forwardedFromMessageId'] = forwardedFromMessageId;
+    data['isDeleted'] = isDeleted;
 
     return data;
   }

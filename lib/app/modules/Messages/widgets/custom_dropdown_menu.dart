@@ -16,50 +16,123 @@ class DropdownMenuItemData {
   });
 }
 
-class CustomDropdownMenu {
-  static Future<void> show({
-    required BuildContext context,
-    required Offset position,
-    required List<DropdownMenuItemData> items,
-    double width = 200,
-  }) async {
-    final overlay =
-    Overlay.of(context).context.findRenderObject() as RenderBox;
 
-    await showDialog(
-      context: context,
-      barrierColor: Colors.transparent,
-      builder: (ctx) {
-        return Stack(
-          children: [
-            Positioned.fill(
-              child: GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTap: () => Navigator.of(ctx).pop(),
-              ),
+Future<void> show({
+  required BuildContext context,
+  required Offset position,
+  required List<DropdownMenuItemData> items,
+  double width = 200,
+}) async {
+  final overlay = Overlay.of(context)
+      .context
+      .findRenderObject() as RenderBox;
+
+  final screenSize = overlay.size;
+  final menuWidth = width.w;
+
+  const horizontalMargin = 10.0;
+  const verticalMargin = 10.0;
+
+  final menuHeight = items.fold<double>(
+    0,
+        (height, item) {
+      final textStyle = TextStyle(
+        fontSize: 12.sp,
+        fontFamily: FontFamily.interSemiBold,
+      );
+
+      final textPainter = TextPainter(
+        text: TextSpan(text: item.title, style: textStyle),
+        textDirection: Directionality.of(context),
+        maxLines: 2,
+      )..layout(maxWidth: menuWidth - 60.w);
+
+      return height +
+          (textPainter.height > 18.sp
+              ? textPainter.height
+              : 18.sp) +
+          24.h +
+          (height == 0 ? 0 : 0);
+    },
+  ) +
+      (items.isNotEmpty ? (items.length - 1) * 0.8 : 0);
+
+  final maxLeft = screenSize.width - menuWidth - horizontalMargin;
+
+  final left = position.dx
+      .clamp(horizontalMargin, maxLeft < horizontalMargin
+      ? horizontalMargin
+      : maxLeft)
+      .toDouble();
+
+  final availableBelow =
+      screenSize.height - position.dy - verticalMargin;
+
+  final openAbove = availableBelow < menuHeight &&
+      position.dy > menuHeight + verticalMargin;
+
+  final estimatedMenuHeight = menuHeight.clamp(
+    0.0,
+    screenSize.height - (verticalMargin * 2),
+  );
+
+  final double top;
+
+  if (availableBelow >= estimatedMenuHeight) {
+    top = position.dy;
+  } else {
+    top = (position.dy - estimatedMenuHeight)
+        .clamp(
+      verticalMargin,
+      screenSize.height - estimatedMenuHeight - verticalMargin,
+    )
+        .toDouble();
+  }
+
+  await showDialog<void>(
+    context: context,
+    barrierColor: Colors.transparent,
+    useSafeArea: false,
+    builder: (ctx) {
+      return Stack(
+        children: [
+          Positioned.fill(
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () => Navigator.of(ctx).pop(),
             ),
-            Positioned(
-              left: position.dx.clamp(10, overlay.size.width - width - 10),
-              top: position.dy,
-              child: Material(
-                color: Colors.transparent,
-                child: Container(
-                  width: width.w,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(14.r),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.08),
-                        blurRadius: 16,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
+          ),
+          Positioned(
+            left: left,
+            top: top.clamp(
+              verticalMargin,
+              screenSize.height - verticalMargin,
+            ),
+            child: Material(
+              color: Colors.transparent,
+              child: Container(
+                width: menuWidth,
+                constraints: BoxConstraints(
+                  maxHeight: screenSize.height -
+                      verticalMargin * 2,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(14.r),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.08),
+                      blurRadius: 16,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: SingleChildScrollView(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: List.generate(items.length, (i) {
                       final item = items[i];
+
                       return _DropdownItem(
                         item: item,
                         isLast: i == items.length - 1,
@@ -73,11 +146,11 @@ class CustomDropdownMenu {
                 ),
               ),
             ),
-          ],
-        );
-      },
-    );
-  }
+          ),
+        ],
+      );
+    },
+  );
 }
 
 class _DropdownItem extends StatelessWidget {

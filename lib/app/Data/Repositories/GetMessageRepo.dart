@@ -8,6 +8,7 @@ import 'package:fgtracker/app/Model/ForwardMessageModel.dart';
 import 'package:fgtracker/app/Model/GetMessage.dart';
 import 'package:fgtracker/app/Model/LocationDataRes.dart';
 import 'package:fgtracker/app/Model/PrivateChatModel.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:dio/dio.dart';
 import 'package:path/path.dart' as p;
@@ -193,10 +194,14 @@ class MessageRepo {
       "targets": targets.map((target) => target.toJson()).toList(),
     };
 
+    debugPrint("FORWARD REQUEST: $data");
+
     final response = await HttpUtil().Authpost(
       "/forward/message",
       data: data,
     );
+
+    debugPrint("FORWARD RESPONSE: $response");
 
     return ForwardMessageResponse.fromJson(response);
   }

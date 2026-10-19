@@ -195,22 +195,29 @@ class ForwardDestination {
   }
 }
 
+
 class ForwardTarget {
   final String type;
-  final int userId;
+  final int? userId;
+  final int? groupId;
 
   ForwardTarget({
     required this.type,
-    required this.userId,
+    this.userId,
+    this.groupId,
   });
 
   Map<String, dynamic> toJson() {
     return {
       "type": type,
-      "userId": userId,
+      if (type == "private" && userId != null)
+        "userId": userId,
+      if (type == "group" && groupId != null)
+        "groupId": groupId,
     };
   }
 }
+
 
 class ForwardMessageResponse {
   bool? status;

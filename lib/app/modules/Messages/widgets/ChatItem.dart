@@ -1504,10 +1504,14 @@ class GroupChatBubble extends StatelessWidget {
   static const Color _myBubbleBg = Color(0xFFDCD6F5);
   static const Color _otherBubbleBg = Colors.white;
 
+  bool get _isDeletedMessage =>
+      message.isDeleted == true ||
+          message.content?.toString() == "This message was deleted";
+
   @override
   Widget build(BuildContext context) {
     final currentUserId =
-        Global.storageServices.get(PrefConst.userId).toString();
+    Global.storageServices.get(PrefConst.userId).toString();
 
     final isSentByMe = message.senderId.toString() == currentUserId;
 
@@ -1517,24 +1521,24 @@ class GroupChatBubble extends StatelessWidget {
 
     final borderRadius = isSentByMe
         ? BorderRadius.only(
-            topLeft: Radius.circular(16.r),
-            topRight: Radius.circular(16.r),
-            bottomLeft: Radius.circular(16.r),
-            bottomRight: Radius.circular(4.r),
-          )
+      topLeft: Radius.circular(16.r),
+      topRight: Radius.circular(16.r),
+      bottomLeft: Radius.circular(16.r),
+      bottomRight: Radius.circular(4.r),
+    )
         : BorderRadius.only(
-            topLeft: Radius.circular(4.r),
-            topRight: Radius.circular(16.r),
-            bottomLeft: Radius.circular(16.r),
-            bottomRight: Radius.circular(16.r),
-          );
+      topLeft: Radius.circular(4.r),
+      topRight: Radius.circular(16.r),
+      bottomLeft: Radius.circular(16.r),
+      bottomRight: Radius.circular(16.r),
+    );
 
     return Container(
       margin: EdgeInsets.symmetric(vertical: 6.h),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment:
-            isSentByMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+        isSentByMe ? MainAxisAlignment.end : MainAxisAlignment.start,
         children: [
           if (isGroup && !isSentByMe)
             Padding(
@@ -1548,8 +1552,8 @@ class GroupChatBubble extends StatelessWidget {
                     destination: const LatLng(0, 0),
                     distance: 0,
                     userId: int.tryParse(
-                          message.senderId.toString(),
-                        ) ??
+                      message.senderId.toString(),
+                    ) ??
                         0,
                     groupId: groupId,
                     groupName: groupName,
@@ -1565,18 +1569,18 @@ class GroupChatBubble extends StatelessWidget {
                   radius: 18.r,
                   backgroundColor: Colors.grey.shade200,
                   backgroundImage: message.senderImage != null &&
-                          message.senderImage!.isNotEmpty
+                      message.senderImage!.isNotEmpty
                       ? NetworkImage(
-                          "${ConstRes.aImageBaseUrl}${message.senderImage}",
-                        )
+                    "${ConstRes.aImageBaseUrl}${message.senderImage}",
+                  )
                       : null,
                   child: (message.senderImage == null ||
-                          message.senderImage!.isEmpty)
+                      message.senderImage!.isEmpty)
                       ? Icon(
-                          Icons.person,
-                          size: 18.sp,
-                          color: Colors.grey.shade500,
-                        )
+                    Icons.person,
+                    size: 18.sp,
+                    color: Colors.grey.shade500,
+                  )
                       : null,
                 ),
               ),
@@ -1592,7 +1596,9 @@ class GroupChatBubble extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       GestureDetector(
-                        onLongPress: () => _showMessageMenu(
+                        onLongPress: _isDeletedMessage
+                            ? null
+                            : () => _showMessageMenu(
                           bubbleContext,
                           isSentByMe,
                         ),
@@ -1607,10 +1613,10 @@ class GroupChatBubble extends StatelessWidget {
                           ),
                           decoration: BoxDecoration(
                             color: controller.highlightedMessageId.value ==
-                                    message.id
+                                message.id
                                 ? Colors.yellow.withValues(
-                                    alpha: .35,
-                                  )
+                              alpha: .35,
+                            )
                                 : bgColor,
                             borderRadius: borderRadius,
                             boxShadow: [
@@ -1642,11 +1648,14 @@ class GroupChatBubble extends StatelessWidget {
                                       ),
                                     ),
                                   ),
-                                _buildReplyPreview(
-                                  message,
-                                  isSentByMe,
-                                ),
-                                if (_isPlainTextMessage(message)) ...[
+                                if (!_isDeletedMessage)
+                                  _buildReplyPreview(
+                                    message,
+                                    isSentByMe,
+                                  ),
+                                if (_isDeletedMessage) ...[
+                                  _buildDeletedContent(isSentByMe),
+                                ] else if (_isPlainTextMessage(message)) ...[
                                   _buildTextWithTime(
                                     message: message,
                                     textColor: textColor,
@@ -1676,6 +1685,7 @@ class GroupChatBubble extends StatelessWidget {
                         ),
                       ),
                       if (!isSentByMe &&
+                          !_isDeletedMessage &&
                           _getTranslatableText(message).isNotEmpty)
                         ChatMessageActionRow(
                           messageId: _getMessageTranslationId(message),
@@ -1693,7 +1703,37 @@ class GroupChatBubble extends StatelessWidget {
     );
   }
 
+  Widget _buildDeletedContent(bool isSentByMe) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Icon(
+          Icons.block_rounded,
+          size: 14.sp,
+          color: Colors.grey.shade900,
+        ),
+        SizedBox(width: 6.w),
+        Flexible(
+          child: Text(
+            "This message was deleted",
+            style: TextStyle(
+              fontSize: 13.sp,
+              fontStyle: FontStyle.italic,
+              color: Colors.grey.shade900,
+              height: 1.35,
+            ),
+          ),
+        ),
+        SizedBox(width: 14.w),
+        _buildTimeRow(isSentByMe),
+      ],
+    );
+  }
+
   String _getTranslatableText(MessageData message) {
+    if (_isDeletedMessage) return '';
+
     if (_isPlainTextMessage(message)) {
       return (message.content?.toString() ?? '').trim();
     }
@@ -1707,7 +1747,7 @@ class GroupChatBubble extends StatelessWidget {
       final parts = message.content?.split("||") ?? [];
       final documentUrl = parts.isNotEmpty ? parts[0] : "";
       String documentName =
-          parts.length > 1 ? parts[1] : documentUrl.split('/').last;
+      parts.length > 1 ? parts[1] : documentUrl.split('/').last;
       documentName = removeDuplicateExtension(documentName).trim();
       return documentName;
     }
@@ -1770,7 +1810,7 @@ class GroupChatBubble extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        if (message.isEdited == true) ...[
+        if (message.isEdited == true && !_isDeletedMessage) ...[
           Text(
             "edited",
             style: TextStyle(
@@ -1819,10 +1859,10 @@ class GroupChatBubble extends StatelessWidget {
   }
 
   Widget _buildTextContent(
-    MessageData message,
-    Color textColor,
-    bool isSentByMe,
-  ) {
+      MessageData message,
+      Color textColor,
+      bool isSentByMe,
+      ) {
     final query = controller.searchQuery.value;
     final content = message.content?.toString() ?? "";
 
@@ -1873,11 +1913,11 @@ class GroupChatBubble extends StatelessWidget {
   }
 
   Widget _buildHighlightedText(
-    String text,
-    String query, {
-    required TextStyle normalStyle,
-    required TextStyle highlightStyle,
-  }) {
+      String text,
+      String query, {
+        required TextStyle normalStyle,
+        required TextStyle highlightStyle,
+      }) {
     final lowerText = text.toLowerCase();
     final lowerQuery = query.toLowerCase();
     final List<InlineSpan> spans = [];
@@ -1990,9 +2030,9 @@ class GroupChatBubble extends StatelessWidget {
         "Status";
 
     final statusType =
-        (status?.type ?? meta?.type ?? message.statusType?.toString() ?? 'text')
-            .toString()
-            .toLowerCase();
+    (status?.type ?? meta?.type ?? message.statusType?.toString() ?? 'text')
+        .toString()
+        .toLowerCase();
 
     final isVideo = statusType == 'video' || (status?.isVideo ?? false);
     final isImage = statusType == 'image' ||
@@ -2060,8 +2100,8 @@ class GroupChatBubble extends StatelessWidget {
                           isVideo
                               ? Icons.videocam_rounded
                               : isImage
-                                  ? Icons.photo_rounded
-                                  : Icons.text_fields_rounded,
+                              ? Icons.photo_rounded
+                              : Icons.text_fields_rounded,
                           size: 13.sp,
                           color: Colors.grey.shade700,
                         ),
@@ -2168,23 +2208,23 @@ class GroupChatBubble extends StatelessWidget {
     }
 
     Get.to(() => StatusViewScreen(
-          isOwnStatus: false,
-          userName: status.creator?.name ??
-              message.replySenderName?.toString() ??
-              'Status',
-          userAvatar: status.creator?.profilePic,
-          statuses: [status],
-          currentIndex: 0,
-        ));
+      isOwnStatus: false,
+      userName: status.creator?.name ??
+          message.replySenderName?.toString() ??
+          'Status',
+      userAvatar: status.creator?.profilePic,
+      statuses: [status],
+      currentIndex: 0,
+    ));
   }
 
   Widget _buildMessageContent(
-    MessageData message,
-    Color textColor,
-    bool isSentByMe,
-  ) {
+      MessageData message,
+      Color textColor,
+      bool isSentByMe,
+      ) {
     final messageType =
-        (message.messageType?.toString() ?? '').toLowerCase().trim();
+    (message.messageType?.toString() ?? '').toLowerCase().trim();
 
     final videos = message.videos ?? [];
 
@@ -2224,7 +2264,7 @@ class GroupChatBubble extends StatelessWidget {
 
       void openGallery(int index) {
         Get.to(
-          () => GroupImageGallery(
+              () => GroupImageGallery(
             images: imageList,
             videos: videos,
             initialIndex: index,
@@ -2233,10 +2273,10 @@ class GroupChatBubble extends StatelessWidget {
       }
 
       Widget buildImageTile(
-        int index,
-        double width,
-        double height,
-      ) {
+          int index,
+          double width,
+          double height,
+          ) {
         return GestureDetector(
           onTap: () => openGallery(index),
           child: SizedBox(
@@ -2329,15 +2369,15 @@ class GroupChatBubble extends StatelessWidget {
                     runSpacing: 3.w,
                     children: List.generate(
                       visibleImages,
-                      (index) {
+                          (index) {
                         final tileSize = totalImages == 2
                             ? 108.w
                             : totalImages == 3 && index == 0
-                                ? 220.w
-                                : 108.w;
+                            ? 220.w
+                            : 108.w;
 
                         final tileHeight =
-                            totalImages == 3 && index == 0 ? 130.h : 108.h;
+                        totalImages == 3 && index == 0 ? 130.h : 108.h;
 
                         return buildImageTile(
                           index,
@@ -2359,7 +2399,7 @@ class GroupChatBubble extends StatelessWidget {
                     runSpacing: 3.w,
                     children: List.generate(
                       (imageList.length + videos.length).clamp(0, 4),
-                      (index) {
+                          (index) {
                         final isVideo = index >= imageList.length;
                         final totalMedia = imageList.length + videos.length;
 
@@ -2428,11 +2468,11 @@ class GroupChatBubble extends StatelessWidget {
           ? parts[2].trim()
           : "--:--";
       final videoUrl =
-          videoPath.startsWith("http://") || videoPath.startsWith("https://")
-              ? videoPath
-              : "${ConstRes.aImageBaseUrl}$videoPath";
+      videoPath.startsWith("http://") || videoPath.startsWith("https://")
+          ? videoPath
+          : "${ConstRes.aImageBaseUrl}$videoPath";
       final thumbnailUrl = thumbnailPath.startsWith("http://") ||
-              thumbnailPath.startsWith("https://")
+          thumbnailPath.startsWith("https://")
           ? thumbnailPath
           : "${ConstRes.aImageBaseUrl}$thumbnailPath";
 
@@ -2467,7 +2507,7 @@ class GroupChatBubble extends StatelessWidget {
       final parts = message.content?.split("||") ?? [];
       final documentUrl = parts.isNotEmpty ? parts[0] : "";
       String documentName =
-          parts.length > 1 ? parts[1] : documentUrl.split('/').last;
+      parts.length > 1 ? parts[1] : documentUrl.split('/').last;
       documentName = removeDuplicateExtension(documentName);
       final extension = documentName.split('.').last.toLowerCase();
       final fileSize = parts.length > 2 ? parts[2] : "";
@@ -2615,10 +2655,14 @@ class GroupChatBubble extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(12.r),
-          onLongPress: () {
+          onLongPress: _isDeletedMessage
+              ? null
+              : () {
             _showMessageMenu(context, isSentByMe);
           },
-          onDoubleTap: () async {
+          onDoubleTap: _isDeletedMessage
+              ? null
+              : () async {
             await Clipboard.setData(
               ClipboardData(text: message.content.toString()),
             );
@@ -2638,7 +2682,7 @@ class GroupChatBubble extends StatelessWidget {
     if (message.seenBy is! List) return false;
 
     final currentUserId =
-        Global.storageServices.get(PrefConst.userId).toString();
+    Global.storageServices.get(PrefConst.userId).toString();
 
     final recipientIds = controller.groupMembers
         .where((member) => member.userId.toString() != currentUserId)
@@ -2653,6 +2697,9 @@ class GroupChatBubble extends StatelessWidget {
   }
 
   void _showMessageMenu(BuildContext bubbleContext, bool isSentByMe) {
+    // Deleted message pe koi action allowed nahi
+    if (_isDeletedMessage) return;
+
     final isPinned = controller.pinnedMessage.value?.id == message.id;
 
     final isText = message.messageType == "text" ||
@@ -2813,7 +2860,7 @@ class GroupChatBubble extends StatelessWidget {
                               CommonDialog.ConfirmationDialog(
                                 title: "Delete for Everyone",
                                 content:
-                                    "Are you sure you want to delete this message for everyone?",
+                                "Are you sure you want to delete this message for everyone?",
                                 cancel: "No",
                                 confirm: "Yes",
                                 icon: Icons.delete_outline_rounded,
@@ -2838,7 +2885,7 @@ class GroupChatBubble extends StatelessWidget {
                             CommonDialog.ConfirmationDialog(
                               title: "Delete for Me",
                               content:
-                                  "Are you sure you want to delete this message for you?",
+                              "Are you sure you want to delete this message for you?",
                               cancel: "No",
                               confirm: "Yes",
                               icon: Icons.delete_rounded,
@@ -2897,7 +2944,6 @@ class GroupChatBubble extends StatelessWidget {
     );
   }
 }
-
 class GroupGalleryMedia {
   final String url;
   final bool isVideo;
