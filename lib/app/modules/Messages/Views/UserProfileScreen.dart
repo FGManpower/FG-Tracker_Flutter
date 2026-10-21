@@ -3,6 +3,7 @@ import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/Dialog/Common_dialog.dart';
 import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
+import 'package:fgtracker/app/Data/Services/call_service.dart';
 import 'package:fgtracker/app/Model/MemberDataRes.dart';
 import 'package:fgtracker/app/Model/profile_details_model.dart';
 import 'package:fgtracker/app/modules/Messages/Controller/MessageController.dart';
@@ -295,13 +296,12 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
   void _startCall(UserDetails user, {required bool isVideo}) {
     if (_chatController != null) {
-      _chatController!.startCall(
-        context,
-        callerId: _myId,
-        remoteUserId: (user.userId ?? "").toString(),
-        is_video: isVideo,
-        callerName: user.name,
-      );
+      CallService().startOutGoingCall(context,
+          callerId: _myId,
+          remoteUserId: (user.userId ?? "").toString(),
+          is_video: isVideo,
+          callerName: user.name,
+          callerProfile: user.profileImage);
       return;
     }
 

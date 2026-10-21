@@ -50,20 +50,9 @@ class _AudiocallScreenState extends State<AudiocallScreen>
 
   @override
   Widget build(BuildContext context) {
-    final String profilePath =
-        controller.args['callerProfile']?.toString() ?? '';
-
-
-
-    final String imageUrl = Utility.isNullEmptyOrFalse(profilePath)
-        ? MyAppTheme.ProfilenotFoundImg
-        : profilePath.startsWith('http')
-        ? profilePath
-        : ConstRes.aImageBaseUrl + "Uploads/Auth/$profilePath";
 
     final bool isOutgoing =
         controller.args["callType"] == "outGoing";
-    print("=====IMageUrllldfaf:${profilePath}");
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 24.w),
       child: AnimatedBuilder(
@@ -115,7 +104,7 @@ class _AudiocallScreenState extends State<AudiocallScreen>
               SizedBox(height: 30.h),
 
               _AnimatedAvatar(
-                imageUrl: imageUrl,
+                imageUrl: controller.args['profileImage'] ?? MyAppTheme.notFoundImg,
                 progress: progress,
               ),
 
@@ -198,7 +187,7 @@ class _AnimatedAvatar extends StatelessWidget {
             padding: EdgeInsets.all(4.r),
             child: ClipOval(
               child: Image.network(
-                imageUrl,
+                ConstRes.aImageBaseUrl+imageUrl,
                 width: 120.r,
                 height: 120.r,
                 fit: BoxFit.cover,

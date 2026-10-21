@@ -9,6 +9,7 @@ import 'package:fgtracker/app/Core/values/Dialog/Common_dialog.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Data/Repositories/GetMessageRepo.dart';
 import 'package:fgtracker/app/Data/Services/CallStateTracker.dart';
+import 'package:fgtracker/app/Data/Services/call_service.dart';
 import 'package:fgtracker/app/Model/ContactMessage.dart';
 import 'package:fgtracker/app/Model/GetMessage.dart';
 import 'package:fgtracker/app/Model/LocationMessage.dart';
@@ -1284,26 +1285,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     Navigator.of(context).pop();
   }
 
-  startCall(
-    BuildContext context, {
-    required String callerId,
-    required String remoteUserId,
-    required bool is_video,
-    dynamic offer,
-    dynamic callerName,
-  }) {
-    Get.toNamed(
-      Routes.callScreen,
-      arguments: {
-        "callerId": callerId,
-        "remoteUserId": remoteUserId,
-        "offer": offer,
-        "is_video": is_video,
-        "callerName": callerName,
-        "callType": "outGoing",
-      },
-    );
-  }
+
 
   void startSearch() {
     isSearching.value = true;

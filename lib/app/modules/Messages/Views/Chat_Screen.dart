@@ -6,6 +6,7 @@ import 'package:fgtracker/app/Core/values/Utils.dart' show Utils;
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Core/values/utility.dart';
 import 'package:fgtracker/app/Data/Services/Tracking.dart';
+import 'package:fgtracker/app/Data/Services/call_service.dart';
 import 'package:fgtracker/app/Model/ContactMessage.dart';
 import 'package:fgtracker/app/Model/LocationMessage.dart';
 import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
@@ -437,13 +438,15 @@ class ChatScreen extends GetView<MessageController> {
             _roundIconBtn(
               icon: Icons.call_rounded,
               onTap: () {
-                controller.startCall(
-                  context,
-                  callerId:
-                      Global.storageServices.get(PrefConst.userId).toString(),
-                  remoteUserId: controller.memberData.userId.toString(),
-                  is_video: false,
-                  callerName: controller.memberData.name,
+
+
+                CallService().startOutGoingCall(
+                    context,
+                    callerId:
+                    Global.storageServices.get(PrefConst.userId).toString(),
+                    remoteUserId: controller.memberData.userId.toString(),
+                    is_video: false,
+                    callerProfile:controller.memberData.profileImage
                 );
               },
             ),
@@ -451,13 +454,13 @@ class ChatScreen extends GetView<MessageController> {
             _roundIconBtn(
               icon: Icons.videocam_rounded,
               onTap: () {
-                controller.startCall(
-                  context,
-                  callerId:
-                      Global.storageServices.get(PrefConst.userId).toString(),
-                  remoteUserId: controller.memberData.userId.toString(),
-                  is_video: true,
-                  callerName: controller.memberData.name,
+                CallService().startOutGoingCall(
+                    context,
+                    callerId:
+                    Global.storageServices.get(PrefConst.userId).toString(),
+                    remoteUserId: controller.memberData.userId.toString(),
+                    is_video: true,
+                    callerProfile:controller.memberData.profileImage
                 );
               },
             ),

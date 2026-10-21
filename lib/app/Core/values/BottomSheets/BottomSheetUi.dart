@@ -6,6 +6,7 @@ import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Data/Repositories/GetMessageRepo.dart';
 import 'package:fgtracker/app/Data/Repositories/GroupRepo.dart';
 import 'package:fgtracker/app/Data/Services/Tracking.dart';
+import 'package:fgtracker/app/Data/Services/call_service.dart';
 import 'package:fgtracker/app/Model/LocationDataRes.dart';
 import 'package:fgtracker/app/Model/MemberDataRes.dart';
 import 'package:fgtracker/app/config/themes_data.dart';
@@ -739,23 +740,15 @@ class BottomSheetUi {
                                                               CallingController>(
                                                           force: true);
                                                     }
-                                                    Get.toNamed(
-                                                      Routes.callScreen,
-                                                      arguments: {
-                                                        "callerId":
-                                                            currentUserId,
-                                                        "remoteUserId":
-                                                            memberUserId,
-                                                        "callerName": name,
-                                                        "callerProfile": member
-                                                                .profileImage
-                                                                ?.toString() ??
-                                                            "",
-                                                        "offer": null,
-                                                        "is_video": false,
-                                                        "callType": "outGoing",
-                                                      },
-                                                    );
+
+
+                                                    CallService().startOutGoingCall(context,
+                                                        callerId: currentUserId,
+                                                        remoteUserId: memberUserId,
+                                                        is_video: false,
+                                                        callerName: name,
+                                                        callerProfile: member
+                                                            .profileImage);
                                                   },
                                                 ),
                                                 SizedBox(width: 6.w),
@@ -770,23 +763,15 @@ class BottomSheetUi {
                                                               CallingController>(
                                                           force: true);
                                                     }
-                                                    Get.toNamed(
-                                                      Routes.callScreen,
-                                                      arguments: {
-                                                        "callerId":
-                                                            currentUserId,
-                                                        "remoteUserId":
-                                                            memberUserId,
-                                                        "callerName": name,
-                                                        "callerProfile": member
-                                                                .profileImage
-                                                                ?.toString() ??
-                                                            "",
-                                                        "offer": null,
-                                                        "is_video": true,
-                                                        "callType": "outGoing",
-                                                      },
-                                                    );
+
+
+                                                    CallService().startOutGoingCall(context,
+                                                        callerId: currentUserId,
+                                                        remoteUserId: memberUserId,
+                                                        is_video: true,
+                                                        callerName: name,
+                                                        callerProfile: member
+                                                            .profileImage);
                                                   },
                                                 ),
                                                 if (!isGhostMode) ...[
