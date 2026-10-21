@@ -1,4 +1,5 @@
 import 'package:fgtracker/app/Core/constant/const_res.dart';
+import 'package:fgtracker/app/Core/util/IncommingCallKit/callkit_service.dart:.dart';
 import 'package:fgtracker/app/Core/values/utility.dart';
 import 'package:fgtracker/app/Data/Services/NotificationServices.dart';
 import 'package:fgtracker/app/Data/Services/PermissionGuard.dart';
@@ -38,7 +39,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   final firebaseNotificationServices notificationServices =
-  firebaseNotificationServices();
+      firebaseNotificationServices();
 
   @override
   void initState() {
@@ -48,6 +49,7 @@ class _HomeScreenState extends State<HomeScreen> {
         checkAndRequestPermissions(context);
         notificationServices.setupInteractMessage(context);
       }
+      CallKitService.instance.markAppReady();
     });
     notificationServices.askPermission();
 
@@ -79,54 +81,54 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return UpgradeAlert(
       child: Obx(
-            () => Scaffold(
+        () => Scaffold(
           resizeToAvoidBottomInset: false,
           backgroundColor: const Color(0xFFF4F6FC),
           key: _scaffoldKey,
           drawer: Sidemenu(scaffoldKey: _scaffoldKey),
           appBar: Utility.isNotNullEmptyOrFalse(
-              controller.InitializeResponeMessage.isNotEmpty)
+                  controller.InitializeResponeMessage.isNotEmpty)
               ? null
               : HomeAppBar(
-            scaffoldKey: _scaffoldKey,
-            controller: controller,
-            trackingController: trackingController,
-          ),
+                  scaffoldKey: _scaffoldKey,
+                  controller: controller,
+                  trackingController: trackingController,
+                ),
           body: Utility.isNotNullEmptyOrFalse(
-              controller.InitializeResponeMessage.isNotEmpty)
+                  controller.InitializeResponeMessage.isNotEmpty)
               ? LostinternetConnection(
-            retry: () async {
-              controller.init();
-            },
-            messgae: controller.InitializeResponeMessage.value,
-          )
+                  retry: () async {
+                    controller.init();
+                  },
+                  messgae: controller.InitializeResponeMessage.value,
+                )
               : RefreshIndicator(
-            onRefresh: () async {
-              controller.init();
-            },
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.w),
-              child: ListView(
-                padding: EdgeInsets.only(bottom: 8.h),
-                children: [
-                  BannerUi(),
-                  const StatsGrid(),
-                  SizedBox(height: 10.h),
-                  const _UpgradeToPremiumCard(),
-                  SizedBox(height: 12.h),
-                  QuickActionsSection(),
-                  SizedBox(height: 4.h),
-                ],
-              ),
-            ),
-          ),
+                  onRefresh: () async {
+                    controller.init();
+                  },
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16.w),
+                    child: ListView(
+                      padding: EdgeInsets.only(bottom: 8.h),
+                      children: [
+                        BannerUi(),
+                        const StatsGrid(),
+                        SizedBox(height: 10.h),
+                        const _UpgradeToPremiumCard(),
+                        SizedBox(height: 12.h),
+                        QuickActionsSection(),
+                        SizedBox(height: 4.h),
+                      ],
+                    ),
+                  ),
+                ),
           bottomNavigationBar: Utility.isNotNullEmptyOrFalse(
-              controller.InitializeResponeMessage.isNotEmpty)
+                  controller.InitializeResponeMessage.isNotEmpty)
               ? null
               : BottomActionsBar(
-            groupController: groupController,
-            joinGroupController: joinGroupController,
-          ),
+                  groupController: groupController,
+                  joinGroupController: joinGroupController,
+                ),
         ),
       ),
     );

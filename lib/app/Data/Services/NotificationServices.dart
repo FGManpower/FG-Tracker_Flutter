@@ -1,9 +1,7 @@
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:math' hide log;
-import 'package:connectycube_flutter_call_kit/connectycube_flutter_call_kit.dart';
-import 'package:fgtracker/app/Core/global/launchedFromCall.dart';
-import 'package:fgtracker/app/Core/util/CallKit/callkit_service.dart';
+
 import 'package:fgtracker/app/Core/values/Context_Utility.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_SignallingService.dart';
 import 'package:fgtracker/app/Model/MemberDataRes.dart';
@@ -973,7 +971,6 @@ class firebaseNotificationServices {
         final myId = GroupWalkieService.instance.selfUserId ??
             Global.storageServices.get(PrefConst.userId)?.toString();
         if (speakerId != null && myId != null && speakerId == myId) {
-          // Skip showing invite banner to the current speaker
           return;
         }
 
@@ -1011,21 +1008,7 @@ class firebaseNotificationServices {
           "remoteUserId": int.tryParse(callData['callerId'].toString()) ?? 0,
           "callingStatus": "Ringing",
         });
-        if (Platform.isAndroid) {
-          final Map<String, String> userInfo = callData.map<String, String>(
-              (key, value) => MapEntry(key.toString(), value.toString()));
-          await ConnectycubeFlutterCallKit.showCallNotification(
-            CallEvent(
-              sessionId: callIdToUuid(callData['callId'].toString()),
-              callerName: callData['callerName'],
-              callType: callData['isVideo'] == true ? 1 : 0,
-              opponentsIds: {int.parse(callData['callerId'])},
-              callerId: int.parse(callData['callerId']),
-              userInfo: userInfo,
-            ),
-          );
-          CallSessionState.sessionId = callData['callId'].toString();
-        }
+
       }
 
       if (message.data['screen_name'] == "incomingGroupCall") {
@@ -1036,22 +1019,7 @@ class firebaseNotificationServices {
           "remoteUserId": int.tryParse(callData['callerId'].toString()) ?? 0,
           "callingStatus": "Ringing",
         });
-        if (Platform.isAndroid) {
-          log("==========CallingUser:${callData}");
-          final Map<String, String> userInfo = callData.map<String, String>(
-              (key, value) => MapEntry(key.toString(), value.toString()));
-          await ConnectycubeFlutterCallKit.showCallNotification(
-            CallEvent(
-              sessionId: message.data['session_id'].toString(),
-              callerName: callData['groupName'],
-              callType: callData['isVideo'] == true ? 1 : 0,
-              opponentsIds: {int.parse(callData['callerId'])},
-              callerId: int.parse(callData['callerId']),
-              userInfo: userInfo,
-            ),
-          );
-          CallSessionState.sessionId = callData('session_id').toString();
-        }
+
       }
 
       if (message.data['screen_name'] == "missedCall") {

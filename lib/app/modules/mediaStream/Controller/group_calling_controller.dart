@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:developer';
 import 'dart:io';
 import 'package:fgtracker/app/Core/global/launchedFromCall.dart';
-import 'package:fgtracker/app/Core/util/CallKit/callkit_service.dart';
 import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/Data/Repositories/GroupRepo.dart';
 import 'package:fgtracker/app/Data/Services/Socket/Socket_SignallingService.dart';
@@ -769,7 +768,7 @@ class GroupCallingController extends GetxController {
     }
 
     if (callId != null) {
-      callEnded(callIdToUuid(callId.toString()), type: "GroupCallEnded-Type");
+      // callEnded(callIdToUuid(callId.toString()), type: "GroupCallEnded-Type");
     }
 
     CallSessionState.reset();

@@ -2,11 +2,11 @@ import 'dart:async';
 import 'dart:developer';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/constant/urls.dart';
-import 'package:fgtracker/app/Core/util/CallKit/callkit_service.dart';
+import 'package:fgtracker/app/Core/util/IncommingCallKit/call_session.dart';
+import 'package:fgtracker/app/Core/util/IncommingCallKit/callkit_service.dart:.dart';
 import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Core/values/utility.dart';
-import 'package:fgtracker/app/Data/Services/CallStateTracker.dart';
 import 'package:fgtracker/app/modules/Track/Controller/GroupTrackController.dart';
 import 'package:fgtracker/app/modules/mediaStream/Controller/call_audio_route_controller.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
@@ -19,8 +19,7 @@ import 'package:proximity_screen_lock/proximity_screen_lock.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 import '../../../../gen/assets.gen.dart';
 import 'package:fgtracker/app/Model/callDetailRes.dart';
-import '../../../Core/global/launchedFromCall.dart';
-import '../../../Data/Services/Socket/Socket_SignallingService.dart';
+import '../../../Data/Services/Socket/Socket_SignallingService.dart' hide callEnded;
 import '../Widget/audio_route_sheet.dart';
 
 class CallingController extends GetxController with WidgetsBindingObserver {
@@ -46,6 +45,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
   bool fromCallKit = false;
   bool _isCleaningUp = false;
   bool _remoteEndSent = false;
+  bool _callKitConnectedSent = false;
 
   Timer? _peerDisconnectTimer;
   final args = Get.arguments;
@@ -77,7 +77,6 @@ class CallingController extends GetxController with WidgetsBindingObserver {
 
   void toggleVideoViews() {
     if (!isVideoCall.value) return;
-
     isLocalVideoMain = !isLocalVideoMain;
     showControlsTemporarily();
     update();
@@ -88,7 +87,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     _controlsTimer?.cancel();
     _controlsTimer = Timer(
       const Duration(seconds: 5),
-      () {
+          () {
         if (!isClosed) {
           areControlsVisible.value = false;
         }
@@ -106,7 +105,6 @@ class CallingController extends GetxController with WidgetsBindingObserver {
   @override
   void onInit() {
     super.onInit();
-
     WidgetsBinding.instance.addObserver(this);
 
     callerId = args["callerId"]?.toString() ?? "";
@@ -123,10 +121,15 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       callId = args["sessionId"];
     }
 
+    if (args["sessionId"] != null &&
+        args["sessionId"].toString().isNotEmpty) {
+      CallSessionState.sessionId = args["sessionId"].toString();
+    }
+
     isVideoCall.value = is_video;
 
     _audioRouteTag =
-        "call_audio_${callId ?? DateTime.now().microsecondsSinceEpoch}";
+    "call_audio_${callId ?? DateTime.now().microsecondsSinceEpoch}";
 
     audioRouteController = Get.put(
       CallAudioRouteController(),
@@ -154,15 +157,10 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     try {
       await localRenderer.initialize();
       await remoteRenderer.initialize();
-
       await _setupPeer();
     } catch (e, stackTrace) {
       log("[Call] Initialization error: $e", stackTrace: stackTrace);
-
-      await _cleanupCall(
-        notifyRemote: true,
-        navigateHome: true,
-      );
+      await _cleanupCall(notifyRemote: true, navigateHome: true);
     }
   }
 
@@ -170,54 +168,40 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     required bool notifyRemote,
     required bool navigateHome,
   }) async {
-    if (_isCleaningUp) {
-      return;
-    }
-
+    if (_isCleaningUp) return;
     _isCleaningUp = true;
 
     try {
       _clearTimers();
-
       _controlsTimer?.cancel();
       _peerDisconnectTimer?.cancel();
 
       stopSound();
       await audioRouteController.stopCall();
+
       if (notifyRemote && !_remoteEndSent) {
         _remoteEndSent = true;
-
         var param = {
           "callId": callId,
           "remoteUserId": remoteUserId,
           "sessionId": _sessionId,
         };
-
-        socket?.emit(
-          "endCall",
-          param,
-        );
-        print("=======CallEndedFromSide:${param}");
+        socket?.emit("endCall", param);
       }
 
       await _disposePeerResources();
       await _stopForegroundCallService();
 
       final String sessionId = _sessionId;
-
       if (sessionId.isNotEmpty) {
         try {
-          await callEnded(
-            sessionId,
-            type: "CallCleanedUp",
-          );
+          await callEnded(sessionId, type: "CallCleanedUp");
         } catch (e) {
-          log("[Call] Call history cleanup error: $e");
+          log("[Call] Call cleanup error: $e");
         }
       }
 
       CallSessionState.reset();
-      CallStateTracker.isIncomingCallScreenOpen = false;
 
       await WakelockPlus.disable();
       await ProximityScreenLock.setActive(false);
@@ -237,10 +221,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
         CallSessionState.sessionId!.isNotEmpty) {
       return CallSessionState.sessionId!;
     }
-    if (callId != null) {
-      return callIdToUuid(callId.toString());
-    }
-    return "";
+    return callId != null ? callId.toString() : "";
   }
 
   Future<void> _stopForegroundCallService() async {
@@ -271,7 +252,6 @@ class CallingController extends GetxController with WidgetsBindingObserver {
         for (final track in localStream!.getAudioTracks()) {
           track.enabled = isAudioOn;
         }
-
         if (isVideoCall.value && isVideoOn) {
           for (final track in localStream!.getVideoTracks()) {
             track.enabled = true;
@@ -283,7 +263,6 @@ class CallingController extends GetxController with WidgetsBindingObserver {
         for (final track in remoteRenderer.srcObject!.getAudioTracks()) {
           track.enabled = true;
         }
-
         if (isVideoCall.value) {
           for (final track in remoteRenderer.srcObject!.getVideoTracks()) {
             track.enabled = true;
@@ -291,20 +270,14 @@ class CallingController extends GetxController with WidgetsBindingObserver {
         }
       }
 
-      // NEW: the remote renderer can stay black after the app returns from
-      // the background, so bind it again.
       if (isVideoCall.value) {
         unawaited(_rebindRemoteRenderer());
         _scheduleRemoteVideoCheck();
       }
 
-      unawaited(
-        audioRouteController.restoreCurrentRoute(),
-      );
+      unawaited(audioRouteController.restoreCurrentRoute());
     } catch (e) {
-      log(
-        "Error restoring active WebRTC audio states: $e",
-      );
+      log("Error restoring active WebRTC audio states: $e");
     }
   }
 
@@ -325,14 +298,6 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     }
   }
 
-  // ---------------------------------------------------------------------------
-  // NEW: remote video helpers
-  // ---------------------------------------------------------------------------
-
-  /// Re-attaches the remote stream to the renderer. flutter_webrtc binds the
-  /// renderer to the video track that exists at the moment srcObject is
-  /// assigned, so a video track that arrives later (or a renderer that missed
-  /// the first frames) needs a fresh bind.
   Future<void> _rebindRemoteRenderer([MediaStream? stream]) async {
     final MediaStream? s = stream ?? remoteRenderer.srcObject;
     if (s == null) return;
@@ -346,8 +311,6 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     update();
   }
 
-  /// If a remote video track exists but no frame has arrived, re-bind the
-  /// renderer a few times (every 2s, max 5 tries).
   void _scheduleRemoteVideoCheck() {
     _remoteVideoWatchdog?.cancel();
 
@@ -373,8 +336,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
         return;
       }
 
-      log("[Call] Remote video has no frames yet, rebinding renderer "
-          "(attempt $attempts)");
+      log("[Call] Remote video has no frames yet, rebinding renderer (attempt $attempts)");
       unawaited(_rebindRemoteRenderer());
     });
   }
@@ -382,12 +344,10 @@ class CallingController extends GetxController with WidgetsBindingObserver {
   Future<void> _handleRemoteTrack(RTCTrackEvent event) async {
     try {
       MediaStream? stream =
-          event.streams.isNotEmpty ? event.streams.first : null;
+      event.streams.isNotEmpty ? event.streams.first : null;
 
-      // A track without a stream used to throw (event.streams[0]).
       if (stream == null) {
-        _remoteFallbackStream ??=
-            await createLocalMediaStream('remote_fallback');
+        _remoteFallbackStream ??= await createLocalMediaStream('remote_fallback');
         await _remoteFallbackStream!.addTrack(event.track);
         stream = _remoteFallbackStream;
       }
@@ -400,8 +360,6 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       if (!sameStream) {
         remoteRenderer.srcObject = stream;
       } else if (isVideoTrack) {
-        // Same stream, but the video track was added after the renderer
-        // was bound: bind again.
         await _rebindRemoteRenderer(stream);
       }
 
@@ -411,6 +369,12 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       startCallTimer();
       callStatus.value = "Connected";
       update();
+
+      if (!_callKitConnectedSent &&
+          (fromCallKit || args["callType"] == "Incoming")) {
+        _callKitConnectedSent = true;
+        unawaited(CallKitService.setConnected(_sessionId));
+      }
 
       if (isVideoTrack) {
         _scheduleRemoteVideoCheck();
@@ -469,13 +433,11 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       });
       await peer!.setLocalDescription(offer);
 
-      await audioRouteController.updateCallType(
-        isVideo: true,
-      );
+      await audioRouteController.updateCallType(isVideo: true);
 
       final myUserId = Global.storageServices.get(PrefConst.userId).toString();
       final targetUserId =
-          (myUserId == callerId.toString()) ? remoteUserId : callerId;
+      (myUserId == callerId.toString()) ? remoteUserId : callerId;
 
       socket?.emit("upgradeToVideo", {
         "callId": callId,
@@ -522,14 +484,10 @@ class CallingController extends GetxController with WidgetsBindingObserver {
 
         is_video = true;
         isVideoCall.value = true;
-
         callStatus.value = "Connected";
-        await audioRouteController.updateCallType(
-          isVideo: true,
-        );
+        await audioRouteController.updateCallType(isVideo: true);
         update();
 
-        // NEW: make sure the new remote video track is actually displayed.
         _scheduleRemoteVideoCheck();
       } catch (e) {
         log("upgradeToVideo handler error: $e");
@@ -550,13 +508,9 @@ class CallingController extends GetxController with WidgetsBindingObserver {
         isVideoOn = true;
         isVideoCall.value = true;
         callStatus.value = "Connected";
-        await audioRouteController.updateCallType(
-          isVideo: true,
-        );
-
+        await audioRouteController.updateCallType(isVideo: true);
         update();
 
-        // NEW
         _scheduleRemoteVideoCheck();
       } catch (e) {
         log("upgradeToVideoAnswer error: $e");
@@ -564,16 +518,75 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     });
   }
 
+  void _onNewCall(dynamic data) {
+    socket?.emit("CallingStatus", {
+      "callId": data['callId'].toString(),
+      "remoteUserId": int.tryParse(data['callerId'].toString()) ?? 0,
+      "callingStatus": "Ringing",
+    });
+  }
+
+  Future<void> _onCallEnded(dynamic data) async {
+    log("[Socket] callEnded RECEIVED: $data");
+    Utils().fluttertoast('Call Ended By ${args["callerName"] ?? "Unknown"}');
+    await _cleanupCall(notifyRemote: false, navigateHome: true);
+  }
+
+  Future<void> _onMissedCall(dynamic data) async {
+    log("[Socket] missedCall RECEIVED: $data");
+
+    if (_isCleaningUp) return;
+
+    if (callTimer != null || callDurationSeconds > 0) {
+      log("[Socket] missedCall ignored: call already connected");
+      return;
+    }
+
+    _clearTimers();
+    stopSound();
+
+    final String sessionId = data["sessionId"]?.toString().isNotEmpty == true
+        ? data["sessionId"].toString()
+        : CallSessionState.sessionId?.toString() ?? "";
+
+    if (sessionId.isNotEmpty) {
+      await callEnded(sessionId, type: "missedCallFromSocket");
+    }
+
+    await resetPeer();
+    await _stopForegroundCallService();
+    await WakelockPlus.disable();
+    await ProximityScreenLock.setActive(false);
+
+    if (Get.currentRoute != Routes.Home_Screen) {
+      Get.offAllNamed(Routes.Home_Screen);
+    }
+  }
+
+  void _onCallCreated(dynamic data) {
+    try {
+      if (data['callId'] != null) callId = data['callId'];
+      final sid = data['sessionId'] ?? data['session_id'];
+      if (sid != null && sid.toString().isNotEmpty) {
+        CallSessionState.sessionId = sid.toString();
+      }
+    } catch (e) {
+      log("[Call] callCreated parse error: $e");
+    }
+  }
+
   void _listenForCallEvents() {
     socket?.off("callRejected");
-    socket?.off("callEnded");
-    socket?.off("missedCall");
+    socket?.off("callEnded", _onCallEnded);
+    socket?.off("missedCall", _onMissedCall);
     socket?.off("callStatus");
     socket?.off("callCreated");
-    socket?.off("newCall");
+    socket?.off("newCall", _onNewCall);
     socket?.off("sdpOfferFromCaller");
     socket?.off("callError");
     socket?.off("callBlocked");
+
+    socket?.on("callCreated", _onCallCreated);
 
     socket?.on("callError", (data) async {
       log("CALL ERROR => $data");
@@ -624,8 +637,6 @@ class CallingController extends GetxController with WidgetsBindingObserver {
         offer = sdp;
         callId = data["callId"] ?? callId;
 
-        // CHANGED: send local candidates from the very first one
-        // (handler is set BEFORE setLocalDescription).
         peer!.onIceCandidate = (c) {
           if (c.candidate == null) return;
           socket!.emit("IceCandidate", {
@@ -640,7 +651,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
 
         await peer!.setRemoteDescription(
             RTCSessionDescription(sdp["sdp"], sdp["type"]));
-        await _markRemoteDescriptionSet(); // NEW: flush queued candidates
+        await _markRemoteDescriptionSet();
 
         final answer = await peer!.createAnswer();
         await peer!.setLocalDescription(answer);
@@ -656,63 +667,13 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       }
     });
 
-    socket!.on("newCall", (data) {
-      socket?.emit("CallingStatus", {
-        "callId": data['callId'].toString(),
-        "remoteUserId": int.tryParse(data['callerId'].toString()) ?? 0,
-        "callingStatus": "Ringing",
-      });
-    });
-
-    socket?.on("callEnded", (data) async {
-      log("[Socket] callEnded RECEIVED: $data");
-      Utils().fluttertoast('Call Ended By ${args["callerName"] ?? "Unknown"}');
-      await _cleanupCall(notifyRemote: false, navigateHome: true);
-    });
-
-    socket?.on("missedCall", (data) async {
-      log("[Socket] missedCall RECEIVED: $data");
-
-      if (_isCleaningUp) {
-        return;
-      }
-
-      // NEW: a late/stale missedCall must never end a call that is already
-      // connected.
-      if (callTimer != null || callDurationSeconds > 0) {
-        log("[Socket] missedCall ignored: call already connected");
-        return;
-      }
-
-      _clearTimers();
-      stopSound();
-
-      final String sessionId = data["sessionId"]?.toString().isNotEmpty == true
-          ? data["sessionId"].toString()
-          : CallSessionState.sessionId?.toString() ?? "";
-
-      if (sessionId.isNotEmpty) {
-        await callEnded(
-          sessionId,
-          type: "missedCallFromSocket",
-        );
-      }
-
-      await resetPeer();
-
-      await _stopForegroundCallService();
-      await WakelockPlus.disable();
-      await ProximityScreenLock.setActive(false);
-
-      if (Get.currentRoute != Routes.Home_Screen) {
-        Get.offAllNamed(Routes.Home_Screen);
-      }
-    });
+    socket?.on("newCall", _onNewCall);
+    socket?.on("callEnded", _onCallEnded);
+    socket?.on("missedCall", _onMissedCall);
 
     socket?.on("callRejected", (data) async {
       log("[Socket] callRejected RECEIVED: $data");
 
-      // NEW: ignore a stale reject for a call that is already connected.
       if (callTimer != null || callDurationSeconds > 0) {
         log("[Socket] callRejected ignored: call already connected");
         return;
@@ -729,7 +690,6 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       final status = data["status"]?.toString();
       if (status != null && status.isNotEmpty) {
         callStatus.value = status;
-        // CHANGED: never overwrite a valid callId with null.
         if (data['callId'] != null) {
           callId = data['callId'];
         }
@@ -756,8 +716,6 @@ class CallingController extends GetxController with WidgetsBindingObserver {
         navigator.mediaDevices.ondevicechange = null;
       }
 
-      // CHANGED: detach the peer first. close() used to fire a "Closed"
-      // state callback that ended the call a second time.
       final RTCPeerConnection? pc = peer;
       peer = null;
       _remoteDescriptionSet = false;
@@ -788,15 +746,10 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       socket?.off("IceCandidate");
       socket?.off("callAnswered");
     } catch (e, stackTrace) {
-      log(
-        "[Call] Peer dispose error: $e",
-        stackTrace: stackTrace,
-      );
+      log("[Call] Peer dispose error: $e", stackTrace: stackTrace);
     }
   }
 
-  // CHANGED: queues candidates until the peer + remote description exist and
-  // never throws.
   void safeAddCandidate(dynamic data) {
     try {
       final ice = data["iceCandidate"];
@@ -823,7 +776,6 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     }
   }
 
-  // NEW
   Future<void> _markRemoteDescriptionSet() async {
     _remoteDescriptionSet = true;
 
@@ -838,8 +790,6 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     }
   }
 
-  // NEW: a "Disconnected" state is usually temporary. End the call only if
-  // the connection has not recovered after the grace period.
   void _startPeerDisconnectTimer() {
     _peerDisconnectTimer?.cancel();
     _peerDisconnectTimer = Timer(const Duration(seconds: 8), () {
@@ -876,9 +826,6 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     socket!.off("IceCandidate");
     socket!.off("callAnswered");
 
-    // CHANGED: listen for remote candidates immediately (they are queued
-    // until the remote description is set) instead of after getUserMedia and
-    // the audio route setup.
     socket!.on("IceCandidate", (data) {
       safeAddCandidate(data);
     });
@@ -898,8 +845,6 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     });
     peer = pc;
 
-    // CHANGED: callbacks ignore events from an old peer and cancel the
-    // disconnect timer when the connection recovers.
     pc.onIceConnectionState = (state) {
       if (!identical(peer, pc)) return;
       log("[Call] ICE state: $state");
@@ -943,8 +888,6 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       }
     };
 
-    // CHANGED: robust remote track handling (no event.streams[0] crash,
-    // renderer re-bind when the video track arrives).
     pc.onTrack = (event) {
       if (!identical(peer, pc)) return;
       unawaited(_handleRemoteTrack(event));
@@ -966,8 +909,6 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     }
     localRenderer.srcObject = localStream;
 
-    // CHANGED: do not block signalling (answer/offer) on the audio route
-    // setup, which has delays of its own.
     unawaited(
       audioRouteController
           .startCall(
@@ -981,8 +922,6 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     update();
 
     if (offer != null) {
-      // CHANGED: candidate sender is installed BEFORE setLocalDescription so
-      // the first local candidates are not lost.
       pc.onIceCandidate = (c) {
         if (c.candidate == null) return;
         socket!.emit("IceCandidate", {
@@ -997,7 +936,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
 
       await pc.setRemoteDescription(
           RTCSessionDescription(offer["sdp"], offer["type"]));
-      await _markRemoteDescriptionSet(); // NEW
+      await _markRemoteDescriptionSet();
 
       final answer = await pc.createAnswer();
       await pc.setLocalDescription(answer);
@@ -1020,7 +959,6 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       pc.onIceCandidate = (c) => iceCandidates.add(c);
 
       socket!.on("callAnswered", (data) async {
-        // NEW: ignore duplicates / answers for an old peer.
         if (!identical(peer, pc) || _remoteDescriptionSet) return;
 
         try {
@@ -1028,7 +966,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
             RTCSessionDescription(
                 data["sdpAnswer"]["sdp"], data["sdpAnswer"]["type"]),
           );
-          await _markRemoteDescriptionSet(); // NEW
+          await _markRemoteDescriptionSet();
         } catch (e) {
           log("[Call] callAnswered handler error: $e");
           return;
@@ -1075,7 +1013,6 @@ class CallingController extends GetxController with WidgetsBindingObserver {
   Future<void> endCall({
     String? type,
   }) async {
-    // NEW: avoid running twice (button + socket + peer callbacks).
     if (_isCleaningUp) return;
     _isCleaningUp = true;
 
@@ -1085,10 +1022,10 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       await _stopForegroundCallService();
 
       final String myUserId =
-          Global.storageServices.get(PrefConst.userId).toString();
+      Global.storageServices.get(PrefConst.userId).toString();
 
       final String targetUser =
-          myUserId == callerId.toString() ? remoteUserId : callerId;
+      myUserId == callerId.toString() ? remoteUserId : callerId;
 
       final Map<String, dynamic> payload = {
         "callId": callId,
@@ -1101,9 +1038,10 @@ class CallingController extends GetxController with WidgetsBindingObserver {
 
       await resetPeer();
 
-      if (CallSessionState.sessionId != null) {
+      final String sid = _sessionId;
+      if (sid.isNotEmpty) {
         await callEnded(
-          CallSessionState.sessionId.toString(),
+          sid,
           type: "endCallMethodHittedFromController-Type:$type",
         );
       }
@@ -1111,6 +1049,8 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       if (args["callType"] == "outGoing") {
         stopSound();
       }
+
+      CallSessionState.reset();
 
       await WakelockPlus.disable();
       await ProximityScreenLock.setActive(false);
@@ -1166,12 +1106,11 @@ class CallingController extends GetxController with WidgetsBindingObserver {
   Future<void> showAudioRoutePicker(BuildContext context) async {
     if (!context.mounted) return;
 
-    // Refresh devices so Bluetooth / headset state is current when it opens.
     await audioRouteController.checkDevices();
     if (!context.mounted) return;
 
     final CallAudioRoute? selected =
-        await showAudioRouteSheet(context, audioRouteController);
+    await showAudioRouteSheet(context, audioRouteController);
 
     if (selected != null) {
       await audioRouteController.selectRoute(selected);
@@ -1217,24 +1156,19 @@ class CallingController extends GetxController with WidgetsBindingObserver {
 
   Future<void> missedCall() async {
     final Map<String, dynamic> param = {
-      // "callId": callId,
+      "callId": callId,
       "remoteUserId": remoteUserId,
     };
 
-    socket?.emit(
-      "missCall",
-      param,
-    );
+    socket?.emit("missCall", param);
 
-    await endCall(
-      type: "missedCall",
-    );
+    await endCall(type: "missedCall");
   }
 
   void _clearTimers() {
     callTimer?.cancel();
     missedCallTimer?.cancel();
-    _remoteVideoWatchdog?.cancel(); // NEW
+    _remoteVideoWatchdog?.cancel();
     callTimer = null;
     missedCallTimer = null;
     _remoteVideoWatchdog = null;
@@ -1293,7 +1227,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
 
     _peerDisconnectTimer?.cancel();
     _controlsTimer?.cancel();
-    _remoteVideoWatchdog?.cancel(); // NEW
+    _remoteVideoWatchdog?.cancel();
 
     stopSound();
 
@@ -1304,11 +1238,11 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     socket?.off("upgradeToVideo");
     socket?.off("upgradeToVideoAnswer");
     socket?.off("callRejected");
-    socket?.off("callEnded");
-    socket?.off("missedCall");
+    socket?.off("callEnded", _onCallEnded);
+    socket?.off("missedCall", _onMissedCall);
     socket?.off("callStatus");
-    socket?.off("callCreated");
-    socket?.off("newCall");
+    socket?.off("callCreated", _onCallCreated);
+    socket?.off("newCall", _onNewCall);
     socket?.off("sdpOfferFromCaller");
     socket?.off("callError");
     socket?.off("callBlocked");
@@ -1327,8 +1261,12 @@ class CallingController extends GetxController with WidgetsBindingObserver {
 
     _clearTimers();
 
+    final sid = _sessionId;
+    if (sid.isNotEmpty) {
+      unawaited(callEnded(sid, type: "onClose"));
+    }
+
     CallSessionState.reset();
-    CallStateTracker.isIncomingCallScreenOpen = false;
 
     WakelockPlus.disable();
     ProximityScreenLock.setActive(false);
