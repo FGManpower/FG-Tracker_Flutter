@@ -1311,6 +1311,29 @@ class SocketMessageService extends GetxService {
     );
   }
 
+  void listenPrivateChatClearedOnListSocket({
+    required Function(Map<String, dynamic>) callback,
+  }) {
+    _privateChatClearedListCallback = callback;
+
+    if (_privateChatListSocket == null) {
+      return;
+    }
+
+    _privateChatListSocket!.off("private_chat_cleared");
+
+    _privateChatListSocket!.on(
+      "private_chat_cleared",
+      (data) {
+        if (data is Map) {
+          _privateChatClearedListCallback?.call(
+            Map<String, dynamic>.from(data),
+          );
+        }
+      },
+    );
+  }
+
   Function(dynamic)? _privateChatActionErrorCallback;
 
   void listenPrivateChatActionError({
