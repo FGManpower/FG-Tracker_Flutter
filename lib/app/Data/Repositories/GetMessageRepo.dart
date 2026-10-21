@@ -153,6 +153,7 @@ class MessageRepo {
     return LocationDataRes.fromJson(response);
   }
 
+  /// Legacy Private Chat List API (Previously used for private chat tab; kept for backward compatibility)
   static Future<PrivateChatResponse> getPrivateChatList({
     int page = 1,
     int limit = 1,
@@ -164,6 +165,7 @@ class MessageRepo {
     return PrivateChatResponse.fromJson(response);
   }
 
+  /// Legacy Group Chat List API (Previously used for groups tab; kept for backward compatibility)
   static Future<GroupChatListResponse> getGroupChatList({
     int page = 1,
     int limit = 20,
@@ -173,6 +175,26 @@ class MessageRepo {
     );
 
     return GroupChatListResponse.fromJson(response);
+  }
+
+  /// Unified Single Chat List API (WhatsApp Behavior)
+  /// GET /api/chat-list
+  /// Merges 1-to-1 private chats and group chats into a single unified list
+  static Future<PrivateChatResponse> getChatList({
+    int page = 1,
+    int limit = 20,
+    String? search,
+    String type = "all", // "all" | "private" | "group"
+    bool includeArchived = false,
+  }) async {
+    String endpoint = "/chat-list?page=$page&limit=$limit&type=$type&includeArchived=$includeArchived";
+    if (search != null && search.trim().isNotEmpty) {
+      endpoint += "&search=${Uri.encodeComponent(search.trim())}";
+    }
+
+    final response = await HttpUtil().get(endpoint);
+
+    return PrivateChatResponse.fromJson(response);
   }
 
   static Future<ForwardListResponse> getForwardList() async {

@@ -664,9 +664,13 @@ class SocketMessageService extends GetxService {
 
     _privateChatListSocket?.onConnect((_) {
       _privateChatListSocket?.off("chat_list_updated");
+      _privateChatListSocket?.off("conversation_updated");
 
       if (_privateChatListUpdatedCallback != null) {
         _privateChatListSocket?.on("chat_list_updated", (data) {
+          _privateChatListUpdatedCallback?.call(data);
+        });
+        _privateChatListSocket?.on("conversation_updated", (data) {
           _privateChatListUpdatedCallback?.call(data);
         });
       }
@@ -721,46 +725,67 @@ class SocketMessageService extends GetxService {
   Function(Map<String, dynamic>)? _privateChatClearedListCallback;
   Function(dynamic)? _privateChatListUpdatedCallback;
 
-
-  void listenPrivateChatClearedOnListSocket({
-    required Function(Map<String, dynamic>) callback,
-  }) {
-    _privateChatClearedListCallback = callback;
-
-    if (_privateChatListSocket == null ||
-        !_privateChatListSocket!.connected) {
-      return;
-    }
-
-    _privateChatListSocket!.off("private_chat_cleared");
-
-    _privateChatListSocket!.on(
-      "private_chat_cleared",
-          (data) {
-        if (data is Map) {
-          _privateChatClearedListCallback?.call(
-            Map<String, dynamic>.from(data),
-          );
-        }
-      },
-    );
-  }
-
+  Function(dynamic)? _unifiedFullChatListCallback;
 
   void listenPrivateChatListUpdated({
     required Function(dynamic) callback,
   }) {
     _privateChatListUpdatedCallback = callback;
 
-    if (_privateChatListSocket == null || !_privateChatListSocket!.connected) {
-      return;
+    void register(IO.Socket? s) {
+      if (s == null) return;
+      s.off("chat_list_updated");
+      s.off("conversation_updated");
+      s.on("chat_list_updated", (data) {
+        _privateChatListUpdatedCallback?.call(data);
+      });
+      s.on("conversation_updated", (data) {
+        _privateChatListUpdatedCallback?.call(data);
+      });
     }
 
-    _privateChatListSocket?.off("chat_list_updated");
+    if (_privateChatListSocket != null && _privateChatListSocket!.connected) {
+      register(_privateChatListSocket);
+    }
+    if (_socket != null && _socket!.connected) {
+      register(_socket);
+    }
+  }
 
-    _privateChatListSocket?.on("chat_list_updated", (data) {
-      _privateChatListUpdatedCallback?.call(data);
-    });
+  void listenFullChatList({
+    required Function(dynamic) callback,
+  }) {
+    _unifiedFullChatListCallback = callback;
+
+    void register(IO.Socket? s) {
+      if (s == null) return;
+      s.off("chat_list");
+      s.off("common_chat_list");
+      s.off("unified_chat_list");
+      s.on("chat_list", (data) => _unifiedFullChatListCallback?.call(data));
+      s.on("common_chat_list", (data) => _unifiedFullChatListCallback?.call(data));
+      s.on("unified_chat_list", (data) => _unifiedFullChatListCallback?.call(data));
+    }
+
+    register(_privateChatListSocket);
+    register(_socket);
+  }
+
+  void fetchUnifiedChatList({
+    int page = 1,
+    int limit = 50,
+    String search = "",
+  }) {
+    final payload = {
+      "page": page,
+      "limit": limit,
+      "search": search,
+    };
+    if (isPrivateChatListSocketConnected) {
+      _privateChatListSocket?.emit("get_chat_list", payload);
+    } else if (isSocketConnected) {
+      _socket?.emit("get_chat_list", payload);
+    }
   }
 
   void listenPrivateChatUpdated({
