@@ -2,11 +2,11 @@ import 'dart:async';
 import 'dart:developer';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/constant/urls.dart';
-import 'package:fgtracker/app/Core/util/IncommingCallKit/call_session.dart';
-import 'package:fgtracker/app/Core/util/IncommingCallKit/callkit_service.dart:.dart';
+
 import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Core/values/utility.dart';
+import 'package:fgtracker/app/Data/Services/IncommingCallKit/callkit_service.dart:.dart';
 import 'package:fgtracker/app/modules/Track/Controller/GroupTrackController.dart';
 import 'package:fgtracker/app/modules/mediaStream/Controller/call_audio_route_controller.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
@@ -19,7 +19,9 @@ import 'package:proximity_screen_lock/proximity_screen_lock.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 import '../../../../gen/assets.gen.dart';
 import 'package:fgtracker/app/Model/callDetailRes.dart';
-import '../../../Data/Services/Socket/Socket_SignallingService.dart' hide callEnded;
+import '../../../Data/Services/IncommingCallKit/call_session.dart'
+    show CallSessionState;
+import '../../../Data/Services/Socket/Socket_SignallingService.dart';
 import '../Widget/audio_route_sheet.dart';
 
 class CallingController extends GetxController with WidgetsBindingObserver {
@@ -87,7 +89,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     _controlsTimer?.cancel();
     _controlsTimer = Timer(
       const Duration(seconds: 5),
-          () {
+      () {
         if (!isClosed) {
           areControlsVisible.value = false;
         }
@@ -121,15 +123,14 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       callId = args["sessionId"];
     }
 
-    if (args["sessionId"] != null &&
-        args["sessionId"].toString().isNotEmpty) {
+    if (args["sessionId"] != null && args["sessionId"].toString().isNotEmpty) {
       CallSessionState.sessionId = args["sessionId"].toString();
     }
 
     isVideoCall.value = is_video;
 
     _audioRouteTag =
-    "call_audio_${callId ?? DateTime.now().microsecondsSinceEpoch}";
+        "call_audio_${callId ?? DateTime.now().microsecondsSinceEpoch}";
 
     audioRouteController = Get.put(
       CallAudioRouteController(),
@@ -344,10 +345,11 @@ class CallingController extends GetxController with WidgetsBindingObserver {
   Future<void> _handleRemoteTrack(RTCTrackEvent event) async {
     try {
       MediaStream? stream =
-      event.streams.isNotEmpty ? event.streams.first : null;
+          event.streams.isNotEmpty ? event.streams.first : null;
 
       if (stream == null) {
-        _remoteFallbackStream ??= await createLocalMediaStream('remote_fallback');
+        _remoteFallbackStream ??=
+            await createLocalMediaStream('remote_fallback');
         await _remoteFallbackStream!.addTrack(event.track);
         stream = _remoteFallbackStream;
       }
@@ -437,7 +439,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
 
       final myUserId = Global.storageServices.get(PrefConst.userId).toString();
       final targetUserId =
-      (myUserId == callerId.toString()) ? remoteUserId : callerId;
+          (myUserId == callerId.toString()) ? remoteUserId : callerId;
 
       socket?.emit("upgradeToVideo", {
         "callId": callId,
@@ -1022,10 +1024,10 @@ class CallingController extends GetxController with WidgetsBindingObserver {
       await _stopForegroundCallService();
 
       final String myUserId =
-      Global.storageServices.get(PrefConst.userId).toString();
+          Global.storageServices.get(PrefConst.userId).toString();
 
       final String targetUser =
-      myUserId == callerId.toString() ? remoteUserId : callerId;
+          myUserId == callerId.toString() ? remoteUserId : callerId;
 
       final Map<String, dynamic> payload = {
         "callId": callId,
@@ -1110,7 +1112,7 @@ class CallingController extends GetxController with WidgetsBindingObserver {
     if (!context.mounted) return;
 
     final CallAudioRoute? selected =
-    await showAudioRouteSheet(context, audioRouteController);
+        await showAudioRouteSheet(context, audioRouteController);
 
     if (selected != null) {
       await audioRouteController.selectRoute(selected);

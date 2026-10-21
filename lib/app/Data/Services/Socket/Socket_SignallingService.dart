@@ -1,7 +1,7 @@
 import 'dart:developer';
 
 import 'package:fgtracker/app/Core/global/launchedFromCall.dart';
-import 'package:fgtracker/app/Core/util/IncommingCallKit/callkit_service.dart:.dart';
+import 'package:fgtracker/app/Data/Services/IncommingCallKit/callkit_service.dart:.dart';
 import 'package:socket_io_client/socket_io_client.dart';
 
 class SignallingService {
@@ -47,8 +47,10 @@ class SignallingService {
     s.on("callRejected", (data) async {
       log('CallRejectedByRemoteUser: $data');
       if (data is Map) {
-        final sessionId =
-            data['sessionId'] ?? data['callId'] ?? data['session_id'] ?? data['id'];
+        final sessionId = data['sessionId'] ??
+            data['callId'] ??
+            data['session_id'] ??
+            data['id'];
         final sid = sessionId?.toString();
         if (sid != null && sid.isNotEmpty && sid != 'null') {
           await CallKitService.dismiss(sid);

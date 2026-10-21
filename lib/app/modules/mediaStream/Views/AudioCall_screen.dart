@@ -54,6 +54,7 @@ class _AudiocallScreenState extends State<AudiocallScreen>
         controller.args['callerProfile']?.toString() ?? '';
 
 
+
     final String imageUrl = Utility.isNullEmptyOrFalse(profilePath)
         ? MyAppTheme.ProfilenotFoundImg
         : profilePath.startsWith('http')
@@ -62,7 +63,7 @@ class _AudiocallScreenState extends State<AudiocallScreen>
 
     final bool isOutgoing =
         controller.args["callType"] == "outGoing";
-
+    print("=====IMageUrllldfaf:${profilePath}");
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 24.w),
       child: AnimatedBuilder(
