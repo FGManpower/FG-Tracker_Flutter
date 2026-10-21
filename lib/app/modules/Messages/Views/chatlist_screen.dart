@@ -852,6 +852,8 @@ class _AllChatsBody extends StatelessWidget {
           isMuted: chat.isMuted == true,
           isDeletedForEveryone: chat.isDeletedForEveryone == true,
           isBlocked: chat.isBlocked == true,
+          isForwarded: chat.isForwarded == true,
+          forwardedLabel: chat.forwardedLabel ?? "Forwarded",
           image: image,
         ),
       ),
@@ -870,6 +872,8 @@ class _AllChatsBody extends StatelessWidget {
     bool isMuted = false,
     bool isDeletedForEveryone = false,
     bool isBlocked = false,
+    bool isForwarded = false,
+    String forwardedLabel = "Forwarded",
     String? image,
   }) {
     final bool isDeleted = isDeletedForEveryone ||
@@ -1012,6 +1016,27 @@ class _AllChatsBody extends StatelessWidget {
                             color: Colors.red.shade700,
                             fontWeight: FontWeight.w600,
                           ),
+                        ),
+                      ),
+                    ],
+                    if (isForwarded) ...[
+                      Transform(
+                        alignment: Alignment.center,
+                        transform: Matrix4.rotationY(3.14159),
+                        child: Icon(
+                          Icons.reply_rounded,
+                          size: 13.sp,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                      SizedBox(width: 3.w),
+                      Text(
+                        "${forwardedLabel.isNotEmpty ? forwardedLabel : 'Forwarded'}: ",
+                        style: TextStyle(
+                          fontSize: 10.sp,
+                          fontStyle: FontStyle.italic,
+                          color: Colors.grey.shade600,
+                          fontFamily: FontFamily.interMedium,
                         ),
                       ),
                     ],

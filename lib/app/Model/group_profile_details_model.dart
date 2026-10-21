@@ -169,9 +169,9 @@ class GroupMemberInfo {
       rawLastSeen: json['rawLastSeen'] ?? json['lastSeen'],
       lastSeen: json['lastSeen']?.toString(),
       locationSharing: json['locationSharing'],
-      chatId: json['chatId'] == null
-          ? null
-          : int.tryParse(json['chatId'].toString()),
+      chatId: int.tryParse(
+        (json['chatId'] ?? json['chat_id'])?.toString() ?? '',
+      ),
     );
   }
 }
