@@ -21,7 +21,6 @@ class ConstRes {
   static const String razorpayTestKey = 'rzp_test_ThoFEwOj0pMgTH';
   static const String razorpayLiveKey = 'rzp_live_TjQUIgRmscuMhF';
 
-  // Active Key for Razorpay Package (dynamically switches based on isPaymentLive)
   static const String activePaymentKey =
       isPaymentLive ? razorpayLiveKey : razorpayTestKey;
 

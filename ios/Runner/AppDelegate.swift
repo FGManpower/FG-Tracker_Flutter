@@ -9,10 +9,12 @@ import AVFAudio
 import AVFoundation
 import UserNotifications
 import CryptoKit
+import WebRTC
 import flutter_callkit_incoming
 
-
+// private let apiBaseUrl = "http://192.168.1.29:4000/api"
 private let apiBaseUrl = "http://fgtracker.in:3000/api"
+private let callingStatusEndpoints = ["/calling-status"]
 private let candidateTokenPrefKeys = [
     "flutter.user_token_key",
     "user_token_key",
@@ -24,25 +26,26 @@ private let candidateTokenPrefKeys = [
 @main
 @objc class AppDelegate: FlutterAppDelegate, PKPushRegistryDelegate, CallkitIncomingAppDelegate {
 
-
     private var voipRegistry: PKPushRegistry?
-
-
     private var hasLaunchedIntoForeground = false
     private var enteredBackgroundAt: Date?
     private let socketSuspensionThresholdSeconds: TimeInterval = 25.0
+    private var audioGeneration = 0
+    private var currentCallIsVideo = false
 
     private var activeBgTasks: [UUID: UIBackgroundTaskIdentifier] = [:]
     private var handledDeclineCallIds = Set<String>()
+    private var handledRingingCallIds = Set<String>()
 
     override func application(
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
         FirebaseApp.configure()
-        GMSServices.provideAPIKey("AIzaSyAgt-V8kmcQJb_6Cj6LHArWfhWjVPh7N_Q")   // replace with your iOS Google Maps key
+        GMSServices.provideAPIKey("AIzaSyAgt-V8kmcQJb_6Cj6LHArWfhWjVPh7N_Q")
         GeneratedPluginRegistrant.register(with: self)
 
+        configureDefaultWebRTCAudio(isVideo: false)
 
         let mainQueue = DispatchQueue.main
         let registry = PKPushRegistry(queue: mainQueue)
@@ -50,14 +53,12 @@ private let candidateTokenPrefKeys = [
         registry.desiredPushTypes = [PKPushType.voIP]
         self.voipRegistry = registry
 
-
         if #available(iOS 10.0, *) {
             UNUserNotificationCenter.current().delegate = self as UNUserNotificationCenterDelegate
         }
 
         return super.application(application, didFinishLaunchingWithOptions: launchOptions)
     }
-
 
     override func applicationDidBecomeActive(_ application: UIApplication) {
         hasLaunchedIntoForeground = true
@@ -83,7 +84,6 @@ private let candidateTokenPrefKeys = [
         }
         return true
     }
-
 
     override func application(
         _ app: UIApplication,
@@ -121,7 +121,6 @@ private let candidateTokenPrefKeys = [
         )
     }
 
-
     override func userNotificationCenter(
         _ center: UNUserNotificationCenter,
         willPresent notification: UNNotification,
@@ -152,7 +151,6 @@ private let candidateTokenPrefKeys = [
         }
     }
 
-
     func pushRegistry(
         _ registry: PKPushRegistry,
         didUpdate credentials: PKPushCredentials,
@@ -169,7 +167,6 @@ private let candidateTokenPrefKeys = [
         print("[AppDelegate] PushKit VoIP token invalidated")
         SwiftFlutterCallkitIncomingPlugin.sharedInstance?.setDevicePushTokenVoIP("")
     }
-
 
     func pushRegistry(
         _ registry: PKPushRegistry,
@@ -210,7 +207,7 @@ private let candidateTokenPrefKeys = [
                   let parsed = (try? JSONSerialization.jsonObject(with: jsonData)) as? [String: Any] {
             extraDict.merge(parsed) { _, new in new }
         }
-        for key in ["callId", "call_id", "groupId", "group_id", "sessionId", "session_id", "callerId"] {
+        for key in ["callId", "call_id", "caller_id", "groupId", "group_id", "sessionId", "session_id", "callerId"] {
             if extraDict[key] == nil, let topVal = p[key] {
                 extraDict[key] = topVal
             }
@@ -221,6 +218,7 @@ private let candidateTokenPrefKeys = [
 
         let endSignals: Set<String> = ["endCall", "callEnded", "cancelCall", "callRejected", "missedCall"]
         if endSignals.contains(signal) {
+            releaseCallKitManualAudio()
             let dummy = flutter_callkit_incoming.Data(
                 id: UUID().uuidString,
                 nameCaller: name,
@@ -242,6 +240,24 @@ private let candidateTokenPrefKeys = [
                 completion()
             }
         } else {
+            currentCallIsVideo = isVideo
+            prepareCallKitManualAudio(isVideo: isVideo)
+
+            let incomingCallId = Self.stringValue(extraDict["callId"])
+                ?? Self.stringValue(extraDict["call_id"])
+                ?? ""
+            let callerIdInt = Int(
+                Self.stringValue(extraDict["callerId"])
+                    ?? Self.stringValue(extraDict["caller_id"])
+                    ?? "0"
+            ) ?? 0
+
+            updateCallingStatusViaApi(
+                callId: incomingCallId,
+                remoteUserId: callerIdInt,
+                callingStatus: "Ringing"
+            )
+
             let data = flutter_callkit_incoming.Data(
                 id: id,
                 nameCaller: name,
@@ -249,6 +265,8 @@ private let candidateTokenPrefKeys = [
                 type: isVideo ? 1 : 0
             )
             data.appName = "FG Tracker"
+            data.supportsVideo = isVideo
+            data.audioSessionMode = isVideo ? "videoChat" : "voiceChat"
             if !avatar.isEmpty {
                 data.avatar = avatar
             }
@@ -263,13 +281,31 @@ private let candidateTokenPrefKeys = [
         }
     }
 
-
     func onAccept(_ call: Call, _ action: CXAnswerCallAction) {
         print("[AppDelegate] onAccept")
+        let isVideo = call.data.type == 1
+        currentCallIsVideo = isVideo
+        configureDefaultWebRTCAudio(isVideo: isVideo)
+        audioGeneration += 1
+        let expectedGen = audioGeneration
+        RTCAudioSession.sharedInstance().useManualAudio = true
         action.fulfill()
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.75) { [weak self] in
+            guard let self = self, self.audioGeneration == expectedGen else { return }
+            let rtcAudio = RTCAudioSession.sharedInstance()
+            if !rtcAudio.isAudioEnabled {
+                rtcAudio.audioSessionDidActivate(AVAudioSession.sharedInstance())
+                rtcAudio.isAudioEnabled = true
+            }
+            self.applyInitialOutputPort(isVideo: isVideo)
+        }
     }
 
     func onDecline(_ call: Call, _ action: CXEndCallAction) {
+        audioGeneration += 1
+        releaseCallKitManualAudio()
+
         let extra = call.data.extra as? [String: Any] ?? [:]
         let callId = Self.stringValue(extra["callId"])
             ?? Self.stringValue(extra["call_id"])
@@ -280,7 +316,7 @@ private let candidateTokenPrefKeys = [
         print("[AppDelegate] onDecline callId=\(callId) groupId=\(groupId ?? "nil") isDartSocketAlive=\(isDartSocketAlive)")
 
         if isDartSocketAlive {
-            print("[AppDelegate] Skipping native REST decline — Dart socket path is active")
+            print("[AppDelegate] Skipping native REST decline")
             action.fulfill()
             return
         }
@@ -291,31 +327,178 @@ private let candidateTokenPrefKeys = [
 
     func onEnd(_ call: Call, _ action: CXEndCallAction) {
         print("[AppDelegate] onEnd")
+        audioGeneration += 1
+        releaseCallKitManualAudio()
         action.fulfill()
     }
 
     func onTimeOut(_ call: Call) {
         print("[AppDelegate] onTimeOut")
+        audioGeneration += 1
+        releaseCallKitManualAudio()
     }
 
     func didActivateAudioSession(_ audioSession: AVAudioSession) {
-        // Uncomment if your WebRTC SDK requires manual CallKit audio session activation:
-//        RTCAudioSession.sharedInstance().audioSessionDidActivate(audioSession)
-//        RTCAudioSession.sharedInstance().isAudioEnabled = true
+        configureDefaultWebRTCAudio(isVideo: currentCallIsVideo)
+        let rtcAudio = RTCAudioSession.sharedInstance()
+        rtcAudio.useManualAudio = true
+        rtcAudio.audioSessionDidActivate(audioSession)
+        rtcAudio.isAudioEnabled = true
+        applyInitialOutputPort(isVideo: currentCallIsVideo)
     }
 
     func didDeactivateAudioSession(_ audioSession: AVAudioSession) {
-        // Uncomment if your WebRTC SDK requires manual CallKit audio session deactivation:
-//        RTCAudioSession.sharedInstance().audioSessionDidDeactivate(audioSession)
-//        RTCAudioSession.sharedInstance().isAudioEnabled = false
+        audioGeneration += 1
+        let rtcAudio = RTCAudioSession.sharedInstance()
+        rtcAudio.audioSessionDidDeactivate(audioSession)
+        rtcAudio.isAudioEnabled = false
+        rtcAudio.useManualAudio = false
     }
 
     func providerDidReset() {
         print("[AppDelegate] providerDidReset")
+        audioGeneration += 1
+        releaseCallKitManualAudio()
         handledDeclineCallIds.removeAll()
+        handledRingingCallIds.removeAll()
     }
 
-    // MARK: - Native REST Decline (Terminated / Background-Suspended State Only)
+    private func configureDefaultWebRTCAudio(isVideo: Bool) {
+        let config = RTCAudioSessionConfiguration.webRTC()
+        config.category = AVAudioSession.Category.playAndRecord.rawValue
+        config.mode = isVideo
+            ? AVAudioSession.Mode.videoChat.rawValue
+            : AVAudioSession.Mode.voiceChat.rawValue
+        if isVideo {
+            config.categoryOptions = [.allowBluetooth, .allowBluetoothA2DP, .defaultToSpeaker]
+        } else {
+            config.categoryOptions = [.allowBluetooth, .allowBluetoothA2DP]
+        }
+        RTCAudioSessionConfiguration.setWebRTC(config)
+    }
+
+    private func applyInitialOutputPort(isVideo: Bool) {
+        let session = AVAudioSession.sharedInstance()
+        let hasExternalRoute = session.currentRoute.outputs.contains { port in
+            port.portType == .bluetoothHFP ||
+                port.portType == .bluetoothA2DP ||
+                port.portType == .bluetoothLE ||
+                port.portType == .headphones ||
+                port.portType == .headsetMic ||
+                port.portType == .usbAudio
+        }
+        guard !hasExternalRoute else { return }
+        do {
+            try session.overrideOutputAudioPort(isVideo ? .speaker : .none)
+        } catch {
+            print("[AppDelegate] overrideOutputAudioPort error: \(error.localizedDescription)")
+        }
+    }
+
+    private func prepareCallKitManualAudio(isVideo: Bool) {
+        configureDefaultWebRTCAudio(isVideo: isVideo)
+        let rtcAudio = RTCAudioSession.sharedInstance()
+        rtcAudio.useManualAudio = true
+        rtcAudio.isAudioEnabled = false
+    }
+
+    private func releaseCallKitManualAudio() {
+        currentCallIsVideo = false
+        configureDefaultWebRTCAudio(isVideo: false)
+        let rtcAudio = RTCAudioSession.sharedInstance()
+        rtcAudio.isAudioEnabled = false
+        rtcAudio.useManualAudio = false
+    }
+
+    private func updateCallingStatusViaApi(
+        callId: String,
+        remoteUserId: Int,
+        callingStatus: String,
+        endpointIndex: Int = 0
+    ) {
+        guard !callId.isEmpty, callId != "null" else {
+            print("[AppDelegate] updateCallingStatusViaApi ABORTED: callId is empty")
+            return
+        }
+
+        if endpointIndex == 0 {
+            if handledRingingCallIds.contains(callId) {
+                return
+            }
+            handledRingingCallIds.insert(callId)
+        }
+
+        guard endpointIndex < callingStatusEndpoints.count else {
+            return
+        }
+
+        guard let token = Self.readAccessToken(), !token.isEmpty else {
+            print("[AppDelegate] updateCallingStatusViaApi ABORTED: token not found")
+            handledRingingCallIds.remove(callId)
+            return
+        }
+
+        let path = callingStatusEndpoints[endpointIndex]
+        guard let url = URL(string: "\(apiBaseUrl)\(path)") else {
+            return
+        }
+
+        let bodyDict: [String: Any] = [
+            "callId": callId,
+            "remoteUserId": remoteUserId,
+            "callingStatus": callingStatus
+        ]
+
+        guard let bodyData = try? JSONSerialization.data(withJSONObject: bodyDict, options: []) else {
+            return
+        }
+
+        var req = URLRequest(url: url, timeoutInterval: 10)
+        req.httpMethod = "POST"
+        req.httpBody = bodyData
+        req.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        req.setValue("application/json", forHTTPHeaderField: "Accept")
+        req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+
+        let taskKey = UUID()
+        let bgId = UIApplication.shared.beginBackgroundTask(withName: "callingStatus.\(callId)") { [weak self] in
+            self?.finishBackgroundTask(for: taskKey)
+        }
+        activeBgTasks[taskKey] = bgId
+
+        URLSession.shared.dataTask(with: req) { [weak self] data, response, error in
+            if let error = error {
+                print("[AppDelegate] updateCallingStatusViaApi error: \(error.localizedDescription)")
+                DispatchQueue.main.async {
+                    self?.handledRingingCallIds.remove(callId)
+                    self?.finishBackgroundTask(for: taskKey)
+                }
+                return
+            }
+
+            if let http = response as? HTTPURLResponse {
+                let body = data.flatMap { String(data: $0, encoding: .utf8) } ?? ""
+                print("[AppDelegate] updateCallingStatusViaApi \(path) HTTP status=\(http.statusCode) body=\(body)")
+                if http.statusCode == 404 && endpointIndex + 1 < callingStatusEndpoints.count {
+                    DispatchQueue.main.async {
+                        self?.finishBackgroundTask(for: taskKey)
+                        self?.updateCallingStatusViaApi(
+                            callId: callId,
+                            remoteUserId: remoteUserId,
+                            callingStatus: callingStatus,
+                            endpointIndex: endpointIndex + 1
+                        )
+                    }
+                    return
+                }
+            }
+
+            DispatchQueue.main.async {
+                self?.finishBackgroundTask(for: taskKey)
+            }
+        }.resume()
+    }
+
     private func rejectCallViaApi(callId: String, groupId: String?) {
         guard !callId.isEmpty, callId != "null" else {
             print("[AppDelegate] rejectCallViaApi ABORTED: callId is empty")
@@ -381,7 +564,6 @@ private let candidateTokenPrefKeys = [
         }
     }
 
-
     private static func readAccessToken() -> String? {
         let defaults = UserDefaults.standard
         for key in candidateTokenPrefKeys {
@@ -397,7 +579,6 @@ private let candidateTokenPrefKeys = [
         let str = "\(raw)".trimmingCharacters(in: .whitespacesAndNewlines)
         return (str.isEmpty || str == "<null>" || str == "null") ? nil : str
     }
-
 
     private static func ensureValidUuid(_ raw: String?) -> String {
         guard let raw = raw, !raw.isEmpty else {

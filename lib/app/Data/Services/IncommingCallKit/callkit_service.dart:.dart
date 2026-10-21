@@ -44,7 +44,6 @@ class CallKitService {
   Future<void> Function(String token)? onVoipToken;
   Future<String?> Function(String callId)? getCallStatus;
 
-  // ------------------------------------------------------------ helpers
   static dynamic _field(dynamic obj, String key) {
     if (obj == null) return null;
     if (obj is Map) return obj[key];
@@ -192,7 +191,7 @@ class CallKitService {
     return false;
   }
 
-  /// Decompress sdpOfferCompressed (gzip + base64).
+
   static dynamic decodeOffer(dynamic compressed) {
     try {
       final s = compressed?.toString() ?? '';
@@ -302,6 +301,8 @@ class CallKitService {
     String avatar = '',
     Map<String, dynamic> extra = const {},
   }) async {
+
+
     final id = sessionId;
 
 
@@ -321,7 +322,7 @@ class CallKitService {
         _ck('showIncoming SKIPPED already active sessionId=$id');
         return;
       }
-
+      _ck("CallkitAvataravatar:${avatar}");
       _ck('showIncoming sessionId=$id callId=$callId caller=$callerName video=$isVideo');
       final params = CallKitParams(
         id: id,

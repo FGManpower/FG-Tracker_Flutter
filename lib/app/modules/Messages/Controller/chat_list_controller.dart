@@ -150,13 +150,11 @@ class ChatListController extends GetxController {
       }
 
       if (response.pagination != null) {
-        currentPage.value =
-            response.pagination!.currentPage ?? requestedPage;
+        currentPage.value = response.pagination!.currentPage ?? requestedPage;
 
         totalPages.value = response.pagination!.totalPages ?? 0;
         hasNextPage.value = response.pagination!.hasNextPage ?? false;
-        hasPreviousPage.value =
-            response.pagination!.hasPreviousPage ?? false;
+        hasPreviousPage.value = response.pagination!.hasPreviousPage ?? false;
       }
 
       privateChats.refresh();
@@ -248,6 +246,10 @@ class ChatListController extends GetxController {
       callback: _handlePrivateChatRemoved,
     );
 
+    socketService.listenPrivateChatClearedOnListSocket(
+      callback: _handlePrivateChatCleared,
+    );
+
     socketService.listenPrivateChatActionError(
       callback: _handlePrivateChatActionError,
     );
@@ -292,10 +294,10 @@ class ChatListController extends GetxController {
 
     final chatId = int.tryParse(
       (data["chatId"] ??
-          data["chat_id"] ??
-          data["conversationId"] ??
-          data["conversation_id"] ??
-          data["id"])
+              data["chat_id"] ??
+              data["conversationId"] ??
+              data["conversation_id"] ??
+              data["id"])
           .toString(),
     );
 
@@ -304,8 +306,42 @@ class ChatListController extends GetxController {
     }
 
     privateChats.removeWhere(
-          (chat) => chat.id == chatId,
+      (chat) => chat.id == chatId,
     );
+
+    privateChats.refresh();
+  }
+
+  void _handlePrivateChatCleared(
+    Map<String, dynamic> data,
+  ) {
+    final conversationId = int.tryParse(
+      (data['conversationId'] ??
+                  data['conversation_id'] ??
+                  data['chatId'] ??
+                  data['chat_id'] ??
+                  data['id'])
+              ?.toString() ??
+          '',
+    );
+
+    if (conversationId == null) {
+      return;
+    }
+
+    final index = privateChats.indexWhere(
+      (chat) => chat.id == conversationId,
+    );
+
+    if (index == -1) {
+      return;
+    }
+
+    final chat = privateChats[index];
+
+    chat.message = '';
+    chat.time = '';
+    chat.messageType = '';
 
     privateChats.refresh();
   }
@@ -504,9 +540,9 @@ class ChatListController extends GetxController {
   }
 
   void muteChat(
-      PrivateChatModel chat, {
-        String? mutedUntil,
-      }) {
+    PrivateChatModel chat, {
+    String? mutedUntil,
+  }) {
     if (chat.id == null) {
       return;
     }
@@ -556,7 +592,7 @@ class ChatListController extends GetxController {
     );
 
     privateChats.removeWhere(
-          (item) => item.id == chat.id,
+      (item) => item.id == chat.id,
     );
 
     privateChats.refresh();
@@ -578,11 +614,11 @@ class ChatListController extends GetxController {
     chat.isPinned = false;
 
     archivedChats.removeWhere(
-          (item) => item.id == chat.id,
+      (item) => item.id == chat.id,
     );
 
     final existingIndex = privateChats.indexWhere(
-          (item) => item.id == chat.id,
+      (item) => item.id == chat.id,
     );
 
     if (existingIndex == -1) {
@@ -599,7 +635,6 @@ class ChatListController extends GetxController {
     archivedChats.refresh();
     privateChats.refresh();
   }
-
 
   void markChatAsRead(PrivateChatModel chat) {
     if (chat.isGroup == true) {
@@ -737,9 +772,9 @@ class ChatListController extends GetxController {
           .whereType<Map>()
           .map(
             (item) => PrivateChatModel.fromJson(
-          Map<String, dynamic>.from(item),
-        ),
-      )
+              Map<String, dynamic>.from(item),
+            ),
+          )
           .where((chat) => chat.id != null)
           .toList();
 
@@ -749,19 +784,18 @@ class ChatListController extends GetxController {
 
       if (pagination is Map) {
         archivedCurrentPage.value = int.tryParse(
-          pagination["currentPage"]?.toString() ?? "",
-        ) ??
+              pagination["currentPage"]?.toString() ?? "",
+            ) ??
             1;
 
         archivedTotalPages.value = int.tryParse(
-          pagination["totalPages"]?.toString() ?? "",
-        ) ??
+              pagination["totalPages"]?.toString() ?? "",
+            ) ??
             0;
 
         archivedHasNextPage.value = pagination["hasNextPage"] == true;
 
-        archivedHasPreviousPage.value =
-            pagination["hasPreviousPage"] == true;
+        archivedHasPreviousPage.value = pagination["hasPreviousPage"] == true;
       }
 
       archivedChats.refresh();

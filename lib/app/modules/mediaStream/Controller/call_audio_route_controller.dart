@@ -3,6 +3,7 @@ import 'dart:io' show Platform;
 
 import 'package:audio_session/audio_session.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_callkit_incoming/flutter_callkit_incoming.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:get/get.dart' hide navigator;
 import 'package:proximity_screen_lock/proximity_screen_lock.dart';
@@ -20,13 +21,13 @@ class CallAudioRouteController extends GetxController {
 
   bool _isDisposed = false;
   bool _isCheckingDevices = false;
-
   bool _iosBluetoothBlocked = false;
 
   Future<void> _routeQueue = Future.value();
 
   StreamSubscription? _devicesSub;
   Timer? _deviceCheckTimer;
+  final List<Timer> _warmupRouteTimers = <Timer>[];
 
   String? _bluetoothDeviceId;
   String? _wiredDeviceId;
@@ -65,7 +66,6 @@ class CallAudioRouteController extends GetxController {
 
   bool get isSpeakerOn => currentRoute.value == CallAudioRoute.speaker;
 
-  /// Routes the user can pick now. Earpiece is hidden during video calls.
   List<CallAudioRoute> get availableRoutes => <CallAudioRoute>[
         if (!isVideoCall.value) CallAudioRoute.earpiece,
         CallAudioRoute.speaker,
@@ -76,18 +76,42 @@ class CallAudioRouteController extends GetxController {
   CallAudioRoute get _defaultRoute =>
       isVideoCall.value ? CallAudioRoute.speaker : CallAudioRoute.earpiece;
 
+  void _cancelWarmupTimers() {
+    for (final t in _warmupRouteTimers) {
+      t.cancel();
+    }
+    _warmupRouteTimers.clear();
+  }
+
+  Future<bool> _hasActiveIosCallKitSession() async {
+    if (!Platform.isIOS) return false;
+    try {
+      final calls = await FlutterCallkitIncoming.activeCalls();
+      return calls is List && calls.isNotEmpty;
+    } catch (_) {
+      return false;
+    }
+  }
+
   Future<void> startCall({required bool isVideo}) async {
     _isDisposed = false;
     _iosBluetoothBlocked = false;
+    _cancelWarmupTimers();
     isVideoCall.value = isVideo;
+    currentRoute.value = _defaultRoute;
 
-    await _configureAudioSession(route: _defaultRoute);
     await _listenAudioDevices();
 
     if (Platform.isIOS) {
-      Future<void>.delayed(const Duration(seconds: 1), () {
-        if (!_isDisposed) unawaited(_checkAudioDevices());
-      });
+      for (final ms in <int>[500, 1300, 2400]) {
+        _warmupRouteTimers.add(
+          Timer(Duration(milliseconds: ms), () {
+            if (!_isDisposed) {
+              unawaited(_applyCurrentAudioRoute());
+            }
+          }),
+        );
+      }
     }
   }
 
@@ -98,6 +122,8 @@ class CallAudioRouteController extends GetxController {
 
     if (currentRoute.value == CallAudioRoute.earpiece) {
       await _setRoute(CallAudioRoute.speaker);
+    } else if (Platform.isIOS) {
+      await _configureAudioSession(route: currentRoute.value);
     }
   }
 
@@ -140,6 +166,7 @@ class CallAudioRouteController extends GetxController {
   Future<void> stopCall() async {
     _isDisposed = true;
     _iosBluetoothBlocked = false;
+    _cancelWarmupTimers();
 
     _deviceCheckTimer?.cancel();
     _deviceCheckTimer = null;
@@ -147,13 +174,31 @@ class CallAudioRouteController extends GetxController {
     _devicesSub = null;
 
     try {
+      await ProximityScreenLock.setActive(false);
+    } catch (_) {}
+
+    try {
       if (Platform.isAndroid) {
         final am = AndroidAudioManager();
-        await am.stopBluetoothSco();
-        await am.setBluetoothScoOn(false);
-        await am.setMode(AndroidAudioHardwareMode.normal);
+        try {
+          await am.stopBluetoothSco();
+          await am.setBluetoothScoOn(false);
+          await am.setSpeakerphoneOn(false);
+          await am.setMode(AndroidAudioHardwareMode.normal);
+        } catch (_) {}
+        try {
+          final session = await AudioSession.instance;
+          await session.setActive(false);
+        } catch (_) {}
+      } else if (Platform.isIOS) {
+        final managedByCallKit = await _hasActiveIosCallKitSession();
+        if (!managedByCallKit) {
+          try {
+            final session = await AudioSession.instance;
+            await session.setActive(false);
+          } catch (_) {}
+        }
       }
-      await ProximityScreenLock.setActive(false);
     } catch (_) {}
   }
 
@@ -442,6 +487,9 @@ class CallAudioRouteController extends GetxController {
 
     try {
       final session = await AudioSession.instance;
+      final iosMode = isVideoCall.value
+          ? AVAudioSessionMode.videoChat
+          : AVAudioSessionMode.voiceChat;
 
       if (Platform.isIOS) {
         final bool isSpeaker = targetRoute == CallAudioRoute.speaker;
@@ -461,10 +509,22 @@ class CallAudioRouteController extends GetxController {
         await session.configure(
           AudioSessionConfiguration(
             avAudioSessionCategory: AVAudioSessionCategory.playAndRecord,
-            avAudioSessionMode: AVAudioSessionMode.voiceChat,
+            avAudioSessionMode: iosMode,
             avAudioSessionCategoryOptions: options,
           ),
         );
+
+        await _iosWebRtcConfig(
+          allowBluetooth: allowBt,
+          defaultToSpeaker: isSpeaker,
+        );
+
+        final managedByCallKit = await _hasActiveIosCallKitSession();
+        if (!managedByCallKit) {
+          try {
+            await session.setActive(true);
+          } catch (_) {}
+        }
       } else {
         await session.configure(
           const AudioSessionConfiguration(
@@ -478,11 +538,11 @@ class CallAudioRouteController extends GetxController {
                 AndroidAudioFocusGainType.gainTransientMayDuck,
           ),
         );
-      }
 
-      try {
-        await session.setActive(true);
-      } catch (_) {}
+        try {
+          await session.setActive(true);
+        } catch (_) {}
+      }
 
       _log('AudioSession configured for route=$targetRoute');
     } catch (e) {
@@ -589,26 +649,21 @@ class CallAudioRouteController extends GetxController {
       } else if (Platform.isIOS) {
         switch (route) {
           case CallAudioRoute.speaker:
-            if (_iosBluetoothBlocked) {
-              // setSpeakerphoneOn re-adds Bluetooth to the session, so block
-              // it again afterwards through WebRTC's session manager.
-              try {
-                await Helper.setSpeakerphoneOn(true);
-              } catch (_) {}
-              await _iosWebRtcConfig(
-                allowBluetooth: false,
-                defaultToSpeaker: true,
-              );
-            } else {
-              try {
-                await Helper.setSpeakerphoneOn(true);
-                await Helper.selectAudioOutput(_speakerDeviceId ?? 'speaker');
-              } catch (_) {}
-            }
+            await _iosWebRtcConfig(
+              allowBluetooth: !_iosBluetoothBlocked,
+              defaultToSpeaker: true,
+            );
+            try {
+              await Helper.setSpeakerphoneOn(true);
+              await Helper.selectAudioOutput(_speakerDeviceId ?? 'speaker');
+            } catch (_) {}
             break;
 
           case CallAudioRoute.bluetooth:
-            await _iosWebRtcConfig(allowBluetooth: true);
+            await _iosWebRtcConfig(
+              allowBluetooth: true,
+              defaultToSpeaker: false,
+            );
             try {
               await Helper.setSpeakerphoneOnButPreferBluetooth();
             } catch (_) {
@@ -629,7 +684,10 @@ class CallAudioRouteController extends GetxController {
             break;
 
           case CallAudioRoute.headset:
-            await _iosWebRtcConfig(allowBluetooth: true);
+            await _iosWebRtcConfig(
+              allowBluetooth: true,
+              defaultToSpeaker: false,
+            );
             try {
               await Helper.setSpeakerphoneOn(false);
               await Helper.selectAudioOutput(
@@ -644,21 +702,16 @@ class CallAudioRouteController extends GetxController {
             break;
 
           case CallAudioRoute.earpiece:
-            if (_iosBluetoothBlocked) {
-              await _iosWebRtcConfig(allowBluetooth: false);
-              try {
-                await Helper.selectAudioOutput(
-                  _earpieceDeviceId ?? 'earpiece',
-                );
-              } catch (_) {}
-            } else {
-              try {
-                await Helper.setSpeakerphoneOn(false);
-                await Helper.selectAudioOutput(
-                  _earpieceDeviceId ?? 'earpiece',
-                );
-              } catch (_) {}
-            }
+            await _iosWebRtcConfig(
+              allowBluetooth: !_iosBluetoothBlocked,
+              defaultToSpeaker: false,
+            );
+            try {
+              await Helper.setSpeakerphoneOn(false);
+              await Helper.selectAudioOutput(
+                _earpieceDeviceId ?? 'earpiece',
+              );
+            } catch (_) {}
             break;
         }
       }
@@ -674,6 +727,7 @@ class CallAudioRouteController extends GetxController {
   @override
   void onClose() {
     _isDisposed = true;
+    _cancelWarmupTimers();
     _deviceCheckTimer?.cancel();
     _deviceCheckTimer = null;
     unawaited(stopCall());
