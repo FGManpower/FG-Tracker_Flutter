@@ -121,8 +121,16 @@ class ForwardDestination {
           ?.toString(),
       mobileNo: json['mobileNo']?.toString(),
       image: (json['image'] ?? json['avatar'])?.toString(),
-      profileImage: json['profileImage']?.toString(),
-      groupProfile: json['groupProfile']?.toString(),
+      profileImage: (json['profileImage'] ??
+              json['profile_image'] ??
+              json['groupProfile'] ??
+              json['group_profile'])
+          ?.toString(),
+      groupProfile: (json['groupProfile'] ??
+              json['group_profile'] ??
+              json['profileImage'] ??
+              json['profile_image'])
+          ?.toString(),
     );
   }
 
@@ -148,10 +156,18 @@ class ForwardDestination {
 
   String get displayImage {
     if (isGroup) {
-      return groupProfile ?? image ?? '';
+      return (groupProfile != null && groupProfile!.isNotEmpty)
+          ? groupProfile!
+          : ((profileImage != null && profileImage!.isNotEmpty)
+              ? profileImage!
+              : (image ?? ''));
     }
 
-    return profileImage ?? image ?? '';
+    return (profileImage != null && profileImage!.isNotEmpty)
+        ? profileImage!
+        : ((groupProfile != null && groupProfile!.isNotEmpty)
+            ? groupProfile!
+            : (image ?? ''));
   }
 
   static int? _toInt(dynamic value) {

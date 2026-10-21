@@ -454,7 +454,7 @@ class ChatListController extends GetxController {
         privateChats.add(updatedChat);
         privateChats.assignAll(_sortPinnedChats(privateChats));
 
-        if (updatedChat.moveToTop == true) {
+        if (updatedChat.moveToTop != false) {
           _moveUpdatedChatToTop(updatedChat);
         }
 
@@ -469,7 +469,7 @@ class ChatListController extends GetxController {
       privateChats[index] = mergedChat;
       privateChats.assignAll(_sortPinnedChats(privateChats));
 
-      if (updatedChat.moveToTop == true) {
+      if (updatedChat.moveToTop != false) {
         _moveUpdatedChatToTop(mergedChat);
       }
 
@@ -536,6 +536,10 @@ class ChatListController extends GetxController {
       isArchived: updated.isArchived ?? current.isArchived,
       moveToTop: updated.moveToTop ?? current.moveToTop,
       image: updated.image ?? current.image,
+      isForwarded: updated.isForwarded ?? current.isForwarded,
+      forwardedLabel: updated.forwardedLabel ?? current.forwardedLabel,
+      forwardedFromMessageId:
+          updated.forwardedFromMessageId ?? current.forwardedFromMessageId,
     );
   }
 

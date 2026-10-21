@@ -746,7 +746,6 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
     bool online,
   ) async {
     final receiverId = m.userId?.toString();
-    final chatId = m.chatId?.toString();
     if (receiverId == null ||
         receiverId.isEmpty ||
         receiverId == 'null' ||
@@ -754,9 +753,11 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
       return;
     }
 
-    if (chatId == null || chatId.isEmpty || chatId == 'null') {
-      return;
-    }
+    final chatId = (m.chatId != null &&
+            m.chatId.toString() != 'null' &&
+            m.chatId.toString().isNotEmpty)
+        ? m.chatId.toString()
+        : null;
 
     final memberData = MemberData(
       userId: m.userId,

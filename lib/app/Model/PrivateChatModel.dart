@@ -177,6 +177,9 @@ class PrivateChatModel {
   bool? isArchived;
   bool? moveToTop;
   String? image;
+  bool? isForwarded;
+  String? forwardedLabel;
+  int? forwardedFromMessageId;
 
   PrivateChatModel({
     this.id,
@@ -209,6 +212,9 @@ class PrivateChatModel {
     this.isArchived,
     this.moveToTop,
     this.image,
+    this.isForwarded,
+    this.forwardedLabel,
+    this.forwardedFromMessageId,
   });
 
   factory PrivateChatModel.fromJson(Map<String, dynamic> json) {
@@ -437,6 +443,37 @@ class PrivateChatModel {
             'group_profile',
             'image',
           ]),
+      isForwarded: _parseBool(
+            json['isForwarded'] ??
+                json['is_forwarded'] ??
+                lastMessage?['isForwarded'] ??
+                lastMessage?['is_forwarded'] ??
+                activity?['isForwarded'] ??
+                activity?['is_forwarded'],
+          ) ??
+          false,
+      forwardedLabel: _readString(json, ['forwardedLabel', 'forwarded_label']) ??
+          _readString(lastMessage ?? {}, ['forwardedLabel', 'forwarded_label']) ??
+          _readString(activity ?? {}, ['forwardedLabel', 'forwarded_label']) ??
+          ((_parseBool(
+                    json['isForwarded'] ??
+                        json['is_forwarded'] ??
+                        lastMessage?['isForwarded'] ??
+                        lastMessage?['is_forwarded'] ??
+                        activity?['isForwarded'] ??
+                        activity?['is_forwarded'],
+                  ) ??
+                  false)
+              ? 'Forwarded'
+              : null),
+      forwardedFromMessageId: _parseInt(
+        json['forwardedFromMessageId'] ??
+            json['forwarded_from_message_id'] ??
+            lastMessage?['forwardedFromMessageId'] ??
+            lastMessage?['forwarded_from_message_id'] ??
+            activity?['forwardedFromMessageId'] ??
+            activity?['forwarded_from_message_id'],
+      ),
     );
   }
 
@@ -472,6 +509,9 @@ class PrivateChatModel {
       'isArchived': isArchived,
       'moveToTop': moveToTop,
       'image': image,
+      'isForwarded': isForwarded,
+      'forwardedLabel': forwardedLabel,
+      'forwardedFromMessageId': forwardedFromMessageId,
     };
   }
 
