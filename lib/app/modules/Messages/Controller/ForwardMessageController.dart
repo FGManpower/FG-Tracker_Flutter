@@ -1,3 +1,5 @@
+import 'package:fgtracker/app/Core/values/Utils.dart';
+import 'package:fgtracker/app/modules/call/widget/call_widget.dart' show normalizePhone;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -5,6 +7,7 @@ import '../../../Data/Repositories/GetMessageRepo.dart';
 import '../../../Model/GetMessage.dart';
 import '../../../Model/ForwardMessageModel.dart';
 import '../../../Model/MemberDataRes.dart';
+import '../../call/Controller/contact_controller.dart';
 import '../Views/Chat_Screen.dart';
 import '../Views/ChatList_Screen.dart';
 import 'MessageController.dart';
@@ -19,7 +22,22 @@ class ForwardMessageController extends GetxController {
       <ForwardDestination>[].obs;
   final RxList<ForwardDestination> selectedDestinations =
       <ForwardDestination>[].obs;
+  final RxList<ForwardDestination> recentChats =
+      <ForwardDestination>[].obs;
 
+  final RxList<ForwardDestination> allGroups =
+      <ForwardDestination>[].obs;
+
+  final RxList<ForwardDestination> myContacts =
+      <ForwardDestination>[].obs;
+
+  final RxList<ForwardDestination> otherContacts =
+      <ForwardDestination>[].obs;
+
+  final List<ForwardDestination> _allRecentChats = [];
+  final List<ForwardDestination> _allGroups = [];
+  final List<ForwardDestination> _allMyContacts = [];
+  final List<ForwardDestination> _allOtherContacts = [];
   final RxBool isLoading = false.obs;
   final RxBool isForwarding = false.obs;
   late String sourceType;
@@ -42,6 +60,23 @@ class ForwardMessageController extends GetxController {
     loadForwardList();
   }
 
+  Future<void> _ensurePhoneBook(ContactController contactController) async {
+    if (contactController.phoneContactNameMap.isNotEmpty) return;
+
+    if (!contactController.isContactPermissionGranted.value) {
+      await contactController.checkContactPermission();
+    } else if (!contactController.contactLoading.value) {
+      await contactController.getRegisteredContacts();
+    }
+
+    // Agar contacts pehle se load ho rahe hain to complete hone ka wait karo
+    int tries = 0;
+    while (contactController.contactLoading.value && tries < 100) {
+      await Future.delayed(const Duration(milliseconds: 100));
+      tries++;
+    }
+  }
+
   Future<void> loadForwardList() async {
     try {
       isLoading.value = true;
@@ -52,20 +87,106 @@ class ForwardMessageController extends GetxController {
       if (response.status == false) {
         responseError.value =
             response.message ?? "Unable to load forward list.";
+
         destinations.clear();
         filteredDestinations.clear();
+        _clearDisplayLists();
         return;
       }
 
-      destinations.assignAll(response.destinations);
-      filteredDestinations.assignAll(response.destinations);
+      final contactController = ContactController.instance;
+      await _ensurePhoneBook(contactController);
+
+      final phoneBook = contactController.phoneContactNameMap;
+      bool matchWithContacts(ForwardDestination user) {
+        final phone = normalizePhone(user.mobileNo ?? '');
+        if (phone.isEmpty) return false;
+
+        final contactName = phoneBook[phone];
+        if (contactName == null || contactName.trim().isEmpty) return false;
+
+        user.name = contactName.trim();
+        return true;
+      }
+
+      final List<ForwardDestination> matchedUsers = response.destinations
+          .where((item) => !item.isGroup && matchWithContacts(item))
+          .toList();
+
+      final List<ForwardDestination> groupList =
+      response.destinations.where((item) => item.isGroup).toList();
+
+      final List<ForwardDestination> matchedRecent = response.recentChats
+          .where((item) => item.isGroup || matchWithContacts(item))
+          .toList();
+
+      destinations.assignAll([...groupList, ...matchedUsers]);
+      filteredDestinations.assignAll([...groupList, ...matchedUsers]);
+
+      _allRecentChats
+        ..clear()
+        ..addAll(matchedRecent);
+
+      _allGroups
+        ..clear()
+        ..addAll(groupList);
+
+      _allMyContacts
+        ..clear()
+        ..addAll(matchedUsers);
+
+      _allOtherContacts.clear();
+
+      _applyForwardSearch(searchController.text);
     } catch (e) {
       responseError.value = "Unable to load forward list.";
       destinations.clear();
       filteredDestinations.clear();
+      _clearDisplayLists();
     } finally {
       isLoading.value = false;
     }
+  }
+
+  void _clearDisplayLists() {
+    _allRecentChats.clear();
+    _allGroups.clear();
+    _allMyContacts.clear();
+    _allOtherContacts.clear();
+
+    recentChats.clear();
+    allGroups.clear();
+    myContacts.clear();
+    otherContacts.clear();
+  }
+
+  void _applyForwardSearch(String value) {
+    final query = value.trim().toLowerCase();
+
+    bool matches(ForwardDestination item) {
+      return item.displayName.toLowerCase().contains(query) ||
+          (item.mobileNo ?? '').toLowerCase().contains(query);
+    }
+
+    recentChats.assignAll(
+      _allRecentChats.where(matches),
+    );
+
+    allGroups.assignAll(
+      _allGroups.where(matches),
+    );
+
+    myContacts.assignAll(
+      _allMyContacts.where(matches),
+    );
+
+    otherContacts.assignAll(
+      _allOtherContacts.where(matches),
+    );
+
+    filteredDestinations.assignAll(
+      destinations.where(matches),
+    );
   }
 
   Future<void> refreshForwardList() async {
@@ -73,23 +194,12 @@ class ForwardMessageController extends GetxController {
   }
 
   void search(String value) {
-    final query = value.trim().toLowerCase();
-
-    if (query.isEmpty) {
-      filteredDestinations.assignAll(destinations);
-      return;
-    }
-
-    filteredDestinations.assignAll(
-      destinations.where((destination) {
-        return destination.displayName.toLowerCase().contains(query);
-      }).toList(),
-    );
+    _applyForwardSearch(value);
   }
 
   void clearSearch() {
     searchController.clear();
-    filteredDestinations.assignAll(destinations);
+    _applyForwardSearch('');
   }
 
   bool isSelected(ForwardDestination destination) {

@@ -1,99 +1,66 @@
+
 class ForwardListResponse {
   bool? status;
   String? message;
-  List<ForwardDestination> destinations = [];
+
+  List<ForwardDestination> recentChats;
+  List<ForwardDestination> destinations;
 
   ForwardListResponse({
     this.status,
     this.message,
+    this.recentChats = const [],
     this.destinations = const [],
   });
 
   factory ForwardListResponse.fromJson(Map<String, dynamic> json) {
-    final List<ForwardDestination> result = [];
+    final dynamic rawData = json['data'];
 
-    dynamic rawData = json['data'];
+    final Map<String, dynamic> dataMap = rawData is Map
+        ? Map<String, dynamic>.from(rawData)
+        : <String, dynamic>{};
+
+    List<ForwardDestination> parseList(dynamic value) {
+      if (value is! List) return <ForwardDestination>[];
+
+      return value
+          .whereType<Map>()
+          .map(
+            (item) => ForwardDestination.fromJson(
+          Map<String, dynamic>.from(item),
+        ),
+      )
+          .toList();
+    }
+
+    final recent = parseList(dataMap['recentChats']);
+
+    final List<ForwardDestination> all = [];
 
     if (rawData is List) {
-      result.addAll(
-        rawData
-            .whereType<Map>()
-            .map(
-              (e) => ForwardDestination.fromJson(
-            Map<String, dynamic>.from(e),
-          ),
+      all.addAll(parseList(rawData));
+    } else {
+      all.addAll(
+        parseList(
+          dataMap['users'] ??
+              dataMap['people'] ??
+              dataMap['private'],
         ),
       );
+
+      all.addAll(parseList(dataMap['groups']));
     }
 
-    if (rawData is Map) {
-      final dataMap = Map<String, dynamic>.from(rawData);
-
-      final users = dataMap['users'] ??
-          dataMap['people'] ??
-          dataMap['private'] ??
-          [];
-
-      final groups = dataMap['groups'] ?? [];
-
-      if (users is List) {
-        result.addAll(
-          users
-              .whereType<Map>()
-              .map(
-                (e) => ForwardDestination.fromJson(
-              Map<String, dynamic>.from(e),
-            ),
-          ),
-        );
-      }
-
-      if (groups is List) {
-        result.addAll(
-          groups
-              .whereType<Map>()
-              .map(
-                (e) => ForwardDestination.fromJson(
-              Map<String, dynamic>.from(e),
-            ),
-          ),
-        );
-      }
-    }
-
-    if (result.isEmpty) {
-      final users = json['users'] ?? json['people'] ?? [];
-      final groups = json['groups'] ?? [];
-
-      if (users is List) {
-        result.addAll(
-          users
-              .whereType<Map>()
-              .map(
-                (e) => ForwardDestination.fromJson(
-              Map<String, dynamic>.from(e),
-            ),
-          ),
-        );
-      }
-
-      if (groups is List) {
-        result.addAll(
-          groups
-              .whereType<Map>()
-              .map(
-                (e) => ForwardDestination.fromJson(
-              Map<String, dynamic>.from(e),
-            ),
-          ),
-        );
-      }
+    if (all.isEmpty) {
+      all.addAll(parseList(json['users'] ?? json['people']));
+      all.addAll(parseList(json['groups']));
     }
 
     return ForwardListResponse(
-      status: json['status'],
+      status: json['status'] as bool?,
       message: json['message']?.toString(),
-      destinations: result,
+      recentChats: recent,
+      destinations: all,
     );
   }
 }
@@ -123,6 +90,7 @@ class ForwardDestination {
 
   factory ForwardDestination.fromJson(Map<String, dynamic> json) {
     final String type = (json['type'] ??
+        json['chatType'] ??
         json['targetType'] ??
         json['sourceType'] ??
         '')

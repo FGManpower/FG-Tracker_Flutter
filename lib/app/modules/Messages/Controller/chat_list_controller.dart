@@ -65,8 +65,8 @@ class ChatListController extends GetxController {
 
       for (final apiChat in chats) {
         final existingIndex = existingChats.indexWhere(
-              (existing) =>
-          (apiChat.id != null && existing.id == apiChat.id) ||
+          (existing) =>
+              (apiChat.id != null && existing.id == apiChat.id) ||
               (apiChat.userId != null && existing.userId == apiChat.userId),
         );
 
@@ -87,8 +87,8 @@ class ChatListController extends GetxController {
       } else {
         for (final apiChat in mergedChats) {
           final existingIndex = privateChats.indexWhere(
-                (existing) =>
-            (apiChat.id != null && existing.id == apiChat.id) ||
+            (existing) =>
+                (apiChat.id != null && existing.id == apiChat.id) ||
                 (apiChat.userId != null && existing.userId == apiChat.userId),
           );
 
@@ -106,13 +106,11 @@ class ChatListController extends GetxController {
       }
 
       if (response.pagination != null) {
-        currentPage.value =
-            response.pagination!.currentPage ?? requestedPage;
+        currentPage.value = response.pagination!.currentPage ?? requestedPage;
 
         totalPages.value = response.pagination!.totalPages ?? 0;
         hasNextPage.value = response.pagination!.hasNextPage ?? false;
-        hasPreviousPage.value =
-            response.pagination!.hasPreviousPage ?? false;
+        hasPreviousPage.value = response.pagination!.hasPreviousPage ?? false;
       }
 
       privateChats.refresh();
@@ -164,6 +162,10 @@ class ChatListController extends GetxController {
       callback: _handlePrivateChatRemoved,
     );
 
+    socketService.listenPrivateChatClearedOnListSocket(
+      callback: _handlePrivateChatCleared,
+    );
+
     socketService.listenPrivateChatActionError(
       callback: _handlePrivateChatActionError,
     );
@@ -187,10 +189,10 @@ class ChatListController extends GetxController {
 
     final chatId = int.tryParse(
       (data["chatId"] ??
-          data["chat_id"] ??
-          data["conversationId"] ??
-          data["conversation_id"] ??
-          data["id"])
+              data["chat_id"] ??
+              data["conversationId"] ??
+              data["conversation_id"] ??
+              data["id"])
           .toString(),
     );
 
@@ -199,8 +201,42 @@ class ChatListController extends GetxController {
     }
 
     privateChats.removeWhere(
-          (chat) => chat.id == chatId,
+      (chat) => chat.id == chatId,
     );
+
+    privateChats.refresh();
+  }
+
+  void _handlePrivateChatCleared(
+    Map<String, dynamic> data,
+  ) {
+    final conversationId = int.tryParse(
+      (data['conversationId'] ??
+                  data['conversation_id'] ??
+                  data['chatId'] ??
+                  data['chat_id'] ??
+                  data['id'])
+              ?.toString() ??
+          '',
+    );
+
+    if (conversationId == null) {
+      return;
+    }
+
+    final index = privateChats.indexWhere(
+      (chat) => chat.id == conversationId,
+    );
+
+    if (index == -1) {
+      return;
+    }
+
+    final chat = privateChats[index];
+
+    chat.message = '';
+    chat.time = '';
+    chat.messageType = '';
 
     privateChats.refresh();
   }
@@ -251,8 +287,7 @@ class ChatListController extends GetxController {
           ? Map<String, dynamic>.from(nestedData)
           : rawPayload;
 
-      if (payload['lastActivity'] == null &&
-          payload['lastMessage'] is Map) {
+      if (payload['lastActivity'] == null && payload['lastMessage'] is Map) {
         payload['lastActivity'] = Map<String, dynamic>.from(
           payload['lastMessage'] as Map,
         );
@@ -306,12 +341,11 @@ class ChatListController extends GetxController {
       }
 
       if (index == -1) {
-        final hasChatDetails =
-            payload['lastActivity'] is Map ||
-                payload.containsKey('message') ||
-                payload.containsKey('lastMessage') ||
-                payload.containsKey('last_message') ||
-                updatedChat.unreadCount != null;
+        final hasChatDetails = payload['lastActivity'] is Map ||
+            payload.containsKey('message') ||
+            payload.containsKey('lastMessage') ||
+            payload.containsKey('last_message') ||
+            updatedChat.unreadCount != null;
 
         if (!hasChatDetails) {
           return;
@@ -340,14 +374,13 @@ class ChatListController extends GetxController {
       }
 
       privateChats.refresh();
-    } catch (e, stackTrace) {
-    }
+    } catch (e, stackTrace) {}
   }
 
   PrivateChatModel _mergePrivateChat(
-      PrivateChatModel current,
-      PrivateChatModel updated,
-      ) {
+    PrivateChatModel current,
+    PrivateChatModel updated,
+  ) {
     final currentTime = DateTime.tryParse(current.time ?? '')?.toUtc();
     final updatedTime = DateTime.tryParse(updated.time ?? '')?.toUtc();
 
@@ -367,13 +400,13 @@ class ChatListController extends GetxController {
       message: keepCurrentMessage
           ? current.message
           : (updated.message != null && updated.message!.isNotEmpty
-          ? updated.message
-          : current.message),
+              ? updated.message
+              : current.message),
       time: keepCurrentMessage
           ? current.time
           : (updated.time != null && updated.time!.isNotEmpty
-          ? updated.time
-          : current.time),
+              ? updated.time
+              : current.time),
       messageType: keepCurrentMessage
           ? current.messageType
           : (updated.messageType ?? current.messageType),
@@ -394,9 +427,9 @@ class ChatListController extends GetxController {
   }
 
   void muteChat(
-      PrivateChatModel chat, {
-        String? mutedUntil,
-      }) {
+    PrivateChatModel chat, {
+    String? mutedUntil,
+  }) {
     if (chat.id == null) {
       return;
     }
@@ -446,7 +479,7 @@ class ChatListController extends GetxController {
     );
 
     privateChats.removeWhere(
-          (item) => item.id == chat.id,
+      (item) => item.id == chat.id,
     );
 
     privateChats.refresh();
@@ -468,11 +501,11 @@ class ChatListController extends GetxController {
     chat.isPinned = false;
 
     archivedChats.removeWhere(
-          (item) => item.id == chat.id,
+      (item) => item.id == chat.id,
     );
 
     final existingIndex = privateChats.indexWhere(
-          (item) => item.id == chat.id,
+      (item) => item.id == chat.id,
     );
 
     if (existingIndex == -1) {
@@ -490,7 +523,6 @@ class ChatListController extends GetxController {
     privateChats.refresh();
   }
 
-
   void markChatAsRead(PrivateChatModel chat) {
     if (chat.id == null) {
       return;
@@ -501,7 +533,6 @@ class ChatListController extends GetxController {
       chatId: chat.id.toString(),
     );
   }
-
 
   void deleteChat(PrivateChatModel chat) {
     if (chat.id == null) {
@@ -518,8 +549,8 @@ class ChatListController extends GetxController {
 
   void _moveUpdatedChatToTop(PrivateChatModel chat) {
     final index = privateChats.indexWhere(
-          (item) =>
-      (chat.id != null && item.id == chat.id) ||
+      (item) =>
+          (chat.id != null && item.id == chat.id) ||
           (chat.userId != null && item.userId == chat.userId),
     );
 
@@ -532,8 +563,8 @@ class ChatListController extends GetxController {
   }
 
   List<PrivateChatModel> _sortPinnedChats(
-      List<PrivateChatModel> chats,
-      ) {
+    List<PrivateChatModel> chats,
+  ) {
     final sortedChats = List<PrivateChatModel>.from(chats);
 
     DateTime getTimestamp(PrivateChatModel chat) {
@@ -583,9 +614,9 @@ class ChatListController extends GetxController {
           .whereType<Map>()
           .map(
             (item) => PrivateChatModel.fromJson(
-          Map<String, dynamic>.from(item),
-        ),
-      )
+              Map<String, dynamic>.from(item),
+            ),
+          )
           .where((chat) => chat.id != null)
           .toList();
 
@@ -595,19 +626,18 @@ class ChatListController extends GetxController {
 
       if (pagination is Map) {
         archivedCurrentPage.value = int.tryParse(
-          pagination["currentPage"]?.toString() ?? "",
-        ) ??
+              pagination["currentPage"]?.toString() ?? "",
+            ) ??
             1;
 
         archivedTotalPages.value = int.tryParse(
-          pagination["totalPages"]?.toString() ?? "",
-        ) ??
+              pagination["totalPages"]?.toString() ?? "",
+            ) ??
             0;
 
         archivedHasNextPage.value = pagination["hasNextPage"] == true;
 
-        archivedHasPreviousPage.value =
-            pagination["hasPreviousPage"] == true;
+        archivedHasPreviousPage.value = pagination["hasPreviousPage"] == true;
       }
 
       archivedChats.refresh();

@@ -682,6 +682,21 @@ class SocketMessageService extends GetxService {
         );
       }
 
+      _privateChatListSocket?.off("private_chat_cleared");
+
+      if (_privateChatClearedListCallback != null) {
+        _privateChatListSocket?.on(
+          "private_chat_cleared",
+              (data) {
+            if (data is Map) {
+              _privateChatClearedListCallback?.call(
+                Map<String, dynamic>.from(data),
+              );
+            }
+          },
+        );
+      }
+
       _privateChatListSocket?.off("private_chat_action_error");
 
       if (_privateChatActionErrorCallback != null) {
@@ -703,8 +718,34 @@ class SocketMessageService extends GetxService {
 
     _privateChatListSocket?.onError((error) {});
   }
-
+  Function(Map<String, dynamic>)? _privateChatClearedListCallback;
   Function(dynamic)? _privateChatListUpdatedCallback;
+
+
+  void listenPrivateChatClearedOnListSocket({
+    required Function(Map<String, dynamic>) callback,
+  }) {
+    _privateChatClearedListCallback = callback;
+
+    if (_privateChatListSocket == null ||
+        !_privateChatListSocket!.connected) {
+      return;
+    }
+
+    _privateChatListSocket!.off("private_chat_cleared");
+
+    _privateChatListSocket!.on(
+      "private_chat_cleared",
+          (data) {
+        if (data is Map) {
+          _privateChatClearedListCallback?.call(
+            Map<String, dynamic>.from(data),
+          );
+        }
+      },
+    );
+  }
+
 
   void listenPrivateChatListUpdated({
     required Function(dynamic) callback,
@@ -772,12 +813,12 @@ class SocketMessageService extends GetxService {
     _privateChatListSocket?.off("chat_list_updated");
     _privateChatListSocket?.off("private_chat_removed");
     _privateChatListSocket?.off("private_chat_action_error");
-
+    _privateChatListSocket?.off("private_chat_cleared");
     _privateChatListSocket?.disconnect();
     _privateChatListSocket?.dispose();
 
     _privateChatListSocket = null;
-
+    _privateChatClearedListCallback = null;
     _privateChatListUpdatedCallback = null;
     _privateChatRemovedCallback = null;
     _privateChatActionErrorCallback = null;

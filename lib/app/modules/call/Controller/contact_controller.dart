@@ -21,6 +21,8 @@ class ContactController extends GetxController {
 
   final ContactService _contactService = ContactService();
   final Map<String, String> phoneContactNameMap = {};
+  Set<String> get savedContactNumbers =>
+      phoneContactNameMap.keys.toSet();
   final RxBool contactLoading = false.obs;
 
   final RxBool isContactPermissionGranted = false.obs;
@@ -37,8 +39,7 @@ class ContactController extends GetxController {
 
   Future<void> checkContactPermission() async {
     try {
-      final bool granted =
-          await FlutterContacts.requestPermission(readonly: true);
+      final bool granted = await FlutterContacts.requestPermission(readonly: true);
       isContactPermissionGranted.value = granted;
       if (granted) {
         hasAllowedContacts.value = true;
