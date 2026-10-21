@@ -741,9 +741,9 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
   }
 
   Future<void> _openPrivateChat(
-      GroupMemberInfo m,
-      bool online,
-      ) async {
+    GroupMemberInfo m,
+    bool online,
+  ) async {
     final receiverId = m.userId?.toString();
     final chatId = m.chatId?.toString();
     if (receiverId == null ||
@@ -753,9 +753,7 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
       return;
     }
 
-    if (chatId == null ||
-        chatId.isEmpty ||
-        chatId == 'null') {
+    if (chatId == null || chatId.isEmpty || chatId == 'null') {
       return;
     }
 
@@ -768,9 +766,8 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
       isOnline: online,
     );
 
-
     await Get.to(
-          () => ChatScreen(),
+      () => ChatScreen(),
       arguments: {
         "userData": memberData,
         "type": "chatScreen",
@@ -787,6 +784,7 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
       }),
     );
   }
+
   Widget _memberTile(
       BuildContext context, GroupMemberInfo m, GroupProfileData data) {
     final isMe = m.isMe ?? false;
@@ -976,14 +974,16 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
               iconColor: Colors.redAccent,
               title: "Exit Group",
               titleColor: Colors.redAccent,
+
               onTap: () {
                 CommonDialog.ConfirmationDialog(
                   title: "Exit Group",
                   content:
-                      "Are you sure you want to exit \"${data.group?.groupName}\"?",
+                  "Are you sure you want to exit \"${data.group?.groupName}\"?",
                   confirm: "Exit",
                   onConfirm: () {
                     Get.back();
+
                     MemberController().exitGroup(
                       context,
                       groupId: data.group!.groupId.toString(),
@@ -997,6 +997,7 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
                   },
                 );
               },
+
             ),
           ]
         ],

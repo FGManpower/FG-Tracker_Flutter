@@ -17,6 +17,10 @@ class ChatList extends StatelessWidget {
     required this.controller,
   });
 
+  bool _isDeleted(MessageData msg) =>
+      msg.isDeleted == true ||
+      msg.content?.toString() == "This message was deleted";
+
   @override
   Widget build(BuildContext context) {
     return Obx(() {
@@ -29,8 +33,8 @@ class ChatList extends StatelessWidget {
           final messages = snapshot.data ?? [];
           debugPrint(
             "CHAT LIST => chatId: ${controller.privateChatId.value}, "
-                "messages: ${messages.length}, "
-                "loading: ${controller.isLoadingInitialMessages.value}",
+            "messages: ${messages.length}, "
+            "loading: ${controller.isLoadingInitialMessages.value}",
           );
           if (isLoading && messages.isEmpty) {
             return const ChatMessageSkeleton();
@@ -54,6 +58,16 @@ class ChatList extends StatelessWidget {
             itemBuilder: (context, index) {
               final msg = messages[index];
 
+              final bubble = ChatBubble(
+                controller: controller,
+                message: msg,
+                context: context,
+              );
+
+              if (_isDeleted(msg)) {
+                return bubble;
+              }
+
               return Dismissible(
                 key: ValueKey(msg.id ?? index),
                 direction: DismissDirection.startToEnd,
@@ -74,11 +88,7 @@ class ChatList extends StatelessWidget {
                     color: Colors.green,
                   ),
                 ),
-                child: ChatBubble(
-                  controller: controller,
-                  message: msg,
-                  context: context,
-                ),
+                child: bubble,
               );
             },
           );
@@ -279,7 +289,7 @@ class GroupChatList extends StatelessWidget {
 
   bool _isDeleted(MessageData msg) =>
       msg.isDeleted == true ||
-          msg.content?.toString() == "This message was deleted";
+      msg.content?.toString() == "This message was deleted";
 
   @override
   Widget build(BuildContext context) {
@@ -350,7 +360,6 @@ class GroupChatList extends StatelessWidget {
                 groupName: controller.groupName.toString(),
               );
 
-              // Deleted message: swipe-to-reply band
               if (_isDeleted(msg)) {
                 return bubble;
               }
