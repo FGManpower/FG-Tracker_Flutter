@@ -47,3 +47,4 @@
 
 -dontwarn com.google.android.play.core.**
 
+-keep class com.hiennv.flutter_callkit_incoming.** { *; }
