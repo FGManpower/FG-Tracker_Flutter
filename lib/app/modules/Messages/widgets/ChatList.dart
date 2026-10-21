@@ -17,6 +17,10 @@ class ChatList extends StatelessWidget {
     required this.controller,
   });
 
+  bool _isDeleted(MessageData msg) =>
+      msg.isDeleted == true ||
+      msg.content?.toString() == "This message was deleted";
+
   @override
   Widget build(BuildContext context) {
     return Obx(() {
@@ -27,7 +31,11 @@ class ChatList extends StatelessWidget {
         initialData: controller.messageData,
         builder: (context, snapshot) {
           final messages = snapshot.data ?? [];
-
+          debugPrint(
+            "CHAT LIST => chatId: ${controller.privateChatId.value}, "
+            "messages: ${messages.length}, "
+            "loading: ${controller.isLoadingInitialMessages.value}",
+          );
           if (isLoading && messages.isEmpty) {
             return const ChatMessageSkeleton();
           }
@@ -50,6 +58,16 @@ class ChatList extends StatelessWidget {
             itemBuilder: (context, index) {
               final msg = messages[index];
 
+              final bubble = ChatBubble(
+                controller: controller,
+                message: msg,
+                context: context,
+              );
+
+              if (_isDeleted(msg)) {
+                return bubble;
+              }
+
               return Dismissible(
                 key: ValueKey(msg.id ?? index),
                 direction: DismissDirection.startToEnd,
@@ -70,11 +88,7 @@ class ChatList extends StatelessWidget {
                     color: Colors.green,
                   ),
                 ),
-                child: ChatBubble(
-                  controller: controller,
-                  message: msg,
-                  context: context,
-                ),
+                child: bubble,
               );
             },
           );
@@ -273,6 +287,10 @@ class GroupChatList extends StatelessWidget {
     required this.controller,
   });
 
+  bool _isDeleted(MessageData msg) =>
+      msg.isDeleted == true ||
+      msg.content?.toString() == "This message was deleted";
+
   @override
   Widget build(BuildContext context) {
     return Obx(() {
@@ -333,6 +351,19 @@ class GroupChatList extends StatelessWidget {
             itemBuilder: (context, index) {
               final msg = messages[index];
 
+              final bubble = GroupChatBubble(
+                controller: controller,
+                message: msg,
+                context: context,
+                isGroup: true,
+                groupId: controller.groupId,
+                groupName: controller.groupName.toString(),
+              );
+
+              if (_isDeleted(msg)) {
+                return bubble;
+              }
+
               return Dismissible(
                 key: ValueKey(msg.id ?? index),
                 direction: DismissDirection.startToEnd,
@@ -351,14 +382,7 @@ class GroupChatList extends StatelessWidget {
                     size: 24.sp,
                   ),
                 ),
-                child: GroupChatBubble(
-                  controller: controller,
-                  message: msg,
-                  context: context,
-                  isGroup: true,
-                  groupId: controller.groupId,
-                  groupName: controller.groupName.toString(),
-                ),
+                child: bubble,
               );
             },
           );

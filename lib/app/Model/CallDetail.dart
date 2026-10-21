@@ -36,6 +36,8 @@ class CallHistoryDetailRes {
 class CallHistoryDetailData {
   String? id;
   int? callId;
+  int? chatId;
+  int? privateChatId;
   String? callType;
   int? groupId;
   GroupInfo? group;
@@ -62,10 +64,13 @@ class CallHistoryDetailData {
   int? joinedParticipantsCount;
   CallSummary? summary;
   List<CallParticipant>? participants;
+  List<CallParticipant>? joinedMembers;
 
   CallHistoryDetailData({
     this.id,
     this.callId,
+    this.chatId,
+    this.privateChatId,
     this.callType,
     this.groupId,
     this.group,
@@ -92,15 +97,31 @@ class CallHistoryDetailData {
     this.joinedParticipantsCount,
     this.summary,
     this.participants,
+    this.joinedMembers,
   });
+
+  static List<CallParticipant>? _parseParticipants(dynamic raw) {
+    if (raw is! List) return null;
+    final List<CallParticipant> list = [];
+    for (final x in raw) {
+      if (x is Map) {
+        list.add(CallParticipant.fromJson(Map<String, dynamic>.from(x)));
+      }
+    }
+    return list;
+  }
 
   factory CallHistoryDetailData.fromJson(Map<String, dynamic> json) {
     return CallHistoryDetailData(
       id: json['id']?.toString(),
       callId: _toInt(json['callId'] ?? json['id']?.toString().replaceAll(RegExp(r'[^0-9]'), '')),
+      chatId: _toInt(json['chatId']),
+      privateChatId: _toInt(json['privateChatId']),
       callType: json['callType']?.toString(),
       groupId: _toInt(json['groupId']),
-      group: json['group'] != null ? GroupInfo.fromJson(json['group']) : null,
+      group: json['group'] is Map
+          ? GroupInfo.fromJson(Map<String, dynamic>.from(json['group']))
+          : null,
       type: json['type']?.toString(),
       isVideo: json['isVideo'] ?? (json['type']?.toString().toLowerCase() == 'video'),
       direction: json['direction']?.toString(),
@@ -116,19 +137,27 @@ class CallHistoryDetailData {
       formattedDate: json['formattedDate']?.toString(),
       duration: _toInt(json['duration']),
       formattedDuration: json['formattedDuration']?.toString(),
-      contact: json['contact'] != null ? CallUser.fromJson(json['contact']) : null,
-      caller: json['caller'] != null ? CallUser.fromJson(json['caller']) : null,
-      receiver: json['receiver'] != null ? CallUser.fromJson(json['receiver']) : null,
-      myParticipant: json['myParticipant'] != null
-          ? MyParticipant.fromJson(json['myParticipant'])
+      contact: json['contact'] is Map
+          ? CallUser.fromJson(Map<String, dynamic>.from(json['contact']))
+          : null,
+      caller: json['caller'] is Map
+          ? CallUser.fromJson(Map<String, dynamic>.from(json['caller']))
+          : null,
+      receiver: json['receiver'] is Map
+          ? CallUser.fromJson(Map<String, dynamic>.from(json['receiver']))
+          : null,
+      myParticipant: json['myParticipant'] is Map
+          ? MyParticipant.fromJson(Map<String, dynamic>.from(json['myParticipant']))
           : null,
       participantsCount: _toInt(json['participantsCount']),
       joinedParticipantsCount: _toInt(json['joinedParticipantsCount']),
-      summary: json['summary'] != null ? CallSummary.fromJson(json['summary']) : null,
-      participants: json['participants'] != null
-          ? List<CallParticipant>.from(
-          json['participants'].map((x) => CallParticipant.fromJson(x)))
+      summary: json['summary'] is Map
+          ? CallSummary.fromJson(Map<String, dynamic>.from(json['summary']))
           : null,
+      participants: _parseParticipants(json['participants']),
+      joinedMembers: _parseParticipants(json['joinedMembers'] ??
+          json['joinedParticipants'] ??
+          json['joinedCallMembers']),
     );
   }
 
@@ -136,6 +165,8 @@ class CallHistoryDetailData {
     final Map<String, dynamic> map = <String, dynamic>{};
     map['id'] = id;
     map['callId'] = callId;
+    map['chatId'] = chatId;
+    map['privateChatId'] = privateChatId;
     map['callType'] = callType;
     map['groupId'] = groupId;
     if (group != null) map['group'] = group!.toJson();
@@ -163,6 +194,9 @@ class CallHistoryDetailData {
     if (summary != null) map['summary'] = summary!.toJson();
     if (participants != null) {
       map['participants'] = participants!.map((v) => v.toJson()).toList();
+    }
+    if (joinedMembers != null) {
+      map['joinedMembers'] = joinedMembers!.map((v) => v.toJson()).toList();
     }
     return map;
   }

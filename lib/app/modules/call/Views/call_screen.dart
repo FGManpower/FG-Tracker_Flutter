@@ -293,14 +293,25 @@ class _CallScreenState extends State<CallScreen>
     );
   }
 
-  Widget _buildTab({required String title, required IconData icon}) {
+  Widget _buildTab({
+    required String title,
+    required IconData icon,
+  }) {
     return Tab(
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
         children: [
           Icon(icon, size: 16.sp),
-          SizedBox(width: 6.w),
-          Text(title),
+          SizedBox(width: 4.w),
+          Flexible(
+            child: Text(
+              title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              softWrap: false,
+            ),
+          ),
         ],
       ),
     );

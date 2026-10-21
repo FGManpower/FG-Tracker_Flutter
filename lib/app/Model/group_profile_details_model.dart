@@ -143,6 +143,7 @@ class GroupMemberInfo {
   dynamic rawLastSeen;
   String? lastSeen;
   bool? locationSharing;
+  final int? chatId;
 
   GroupMemberInfo({
     this.userId,
@@ -154,6 +155,7 @@ class GroupMemberInfo {
     this.rawLastSeen,
     this.lastSeen,
     this.locationSharing,
+    this.chatId,
   });
 
   factory GroupMemberInfo.fromJson(Map<String, dynamic> json) {
@@ -167,6 +169,9 @@ class GroupMemberInfo {
       rawLastSeen: json['rawLastSeen'] ?? json['lastSeen'],
       lastSeen: json['lastSeen']?.toString(),
       locationSharing: json['locationSharing'],
+      chatId: json['chatId'] == null
+          ? null
+          : int.tryParse(json['chatId'].toString()),
     );
   }
 }

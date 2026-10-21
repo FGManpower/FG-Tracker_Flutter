@@ -90,16 +90,66 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
   Timer? _floatingDateTimer;
 
+
   @override
   void onInit() {
     super.onInit();
-    ChatTranslationService.instance.resetVisibility();
+
+    log("========== CHAT DEBUG 1: onInit START ==========");
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      log("========== CHAT DEBUG 2: POST FRAME CALLBACK ==========");
+
+      if (!isClosed) {
+        log("========== CHAT DEBUG 3: RESET VISIBILITY START ==========");
+
+        try {
+          ChatTranslationService.instance.resetVisibility();
+          log("========== CHAT DEBUG 4: RESET VISIBILITY SUCCESS ==========");
+        } catch (e, stackTrace) {
+          log("CHAT DEBUG: RESET VISIBILITY ERROR => $e");
+          log("$stackTrace");
+        }
+      } else {
+        log("CHAT DEBUG: Controller already closed");
+      }
+    });
+
+    log("========== CHAT DEBUG 5: ADD OBSERVER ==========");
+
     WidgetsBinding.instance.addObserver(this);
+
+    log("========== CHAT DEBUG 6: GET ARGUMENTS ==========");
+    log("CHAT ARGUMENTS => $arguments");
+
     memberData = arguments?['userData'];
 
-    _initializeChat();
-    itemPositionsListener.itemPositions.addListener(_onScrollDateChanged);
-    itemPositionsListener.itemPositions.addListener(_onScrollForOlderMessages);
+    log("========== CHAT DEBUG 7: MEMBER DATA ==========");
+    log("MEMBER DATA => $memberData");
+    log("MEMBER USER ID => ${memberData?.userId}");
+
+    log("========== CHAT DEBUG 8: BEFORE INITIALIZE ==========");
+
+    try {
+      _initializeChat();
+
+      log("========== CHAT DEBUG 9: INITIALIZE CALLED ==========");
+    } catch (e, stackTrace) {
+      log("CHAT DEBUG: INITIALIZE ERROR => $e");
+      log("$stackTrace");
+    }
+
+    log("========== CHAT DEBUG 10: ADD SCROLL LISTENERS ==========");
+
+    itemPositionsListener.itemPositions.addListener(
+      _onScrollDateChanged,
+    );
+
+    itemPositionsListener.itemPositions.addListener(
+      _onScrollForOlderMessages,
+    );
+
+    log("========== CHAT DEBUG 11: onInit COMPLETE ==========");
   }
 
   @override
@@ -220,7 +270,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     final stopwatch = Stopwatch()..start();
 
     final currentUserId =
-        Global.storageServices.get(PrefConst.userId).toString();
+    Global.storageServices.get(PrefConst.userId).toString();
 
     final receiverId = memberData.userId.toString();
 
@@ -376,10 +426,10 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         callback: (message) {
           try {
             final messageData =
-                MessageData.fromJson(Map<String, dynamic>.from(message));
+            MessageData.fromJson(Map<String, dynamic>.from(message));
 
             final alreadyExists = _messages.any(
-              (msg) => msg.id == messageData.id && messageData.id != null,
+                  (msg) => msg.id == messageData.id && messageData.id != null,
             );
 
             if (!alreadyExists) {
@@ -429,7 +479,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
           for (var msg in _messages) {
             if (updatedIds.any(
-              (id) => id.toString() == msg.id.toString(),
+                  (id) => id.toString() == msg.id.toString(),
             )) {
               msg.seenCount = (msg.seenCount ?? 0) + 1;
             }
@@ -451,7 +501,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
             );
 
             final index = _messages.indexWhere(
-              (message) => message.id == editedMessage.id,
+                  (message) => message.id == editedMessage.id,
             );
 
             if (index == -1) {
@@ -483,7 +533,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
             }
 
             final index = _messages.indexWhere(
-              (message) => message.id == messageId,
+                  (message) => message.id == messageId,
             );
 
             if (index == -1) {
@@ -514,7 +564,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         if (data["chatType"] != "private") return;
 
         final currentUserId =
-            Global.storageServices.get(PrefConst.userId).toString();
+        Global.storageServices.get(PrefConst.userId).toString();
 
         final otherUserId = memberData.userId.toString();
 
@@ -530,7 +580,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         }
 
         final msg = _messages.firstWhereOrNull(
-          (e) => e.id == messageId,
+              (e) => e.id == messageId,
         );
 
         if (msg != null) {
@@ -547,7 +597,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         if (data["chatType"] != "private") return;
 
         final currentUserId =
-            Global.storageServices.get(PrefConst.userId).toString();
+        Global.storageServices.get(PrefConst.userId).toString();
 
         final otherUserId = memberData.userId.toString();
 
@@ -569,7 +619,6 @@ class MessageController extends GetxController with WidgetsBindingObserver {
 
     log("[CHAT-PERF] Initialization method completed: ${stopwatch.elapsedMilliseconds} ms");
   }
-
   bool isUserAtBottom() {
     if (_messages.isEmpty) return true;
 
@@ -954,13 +1003,17 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     required String deleteType,
   }) async {
     final currentUserId =
-        Global.storageServices.get(PrefConst.userId).toString();
+    Global.storageServices.get(PrefConst.userId).toString();
 
     final otherUserId = memberData.userId.toString();
 
-    log(
-      "DELETE MESSAGE CONTROLLER => messageId=$messageId, userId=$currentUserId, otherUserId=$otherUserId, deleteType=$deleteType",
-    );
+    log("========== PRIVATE DELETE START ==========");
+    log("MESSAGE ID: $messageId");
+    log("DELETE TYPE: $deleteType");
+    log("CURRENT USER: $currentUserId");
+    log("OTHER USER: $otherUserId");
+    log("PRIVATE SOCKET CONNECTED: "
+        "${socketService.isPrivateChatSocketConnected}");
 
     socketService.deleteMessage(
       messageId: messageId,
@@ -968,6 +1021,8 @@ class MessageController extends GetxController with WidgetsBindingObserver {
       deleteType: deleteType,
       otherUserId: otherUserId,
     );
+
+    log("PRIVATE DELETE EMIT CALLED");
   }
 
   Future<void> getMessageHistory(
@@ -1015,14 +1070,20 @@ class MessageController extends GetxController with WidgetsBindingObserver {
     }
   }
 
+
   Future<void> getPrivateMessageHistory(String chatId) async {
     final apiStopwatch = Stopwatch()..start();
 
-    log("[CHAT-PERF] 6. History API request started | chatId: $chatId");
+    log("========== HISTORY DEBUG 1: METHOD START ==========");
+    log("HISTORY DEBUG => chatId: $chatId");
+    log("HISTORY DEBUG => controller closed: $isClosed");
 
     try {
       privateCurrentPage.value = 1;
       hasMoreOlderMessages.value = true;
+
+      log("========== HISTORY DEBUG 2: BEFORE API CALL ==========");
+      log("HISTORY DEBUG => page: 1, limit: 10");
 
       final result = await MessageRepo.privateChatHistory(
         chatId: chatId,
@@ -1030,13 +1091,15 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         limit: 10,
       );
 
-      log(
-        "[CHAT-PERF] API response received: "
-        "${apiStopwatch.elapsedMilliseconds} ms | "
-        "status: ${result.status}",
-      );
+      log("========== HISTORY DEBUG 3: API RESPONSE RECEIVED ==========");
+      log("HISTORY DEBUG => elapsed: ${apiStopwatch.elapsedMilliseconds} ms");
+      log("HISTORY DEBUG => status: ${result.status}");
+      log("HISTORY DEBUG => response message: ${result.message}");
+      log("HISTORY DEBUG => response item count: ${result.messageData?.length ?? 0}");
 
       if (result.status == true) {
+        log("========== HISTORY DEBUG 4: PROCESSING SUCCESS RESPONSE ==========");
+
         memberData.isOnline = result.isOnline ?? memberData.isOnline;
         memberData.lastSeen = result.lastSeen ?? memberData.lastSeen;
 
@@ -1050,7 +1113,8 @@ class MessageController extends GetxController with WidgetsBindingObserver {
           try {
             peerLastSeen.value =
                 Tracking().getTimeAgo(DateTime.parse(lastSeen));
-          } catch (_) {
+          } catch (e) {
+            log("HISTORY DEBUG => lastSeen parsing error: $e");
             peerLastSeen.value = lastSeen;
           }
         } else {
@@ -1060,6 +1124,9 @@ class MessageController extends GetxController with WidgetsBindingObserver {
         final messages = result.messageData ?? [];
         final blockStatus = result.blockStatus;
 
+        log("HISTORY DEBUG => online: ${isPeerOnline.value}");
+        log("HISTORY DEBUG => incoming messages: ${messages.length}");
+
         if (blockStatus != null) {
           isBlocked.value = blockStatus.isBlocked == true;
           blockedByMe.value = blockStatus.blockedByMe == true;
@@ -1068,17 +1135,24 @@ class MessageController extends GetxController with WidgetsBindingObserver {
           blockedByMe.value = false;
         }
 
+        log("HISTORY DEBUG => isBlocked: ${isBlocked.value}");
+        log("HISTORY DEBUG => blockedByMe: ${blockedByMe.value}");
+
+        log("========== HISTORY DEBUG 5: UPDATING MESSAGE LIST ==========");
+
         _messages
           ..clear()
           ..addAll(messages.reversed);
 
-        log("[CHAT-PERF] Messages mapped: ${apiStopwatch.elapsedMilliseconds} ms | count: ${_messages.length}");
+        log("HISTORY DEBUG => mapped message count: ${_messages.length}");
 
         final pinnedId = result.pinnedMessageId;
 
+        log("HISTORY DEBUG => pinned message ID: $pinnedId");
+
         if (pinnedId != null) {
           final pinned = _messages.firstWhereOrNull(
-            (message) => message.id == pinnedId,
+                (message) => message.id == pinnedId,
           );
 
           if (pinned != null) {
@@ -1093,33 +1167,51 @@ class MessageController extends GetxController with WidgetsBindingObserver {
           showPinnedBanner.value = false;
         }
 
+        log("========== HISTORY DEBUG 6: BEFORE STREAM UPDATE ==========");
+
         updateMessageStream();
 
-        log("[CHAT-PERF] Message stream updated: ${apiStopwatch.elapsedMilliseconds} ms");
+        log("HISTORY DEBUG => stream update completed");
+        log("HISTORY DEBUG => stream message count: ${_messages.length}");
 
         isCreator.value = result.isCreator ?? false;
 
         if (result.pagination != null) {
-          hasMoreOlderMessages.value = result.pagination!.hasNextPage == true;
+          hasMoreOlderMessages.value =
+              result.pagination!.hasNextPage == true;
         } else {
           hasMoreOlderMessages.value = false;
         }
 
+        log("HISTORY DEBUG => isCreator: ${isCreator.value}");
+        log("HISTORY DEBUG => hasMoreOlderMessages: ${hasMoreOlderMessages.value}");
+
         if (_messages.isNotEmpty) {
+          log("========== HISTORY DEBUG 7: SCROLL TO BOTTOM ==========");
           scrollToBottom(instant: true);
+        } else {
+          log("HISTORY DEBUG => message list is EMPTY");
         }
 
-        log("[CHAT-PERF] History processing completed: ${apiStopwatch.elapsedMilliseconds} ms");
+        log("========== HISTORY DEBUG 8: PROCESSING COMPLETED ==========");
+        log("HISTORY DEBUG => final count: ${_messages.length}");
+        log("HISTORY DEBUG => total: ${apiStopwatch.elapsedMilliseconds} ms");
       } else {
-        log("[CHAT-PERF] History API returned unsuccessful status");
+        log("========== HISTORY DEBUG ERROR: API STATUS FALSE ==========");
+        log("HISTORY DEBUG => ${result.message}");
+
         CommonDialog.errorMessage(result.message);
       }
     } catch (e, stackTrace) {
-      log("[CHAT-PERF] Private History Error: $e");
-      log("[CHAT-PERF] StackTrace: $stackTrace");
+      log("========== HISTORY DEBUG ERROR: EXCEPTION ==========");
+      log("HISTORY DEBUG => $e");
+      log("HISTORY DEBUG STACKTRACE => $stackTrace");
     } finally {
       isLoadingInitialMessages.value = false;
-      log("[CHAT-PERF] Loading stopped; total API method time: ${apiStopwatch.elapsedMilliseconds} ms");
+
+      log("========== HISTORY DEBUG 9: FINALLY ==========");
+      log("HISTORY DEBUG => loading stopped");
+      log("HISTORY DEBUG => total time: ${apiStopwatch.elapsedMilliseconds} ms");
     }
   }
 

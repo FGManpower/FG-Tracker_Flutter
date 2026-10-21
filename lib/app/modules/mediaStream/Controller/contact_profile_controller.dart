@@ -1,12 +1,10 @@
-import 'dart:convert';
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../Core/constant/pref_res.dart';
-import '../../../Core/constant/urls.dart';
-import '../../../Core/util/http/http_util.dart';
 import '../../../Core/values/Utils.dart';
 import '../../../Core/values/global.dart';
+import '../../../Data/Repositories/call_repo.dart';
 import '../../../Data/Services/call_service.dart';
 import '../../../Data/Services/group_call_service.dart';
 import '../../../Model/CallDetail.dart';
@@ -21,6 +19,7 @@ class ContactProfileController extends GetxController {
   final String? groupId;
   final String? groupName;
   final String? groupAvatar;
+  final String? callId;
 
   ContactProfileController({
     this.contactData,
@@ -28,144 +27,63 @@ class ContactProfileController extends GetxController {
     this.groupId,
     this.groupName,
     this.groupAvatar,
+    this.callId,
   });
 
+  var isLoading = true.obs;
+  var errorMessage = ''.obs;
+  final detail = Rxn<CallHistoryDetailData>();
 
-  static const int _maxPages = 10;
+  String get _targetGroupId {
+    final String g = groupId?.toString().trim() ?? '';
+    if (g.isNotEmpty) return g;
+    return detail.value?.groupId?.toString().trim() ?? '';
+  }
 
-  var isLoading = false.obs;
-  var recentCalls = <CallHistoryDetailData>[].obs;
-
-  String get _targetGroupId => groupId?.toString().trim() ?? '';
-  String get _targetUserId => contactData?.userId?.toString().trim() ?? '';
-  String get _targetPhone => _cleanPhone(contactData?.mobileNo ?? '');
+  /// participants + joinedMembers merge (duplicate hata ke).
+  List<CallParticipant> get participants {
+    final CallHistoryDetailData? d = detail.value;
+    if (d == null) return [];
+    final List<CallParticipant> out = [];
+    final Set<String> seen = {};
+    for (final p in [...?d.participants, ...?d.joinedMembers]) {
+      final String key = (p.userId ?? p.id?.toString() ?? '').trim();
+      if (key.isEmpty || seen.add(key)) out.add(p);
+    }
+    return out;
+  }
 
   @override
   void onInit() {
     super.onInit();
-    fetchCallHistory();
+    fetchDetail();
   }
 
-  Future<void> fetchCallHistory() async {
+  Future<void> fetchDetail() async {
+    final String id = callId?.trim() ?? '';
+    if (id.isEmpty) {
+      errorMessage.value = "Call id not found";
+      isLoading.value = false;
+      return;
+    }
+
     isLoading.value = true;
-    final Set<String> seen = {};
-    final List<CallHistoryDetailData> matched = [];
-    int emptyStreak = 0;
+    errorMessage.value = '';
 
     try {
-      for (int page = 0; page < _maxPages; page++) {
-        if (isClosed) return;
-
-        final Map<String, dynamic>? raw = await _fetchPage(page);
-
-        if (raw == null || raw['status'] != true) {
-          if (page == 0) recentCalls.clear();
-          break;
-        }
-
-        final List<CallHistoryDetailData> pageCalls =
-        _extractCallList(raw['data']);
-
-        int fresh = 0;
-        for (final c in pageCalls) {
-          final String key = c.id ?? '${c.callId}_${c.calledAt}';
-          if (seen.add(key)) {
-            fresh++;
-            if (_isRelevant(c)) matched.add(c);
-          }
-        }
-
-        if (isClosed) return;
-        recentCalls.assignAll(matched);
-        if (page == 0) isLoading.value = false;
-
-        emptyStreak = fresh == 0 ? emptyStreak + 1 : 0;
-        if (emptyStreak >= 2 || !_hasNextPage(raw['pagination'])) break;
+      final CallHistoryDetailRes res = await CallRepo.getCallHistoryDetail(id);
+      if (isClosed) return;
+      if (res.status == true && res.data != null) {
+        detail.value = res.data;
+      } else {
+        errorMessage.value = res.message ?? "Failed to load call detail";
       }
-    } catch (e, stackTrace) {
-      log("Error fetching contact call history: $e\n$stackTrace");
+    } catch (e, st) {
+      log("[ContactProfile] getCallHistoryDetail error: $e\n$st");
+      if (!isClosed) errorMessage.value = "Something went wrong";
     } finally {
       if (!isClosed) isLoading.value = false;
     }
-  }
-
-  Future<Map<String, dynamic>?> _fetchPage(int page) async {
-    try {
-      dynamic res = await HttpUtil()
-          .getRecentCall("${Urls.recentCallHistory}?page=$page&type=all");
-      if (res is String) res = jsonDecode(res);
-      if (res is Map) return Map<String, dynamic>.from(res);
-    } catch (e) {
-      log("ContactProfile _fetchPage($page) error: $e");
-    }
-    return null;
-  }
-
-  bool _hasNextPage(dynamic pagination) {
-    if (pagination is! Map) return false;
-    for (final v in pagination.values) {
-      if (v is Map && v['hasNextPage'] == true) return true;
-    }
-    return false;
-  }
-
-  List<CallHistoryDetailData> _extractCallList(dynamic data) {
-    final List<CallHistoryDetailData> list = [];
-    if (data == null) return list;
-
-    void parseItems(List items) {
-      for (final e in items) {
-        if (e is! Map) continue;
-        try {
-          list.add(CallHistoryDetailData.fromJson(Map<String, dynamic>.from(e)));
-        } catch (err) {
-          log("Skipping bad call item: $err");
-        }
-      }
-    }
-
-    if (data is Map) {
-      for (final v in data.values) {
-        if (v is List) parseItems(v);
-      }
-    } else if (data is List) {
-      parseItems(data);
-    }
-    return list;
-  }
-
-  bool _isGroupCall(CallHistoryDetailData c) =>
-      c.callType == 'group' || c.groupId != null || c.group != null;
-
-  bool _isRelevant(CallHistoryDetailData c) =>
-      isGroup ? _matchesGroup(c) : _matchesContact(c);
-
-  bool _matchesGroup(CallHistoryDetailData c) {
-    if (!_isGroupCall(c)) return false;
-    final String gId =
-        (c.groupId ?? c.group?.groupId ?? c.group?.id)?.toString() ?? '';
-    return gId.isNotEmpty && _targetGroupId.isNotEmpty && gId == _targetGroupId;
-  }
-
-  bool _matchesContact(CallHistoryDetailData c) {
-    if (_isGroupCall(c)) return false;
-
-    bool isTarget(String? id, String? userId, String? phone) {
-      final String a = id?.trim() ?? '';
-      final String b = userId?.trim() ?? '';
-      final String p = _cleanPhone(phone ?? '');
-      if (_targetUserId.isNotEmpty && (a == _targetUserId || b == _targetUserId)) {
-        return true;
-      }
-      return _targetPhone.isNotEmpty && p == _targetPhone;
-    }
-
-    for (final u in [c.contact, c.caller, c.receiver]) {
-      if (u != null && isTarget(u.id, u.userId, u.phoneNumber)) return true;
-    }
-
-    return c.participants?.any((p) => isTarget(p.id?.toString(), p.userId, p.phoneNumber)) ??
-        false;
   }
 
   void startCall(BuildContext context, {required bool isVideo}) {
@@ -208,10 +126,20 @@ class ContactProfileController extends GetxController {
       );
     } else {
       final MemberData? user = contactData;
+
       if (user == null || user.userId == null) {
         Utils().fluttertoast("Unable to open chat for this contact");
         return;
-      }Get.to(
+      }
+
+      log("========== OPEN PRIVATE CHAT FROM PROFILE ==========");
+      log("CURRENT USER ID: ${Global.storageServices.get(PrefConst.userId)}");
+      log("RECEIVER USER ID: ${user.userId}");
+      log("RECEIVER NAME: ${user.name}");
+      log("RECEIVER IMAGE: ${user.profileImage}");
+      log("CHAT ID FROM CONTACT DATA: NOT AVAILABLE IN CURRENT CODE");
+
+      Get.to(
             () => ChatScreen(),
         arguments: {
           "userData": MemberData(
@@ -222,19 +150,20 @@ class ContactProfileController extends GetxController {
             isOnline: user.isOnline,
             groupId: 0,
           ),
+          "type": "chatScreen",
+          "chatType": "private",
+          "groupId": 0,
+          "groupName": user.name ?? "Chat",
         },
         binding: BindingsBuilder(() {
-          Get.put(MessageController());
+          if (!Get.isRegistered<MessageController>()) {
+            Get.put(MessageController());
+            log("MessageController CREATED");
+          } else {
+            log("MessageController ALREADY REGISTERED");
+          }
         }),
       );
     }
-  }
-
-  String _cleanPhone(String phone) {
-    String cleaned = phone.replaceAll(RegExp(r'[^0-9]'), '');
-    if (cleaned.length > 10) {
-      cleaned = cleaned.substring(cleaned.length - 10);
-    }
-    return cleaned;
   }
 }

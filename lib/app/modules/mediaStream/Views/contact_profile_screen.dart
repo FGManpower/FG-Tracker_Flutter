@@ -15,6 +15,7 @@ class ContactProfileScreen extends StatefulWidget {
   final String? groupId;
   final String? groupName;
   final String? groupAvatar;
+  final String? callId;
 
   const ContactProfileScreen({
     Key? key,
@@ -23,6 +24,7 @@ class ContactProfileScreen extends StatefulWidget {
     this.groupId,
     this.groupName,
     this.groupAvatar,
+    this.callId,
   }) : super(key: key);
 
   @override
@@ -41,9 +43,10 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
   @override
   void initState() {
     super.initState();
-    _tag = widget.isGroup
+    final String base = widget.isGroup
         ? "group_${widget.groupId ?? widget.groupName ?? '0'}"
         : "${widget.contactData?.userId ?? '0'}";
+    _tag = "${base}_${widget.callId ?? ''}";
 
     controller = Get.put(
       ContactProfileController(
@@ -52,6 +55,7 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
         groupId: widget.groupId,
         groupName: widget.groupName,
         groupAvatar: widget.groupAvatar,
+        callId: widget.callId,
       ),
       tag: _tag,
     );
@@ -63,17 +67,62 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
     super.dispose();
   }
 
+
+  String? _valid(String? v) {
+    final String t = v?.trim() ?? '';
+    if (t.isEmpty ||
+        t.toLowerCase() == 'unknown' ||
+        t.toLowerCase() == 'null') {
+      return null;
+    }
+    return t;
+  }
+
+  String? _firstValid(List<String?> values) {
+    for (final v in values) {
+      final String? t = _valid(v);
+      if (t != null) return t;
+    }
+    return null;
+  }
+
+  String _displayName(CallHistoryDetailData? d) {
+    if (widget.isGroup) {
+      return _firstValid([widget.groupName, d?.group?.name]) ?? "Group";
+    }
+    return _firstValid([
+      widget.contactData?.name,
+      d?.contact?.name,
+      d?.isCaller == true ? d?.receiver?.name : d?.caller?.name,
+    ]) ??
+        "User";
+  }
+
+  String? _displayAvatar(CallHistoryDetailData? d) {
+    if (widget.isGroup) {
+      return _firstValid([widget.groupAvatar, d?.group?.avatar]);
+    }
+    return _firstValid([
+      widget.contactData?.profileImage,
+      d?.contact?.avatar,
+      d?.isCaller == true ? d?.receiver?.avatar : d?.caller?.avatar,
+    ]);
+  }
+
+  String _displayPhone(CallHistoryDetailData? d) {
+    return _firstValid([
+      widget.contactData?.mobileNo,
+      d?.contact?.phoneNumber,
+      d?.isCaller == true
+          ? d?.receiver?.phoneNumber
+          : d?.caller?.phoneNumber,
+    ]) ??
+        '';
+  }
+
+
   @override
   Widget build(BuildContext context) {
-    final bool isGroup = widget.isGroup;
-    final String displayName = isGroup
-        ? (widget.groupName ?? "Group")
-        : (widget.contactData?.name ?? "User");
-    final String? avatarRaw =
-        isGroup ? widget.groupAvatar : widget.contactData?.profileImage;
-    final String phone = widget.contactData?.mobileNo ?? '';
-    final bool isOnline = widget.contactData?.isOnline == true;
-
     return Scaffold(
       backgroundColor: const Color(0xFFF7F7FD),
       body: Container(
@@ -112,51 +161,7 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
                 ),
                 SizedBox(height: 4.h),
 
-                _buildBigAvatar(displayName, avatarRaw, isGroup),
-                SizedBox(height: 12.h),
-
-                Text(
-                  displayName,
-                  textAlign: TextAlign.center,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 20.sp,
-                    fontFamily: FontFamily.interBold,
-                    color: _dark,
-                  ),
-                ),
-                SizedBox(height: 4.h),
-
-                if (isGroup)
-                  Text(
-                    "Group",
-                    style: TextStyle(
-                      fontSize: 14.sp,
-                      fontFamily: FontFamily.interSemiBold,
-                      color: _purple,
-                    ),
-                  )
-                else ...[
-                  if (phone.isNotEmpty)
-                    Text(
-                      phone,
-                      style: TextStyle(
-                        fontSize: 16.sp,
-                        fontFamily: FontFamily.interSemiBold,
-                        color: _purple,
-                      ),
-                    ),
-                  SizedBox(height: 3.h),
-                  Text(
-                    isOnline ? "Online" : "Offline",
-                    style: TextStyle(
-                      fontSize: 12.sp,
-                      fontFamily: FontFamily.interMedium,
-                      color: isOnline ? const Color(0xFF10B981) : _grey,
-                    ),
-                  ),
-                ],
+                Obx(() => _buildHeader(controller.detail.value)),
                 SizedBox(height: 18.h),
 
                 Row(
@@ -190,11 +195,16 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
                 ),
                 SizedBox(height: 14.h),
 
-                // Information card
-                _buildInfoCard(isGroup, displayName, phone),
+                Obx(() {
+                  final d = controller.detail.value;
+                  return _buildInfoCard(
+                    widget.isGroup,
+                    _displayName(d),
+                    _displayPhone(d),
+                  );
+                }),
                 SizedBox(height: 14.h),
 
-                // Recent calls card
                 _buildRecentCallsCard(context),
               ],
             ),
@@ -204,13 +214,69 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
     );
   }
 
-  List<BoxShadow> get _softShadow => [
-        BoxShadow(
-          color: Colors.black.withValues(alpha: 0.04),
-          blurRadius: 12,
-          offset: const Offset(0, 3),
+  Widget _buildHeader(CallHistoryDetailData? d) {
+    final bool isGroup = widget.isGroup;
+    final String name = _displayName(d);
+    final String phone = _displayPhone(d);
+    final bool isOnline = widget.contactData?.isOnline == true;
+
+    return Column(
+      children: [
+        _buildBigAvatar(name, _displayAvatar(d), isGroup),
+        SizedBox(height: 12.h),
+        Text(
+          name,
+          textAlign: TextAlign.center,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            fontSize: 20.sp,
+            fontFamily: FontFamily.interBold,
+            color: _dark,
+          ),
         ),
-      ];
+        SizedBox(height: 4.h),
+        if (isGroup)
+          Text(
+            "Group",
+            style: TextStyle(
+              fontSize: 14.sp,
+              fontFamily: FontFamily.interSemiBold,
+              color: _purple,
+            ),
+          )
+        else ...[
+          if (phone.isNotEmpty)
+            Text(
+              phone,
+              style: TextStyle(
+                fontSize: 16.sp,
+                fontFamily: FontFamily.interSemiBold,
+                color: _purple,
+              ),
+            ),
+          SizedBox(height: 3.h),
+          Text(
+            isOnline ? "Online" : "Offline",
+            style: TextStyle(
+              fontSize: 12.sp,
+              fontFamily: FontFamily.interMedium,
+              color: isOnline ? const Color(0xFF10B981) : _grey,
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+
+  List<BoxShadow> get _softShadow => [
+    BoxShadow(
+      color: Colors.black.withValues(alpha: 0.04),
+      blurRadius: 12,
+      offset: const Offset(0, 3),
+    ),
+  ];
 
   Widget _card({required Widget child}) {
     return Container(
@@ -234,27 +300,27 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
   }
 
   Widget _divider() => Divider(
-        height: 1,
-        thickness: 0.8,
-        color: const Color(0xFFF1F3F9),
-      );
+    height: 1,
+    thickness: 0.8,
+    color: const Color(0xFFF1F3F9),
+  );
 
   Widget _buildBigAvatar(String name, String? raw, bool isGroup) {
     final String url = _buildAvatarUrl(raw);
     final String initial = (name.isNotEmpty ? name[0] : '?').toUpperCase();
 
     Widget fallback() => Center(
-          child: isGroup
-              ? Icon(Icons.groups_rounded, size: 40.sp, color: _purple)
-              : Text(
-                  initial,
-                  style: TextStyle(
-                    fontSize: 32.sp,
-                    fontFamily: FontFamily.interBold,
-                    color: _purple,
-                  ),
-                ),
-        );
+      child: isGroup
+          ? Icon(Icons.groups_rounded, size: 40.sp, color: _purple)
+          : Text(
+        initial,
+        style: TextStyle(
+          fontSize: 32.sp,
+          fontFamily: FontFamily.interBold,
+          color: _purple,
+        ),
+      ),
+    );
 
     return Container(
       width: 96.w,
@@ -270,11 +336,11 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
           color: _lavender,
           child: url.isNotEmpty
               ? CachedNetworkImage(
-                  imageUrl: url,
-                  fit: BoxFit.cover,
-                  placeholder: (_, __) => fallback(),
-                  errorWidget: (_, __, ___) => fallback(),
-                )
+            imageUrl: url,
+            fit: BoxFit.cover,
+            placeholder: (_, __) => fallback(),
+            errorWidget: (_, __, ___) => fallback(),
+          )
               : fallback(),
         ),
       ),
@@ -314,6 +380,7 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
       ),
     );
   }
+
 
   Widget _buildInfoCard(bool isGroup, String displayName, String phone) {
     return _card(
@@ -378,11 +445,14 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
     );
   }
 
+
   Widget _buildRecentCallsCard(BuildContext context) {
     return _card(
       child: Obx(() {
         final bool loading = controller.isLoading.value;
-        final calls = controller.recentCalls;
+        final String error = controller.errorMessage.value;
+        final CallHistoryDetailData? d = controller.detail.value;
+        final bool hasData = !loading && error.isEmpty && d != null;
 
         return Column(
           children: [
@@ -402,9 +472,9 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
                       ),
                     ),
                   ),
-                  if (!loading || calls.isNotEmpty)
+                  if (hasData)
                     Text(
-                      "${calls.length}",
+                      "1",
                       style: TextStyle(
                         fontSize: 14.sp,
                         fontFamily: FontFamily.interBold,
@@ -415,31 +485,55 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
               ),
             ),
             _divider(),
-            if (loading && calls.isEmpty)
+            if (loading)
               _buildSkeletonList()
-            else if (calls.isEmpty)
-              Padding(
-                padding: EdgeInsets.symmetric(vertical: 24.h, horizontal: 16.w),
-                child: Center(
-                  child: Text(
-                    "No call history found for this ${widget.isGroup ? 'group' : 'contact'}",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 13.sp,
-                      fontFamily: FontFamily.interMedium,
-                      color: _grey,
-                    ),
-                  ),
-                ),
-              )
+            else if (error.isNotEmpty || d == null)
+              _buildError(error)
             else
-              for (int i = 0; i < calls.length; i++) ...[
-                if (i > 0) _divider(),
-                _buildHistoryTile(context, calls[i]),
-              ],
+              _buildHistoryTile(context, d),
           ],
         );
       }),
+    );
+  }
+
+  Widget _buildError(String message) {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 22.h, horizontal: 16.w),
+      child: Column(
+        children: [
+          Icon(Icons.error_outline_rounded, size: 32.sp, color: _grey),
+          SizedBox(height: 8.h),
+          Text(
+            message.isNotEmpty ? message : "Failed to load call detail",
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 13.sp,
+              fontFamily: FontFamily.interMedium,
+              color: _grey,
+            ),
+          ),
+          SizedBox(height: 12.h),
+          GestureDetector(
+            onTap: controller.fetchDetail,
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 22.w, vertical: 9.h),
+              decoration: BoxDecoration(
+                color: _purple,
+                borderRadius: BorderRadius.circular(12.r),
+              ),
+              child: Text(
+                "Retry",
+                style: TextStyle(
+                  fontSize: 13.sp,
+                  fontFamily: FontFamily.interSemiBold,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -620,6 +714,7 @@ class _ContactProfileScreenState extends State<ContactProfileScreen> {
   String _buildAvatarUrl(String? raw) {
     if (raw == null || raw.trim().isEmpty) return '';
     String v = raw.trim();
+    if (v.toLowerCase() == 'null') return '';
     if (v.startsWith('http://') || v.startsWith('https://')) return v;
     if (v.startsWith('/')) v = v.substring(1);
     return '${ConstRes.aImageBaseUrl}$v';

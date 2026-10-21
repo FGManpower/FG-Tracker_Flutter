@@ -8,7 +8,6 @@ import 'package:fgtracker/app/Data/Services/group_call_service.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/modules/call/widget/call_widget.dart';
 import 'package:fgtracker/app/modules/call/Controller/call_controller.dart';
-import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:fgtracker/gen/assets.gen.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
@@ -56,39 +55,41 @@ class _CallRecentCallsTabState extends State<CallRecentCallsTab> {
     }
   }
 
-  void _handleAvatarTap(Map<String, dynamic> call) {
-    final bool isGroup = call['isGroup'] == 'true' ||
-        call['isGroup'] == true ||
-        call['callType'] == 'group';
+  /// Row tap + DP tap: seedha profile screen, API screen ke andar hit hoti hai.
+  void _openProfile(Map<String, String> call) {
+    final String callId = (call['callId'] ?? call['id'] ?? '').trim();
+    final bool isGroup = call['isGroup'] == 'true';
 
     if (isGroup) {
-      final gId = call['groupId']?.toString() ??
-          call['group_id']?.toString() ??
-          call['callerId']?.toString();
+      final String gId = (call['groupId']?.isNotEmpty == true)
+          ? call['groupId']!
+          : (call['callerId'] ?? '');
 
       Get.to(
-        () => ContactProfileScreen(
+            () => ContactProfileScreen(
           isGroup: true,
           groupId: gId,
-          groupName: call['name'] ?? call['groupName'] ?? "Group",
-          groupAvatar: call['avatar'] ?? call['groupAvatar'],
+          groupName: call['name'] ?? "Group",
+          groupAvatar: call['avatar'],
+          callId: callId,
         ),
       );
     } else {
       final String phone = (call['mobileNo']?.isNotEmpty == true)
           ? call['mobileNo']!
-          : (call['phone']?.toString() ?? '');
+          : (call['phone'] ?? '');
 
       Get.to(
-        () => ContactProfileScreen(
+            () => ContactProfileScreen(
           isGroup: false,
           contactData: MemberData(
-            userId: int.tryParse(call['callerId']?.toString() ?? '0'),
+            userId: int.tryParse(call['callerId'] ?? '0'),
             name: call['name'],
             mobileNo: phone,
             profileImage: call['avatar'],
-            isOnline: call['isOnline'] == 'true' || call['isOnline'] == true,
+            isOnline: call['isOnline'] == 'true',
           ),
+          callId: callId,
         ),
       );
     }
@@ -140,7 +141,7 @@ class _CallRecentCallsTabState extends State<CallRecentCallsTab> {
           controller: _scrollController,
           physics: const AlwaysScrollableScrollPhysics(),
           padding:
-              EdgeInsets.fromLTRB(16.w, 4.h, 16.w, isDialOpen ? 390.h : 90.h),
+          EdgeInsets.fromLTRB(16.w, 4.h, 16.w, isDialOpen ? 390.h : 90.h),
           children: [
             for (final entry in groupedCalls.entries) ...[
               Padding(
@@ -178,45 +179,7 @@ class _CallRecentCallsTabState extends State<CallRecentCallsTab> {
                           endIndent: 14.w,
                         ),
                       InkWell(
-                        onTap: () {
-                          // Standard flow for tapping the row (redirects to Chat screen or Contact Profile)
-                          final isGroup = entry.value[i]['isGroup'] == 'true';
-
-                          if (isGroup) {
-                            final gId = entry.value[i]['groupId'] ??
-                                entry.value[i]['callerId'];
-
-                            if (gId != null && gId.isNotEmpty) {
-                              Get.toNamed(
-                                Routes.groupChatScreen,
-                                arguments: {
-                                  "groupId": gId,
-                                  "groupName":
-                                      entry.value[i]['name'] ?? "Group",
-                                  "groupProfile": entry.value[i]['avatar'],
-                                },
-                              );
-                            }
-                          } else {
-                            final call = entry.value[i];
-                            final String phone =
-                                (call['mobileNo']?.isNotEmpty == true)
-                                    ? call['mobileNo']!
-                                    : (call['phone'] ?? '');
-
-                            Get.to(
-                              () => ContactProfileScreen(
-                                contactData: MemberData(
-                                  userId: int.tryParse(call['callerId'] ?? ''),
-                                  name: call['name'],
-                                  mobileNo: phone,
-                                  profileImage: call['avatar'],
-                                  isOnline: call['isOnline'] == 'true',
-                                ),
-                              ),
-                            );
-                          }
-                        },
+                        onTap: () => _openProfile(entry.value[i]),
                         borderRadius: BorderRadius.vertical(
                           top: i == 0 ? Radius.circular(20.r) : Radius.zero,
                           bottom: i == entry.value.length - 1
@@ -230,8 +193,7 @@ class _CallRecentCallsTabState extends State<CallRecentCallsTab> {
                           ),
                           child: _RecentCallTile(
                             call: entry.value[i],
-                            onAvatarTap: () => _handleAvatarTap(
-                                entry.value[i]), // DP tap handler
+                            onAvatarTap: () => _openProfile(entry.value[i]),
                             onCallTap: (type) {
                               final isGroup =
                                   entry.value[i]['isGroup'] == 'true';
@@ -245,12 +207,12 @@ class _CallRecentCallsTabState extends State<CallRecentCallsTab> {
                                   context,
                                   groupId: gId,
                                   groupName:
-                                      entry.value[i]['name'] ?? "Group Call",
+                                  entry.value[i]['name'] ?? "Group Call",
                                   groupProfile: entry.value[i]['avatar'],
                                   isVideo: isVideo,
                                   memberCount: int.tryParse(entry.value[i]
-                                              ['memberCount'] ??
-                                          '0') ??
+                                  ['memberCount'] ??
+                                      '0') ??
                                       0,
                                 );
                               } else {
@@ -277,7 +239,7 @@ class _CallRecentCallsTabState extends State<CallRecentCallsTab> {
                                   );
                                 } else {
                                   final String phone = entry.value[i]
-                                          ['mobileNo'] ??
+                                  ['mobileNo'] ??
                                       entry.value[i]['phone'] ??
                                       '';
                                   if (phone.isNotEmpty) {
@@ -314,12 +276,12 @@ class _RecentCallTile extends StatelessWidget {
   const _RecentCallTile({
     required this.call,
     required this.onCallTap,
-    required this.onAvatarTap, // Added avatar tap callback parameter
+    required this.onAvatarTap,
   });
 
   final Map<String, String> call;
   final void Function(dynamic) onCallTap;
-  final VoidCallback onAvatarTap; // Callback function definition
+  final VoidCallback onAvatarTap;
 
   @override
   Widget build(BuildContext context) {
@@ -333,18 +295,18 @@ class _RecentCallTile extends StatelessWidget {
     final Color statusColor = missed
         ? const Color(0xFFEF4444)
         : incoming
-            ? const Color(0xFF3B82F6)
-            : cancelled
-                ? const Color(0xFF9CA3AF)
-                : const Color(0xFF10B981);
+        ? const Color(0xFF3B82F6)
+        : cancelled
+        ? const Color(0xFF9CA3AF)
+        : const Color(0xFF10B981);
 
     final IconData statusIcon = missed
         ? Icons.south_west_rounded
         : cancelled
-            ? Icons.call_end_rounded
-            : incoming
-                ? Icons.south_west_rounded
-                : Icons.arrow_outward_rounded;
+        ? Icons.call_end_rounded
+        : incoming
+        ? Icons.south_west_rounded
+        : Icons.arrow_outward_rounded;
 
     final String name = call['name'] ?? '';
     final String? avatar = call['avatar'];
@@ -353,7 +315,6 @@ class _RecentCallTile extends StatelessWidget {
 
     return Row(
       children: [
-        // Wrap avatar in GestureDetector to capture DP clicks specifically
         GestureDetector(
           onTap: onAvatarTap,
           behavior: HitTestBehavior.opaque,
@@ -439,7 +400,7 @@ class _RecentCallTile extends StatelessWidget {
         SizedBox(width: 10.w),
         CallActionChip(
           icon:
-              callType == "video" ? Icons.videocam_rounded : Icons.call_rounded,
+          callType == "video" ? Icons.videocam_rounded : Icons.call_rounded,
           onTap: () {
             onCallTap(callType);
           },
@@ -452,7 +413,7 @@ class _RecentCallTile extends StatelessWidget {
     final String trimmed = raw.trim();
     final String cleaned = trimmed
         .replaceAll(
-            RegExp(r'^(today|yesterday),?\s*', caseSensitive: false), '')
+        RegExp(r'^(today|yesterday),?\s*', caseSensitive: false), '')
         .trim();
     return cleaned.isNotEmpty ? cleaned : trimmed;
   }
@@ -472,11 +433,11 @@ class _RecentCallTile extends StatelessWidget {
   }
 
   Widget _buildAvatar(
-    String name,
-    String? avatar,
-    bool isOnline, {
-    bool isGroup = false,
-  }) {
+      String name,
+      String? avatar,
+      bool isOnline, {
+        bool isGroup = false,
+      }) {
     final String avatarUrl = _buildAvatarUrl(avatar);
     final String initial = (name.isNotEmpty ? name[0] : '?').toUpperCase();
 
@@ -512,12 +473,12 @@ class _RecentCallTile extends StatelessWidget {
             color: const Color(0xFFECEAFD),
             child: avatarUrl.isNotEmpty
                 ? CachedNetworkImage(
-                    imageUrl: avatarUrl,
-                    fit: BoxFit.cover,
-                    placeholder: (context, url) => placeholderOrFallback(),
-                    errorWidget: (context, url, error) =>
-                        placeholderOrFallback(),
-                  )
+              imageUrl: avatarUrl,
+              fit: BoxFit.cover,
+              placeholder: (context, url) => placeholderOrFallback(),
+              errorWidget: (context, url, error) =>
+                  placeholderOrFallback(),
+            )
                 : placeholderOrFallback(),
           ),
         ),

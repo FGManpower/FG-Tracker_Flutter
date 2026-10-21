@@ -1,5 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:skeletonizer/skeletonizer.dart';
@@ -24,6 +26,19 @@ class _ForwardMessageScreenState extends State<ForwardMessageScreen> {
 
   bool _isSearchCollapsed = false;
   bool _showSearchInAppBar = false;
+
+  static const List<String> _alphabet = [
+    'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
+    'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '#',
+  ];
+
+  final Map<String, GlobalKey> _keyCache = {};
+  final Set<String> _available = {};
+
+  final ValueNotifier<String?> _activeLetter = ValueNotifier<String?>(null);
+  final ValueNotifier<bool> _draggingThumb = ValueNotifier<bool>(false);
+  final ValueNotifier<int> _metricsTick = ValueNotifier<int>(0);
+  bool _metricsScheduled = false;
 
   @override
   void initState() {
@@ -64,12 +79,73 @@ class _ForwardMessageScreenState extends State<ForwardMessageScreen> {
   @override
   void dispose() {
     _scrollController.dispose();
+    _activeLetter.dispose();
+    _draggingThumb.dispose();
+    _metricsTick.dispose();
     super.dispose();
+  }
+
+  String _letterOf(String name) {
+    final trimmed = name.trim();
+    if (trimmed.isEmpty) return '#';
+    final first = trimmed[0].toUpperCase();
+    return RegExp(r'[A-Z]').hasMatch(first) ? first : '#';
+  }
+
+  List<ForwardDestination> _sorted(Iterable<ForwardDestination> items) {
+    final list = List<ForwardDestination>.from(items);
+    list.sort((a, b) {
+      final la = _letterOf(a.displayName);
+      final lb = _letterOf(b.displayName);
+      if (la == '#' && lb != '#') return 1;
+      if (lb == '#' && la != '#') return -1;
+      return a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase());
+    });
+    return list;
+  }
+
+  GlobalKey _keyFor(String letter) =>
+      _keyCache.putIfAbsent(letter, () => GlobalKey());
+
+  void _jumpToLetter(String letter) {
+    final ctx = _keyCache[letter]?.currentContext;
+    if (ctx == null) return;
+
+    if (_activeLetter.value != letter) {
+      HapticFeedback.selectionClick();
+      _activeLetter.value = letter;
+    }
+
+    Scrollable.ensureVisible(
+      ctx,
+      alignment: 0,
+      duration: Duration.zero,
+    );
+  }
+
+  void _handleIndexTouch(double dy, double itemHeight) {
+    if (itemHeight <= 0) return;
+
+    final index = (dy / itemHeight).floor().clamp(0, _alphabet.length - 1);
+
+    for (int i = index; i < _alphabet.length; i++) {
+      if (_available.contains(_alphabet[i])) {
+        _jumpToLetter(_alphabet[i]);
+        return;
+      }
+    }
+    for (int i = index - 1; i >= 0; i--) {
+      if (_available.contains(_alphabet[i])) {
+        _jumpToLetter(_alphabet[i]);
+        return;
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       backgroundColor: Colors.white,
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(60.h),
@@ -140,10 +216,17 @@ class _ForwardMessageScreenState extends State<ForwardMessageScreen> {
             ),
             SizedBox(height: 8.h),
             Expanded(
-              child: RefreshIndicator(
-                color: ToggleThemeData.darkPurple,
-                onRefresh: controller.refreshForwardList,
-                child: _destinationList(),
+              child: Stack(
+                children: [
+                  RefreshIndicator(
+                    color: ToggleThemeData.darkPurple,
+                    onRefresh: controller.refreshForwardList,
+                    child: _destinationList(),
+                  ),
+                  _alphabetIndex(),
+                  _activeLetterBubble(),
+                  _scrollThumb(),
+                ],
               ),
             ),
           ],
@@ -153,6 +236,205 @@ class _ForwardMessageScreenState extends State<ForwardMessageScreen> {
             () => controller.selectedDestinations.isNotEmpty
             ? _sendButton()
             : const SizedBox.shrink(),
+      ),
+    );
+  }
+
+
+  Widget _alphabetIndex() {
+    if (_available.isEmpty) return const SizedBox.shrink();
+
+    return Positioned(
+      right: 14.w,
+      top: 6.h,
+      bottom: 6.h,
+      width: 18.w,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final itemHeight = constraints.maxHeight / _alphabet.length;
+          final fontSize = (itemHeight * 0.72).clamp(6.0, 11.sp).toDouble();
+
+          return GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTapDown: (d) => _handleIndexTouch(d.localPosition.dy, itemHeight),
+            onVerticalDragStart: (d) =>
+                _handleIndexTouch(d.localPosition.dy, itemHeight),
+            onVerticalDragUpdate: (d) =>
+                _handleIndexTouch(d.localPosition.dy, itemHeight),
+            onTapUp: (_) => _activeLetter.value = null,
+            onTapCancel: () => _activeLetter.value = null,
+            onVerticalDragEnd: (_) => _activeLetter.value = null,
+            onVerticalDragCancel: () => _activeLetter.value = null,
+            child: ValueListenableBuilder<String?>(
+              valueListenable: _activeLetter,
+              builder: (context, active, _) {
+                return Column(
+                  children: _alphabet.map((letter) {
+                    final available = _available.contains(letter);
+                    final isActive = active == letter;
+
+                    return SizedBox(
+                      height: itemHeight,
+                      width: double.infinity,
+                      child: Center(
+                        child: Text(
+                          letter,
+                          style: TextStyle(
+                            fontSize: fontSize,
+                            height: 1,
+                            fontWeight:
+                            isActive ? FontWeight.w800 : FontWeight.w600,
+                            color: isActive
+                                ? ToggleThemeData.darkPurple
+                                : available
+                                ? Colors.grey.shade700
+                                : Colors.grey.shade300,
+                          ),
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                );
+              },
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _activeLetterBubble() {
+    return Positioned(
+      right: 44.w,
+      top: 0,
+      bottom: 0,
+      child: IgnorePointer(
+        child: Center(
+          child: ValueListenableBuilder<String?>(
+            valueListenable: _activeLetter,
+            builder: (context, active, _) {
+              if (active == null) return const SizedBox.shrink();
+
+              return Container(
+                width: 52.w,
+                height: 52.w,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: ToggleThemeData.darkPurple,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.18),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Text(
+                  active,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 24.sp,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
+
+  void _scheduleMetricsRefresh() {
+    if (_metricsScheduled) return;
+    _metricsScheduled = true;
+
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      _metricsScheduled = false;
+      if (mounted) _metricsTick.value++;
+    });
+  }
+
+  Widget _scrollThumb() {
+    return Positioned(
+      right: 0,
+      top: 0,
+      bottom: 0,
+      width: 16.w,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final trackHeight = constraints.maxHeight;
+          final thumbHeight = 56.h.clamp(24.0, trackHeight).toDouble();
+
+          return AnimatedBuilder(
+            animation: Listenable.merge([_scrollController, _metricsTick]),
+            builder: (context, _) {
+              if (!_scrollController.hasClients ||
+                  !_scrollController.position.hasContentDimensions) {
+                _scheduleMetricsRefresh();
+                return const SizedBox.shrink();
+              }
+
+              final position = _scrollController.position;
+              final maxExtent = position.maxScrollExtent;
+
+              if (maxExtent <= 0) return const SizedBox.shrink();
+
+              final ratio = (position.pixels / maxExtent).clamp(0.0, 1.0);
+              final travel = trackHeight - thumbHeight;
+
+              return Stack(
+                children: [
+                  Positioned(
+                    top: ratio * travel,
+                    right: 0,
+                    width: 16.w,
+                    height: thumbHeight,
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onVerticalDragStart: (_) =>
+                      _draggingThumb.value = true,
+                      onVerticalDragEnd: (_) =>
+                      _draggingThumb.value = false,
+                      onVerticalDragCancel: () =>
+                      _draggingThumb.value = false,
+                      onVerticalDragUpdate: (d) {
+                        if (travel <= 0 || !_scrollController.hasClients) {
+                          return;
+                        }
+                        final pos = _scrollController.position;
+                        final target = (pos.pixels +
+                            d.delta.dy * pos.maxScrollExtent / travel)
+                            .clamp(0.0, pos.maxScrollExtent);
+                        _scrollController.jumpTo(target);
+                      },
+                      child: Align(
+                        alignment: Alignment.centerRight,
+                        child: ValueListenableBuilder<bool>(
+                          valueListenable: _draggingThumb,
+                          builder: (context, dragging, _) {
+                            return AnimatedContainer(
+                              duration: const Duration(milliseconds: 120),
+                              width: dragging ? 8.w : 5.w,
+                              margin: EdgeInsets.only(right: 2.w),
+                              decoration: BoxDecoration(
+                                color: ToggleThemeData.darkPurple
+                                    .withValues(alpha: dragging ? 1 : 0.75),
+                                borderRadius: BorderRadius.circular(8.r),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
+          );
+        },
       ),
     );
   }
@@ -240,7 +522,46 @@ class _ForwardMessageScreenState extends State<ForwardMessageScreen> {
     );
   }
 
+  List<Widget> _groupedByLetter(
+      List<ForwardDestination> items,
+      Widget Function(ForwardDestination) tileBuilder,
+      ) {
+    final widgets = <Widget>[];
+    String? currentLetter;
+
+    for (final item in _sorted(items)) {
+      final letter = _letterOf(item.displayName);
+
+      if (letter != currentLetter) {
+        currentLetter = letter;
+
+        final isFirstForLetter = _available.add(letter);
+
+        widgets.add(
+          Container(
+            key: isFirstForLetter ? _keyFor(letter) : null,
+            padding: EdgeInsets.fromLTRB(18.w, 8.h, 18.w, 2.h),
+            child: Text(
+              letter,
+              style: TextStyle(
+                fontSize: 13.sp,
+                fontWeight: FontWeight.w700,
+                color: ToggleThemeData.darkPurple,
+              ),
+            ),
+          ),
+        );
+      }
+
+      widgets.add(tileBuilder(item));
+    }
+
+    return widgets;
+  }
+
   Widget _destinationList() {
+    _available.clear();
+
     final users = controller.users;
     final groups = controller.groups;
     final numberUsers = controller.numberUsers;
@@ -273,17 +594,18 @@ class _ForwardMessageScreenState extends State<ForwardMessageScreen> {
       ),
       padding: EdgeInsets.only(
         top: 4.h,
-        bottom: 100.h,
+        bottom: 100.h + MediaQuery.of(context).viewInsets.bottom,
+        right: 36.w,
       ),
       children: [
         if (users.isNotEmpty) ...[
           _sectionTitle("PEOPLE"),
-          ...users.map(_userTile),
+          ..._groupedByLetter(users, _userTile),
         ],
         if (groups.isNotEmpty) ...[
           SizedBox(height: 10.h),
           _sectionTitle("GROUPS"),
-          ...groups.map(_groupTile),
+          ..._groupedByLetter(groups, _groupTile),
         ],
         if (numberUsers.isNotEmpty) ...[
           SizedBox(height: 10.h),
@@ -312,6 +634,33 @@ class _ForwardMessageScreenState extends State<ForwardMessageScreen> {
     );
   }
 
+  Widget _avatar(String image, IconData icon, Color iconColor) {
+    final hasImage =
+        image.isNotEmpty && !image.toLowerCase().contains('default-profile');
+    final url = image.startsWith("http")
+        ? image
+        : "${ConstRes.aImageBaseUrl}$image";
+
+    final fallback = Icon(icon, color: iconColor, size: 28.sp);
+
+    return CircleAvatar(
+      radius: 27.r,
+      backgroundColor: Colors.grey.shade200,
+      child: hasImage
+          ? ClipOval(
+        child: CachedNetworkImage(
+          imageUrl: url,
+          width: 54.r,
+          height: 54.r,
+          fit: BoxFit.cover,
+          placeholder: (_, __) => const SizedBox.shrink(),
+          errorWidget: (_, __, ___) => fallback,
+        ),
+      )
+          : fallback,
+    );
+  }
+
   Widget _userTile(ForwardDestination user) {
     return Obx(() {
       final selected = controller.isSelected(user);
@@ -330,24 +679,7 @@ class _ForwardMessageScreenState extends State<ForwardMessageScreen> {
             children: [
               Stack(
                 children: [
-                  CircleAvatar(
-                    radius: 27.r,
-                    backgroundColor: Colors.grey.shade200,
-                    backgroundImage: image.isNotEmpty
-                        ? CachedNetworkImageProvider(
-                      image.startsWith("http")
-                          ? image
-                          : "${ConstRes.aImageBaseUrl}$image",
-                    )
-                        : null,
-                    child: image.isEmpty
-                        ? Icon(
-                      Icons.person,
-                      color: Colors.grey.shade500,
-                      size: 28.sp,
-                    )
-                        : null,
-                  ),
+                  _avatar(image, Icons.person, Colors.grey.shade500),
                   if (selected)
                     Positioned.fill(
                       child: Container(
@@ -402,24 +734,7 @@ class _ForwardMessageScreenState extends State<ForwardMessageScreen> {
             children: [
               Stack(
                 children: [
-                  CircleAvatar(
-                    radius: 27.r,
-                    backgroundColor: Colors.grey.shade200,
-                    backgroundImage: image.isNotEmpty
-                        ? CachedNetworkImageProvider(
-                      image.startsWith("http")
-                          ? image
-                          : "${ConstRes.aImageBaseUrl}$image",
-                    )
-                        : null,
-                    child: image.isEmpty
-                        ? Icon(
-                      Icons.groups,
-                      color: ToggleThemeData.darkPurple,
-                      size: 28.sp,
-                    )
-                        : null,
-                  ),
+                  _avatar(image, Icons.groups, ToggleThemeData.darkPurple),
                   if (selected)
                     Positioned.fill(
                       child: Container(

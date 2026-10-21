@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:fgtracker/app/Core/constant/pref_res.dart';
 import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
@@ -42,10 +43,16 @@ class CallController extends GetxController {
 
   final List<_RecentEntry> _recentRaw = <_RecentEntry>[];
 
-  // Dial pad state
   final RxBool isDialPadOpen = false.obs;
   final RxString dialNumber = ''.obs;
+  Timer? _rebuildTimer;
 
+  void _scheduleRebuild() {
+    _rebuildTimer?.cancel();
+    _rebuildTimer = Timer(const Duration(milliseconds: 150), () {
+      if (_recentRaw.isNotEmpty) _rebuildRecentDisplay();
+    });
+  }
   @override
   void onInit() {
     super.onInit();
@@ -53,17 +60,8 @@ class CallController extends GetxController {
     loadGroups();
     getRecentCall();
 
-    // Automatically re-resolve names and avatars when groups or contacts update
-    ever(_groupController.groupData, (_) {
-      if (_recentRaw.isNotEmpty) {
-        _rebuildRecentDisplay();
-      }
-    });
-    ever(allUserProfileData, (_) {
-      if (_recentRaw.isNotEmpty) {
-        _rebuildRecentDisplay();
-      }
-    });
+    ever(_groupController.groupData, (_) => _scheduleRebuild());
+    ever(allUserProfileData, (_) => _scheduleRebuild());
   }
 
   @override
@@ -71,7 +69,7 @@ class CallController extends GetxController {
     searchController.dispose();
     searchQuery.close();
     selectedTab.close();
-
+    _rebuildTimer?.cancel();
     responseError.close();
     recentCallLoading.close();
     recentCallLoadingMore.close();
@@ -478,6 +476,8 @@ class CallController extends GetxController {
   Map<String, String> _buildRow(_RecentEntry entry) {
     final CallingDetail call = entry.call;
     final RecentContact? contact = call.contact;
+    final String rawCallId = (call.id ?? '').trim();
+    final String numericCallId = rawCallId.replaceAll(RegExp(r'[^0-9]'), '');
 
     String name = [
       contact?.firstName,
@@ -624,6 +624,8 @@ class CallController extends GetxController {
       'isGroup': isGroupCall ? 'true' : 'false',
       'groupId': resolvedGroupId,
       'memberCount': memberCount,
+      'id': rawCallId,
+      'callId': rawCallId,
       'apiTime': (call.time ?? '').trim(),
       'apiDate': (call.date ?? '').trim(),
       'apiDay': (call.day ?? '').trim(),

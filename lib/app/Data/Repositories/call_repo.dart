@@ -79,7 +79,7 @@ class CallRepo {
   }
 
   static Future<CallHistoryDetailRes> getCallHistoryDetail(String callId) async {
-    var response = await HttpUtil().get("/api/call/getCallDetail?callId=$callId");
+    var response = await HttpUtil().get("/getCallDetail?callId=$callId");
     log("[CallRepo] Call History Detail ($callId) Response: $response");
 
     if (response is String) {
