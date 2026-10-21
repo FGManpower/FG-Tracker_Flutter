@@ -223,12 +223,16 @@ class _CallRecentCallsTabState extends State<CallRecentCallsTab> {
                                     entry.value[i]['name']?.toString() ??
                                         'User';
 
+                                final profileImage =
+                                    entry.value[i]['profileImage']?.toString() ??
+                                        'User';
+
                                 if (remoteId.isNotEmpty &&
                                     remoteId !=
                                         Global.storageServices
                                             .get(PrefConst.userId)
                                             ?.toString()) {
-                                  CallService().startCall(
+                                  CallService().startOutGoingCall(
                                     context,
                                     callerId: Global.storageServices
                                         .get(PrefConst.userId)
@@ -236,6 +240,8 @@ class _CallRecentCallsTabState extends State<CallRecentCallsTab> {
                                     remoteUserId: remoteId,
                                     is_video: isVideo,
                                     callerName: callerName,
+                                    callerProfile: profileImage
+
                                   );
                                 } else {
                                   final String phone = entry.value[i]

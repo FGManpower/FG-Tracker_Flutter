@@ -202,12 +202,13 @@ class _CallContactsTabState extends State<CallContactsTab> {
   }
 
   void _startCall(UserListData user, bool isVideo) {
-    CallService().startCall(
+    CallService().startOutGoingCall(
       context,
       callerId: Global.storageServices.get(PrefConst.userId).toString(),
       remoteUserId: user.userId.toString(),
       is_video: isVideo,
       callerName: user.name ?? "User",
+      callerProfile: user.profileImage
     );
   }
 }

@@ -7,6 +7,7 @@ import 'package:fgtracker/app/Core/values/Dialog/DialogBox.dart';
 import 'package:fgtracker/app/Core/values/Utils.dart';
 import 'package:fgtracker/app/Core/values/global.dart';
 import 'package:fgtracker/app/Data/Services/Tracking.dart';
+import 'package:fgtracker/app/Data/Services/call_service.dart';
 import 'package:fgtracker/app/Model/GetMessage.dart';
 import 'package:fgtracker/app/Model/MemberDataRes.dart';
 import 'package:fgtracker/app/modules/Group/controller/Group_Controller.dart';
@@ -864,21 +865,19 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
               if (value == "chat")
                 _openPrivateChat(m, online);
               else if (value == "call")
-                Get.toNamed(Routes.callScreen, arguments: {
-                  "callerId": _myId,
-                  "remoteUserId": m.userId.toString(),
-                  "callerName": name,
-                  "is_video": false,
-                  "callType": "outGoing"
-                });
+                CallService().startOutGoingCall(context,
+                    callerId: _myId,
+                    remoteUserId: m.userId.toString(),
+                    is_video: false,
+                    callerName: name,
+                    callerProfile: m.profileImage);
               else if (value == "video")
-                Get.toNamed(Routes.callScreen, arguments: {
-                  "callerId": _myId,
-                  "remoteUserId": m.userId.toString(),
-                  "callerName": name,
-                  "is_video": true,
-                  "callType": "outGoing"
-                });
+                CallService().startOutGoingCall(context,
+                    callerId: _myId,
+                    remoteUserId: m.userId.toString(),
+                    is_video: true,
+                    callerName: name,
+                    callerProfile: m.profileImage);
               else if (value == "remove" &&
                   (data.permissions?.canAddMember ?? false) &&
                   !isMe) {

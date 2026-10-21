@@ -136,6 +136,7 @@ void _setupCallKit() {
       'callId': callId,
       'sessionId': uuid,
       'is_video': extra['isVideo'] == 'true' || extra['isVideo'] == true,
+      'profileImage': extra['profileImage'],
       'callType': 'Incoming',
       'fromCallKit': true,
       'callerName': extra['callerName'],
@@ -220,7 +221,6 @@ Future<void> main() async {
   _setupCallKit();
 
   if (userId != null) {
-
     SignallingService.instance.init(
       websocketUrl: ConstRes.socketUrl,
       selfCallerID: userId.toString(),

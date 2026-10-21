@@ -4,6 +4,7 @@ import 'package:fgtracker/app/Core/constant/const_res.dart';
 import 'package:fgtracker/app/Core/util/validator.dart';
 import 'package:fgtracker/app/Core/values/bottomSheet.dart';
 import 'package:fgtracker/app/Core/values/utility.dart';
+import 'package:fgtracker/app/Data/Services/call_service.dart';
 import 'package:fgtracker/app/config/themes_data.dart';
 import 'package:fgtracker/app/global_widget/input_widget.dart';
 import 'package:fgtracker/app/modules/Group/controller/JoinGroup_Controller.dart';
@@ -1287,19 +1288,14 @@ class DialogBox {
                                               force: true);
                                         }
 
-                                        Get.toNamed(
-                                          Routes.callScreen,
-                                          arguments: {
-                                            "callerId": currentUserId,
-                                            "remoteUserId":
-                                                (effectiveUserId ?? "").toString(),
-                                            "callerName": displayName,
-                                            "callerProfile": fullImageUrl ?? "",
-                                            "offer": null,
-                                            "is_video": false,
-                                            "callType": "outGoing",
-                                          },
-                                        );
+
+
+                                        CallService().startOutGoingCall(ctx,
+                                            callerId: currentUserId,
+                                            remoteUserId:  (effectiveUserId ?? "").toString(),
+                                            is_video: true,
+                                            callerName: displayName,
+                                            callerProfile: imageUrl);
                                       },
                                       child: Container(
                                         padding: EdgeInsets.symmetric(
@@ -1368,18 +1364,15 @@ class DialogBox {
                                               force: true);
                                         }
 
-                                        Get.toNamed(
-                                          Routes.callScreen,
-                                          arguments: {
-                                            "callerId": currentUserId,
-                                            "remoteUserId":
-                                                (effectiveUserId ?? "").toString(),
-                                            "callerName": displayName,
-                                            "callerProfile": fullImageUrl ?? "",
-                                            "offer": null,
-                                            "is_video": true,
-                                            "callType": "outGoing",
-                                          },
+
+
+                                        CallService().startOutGoingCall(
+                                            ctx,
+                                            callerId: currentUserId,
+                                            remoteUserId:   (effectiveUserId ?? "").toString(),
+                                            is_video: true,
+                                            callerName: displayName,
+                                            callerProfile:imageUrl
                                         );
                                       },
                                       child: Container(

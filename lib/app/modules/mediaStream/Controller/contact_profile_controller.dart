@@ -100,12 +100,13 @@ class ContactProfileController extends GetxController {
     } else {
       final String remoteId = contactData?.userId?.toString() ?? '';
       if (remoteId.isNotEmpty) {
-        CallService().startCall(
+        CallService().startOutGoingCall(
           context,
           callerId: Global.storageServices.get(PrefConst.userId).toString(),
           remoteUserId: remoteId,
           is_video: isVideo,
           callerName: contactData?.name ?? 'User',
+          callerProfile: contactData?.profileImage
         );
       } else {
         Utils().fluttertoast("Unable to call this contact");

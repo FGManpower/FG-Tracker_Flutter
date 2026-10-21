@@ -53,6 +53,7 @@ class CallController extends GetxController {
       if (_recentRaw.isNotEmpty) _rebuildRecentDisplay();
     });
   }
+
   @override
   void onInit() {
     super.onInit();
@@ -254,13 +255,12 @@ class CallController extends GetxController {
 
       final ctx = Get.context;
       if (ctx != null) {
-        CallService().startCall(
-          ctx,
-          callerId: currentUserId,
-          remoteUserId: remoteUserId,
-          is_video: isVideo,
-          callerName: targetName,
-        );
+        CallService().startOutGoingCall(ctx,
+            callerId: currentUserId,
+            remoteUserId: remoteUserId,
+            is_video: isVideo,
+            callerName: targetName,
+            callerProfile: targetUser?.profileImage);
       }
     } else {
       selectedDialUser = null;
