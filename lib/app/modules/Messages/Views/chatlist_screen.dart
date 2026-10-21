@@ -34,36 +34,40 @@ class ChatListScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 2,
-      child: Scaffold(
-        backgroundColor: const Color(0xFFF8F7FF),
-        appBar: _buildAppBar(),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () => Get.to(() => const NewChatScreen()),
-          backgroundColor: const Color(0xFF6B4DFF),
-          shape: const CircleBorder(),
-          elevation: 4,
-          child: const Icon(
-            Icons.chat_bubble_outline,
-            color: Colors.white,
-          ),
-        ),
-        bottomNavigationBar: const QuickCommunicationBar(),
-        body: Column(
-          children: [
-            _buildCustomTabBar(),
-            Expanded(
-              child: TabBarView(
-                children: [
-                  _AllChatsBody(controller: controller),
-                  const _GroupsTabBody(),
-                ],
-              ),
-            ),
-          ],
+    // Single Unified WhatsApp Chat List Screen:
+    // TabBar and legacy separate Groups Tab are commented out as requested.
+    // Both 1-to-1 chats and group chats are now presented in a single unified list.
+    return Scaffold(
+      backgroundColor: const Color(0xFFF8F7FF),
+      appBar: _buildAppBar(),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => Get.to(() => const NewChatScreen()),
+        backgroundColor: const Color(0xFF6B4DFF),
+        shape: const CircleBorder(),
+        elevation: 4,
+        child: const Icon(
+          Icons.chat_bubble_outline,
+          color: Colors.white,
         ),
       ),
+      bottomNavigationBar: const QuickCommunicationBar(),
+      body: _AllChatsBody(controller: controller),
+      /*
+      // LEGACY TAB BAR UI (Commented out):
+      // body: Column(
+      //   children: [
+      //     _buildCustomTabBar(),
+      //     Expanded(
+      //       child: TabBarView(
+      //         children: [
+      //           _AllChatsBody(controller: controller),
+      //           const _GroupsTabBody(),
+      //         ],
+      //       ),
+      //     ),
+      //   ],
+      // ),
+      */
     );
   }
 
@@ -106,6 +110,8 @@ class ChatListScreen extends StatelessWidget {
     );
   }
 
+  /*
+  // LEGACY TAB BAR UI (Commented out):
   Widget _buildCustomTabBar() {
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
@@ -163,6 +169,7 @@ class ChatListScreen extends StatelessWidget {
       ),
     );
   }
+  */
 
   Widget _circleIcon(IconData icon, VoidCallback onTap) {
     return GestureDetector(
@@ -421,7 +428,69 @@ class _AllChatsBody extends StatelessWidget {
                         ? _archivedChatsRow()
                         : const SizedBox.shrink(),
                   ),
-                  _sectionTitle("All Chats"),
+                  // Search Bar for Unified WhatsApp Chats
+                  Container(
+                    height: 44.h,
+                    margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(14.r),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.03),
+                          blurRadius: 10,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                      border: Border.all(
+                        color: Colors.grey.withOpacity(0.12),
+                      ),
+                    ),
+                    child: Obx(
+                      () => TextField(
+                        controller: controller.searchController,
+                        onChanged: controller.onSearchChanged,
+                        decoration: InputDecoration(
+                          hintText: "Search chats or messages...",
+                          hintStyle: TextStyle(
+                            fontSize: 13.sp,
+                            color: Colors.grey.shade400,
+                            fontFamily: FontFamily.interRegular,
+                          ),
+                          prefixIcon: Icon(
+                            Icons.search_rounded,
+                            size: 20.sp,
+                            color: Colors.grey.shade400,
+                          ),
+                          border: InputBorder.none,
+                          enabledBorder: InputBorder.none,
+                          focusedBorder: InputBorder.none,
+                          contentPadding: EdgeInsets.symmetric(
+                            horizontal: 16.w,
+                            vertical: 12.h,
+                          ),
+                          suffixIcon: controller.searchQuery.value.isNotEmpty
+                              ? GestureDetector(
+                                  onTap: controller.clearSearch,
+                                  child: Icon(
+                                    Icons.close_rounded,
+                                    size: 18.sp,
+                                    color: Colors.grey.shade400,
+                                  ),
+                                )
+                              : null,
+                        ),
+                      ),
+                    ),
+                  ),
+                  Obx(
+                    () => _sectionTitle(
+                      "All Chats",
+                      badgeCount: controller.unreadTotalCount.value > 0
+                          ? controller.unreadTotalCount.value
+                          : null,
+                    ),
+                  ),
                   Obx(() {
                     if (controller.isLoading.value &&
                         controller.privateChats.isEmpty) {
@@ -463,14 +532,19 @@ class _AllChatsBody extends StatelessWidget {
                           return _chatRow(
                             context: context,
                             chat: chat,
-                            name: chat.name ?? "Unknown User",
+                            name: chat.name ?? chat.groupName ?? "Unknown User",
                             role: chat.role ?? "",
-                            msg: ChatUtil.formatLastMessage(chat.message),
-                            time: _formatChatTime(chat.time ?? ""),
+                            msg: chat.preview ??
+                                ChatUtil.formatLastMessage(chat.message),
+                            time: _formatChatTime(
+                              chat.timestamp ?? chat.time ?? "",
+                            ),
                             unreadCount: chat.unreadCount ?? 0,
-                            statusColor: chat.isOnline == true
-                                ? const Color(0xFF16A765)
-                                : Colors.grey,
+                            statusColor: chat.isGroup == true
+                                ? null
+                                : (chat.isOnline == true
+                                    ? const Color(0xFF16A765)
+                                    : Colors.grey),
                             isGroup: chat.isGroup ?? false,
                             image: chat.image,
                           );
@@ -689,10 +763,55 @@ class _AllChatsBody extends StatelessWidget {
         tapPos = d.globalPosition;
       },
       onTap: () async {
-        if (chat.userId == null) {
+        if (chat.isGroup == true) {
+          final effectiveGroupId =
+              chat.groupId?.toString() ?? chat.id?.toString() ?? '';
+          if (effectiveGroupId.isEmpty) return;
+
+          if (Get.isRegistered<ChatListController>()) {
+            Get.find<ChatListController>().markChatAsRead(chat);
+          }
+
+          String groupCode = '';
+          String isCreator = 'false';
+          String isActive = 'true';
+          String profileImg = chat.image ?? '';
+
+          if (Get.isRegistered<GroupController>()) {
+            final gc = Get.find<GroupController>();
+            final matched = gc.groupData.firstWhereOrNull(
+              (g) => g.id == (chat.groupId ?? chat.id),
+            );
+            if (matched != null) {
+              groupCode = matched.groupCode ?? '';
+              isCreator = (matched.isCreator ?? false).toString();
+              isActive = (matched.isActive ?? true).toString();
+              if (profileImg.isEmpty && matched.groupProfile != null) {
+                profileImg = matched.groupProfile!;
+              }
+            }
+          }
+
+          await Get.toNamed(
+            Routes.groupChatScreen,
+            arguments: {
+              "groupId": effectiveGroupId,
+              "groupName": chat.name ?? chat.groupName ?? "Group Chat",
+              "groupProfile": profileImg,
+              "groupImage": profileImg,
+              "groupCode": groupCode,
+              "isCreator": isCreator,
+              "isActive": isActive,
+            },
+          )?.then((_) {
+            controller.getChatList(isRefresh: false);
+          });
           return;
         }
 
+        if (chat.userId == null && chat.id == null) {
+          return;
+        }
 
         if (Get.isRegistered<ChatListController>()) {
           Get.find<ChatListController>().markChatAsRead(chat);
@@ -707,13 +826,15 @@ class _AllChatsBody extends StatelessWidget {
               profileImage: chat.image,
               groupId: 0,
             ),
-            "chatId": chat.id?.toString(),
+            "chatId":
+                (chat.chatId ?? chat.conversationId ?? chat.id)?.toString(),
           },
           binding: BindingsBuilder(() {
             Get.put(MessageController());
           }),
-        );
-
+        )?.then((_) {
+          controller.getChatList(isRefresh: false);
+        });
       },
       onLongPress: () => _showChatOptions(context, tapPos, chat),
       child: Container(
@@ -729,6 +850,8 @@ class _AllChatsBody extends StatelessWidget {
           isGroup: isGroup,
           isPinned: chat.isPinned == true,
           isMuted: chat.isMuted == true,
+          isDeletedForEveryone: chat.isDeletedForEveryone == true,
+          isBlocked: chat.isBlocked == true,
           image: image,
         ),
       ),
@@ -745,8 +868,14 @@ class _AllChatsBody extends StatelessWidget {
     bool isGroup = false,
     bool isPinned = false,
     bool isMuted = false,
+    bool isDeletedForEveryone = false,
+    bool isBlocked = false,
     String? image,
   }) {
+    final bool isDeleted = isDeletedForEveryone ||
+        msg == "This message was deleted" ||
+        msg == "Message deleted";
+
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -757,7 +886,7 @@ class _AllChatsBody extends StatelessWidget {
               radius: 26.r,
               backgroundColor:
                   isGroup ? const Color(0xFF6B4DFF) : Colors.grey.shade300,
-              backgroundImage: (!isGroup && image != null && image.isNotEmpty)
+              backgroundImage: (image != null && image.isNotEmpty)
                   ? NetworkImage(
                       image.startsWith("http://") ||
                               image.startsWith("https://")
@@ -765,19 +894,19 @@ class _AllChatsBody extends StatelessWidget {
                           : "${ConstRes.aImageBaseUrl}$image",
                     )
                   : null,
-              child: isGroup
-                  ? Icon(
-                      Icons.groups,
-                      color: Colors.white,
-                      size: 24.sp,
-                    )
-                  : (image == null || image.isEmpty
+              child: (image != null && image.isNotEmpty)
+                  ? null
+                  : (isGroup
                       ? Icon(
+                          Icons.groups,
+                          color: Colors.white,
+                          size: 24.sp,
+                        )
+                      : Icon(
                           Icons.person,
                           color: Colors.white,
                           size: 26.sp,
-                        )
-                      : null),
+                        )),
             ),
             if (statusColor != null)
               Positioned(
@@ -808,7 +937,7 @@ class _AllChatsBody extends StatelessWidget {
                 children: [
                   Flexible(
                     child: reausabletext(
-                      name.isEmpty ? "Unknown User" : name,
+                      name.isEmpty ? "Unknown" : name,
                       fontsize: 12.sp,
                       fontfamily: FontFamily.interBold,
                       color: Colors.black87,
@@ -837,13 +966,66 @@ class _AllChatsBody extends StatelessWidget {
                 ],
               ),
               SizedBox(height: 4.h),
-              reausabletext(
-                msg.isEmpty ? "" : msg,
-                fontsize: 10.sp,
-                fontfamily: FontFamily.interMedium,
-                color: const Color(0xFF6B4DFF),
-                maxline: 1,
-              ),
+              if (isDeleted)
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.block_flipped,
+                      size: 12.sp,
+                      color: Colors.grey.shade500,
+                    ),
+                    SizedBox(width: 4.w),
+                    Flexible(
+                      child: Text(
+                        "This message was deleted",
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 10.5.sp,
+                          fontStyle: FontStyle.italic,
+                          color: Colors.grey.shade500,
+                          fontFamily: FontFamily.interMedium,
+                        ),
+                      ),
+                    ),
+                  ],
+                )
+              else
+                Row(
+                  children: [
+                    if (isBlocked) ...[
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 4.w,
+                          vertical: 1.h,
+                        ),
+                        margin: EdgeInsets.only(right: 5.w),
+                        decoration: BoxDecoration(
+                          color: Colors.red.withOpacity(0.12),
+                          borderRadius: BorderRadius.circular(4.r),
+                        ),
+                        child: Text(
+                          "Blocked",
+                          style: TextStyle(
+                            fontSize: 8.5.sp,
+                            color: Colors.red.shade700,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                    Flexible(
+                      child: reausabletext(
+                        msg.isEmpty ? "" : msg,
+                        fontsize: 10.sp,
+                        fontfamily: FontFamily.interMedium,
+                        color: const Color(0xFF6B4DFF),
+                        maxline: 1,
+                      ),
+                    ),
+                  ],
+                ),
             ],
           ),
         ),
@@ -1222,6 +1404,9 @@ class _AllChatsBody extends StatelessWidget {
   }
 }
 
+/*
+// LEGACY GROUPS TAB BODY (Commented out - Groups are merged into the unified WhatsApp chat list):
+// Previously called TotalGroupController().getGroupChatList()
 class _GroupsTabBody extends StatelessWidget {
   const _GroupsTabBody();
 
@@ -1704,3 +1889,4 @@ class _GroupCardSkeleton extends StatelessWidget {
     );
   }
 }
+*/

@@ -1,6 +1,7 @@
 class PrivateChatResponse {
   bool? status;
   String? message;
+  int? unreadTotalCount;
   Pagination? pagination;
   List<PrivateChatModel>? data;
   bool? isOnline;
@@ -8,6 +9,7 @@ class PrivateChatResponse {
   PrivateChatResponse({
     this.status,
     this.message,
+    this.unreadTotalCount,
     this.pagination,
     this.data,
     this.isOnline,
@@ -17,6 +19,9 @@ class PrivateChatResponse {
     return PrivateChatResponse(
       status: _parseBool(json['status']),
       message: json['message']?.toString(),
+      unreadTotalCount: _parseInt(
+        json['unreadTotalCount'] ?? json['unread_total_count'],
+      ),
       pagination: json['pagination'] is Map
           ? Pagination.fromJson(
         Map<String, dynamic>.from(json['pagination']),
@@ -40,10 +45,19 @@ class PrivateChatResponse {
     return {
       'status': status,
       'message': message,
+      'unreadTotalCount': unreadTotalCount,
       'pagination': pagination?.toJson(),
       'data': data?.map((x) => x.toJson()).toList() ?? [],
       'isOnline': isOnline,
     };
+  }
+
+  static int? _parseInt(dynamic value) {
+    if (value == null) return null;
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    if (value is String) return int.tryParse(value.trim());
+    return null;
   }
 
   static bool? _parseBool(dynamic value) {
@@ -134,19 +148,31 @@ class Pagination {
 
 class PrivateChatModel {
   int? id;
+  int? chatId;
+  int? conversationId;
+  int? groupId;
+  String? chatType;
   int? userId;
   String? name;
+  String? groupName;
+  int? memberCount;
   String? role;
   String? message;
+  String? preview;
+  bool? isDeletedForEveryone;
   String? time;
+  String? timestamp;
   String? messageType;
   String? mutedUntil;
   int? unreadCount;
   String? status;
   bool? isOnline;
   String? lastSeen;
+  bool? isBlocked;
+  bool? blockedByMe;
   bool? isGroup;
   bool? isPinned;
+  String? pinnedAt;
   bool? isMuted;
   bool? isArchived;
   bool? moveToTop;
@@ -154,19 +180,31 @@ class PrivateChatModel {
 
   PrivateChatModel({
     this.id,
+    this.chatId,
+    this.conversationId,
+    this.groupId,
+    this.chatType,
     this.userId,
     this.name,
+    this.groupName,
+    this.memberCount,
     this.role,
     this.message,
+    this.preview,
+    this.isDeletedForEveryone,
     this.time,
+    this.timestamp,
     this.messageType,
     this.mutedUntil,
     this.unreadCount,
     this.status,
     this.isOnline,
     this.lastSeen,
+    this.isBlocked,
+    this.blockedByMe,
     this.isGroup,
     this.isPinned,
+    this.pinnedAt,
     this.isMuted,
     this.isArchived,
     this.moveToTop,
@@ -176,6 +214,9 @@ class PrivateChatModel {
   factory PrivateChatModel.fromJson(Map<String, dynamic> json) {
     final user =
     json['user'] is Map ? Map<String, dynamic>.from(json['user']) : null;
+
+    final group =
+    json['group'] is Map ? Map<String, dynamic>.from(json['group']) : null;
 
     final lastMessage = json['lastMessage'] is Map
         ? Map<String, dynamic>.from(json['lastMessage'])
@@ -187,47 +228,87 @@ class PrivateChatModel {
 
     final activity = lastMessage ?? lastActivity;
 
-    final online = _parseBool(
+    final rawChatType = _readString(json, ['chatType', 'chat_type', 'type']);
+    final isGroupParsed = _parseBool(
+      json['isGroup'] ?? json['is_group'] ?? json['group'],
+    );
+    final isGroupChat = isGroupParsed ??
+        (rawChatType == 'group' ||
+            json['groupId'] != null ||
+            json['group_id'] != null ||
+            group != null);
+
+    final online = isGroupChat
+        ? false
+        : _parseBool(
       json['isOnline'] ??
           json['is_online'] ??
           user?['isOnline'] ??
           user?['is_online'],
     );
 
-    return PrivateChatModel(
-      id: _parseInt(
-        json['id'] ??
-            json['chatId'] ??
-            json['chat_id'] ??
-            json['conversationId'] ??
-            json['conversation_id'],
-      ),
-      userId: _parseInt(
-        json['userId'] ??
-            json['user_id'] ??
-            user?['id'] ??
-            user?['userId'] ??
-            user?['user_id'],
-      ),
-      name: _readString(json, [
-        'name',
-        'receiverName',
-        'receiver_name',
-        'userName',
-        'user_name',
-        'fullName',
-        'full_name',
-      ]),
-      role: _readString(json, [
-        'role',
-        'designation',
-        'department',
-        'teamName',
-        'team_name',
-      ]),
-      message: _readString(
-        activity ?? {},
-        [
+    final resolvedId = _parseInt(
+      json['id'] ??
+          json['chatId'] ??
+          json['chat_id'] ??
+          json['conversationId'] ??
+          json['conversation_id'],
+    );
+
+    final resolvedGroupId = _parseInt(
+      json['groupId'] ??
+          json['group_id'] ??
+          group?['id'] ??
+          group?['groupId'] ??
+          group?['group_id'],
+    );
+
+    final resolvedUserId = _parseInt(
+      json['userId'] ??
+          json['user_id'] ??
+          user?['id'] ??
+          user?['userId'] ??
+          user?['user_id'],
+    );
+
+    final resolvedName = _readString(json, [
+      'name',
+      'groupName',
+      'group_name',
+      'receiverName',
+      'receiver_name',
+      'userName',
+      'user_name',
+      'fullName',
+      'full_name',
+    ]) ??
+        _readString(group ?? {}, ['groupName', 'group_name', 'name']) ??
+        _readString(user ?? {}, ['name', 'fullName', 'full_name']) ??
+        (isGroupChat ? 'Group' : 'Unknown User');
+
+    final messageDeleted = _parseBool(
+      lastMessage?['isDeletedForEveryone'] ??
+          activity?['isDeletedForEveryone'] ??
+          json['isDeletedForEveryone'] ??
+          json['is_deleted_for_everyone'],
+    ) ??
+        false;
+
+    final messageContent = _readString(
+      activity ?? {},
+      [
+        'preview',
+        'message',
+        'lastMessage',
+        'last_message',
+        'latestMessage',
+        'latest_message',
+        'msg',
+        'content',
+      ],
+    ) ??
+        _readString(json, [
+          'preview',
           'message',
           'lastMessage',
           'last_message',
@@ -235,49 +316,80 @@ class PrivateChatModel {
           'latest_message',
           'msg',
           'content',
-        ],
-      ) ??
-          _readString(json, [
-            'message',
-            'lastMessage',
-            'last_message',
-            'latestMessage',
-            'latest_message',
-            'msg',
-            'content',
-          ]) ??
-          '',
-      messageType: _readString(
-        activity ?? {},
-        ['messageType', 'message_type', 'type'],
-      ) ??
-          _readString(json, ['messageType', 'message_type']),
-      mutedUntil: _readString(json, ['mutedUntil', 'muted_until']),
-      time: _readString(
-        activity ?? {},
-        [
+        ]) ??
+        '';
+
+    final messagePreview = _readString(
+      activity ?? {},
+      ['preview', 'message', 'content'],
+    ) ??
+        _readString(json, ['preview', 'message', 'content']) ??
+        messageContent;
+
+    final timeString = _readString(
+      activity ?? {},
+      [
+        'timestamp',
+        'time',
+        'createdAt',
+        'created_at',
+        'updatedAt',
+        'updated_at',
+      ],
+    ) ??
+        _readString(json, [
           'timestamp',
+          'lastMessageAt',
+          'last_message_at',
           'time',
           'createdAt',
           'created_at',
           'updatedAt',
           'updated_at',
-        ],
+        ]) ??
+        '';
+
+    return PrivateChatModel(
+      id: resolvedId,
+      chatId: _parseInt(json['chatId'] ?? json['chat_id'] ?? resolvedId),
+      conversationId: _parseInt(
+        json['conversationId'] ?? json['conversation_id'] ?? resolvedId,
+      ),
+      groupId: resolvedGroupId,
+      chatType: rawChatType ?? (isGroupChat ? 'group' : 'private'),
+      userId: resolvedUserId,
+      name: resolvedName,
+      groupName: _readString(json, ['groupName', 'group_name']) ??
+          _readString(group ?? {}, ['groupName', 'group_name', 'name']),
+      memberCount: _parseInt(
+        json['memberCount'] ??
+            json['member_count'] ??
+            group?['memberCount'] ??
+            group?['member_count'],
+      ),
+      role: _readString(json, [
+        'role',
+        'designation',
+        'department',
+        'teamName',
+        'team_name',
+      ]),
+      message: messageContent,
+      preview: messagePreview,
+      isDeletedForEveryone: messageDeleted,
+      time: timeString,
+      timestamp: timeString,
+      messageType: _readString(
+        activity ?? {},
+        ['messageType', 'message_type', 'type'],
       ) ??
-          _readString(json, [
-            'timestamp',
-            'lastMessageAt',
-            'last_message_at',
-            'time',
-            'createdAt',
-            'created_at',
-            'updatedAt',
-            'updated_at',
-          ]) ??
-          '',
+          _readString(json, ['messageType', 'message_type']) ??
+          'text',
+      mutedUntil: _readString(json, ['mutedUntil', 'muted_until']),
       unreadCount: _parseInt(
         json['unreadCount'] ?? json['unread_count'] ?? json['unread'],
-      ),
+      ) ??
+          0,
       status: online != null
           ? (online ? 'Online' : 'Offline')
           : _readString(json, [
@@ -288,13 +400,17 @@ class PrivateChatModel {
         'online_status',
       ]),
       isOnline: online,
-      lastSeen: _readString(json, ['lastSeen', 'last_seen']),
-      isGroup: _parseBool(
-        json['isGroup'] ?? json['is_group'] ?? json['group'],
-      ),
+      lastSeen: _readString(json, ['lastSeen', 'last_seen']) ??
+          _readString(user ?? {}, ['lastSeen', 'last_seen']),
+      isBlocked: _parseBool(json['isBlocked'] ?? json['is_blocked']) ?? false,
+      blockedByMe:
+      _parseBool(json['blockedByMe'] ?? json['blocked_by_me']) ?? false,
+      isGroup: isGroupChat,
       isPinned: _parseBool(
         json['isPinned'] ?? json['is_pinned'] ?? json['pinned'],
-      ),
+      ) ??
+          false,
+      pinnedAt: _readString(json, ['pinnedAt', 'pinned_at']),
       isMuted: _parseBool(
         json['isMuted'] ?? json['is_muted'],
       ),
@@ -305,33 +421,53 @@ class PrivateChatModel {
         json['moveToTop'] ?? json['move_to_top'],
       ),
       image: _readString(json, [
-        'image',
         'profileImage',
         'profile_image',
         'avatar',
+        'image',
         'profilePic',
         'profile_pic',
         'profile_picture',
-      ]),
+      ]) ??
+          _readString(user ?? {}, ['avatar', 'profileImage', 'profile_image']) ??
+          _readString(group ?? {}, [
+            'profileImage',
+            'profile_image',
+            'groupProfile',
+            'group_profile',
+            'image',
+          ]),
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
       'id': id,
+      'chatId': chatId,
+      'conversationId': conversationId,
+      'groupId': groupId,
+      'chatType': chatType,
       'userId': userId,
       'name': name,
+      'groupName': groupName,
+      'memberCount': memberCount,
       'role': role,
       'message': message,
+      'preview': preview,
+      'isDeletedForEveryone': isDeletedForEveryone,
       'time': time,
+      'timestamp': timestamp,
       'messageType': messageType,
       'mutedUntil': mutedUntil,
       'unreadCount': unreadCount,
       'status': status,
       'isOnline': isOnline,
       'lastSeen': lastSeen,
+      'isBlocked': isBlocked,
+      'blockedByMe': blockedByMe,
       'isGroup': isGroup,
       'isPinned': isPinned,
+      'pinnedAt': pinnedAt,
       'isMuted': isMuted,
       'isArchived': isArchived,
       'moveToTop': moveToTop,

@@ -974,12 +974,11 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
               iconColor: Colors.redAccent,
               title: "Exit Group",
               titleColor: Colors.redAccent,
-
               onTap: () {
                 CommonDialog.ConfirmationDialog(
                   title: "Exit Group",
                   content:
-                  "Are you sure you want to exit \"${data.group?.groupName}\"?",
+                      "Are you sure you want to exit \"${data.group?.groupName}\"?",
                   confirm: "Exit",
                   onConfirm: () {
                     Get.back();
@@ -997,7 +996,6 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
                   },
                 );
               },
-
             ),
           ]
         ],

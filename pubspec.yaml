@@ -100,6 +100,7 @@ dependencies:
   flutter_in_app_pip: ^1.7.5
   flutter_timezone: ^5.1.1
   flutter_callkit_incoming: ^3.1.6
+  speech_to_text: ^7.5.0
 
 
 dependency_overrides:

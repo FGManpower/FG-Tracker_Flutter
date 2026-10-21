@@ -19,6 +19,7 @@ import 'package:waveform_flutter/waveform_flutter.dart';
 import '../../../Model/GetMessage.dart';
 import '../Controller/MessageController.dart';
 import 'message_Widgets.dart';
+import 'package:fgtracker/features/voice_typing/voice_typing_mic_button.dart';
 
 class ChatInputArea extends StatefulWidget {
   final RxString messageText;
@@ -350,121 +351,131 @@ class _ChatInputAreaState extends State<ChatInputArea> {
                                       ),
                                     ),
                                   ),
-                                  suffixIcon: GestureDetector(
-                                    onTap: () {
-                                      final isGroupAdmin = widget
-                                              .groupMessageController
-                                              ?.isCreator
-                                              .value ==
-                                          true;
-                                      ChatBottomSheet.showFileOptions(
-                                        context,
-                                        showAttendance: isGroupAdmin,
-                                        onGallery: () async {
-                                          Navigator.pop(context);
-                                          final List<XFile> mediaFiles =
-                                              await FileServices()
-                                                  .pickMultipleMediaFromGallery();
-                                          if (mediaFiles.isEmpty) return;
-                                          final List<File> images = [];
-                                          final List<String> videos = [];
-                                          const videoExtensions = [
-                                            'mp4',
-                                            'mov',
-                                            'avi',
-                                            'mkv',
-                                            '3gp',
-                                            'webm',
-                                            'm4v'
-                                          ];
-                                          for (final file in mediaFiles) {
-                                            final ext = file.path
-                                                .split('.')
-                                                .last
-                                                .toLowerCase();
-                                            if (videoExtensions.contains(ext)) {
-                                              videos.add(file.path);
-                                            } else {
-                                              images.add(File(file.path));
-                                            }
-                                          }
-                                          if (images.isNotEmpty) {
-                                            widget.onImageSelected(images);
-                                          }
-                                          if (videos.isNotEmpty) {
-                                            widget.onVideosSelected(videos);
-                                          }
-                                        },
-                                        onDocument: () async {
-                                          Navigator.pop(context);
-                                          final file = await FileServices()
-                                              .pickDocument();
-                                          if (file != null) {
-                                            widget.onDocumentSelected(
-                                                file.path ?? "");
-                                          }
-                                        },
-                                        onCamera: () {
-                                          Navigator.pop(context);
-                                          WidgetsBinding.instance
-                                              .addPostFrameCallback((_) async {
-                                            final result = await Get.toNamed(
-                                                Routes.cameraScreen);
-                                            if (result != null &&
-                                                result is String &&
-                                                result.isNotEmpty) {
-                                              final ext = result
-                                                  .split('.')
-                                                  .last
-                                                  .toLowerCase();
+                                  suffixIcon: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      if (widget.messageController != null)
+                                        VoiceTypingMicButton(
+                                          textController: widget.textController,
+                                          focusNode: focusNode,
+                                        ),
+                                      GestureDetector(
+                                        onTap: () {
+                                          final isGroupAdmin = widget
+                                                  .groupMessageController
+                                                  ?.isCreator
+                                                  .value ==
+                                              true;
+                                          ChatBottomSheet.showFileOptions(
+                                            context,
+                                            showAttendance: isGroupAdmin,
+                                            onGallery: () async {
+                                              Navigator.pop(context);
+                                              final List<XFile> mediaFiles =
+                                                  await FileServices()
+                                                      .pickMultipleMediaFromGallery();
+                                              if (mediaFiles.isEmpty) return;
+                                              final List<File> images = [];
+                                              final List<String> videos = [];
                                               const videoExtensions = [
                                                 'mp4',
                                                 'mov',
                                                 'avi',
                                                 'mkv',
                                                 '3gp',
-                                                'webm'
+                                                'webm',
+                                                'm4v'
                                               ];
-                                              if (videoExtensions
-                                                  .contains(ext)) {
-                                                widget
-                                                    .onVideosSelected([result]);
-                                              } else {
-                                                widget.onImageSelected(
-                                                    [File(result)]);
+                                              for (final file in mediaFiles) {
+                                                final ext = file.path
+                                                    .split('.')
+                                                    .last
+                                                    .toLowerCase();
+                                                if (videoExtensions.contains(ext)) {
+                                                  videos.add(file.path);
+                                                } else {
+                                                  images.add(File(file.path));
+                                                }
                                               }
-                                            }
-                                          });
-                                        },
-                                        onLocation: () async {
-                                          Navigator.pop(context);
-                                          widget.onLocationSelected();
-                                        },
-                                        onContact: () async {
-                                          Navigator.pop(context);
-                                          widget.onContactSelected();
-                                        },
-                                        onAttendance: isGroupAdmin
-                                            ? () {
-                                                Navigator.pop(context);
-                                                ChatBottomSheet
-                                                    .showCreateAttendance(
-                                                  context,
-                                                  groupMembers:
-                                                      widget.groupMembers,
-                                                );
+                                              if (images.isNotEmpty) {
+                                                widget.onImageSelected(images);
                                               }
-                                            : null,
-                                      );
-                                    },
-                                    child: Padding(
-                                      padding: EdgeInsets.only(right: 6.w),
-                                      child: Icon(
-                                        Icons.attach_file_rounded,
-                                        color: const Color(0xFF5045B9),
-                                        size: 24.sp,
+                                              if (videos.isNotEmpty) {
+                                                widget.onVideosSelected(videos);
+                                              }
+                                            },
+                                            onDocument: () async {
+                                              Navigator.pop(context);
+                                              final file = await FileServices()
+                                                  .pickDocument();
+                                              if (file != null) {
+                                                widget.onDocumentSelected(
+                                                    file.path ?? "");
+                                              }
+                                            },
+                                            onCamera: () {
+                                              Navigator.pop(context);
+                                              WidgetsBinding.instance
+                                                  .addPostFrameCallback((_) async {
+                                                final result = await Get.toNamed(
+                                                    Routes.cameraScreen);
+                                                if (result != null &&
+                                                    result is String &&
+                                                    result.isNotEmpty) {
+                                                  final ext = result
+                                                      .split('.')
+                                                      .last
+                                                      .toLowerCase();
+                                                  const videoExtensions = [
+                                                    'mp4',
+                                                    'mov',
+                                                    'avi',
+                                                    'mkv',
+                                                    '3gp',
+                                                    'webm'
+                                                  ];
+                                                  if (videoExtensions
+                                                      .contains(ext)) {
+                                                    widget
+                                                        .onVideosSelected([result]);
+                                                  } else {
+                                                    widget.onImageSelected(
+                                                        [File(result)]);
+                                                  }
+                                                }
+                                              });
+                                            },
+                                            onLocation: () async {
+                                              Navigator.pop(context);
+                                              widget.onLocationSelected();
+                                            },
+                                            onContact: () async {
+                                              Navigator.pop(context);
+                                              widget.onContactSelected();
+                                            },
+                                            onAttendance: isGroupAdmin
+                                                ? () {
+                                                    Navigator.pop(context);
+                                                    ChatBottomSheet
+                                                        .showCreateAttendance(
+                                                      context,
+                                                      groupMembers:
+                                                          widget.groupMembers,
+                                                    );
+                                                  }
+                                                : null,
+                                          );
+                                        },
+                                        child: Padding(
+                                          padding: EdgeInsets.only(right: 6.w),
+                                          child: Icon(
+                                            Icons.attach_file_rounded,
+                                            color: const Color(0xFF5045B9),
+                                            size: 24.sp,
+                                          ),
+                                        ),
                                       ),
-                                    ),
+                                    ],
                                   ),
                                   fillColor: _inputBg,
                                   filled: true,
