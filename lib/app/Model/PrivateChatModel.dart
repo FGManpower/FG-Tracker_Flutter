@@ -429,6 +429,10 @@ class PrivateChatModel {
       image: _readString(json, [
         'profileImage',
         'profile_image',
+        'groupProfile',
+        'group_profile',
+        'groupImage',
+        'group_image',
         'avatar',
         'image',
         'profilePic',
@@ -441,6 +445,8 @@ class PrivateChatModel {
             'profile_image',
             'groupProfile',
             'group_profile',
+            'groupImage',
+            'group_image',
             'image',
           ]),
       isForwarded: _parseBool(
@@ -539,6 +545,7 @@ class PrivateChatModel {
       'receiver',
       'recipient',
       'profile',
+      'group',
     ];
 
     for (final parentKey in nestedKeys) {

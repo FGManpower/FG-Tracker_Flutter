@@ -207,7 +207,9 @@ class ArchivedChatsScreen extends StatelessWidget {
                   child: imageUrl.isEmpty
                       ? Center(
                     child: Icon(
-                      Icons.person,
+                      chat.isGroup == true
+                          ? Icons.groups_rounded
+                          : Icons.person,
                       size: 24.sp,
                       color: const Color(0xFF6B4DFF),
                     ),

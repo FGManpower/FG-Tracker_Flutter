@@ -19,6 +19,7 @@ import '../../../Core/constant/const_res.dart';
 import '../../../Core/constant/pref_res.dart';
 
 import '../../../Core/values/Dialog/Common_dialog.dart';
+import '../../../Core/values/Utils.dart';
 import '../../../Core/values/global.dart';
 
 import '../../../Data/Repositories/GetMessageRepo.dart';
@@ -1365,6 +1366,36 @@ class GroupMessageController extends GetxController {
     editingMessage.value = null;
   }
 
+  Future<void> clearGroupChat() async {
+    try {
+      final response = await MessageRepo.clearGroupChat(
+        groupId: groupId,
+      );
+
+      if (response['status'] == true) {
+        _messages.clear();
+
+        pinnedMessage.value = null;
+        showPinnedBanner.value = false;
+
+        updateMessageStream();
+
+        Utils().fluttertoast(
+          response['message']?.toString() ??
+              'Group chat cleared successfully',
+        );
+      } else {
+        Utils().fluttertoast(
+          response['message']?.toString() ??
+              'Failed to clear group chat',
+        );
+      }
+    } catch (e) {
+      log('Clear group chat error: $e');
+
+      Utils().fluttertoast('Failed to clear group chat');
+    }
+  }
   @override
   void onClose() {
     ChatTranslationService.instance.resetVisibility();

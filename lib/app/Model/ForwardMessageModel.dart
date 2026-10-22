@@ -1,4 +1,3 @@
-
 class ForwardListResponse {
   bool? status;
   String? message;
@@ -27,9 +26,9 @@ class ForwardListResponse {
           .whereType<Map>()
           .map(
             (item) => ForwardDestination.fromJson(
-          Map<String, dynamic>.from(item),
-        ),
-      )
+              Map<String, dynamic>.from(item),
+            ),
+          )
           .toList();
     }
 
@@ -42,9 +41,7 @@ class ForwardListResponse {
     } else {
       all.addAll(
         parseList(
-          dataMap['users'] ??
-              dataMap['people'] ??
-              dataMap['private'],
+          dataMap['users'] ?? dataMap['people'] ?? dataMap['private'],
         ),
       );
 
@@ -90,10 +87,10 @@ class ForwardDestination {
 
   factory ForwardDestination.fromJson(Map<String, dynamic> json) {
     final String type = (json['type'] ??
-        json['chatType'] ??
-        json['targetType'] ??
-        json['sourceType'] ??
-        '')
+            json['chatType'] ??
+            json['targetType'] ??
+            json['sourceType'] ??
+            '')
         .toString()
         .toLowerCase();
 
@@ -115,9 +112,9 @@ class ForwardDestination {
       groupId: parsedGroupId,
       type: type == 'group' ? 'group' : 'private',
       name: (json['name'] ??
-          json['userName'] ??
-          json['username'] ??
-          json['groupName'])
+              json['userName'] ??
+              json['username'] ??
+              json['groupName'])
           ?.toString(),
       mobileNo: json['mobileNo']?.toString(),
       image: (json['image'] ?? json['avatar'])?.toString(),
@@ -179,7 +176,6 @@ class ForwardDestination {
   }
 }
 
-
 class ForwardTarget {
   final String type;
   final int? userId;
@@ -194,14 +190,11 @@ class ForwardTarget {
   Map<String, dynamic> toJson() {
     return {
       "type": type,
-      if (type == "private" && userId != null)
-        "userId": userId,
-      if (type == "group" && groupId != null)
-        "groupId": groupId,
+      if (type == "private" && userId != null) "userId": userId,
+      if (type == "group" && groupId != null) "groupId": groupId,
     };
   }
 }
-
 
 class ForwardMessageResponse {
   bool? status;

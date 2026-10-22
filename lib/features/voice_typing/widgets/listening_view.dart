@@ -25,6 +25,7 @@ class _ListeningViewState extends State<ListeningView>
   late final AnimationController _blinkController;
   late final Animation<double> _pulseAnimation;
   late final Animation<double> _blinkAnimation;
+  bool _canTapStop = false;
 
   @override
   void initState() {
@@ -46,6 +47,11 @@ class _ListeningViewState extends State<ListeningView>
     _blinkAnimation = Tween<double>(begin: 0.2, end: 1.0).animate(
       CurvedAnimation(parent: _blinkController, curve: Curves.easeInOut),
     );
+
+    // Prevent accidental tap-to-stop while sheet is animating in
+    Future.delayed(const Duration(milliseconds: 600), () {
+      if (mounted) setState(() => _canTapStop = true);
+    });
   }
 
   @override
@@ -169,7 +175,11 @@ class _ListeningViewState extends State<ListeningView>
               label: "Tap to stop recording",
               button: true,
               child: InkWell(
-                onTap: () => widget.controller.stopListening(),
+                onTap: () {
+                  if (_canTapStop) {
+                    widget.controller.stopListening();
+                  }
+                },
                 borderRadius: BorderRadius.circular(44.r),
                 child: Padding(
                   padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),

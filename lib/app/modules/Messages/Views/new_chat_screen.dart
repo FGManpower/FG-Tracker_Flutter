@@ -9,7 +9,7 @@ import 'package:fgtracker/gen/assets.gen.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:share_plus/share_plus.dart';
-
+import 'dart:developer';
 import '../../../Model/MemberDataRes.dart';
 import '../../../routes/app_pages.dart';
 
@@ -50,12 +50,14 @@ class _NewChatScreenState extends State<NewChatScreen> {
   }
 
   String _getInitials(String name) {
-    if (name.isEmpty) return "?";
-    List<String> parts = name.trim().split(RegExp(r'\s+'));
-    if (parts.length > 1 && parts[0].isNotEmpty && parts[1].isNotEmpty) {
-      return (parts[0][0] + parts[1][0]).toUpperCase();
+    final trimmed = name.trim();
+    if (trimmed.isEmpty) return "?";
+    final parts = trimmed.split(RegExp(r'\s+'));
+    String first(String s) => String.fromCharCodes(s.runes.take(1));
+    if (parts.length > 1) {
+      return (first(parts[0]) + first(parts[1])).toUpperCase();
     }
-    return parts[0][0].toUpperCase();
+    return first(parts[0]).toUpperCase();
   }
 
   Color _getAvatarColor(String name) {
@@ -193,8 +195,9 @@ class _NewChatScreenState extends State<NewChatScreen> {
     final String? avatar = user.profileImage;
     final bool hasAvatar = avatar != null && avatar.isNotEmpty;
     final String imageUrl = hasAvatar ? (ConstRes.aImageBaseUrl + avatar) : '';
-    final String displayName = user.name ?? 'Unknown User';
-
+    final String displayName = (user.name?.trim().isNotEmpty == true)
+        ? user.name!.trim()
+        : (user.mobileNo ?? 'Unknown User');
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
       child: Row(
@@ -285,19 +288,28 @@ class _NewChatScreenState extends State<NewChatScreen> {
         Get.snackbar("Error", "Could not open share menu: $e");
       }
     } else {
+      final int? chatId =
+          user.privateChatId ?? user.chatId ?? user.conversationId;
+
       final memberData = MemberData(
         userId: user.userId,
         name: user.name,
         profileImage: user.profileImage,
+        chatId: chatId,
         groupId: 0,
       );
-
+      log("NEW CHAT USER ID => ${user.userId}");
+      log("NEW CHAT chatId => ${user.chatId}");
+      log("NEW CHAT privateChatId => ${user.privateChatId}");
+      log("NEW CHAT conversationId => ${user.conversationId}");
+      log("NEW CHAT FINAL chatId => $chatId");
       Get.toNamed(
         Routes.chatScreen,
         arguments: {
           "type": "chatScreen",
           "chatType": "private",
           "userData": memberData,
+          "chatId": chatId?.toString(),
         },
       );
     }

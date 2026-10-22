@@ -88,41 +88,20 @@ class ReviewView extends StatelessWidget {
         ),
         SizedBox(height: 12.h),
 
-        // 2. Player Card
-        Container(
-          padding: EdgeInsets.all(12.w),
-          decoration: BoxDecoration(
-            color: AppColors.authIconBgCircle,
-            borderRadius: BorderRadius.circular(18.r),
-          ),
-          child: Obx(() {
-            if (!controller.hasAudioRecording.value) {
-              return Padding(
-                padding: EdgeInsets.symmetric(vertical: 8.h),
-                child: Row(
-                  children: [
-                    const Icon(
-                      Icons.check_rounded,
-                      color: AppColors.primaryDarkblue,
-                      size: 24,
-                    ),
-                    SizedBox(width: 8.w),
-                    Expanded(
-                      child: Text(
-                        "Words converted into message box successfully.",
-                        style: TextStyle(
-                          fontSize: 13.sp,
-                          color: AppColors.darkText,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            }
+        // 2. Player Card (Shown only if audio recording is available, hidden on Android)
+        Obx(() {
+          if (!controller.hasAudioRecording.value) {
+            return const SizedBox.shrink();
+          }
 
-            return Row(
+          return Container(
+            margin: EdgeInsets.only(bottom: 10.h),
+            padding: EdgeInsets.all(12.w),
+            decoration: BoxDecoration(
+              color: AppColors.authIconBgCircle,
+              borderRadius: BorderRadius.circular(18.r),
+            ),
+            child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 // Play / Pause Circle
@@ -171,10 +150,9 @@ class ReviewView extends StatelessWidget {
                   ),
                 ),
               ],
-            );
-          }),
-        ),
-        SizedBox(height: 10.h),
+            ),
+          );
+        }),
 
         // 3. Hint Text
         Text(
