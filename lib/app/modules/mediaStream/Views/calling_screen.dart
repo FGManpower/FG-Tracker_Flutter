@@ -25,8 +25,10 @@ class CallingScreen extends StatelessWidget {
       child: GetBuilder<CallingController>(
         builder: (c) {
           final bool isVideo = c.is_video || c.isVideoCall.value;
+          final bool showLocalInMain =
+              c.isLocalVideoMain && (c.isVideoOn || !c.isRemoteVideoOn);
           final bool mainHasActiveVideo =
-          c.isLocalVideoMain ? c.isVideoOn : c.isRemoteVideoOn;
+          showLocalInMain ? c.isVideoOn : c.isRemoteVideoOn;
 
           return Scaffold(
             backgroundColor: Colors.black,
@@ -41,10 +43,10 @@ class CallingScreen extends StatelessWidget {
                         onTap: c.toggleControls,
                         child: mainHasActiveVideo
                             ? RTCVideoView(
-                          c.isLocalVideoMain
+                          showLocalInMain
                               ? c.localRenderer
                               : c.remoteRenderer,
-                          mirror: c.isLocalVideoMain && c.isFrontCamera,
+                          mirror: showLocalInMain && c.isFrontCamera,
                           objectFit: RTCVideoViewObjectFit
                               .RTCVideoViewObjectFitCover,
                         )
@@ -249,7 +251,8 @@ class CallingScreen extends StatelessWidget {
   }
 
   Widget _videoPip(CallingController c) {
-    final bool showingRemote = c.isLocalVideoMain;
+    final bool showingRemote =
+        c.isLocalVideoMain && (c.isVideoOn || !c.isRemoteVideoOn);
     final bool pipHasActiveVideo =
     showingRemote ? c.isRemoteVideoOn : c.isVideoOn;
 
@@ -476,6 +479,7 @@ class CallingScreen extends StatelessWidget {
     );
   }
 }
+
 
 
 
