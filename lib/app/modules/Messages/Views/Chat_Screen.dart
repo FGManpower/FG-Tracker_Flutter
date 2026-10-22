@@ -50,24 +50,23 @@ class ChatScreen extends GetView<MessageController> {
         backgroundColor: _scaffoldBg,
         resizeToAvoidBottomInset: true,
         appBar: PreferredSize(
-        preferredSize: Size.fromHeight(64.h),
-        child: Obx(() {
-          if (controller.isSearching.value) {
-            return _buildSearchAppBar();
-          }
+          preferredSize: Size.fromHeight(64.h),
+          child: Obx(() {
+            if (controller.isSearching.value) {
+              return _buildSearchAppBar();
+            }
 
-          final isOnline = controller.isPeerOnline.value;
-          final lastSeenText = controller.peerLastSeen.value;
+            final isOnline = controller.isPeerOnline.value;
+            final lastSeenText = controller.peerLastSeen.value;
 
-          return _buildNormalAppBar(
-            context,
-            userData,
-            isOnline,
-            lastSeenText,
-          );
-        }),
-      ),
-
+            return _buildNormalAppBar(
+              context,
+              userData,
+              isOnline,
+              lastSeenText,
+            );
+          }),
+        ),
         body: SafeArea(
           child: Column(
             children: [
@@ -243,7 +242,7 @@ class ChatScreen extends GetView<MessageController> {
                   },
                   onLocationSelected: () async {
                     final location = await Get.to<LocationMessage>(
-                          () => const LocationPickerPage(),
+                      () => const LocationPickerPage(),
                     );
 
                     if (location != null) {
@@ -252,7 +251,7 @@ class ChatScreen extends GetView<MessageController> {
                   },
                   onContactSelected: () async {
                     final contact = await Get.to<ContactMessage>(
-                          () => const ContactPickerPage(),
+                      () => const ContactPickerPage(),
                     );
 
                     if (contact != null) {
@@ -260,7 +259,8 @@ class ChatScreen extends GetView<MessageController> {
                     }
                   },
                 );
-              })            ],
+              })
+            ],
           ),
         ),
       ),
@@ -333,7 +333,8 @@ class ChatScreen extends GetView<MessageController> {
               onTap: () {
                 controller.handleBackPressed(
                   context,
-                  groupID: int.tryParse(userData.groupId?.toString() ?? "0") ?? 0,
+                  groupID:
+                      int.tryParse(userData.groupId?.toString() ?? "0") ?? 0,
                 );
               },
             ),
@@ -357,12 +358,25 @@ class ChatScreen extends GetView<MessageController> {
                         ),
                       ),
                       child: (userData.profileImage != null &&
-                              userData.profileImage.toString().trim().isNotEmpty &&
-                              userData.profileImage.toString().trim().toLowerCase() != 'null')
+                              userData.profileImage
+                                  .toString()
+                                  .trim()
+                                  .isNotEmpty &&
+                              userData.profileImage
+                                      .toString()
+                                      .trim()
+                                      .toLowerCase() !=
+                                  'null')
                           ? ClipOval(
                               child: Image.network(
-                                (userData.profileImage.toString().trim().startsWith('http://') ||
-                                        userData.profileImage.toString().trim().startsWith('https://'))
+                                (userData.profileImage
+                                            .toString()
+                                            .trim()
+                                            .startsWith('http://') ||
+                                        userData.profileImage
+                                            .toString()
+                                            .trim()
+                                            .startsWith('https://'))
                                     ? userData.profileImage.toString().trim()
                                     : "${ConstRes.aImageBaseUrl}${userData.profileImage.toString().trim()}",
                                 fit: BoxFit.cover,
@@ -438,30 +452,26 @@ class ChatScreen extends GetView<MessageController> {
             _roundIconBtn(
               icon: Icons.call_rounded,
               onTap: () {
-
-
-                CallService().startOutGoingCall(
-                    context,
+                CallService().startOutGoingCall(context,
                     callerId:
-                    Global.storageServices.get(PrefConst.userId).toString(),
+                        Global.storageServices.get(PrefConst.userId).toString(),
                     remoteUserId: controller.memberData.userId.toString(),
                     is_video: false,
-                    callerProfile:controller.memberData.profileImage
-                );
+                    callerName: controller.memberData.name.toString(),
+                    callerProfile: controller.memberData.profileImage);
               },
             ),
             SizedBox(width: 6.w),
             _roundIconBtn(
               icon: Icons.videocam_rounded,
               onTap: () {
-                CallService().startOutGoingCall(
-                    context,
+                CallService().startOutGoingCall(context,
                     callerId:
-                    Global.storageServices.get(PrefConst.userId).toString(),
+                        Global.storageServices.get(PrefConst.userId).toString(),
                     remoteUserId: controller.memberData.userId.toString(),
                     is_video: true,
-                    callerProfile:controller.memberData.profileImage
-                );
+                    callerName: controller.memberData.name.toString(),
+                    callerProfile: controller.memberData.profileImage);
               },
             ),
             SizedBox(width: 2.w),
@@ -505,8 +515,7 @@ class ChatScreen extends GetView<MessageController> {
                     return;
                   }
 
-                  final isGroupChat =
-                      (userData.groupId ?? 0) != 0;
+                  final isGroupChat = (userData.groupId ?? 0) != 0;
 
                   if (!isGroupChat) {
                     return;
@@ -525,14 +534,14 @@ class ChatScreen extends GetView<MessageController> {
                     CommonDialog.ConfirmationDialog(
                       title: "Remove Member",
                       content:
-                      "Are you sure you want to remove this member from the group?",
+                          "Are you sure you want to remove this member from the group?",
                       confirm: "Remove",
                       onConfirm: () {
                         groupController.deleteGroupMember(
                           context,
                           groupId: userData.groupId.toString(),
                           groupMemberId:
-                          controller.memberData.userId.toString(),
+                              controller.memberData.userId.toString(),
                           onSuccess: (success) {
                             if (success) {
                               Get.offAllNamed(Routes.Home_Screen);
@@ -544,8 +553,7 @@ class ChatScreen extends GetView<MessageController> {
                   }
                 },
                 itemBuilder: (context) {
-                  final isGroupChat =
-                      (userData.groupId ?? 0) != 0;
+                  final isGroupChat = (userData.groupId ?? 0) != 0;
 
                   return [
                     _buildPopupMenuItem(
@@ -554,7 +562,6 @@ class ChatScreen extends GetView<MessageController> {
                       iconColor: _purple,
                       title: "Search Messages",
                     ),
-
                     _buildPopupMenuItem(
                       value: 1,
                       icon: Icons.delete_outline_rounded,
@@ -562,7 +569,6 @@ class ChatScreen extends GetView<MessageController> {
                       title: "Clear Chat",
                       isDestructive: true,
                     ),
-
                     if (isGroupChat)
                       _buildPopupMenuItem(
                         value: 2,
@@ -570,7 +576,6 @@ class ChatScreen extends GetView<MessageController> {
                         iconColor: _purple,
                         title: "Update Group",
                       ),
-
                     if (isGroupChat)
                       _buildPopupMenuItem(
                         value: 3,
@@ -641,9 +646,6 @@ class ChatScreen extends GetView<MessageController> {
       ),
     );
   }
-
-
-
 
   Widget _buildBlockedMessage() {
     final blockedByMe = controller.blockedByMe.value;

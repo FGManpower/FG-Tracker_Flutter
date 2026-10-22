@@ -17,7 +17,6 @@ class MainApplication : Application() {
     val isMainAppRunning: Boolean
         get() = activeMainActivities > 0
 
-
     private val callkitEventCallback = object : CallkitEventCallback {
         override fun onCallEvent(event: CallkitEventCallback.CallEvent, callData: Bundle) {
             Log.d(
@@ -32,21 +31,12 @@ class MainApplication : Application() {
                 }
 
                 CallkitEventCallback.CallEvent.DECLINE -> {
-                    if (isMainAppRunning) {
-                        Log.d(
-                            TAG,
-                            "Skipping native REST decline — Flutter app is alive; " +
-                                    "Dart socket handles single decline path"
-                        )
-                        return
-                    }
-
                     val callId = extractCallId(callData)
                     val groupId = extractGroupId(callData)
                     Log.d(
                         TAG,
-                        "Terminated-state DECLINE -> forwarding to CallDeclineReceiver " +
-                                "callId=$callId groupId=$groupId"
+                        "DECLINE -> forwarding to CallDeclineReceiver " +
+                                "callId=$callId groupId=$groupId isMainAppRunning=$isMainAppRunning"
                     )
                     CallDeclineReceiver.enqueueDecline(this@MainApplication, callId, groupId)
                 }

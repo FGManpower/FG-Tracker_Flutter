@@ -50,21 +50,17 @@ class _AudiocallScreenState extends State<AudiocallScreen>
 
   @override
   Widget build(BuildContext context) {
-
-    final bool isOutgoing =
-        controller.args["callType"] == "outGoing";
+    final bool isOutgoing = controller.args["callType"] == "outGoing";
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 24.w),
       child: AnimatedBuilder(
         animation: _animationController,
         builder: (context, child) {
-          final double progress =
-              _animationController.value;
+          final double progress = _animationController.value;
 
           return Column(
             children: [
               SizedBox(height: 10.h),
-
               Text(
                 isOutgoing ? "" : "Call From",
                 style: TextStyle(
@@ -73,9 +69,7 @@ class _AudiocallScreenState extends State<AudiocallScreen>
                   fontFamily: FontFamily.interMedium,
                 ),
               ),
-
               SizedBox(height: 6.h),
-
               Text(
                 "${controller.args["callerName"] ?? ""}",
                 textAlign: TextAlign.center,
@@ -86,9 +80,7 @@ class _AudiocallScreenState extends State<AudiocallScreen>
                   fontWeight: FontWeight.w700,
                 ),
               ),
-
               SizedBox(height: 8.h),
-
               Text(
                 controller.formattedDuration == "00:00"
                     ? "${controller.callStatus.value}..."
@@ -100,22 +92,17 @@ class _AudiocallScreenState extends State<AudiocallScreen>
                   fontWeight: FontWeight.w600,
                 ),
               ),
-
               SizedBox(height: 30.h),
-
               _AnimatedAvatar(
-                imageUrl: controller.args['profileImage'] ?? MyAppTheme.notFoundImg,
+                imageUrl:
+                    controller.args['profileImage'] ?? MyAppTheme.notFoundImg,
                 progress: progress,
               ),
-
               SizedBox(height: 35.h),
-
               _AnimatedAudioWave(
                 progress: progress,
               ),
-
               SizedBox(height: 28.h),
-
               const Spacer(),
             ],
           );
@@ -137,10 +124,8 @@ class _AnimatedAvatar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final double outerProgress = progress;
-    final double middleProgress =
-        (progress + 0.25) % 1.0;
-    final double innerProgress =
-        (progress + 0.5) % 1.0;
+    final double middleProgress = (progress + 0.25) % 1.0;
+    final double innerProgress = (progress + 0.5) % 1.0;
 
     return SizedBox(
       width: 270.r,
@@ -154,21 +139,18 @@ class _AnimatedAvatar extends StatelessWidget {
             opacity: 0.14,
             color: const Color(0xFF7B58FF),
           ),
-
           _PulseRing(
             baseSize: 205.r,
             progress: middleProgress,
             opacity: 0.20,
             color: const Color(0xFF8F72FF),
           ),
-
           _PulseRing(
             baseSize: 160.r,
             progress: innerProgress,
             opacity: 0.28,
             color: const Color(0xFFB1A0FF),
           ),
-
           Container(
             width: 128.r,
             height: 128.r,
@@ -177,8 +159,7 @@ class _AnimatedAvatar extends StatelessWidget {
               color: Colors.white,
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF7B58FF)
-                      .withOpacity(0.30),
+                  color: const Color(0xFF7B58FF).withOpacity(0.30),
                   blurRadius: 24,
                   spreadRadius: 5,
                 ),
@@ -187,7 +168,7 @@ class _AnimatedAvatar extends StatelessWidget {
             padding: EdgeInsets.all(4.r),
             child: ClipOval(
               child: Image.network(
-                ConstRes.aImageBaseUrl+imageUrl,
+                ConstRes.aImageBaseUrl + imageUrl,
                 width: 120.r,
                 height: 120.r,
                 fit: BoxFit.cover,
@@ -205,7 +186,6 @@ class _AnimatedAvatar extends StatelessWidget {
               ),
             ),
           ),
-
           Positioned(
             bottom: 4.r,
             right: 36.r,
@@ -221,8 +201,7 @@ class _AnimatedAvatar extends StatelessWidget {
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF7B58FF)
-                        .withOpacity(0.35),
+                    color: const Color(0xFF7B58FF).withOpacity(0.35),
                     blurRadius: 10,
                   ),
                 ],
@@ -255,11 +234,9 @@ class _PulseRing extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final double scale =
-        0.88 + (progress * 0.16);
+    final double scale = 0.88 + (progress * 0.16);
 
-    final double ringOpacity =
-        opacity * (1.0 - (progress * 0.45));
+    final double ringOpacity = opacity * (1.0 - (progress * 0.45));
 
     return Transform.scale(
       scale: scale,
@@ -309,19 +286,14 @@ class _AnimatedAudioWave extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: List.generate(
         baseHeights.length,
-            (index) {
-          final double phase =
-              progress * math.pi * 2 +
-                  index * 0.55;
+        (index) {
+          final double phase = progress * math.pi * 2 + index * 0.55;
 
-          final double wave =
-              (math.sin(phase) + 1) / 2;
+          final double wave = (math.sin(phase) + 1) / 2;
 
-          final double height = baseHeights[index] *
-              (0.65 + wave * 0.55);
+          final double height = baseHeights[index] * (0.65 + wave * 0.55);
 
-          final double opacity =
-              0.55 + wave * 0.45;
+          final double opacity = 0.55 + wave * 0.45;
 
           return AnimatedContainer(
             duration: const Duration(milliseconds: 80),
@@ -331,13 +303,11 @@ class _AnimatedAudioWave extends StatelessWidget {
             width: 4.5.w,
             height: height.h,
             decoration: BoxDecoration(
-              color: const Color(0xFF7B58FF)
-                  .withOpacity(opacity),
+              color: const Color(0xFF7B58FF).withOpacity(opacity),
               borderRadius: BorderRadius.circular(8.r),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF7B58FF)
-                      .withOpacity(0.25),
+                  color: const Color(0xFF7B58FF).withOpacity(0.25),
                   blurRadius: 5,
                   spreadRadius: 1,
                 ),

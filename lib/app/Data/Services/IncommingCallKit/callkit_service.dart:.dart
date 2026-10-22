@@ -25,17 +25,15 @@ class CallKitService {
 
   Map<String, dynamic>? pendingAccept;
 
-
   static final Set<String> _selfEnded = {};
-
 
   static final Set<String> _accepted = {};
 
-
   static final Set<String> _showing = {};
 
-
   static final Map<String, DateTime> _shown = {};
+
+  static final Map<String, String> _uuidByKey = {};
 
   CallActionCallback? onAcceptCall;
   CallActionCallback? onDeclineCall;
@@ -43,6 +41,49 @@ class CallKitService {
   CallActionCallback? onEndCall;
   Future<void> Function(String token)? onVoipToken;
   Future<String?> Function(String callId)? getCallStatus;
+
+  static void _registerUuidMapping({
+    String? uuid,
+    String? sessionId,
+    String? callId,
+  }) {
+    if (uuid == null || uuid.isEmpty) return;
+    _uuidByKey[uuid] = uuid;
+    if (sessionId != null && sessionId.isNotEmpty) {
+      _uuidByKey[sessionId] = uuid;
+    }
+    if (callId != null && callId.isNotEmpty) {
+      _uuidByKey[callId] = uuid;
+    }
+  }
+
+  void _clearPendingAcceptMatching({
+    String? uuid,
+    String? sessionId,
+    String? callId,
+    bool forceAll = false,
+  }) {
+    final p = pendingAccept;
+    if (p == null) return;
+    if (forceAll) {
+      pendingAccept = null;
+      return;
+    }
+    final pUuid = p['uuid']?.toString() ?? '';
+    final pSid = p['sessionId']?.toString() ?? '';
+    final pCid = p['callId']?.toString() ?? '';
+    final matched =
+        (uuid != null && uuid.isNotEmpty && (uuid == pUuid || uuid == pSid)) ||
+            (sessionId != null &&
+                sessionId.isNotEmpty &&
+                (sessionId == pSid || sessionId == pUuid)) ||
+            (callId != null && callId.isNotEmpty && callId == pCid);
+    if (matched) {
+      _ck('Clearing stale pendingAccept for ended/declined call '
+          'callId=$pCid sessionId=$pSid');
+      pendingAccept = null;
+    }
+  }
 
   static dynamic _field(dynamic obj, String key) {
     if (obj == null) return null;
@@ -62,7 +103,6 @@ class CallKitService {
     if (v is Map) return v.map((k, val) => MapEntry(k.toString(), val));
     return <String, dynamic>{};
   }
-
 
   static String _eventName(dynamic e) {
     dynamic raw;
@@ -87,16 +127,15 @@ class CallKitService {
         .toLowerCase();
   }
 
-
   static dynamic _eventBody(dynamic e) {
     final getters = <dynamic Function()>[
-      () => (e as dynamic).body,
-      () => (e as dynamic).data,
-      () => (e as dynamic).args,
-      () => (e as dynamic).arguments,
-      () => (e as dynamic).payload,
-      () => (e as dynamic).toJson(),
-      () => (e as dynamic).toMap(),
+          () => (e as dynamic).body,
+          () => (e as dynamic).data,
+          () => (e as dynamic).args,
+          () => (e as dynamic).arguments,
+          () => (e as dynamic).payload,
+          () => (e as dynamic).toJson(),
+          () => (e as dynamic).toMap(),
     ];
     for (final g in getters) {
       try {
@@ -106,7 +145,6 @@ class CallKitService {
     }
     return null;
   }
-
 
   static Map<String, dynamic> _extractAcceptPayload(dynamic e) {
     final result = <String, dynamic>{
@@ -130,22 +168,28 @@ class CallKitService {
       final ckpExtra = _asMap(_field(ckp, 'extra'));
       if (ckpExtra.isNotEmpty) {
         result['extra'] = ckpExtra;
-        final cid = ckpExtra['callId']?.toString() ?? '';
+        final cid = ckpExtra['callId']?.toString() ??
+            ckpExtra['call_id']?.toString() ??
+            '';
         if (cid.isNotEmpty) result['callId'] = cid;
         final sid = ckpExtra['session_id']?.toString() ??
             ckpExtra['sessionId']?.toString();
         if (sid != null && sid.isNotEmpty) {
           result['sessionId'] = sid;
-          result['uuid'] = sid;
+          result['uuid'] ??= sid;
         }
       }
+      _registerUuidMapping(
+        uuid: result['uuid']?.toString(),
+        sessionId: result['sessionId']?.toString(),
+        callId: result['callId']?.toString(),
+      );
       return result;
     }
 
-
     final body = _asMap(_eventBody(e));
     if (body.isNotEmpty) {
-      final id = body['id']?.toString() ?? body['sessionId']?.toString();
+      final id = body['id']?.toString();
       if (id != null && id.isNotEmpty) {
         result['uuid'] = id;
         result['sessionId'] = id;
@@ -153,15 +197,27 @@ class CallKitService {
       final extra = _asMap(body['extra']);
       if (extra.isNotEmpty) {
         result['extra'] = extra;
-        final cid = extra['callId']?.toString() ?? '';
+        final cid =
+            extra['callId']?.toString() ?? extra['call_id']?.toString() ?? '';
         if (cid.isNotEmpty) result['callId'] = cid;
         final sid =
             extra['session_id']?.toString() ?? extra['sessionId']?.toString();
         if (sid != null && sid.isNotEmpty) {
           result['sessionId'] = sid;
-          result['uuid'] = sid;
+          result['uuid'] ??= sid;
+        }
+      } else {
+        final topSid = body['sessionId']?.toString();
+        if (topSid != null && topSid.isNotEmpty) {
+          result['sessionId'] = topSid;
+          result['uuid'] ??= topSid;
         }
       }
+      _registerUuidMapping(
+        uuid: result['uuid']?.toString(),
+        sessionId: result['sessionId']?.toString(),
+        callId: result['callId']?.toString(),
+      );
     }
     return result;
   }
@@ -175,14 +231,17 @@ class CallKitService {
     }
   }
 
-  static bool _truthy(dynamic v) => v == true || v == 'true' || v == 1;
-
   static Future<bool> _isAccepted(String sessionId) async {
+    final targetUuid = _uuidByKey[sessionId] ?? sessionId;
     try {
       final calls = await FlutterCallkitIncoming.activeCalls();
       if (calls is List) {
         for (final c in calls) {
-          if (_field(c, 'id')?.toString() == sessionId) {
+          final cid = _field(c, 'id')?.toString() ?? '';
+          final extra = _asMap(_field(c, 'extra'));
+          final sid =
+              extra['session_id']?.toString() ?? extra['sessionId']?.toString();
+          if (cid == targetUuid || cid == sessionId || sid == sessionId) {
             return _field(c, 'isAccepted') == true;
           }
         }
@@ -190,7 +249,6 @@ class CallKitService {
     } catch (_) {}
     return false;
   }
-
 
   static dynamic decodeOffer(dynamic compressed) {
     try {
@@ -203,35 +261,50 @@ class CallKitService {
     }
   }
 
-
   Future<void> init() async {
     _ck('init() called, alreadyInited=$_inited');
     if (_inited) return;
     _inited = true;
 
-    try {
-      await FlutterCallkitIncoming.requestNotificationPermission({
-        'title': 'Notification permission',
-        'rationaleMessagePermission': 'Needed to show incoming calls.',
-        'postNotificationMessageRequired': 'Enable notifications in Settings.',
-      });
-      if (Platform.isAndroid) {
-        final ok = await FlutterCallkitIncoming.canUseFullScreenIntent();
-        _ck('canUseFullScreenIntent=$ok');
-        if (ok != true) {
-          await FlutterCallkitIncoming.requestFullIntentPermission();
-        }
-      }
-    } catch (e) {
-      _ck('permission error: $e');
-    }
-
     _sub?.cancel();
     _sub = FlutterCallkitIncoming.onEvent.listen(
-      (dynamic e) => _onEvent(e),
+          (dynamic e) => _onEvent(e),
       onError: (err) => _ck('onEvent stream ERROR: $err'),
     );
     _ck('event listener ATTACHED');
+
+    bool hasActiveCallNow = false;
+    try {
+      final calls = await FlutterCallkitIncoming.activeCalls();
+      if (calls is List && calls.isNotEmpty) {
+        hasActiveCallNow = true;
+      }
+    } catch (_) {}
+
+    await _recoverAcceptedCall();
+
+    unawaited(_postInitBackgroundTasks(skipPermissions: hasActiveCallNow));
+  }
+
+  Future<void> _postInitBackgroundTasks({required bool skipPermissions}) async {
+    if (!skipPermissions) {
+      try {
+        await FlutterCallkitIncoming.requestNotificationPermission({
+          'title': 'Notification permission',
+          'rationaleMessagePermission': 'Needed to show incoming calls.',
+          'postNotificationMessageRequired': 'Enable notifications in Settings.',
+        });
+        if (Platform.isAndroid) {
+          final ok = await FlutterCallkitIncoming.canUseFullScreenIntent();
+          _ck('canUseFullScreenIntent=$ok');
+          if (ok != true) {
+            await FlutterCallkitIncoming.requestFullIntentPermission();
+          }
+        }
+      } catch (e) {
+        _ck('permission error: $e');
+      }
+    }
 
     if (Platform.isIOS) {
       try {
@@ -245,10 +318,8 @@ class CallKitService {
       }
     }
 
-    await _recoverAcceptedCall();
     await restoreActiveCalls();
   }
-
 
   Future<void> _recoverAcceptedCall() async {
     try {
@@ -260,8 +331,12 @@ class CallKitService {
         final uuid = _field(c, 'id')?.toString();
         if (uuid == null || _accepted.contains(uuid)) continue;
         final extra = _asMap(_field(c, 'extra'));
-        final sessionId = extra['session_id']?.toString() ?? uuid;
-        final callId = extra['callId']?.toString() ?? '';
+        final sessionId = extra['session_id']?.toString() ??
+            extra['sessionId']?.toString() ??
+            uuid;
+        final callId =
+            extra['callId']?.toString() ?? extra['call_id']?.toString() ?? '';
+        _registerUuidMapping(uuid: uuid, sessionId: sessionId, callId: callId);
         _accepted.add(uuid);
         _ck('recovered accepted call uuid=$uuid sessionId=$sessionId callId=$callId');
         await _handleAccept(callId, extra, uuid, sessionId: sessionId);
@@ -270,7 +345,6 @@ class CallKitService {
       _ck('_recoverAcceptedCall error: $e');
     }
   }
-
 
   Future<void> markAppReady() async {
     _ck('markAppReady() pendingAccept=$pendingAccept '
@@ -283,6 +357,7 @@ class CallKitService {
       final uuid = p['uuid']?.toString() ?? '';
       final sessionId = p['sessionId']?.toString() ?? uuid;
       _ck('markAppReady -> opening pending accept callId=$callId sessionId=$sessionId');
+      _ck('markAppReadyprofileImage:${p['profileImage']}');
       try {
         await onAcceptCall!(callId, p, uuid);
         _ck('onAcceptCall finished OK');
@@ -292,7 +367,6 @@ class CallKitService {
     }
   }
 
-
   static Future<void> showIncoming({
     required String sessionId,
     String callId = '',
@@ -301,10 +375,7 @@ class CallKitService {
     String avatar = '',
     Map<String, dynamic> extra = const {},
   }) async {
-
-
     final id = sessionId;
-
 
     final last = _shown[id];
     if (_showing.contains(id) ||
@@ -314,6 +385,7 @@ class CallKitService {
     }
     _showing.add(id);
     _shown[id] = DateTime.now();
+    _registerUuidMapping(uuid: id, sessionId: id, callId: callId);
 
     try {
       final active = await FlutterCallkitIncoming.activeCalls();
@@ -353,12 +425,12 @@ class CallKitService {
           incomingCallNotificationChannelName: 'Incoming Call',
           missedCallNotificationChannelName: 'Missed Call',
         ),
-        ios: const IOSParams(
+        ios: IOSParams(
           handleType: 'generic',
-          supportsVideo: true,
+          supportsVideo: isVideo,
           maximumCallGroups: 1,
           maximumCallsPerCallGroup: 1,
-          audioSessionMode: 'default',
+          audioSessionMode: isVideo ? 'videoChat' : 'voiceChat',
           audioSessionActive: true,
           audioSessionPreferredSampleRate: 44100.0,
           audioSessionPreferredIOBufferDuration: 0.005,
@@ -377,22 +449,61 @@ class CallKitService {
     }
   }
 
-
   static Future<void> dismiss(String sessionId) async {
-    final uuid = sessionId;
-    _ck('dismiss uuid=$uuid (sessionId=$sessionId)');
-    _selfEnded.add(uuid);
-    Timer(const Duration(seconds: 10), () => _selfEnded.remove(uuid));
-    _accepted.remove(uuid);
-    _shown.remove(uuid);
+    if (sessionId.isEmpty) return;
+
+    final resolvedUuid = _uuidByKey.remove(sessionId) ?? sessionId;
+    final idsToEnd = <String>{resolvedUuid, sessionId};
+
     try {
-      await FlutterCallkitIncoming.endCall(uuid);
-    } catch (e) {
-      _ck('dismiss error: $e');
+      final calls = await FlutterCallkitIncoming.activeCalls();
+      if (calls is List) {
+        for (final c in calls) {
+          final activeId = _field(c, 'id')?.toString() ?? '';
+          final extra = _asMap(_field(c, 'extra'));
+          final sid = extra['session_id']?.toString() ??
+              extra['sessionId']?.toString() ??
+              '';
+          final cid = extra['callId']?.toString() ??
+              extra['call_id']?.toString() ??
+              '';
+          if (activeId.isNotEmpty &&
+              (activeId == sessionId ||
+                  activeId == resolvedUuid ||
+                  sid == sessionId ||
+                  cid == sessionId)) {
+            idsToEnd.add(activeId);
+          }
+        }
+      }
+    } catch (_) {}
+
+    instance._clearPendingAcceptMatching(
+      uuid: resolvedUuid,
+      sessionId: sessionId,
+      callId: sessionId,
+    );
+
+    _ck('dismiss targets=$idsToEnd (requested=$sessionId)');
+    for (final target in idsToEnd) {
+      if (target.isEmpty) continue;
+      _selfEnded.add(target);
+      Timer(const Duration(seconds: 10), () => _selfEnded.remove(target));
+      _accepted.remove(target);
+      _shown.remove(target);
+      try {
+        await FlutterCallkitIncoming.endCall(target);
+      } catch (e) {
+        _ck('dismiss error for $target: $e');
+      }
     }
   }
 
   static Future<void> dismissAll() async {
+    instance._clearPendingAcceptMatching(forceAll: true);
+    _accepted.clear();
+    _shown.clear();
+    _uuidByKey.clear();
     try {
       await FlutterCallkitIncoming.endAllCalls();
     } catch (e) {
@@ -434,31 +545,30 @@ class CallKitService {
     }
   }
 
-
   static Future<void> setConnected(String sessionId) async {
+    if (sessionId.isEmpty) return;
+    final targetUuid = _uuidByKey[sessionId] ?? sessionId;
     try {
-      await FlutterCallkitIncoming.setCallConnected(sessionId);
+      await FlutterCallkitIncoming.setCallConnected(targetUuid);
     } catch (e) {
       _ck('setCallConnected error: $e');
     }
   }
-
 
   static Future<bool> handlePush(Map<String, dynamic> d) async {
     final screen = d['screen_name']?.toString();
     _ck('handlePush screen=$screen keys=${d.keys.toList()}');
     final cd = decodeCallData(d['callData']);
 
-
     final sessionId = (d['session_id'] ??
-            d['sessionId'] ??
-            cd['session_id'] ??
-            cd['sessionId'] ??
-            '')
+        d['sessionId'] ??
+        cd['session_id'] ??
+        cd['sessionId'] ??
+        '')
         .toString();
     final callId =
-        (cd['callId'] ?? d['callId'] ?? d['call_id'] ?? '').toString();
-    final isVideo = _truthy(cd['isVideo']);
+    (cd['callId'] ?? d['callId'] ?? d['call_id'] ?? '').toString();
+    final isVideo = cd['isVideo'].toString() == "true" ? true : false;
 
     switch (screen) {
       case 'incomingCall':
@@ -482,22 +592,27 @@ class CallKitService {
 
       case 'callEnded':
       case 'groupCallEnded':
-        await dismiss(d['session_id'] ?? d['sessionId'] ?? sessionId);
+        final endTarget =
+        (d['session_id'] ?? d['sessionId'] ?? sessionId).toString();
+        await dismiss(endTarget.isNotEmpty ? endTarget : callId);
         return true;
 
       case 'missedCall':
       case 'missedGroupCall':
-        await markMissed(
-          sessionId: d['session_id'] ?? d['sessionId'] ?? sessionId,
-          callId: callId,
-          callerName: (cd['callerName'] ?? 'Someone').toString(),
-          isVideo: isVideo,
-        );
+        // await markMissed(
+        //   sessionId:
+        //   (d['session_id'] ?? d['sessionId'] ?? sessionId).toString(),
+        //   callId: callId,
+        //   callerName: (cd['callerName'] ?? 'Someone').toString(),
+        //   isVideo: isVideo,
+        // );
         return true;
     }
 
     if (d['signal_type'] == 'endCall') {
-      await dismiss(d['session_id'] ?? d['sessionId'] ?? sessionId);
+      final endTarget =
+      (d['session_id'] ?? d['sessionId'] ?? sessionId).toString();
+      await dismiss(endTarget.isNotEmpty ? endTarget : callId);
       return true;
     }
     return false;
@@ -514,10 +629,10 @@ class CallKitService {
     final m = _asMap(data);
     final cd = decodeCallData(m['callData']);
     final sessionId = (m['session_id'] ??
-            m['sessionId'] ??
-            cd['session_id'] ??
-            cd['sessionId'] ??
-            '')
+        m['sessionId'] ??
+        cd['session_id'] ??
+        cd['sessionId'] ??
+        '')
         .toString();
     final callId = (m['callId'] ?? cd['callId'] ?? '').toString();
     if (sessionId.isEmpty) return;
@@ -525,8 +640,8 @@ class CallKitService {
       sessionId: sessionId,
       callId: callId,
       callerName:
-          (m['caller_name'] ?? cd['callerName'] ?? 'Unknown').toString(),
-      isVideo: _truthy(m['isVideo'] ?? m['is_video'] ?? cd['isVideo']),
+      (m['caller_name'] ?? cd['callerName'] ?? 'Unknown').toString(),
+      isVideo: m['isVideo'].toString() == "true" ? true : false,
       avatar: (m['caller_profile_image'] ?? cd['callerProfileImage'] ?? '')
           .toString(),
       extra: cd.map((k, v) => MapEntry(k, v.toString())),
@@ -536,7 +651,7 @@ class CallKitService {
   late final void Function(dynamic) _hEnded = (data) {
     final m = _asMap(data);
     final sessionId =
-        (m['session_id'] ?? m['sessionId'] ?? m['callId'] ?? '').toString();
+    (m['session_id'] ?? m['sessionId'] ?? m['callId'] ?? '').toString();
     _ck('socket callEnded/endCall sessionId=$sessionId data=$m');
     if (sessionId.isNotEmpty) dismiss(sessionId);
   };
@@ -544,30 +659,35 @@ class CallKitService {
   late final void Function(dynamic) _hMissed = (data) {
     final m = _asMap(data);
     final sessionId =
-        (m['session_id'] ?? m['sessionId'] ?? m['callId'] ?? '').toString();
+    (m['session_id'] ?? m['sessionId'] ?? m['callId'] ?? '').toString();
     _ck('socket missedCall sessionId=$sessionId data=$m');
     if (sessionId.isNotEmpty) dismiss(sessionId);
   };
 
-
   void bindSocket(dynamic socket) {
     if (socket == null) return;
     _ck('bindSocket');
+    const endEvents = [
+      'callEnded',
+      'endCall',
+      'call_ended',
+      'callRejected',
+      'cancelCall',
+    ];
     if (_boundSocket != null) {
       _boundSocket.off('newCall', _hNewCall);
-      for (final ev in ['callEnded', 'endCall', 'call_ended']) {
+      for (final ev in endEvents) {
         _boundSocket.off(ev, _hEnded);
       }
       _boundSocket.off('missedCall', _hMissed);
     }
     _boundSocket = socket;
     socket.on('newCall', _hNewCall);
-    for (final ev in ['callEnded', 'endCall', 'call_ended']) {
+    for (final ev in endEvents) {
       socket.on(ev, _hEnded);
     }
     socket.on('missedCall', _hMissed);
   }
-
 
   void _onEvent(dynamic e) {
     if (e == null) {
@@ -595,6 +715,11 @@ class CallKitService {
 
         case 'actioncalldecline':
           if (uuid != null) _accepted.remove(uuid);
+          _clearPendingAcceptMatching(
+            uuid: uuid,
+            sessionId: sessionId,
+            callId: callId,
+          );
           _ck('DECLINE onDeclineCall=${onDeclineCall != null} '
               'sessionId=$sessionId callId=$callId');
 
@@ -602,18 +727,31 @@ class CallKitService {
           break;
 
         case 'actioncalltimeout':
+          if (uuid != null) _accepted.remove(uuid);
+          _clearPendingAcceptMatching(
+            uuid: uuid,
+            sessionId: sessionId,
+            callId: callId,
+          );
           onTimeoutCall?.call(callId, extra, uuid);
           break;
 
         case 'actioncallended':
-          if (uuid != null && _selfEnded.remove(uuid)) {
+          _clearPendingAcceptMatching(
+            uuid: uuid,
+            sessionId: sessionId,
+            callId: callId,
+          );
+          if ((uuid != null && _selfEnded.remove(uuid)) ||
+              (sessionId.isNotEmpty && _selfEnded.remove(sessionId))) {
             _ck('ENDED ignored (our own dismiss)');
             break;
           }
-          if (uuid != null && _accepted.remove(uuid)) {
-            _ck('ENDED by user from system UI');
-            onEndCall?.call(callId, extra, uuid);
+          if (uuid != null) {
+            _accepted.remove(uuid);
           }
+          _ck('ENDED by user from system UI');
+          onEndCall?.call(callId, extra, uuid);
           break;
 
         case 'actiondidupdatedevicepushtokenvoip':
@@ -630,15 +768,14 @@ class CallKitService {
   }
 
   Future<void> _handleAccept(
-    String callId,
-    Map<String, dynamic> extra,
-    String? uuid, {
-    String? sessionId,
-  }) async {
+      String callId,
+      Map<String, dynamic> extra,
+      String? uuid, {
+        String? sessionId,
+      }) async {
     var resolvedSessionId = sessionId ?? uuid ?? '';
     _ck('_handleAccept callId="$callId" uuid=$uuid sessionId=$resolvedSessionId '
         'appReady=$_appReady onAcceptCall=${onAcceptCall != null}');
-
 
     if (resolvedSessionId.isEmpty || callId.isEmpty) {
       try {
@@ -658,9 +795,14 @@ class CallKitService {
           }
           final fallbackExtra = _asMap(_field(pick, 'extra'));
           extra.addAll(fallbackExtra);
-          final cid = fallbackExtra['callId']?.toString() ?? '';
+          final cid = fallbackExtra['callId']?.toString() ??
+              fallbackExtra['call_id']?.toString() ??
+              '';
           if (cid.isNotEmpty) callId = cid;
-          final sid = fallbackExtra['session_id']?.toString() ?? id ?? '';
+          final sid = fallbackExtra['session_id']?.toString() ??
+              fallbackExtra['sessionId']?.toString() ??
+              id ??
+              '';
           if (sid.isNotEmpty) resolvedSessionId = sid;
         }
       } catch (e) {
@@ -672,6 +814,12 @@ class CallKitService {
       _ck('_handleAccept ABORT: still no sessionId/callId');
       return;
     }
+
+    _registerUuidMapping(
+      uuid: uuid,
+      sessionId: resolvedSessionId,
+      callId: callId,
+    );
 
     final payload = {
       ...extra,
@@ -702,7 +850,7 @@ class CallKitService {
         final extra = _asMap(_field(c, 'extra'));
         final sessionId =
             (extra['session_id'] ?? extra['sessionId'] ?? _field(c, 'id'))
-                    ?.toString() ??
+                ?.toString() ??
                 '';
         final callId = extra['callId']?.toString();
         if (callId == null || callId.isEmpty) continue;

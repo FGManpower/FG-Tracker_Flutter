@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:fgtracker/app/Core/theme/appTheme.dart';
 import 'package:fgtracker/app/routes/app_pages.dart';
 import 'package:flutter/material.dart';
@@ -12,17 +14,20 @@ class CallService {
     dynamic callerName,
     String? callerProfile,
   }) {
+
+    dynamic arg = {
+      "callerId": callerId,
+      "remoteUserId": remoteUserId,
+      "offer": null,
+      "is_video": is_video,
+      "callerName": callerName,
+      "profileImage": callerProfile ?? MyAppTheme.ProfilenotFoundImg,
+      "callType": "outGoing",
+    };
+    log("=========OutGoingCallArgumentDetail:${arg}");
     Get.toNamed(
       Routes.callScreen,
-      arguments: {
-        "callerId": callerId,
-        "remoteUserId": remoteUserId,
-        "offer": null,
-        "is_video": is_video,
-        "callerName": callerName,
-        "callerProfile": callerProfile ?? MyAppTheme.ProfilenotFoundImg,
-        "callType": "outGoing",
-      },
+      arguments:arg
     );
   }
 }
