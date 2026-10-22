@@ -40,7 +40,6 @@ class ContactProfileController extends GetxController {
     return detail.value?.groupId?.toString().trim() ?? '';
   }
 
-  /// participants + joinedMembers merge (duplicate hata ke).
   List<CallParticipant> get participants {
     final CallHistoryDetailData? d = detail.value;
     if (d == null) return [];
@@ -117,6 +116,7 @@ class ContactProfileController extends GetxController {
   void openMessage() {
     if (isGroup) {
       if (_targetGroupId.isEmpty) return;
+
       Get.toNamed(
         Routes.groupChatScreen,
         arguments: {
@@ -125,46 +125,48 @@ class ContactProfileController extends GetxController {
           "groupProfile": groupAvatar,
         },
       );
-    } else {
-      final MemberData? user = contactData;
-
-      if (user == null || user.userId == null) {
-        Utils().fluttertoast("Unable to open chat for this contact");
-        return;
-      }
-
-      log("========== OPEN PRIVATE CHAT FROM PROFILE ==========");
-      log("CURRENT USER ID: ${Global.storageServices.get(PrefConst.userId)}");
-      log("RECEIVER USER ID: ${user.userId}");
-      log("RECEIVER NAME: ${user.name}");
-      log("RECEIVER IMAGE: ${user.profileImage}");
-      log("CHAT ID FROM CONTACT DATA: NOT AVAILABLE IN CURRENT CODE");
-
-      Get.to(
-            () => ChatScreen(),
-        arguments: {
-          "userData": MemberData(
-            userId: user.userId,
-            name: user.name,
-            mobileNo: user.mobileNo,
-            profileImage: user.profileImage,
-            isOnline: user.isOnline,
-            groupId: 0,
-          ),
-          "type": "chatScreen",
-          "chatType": "private",
-          "groupId": 0,
-          "groupName": user.name ?? "Chat",
-        },
-        binding: BindingsBuilder(() {
-          if (!Get.isRegistered<MessageController>()) {
-            Get.put(MessageController());
-            log("MessageController CREATED");
-          } else {
-            log("MessageController ALREADY REGISTERED");
-          }
-        }),
-      );
+      return;
     }
-  }
-}
+
+    final MemberData? user = contactData;
+
+    if (user == null || user.userId == null) {
+      Utils().fluttertoast("Unable to open chat for this contact");
+      return;
+    }
+
+    final d = detail.value;
+
+    final int? chatId = user.chatId ?? detail.value?.chatId;
+    log("PROFILE USER ID => ${user.userId}");
+    log("PROFILE CHAT ID => ${user.chatId}");
+    log("CHAT ID ARGUMENT => ${chatId?.toString()}");
+
+    Get.to(
+          () => ChatScreen(),
+      arguments: {
+        "userData": MemberData(
+          userId: user.userId,
+          name: user.name,
+          mobileNo: user.mobileNo,
+          profileImage: user.profileImage,
+          isOnline: user.isOnline,
+          chatId: chatId,
+          groupId: 0,
+        ),
+        "type": "chatScreen",
+        "chatType": "private",
+        "chatId": chatId?.toString(),
+        "groupId": 0,
+        "groupName": user.name ?? "Chat",
+      },
+      binding: BindingsBuilder(() {
+        if (!Get.isRegistered<MessageController>()) {
+          Get.put(MessageController());
+          log("MessageController CREATED");
+        } else {
+          log("MessageController ALREADY REGISTERED");
+        }
+      }),
+    );
+  }}

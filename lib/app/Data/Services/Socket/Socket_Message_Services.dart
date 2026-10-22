@@ -360,12 +360,8 @@ class SocketMessageService extends GetxService {
       },
     );
 
-    // Register receive_message immediately after socket creation,
-    // before connection and join events can arrive.
-    receivePrivateMessage(
-      senderId: userId,
-      receiverId: receiverId,
-    );
+
+
 
 
     _privateChatSocket?.onConnect((_) {
