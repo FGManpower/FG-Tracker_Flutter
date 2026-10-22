@@ -195,6 +195,7 @@ class _CallRecentCallsTabState extends State<CallRecentCallsTab> {
                             call: entry.value[i],
                             onAvatarTap: () => _openProfile(entry.value[i]),
                             onCallTap: (type) {
+                              print("========EntryValue:${ entry.value[i]}");
                               final isGroup =
                                   entry.value[i]['isGroup'] == 'true';
                               final bool isVideo = type == "video";
@@ -224,7 +225,7 @@ class _CallRecentCallsTabState extends State<CallRecentCallsTab> {
                                         'User';
 
                                 final profileImage =
-                                    entry.value[i]['profileImage']?.toString() ??
+                                    entry.value[i]['avatar']?.toString() ??
                                         'User';
 
                                 if (remoteId.isNotEmpty &&

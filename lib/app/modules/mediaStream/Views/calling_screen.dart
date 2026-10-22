@@ -25,6 +25,8 @@ class CallingScreen extends StatelessWidget {
       child: GetBuilder<CallingController>(
         builder: (c) {
           final bool isVideo = c.is_video || c.isVideoCall.value;
+          final bool mainHasActiveVideo =
+          c.isLocalVideoMain ? c.isVideoOn : c.isRemoteVideoOn;
 
           return Scaffold(
             backgroundColor: Colors.black,
@@ -33,14 +35,50 @@ class CallingScreen extends StatelessWidget {
               children: [
                 if (isVideo)
                   Positioned.fill(
-                    child: GestureDetector(
-                      behavior: HitTestBehavior.opaque,
-                      onTap: c.toggleControls,
-                      child: RTCVideoView(
-                        c.isLocalVideoMain ? c.localRenderer : c.remoteRenderer,
-                        mirror: c.isLocalVideoMain && c.isFrontCamera,
-                        objectFit:
-                            RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
+                    child: RepaintBoundary(
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: c.toggleControls,
+                        child: mainHasActiveVideo
+                            ? RTCVideoView(
+                          c.isLocalVideoMain
+                              ? c.localRenderer
+                              : c.remoteRenderer,
+                          mirror: c.isLocalVideoMain && c.isFrontCamera,
+                          objectFit: RTCVideoViewObjectFit
+                              .RTCVideoViewObjectFitCover,
+                        )
+                            : Container(
+                          color: const Color(0xFF12131F),
+                          alignment: Alignment.center,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                width: 84.r,
+                                height: 84.r,
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.10),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(
+                                  Icons.videocam_off_rounded,
+                                  color: Colors.white60,
+                                  size: 38.sp,
+                                ),
+                              ),
+                              SizedBox(height: 12.h),
+                              Text(
+                                "Camera Off",
+                                style: TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 15.sp,
+                                  fontFamily: FontFamily.interMedium,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
                     ),
                   )
@@ -94,22 +132,17 @@ class CallingScreen extends StatelessWidget {
                     ),
                   ),
                 ],
-                if (isVideo)
-                  Positioned.fill(
-                    child: DraggableVideoPip(
-                      controller: c,
-                      child: _videoPip(c),
-                    ),
-                  ),
                 SafeArea(
                   child: Padding(
                     padding: EdgeInsets.only(top: 12.h),
                     child: Column(
                       children: [
                         if (isVideo)
-                          _buildTopInfo(
-                            c,
-                            isVideo: true,
+                          IgnorePointer(
+                            child: _buildTopInfo(
+                              c,
+                              isVideo: true,
+                            ),
                           ),
                         if (!isVideo)
                           Expanded(
@@ -119,13 +152,11 @@ class CallingScreen extends StatelessWidget {
                           const Spacer(),
                         Obx(() {
                           if (!c.areControlsVisible.value &&
-                              c.is_video == true) {
+                              (c.is_video || c.isVideoCall.value)) {
                             return const SizedBox.shrink();
                           }
 
-                          return GestureDetector(
-                            behavior: HitTestBehavior.opaque,
-                            onTap: c.showControlsTemporarily,
+                          return RepaintBoundary(
                             child: Padding(
                               padding: EdgeInsets.fromLTRB(
                                 18.w,
@@ -133,10 +164,14 @@ class CallingScreen extends StatelessWidget {
                                 18.w,
                                 22.h,
                               ),
-                              child: _bottomControls(
-                                context,
-                                c,
-                                isVideo: isVideo,
+                              child: GestureDetector(
+                                behavior: HitTestBehavior.opaque,
+                                onTap: c.showControlsTemporarily,
+                                child: _bottomControls(
+                                  context,
+                                  c,
+                                  isVideo: isVideo,
+                                ),
                               ),
                             ),
                           );
@@ -145,6 +180,15 @@ class CallingScreen extends StatelessWidget {
                     ),
                   ),
                 ),
+                if (isVideo)
+                  Positioned.fill(
+                    child: DraggableVideoPip(
+                      controller: c,
+                      child: RepaintBoundary(
+                        child: _videoPip(c),
+                      ),
+                    ),
+                  ),
               ],
             ),
           );
@@ -154,13 +198,13 @@ class CallingScreen extends StatelessWidget {
   }
 
   Widget _buildTopInfo(
-    CallingController c, {
-    required bool isVideo,
-  }) {
+      CallingController c, {
+        required bool isVideo,
+      }) {
     final Color textColor = isVideo ? Colors.white : AppColors.darkText;
 
     final Color subColor =
-        isVideo ? Colors.white70 : AppColors.primaryPurple.withOpacity(0.9);
+    isVideo ? Colors.white70 : AppColors.primaryPurple.withOpacity(0.9);
 
     final bool isOutgoing = c.args["callType"] == "outGoing";
 
@@ -186,101 +230,120 @@ class CallingScreen extends StatelessWidget {
           ),
         ),
         SizedBox(height: 6.h),
-        Text(
-          c.formattedDuration == "00:00"
-              ? "${c.callStatus.value}..."
-              : c.formattedDuration,
-          style: TextStyle(
-            color: subColor,
-            fontSize: 14.sp,
-            fontFamily: FontFamily.interMedium,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
+        Obx(() {
+          final String dur = c.formattedDuration;
+          final String statusText =
+          dur == "00:00" ? "${c.callStatus.value}..." : dur;
+          return Text(
+            statusText,
+            style: TextStyle(
+              color: subColor,
+              fontSize: 14.sp,
+              fontFamily: FontFamily.interMedium,
+              fontWeight: FontWeight.w600,
+            ),
+          );
+        }),
       ],
     );
   }
 
   Widget _videoPip(CallingController c) {
     final bool showingRemote = c.isLocalVideoMain;
+    final bool pipHasActiveVideo =
+    showingRemote ? c.isRemoteVideoOn : c.isVideoOn;
 
-    return GestureDetector(
-      onTap: () {
-        c.toggleVideoViews();
-        c.showControlsTemporarily();
-      },
+    return SizedBox(
+      width: 110.w,
+      height: 150.h,
       child: Stack(
         children: [
-          Container(
-            width: 110.w,
-            height: 150.h,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(14.r),
-              border: Border.all(
-                color: Colors.white.withOpacity(0.85),
-                width: 2,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.25),
-                  blurRadius: 12,
-                  offset: const Offset(0, 6),
-                ),
-              ],
-            ),
-            clipBehavior: Clip.antiAlias,
-            child: showingRemote
-                ? RTCVideoView(
-                    c.remoteRenderer,
-                    objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
-                  )
-                : c.isVideoOn
-                    ? RTCVideoView(
-                        c.localRenderer,
-                        mirror: c.isFrontCamera,
-                        objectFit:
-                            RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
-                      )
-                    : Container(
-                        color: const Color(0xFF1A1A2E),
-                        child: Icon(
-                          Icons.videocam_off,
-                          color: Colors.white54,
-                          size: 32.sp,
-                        ),
-                      ),
-          ),
-          Positioned(
-            top: 6.h,
-            right: 6.w,
+          Positioned.fill(
             child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
               onTap: () {
-                c.switchCamera();
+                c.toggleVideoViews();
+                c.showControlsTemporarily();
               },
               child: Container(
-                padding: EdgeInsets.all(6.r),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.92),
-                  shape: BoxShape.circle,
+                  borderRadius: BorderRadius.circular(14.r),
+                  border: Border.all(
+                    color: Colors.white.withOpacity(0.85),
+                    width: 2,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.25),
+                      blurRadius: 12,
+                      offset: const Offset(0, 6),
+                    ),
+                  ],
                 ),
-                child: Icon(
-                  Icons.cameraswitch_rounded,
-                  size: 16.sp,
-                  color: AppColors.primaryPurple,
+                clipBehavior: Clip.antiAlias,
+                child: pipHasActiveVideo
+                    ? RTCVideoView(
+                  showingRemote ? c.remoteRenderer : c.localRenderer,
+                  mirror: !showingRemote && c.isFrontCamera,
+                  objectFit:
+                  RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
+                )
+                    : Container(
+                  color: const Color(0xFF1A1A2E),
+                  child: Icon(
+                    Icons.videocam_off,
+                    color: Colors.white54,
+                    size: 32.sp,
+                  ),
                 ),
               ),
             ),
           ),
+          if (!showingRemote && c.isVideoOn)
+            Positioned(
+              top: 0,
+              right: 0,
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: c.switchCamera,
+                child: Container(
+                  width: 44.r,
+                  height: 44.r,
+                  alignment: Alignment.topRight,
+                  padding: EdgeInsets.only(top: 6.h, right: 6.w),
+                  color: Colors.transparent,
+                  child: Container(
+                    padding: EdgeInsets.all(7.r),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.92),
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.18),
+                          blurRadius: 6,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Icon(
+                      Icons.cameraswitch_rounded,
+                      size: 17.sp,
+                      color: AppColors.primaryPurple,
+                    ),
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
     );
   }
 
   Widget _bottomControls(
-    BuildContext context,
-    CallingController c, {
-    required bool isVideo,
-  }) {
+      BuildContext context,
+      CallingController c, {
+        required bool isVideo,
+      }) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(28.r),
       child: BackdropFilter(
@@ -413,3 +476,6 @@ class CallingScreen extends StatelessWidget {
     );
   }
 }
+
+
+

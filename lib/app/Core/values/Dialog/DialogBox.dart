@@ -1293,7 +1293,7 @@ class DialogBox {
                                         CallService().startOutGoingCall(ctx,
                                             callerId: currentUserId,
                                             remoteUserId:  (effectiveUserId ?? "").toString(),
-                                            is_video: true,
+                                            is_video: false,
                                             callerName: displayName,
                                             callerProfile: imageUrl);
                                       },
@@ -1353,6 +1353,8 @@ class DialogBox {
                                       ),
                                     ),
                                     SizedBox(height: 14.h),
+
+
                                     GestureDetector(
                                       onTap: () {
                                         Navigator.pop(ctx);
