@@ -1,10 +1,13 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:audio_session/audio_session.dart';
 import 'package:fgtracker/app/modules/Messages/Controller/MessageController.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:record/record.dart';
 import 'package:speech_to_text/speech_recognition_error.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
@@ -26,6 +29,10 @@ enum VoiceTypingContext {
 class VoiceTypingController extends GetxController with WidgetsBindingObserver {
   final TextEditingController textController;
   final FocusNode focusNode;
+
+  void _vtLog(String message) {
+    if (kDebugMode) debugPrint('[VT] $message');
+  }
 
   VoiceTypingController({
     required this.textController,
@@ -103,7 +110,7 @@ class VoiceTypingController extends GetxController with WidgetsBindingObserver {
   }
 
   String get languageLabel =>
-      currentLocale.value.toLowerCase().startsWith("hi") ? "HI-IN" : "EN-IN";
+      currentLocale.value.toLowerCase().startsWith("hi") ? "HI" : "EN";
 
   String get formattedListeningTimer {
     final minutes = (listeningSeconds.value ~/ 60).toString().padLeft(2, '0');
@@ -176,7 +183,12 @@ class VoiceTypingController extends GetxController with WidgetsBindingObserver {
     _sessionAddedText = "";
     soundLevel.value = 0.0;
 
-    debugPrint("[VoiceTyping] startListening called");
+    _vtLog("startListening() called");
+
+    // Permission status check
+    final micPerm = await Permission.microphone.status;
+    final speechPerm = await Permission.speech.status;
+    _vtLog("Permissions -> mic: $micPerm, speech: $speechPerm");
 
     // 1. Initialize Speech Recognizer if not yet initialized
     if (!_isSpeechInitialized) {
@@ -185,35 +197,70 @@ class VoiceTypingController extends GetxController with WidgetsBindingObserver {
           onStatus: _handleSpeechStatus,
           onError: _handleSpeechError,
           debugLogging: true,
+          options: [
+            SpeechConfigOption('android', 'noBluetooth', true),
+          ],
         );
-        debugPrint("[VoiceTyping] _speechToText initialized: $_isSpeechInitialized");
+        _vtLog("speech.initialize() result: $_isSpeechInitialized");
 
         final sysLocale = await _speechToText.systemLocale();
-        debugPrint("[VoiceTyping] System locale: ${sysLocale?.localeId}");
+        _vtLog("System locale: ${sysLocale?.localeId}");
+        if (sysLocale != null &&
+            sysLocale.localeId.isNotEmpty &&
+            !currentLocale.value.toLowerCase().startsWith("hi")) {
+          currentLocale.value = sysLocale.localeId;
+        }
         
         final availableLocales = await _speechToText.locales();
-        debugPrint("[VoiceTyping] Available locales count: ${availableLocales.length}");
+        _vtLog("speech.locales() [${availableLocales.length}]: ${availableLocales.map((l) => l.localeId).toList()}");
       } catch (e) {
-        debugPrint("[VoiceTyping] initialize error: $e");
+        _vtLog("speech.initialize() exception: $e");
         _isSpeechInitialized = false;
       }
     }
 
     if (!_isSpeechInitialized) {
-      errorMessage.value = "Speech recognition is not available on this device.";
+      errorMessage.value = "Voice typing isn't available on this device.";
       sheetState.value = VoiceSheetState.error;
       return;
     }
 
-    // 2. Start Concurrent Local Audio Recording for replay
-    await _startLocalRecording();
+    // 1.1 Ensure Android hardware is in MODE_NORMAL for SpeechRecognizer
+    if (Platform.isAndroid) {
+      try {
+        final am = AndroidAudioManager();
+        await am.setMode(AndroidAudioHardwareMode.normal);
+      } catch (e) {
+        _vtLog("Audio mode reset: $e");
+      }
+    }
+
+    // Ensure any leftover recognizer is cancelled before starting new
+    if (_speechToText.isListening) {
+      try {
+        await _speechToText.cancel();
+        await Future.delayed(const Duration(milliseconds: 200));
+      } catch (_) {}
+    }
+
+    // 2. Start Concurrent Local Audio Recording for replay (iOS only; Android mic cannot be shared)
+    if (!Platform.isAndroid) {
+      await _startLocalRecording();
+    } else {
+      hasAudioRecording.value = false;
+      _recordingPath = null;
+    }
+
+    // Check if recorder / audio player is active while recognition starts
+    final isRecorderRecording = await _audioRecorder.isRecording();
+    _vtLog("During recognition start -> AudioRecorder.isRecording: $isRecorderRecording, AudioPlayer.playing: ${_audioPlayer.playing}");
 
     // 3. Start Duration Timer
     _durationTimer?.cancel();
     _durationTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       listeningSeconds.value++;
       if (listeningSeconds.value >= 60) {
-        debugPrint("[VoiceTyping] 60s timeout reached");
+        _vtLog("60s duration timeout reached -> stopping listening");
         stopListening();
       }
     });
@@ -234,19 +281,20 @@ class VoiceTypingController extends GetxController with WidgetsBindingObserver {
         }
       }
     } catch (_) {}
-    debugPrint("[VoiceTyping] Listening with locale: $targetLocale");
+    _vtLog("localeId passed to listen(): $targetLocale");
 
     // 5. Start Listening with Speech Recognizer
     try {
       await _speechToText.listen(
         onResult: _handleSpeechResult,
         onSoundLevelChange: (level) {
+          _vtLog("onSoundLevelChange: level=$level");
           if (_isDisposed || sheetState.value != VoiceSheetState.listening) return;
           final normalized = ((level + 2.0) / 10.0).clamp(0.0, 1.0);
           soundLevel.value = normalized;
         },
         listenOptions: SpeechListenOptions(
-          listenMode: ListenMode.dictation,
+          listenMode: ListenMode.deviceDefault,
           cancelOnError: false,
           partialResults: true,
           autoPunctuation: true,
@@ -255,14 +303,19 @@ class VoiceTypingController extends GetxController with WidgetsBindingObserver {
           pauseFor: const Duration(seconds: 5),
         ),
       );
-      debugPrint("[VoiceTyping] _speechToText.listen started successfully");
+      _vtLog("speech.listen() started successfully");
     } catch (e) {
-      debugPrint("[VoiceTyping] listen exception: $e");
+      _vtLog("speech.listen() exception: $e");
       stopListening();
     }
   }
 
   Future<void> _startLocalRecording() async {
+    if (Platform.isAndroid) {
+      hasAudioRecording.value = false;
+      _recordingPath = null;
+      return;
+    }
     try {
       final dir = await getTemporaryDirectory();
       _recordingPath =
@@ -277,17 +330,16 @@ class VoiceTypingController extends GetxController with WidgetsBindingObserver {
         path: _recordingPath!,
       );
       hasAudioRecording.value = true;
-      debugPrint("[VoiceTyping] _audioRecorder started successfully: $_recordingPath");
+      _vtLog("_audioRecorder started successfully: $_recordingPath");
     } catch (e) {
-      debugPrint("[VoiceTyping] _audioRecorder start failed: $e");
-      // Hardware mic concurrency restriction on specific Android devices
+      _vtLog("_audioRecorder start failed: $e");
       hasAudioRecording.value = false;
       _recordingPath = null;
     }
   }
 
   void _handleSpeechResult(SpeechRecognitionResult result) {
-    debugPrint("[VoiceTyping] _handleSpeechResult: ${result.recognizedWords} (final: ${result.finalResult})");
+    _vtLog("onResult -> recognizedWords: '${result.recognizedWords}', finalResult: ${result.finalResult}, confidence: ${result.confidence}");
     if (_isDisposed || sheetState.value != VoiceSheetState.listening) return;
 
     final words = result.recognizedWords.trim();
@@ -319,32 +371,50 @@ class VoiceTypingController extends GetxController with WidgetsBindingObserver {
     // Auto-stop after ~4 seconds of silence once speech has been recognized
     _silenceTimer = Timer(const Duration(milliseconds: 4000), () {
       if (sheetState.value == VoiceSheetState.listening) {
-        debugPrint("[VoiceTyping] Silence timer triggered stopListening");
+        _vtLog("Silence timer triggered stopListening()");
         stopListening();
       }
     });
   }
 
   void _handleSpeechStatus(String status) {
-    debugPrint("[VoiceTyping] Speech status changed: $status");
+    _vtLog("onStatus: $status");
     if (_isDisposed) return;
-    if (status == "done" || status == "notListening") {
-      if (sheetState.value == VoiceSheetState.listening) {
-        debugPrint("[VoiceTyping] Status is $status, stopping listening");
-        stopListening();
-      }
-    }
+    // Allow user to continue speaking naturally without premature kill
   }
 
   void _handleSpeechError(SpeechRecognitionError error) {
-    debugPrint("[VoiceTyping] Speech error occurred: errorMsg=${error.errorMsg}, permanent=${error.permanent}");
+    _vtLog("onError: errorMsg=${error.errorMsg}, permanent=${error.permanent}");
     if (_isDisposed) return;
+    if (error.errorMsg == "error_language_unavailable") {
+      _vtLog("Language unavailable -> falling back to system locale");
+      _speechToText.systemLocale().then((sys) {
+        if (sys != null && currentLocale.value != sys.localeId) {
+          currentLocale.value = sys.localeId;
+          Future.delayed(const Duration(milliseconds: 250), () {
+            if (_isDisposed || sheetState.value != VoiceSheetState.listening) return;
+            startListening();
+          });
+        } else {
+          _showNoSpeech();
+        }
+      });
+      return;
+    }
     if (error.errorMsg == "error_no_match" || error.errorMsg == "error_speech_timeout") {
-      if (_sessionAddedText.isEmpty) {
-        debugPrint("[VoiceTyping] No text added yet -> showing noSpeech view");
-        _showNoSpeech();
-      } else {
+      // If user is still in listening session and under 15 seconds, keep mic alive
+      if (sheetState.value == VoiceSheetState.listening &&
+          listeningSeconds.value < 15 &&
+          _sessionAddedText.trim().isEmpty) {
+        _vtLog("Brief silence timeout -> seamless restart listening");
+        Future.delayed(const Duration(milliseconds: 250), () {
+          if (_isDisposed || sheetState.value != VoiceSheetState.listening) return;
+          startListening();
+        });
+      } else if (_sessionAddedText.trim().isNotEmpty) {
         stopListening();
+      } else {
+        _showNoSpeech();
       }
     } else {
       // Generic or network error
@@ -372,6 +442,9 @@ class VoiceTypingController extends GetxController with WidgetsBindingObserver {
     try {
       await _speechToText.stop();
     } catch (_) {}
+
+    // Wait 350ms to allow Google SpeechRecognizer to deliver pending final words
+    await Future.delayed(const Duration(milliseconds: 350));
 
     String? savedAudioPath;
     try {
@@ -422,14 +495,20 @@ class VoiceTypingController extends GetxController with WidgetsBindingObserver {
   }
 
   Future<void> toggleLanguage() async {
-    final newLocale = currentLocale.value.startsWith("hi") ? "en_IN" : "hi_IN";
-    currentLocale.value = newLocale;
+    final isHindi = currentLocale.value.toLowerCase().startsWith("hi");
+    if (isHindi) {
+      final sys = await _speechToText.systemLocale();
+      currentLocale.value = sys?.localeId ?? "en_GB";
+    } else {
+      currentLocale.value = "hi_IN";
+    }
 
     // If currently listening, restart with the new language
     if (sheetState.value == VoiceSheetState.listening) {
-      await _speechToText.stop();
+      await _speechToText.cancel();
       _durationTimer?.cancel();
       _silenceTimer?.cancel();
+      await Future.delayed(const Duration(milliseconds: 300));
       await startListening();
     }
   }
@@ -460,6 +539,9 @@ class VoiceTypingController extends GetxController with WidgetsBindingObserver {
 
   // Action: Cancel (from Listening)
   Future<void> cancelListening() async {
+    try {
+      await _speechToText.cancel();
+    } catch (_) {}
     _cleanUpAfterStop();
     _revertAddedText();
   }

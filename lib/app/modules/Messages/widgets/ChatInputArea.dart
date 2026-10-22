@@ -19,7 +19,9 @@ import 'package:waveform_flutter/waveform_flutter.dart';
 import '../../../Model/GetMessage.dart';
 import '../Controller/MessageController.dart';
 import 'message_Widgets.dart';
-import 'package:fgtracker/features/voice_typing/voice_typing_mic_button.dart';
+import 'package:fgtracker/app/Core/values/colors.dart';
+import 'package:fgtracker/features/voice_input/voice_input_controller.dart';
+import 'package:fgtracker/features/voice_input/voice_input_sheet.dart';
 
 class ChatInputArea extends StatefulWidget {
   final RxString messageText;
@@ -44,7 +46,6 @@ class ChatInputArea extends StatefulWidget {
   RxList<LocationData>? groupMembers;
   final RxSet<int> uploadingVideoIndexes;
   final RxMap<int, double> videoUploadProgress;
-
 
   ChatInputArea({
     super.key,
@@ -78,6 +79,7 @@ class ChatInputArea extends StatefulWidget {
 
 class _ChatInputAreaState extends State<ChatInputArea> {
   final voiceController = Get.put(VoiceRecordController());
+  final voiceInputController = Get.put(VoiceInputController());
   MessageData? _lastEditingMessage;
   late final FocusNode focusNode;
 
@@ -93,6 +95,9 @@ class _ChatInputAreaState extends State<ChatInputArea> {
       if (focusNode.hasFocus) {
         widget.messageController?.showEmoji.value = false;
         widget.groupMessageController?.showEmoji.value = false;
+        if (voiceInputController.isInlinePanelActive) {
+          voiceInputController.closeInlinePanel();
+        }
       }
     });
   }
@@ -127,7 +132,8 @@ class _ChatInputAreaState extends State<ChatInputArea> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Obx(() {
-        final isMessageNotEmpty = widget.messageText.value.trim().isNotEmpty;
+        final isMessageNotEmpty = widget.messageText.value.trim().isNotEmpty ||
+            widget.textController.text.trim().isNotEmpty;
         final editingMessage = widget.messageController?.editingMessage.value ??
             widget.groupMessageController?.editingMessage.value;
 
@@ -157,10 +163,23 @@ class _ChatInputAreaState extends State<ChatInputArea> {
         final isImageSelected = widget.imagePath.value.isNotEmpty;
         final isVideoSelected = widget.videoPaths.value.isNotEmpty;
         final isDocumentSelected = widget.documentPath.value.isNotEmpty;
+        final hasAttachment =
+            isImageSelected || isVideoSelected || isDocumentSelected;
+        final isReplying = widget.messageController?.replyMessage.value != null;
+        final currentVoiceContextType = hasAttachment
+            ? VoiceContextType.caption
+            : (isReplying ? VoiceContextType.reply : VoiceContextType.normal);
+
+        final hasRecordedAudio =
+            voiceInputController.recordedAudioPath.value.isNotEmpty;
         final shouldShowSend = isMessageNotEmpty ||
             isImageSelected ||
             isVideoSelected ||
-            isDocumentSelected;
+            isDocumentSelected ||
+            hasRecordedAudio;
+
+        final showSideBySideMic =
+            hasAttachment && !isMessageNotEmpty && !hasRecordedAudio;
 
         return Column(
           mainAxisSize: MainAxisSize.min,
@@ -326,6 +345,12 @@ class _ChatInputAreaState extends State<ChatInputArea> {
                                     );
                                   }
                                 },
+                                onTap: () {
+                                  if (voiceInputController
+                                      .isInlinePanelActive) {
+                                    voiceInputController.closeInlinePanel();
+                                  }
+                                },
                                 style: TextStyle(
                                   color: Colors.black87,
                                   fontFamily: FontFamily.interMedium,
@@ -334,7 +359,11 @@ class _ChatInputAreaState extends State<ChatInputArea> {
                                 maxLines: 5,
                                 minLines: 1,
                                 decoration: InputDecoration(
-                                  hintText: "Type a message...",
+                                  hintText: hasAttachment
+                                      ? "Add a caption..."
+                                      : (isReplying
+                                          ? "Reply to message..."
+                                          : "Type a message..."),
                                   hintStyle: TextStyle(
                                     color: Colors.grey.shade700,
                                     fontSize: 14.sp,
@@ -354,11 +383,6 @@ class _ChatInputAreaState extends State<ChatInputArea> {
                                   suffixIcon: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      if (widget.messageController != null)
-                                        VoiceTypingMicButton(
-                                          textController: widget.textController,
-                                          focusNode: focusNode,
-                                        ),
                                       GestureDetector(
                                         onTap: () {
                                           final isGroupAdmin = widget
@@ -391,7 +415,8 @@ class _ChatInputAreaState extends State<ChatInputArea> {
                                                     .split('.')
                                                     .last
                                                     .toLowerCase();
-                                                if (videoExtensions.contains(ext)) {
+                                                if (videoExtensions
+                                                    .contains(ext)) {
                                                   videos.add(file.path);
                                                 } else {
                                                   images.add(File(file.path));
@@ -416,9 +441,11 @@ class _ChatInputAreaState extends State<ChatInputArea> {
                                             onCamera: () {
                                               Navigator.pop(context);
                                               WidgetsBinding.instance
-                                                  .addPostFrameCallback((_) async {
-                                                final result = await Get.toNamed(
-                                                    Routes.cameraScreen);
+                                                  .addPostFrameCallback(
+                                                      (_) async {
+                                                final result =
+                                                    await Get.toNamed(
+                                                        Routes.cameraScreen);
                                                 if (result != null &&
                                                     result is String &&
                                                     result.isNotEmpty) {
@@ -436,8 +463,8 @@ class _ChatInputAreaState extends State<ChatInputArea> {
                                                   ];
                                                   if (videoExtensions
                                                       .contains(ext)) {
-                                                    widget
-                                                        .onVideosSelected([result]);
+                                                    widget.onVideosSelected(
+                                                        [result]);
                                                   } else {
                                                     widget.onImageSelected(
                                                         [File(result)]);
@@ -493,14 +520,55 @@ class _ChatInputAreaState extends State<ChatInputArea> {
                           ),
                         ),
                         SizedBox(width: 8.w),
+                        if (showSideBySideMic &&
+                            !voiceController.isRecording.value)
+                          Padding(
+                            padding: EdgeInsets.only(bottom: 2.h, right: 8.w),
+                            child: GestureDetector(
+                              onTap: () {
+                                focusNode.unfocus();
+                                VoiceInputSheet.show(
+                                  context: context,
+                                  textController: widget.textController,
+                                  focusNode: focusNode,
+                                  messageText: widget.messageText,
+                                  onSend: widget.onSend,
+                                  onVoiceSend: widget.onVoiceSend,
+                                  type: currentVoiceContextType,
+                                );
+                              },
+                              child: CircleAvatar(
+                                radius: 24.r,
+                                backgroundColor: AppColors.primaryDarkblue,
+                                child: Icon(
+                                  Icons.mic_none_rounded,
+                                  color: Colors.white,
+                                  size: 24.sp,
+                                ),
+                              ),
+                            ),
+                          ),
                         if (shouldShowSend &&
                             !voiceController.isRecording.value)
                           Padding(
                             padding: EdgeInsets.only(bottom: 2.h),
                             child: GestureDetector(
-                              onTap: widget.isSending.value
+                              onTap: (widget.isSending.value ||
+                                      voiceInputController
+                                          .isBusyListeningOrRecording)
                                   ? null
                                   : () {
+                                      if (hasRecordedAudio &&
+                                          widget.onVoiceSend != null) {
+                                        final audioPath = voiceInputController
+                                            .consumeRecordedAudio();
+                                        widget.onVoiceSend!(audioPath);
+                                        return;
+                                      }
+                                      if (voiceInputController
+                                          .isInlinePanelActive) {
+                                        voiceInputController.closeInlinePanel();
+                                      }
                                       if (isEditing) {
                                         final newText =
                                             widget.textController.text.trim();
@@ -526,7 +594,10 @@ class _ChatInputAreaState extends State<ChatInputArea> {
                                     },
                               child: CircleAvatar(
                                 radius: 24.r,
-                                backgroundColor: _purple,
+                                backgroundColor: voiceInputController
+                                        .isBusyListeningOrRecording
+                                    ? AppColors.authIconBar
+                                    : AppColors.primaryDarkblue,
                                 child: Icon(
                                   isEditing ? Icons.check : Icons.send_rounded,
                                   color: Colors.white,
@@ -539,12 +610,21 @@ class _ChatInputAreaState extends State<ChatInputArea> {
                           Padding(
                             padding: EdgeInsets.only(bottom: 2.h),
                             child: GestureDetector(
-                              onTap: () async {
-                                await voiceController.startRecording();
+                              onTap: () {
+                                focusNode.unfocus();
+                                VoiceInputSheet.show(
+                                  context: context,
+                                  textController: widget.textController,
+                                  focusNode: focusNode,
+                                  messageText: widget.messageText,
+                                  onSend: widget.onSend,
+                                  onVoiceSend: widget.onVoiceSend,
+                                  type: currentVoiceContextType,
+                                );
                               },
                               child: CircleAvatar(
                                 radius: 24.r,
-                                backgroundColor: _purple,
+                                backgroundColor: AppColors.primaryDarkblue,
                                 child: Icon(
                                   Icons.mic_none_rounded,
                                   color: Colors.white,
@@ -557,7 +637,15 @@ class _ChatInputAreaState extends State<ChatInputArea> {
                           const SizedBox(),
                       ],
                     ),
-                    if (!voiceController.isRecording.value &&
+                    if (voiceInputController.isInlinePanelActive)
+                      VoiceInputInlinePanel(
+                        controller: voiceInputController,
+                        textController: widget.textController,
+                        focusNode: focusNode,
+                        onSend: widget.onSend,
+                        onVoiceSend: widget.onVoiceSend,
+                      )
+                    else if (!voiceController.isRecording.value &&
                         (widget.messageController?.showEmoji.value ??
                             widget.groupMessageController?.showEmoji.value ??
                             false))
