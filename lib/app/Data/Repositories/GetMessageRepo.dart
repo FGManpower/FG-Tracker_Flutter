@@ -277,4 +277,19 @@ class MessageRepo {
     );
     return GroupProfileDetailsModel.fromJson(response);
   }
+
+
+
+  static Future<Map<String, dynamic>> clearGroupChat({
+    required int groupId,
+  }) async {
+    final response = await HttpUtil().Authpost(
+      "/clearGroupChat",
+      data: {
+        "groupId": groupId,
+      },
+    );
+
+    return Map<String, dynamic>.from(response);
+  }
 }

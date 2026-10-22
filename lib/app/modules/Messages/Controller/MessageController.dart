@@ -58,7 +58,7 @@ class MessageController extends GetxController with WidgetsBindingObserver {
   final RxBool isUploadingVideo = false.obs;
   final RxDouble uploadProgress = 0.0.obs;
   late MemberData memberData;
-  Map<String, dynamic>? arguments = Get.arguments;
+  Map<String, dynamic>? arguments;
   RxBool isCreator = false.obs;
   final Rxn<MessageData> pinnedMessage = Rxn<MessageData>();
   final RxBool showPinnedBanner = true.obs;
@@ -95,6 +95,13 @@ class MessageController extends GetxController with WidgetsBindingObserver {
   @override
   void onInit() {
     super.onInit();
+    arguments = Get.arguments is Map
+        ? Map<String, dynamic>.from(Get.arguments as Map)
+        : null;
+
+    log("CHAT ROUTE ARGUMENTS => $arguments");
+    log("CHAT ROUTE chatId => ${arguments?['chatId']}");
+    log("CHAT ROUTE userData => ${arguments?['userData']}");
 
     log("========== CHAT DEBUG 1: onInit START ==========");
 
@@ -302,7 +309,17 @@ class MessageController extends GetxController with WidgetsBindingObserver {
       final passedChatId = arguments?['chatId']?.toString();
 
       isLoadingInitialMessages.value = true;
+      final hasPassedChatId = passedChatId != null &&
+          passedChatId.isNotEmpty &&
+          passedChatId != 'null';
 
+      if (!hasPassedChatId) {
+        Future.delayed(const Duration(seconds: 8), () {
+          if (!isClosed && privateChatId.value.isEmpty) {
+            isLoadingInitialMessages.value = false;
+          }
+        });
+      }
       if (passedChatId != null &&
           passedChatId.isNotEmpty &&
           passedChatId != 'null') {
