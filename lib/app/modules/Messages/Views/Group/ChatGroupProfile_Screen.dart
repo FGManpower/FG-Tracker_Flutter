@@ -962,7 +962,7 @@ class _GroupProfileScreenState extends State<GroupProfileScreen> {
                 confirm: "Clear",
                 onConfirm: () {
                   Get.back();
-                  Utils().fluttertoast("Clear chat coming soon");
+                  chatController.clearGroupChat();
                 },
               );
             },

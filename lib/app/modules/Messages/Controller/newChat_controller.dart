@@ -1,3 +1,6 @@
+import 'dart:developer';
+
+import 'package:fgtracker/app/Data/Repositories/GetMessageRepo.dart';
 import 'package:fgtracker/app/Data/Repositories/GroupRepo.dart';
 import 'package:fgtracker/app/Data/Services/contact_services.dart';
 import 'package:fgtracker/app/Model/user_profileList_res.dart';
@@ -25,6 +28,36 @@ class NewChatController extends GetxController {
     getRegisteredContacts();
   }
 
+  Future<Map<int, int>> _loadPrivateChatIdMap() async {
+    final Map<int, int> map = {};
+
+    try {
+      final res = await MessageRepo.getChatList(
+        page: 1,
+        limit: 100,
+        type: "private",
+        includeArchived: true,
+      );
+
+      for (final item in res.data ?? <dynamic>[]) {
+        if (item.isGroup == true) continue;
+
+        final int? uid = item.userId;
+        final int? cid = item.chatId ?? item.conversationId ?? item.id;
+
+        if (uid != null && cid != null) {
+          map[uid] = cid;
+        }
+      }
+
+      log("CHAT ID MAP => $map");
+    } catch (e) {
+      log("CHAT ID MAP ERROR => $e");
+    }
+
+    return map;
+  }
+
   Future<void> getRegisteredContacts() async {
     try {
       contactLoading.value = true;
@@ -32,7 +65,13 @@ class NewChatController extends GetxController {
 
       final List<Contact> deviceContacts = await _contactService.getContacts();
 
-      final result = await GroupRepo.getAllUserData();
+      final results = await Future.wait([
+        GroupRepo.getAllUserData(),
+        _loadPrivateChatIdMap(),
+      ]);
+
+      final result = results[0] as dynamic;
+      final Map<int, int> chatIdMap = results[1] as Map<int, int>;
 
       if (result.status == true) {
         final List<UserListData> users = result.userData ?? [];
@@ -53,23 +92,36 @@ class NewChatController extends GetxController {
           for (var phone in contact.phones) {
             final String normalized = _normalizePhone(phone.number);
 
-            if (normalized.length == 10 && !processedPhones.contains(normalized)) {
+            if (normalized.length == 10 &&
+                !processedPhones.contains(normalized)) {
               processedPhones.add(normalized);
 
-              final String contactDisplayName = contact.displayName.trim().isNotEmpty
+              final String contactDisplayName =
+              contact.displayName.trim().isNotEmpty
                   ? contact.displayName.trim()
                   : phone.number;
 
               if (registeredMap.containsKey(normalized)) {
                 final registeredUser = registeredMap[normalized]!;
+
+                final int? resolvedChatId = registeredUser.privateChatId ??
+                    registeredUser.chatId ??
+                    registeredUser.conversationId ??
+                    (registeredUser.userId != null
+                        ? chatIdMap[registeredUser.userId!]
+                        : null);
+
                 matched.add(UserListData(
                   userId: registeredUser.userId,
                   name: contactDisplayName,
                   mobileNo: phone.number,
                   profileImage: registeredUser.profileImage,
+                  isOnline: registeredUser.isOnline,
+                  chatId: resolvedChatId,
+                  conversationId: registeredUser.conversationId,
+                  privateChatId: registeredUser.privateChatId,
                 ));
-              }
-              else {
+              } else {
                 unmatched.add(UserListData(
                   userId: null,
                   name: contactDisplayName,
