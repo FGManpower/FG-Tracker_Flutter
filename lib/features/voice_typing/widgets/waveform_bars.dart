@@ -15,8 +15,28 @@ class AnimatedWaveformBars extends StatelessWidget {
 
   // Base pattern multiplier for natural-looking visual variance across the 22 bars
   static const List<double> _baseMultipliers = [
-    0.30, 0.45, 0.65, 0.85, 0.95, 0.75, 0.90, 1.00, 0.80, 0.60, 0.90,
-    0.95, 0.70, 0.85, 1.00, 0.80, 0.90, 0.75, 0.60, 0.45, 0.35, 0.25,
+    0.30,
+    0.45,
+    0.65,
+    0.85,
+    0.95,
+    0.75,
+    0.90,
+    1.00,
+    0.80,
+    0.60,
+    0.90,
+    0.95,
+    0.70,
+    0.85,
+    1.00,
+    0.80,
+    0.90,
+    0.75,
+    0.60,
+    0.45,
+    0.35,
+    0.25,
   ];
 
   @override
@@ -33,8 +53,9 @@ class AnimatedWaveformBars extends StatelessWidget {
           final multiplier = _baseMultipliers[index % _baseMultipliers.length];
           // Target height influenced by live sound level with pseudo-random jitter for vitality
           final levelFactor = max(0.1, soundLevel);
-          final computedHeight = (minHeight + (maxHeight - minHeight) * levelFactor * multiplier)
-              .clamp(minHeight, maxHeight);
+          final computedHeight =
+              (minHeight + (maxHeight - minHeight) * levelFactor * multiplier)
+                  .clamp(minHeight, maxHeight);
 
           final color = (index % 2 == 0)
               ? AppColors.primaryDarkblue
@@ -72,9 +93,32 @@ class StaticWaveformBars extends StatelessWidget {
   static const int _barCount = 26;
 
   static const List<double> _fixedHeights = [
-    12.0, 18.0, 26.0, 32.0, 22.0, 36.0, 28.0, 20.0, 34.0, 38.0,
-    24.0, 16.0, 30.0, 36.0, 22.0, 28.0, 34.0, 26.0, 18.0, 30.0,
-    38.0, 26.0, 20.0, 28.0, 18.0, 12.0,
+    12.0,
+    18.0,
+    26.0,
+    32.0,
+    22.0,
+    36.0,
+    28.0,
+    20.0,
+    34.0,
+    38.0,
+    24.0,
+    16.0,
+    30.0,
+    36.0,
+    22.0,
+    28.0,
+    34.0,
+    26.0,
+    18.0,
+    30.0,
+    38.0,
+    26.0,
+    20.0,
+    28.0,
+    18.0,
+    12.0,
   ];
 
   @override
@@ -85,7 +129,9 @@ class StaticWaveformBars extends StatelessWidget {
           behavior: HitTestBehavior.opaque,
           onTapDown: (details) {
             if (onSeek != null && constraints.maxWidth > 0) {
-              final tapFraction = (details.localPosition.dx / constraints.maxWidth).clamp(0.0, 1.0);
+              final tapFraction =
+                  (details.localPosition.dx / constraints.maxWidth)
+                      .clamp(0.0, 1.0);
               onSeek!(tapFraction);
             }
           },
@@ -103,7 +149,9 @@ class StaticWaveformBars extends StatelessWidget {
                   width: 4.w,
                   height: barHeight.h,
                   decoration: BoxDecoration(
-                    color: isFilled ? AppColors.primaryDarkblue : AppColors.authIconBar,
+                    color: isFilled
+                        ? AppColors.primaryDarkblue
+                        : AppColors.authIconBar,
                     borderRadius: BorderRadius.circular(4.r),
                   ),
                 );

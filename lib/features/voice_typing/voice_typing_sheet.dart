@@ -113,7 +113,7 @@ class _VoiceTypingSheetState extends State<VoiceTypingSheet> {
                 return _buildMessageStateView(
                   icon: Icons.mic_off_rounded,
                   title: "Didn't catch that",
-                  message: "Didn't catch that. Tap the mic and try again.",
+                  message: "Didn't catch that. Tap the mic and speak a little louder.",
                   actionLabel: "Try Again",
                   onAction: () => controller.startListening(),
                 );
@@ -124,7 +124,7 @@ class _VoiceTypingSheetState extends State<VoiceTypingSheet> {
                   title: "Something went wrong",
                   message: controller.errorMessage.value.isNotEmpty
                       ? controller.errorMessage.value
-                      : "Failed to recognize speech. Tap to retry.",
+                      : "Voice typing isn't available on this device.",
                   actionLabel: "Retry",
                   onAction: () => controller.startListening(),
                 );

@@ -534,7 +534,7 @@ class _ForwardMessageScreenState extends State<ForwardMessageScreen> {
             children: [
               Stack(
                 children: [
-                  _avatar(image, Icons.groups, ToggleThemeData.darkPurple),
+                  _avatar(image, Icons.groups_rounded, ToggleThemeData.darkPurple),
                   if (selected)
                     Positioned.fill(
                       child: Container(

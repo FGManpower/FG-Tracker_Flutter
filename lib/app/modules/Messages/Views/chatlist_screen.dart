@@ -7,6 +7,7 @@ import 'package:skeletonizer/skeletonizer.dart';
 
 import 'package:fgtracker/app/Model/MemberDataRes.dart';
 import 'package:fgtracker/app/Model/PrivateChatModel.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fgtracker/app/global_widget/common_widget.dart';
 import 'package:fgtracker/app/modules/status/views/status_section.dart';
 import 'package:fgtracker/gen/fonts.gen.dart';
@@ -531,6 +532,7 @@ class _AllChatsBody extends StatelessWidget {
 
                           return _chatRow(
                             context: context,
+                            index: index,
                             chat: chat,
                             name: chat.name ?? chat.groupName ?? "Unknown User",
                             role: chat.role ?? "",
@@ -744,6 +746,35 @@ class _AllChatsBody extends StatelessWidget {
     );
   }
 
+  static bool _isPlaceholderImage(String? url) {
+    if (url == null) return true;
+    final lower = url.toLowerCase().trim();
+    return lower.isEmpty ||
+        lower == 'null' ||
+        lower == 'undefined' ||
+        lower.endsWith('/null') ||
+        lower.contains('default-profile') ||
+        lower.contains('default_profile') ||
+        lower.contains('default-avatar') ||
+        lower.contains('default_avatar') ||
+        lower.contains('default-group') ||
+        lower.contains('default_group') ||
+        lower.contains('default.png') ||
+        lower.contains('default-image') ||
+        lower.contains('default_image');
+  }
+
+  static String _formatImageUrl(String? rawUrl) {
+    if (rawUrl == null || _isPlaceholderImage(rawUrl)) return '';
+    final trimmed = rawUrl.trim();
+    if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+      return trimmed;
+    }
+    final baseUrl = ConstRes.aImageBaseUrl.replaceFirst(RegExp(r'/+$'), '');
+    final path = trimmed.replaceFirst(RegExp(r'^/+'), '');
+    return '$baseUrl/$path';
+  }
+
   Widget _chatRow({
     required BuildContext context,
     required String name,
@@ -755,6 +786,7 @@ class _AllChatsBody extends StatelessWidget {
     Color? statusColor,
     bool isGroup = false,
     String? image,
+    int? index,
   }) {
     Offset tapPos = Offset.zero;
 
@@ -786,7 +818,9 @@ class _AllChatsBody extends StatelessWidget {
               groupCode = matched.groupCode ?? '';
               isCreator = (matched.isCreator ?? false).toString();
               isActive = (matched.isActive ?? true).toString();
-              if (profileImg.isEmpty && matched.groupProfile != null) {
+              if ((profileImg.isEmpty || _isPlaceholderImage(profileImg)) &&
+                  matched.groupProfile != null &&
+                  !_isPlaceholderImage(matched.groupProfile)) {
                 profileImg = matched.groupProfile!;
               }
             }
@@ -855,6 +889,7 @@ class _AllChatsBody extends StatelessWidget {
           isForwarded: chat.isForwarded == true,
           forwardedLabel: chat.forwardedLabel ?? "Forwarded",
           image: image,
+          colorIndex: (chat.groupId ?? chat.id ?? index ?? name.hashCode).abs(),
         ),
       ),
     );
@@ -875,10 +910,16 @@ class _AllChatsBody extends StatelessWidget {
     bool isForwarded = false,
     String forwardedLabel = "Forwarded",
     String? image,
+    int? colorIndex,
   }) {
     final bool isDeleted = isDeletedForEveryone ||
         msg == "This message was deleted" ||
         msg == "Message deleted";
+
+    final colors =
+        colorPool[(colorIndex ?? name.hashCode.abs()) % colorPool.length];
+    final bool hasValidImage = !_isPlaceholderImage(image);
+    final String formattedUrl = hasValidImage ? _formatImageUrl(image) : '';
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -886,32 +927,88 @@ class _AllChatsBody extends StatelessWidget {
         Stack(
           clipBehavior: Clip.none,
           children: [
-            CircleAvatar(
-              radius: 26.r,
-              backgroundColor:
-                  isGroup ? const Color(0xFF6B4DFF) : Colors.grey.shade300,
-              backgroundImage: (image != null && image.isNotEmpty)
-                  ? NetworkImage(
-                      image.startsWith("http://") ||
-                              image.startsWith("https://")
-                          ? image
-                          : "${ConstRes.aImageBaseUrl}$image",
-                    )
-                  : null,
-              child: (image != null && image.isNotEmpty)
-                  ? null
-                  : (isGroup
-                      ? Icon(
-                          Icons.groups,
-                          color: Colors.white,
-                          size: 24.sp,
+            if (isGroup)
+              ClipOval(
+                child: SizedBox(
+                  width: 52.r,
+                  height: 52.r,
+                  child: hasValidImage && formattedUrl.isNotEmpty
+                      ? CachedNetworkImage(
+                          imageUrl: formattedUrl,
+                          width: 52.r,
+                          height: 52.r,
+                          fit: BoxFit.cover,
+                          placeholder: (context, url) => Container(
+                            color: colors['bg'],
+                            alignment: Alignment.center,
+                            child: Icon(
+                              Icons.groups_rounded,
+                              color: colors['icon'],
+                              size: 26.sp,
+                            ),
+                          ),
+                          errorWidget: (context, url, error) => Container(
+                            color: colors['bg'],
+                            alignment: Alignment.center,
+                            child: Icon(
+                              Icons.groups_rounded,
+                              color: colors['icon'],
+                              size: 26.sp,
+                            ),
+                          ),
                         )
-                      : Icon(
-                          Icons.person,
-                          color: Colors.white,
-                          size: 26.sp,
-                        )),
-            ),
+                      : Container(
+                          color: colors['bg'],
+                          alignment: Alignment.center,
+                          child: Icon(
+                            Icons.groups_rounded,
+                            color: colors['icon'],
+                            size: 26.sp,
+                          ),
+                        ),
+                ),
+              )
+            else
+              ClipOval(
+                child: SizedBox(
+                  width: 52.r,
+                  height: 52.r,
+                  child: hasValidImage && formattedUrl.isNotEmpty
+                      ? CachedNetworkImage(
+                          imageUrl: formattedUrl,
+                          width: 52.r,
+                          height: 52.r,
+                          fit: BoxFit.cover,
+                          placeholder: (context, url) => Container(
+                            color: Colors.grey.shade200,
+                            alignment: Alignment.center,
+                            child: Icon(
+                              Icons.person,
+                              color: Colors.grey.shade500,
+                              size: 26.sp,
+                            ),
+                          ),
+                          errorWidget: (context, url, error) => Container(
+                            color: Colors.grey.shade200,
+                            alignment: Alignment.center,
+                            child: Icon(
+                              Icons.person,
+                              color: Colors.grey.shade500,
+                              size: 26.sp,
+                            ),
+                          ),
+                        )
+                      : Container(
+                          color: Colors.grey.shade200,
+                          alignment: Alignment.center,
+                          child: Icon(
+                            Icons.person,
+                            color: Colors.grey.shade500,
+                            size: 26.sp,
+                          ),
+                        ),
+                ),
+              ),
             if (statusColor != null)
               Positioned(
                 bottom: 0,
