@@ -6,10 +6,12 @@ import 'package:fgtracker/features/voice_input/widgets/listening_view.dart';
 import 'package:fgtracker/features/voice_input/widgets/recording_view.dart';
 import 'package:fgtracker/features/voice_input/widgets/text_review_view.dart';
 import 'package:fgtracker/features/voice_input/widgets/voice_review_view.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:record/record.dart';
 
 class VoiceInputSheet {
   static Future<void> show({
@@ -25,13 +27,58 @@ class VoiceInputSheet {
     focusNode.unfocus();
     FocusScope.of(context).unfocus();
 
-    // 2. Request mic permission
-    final micStatus = await Permission.microphone.request();
-    if (!micStatus.isGranted) {
-      if (!context.mounted) return;
-      _showPermissionDialog(context);
-      return;
+    // 2. Microphone Permission Check (iOS & Android)
+    bool hasPermission = false;
+
+    if (Platform.isIOS) {
+      var micStatus = await Permission.microphone.status;
+      if (kDebugMode) {
+        final speechStatus = await Permission.speech.status;
+        final recorderHasPerm = await AudioRecorder().hasPermission();
+        debugPrint('[VT-iOS] Permission.microphone.status: $micStatus');
+        debugPrint('[VT-iOS] Permission.speech.status: $speechStatus');
+        debugPrint('[VT-iOS] AudioRecorder().hasPermission(): $recorderHasPerm');
+      }
+
+      // If already allowed (granted or limited in iOS 17+), proceed immediately
+      if (micStatus.isGranted || micStatus.isLimited) {
+        hasPermission = true;
+      } else if (micStatus.isDenied) {
+        // First-time or unprompted: request() shows the native iOS system popup
+        micStatus = await Permission.microphone.request();
+        if (kDebugMode) {
+          debugPrint('[VT-iOS] Permission.microphone.request() result: $micStatus');
+        }
+        if (micStatus.isGranted || micStatus.isLimited) {
+          hasPermission = true;
+        } else if (micStatus.isPermanentlyDenied || micStatus.isRestricted) {
+          if (!context.mounted) return;
+          _showPermissionDialog(context);
+          return;
+        } else {
+          return;
+        }
+      } else if (micStatus.isPermanentlyDenied || micStatus.isRestricted) {
+        if (kDebugMode) {
+          debugPrint(
+              '[VT-iOS] Showing permission dialog because: permanentlyDenied/restricted ($micStatus)');
+        }
+        if (!context.mounted) return;
+        _showPermissionDialog(context);
+        return;
+      }
+    } else {
+      // Android behaviour stays exactly the same as before
+      final micStatus = await Permission.microphone.request();
+      if (!micStatus.isGranted) {
+        if (!context.mounted) return;
+        _showPermissionDialog(context);
+        return;
+      }
+      hasPermission = true;
     }
+
+    if (!hasPermission) return;
 
     final controller = Get.find<VoiceInputController>();
 
@@ -45,14 +92,6 @@ class VoiceInputSheet {
       builder: (_) => ChooseView(
         onSelectVoiceToText: () async {
           Navigator.pop(context);
-          if (Platform.isIOS) {
-            final speechStatus = await Permission.speech.request();
-            if (!speechStatus.isGranted && !speechStatus.isLimited) {
-              if (!context.mounted) return;
-              _showPermissionDialog(context);
-              return;
-            }
-          }
           await controller.startVoiceToText(
             textController: textController,
             focusNode: focusNode,
@@ -77,39 +116,80 @@ class VoiceInputSheet {
   static void _showPermissionDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20.r),
-        ),
-        title: Text(
-          "Permission Required",
-          style: TextStyle(
-            fontSize: 16.sp,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        content: Text(
-          "Microphone permission is needed to use voice.",
-          style: TextStyle(
-            fontSize: 13.sp,
-            color: Colors.grey.shade700,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text("Cancel"),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              openAppSettings();
-            },
-            child: const Text("Open settings"),
-          ),
-        ],
+      builder: (ctx) => const _PermissionDialog(),
+    );
+  }
+}
+
+class _PermissionDialog extends StatefulWidget {
+  const _PermissionDialog();
+
+  @override
+  State<_PermissionDialog> createState() => _PermissionDialogState();
+}
+
+class _PermissionDialogState extends State<_PermissionDialog>
+    with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Re-check mic permission when returning from iOS Settings
+    if (state == AppLifecycleState.resumed) {
+      Permission.microphone.status.then((status) {
+        if (kDebugMode) {
+          debugPrint('[VT-iOS] App resumed, re-checked mic status: $status');
+        }
+        if (status.isGranted || status.isLimited) {
+          if (mounted) Navigator.of(context).pop();
+        }
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      backgroundColor: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20.r),
       ),
+      title: Text(
+        "Permission Required",
+        style: TextStyle(
+          fontSize: 16.sp,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+      content: Text(
+        "Microphone permission is needed to use voice.",
+        style: TextStyle(
+          fontSize: 13.sp,
+          color: Colors.grey.shade700,
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text("Cancel"),
+        ),
+        ElevatedButton(
+          onPressed: () {
+            openAppSettings();
+          },
+          child: const Text("Open settings"),
+        ),
+      ],
     );
   }
 }

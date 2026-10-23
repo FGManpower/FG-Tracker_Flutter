@@ -77,69 +77,79 @@ class VoiceToTextReviewView extends StatelessWidget {
 
           SizedBox(height: 12.h),
 
-          // ── SECTION 1: Voice Playback ────────────────────────────────────────
-          _SectionLabel(
-            icon: Icons.graphic_eq_rounded,
-            label: "Listen back",
-            color: AppColors.primaryDarkblue,
-          ),
-          SizedBox(height: 6.h),
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
-            decoration: BoxDecoration(
-              color: AppColors.authIconBgCircle, // #EEEDFD
-              borderRadius: BorderRadius.circular(16.r),
-            ),
-            child: Row(
+          // ── SECTION 1: Voice Playback (if audio available) ────────────────────
+          Obx(() {
+            if (controller.voiceToTextAudioPath.value.isEmpty) {
+              return const SizedBox.shrink();
+            }
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Play / Pause Button
-                Obx(() {
-                  final isPlaying = controller.isAudioPlaying.value;
-                  return GestureDetector(
-                    onTap: () => controller.togglePlayPause(),
-                    child: Container(
-                      width: 42.w,
-                      height: 42.w,
-                      decoration: const BoxDecoration(
-                        color: AppColors.primaryDarkblue,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        isPlaying
-                            ? Icons.pause_rounded
-                            : Icons.play_arrow_rounded,
-                        color: Colors.white,
-                        size: 26.sp,
-                      ),
-                    ),
-                  );
-                }),
-                SizedBox(width: 12.w),
-                // Seekable waveform
-                Expanded(
-                  child: Obx(() => VoiceInputReviewWaveform(
-                        progress: controller.audioProgress.value,
-                        playedColor: AppColors.primaryDarkblue,
-                        unplayedColor: AppColors.authIconBar,
-                        onSeek: (frac) => controller.seekAudio(frac),
-                      )),
+                _SectionLabel(
+                  icon: Icons.graphic_eq_rounded,
+                  label: "Listen back",
+                  color: AppColors.primaryDarkblue,
                 ),
-                SizedBox(width: 10.w),
-                Obx(() => Text(
-                      controller.audioDurationSeconds.value > 0
-                          ? controller.formattedAudioDuration
-                          : controller.formattedTimer,
-                      style: TextStyle(
-                        color: AppColors.primaryDarkblue,
-                        fontSize: 13.sp,
-                        fontWeight: FontWeight.w600,
+                SizedBox(height: 6.h),
+                Container(
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
+                  decoration: BoxDecoration(
+                    color: AppColors.authIconBgCircle, // #EEEDFD
+                    borderRadius: BorderRadius.circular(16.r),
+                  ),
+                  child: Row(
+                    children: [
+                      // Play / Pause Button
+                      Obx(() {
+                        final isPlaying = controller.isAudioPlaying.value;
+                        return GestureDetector(
+                          onTap: () => controller.togglePlayPause(),
+                          child: Container(
+                            width: 42.w,
+                            height: 42.w,
+                            decoration: const BoxDecoration(
+                              color: AppColors.primaryDarkblue,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              isPlaying
+                                  ? Icons.pause_rounded
+                                  : Icons.play_arrow_rounded,
+                              color: Colors.white,
+                              size: 26.sp,
+                            ),
+                          ),
+                        );
+                      }),
+                      SizedBox(width: 12.w),
+                      // Seekable waveform
+                      Expanded(
+                        child: Obx(() => VoiceInputReviewWaveform(
+                              progress: controller.audioProgress.value,
+                              playedColor: AppColors.primaryDarkblue,
+                              unplayedColor: AppColors.authIconBar,
+                              onSeek: (frac) => controller.seekAudio(frac),
+                            )),
                       ),
-                    )),
+                      SizedBox(width: 10.w),
+                      Obx(() => Text(
+                            controller.audioDurationSeconds.value > 0
+                                ? controller.formattedAudioDuration
+                                : controller.formattedTimer,
+                            style: TextStyle(
+                              color: AppColors.primaryDarkblue,
+                              fontSize: 13.sp,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          )),
+                    ],
+                  ),
+                ),
+                SizedBox(height: 12.h),
               ],
-            ),
-          ),
-
-          SizedBox(height: 12.h),
+            );
+          }),
 
           // ── SECTION 2: Transcribed Text ──────────────────────────────────────
           _SectionLabel(

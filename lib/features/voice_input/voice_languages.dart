@@ -25,13 +25,6 @@ class VoiceLanguages {
     VoiceLanguage(code: 'en_IN', name: 'English', englishName: 'English'),
     VoiceLanguage(code: 'hi_IN', name: 'हिन्दी', englishName: 'Hindi'),
     VoiceLanguage(code: 'mr_IN', name: 'मराठी', englishName: 'Marathi'),
-    VoiceLanguage(code: 'gu_IN', name: 'ગુજરાતી', englishName: 'Gujarati'),
-    VoiceLanguage(code: 'bn_IN', name: 'বাংলা', englishName: 'Bengali'),
-    VoiceLanguage(code: 'ta_IN', name: 'தமிழ்', englishName: 'Tamil'),
-    VoiceLanguage(code: 'te_IN', name: 'తెలుగు', englishName: 'Telugu'),
-    VoiceLanguage(code: 'kn_IN', name: 'ಕನ್ನಡ', englishName: 'Kannada'),
-    VoiceLanguage(code: 'pa_IN', name: 'ਪੰਜਾਬੀ', englishName: 'Punjabi'),
-    VoiceLanguage(code: 'ur_IN', name: 'اردو', englishName: 'Urdu', isRtl: true),
   ];
 
   static VoiceLanguage defaultLanguage({String? appLanguageCode}) {
