@@ -2,20 +2,81 @@ package com.example.fgtracker
 
 import android.app.Activity
 import android.app.Application
+import android.content.Intent
+import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import com.hiennv.flutter_callkit_incoming.CallkitEventCallback
 import com.hiennv.flutter_callkit_incoming.FlutterCallkitIncomingPlugin
+import java.lang.ref.WeakReference
+import java.util.Collections
 
 private const val TAG = "MainApplication"
+private const val CALLKIT_INCOMING_ACTIVITY =
+    "com.hiennv.flutter_callkit_incoming.CallkitIncomingActivity"
+private const val ACTION_ENDED_CALL_INCOMING_SUFFIX =
+    "com.hiennv.flutter_callkit_incoming.ACTION_ENDED_CALL_INCOMING"
 
 class MainApplication : Application() {
 
     @Volatile
     private var activeMainActivities: Int = 0
 
+    private val incomingCallActivities =
+        Collections.synchronizedList(mutableListOf<WeakReference<Activity>>())
+
     val isMainAppRunning: Boolean
         get() = activeMainActivities > 0
+
+    private fun closeIncomingCallActivities(): Boolean {
+        var closedOpenActivity = false
+
+        try {
+            FlutterCallkitIncomingPlugin.getInstance()?.getCallkitSoundPlayerManager()?.stop()
+        } catch (_: Exception) {}
+
+        try {
+            val closeBroadcast = Intent("${packageName}.$ACTION_ENDED_CALL_INCOMING_SUFFIX").apply {
+                putExtra("ACCEPTED", false)
+                setPackage(packageName)
+            }
+            sendBroadcast(closeBroadcast)
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed sending close broadcast: ${e.message}")
+        }
+
+        val snapshot: List<Activity>
+        synchronized(incomingCallActivities) {
+            snapshot = incomingCallActivities.mapNotNull { it.get() }
+            incomingCallActivities.clear()
+        }
+
+        for (act in snapshot) {
+            if (!act.isFinishing && !act.isDestroyed) {
+                closedOpenActivity = true
+            }
+        }
+
+        Handler(Looper.getMainLooper()).post {
+            for (act in snapshot) {
+                try {
+                    if (!act.isFinishing && !act.isDestroyed) {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                            act.finishAndRemoveTask()
+                        } else {
+                            act.finish()
+                        }
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error finishing CallkitIncomingActivity: ${e.message}")
+                }
+            }
+        }
+
+        return closedOpenActivity
+    }
 
     private val callkitEventCallback = object : CallkitEventCallback {
         override fun onCallEvent(event: CallkitEventCallback.CallEvent, callData: Bundle) {
@@ -31,18 +92,27 @@ class MainApplication : Application() {
                 }
 
                 CallkitEventCallback.CallEvent.DECLINE -> {
+                    val closedProgrammatically = closeIncomingCallActivities()
                     val callId = extractCallId(callData)
                     val groupId = extractGroupId(callData)
-                    Log.d(
-                        TAG,
-                        "DECLINE -> forwarding to CallDeclineReceiver " +
-                                "callId=$callId groupId=$groupId isMainAppRunning=$isMainAppRunning"
-                    )
-                    CallDeclineReceiver.enqueueDecline(this@MainApplication, callId, groupId)
+                    if (!isMainAppRunning && !closedProgrammatically) {
+                        Log.d(
+                            TAG,
+                            "DECLINE by user while terminated -> CallDeclineReceiver " +
+                                    "callId=$callId groupId=$groupId"
+                        )
+                        CallDeclineReceiver.enqueueDecline(this@MainApplication, callId, groupId)
+                    } else {
+                        Log.d(
+                            TAG,
+                            "DECLINE handled (isMainAppRunning=$isMainAppRunning " +
+                                    "closedProgrammatically=$closedProgrammatically callId=$callId)"
+                        )
+                    }
                 }
 
-                else -> {
-                    Log.d(TAG, "Unhandled CallKit native event: $event")
+                CallkitEventCallback.CallEvent.END -> {
+                    closeIncomingCallActivities()
                 }
             }
         }
@@ -56,6 +126,9 @@ class MainApplication : Application() {
                 if (activity is MainActivity) {
                     activeMainActivities += 1
                     Log.d(TAG, "MainActivity created -> activeMainActivities=$activeMainActivities")
+                } else if (activity.javaClass.name == CALLKIT_INCOMING_ACTIVITY) {
+                    incomingCallActivities.add(WeakReference(activity))
+                    Log.d(TAG, "Tracked CallkitIncomingActivity instance")
                 }
             }
 
@@ -63,6 +136,10 @@ class MainApplication : Application() {
                 if (activity is MainActivity) {
                     activeMainActivities = (activeMainActivities - 1).coerceAtLeast(0)
                     Log.d(TAG, "MainActivity destroyed -> activeMainActivities=$activeMainActivities")
+                } else if (activity.javaClass.name == CALLKIT_INCOMING_ACTIVITY) {
+                    synchronized(incomingCallActivities) {
+                        incomingCallActivities.removeAll { it.get() == null || it.get() == activity }
+                    }
                 }
             }
 
@@ -99,3 +176,4 @@ class MainApplication : Application() {
         return callData.getString("groupId")?.takeIf { it.isNotBlank() && it != "null" }
     }
 }
+
