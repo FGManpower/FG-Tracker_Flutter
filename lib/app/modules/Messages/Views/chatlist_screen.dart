@@ -300,7 +300,7 @@ class _QuickCommunicationBarState extends State<QuickCommunicationBar> {
                             title: "Groups",
                             subtitle: "Team Chats",
                             onTap: () {
-                              Get.toNamed(Routes.totalGroup);
+                              Get.toNamed(Routes.GroupsList);
                             },
                           ),
                           _quickCommCard(

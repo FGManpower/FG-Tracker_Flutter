@@ -177,6 +177,8 @@ class _CallContactsTabState extends State<CallContactsTab> {
                         mobileNo: contactData[index].mobileNo,
                         profileImage: contactData[index].profileImage,
                         isOnline: contactData[index].isOnline ?? false,
+                        chatId: contactController
+                            .chatIdFor(contactData[index].userId),
                       ),
                     ),
                   );
@@ -203,12 +205,12 @@ class _CallContactsTabState extends State<CallContactsTab> {
 
   void _startCall(UserListData user, bool isVideo) {
     CallService().startOutGoingCall(
-      context,
-      callerId: Global.storageServices.get(PrefConst.userId).toString(),
-      remoteUserId: user.userId.toString(),
-      is_video: isVideo,
-      callerName: user.name ?? "User",
-      callerProfile: user.profileImage
+        context,
+        callerId: Global.storageServices.get(PrefConst.userId).toString(),
+        remoteUserId: user.userId.toString(),
+        is_video: isVideo,
+        callerName: user.name ?? "User",
+        callerProfile: user.profileImage
     );
   }
 }

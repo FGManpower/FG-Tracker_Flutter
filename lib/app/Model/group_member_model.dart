@@ -194,7 +194,9 @@ class IndividualPlanDetails {
   static bool? _toBool(dynamic value) {
     if (value == null) return null;
     if (value is bool) return value;
-    if (value == 1 || value == '1' || value.toString().toLowerCase() == 'true') {
+    if (value == 1 ||
+        value == '1' ||
+        value.toString().toLowerCase() == 'true') {
       return true;
     }
     if (value == 0 ||
@@ -261,7 +263,7 @@ class TeamPlanDetails {
     canManageMembers = _toBool(json['canManageMembers']);
     canAssignMember = _toBool(json['canAssignMember']) ??
         (availableSeats != null && availableSeats! > 0) ||
-        (purchasedSeats != null && purchasedSeats! > 1);
+            (purchasedSeats != null && purchasedSeats! > 1);
     ownerUserId = _toInt(json['ownerUserId']);
     purchasedAt =
         json['purchasedAt']?.toString() ?? json['purchased_at']?.toString();
@@ -300,7 +302,9 @@ class TeamPlanDetails {
   static bool? _toBool(dynamic value) {
     if (value == null) return null;
     if (value is bool) return value;
-    if (value == 1 || value == '1' || value.toString().toLowerCase() == 'true') {
+    if (value == 1 ||
+        value == '1' ||
+        value.toString().toLowerCase() == 'true') {
       return true;
     }
     if (value == 0 ||
@@ -380,7 +384,9 @@ class TeamSeatItem {
   static bool? _toBool(dynamic value) {
     if (value == null) return null;
     if (value is bool) return value;
-    if (value == 1 || value == '1' || value.toString().toLowerCase() == 'true') {
+    if (value == 1 ||
+        value == '1' ||
+        value.toString().toLowerCase() == 'true') {
       return true;
     }
     if (value == 0 ||
@@ -437,7 +443,9 @@ class AdminSubscription {
   static bool? _toBool(dynamic value) {
     if (value == null) return null;
     if (value is bool) return value;
-    if (value == 1 || value == '1' || value.toString().toLowerCase() == 'true') {
+    if (value == 1 ||
+        value == '1' ||
+        value.toString().toLowerCase() == 'true') {
       return true;
     }
     if (value == 0 ||
@@ -490,7 +498,9 @@ class ExistingAccess {
   static bool? _toBool(dynamic value) {
     if (value == null) return null;
     if (value is bool) return value;
-    if (value == 1 || value == '1' || value.toString().toLowerCase() == 'true') {
+    if (value == 1 ||
+        value == '1' ||
+        value.toString().toLowerCase() == 'true') {
       return true;
     }
     if (value == 0 ||
@@ -556,8 +566,8 @@ class UserSubscription {
     }
 
     if (json['teamPlan'] is Map) {
-      teamPlan = TeamPlanDetails.fromJson(
-          Map<String, dynamic>.from(json['teamPlan']));
+      teamPlan =
+          TeamPlanDetails.fromJson(Map<String, dynamic>.from(json['teamPlan']));
       teamPlans ??= [teamPlan!];
     }
 
@@ -720,7 +730,9 @@ class User {
   static bool? _toBool(dynamic value) {
     if (value == null) return null;
     if (value is bool) return value;
-    if (value == 1 || value == '1' || value.toString().toLowerCase() == 'true') {
+    if (value == 1 ||
+        value == '1' ||
+        value.toString().toLowerCase() == 'true') {
       return true;
     }
     if (value == 0 ||
@@ -793,7 +805,9 @@ class SubscriptionMetaData {
   static bool? _toBool(dynamic value) {
     if (value == null) return null;
     if (value is bool) return value;
-    if (value == 1 || value == '1' || value.toString().toLowerCase() == 'true') {
+    if (value == 1 ||
+        value == '1' ||
+        value.toString().toLowerCase() == 'true') {
       return true;
     }
     if (value == 0 ||
@@ -841,7 +855,9 @@ class SubscriptionManagement {
   static bool? _toBool(dynamic value) {
     if (value == null) return null;
     if (value is bool) return value;
-    if (value == 1 || value == '1' || value.toString().toLowerCase() == 'true') {
+    if (value == 1 ||
+        value == '1' ||
+        value.toString().toLowerCase() == 'true') {
       return true;
     }
     if (value == 0 ||
@@ -874,7 +890,9 @@ class MemberAccess {
   static bool? _toBool(dynamic value) {
     if (value == null) return null;
     if (value is bool) return value;
-    if (value == 1 || value == '1' || value.toString().toLowerCase() == 'true') {
+    if (value == 1 ||
+        value == '1' ||
+        value.toString().toLowerCase() == 'true') {
       return true;
     }
     if (value == 0 ||
@@ -922,7 +940,9 @@ class MemberManagement {
   static bool? _toBool(dynamic value) {
     if (value == null) return null;
     if (value is bool) return value;
-    if (value == 1 || value == '1' || value.toString().toLowerCase() == 'true') {
+    if (value == 1 ||
+        value == '1' ||
+        value.toString().toLowerCase() == 'true') {
       return true;
     }
     if (value == 0 ||
@@ -997,7 +1017,9 @@ class TeamAssignmentDetails {
   static bool? _toBool(dynamic value) {
     if (value == null) return null;
     if (value is bool) return value;
-    if (value == 1 || value == '1' || value.toString().toLowerCase() == 'true') {
+    if (value == 1 ||
+        value == '1' ||
+        value.toString().toLowerCase() == 'true') {
       return true;
     }
     if (value == 0 ||
@@ -1030,8 +1052,8 @@ class SubscriptionGroupData {
           Map<String, dynamic>.from(json['management']));
     }
     if (json['teamPlan'] is Map) {
-      teamPlan = TeamPlanDetails.fromJson(
-          Map<String, dynamic>.from(json['teamPlan']));
+      teamPlan =
+          TeamPlanDetails.fromJson(Map<String, dynamic>.from(json['teamPlan']));
     }
     if (json['metaData'] is Map) {
       metaData = SubscriptionMetaData.fromJson(
@@ -1295,6 +1317,7 @@ class GroupMemberData {
   String? role;
   String? joinedAt;
   String? startedAt;
+  int? chatId;
   String? createdAt;
   String? subscriptionStatus;
   UserSubscription? subscription;
@@ -1346,6 +1369,7 @@ class GroupMemberData {
     this.canAssignTeamSeat,
     this.canRemoveTeam,
     this.canRemove,
+    this.chatId,
   }) {
     if (mobileNo != null && (phone == null || phone!.isEmpty)) {
       phone = mobileNo.toString();
@@ -1389,6 +1413,8 @@ class GroupMemberData {
         _toBool(json['isLocationSharing'] ?? json['locationSharing']);
     isOnline = _toBool(json['isOnline'] ?? json['online']);
     lastSeen = json['lastSeen']?.toString() ?? json['lastActive']?.toString();
+    chatId = _toInt(
+        json['chatId'] ?? json['privateChatId'] ?? json['conversationId']);
     department = json['department']?.toString() ??
         json['team']?.toString() ??
         json['designation']?.toString();
@@ -1432,13 +1458,12 @@ class GroupMemberData {
 
     isSubscribedByAdmin = _toBool(json['isSubscribedByAdmin']) ??
         management?.isManagedByCurrentUser ??
-        (teamAssignment != null && teamAssignment?.isOwnedByCurrentUser == true);
-    adminSubscriptionStatus = json['adminSubscriptionStatus']?.toString() ??
-        teamAssignment?.status;
-    adminAccessType = json['adminAccessType']?.toString() ??
-        access?.accessType;
-    if (json['adminSubscription'] != null &&
-        json['adminSubscription'] is Map) {
+        (teamAssignment != null &&
+            teamAssignment?.isOwnedByCurrentUser == true);
+    adminSubscriptionStatus =
+        json['adminSubscriptionStatus']?.toString() ?? teamAssignment?.status;
+    adminAccessType = json['adminAccessType']?.toString() ?? access?.accessType;
+    if (json['adminSubscription'] != null && json['adminSubscription'] is Map) {
       adminSubscription = AdminSubscription.fromJson(
           Map<String, dynamic>.from(json['adminSubscription']));
     }
@@ -1446,10 +1471,9 @@ class GroupMemberData {
       existingAccess = ExistingAccess.fromJson(
           Map<String, dynamic>.from(json['existingAccess']));
     }
-    canAssignTeamSeat = _toBool(json['canAssignTeamSeat']) ??
-        management?.canAssign;
-    canRemoveTeam = _toBool(json['canRemoveTeam']) ??
-        management?.canRemove;
+    canAssignTeamSeat =
+        _toBool(json['canAssignTeamSeat']) ?? management?.canAssign;
+    canRemoveTeam = _toBool(json['canRemoveTeam']) ?? management?.canRemove;
     canRemove = _toBool(json['canRemove'] ?? json['canRemoveTeam']) ??
         management?.canRemove;
   }
@@ -1466,6 +1490,7 @@ class GroupMemberData {
     data['isLocationSharing'] = isLocationSharing;
     data['isOnline'] = isOnline;
     data['lastSeen'] = lastSeen;
+    data['chatId'] = chatId;
     data['department'] = department;
     data['role'] = role;
     data['joinedAt'] = joinedAt;
@@ -1519,7 +1544,6 @@ class GroupMemberData {
     return data;
   }
 
-  // --- Display Helpers ---
   String get displayName {
     if (name != null &&
         name!.trim().isNotEmpty &&
@@ -1612,7 +1636,9 @@ class GroupMemberData {
   static bool? _toBool(dynamic value) {
     if (value == null) return null;
     if (value is bool) return value;
-    if (value == 1 || value == '1' || value.toString().toLowerCase() == 'true') {
+    if (value == 1 ||
+        value == '1' ||
+        value.toString().toLowerCase() == 'true') {
       return true;
     }
     if (value == 0 ||
@@ -1624,7 +1650,6 @@ class GroupMemberData {
   }
 }
 
-// Typedef aliases for direct compatibility
 typedef Private = GroupMemberData;
 typedef Active = GroupMemberData;
 typedef RecentActive = GroupMemberData;
